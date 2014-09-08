@@ -202,9 +202,11 @@ class BASE_EXPORT ProcessMetrics {
   TimeTicks last_cpu_time_;
   int64 last_system_time_;
 
+#if defined(OS_MACOSX)
   // Same thing for idle wakeups.
   TimeTicks last_idle_wakeups_time_;
-  int64 last_absolute_idle_wakeups_;
+  uint64 last_absolute_idle_wakeups_;
+#endif
 
 #if !defined(OS_IOS)
 #if defined(OS_MACOSX)
@@ -320,7 +322,7 @@ struct BASE_EXPORT SystemDiskInfo {
   uint64 weighted_io_time;
 };
 
-// Checks whether the candidate string is a valid disk name, [sh]d[a-z]+
+// Checks whether the candidate string is a valid disk name, [hsv]d[a-z]+
 // for a generic disk or mmcblk[0-9]+ for the MMC case.
 // Names of disk partitions (e.g. sda1) are not valid.
 BASE_EXPORT bool IsValidDiskName(const std::string& candidate);

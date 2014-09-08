@@ -25,69 +25,51 @@ namespace base {
 
 namespace {
 
-enum ParsingState {
-  KEY_NAME,
-  KEY_VALUE
-};
-
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 // Read a file with a single number string and return the number as a uint64.
-static uint64 ReadFileToUint64(const base::FilePath file) {
+static uint64 ReadFileToUint64(const FilePath file) {
   std::string file_as_string;
   if (!ReadFileToString(file, &file_as_string))
     return 0;
-  base::TrimWhitespaceASCII(file_as_string, base::TRIM_ALL, &file_as_string);
+  TrimWhitespaceASCII(file_as_string, TRIM_ALL, &file_as_string);
   uint64 file_as_uint64 = 0;
-  if (!base::StringToUint64(file_as_string, &file_as_uint64))
+  if (!StringToUint64(file_as_string, &file_as_uint64))
     return 0;
   return file_as_uint64;
 }
 #endif
 
-// Read /proc/<pid>/status and returns the value for |field|, or 0 on failure.
+// Read /proc/<pid>/status and return the value for |field|, or 0 on failure.
 // Only works for fields in the form of "Field: value kB".
 size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
-  FilePath stat_file = internal::GetProcPidDir(pid).Append("status");
   std::string status;
   {
     // Synchronously reading files in /proc is safe.
     ThreadRestrictions::ScopedAllowIO allow_io;
+    FilePath stat_file = internal::GetProcPidDir(pid).Append("status");
     if (!ReadFileToString(stat_file, &status))
       return 0;
   }
 
-  StringTokenizer tokenizer(status, ":\n");
-  ParsingState state = KEY_NAME;
-  StringPiece last_key_name;
-  while (tokenizer.GetNext()) {
-    switch (state) {
-      case KEY_NAME:
-        last_key_name = tokenizer.token_piece();
-        state = KEY_VALUE;
-        break;
-      case KEY_VALUE:
-        DCHECK(!last_key_name.empty());
-        if (last_key_name == field) {
-          std::string value_str;
-          tokenizer.token_piece().CopyToString(&value_str);
-          std::string value_str_trimmed;
-          base::TrimWhitespaceASCII(value_str, base::TRIM_ALL,
-                                    &value_str_trimmed);
-          std::vector<std::string> split_value_str;
-          SplitString(value_str_trimmed, ' ', &split_value_str);
-          if (split_value_str.size() != 2 || split_value_str[1] != "kB") {
-            NOTREACHED();
-            return 0;
-          }
-          size_t value;
-          if (!StringToSizeT(split_value_str[0], &value)) {
-            NOTREACHED();
-            return 0;
-          }
-          return value;
-        }
-        state = KEY_NAME;
-        break;
+  std::vector<std::pair<std::string, std::string> > pairs;
+  SplitStringIntoKeyValuePairs(status, ':', '\n', &pairs);
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    std::string key, value_str;
+    TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
+    TrimWhitespaceASCII(pairs[i].second, TRIM_ALL, &value_str);
+    if (key == field) {
+      std::vector<std::string> split_value_str;
+      SplitString(value_str, ' ', &split_value_str);
+      if (split_value_str.size() != 2 || split_value_str[1] != "kB") {
+        NOTREACHED();
+        return 0;
+      }
+      size_t value;
+      if (!StringToSizeT(split_value_str[0], &value)) {
+        NOTREACHED();
+        return 0;
+      }
+      return value;
     }
   }
   NOTREACHED();
@@ -223,36 +205,28 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   if (!ReadFileToString(io_file, &proc_io_contents))
     return false;
 
-  (*io_counters).OtherOperationCount = 0;
-  (*io_counters).OtherTransferCount = 0;
+  io_counters->OtherOperationCount = 0;
+  io_counters->OtherTransferCount = 0;
 
-  StringTokenizer tokenizer(proc_io_contents, ": \n");
-  ParsingState state = KEY_NAME;
-  StringPiece last_key_name;
-  while (tokenizer.GetNext()) {
-    switch (state) {
-      case KEY_NAME:
-        last_key_name = tokenizer.token_piece();
-        state = KEY_VALUE;
-        break;
-      case KEY_VALUE:
-        DCHECK(!last_key_name.empty());
-        if (last_key_name == "syscr") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).ReadOperationCount));
-        } else if (last_key_name == "syscw") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).WriteOperationCount));
-        } else if (last_key_name == "rchar") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).ReadTransferCount));
-        } else if (last_key_name == "wchar") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).WriteTransferCount));
-        }
-        state = KEY_NAME;
-        break;
-    }
+  std::vector<std::pair<std::string, std::string> > pairs;
+  SplitStringIntoKeyValuePairs(proc_io_contents, ':', '\n', &pairs);
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    std::string key, value_str;
+    TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
+    TrimWhitespaceASCII(pairs[i].second, TRIM_ALL, &value_str);
+    uint64* target_counter = NULL;
+    if (key == "syscr")
+      target_counter = &io_counters->ReadOperationCount;
+    else if (key == "syscw")
+      target_counter = &io_counters->WriteOperationCount;
+    else if (key == "rchar")
+      target_counter = &io_counters->ReadTransferCount;
+    else if (key == "wchar")
+      target_counter = &io_counters->WriteTransferCount;
+    if (!target_counter)
+      continue;
+    bool converted = StringToUint64(value_str, target_counter);
+    DCHECK(converted);
   }
   return true;
 }
@@ -261,7 +235,7 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       last_system_time_(0),
       last_cpu_(0) {
-  processor_count_ = base::SysInfo::NumberOfProcessors();
+  processor_count_ = SysInfo::NumberOfProcessors();
 }
 
 #if defined(OS_CHROMEOS)
@@ -480,7 +454,7 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
 }
 
 scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
-  scoped_ptr<DictionaryValue> res(new base::DictionaryValue());
+  scoped_ptr<DictionaryValue> res(new DictionaryValue());
 
   res->SetInteger("total", total);
   res->SetInteger("free", free);
@@ -532,61 +506,49 @@ bool ParseProcMeminfo(const std::string& meminfo_data,
     SplitStringAlongWhitespace(*it, &tokens);
     // HugePages_* only has a number and no suffix so we can't rely on
     // there being exactly 3 tokens.
-    if (tokens.size() > 1) {
-      if (tokens[0] == "MemTotal:") {
-        StringToInt(tokens[1], &meminfo->total);
-        continue;
-      } if (tokens[0] == "MemFree:") {
-        StringToInt(tokens[1], &meminfo->free);
-        continue;
-      } if (tokens[0] == "Buffers:") {
-        StringToInt(tokens[1], &meminfo->buffers);
-        continue;
-      } if (tokens[0] == "Cached:") {
-        StringToInt(tokens[1], &meminfo->cached);
-        continue;
-      } if (tokens[0] == "Active(anon):") {
-        StringToInt(tokens[1], &meminfo->active_anon);
-        continue;
-      } if (tokens[0] == "Inactive(anon):") {
-        StringToInt(tokens[1], &meminfo->inactive_anon);
-        continue;
-      } if (tokens[0] == "Active(file):") {
-        StringToInt(tokens[1], &meminfo->active_file);
-        continue;
-      } if (tokens[0] == "Inactive(file):") {
-        StringToInt(tokens[1], &meminfo->inactive_file);
-        continue;
-      } if (tokens[0] == "SwapTotal:") {
-        StringToInt(tokens[1], &meminfo->swap_total);
-        continue;
-      } if (tokens[0] == "SwapFree:") {
-        StringToInt(tokens[1], &meminfo->swap_free);
-        continue;
-      } if (tokens[0] == "Dirty:") {
-        StringToInt(tokens[1], &meminfo->dirty);
-        continue;
-#if defined(OS_CHROMEOS)
-      // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
-      // usually video memory otherwise invisible to the OS.
-      } if (tokens[0] == "Shmem:") {
-        StringToInt(tokens[1], &meminfo->shmem);
-        continue;
-      } if (tokens[0] == "Slab:") {
-        StringToInt(tokens[1], &meminfo->slab);
-        continue;
-#endif
-      }
-    } else
+    if (tokens.size() <= 1) {
       DLOG(WARNING) << "meminfo: tokens: " << tokens.size()
                     << " malformed line: " << *it;
+      continue;
+    }
+
+    int* target = NULL;
+    if (tokens[0] == "MemTotal:")
+      target = &meminfo->total;
+    else if (tokens[0] == "MemFree:")
+      target = &meminfo->free;
+    else if (tokens[0] == "Buffers:")
+      target = &meminfo->buffers;
+    else if (tokens[0] == "Cached:")
+      target = &meminfo->cached;
+    else if (tokens[0] == "Active(anon):")
+      target = &meminfo->active_anon;
+    else if (tokens[0] == "Inactive(anon):")
+      target = &meminfo->inactive_anon;
+    else if (tokens[0] == "Active(file):")
+      target = &meminfo->active_file;
+    else if (tokens[0] == "Inactive(file):")
+      target = &meminfo->inactive_file;
+    else if (tokens[0] == "SwapTotal:")
+      target = &meminfo->swap_total;
+    else if (tokens[0] == "SwapFree:")
+      target = &meminfo->swap_free;
+    else if (tokens[0] == "Dirty:")
+      target = &meminfo->dirty;
+#if defined(OS_CHROMEOS)
+    // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
+    // usually video memory otherwise invisible to the OS.
+    else if (tokens[0] == "Shmem:")
+      target = &meminfo->shmem;
+    else if (tokens[0] == "Slab:")
+      target = &meminfo->slab;
+#endif
+    if (target)
+      StringToInt(tokens[1], target);
   }
 
   // Make sure we got a valid MemTotal.
-  if (!meminfo->total)
-    return false;
-
-  return true;
+  return meminfo->total > 0;
 }
 
 // exposed for testing
@@ -609,15 +571,15 @@ bool ParseProcVmstat(const std::string& vmstat_data,
        it != vmstat_lines.end(); ++it) {
     std::vector<std::string> tokens;
     SplitString(*it, ' ', &tokens);
-    if (tokens.size() == 2) {
-      if (tokens[0] == "pswpin") {
-        StringToInt(tokens[1], &meminfo->pswpin);
-        continue;
-      } if (tokens[0] == "pswpout") {
-        StringToInt(tokens[1], &meminfo->pswpout);
-        continue;
-      } if (tokens[0] == "pgmajfault")
-        StringToInt(tokens[1], &meminfo->pgmajfault);
+    if (tokens.size() != 2)
+      continue;
+
+    if (tokens[0] == "pswpin") {
+      StringToInt(tokens[1], &meminfo->pswpin);
+    } else if (tokens[0] == "pswpout") {
+      StringToInt(tokens[1], &meminfo->pswpout);
+    } else if (tokens[0] == "pgmajfault") {
+      StringToInt(tokens[1], &meminfo->pgmajfault);
     }
   }
 
@@ -625,7 +587,7 @@ bool ParseProcVmstat(const std::string& vmstat_data,
 }
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
-  // Synchronously reading files in /proc is safe.
+  // Synchronously reading files in /proc and /sys are safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
   // Used memory is: total - free - buffers - caches
@@ -707,7 +669,7 @@ SystemDiskInfo::SystemDiskInfo() {
 }
 
 scoped_ptr<Value> SystemDiskInfo::ToValue() const {
-  scoped_ptr<DictionaryValue> res(new base::DictionaryValue());
+  scoped_ptr<DictionaryValue> res(new DictionaryValue());
 
   // Write out uint64 variables as doubles.
   // Note: this may discard some precision, but for JS there's no other option.
@@ -729,27 +691,28 @@ scoped_ptr<Value> SystemDiskInfo::ToValue() const {
 bool IsValidDiskName(const std::string& candidate) {
   if (candidate.length() < 3)
     return false;
-  if (candidate.substr(0,2) == "sd" || candidate.substr(0,2) == "hd") {
-    // [sh]d[a-z]+ case
-    for (size_t i = 2; i < candidate.length(); i++) {
+  if (candidate[1] == 'd' &&
+      (candidate[0] == 'h' || candidate[0] == 's' || candidate[0] == 'v')) {
+    // [hsv]d[a-z]+ case
+    for (size_t i = 2; i < candidate.length(); ++i) {
       if (!islower(candidate[i]))
         return false;
     }
-  } else {
-    if (candidate.length() < 7) {
-      return false;
-    }
-    if (candidate.substr(0,6) == "mmcblk") {
-      // mmcblk[0-9]+ case
-      for (size_t i = 6; i < candidate.length(); i++) {
-        if (!isdigit(candidate[i]))
-          return false;
-      }
-    } else {
-      return false;
-    }
+    return true;
   }
 
+  const char kMMCName[] = "mmcblk";
+  const size_t kMMCNameLen = strlen(kMMCName);
+  if (candidate.length() < kMMCNameLen + 1)
+    return false;
+  if (candidate.compare(0, kMMCNameLen, kMMCName) != 0)
+    return false;
+
+  // mmcblk[0-9]+ case
+  for (size_t i = kMMCNameLen; i < candidate.length(); ++i) {
+    if (!isdigit(candidate[i]))
+      return false;
+  }
   return true;
 }
 
@@ -854,7 +817,7 @@ void GetSwapInfo(SwapInfo* swap_info) {
   // Synchronously reading files in /sys/block/zram0 is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  base::FilePath zram_path("/sys/block/zram0");
+  FilePath zram_path("/sys/block/zram0");
   uint64 orig_data_size = ReadFileToUint64(zram_path.Append("orig_data_size"));
   if (orig_data_size <= 4096) {
     // A single page is compressed at startup, and has a high compression

@@ -312,9 +312,10 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
 
   int64 wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
   int64 time_delta = (time - last_idle_wakeups_time_).InMicroseconds();
-  DCHECK_NE(0U, time_delta);
-  if (time_delta == 0)
+  if (time_delta == 0) {
+    NOTREACHED();
     return 0;
+  }
 
   last_idle_wakeups_time_ = time;
   last_absolute_idle_wakeups_ = absolute_idle_wakeups;

@@ -53,7 +53,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
 
 #if !defined(OS_MACOSX)
 int ProcessMetrics::GetIdleWakeupsPerSecond() {
-  NOTIMPLEMENTED();  // http://crbug.com/20488
+  NOTIMPLEMENTED();  // http://crbug.com/120488
   return 0;
 }
 #endif  // !defined(OS_MACOSX)
