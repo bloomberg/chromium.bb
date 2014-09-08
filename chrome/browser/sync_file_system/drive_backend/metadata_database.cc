@@ -45,8 +45,8 @@ namespace drive_backend {
 
 namespace {
 
-// Command line flag to enable on-disk indexing.
-const char kEnableMetadataDatabaseOnDisk[] = "enable-syncfs-on-disk-indexing";
+// Command line flag to disable on-disk indexing.
+const char kDisableMetadataDatabaseOnDisk[] = "disable-syncfs-on-disk-indexing";
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
@@ -262,8 +262,8 @@ SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
       // TODO(peria): Move the migration code (from v3 to v4) here.
       return SYNC_STATUS_OK;
     case 4:
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-              kEnableMetadataDatabaseOnDisk)) {
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              kDisableMetadataDatabaseOnDisk)) {
         MigrateDatabaseFromV4ToV3(db->GetLevelDB());
       }
       return SYNC_STATUS_OK;
@@ -551,10 +551,13 @@ void MetadataDatabase::Create(
 // static
 SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<LevelDBWrapper> db,
+    bool enable_on_disk_index,
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(base::ThreadTaskRunnerHandle::Get(),
-                           base::FilePath(), NULL));
+                           base::FilePath(),
+                           enable_on_disk_index,
+                           NULL));
   metadata_database->db_ = db.Pass();
   SyncStatusCode status = metadata_database->Initialize();
   if (status == SYNC_STATUS_OK)
@@ -1405,10 +1408,12 @@ void MetadataDatabase::SweepDirtyTrackers(
 MetadataDatabase::MetadataDatabase(
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
     const base::FilePath& database_path,
+    bool enable_on_disk_index,
     leveldb::Env* env_override)
     : worker_task_runner_(worker_task_runner),
       database_path_(database_path),
       env_override_(env_override),
+      enable_on_disk_index_(enable_on_disk_index),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(worker_task_runner.get());
@@ -1420,9 +1425,12 @@ void MetadataDatabase::CreateOnWorkerTaskRunner(
     const CreateCallback& callback) {
   DCHECK(create_param->worker_task_runner->RunsTasksOnCurrentThread());
 
+  bool enable_on_disk_index = !CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableMetadataDatabaseOnDisk);
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(create_param->worker_task_runner,
                            create_param->database_path,
+                           enable_on_disk_index,
                            create_param->env_override));
 
   SyncStatusCode status = metadata_database->Initialize();
@@ -1434,6 +1442,7 @@ void MetadataDatabase::CreateOnWorkerTaskRunner(
     metadata_database.reset(
         new MetadataDatabase(create_param->worker_task_runner,
                              create_param->database_path,
+                             enable_on_disk_index,
                              create_param->env_override));
     status = metadata_database->Initialize();
   }
@@ -1468,8 +1477,7 @@ SyncStatusCode MetadataDatabase::Initialize() {
       return status;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableMetadataDatabaseOnDisk)) {
+  if (enable_on_disk_index_) {
     index_ = MetadataDatabaseIndexOnDisk::Create(db_.get());
   } else {
     index_ = MetadataDatabaseIndex::Create(db_.get());

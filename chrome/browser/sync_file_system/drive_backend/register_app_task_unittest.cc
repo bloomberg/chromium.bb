@@ -125,7 +125,7 @@ class RegisterAppTaskTest : public testing::Test {
     scoped_ptr<MetadataDatabase> metadata_db;
     ASSERT_EQ(SYNC_STATUS_OK,
               MetadataDatabase::CreateForTesting(
-                  db.Pass(), &metadata_db));
+                  db.Pass(), true /* enable_on_disk_index */, &metadata_db));
     context_->SetMetadataDatabase(metadata_db.Pass());
   }
 

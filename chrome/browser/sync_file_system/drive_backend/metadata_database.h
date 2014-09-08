@@ -139,6 +139,7 @@ class MetadataDatabase {
       const CreateCallback& callback);
   static SyncStatusCode CreateForTesting(
       scoped_ptr<LevelDBWrapper> db,
+      bool enable_on_disk_index,
       scoped_ptr<MetadataDatabase>* metadata_database_out);
 
   ~MetadataDatabase();
@@ -358,6 +359,7 @@ class MetadataDatabase {
   MetadataDatabase(
       const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const base::FilePath& database_path,
+      bool enable_on_disk_index,
       leveldb::Env* env_override);
   static void CreateOnWorkerTaskRunner(
       scoped_ptr<CreateParam> create_param,
@@ -417,6 +419,8 @@ class MetadataDatabase {
   base::FilePath database_path_;
   leveldb::Env* env_override_;
   scoped_ptr<LevelDBWrapper> db_;
+
+  bool enable_on_disk_index_;
 
   int64 largest_known_change_id_;
 

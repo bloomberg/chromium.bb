@@ -16,6 +16,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -462,59 +463,75 @@ class MetadataDatabaseTest : public testing::Test {
     return db->Commit();
   }
 
+  void VerifyReloadConsistencyForOnMemory(MetadataDatabaseIndex* index1,
+                                          MetadataDatabaseIndex* index2) {
+    ExpectEquivalentServiceMetadata(index1, index2);
+    {
+      SCOPED_TRACE("Expect equivalent metadata_by_id_ contents.");
+      ExpectEquivalent(index1->metadata_by_id_, index2->metadata_by_id_);
+    }
+    {
+      SCOPED_TRACE("Expect equivalent tracker_by_id_ contents.");
+      ExpectEquivalent(index1->tracker_by_id_, index2->tracker_by_id_);
+    }
+    {
+      SCOPED_TRACE("Expect equivalent trackers_by_file_id_ contents.");
+      ExpectEquivalent(index1->trackers_by_file_id_,
+                       index2->trackers_by_file_id_);
+    }
+    {
+      SCOPED_TRACE("Expect equivalent app_root_by_app_id_ contents.");
+      ExpectEquivalent(index1->app_root_by_app_id_,
+                       index2->app_root_by_app_id_);
+    }
+    {
+      SCOPED_TRACE("Expect equivalent trackers_by_parent_and_title_ contents.");
+      ExpectEquivalent(index1->trackers_by_parent_and_title_,
+                       index2->trackers_by_parent_and_title_);
+    }
+    {
+      SCOPED_TRACE("Expect equivalent dirty_trackers_ contents.");
+      ExpectEquivalent(index1->dirty_trackers_, index2->dirty_trackers_);
+    }
+  }
+
+  void VerifyReloadConsistencyForOnDisk(
+      MetadataDatabaseIndexOnDisk* index1,
+      MetadataDatabaseIndexOnDisk* index2) {
+    ExpectEquivalentServiceMetadata(index1, index2);
+    scoped_ptr<LevelDBWrapper::Iterator> itr1 =
+        index1->GetDBForTesting()->NewIterator();
+    scoped_ptr<LevelDBWrapper::Iterator> itr2 =
+        index2->GetDBForTesting()->NewIterator();
+    for (itr1->SeekToFirst(), itr2->SeekToFirst();
+         itr1->Valid() && itr2->Valid();
+         itr1->Next(), itr2->Next()) {
+      EXPECT_EQ(itr1->key().ToString(), itr2->key().ToString());
+      EXPECT_EQ(itr1->value().ToString(), itr2->value().ToString());
+    }
+    EXPECT_TRUE(!itr1->Valid());
+    EXPECT_TRUE(!itr2->Valid());
+  }
+
   void VerifyReloadConsistency() {
     scoped_ptr<MetadataDatabase> metadata_database_2;
     ASSERT_EQ(SYNC_STATUS_OK,
               MetadataDatabase::CreateForTesting(
                   metadata_database_->db_.Pass(),
+                  metadata_database_->enable_on_disk_index_,
                   &metadata_database_2));
     metadata_database_->db_ = metadata_database_2->db_.Pass();
 
-    const MetadataDatabaseIndex* on_memory =
-        static_cast<MetadataDatabaseIndex*>(metadata_database_->index_.get());
-    const MetadataDatabaseIndex* reloaded =
-        static_cast<MetadataDatabaseIndex*>(metadata_database_2->index_.get());
-
-    {
-      SCOPED_TRACE("Expect equivalent service_metadata");
-      ExpectEquivalentServiceMetadata(metadata_database_->index_.get(),
-                                      metadata_database_2->index_.get());
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent metadata_by_id_ contents.");
-      ExpectEquivalent(on_memory->metadata_by_id_,
-                       reloaded->metadata_by_id_);
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent tracker_by_id_ contents.");
-      ExpectEquivalent(on_memory->tracker_by_id_,
-                       reloaded->tracker_by_id_);
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent trackers_by_file_id_ contents.");
-      ExpectEquivalent(on_memory->trackers_by_file_id_,
-                       reloaded->trackers_by_file_id_);
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent app_root_by_app_id_ contents.");
-      ExpectEquivalent(on_memory->app_root_by_app_id_,
-                       reloaded->app_root_by_app_id_);
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent trackers_by_parent_and_title_ contents.");
-      ExpectEquivalent(on_memory->trackers_by_parent_and_title_,
-                       reloaded->trackers_by_parent_and_title_);
-    }
-
-    {
-      SCOPED_TRACE("Expect equivalent dirty_trackers_ contents.");
-      ExpectEquivalent(on_memory->dirty_trackers_,
-                       reloaded->dirty_trackers_);
+    MetadataDatabaseIndexInterface* index1 = metadata_database_->index_.get();
+    MetadataDatabaseIndexInterface* index2 = metadata_database_2->index_.get();
+    if (metadata_database_->enable_on_disk_index_) {
+      VerifyReloadConsistencyForOnDisk(
+          static_cast<MetadataDatabaseIndexOnDisk*>(index1),
+          static_cast<MetadataDatabaseIndexOnDisk*>(index2));
+    } else {
+      VerifyReloadConsistencyForOnMemory(
+          static_cast<MetadataDatabaseIndex*>(index1),
+          static_cast<MetadataDatabaseIndex*>(index2));
     }
   }
 
