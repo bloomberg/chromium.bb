@@ -153,6 +153,7 @@ class MediaCodecBridge {
     /**
      * Get a list of supported android codec mimes.
      */
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private static CodecInfo[] getCodecsInfo() {
         // Return the first (highest-priority) codec for each MIME type.
@@ -180,6 +181,7 @@ class MediaCodecBridge {
         return codecInfos.toArray(new CodecInfo[codecInfos.size()]);
     }
 
+    @SuppressWarnings("deprecation")
     private static String getDecoderNameForMime(String mime) {
         int count = MediaCodecList.getCodecCount();
         for (int i = 0; i < count; ++i) {
@@ -268,6 +270,7 @@ class MediaCodecBridge {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private boolean start() {
         try {
@@ -362,6 +365,7 @@ class MediaCodecBridge {
         return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
     }
 
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private boolean getOutputBuffers() {
         try {
@@ -435,6 +439,7 @@ class MediaCodecBridge {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private DequeueOutputResult dequeueOutputBuffer(long timeoutUs) {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
@@ -610,6 +615,7 @@ class MediaCodecBridge {
         return mAudioTrack.getPlaybackHeadPosition();
     }
 
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private void setVolume(double volume) {
         if (mAudioTrack != null) {
