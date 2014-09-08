@@ -36,6 +36,8 @@ class TouchDispositionGestureFilterTest
     sent_gestures_.push_back(event.type());
     last_sent_gesture_location_ = gfx::PointF(event.x, event.y);
     last_sent_gesture_raw_location_ = gfx::PointF(event.raw_x, event.raw_y);
+    if (event.type() == ET_GESTURE_SHOW_PRESS)
+      show_press_bounding_box_ = event.details.bounding_box();
     if (cancel_after_next_gesture_) {
       cancel_after_next_gesture_ = false;
       CancelTouchPoint();
@@ -141,6 +143,10 @@ class TouchDispositionGestureFilterTest
     pending_gesture_packet_.Push(CreateGesture(type));
   }
 
+  void PushGesture(EventType type, float x, float y, float diameter) {
+    pending_gesture_packet_.Push(CreateGesture(type, x, y, diameter));
+  }
+
   void PressTouchPoint(int x, int y) {
     touch_event_.PressPoint(x, y);
     touch_event_.SetRawOffset(raw_offset_.x(), raw_offset_.y());
@@ -195,21 +201,33 @@ class TouchDispositionGestureFilterTest
     return last_sent_gesture_raw_location_;
   }
 
+  const gfx::RectF& ShowPressBoundingBox() const {
+    return show_press_bounding_box_;
+  }
+
   void SetCancelAfterNextGesture(bool cancel_after_next_gesture) {
     cancel_after_next_gesture_ = cancel_after_next_gesture;
   }
 
   GestureEventData CreateGesture(EventType type) {
-    return GestureEventData(GestureEventDetails(type, 0, 0),
-                            0,
-                            MotionEvent::TOOL_TYPE_FINGER,
-                            base::TimeTicks(),
-                            touch_event_.GetX(0),
-                            touch_event_.GetY(0),
-                            touch_event_.GetRawX(0),
-                            touch_event_.GetRawY(0),
-                            1,
-                            gfx::RectF(0, 0, 0, 0));
+    return CreateGesture(type, 0, 0, 0);
+  }
+
+  GestureEventData CreateGesture(EventType type,
+                                 float x,
+                                 float y,
+                                 float diameter) {
+    return GestureEventData(
+        GestureEventDetails(type, 0, 0),
+        0,
+        MotionEvent::TOOL_TYPE_FINGER,
+        base::TimeTicks(),
+        touch_event_.GetX(0),
+        touch_event_.GetY(0),
+        touch_event_.GetRawX(0),
+        touch_event_.GetRawY(0),
+        1,
+        gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter));
   }
 
  private:
@@ -223,6 +241,7 @@ class TouchDispositionGestureFilterTest
   gfx::Vector2dF raw_offset_;
   gfx::PointF last_sent_gesture_location_;
   gfx::PointF last_sent_gesture_raw_location_;
+  gfx::RectF show_press_bounding_box_;
 };
 
 TEST_F(TouchDispositionGestureFilterTest, BasicNoGestures) {
@@ -1065,6 +1084,21 @@ TEST_F(TouchDispositionGestureFilterTest, TapCancelOnSecondFingerDown) {
   SendTouchNotConsumedAck();
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL),
                             GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, ShowPressBoundingBox) {
+  PushGesture(ET_GESTURE_TAP_DOWN, 9, 9, 8);
+  PressTouchPoint(9, 9);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN), GetAndResetSentGestures()));
+
+  PushGesture(ET_GESTURE_TAP, 10, 10, 10);
+  ReleaseTouchPoint();
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS, ET_GESTURE_TAP),
+                            GetAndResetSentGestures()));
+  EXPECT_EQ(gfx::RectF(5, 5, 10, 10), ShowPressBoundingBox());
 }
 
 }  // namespace ui

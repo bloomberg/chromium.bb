@@ -257,6 +257,14 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void SetShowPressAndLongPressTimeout(base::TimeDelta showpress_timeout,
+                                       base::TimeDelta longpress_timeout) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.showpress_timeout = showpress_timeout;
+    config.gesture_detector_config.longpress_timeout = longpress_timeout;
+    SetUpWithConfig(config);
+  }
+
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -2398,8 +2406,8 @@ TEST_F(GestureProviderTest, NoMinOrMaxGestureBoundsLengthWithStylusOrMouse) {
   EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
   EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS,
             GetMostRecentGestureEvent().primary_tool_type);
-  EXPECT_EQ(1.f, GetMostRecentGestureEvent().details.bounding_box_f().width());
-  EXPECT_EQ(1.f, GetMostRecentGestureEvent().details.bounding_box_f().height());
+  EXPECT_EQ(0, GetMostRecentGestureEvent().details.bounding_box_f().width());
+  EXPECT_EQ(0, GetMostRecentGestureEvent().details.bounding_box_f().height());
 
   event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
   event.SetTouchMajor(2.f * kMaxGestureBoundsLength);
@@ -2425,6 +2433,49 @@ TEST_F(GestureProviderTest, NoMinOrMaxGestureBoundsLengthWithStylusOrMouse) {
             GetMostRecentGestureEvent().details.bounding_box_f().width());
   EXPECT_EQ(2.f * kMaxGestureBoundsLength,
             GetMostRecentGestureEvent().details.bounding_box_f().height());
+}
+
+// Test the bounding box for show press and tap gestures.
+TEST_F(GestureProviderTest, BoundingBoxForShowPressAndTapGesture) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
+  base::TimeDelta showpress_timeout = kOneMicrosecond;
+  base::TimeDelta longpress_timeout = kOneSecond;
+  SetShowPressAndLongPressTimeout(showpress_timeout, longpress_timeout);
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 10, 10);
+  event.SetTouchMajor(10);
+
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(gfx::RectF(5, 5, 10, 10),
+            GetMostRecentGestureEvent().details.bounding_box());
+
+  event = ObtainMotionEvent(
+      event_time + kOneMicrosecond, MotionEvent::ACTION_MOVE, 11, 9);
+  event.SetTouchMajor(20);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(
+      event_time + kOneMicrosecond, MotionEvent::ACTION_MOVE, 8, 11);
+  event.SetTouchMajor(10);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  RunTasksAndWait(showpress_timeout + kOneMicrosecond);
+  EXPECT_EQ(ET_GESTURE_SHOW_PRESS, GetMostRecentGestureEventType());
+  EXPECT_EQ(gfx::RectF(0, 0, 20, 20),
+            GetMostRecentGestureEvent().details.bounding_box());
+
+  event =
+      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::ACTION_UP);
+  event.SetTouchMajor(30);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(gfx::RectF(0, 0, 20, 20),
+            GetMostRecentGestureEvent().details.bounding_box());
 }
 
 }  // namespace ui
