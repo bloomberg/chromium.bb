@@ -161,6 +161,18 @@ void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
   }
 }
 
+void ConnectionManager::ProcessWillChangeViewHierarchy(
+    const ServerView* view,
+    const ServerView* new_parent,
+    const ServerView* old_parent) {
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end();
+       ++i) {
+    i->second->ProcessWillChangeViewHierarchy(
+        view, new_parent, old_parent, IsChangeSource(i->first));
+  }
+}
+
 void ConnectionManager::ProcessViewHierarchyChanged(
     const ServerView* view,
     const ServerView* new_parent,
@@ -238,6 +250,14 @@ void ConnectionManager::OnViewDestroyed(const ServerView* view) {
   ProcessViewDeleted(view->id());
 }
 
+void ConnectionManager::OnWillChangeViewHierarchy(
+    const ServerView* view,
+    const ServerView* new_parent,
+    const ServerView* old_parent) {
+  if (!display_manager_.in_setup())
+    ProcessWillChangeViewHierarchy(view, new_parent, old_parent);
+}
+
 void ConnectionManager::OnViewHierarchyChanged(const ServerView* view,
                                                const ServerView* new_parent,
                                                const ServerView* old_parent) {
@@ -259,6 +279,14 @@ void ConnectionManager::OnViewBoundsChanged(const ServerView* view,
 
 void ConnectionManager::OnViewBitmapChanged(const ServerView* view) {
   display_manager_.SchedulePaint(view, gfx::Rect(view->bounds().size()));
+}
+
+void ConnectionManager::OnWillChangeViewVisibility(const ServerView* view) {
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end();
+       ++i) {
+    i->second->ProcessWillChangeViewVisibility(view, IsChangeSource(i->first));
+  }
 }
 
 }  // namespace service

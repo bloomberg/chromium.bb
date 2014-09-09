@@ -365,6 +365,16 @@ void ViewManagerClientImpl::OnViewDeleted(Id view_id) {
     ViewPrivate(view).LocalDestroy();
 }
 
+void ViewManagerClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
+  // TODO(sky): implement me.
+  NOTIMPLEMENTED();
+}
+
+void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
+  // TODO(sky): implement me.
+  NOTIMPLEMENTED();
+}
+
 void ViewManagerClientImpl::OnViewInputEvent(
     Id view_id,
     EventPtr event,

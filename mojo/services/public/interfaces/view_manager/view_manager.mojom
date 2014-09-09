@@ -13,7 +13,12 @@ struct ViewData {
   uint32 parent_id;
   uint32 view_id;
   mojo.Rect bounds;
-  // TODO(sky): add visible.
+  // True if this view is visible. The view may not be drawn on screen (see
+  // drawn for specifics).
+  bool visible;
+  // True if this view is drawn on screen. A view is drawn if attached to the
+  // root and all ancestors (including this view) are visible.
+  bool drawn;
 };
 
 enum ErrorCode {
@@ -175,6 +180,21 @@ interface ViewManagerClient {
 
   // Invoked when a view is deleted.
   OnViewDeleted(uint32 view);
+
+  // Invoked when the visibility of the specified view changes.
+  OnViewVisibilityChanged(uint32 view, bool visible);
+
+  // Invoked when a change to the visibility of |view| or one if it's ancestors
+  // is done such that the drawn state changes. This is only invoked for the
+  // top most view of a particular connection. For example, if you have the
+  // hierarchy: A -> B1 -> B2 (B2 is a child of B1 and B1 a child of A), B1/B2
+  // are from connection 2 and A from connection 1 with all views visible and
+  // drawn and the visiblity of A changes to false, then connection 2 is told
+  // the drawn state of B1 has changed (to false), but is not told anything
+  // about B2 as it's drawn state can be calculated from that of B1.
+  //
+  // NOTE: This is not invoked if OnViewVisibilityChanged() is invoked.
+  OnViewDrawnStateChanged(uint32 view, bool drawn);
 
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();

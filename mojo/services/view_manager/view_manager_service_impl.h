@@ -77,6 +77,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds,
                                 bool originated_change);
+  void ProcessWillChangeViewHierarchy(const ServerView* view,
+                                      const ServerView* new_parent,
+                                      const ServerView* old_parent,
+                                      bool originated_change);
   void ProcessViewHierarchyChanged(const ServerView* view,
                                    const ServerView* new_parent,
                                    const ServerView* old_parent,
@@ -86,6 +90,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                           OrderDirection direction,
                           bool originated_change);
   void ProcessViewDeleted(const ViewId& view, bool originated_change);
+  void ProcessWillChangeViewVisibility(const ServerView* view,
+                                       bool originated_change);
 
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
@@ -135,6 +141,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // CanDescendIntoViewForViewTree() returns true.
   void GetViewTreeImpl(const ServerView* view,
                        std::vector<const ServerView*>* views) const;
+
+  // Notify the client if the drawn state of any of the roots changes.
+  // |view| is the view that is changing to the drawn state |new_drawn_value|.
+  void NotifyDrawnStateChanged(const ServerView* view, bool new_drawn_value);
 
   // ViewManagerService:
   virtual void CreateView(Id transport_view_id,

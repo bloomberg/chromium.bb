@@ -37,6 +37,7 @@ void ServerView::Add(ServerView* child) {
   }
 
   const ServerView* old_parent = child->parent();
+  child->delegate_->OnWillChangeViewHierarchy(child, this, old_parent);
   if (child->parent())
     child->parent()->RemoveImpl(child);
 
@@ -51,6 +52,7 @@ void ServerView::Remove(ServerView* child) {
   DCHECK(child != this);
   DCHECK(child->parent() == this);
 
+  child->delegate_->OnWillChangeViewHierarchy(child, NULL, this);
   RemoveImpl(child);
   child->delegate_->OnViewHierarchyChanged(child, NULL, this);
 }
@@ -114,8 +116,17 @@ void ServerView::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
+  delegate_->OnWillChangeViewVisibility(this);
   visible_ = value;
-  // TODO(sky): notification, including repaint.
+}
+
+bool ServerView::IsDrawn(const ServerView* root) const {
+  if (!root->visible_)
+    return false;
+  const ServerView* view = this;
+  while (view && view != root && view->visible_)
+    view = view->parent_;
+  return view == root;
 }
 
 void ServerView::SetBitmap(const SkBitmap& bitmap) {

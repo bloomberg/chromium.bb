@@ -125,6 +125,9 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   void ProcessViewBoundsChanged(const ServerView* view,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds);
+  void ProcessWillChangeViewHierarchy(const ServerView* view,
+                                      const ServerView* new_parent,
+                                      const ServerView* old_parent);
   void ProcessViewHierarchyChanged(const ServerView* view,
                                    const ServerView* new_parent,
                                    const ServerView* old_parent);
@@ -167,6 +170,9 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
 
   // Overridden from ServerViewDelegate:
   virtual void OnViewDestroyed(const ServerView* view) OVERRIDE;
+  virtual void OnWillChangeViewHierarchy(const ServerView* view,
+                                         const ServerView* new_parent,
+                                         const ServerView* old_parent) OVERRIDE;
   virtual void OnViewHierarchyChanged(const ServerView* view,
                                       const ServerView* new_parent,
                                       const ServerView* old_parent) OVERRIDE;
@@ -174,6 +180,7 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnViewBitmapChanged(const ServerView* view) OVERRIDE;
+  virtual void OnWillChangeViewVisibility(const ServerView* view) OVERRIDE;
 
   Context context_;
 

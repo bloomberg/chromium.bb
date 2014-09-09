@@ -105,7 +105,9 @@ class ViewManagerClientImpl : public ViewManager,
                                Id relative_view_id,
                                OrderDirection direction) OVERRIDE;
   virtual void OnViewDeleted(Id view_id) OVERRIDE;
-  virtual void OnViewInputEvent(Id view,
+  virtual void OnViewVisibilityChanged(Id view_id, bool visible) OVERRIDE;
+  virtual void OnViewDrawnStateChanged(Id view_id, bool drawn) OVERRIDE;
+  virtual void OnViewInputEvent(Id view_id,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
   virtual void Embed(

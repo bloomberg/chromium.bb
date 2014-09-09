@@ -81,6 +81,23 @@ void ViewManagerServiceImpl::ProcessViewBoundsChanged(
                                 Rect::From(new_bounds));
 }
 
+void ViewManagerServiceImpl::ProcessWillChangeViewHierarchy(
+    const ServerView* view,
+    const ServerView* new_parent,
+    const ServerView* old_parent,
+    bool originated_change) {
+  if (originated_change)
+    return;
+
+  const bool old_drawn = view->IsDrawn(connection_manager_->root());
+  const bool new_drawn = view->visible() && new_parent &&
+      new_parent->IsDrawn(connection_manager_->root());
+  if (old_drawn == new_drawn)
+    return;
+
+  NotifyDrawnStateChanged(view, new_drawn);
+}
+
 void ViewManagerServiceImpl::ProcessViewHierarchyChanged(
     const ServerView* view,
     const ServerView* new_parent,
@@ -140,6 +157,31 @@ void ViewManagerServiceImpl::ProcessViewDeleted(const ViewId& view,
     client()->OnViewDeleted(ViewIdToTransportId(view));
     connection_manager_->OnConnectionMessagedClient(id_);
   }
+}
+
+void ViewManagerServiceImpl::ProcessWillChangeViewVisibility(
+    const ServerView* view,
+    bool originated_change) {
+  if (originated_change)
+    return;
+
+  if (IsViewKnown(view)) {
+    client()->OnViewVisibilityChanged(ViewIdToTransportId(view->id()),
+                                      !view->visible());
+    return;
+  }
+
+  bool view_target_drawn_state;
+  if (view->visible()) {
+    // View is being hidden, won't be drawn.
+    view_target_drawn_state = false;
+  } else {
+    // View is being shown. View will be drawn if its parent is drawn.
+    view_target_drawn_state =
+        view->parent() && view->parent()->IsDrawn(connection_manager_->root());
+  }
+
+  NotifyDrawnStateChanged(view, view_target_drawn_state);
 }
 
 void ViewManagerServiceImpl::OnConnectionError() {
@@ -264,6 +306,8 @@ ViewDataPtr ViewManagerServiceImpl::ViewToViewData(const ServerView* view) {
   view_data->parent_id = ViewIdToTransportId(parent ? parent->id() : ViewId());
   view_data->view_id = ViewIdToTransportId(view->id());
   view_data->bounds = Rect::From(view->bounds());
+  view_data->visible = view->visible();
+  view_data->drawn = view->IsDrawn(connection_manager_->root());
   return view_data.Pass();
 }
 
@@ -283,6 +327,21 @@ void ViewManagerServiceImpl::GetViewTreeImpl(
   std::vector<const ServerView*> children(view->GetChildren());
   for (size_t i = 0 ; i < children.size(); ++i)
     GetViewTreeImpl(children[i], views);
+}
+
+void ViewManagerServiceImpl::NotifyDrawnStateChanged(const ServerView* view,
+                                                     bool new_drawn_value) {
+  // Even though we don't know about view, it may be an ancestor of one of our
+  // roots, in which case the change may effect our roots drawn state.
+  for (ViewIdSet::iterator i = roots_.begin(); i != roots_.end(); ++i) {
+    const ServerView* root = GetView(ViewIdFromTransportId(*i));
+    DCHECK(root);
+    if (view->Contains(root) &&
+        (new_drawn_value != root->IsDrawn(connection_manager_->root()))) {
+      client()->OnViewDrawnStateChanged(ViewIdToTransportId(root->id()),
+                                        new_drawn_value);
+    }
+  }
 }
 
 void ViewManagerServiceImpl::CreateView(
@@ -414,14 +473,16 @@ void ViewManagerServiceImpl::SetViewVisibility(
     bool visible,
     const Callback<void(bool)>& callback) {
   ServerView* view = GetView(ViewIdFromTransportId(transport_view_id));
-  const bool success = view && view->visible() != visible &&
-                       access_policy_->CanChangeViewVisibility(view);
-  if (success) {
-    DCHECK(view);
+  if (!view || view->visible() == visible ||
+      !access_policy_->CanChangeViewVisibility(view)) {
+    callback.Run(false);
+    return;
+  }
+  {
+    ConnectionManager::ScopedChange change(this, connection_manager_, false);
     view->SetVisible(visible);
   }
-  // TODO(sky): need to notify of visibility changes.
-  callback.Run(success);
+  callback.Run(true);
 }
 
 void ViewManagerServiceImpl::Embed(

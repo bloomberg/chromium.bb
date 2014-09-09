@@ -53,12 +53,17 @@ class MOJO_VIEW_MANAGER_EXPORT ServerView {
   std::vector<const ServerView*> GetChildren() const;
   std::vector<ServerView*> GetChildren();
 
+  // Returns true if this contains |view| or is |view|.
   bool Contains(const ServerView* view) const;
 
   // Returns true if the window is visible. This does not consider visibility
   // of any ancestors.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
+
+  // Returns true if this view is attached to |root| and all ancestors are
+  // visible.
+  bool IsDrawn(const ServerView* root) const;
 
   void SetBitmap(const SkBitmap& contents);
   const SkBitmap& bitmap() const { return bitmap_; }

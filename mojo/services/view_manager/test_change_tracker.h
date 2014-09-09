@@ -18,9 +18,12 @@ namespace service {
 
 enum ChangeType {
   CHANGE_TYPE_EMBED,
+  // TODO(sky): NODE->VIEW.
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
   CHANGE_TYPE_NODE_REORDERED,
+  CHANGE_TYPE_NODE_VISIBILITY_CHANGED,
+  CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED,
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_INPUT_EVENT,
   CHANGE_TYPE_DELEGATE_EMBED,
@@ -31,8 +34,13 @@ struct TestView {
   // Returns a string description of this.
   std::string ToString() const;
 
+  // Returns a string description that includes visible and drawn.
+  std::string ToString2() const;
+
   Id parent_id;
   Id view_id;
+  bool visible;
+  bool drawn;
 };
 
 // Tracks a call to ViewManagerClient. See the individual functions for the
@@ -53,6 +61,7 @@ struct Change {
   String creator_url;
   String embed_url;
   OrderDirection direction;
+  bool bool_value;
 };
 
 // Converts Changes to string descriptions.
@@ -104,6 +113,8 @@ class TestChangeTracker {
                        Id relative_view_id,
                        OrderDirection direction);
   void OnViewDeleted(Id view_id);
+  void OnViewVisibilityChanged(Id view_id, bool visible);
+  void OnViewDrawnStateChanged(Id view_id, bool drawn);
   void OnViewInputEvent(Id view_id, EventPtr event);
   void DelegateEmbed(const String& url);
 

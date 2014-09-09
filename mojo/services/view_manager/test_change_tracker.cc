@@ -59,10 +59,21 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("ViewDeleted view=%s",
                                 ViewIdToString(change.view_id).c_str());
 
+    case CHANGE_TYPE_NODE_VISIBILITY_CHANGED:
+      return base::StringPrintf("VisibilityChanged view=%s visible=%s",
+                                ViewIdToString(change.view_id).c_str(),
+                                change.bool_value ? "true" : "false");
+
+    case CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED:
+      return base::StringPrintf("DrawnStateChanged view=%s drawn=%s",
+                                ViewIdToString(change.view_id).c_str(),
+                                change.bool_value ? "true" : "false");
+
     case CHANGE_TYPE_INPUT_EVENT:
       return base::StringPrintf("InputEvent view=%s event_action=%d",
                                 ViewIdToString(change.view_id).c_str(),
                                 change.event_action);
+
     case CHANGE_TYPE_DELEGATE_EMBED:
       return base::StringPrintf("DelegateEmbed url=%s",
                                 change.embed_url.data());
@@ -93,6 +104,8 @@ TestView ViewDataToTestView(const ViewDataPtr& data) {
   TestView view;
   view.parent_id = data->parent_id;
   view.view_id = data->view_id;
+  view.visible = data->visible;
+  view.drawn = data->drawn;
   return view;
 }
 
@@ -109,7 +122,8 @@ Change::Change()
       view_id2(0),
       view_id3(0),
       event_action(0),
-      direction(ORDER_DIRECTION_ABOVE) {
+      direction(ORDER_DIRECTION_ABOVE),
+      bool_value(false) {
 }
 
 Change::~Change() {
@@ -175,6 +189,22 @@ void TestChangeTracker::OnViewDeleted(Id view_id) {
   AddChange(change);
 }
 
+void TestChangeTracker::OnViewVisibilityChanged(Id view_id, bool visible) {
+  Change change;
+  change.type = CHANGE_TYPE_NODE_VISIBILITY_CHANGED;
+  change.view_id = view_id;
+  change.bool_value = visible;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnViewDrawnStateChanged(Id view_id, bool drawn) {
+  Change change;
+  change.type = CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED;
+  change.view_id = view_id;
+  change.bool_value = drawn;
+  AddChange(change);
+}
+
 void TestChangeTracker::OnViewInputEvent(Id view_id, EventPtr event) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
@@ -200,6 +230,14 @@ std::string TestView::ToString() const {
   return base::StringPrintf("view=%s parent=%s",
                             ViewIdToString(view_id).c_str(),
                             ViewIdToString(parent_id).c_str());
+}
+
+std::string TestView::ToString2() const {
+  return base::StringPrintf("view=%s parent=%s visible=%s drawn=%s",
+                            ViewIdToString(view_id).c_str(),
+                            ViewIdToString(parent_id).c_str(),
+                            visible ? "true" : "false",
+                            drawn ? "true" : "false");
 }
 
 }  // namespace service
