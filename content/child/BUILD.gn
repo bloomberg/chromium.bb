@@ -47,7 +47,6 @@ source_set("child") {
       "npapi/plugin_host.h",
       "npapi/plugin_instance.cc",
       "npapi/plugin_instance.h",
-      "npapi/plugin_instance_mac.mm",
       "npapi/plugin_lib.cc",
       "npapi/plugin_lib.h",
       "npapi/plugin_stream.cc",
@@ -55,26 +54,42 @@ source_set("child") {
       "npapi/plugin_stream_posix.cc",
       "npapi/plugin_stream_url.cc",
       "npapi/plugin_stream_url.h",
-      "npapi/plugin_stream_win.cc",
       "npapi/plugin_string_stream.cc",
       "npapi/plugin_string_stream.h",
       "npapi/plugin_url_fetcher.cc",
       "npapi/plugin_url_fetcher.h",
-      "npapi/plugin_web_event_converter_mac.h",
-      "npapi/plugin_web_event_converter_mac.mm",
       "npapi/webplugin.h",
-      "npapi/webplugin_accelerated_surface_mac.h",
       "npapi/webplugin_delegate.h",
       "npapi/webplugin_delegate_impl.cc",
       "npapi/webplugin_delegate_impl.h",
-      "npapi/webplugin_delegate_impl_android.cc",
-      "npapi/webplugin_delegate_impl_aura.cc",
-      "npapi/webplugin_delegate_impl_mac.mm",
-      "npapi/webplugin_delegate_impl_win.cc",
-      "npapi/webplugin_ime_win.cc",
-      "npapi/webplugin_ime_win.h",
       "npapi/webplugin_resource_client.h",
     ]
+
+    if (is_mac) {
+      sources -= [
+        "npapi/plugin_instance_mac.mm",
+        "npapi/plugin_web_event_converter_mac.h",
+        "npapi/plugin_web_event_converter_mac.mm",
+        "npapi/webplugin_accelerated_surface_mac.h",
+        "npapi/webplugin_delegate_impl_mac.mm",
+      ]
+    } else if (is_win) {
+      sources -= [
+        "npapi/plugin_stream_win.cc",
+        "npapi/webplugin_delegate_impl_win.cc",
+        "npapi/webplugin_ime_win.cc",
+        "npapi/webplugin_ime_win.h",
+      ]
+    } else if (is_android) {
+      sources -= [
+        "npapi/webplugin_delegate_impl_android.cc",
+      ]
+    }
+    if (use_aura) {
+      sources -= [
+        "npapi/webplugin_delegate_impl_aura.cc",
+      ]
+    }
   }
 
   configs += [

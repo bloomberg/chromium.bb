@@ -44,7 +44,6 @@ static_library("test_support") {
       "//content/browser/speech/proto",
       "//content/child",
       "//content/gpu",
-      "//content/ppapi_plugin",
       "//content/public/renderer",
       "//content/public/utility",
       "//cc",
@@ -66,6 +65,10 @@ static_library("test_support") {
       "//third_party/WebKit/public:blink",
     ]
 
+    if (enable_plugins) {
+      deps += [ "//content/ppapi_plugin" ]
+    }
+
     if (enable_webrtc) {
       # TODO(GYP) remove this when libjingle is converted.
       configs += [ "//third_party/libjingle:jingle_direct_dependent_configs" ]
@@ -86,6 +89,9 @@ static_library("test_support") {
         #"//third_party/libjingle:peerconnection",  TODO(GYP)
         "//third_party/webrtc/modules/video_capture",
       ]
+    }
+    if (!enable_plugins) {
+      sources -= [ "ppapi_unittest.cc" ]
     }
 
     if (use_glib) {

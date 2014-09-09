@@ -214,7 +214,6 @@ static_library("content_shell_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
-    "//content/ppapi_plugin",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/plugin",
@@ -243,6 +242,9 @@ static_library("content_shell_lib") {
     "//v8",
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
+  if (enable_plugins) {
+    deps += [ "//content/ppapi_plugin" ]
+  }
 
   if (is_win) {
     #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',  TODO(GYP)

@@ -12,7 +12,6 @@ config("content_implementation") {
 content_shared_components = [
   "//content/gpu",
   "//content/plugin",
-  "//content/ppapi_plugin",
   "//content/public/browser:sources",
   "//content/public/child",
   "//content/public/common",
@@ -21,6 +20,10 @@ content_shared_components = [
   "//content/public/utility",
   "//content/renderer",
 ]
+
+if (enable_plugins) {
+  content_shared_components += [ "//content/ppapi_plugin" ]
+}
 
 if (is_component_build) {
   shared_library("content") {
