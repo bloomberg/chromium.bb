@@ -15,6 +15,8 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -244,29 +246,28 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnClick) {
   EXPECT_TRUE(observer.was_called());
 }
 
-// Crashes on Windows XP: http://crbug.com/412340
-#if defined(OS_WIN)
-#define MAYBE_FadeOnKey DISABLED_FadeOnKey
-#else
-#define MAYBE_FadeOnKey FadeOnKey
-#endif
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, MAYBE_FadeOnKey) {
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnKey) {
+  content::WindowedNotificationObserver focus_observer(
+      content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("data:text/html;charset=utf-8,<input type=\"text\" autofocus>"));
-  ManagePasswordsBubbleView::ShowBubble(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      ManagePasswordsBubble::AUTOMATIC);
+  focus_observer.Wait();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ManagePasswordsBubbleView::ShowBubble(web_contents,
+                                        ManagePasswordsBubble::AUTOMATIC);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
       GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(web_contents->GetRenderViewHost()->IsFocusedElementEditable());
   // We have to check the animation in the process of handling the key down
   // event. Otherwise, animation may finish too quickly.
-  WebContentEventHandler observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::Bind(&CheckBubbleAnimation));
+  WebContentEventHandler key_observer(web_contents,
+                                      base::Bind(&CheckBubbleAnimation));
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K,
       false, false, false, false));
-  EXPECT_TRUE(observer.was_called());
+  EXPECT_TRUE(key_observer.was_called());
 }
