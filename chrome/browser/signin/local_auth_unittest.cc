@@ -35,9 +35,7 @@ TEST(LocalAuthTest, SetAndCheckCredentials) {
   std::string password("Some Password");
   EXPECT_FALSE(ValidateLocalAuthCredentials(prof, password));
 
-  EXPECT_FALSE(LocalAuthCredentialsExist(prof));
   SetLocalAuthCredentials(prof, password);
-  EXPECT_TRUE(LocalAuthCredentialsExist(prof));
   std::string passhash = cache.GetLocalAuthCredentialsOfProfileAtIndex(0);
 
   // We perform basic validation on the written record to ensure bugs don't slip

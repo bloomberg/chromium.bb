@@ -33,10 +33,6 @@ bool ValidateLocalAuthCredentials(size_t profile_info_index,
 bool ValidateLocalAuthCredentials(const Profile* profile,
                                   const std::string& password);
 
-bool LocalAuthCredentialsExist(size_t profile_info_index);
-
-bool LocalAuthCredentialsExist(const Profile* profile);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_SIGNIN_LOCAL_AUTH_H_

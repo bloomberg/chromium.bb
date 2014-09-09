@@ -1275,8 +1275,6 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
         this,
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
         *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK));
-    if (!chrome::LocalAuthCredentialsExist(browser_->profile()))
-      lock_button_->SetState(views::Button::STATE_DISABLED);
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   }

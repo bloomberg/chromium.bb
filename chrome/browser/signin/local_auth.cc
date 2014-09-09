@@ -198,23 +198,4 @@ bool ValidateLocalAuthCredentials(const Profile* profile,
                                       password);
 }
 
-bool LocalAuthCredentialsExist(size_t profile_info_index) {
-  if (profile_info_index == std::string::npos) {
-    NOTREACHED();
-    return false;
-  }
-
-  ProfileInfoCache& info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
-  std::string encodedhash =
-      info.GetLocalAuthCredentialsOfProfileAtIndex(profile_info_index);
-
-  return !encodedhash.empty();
-}
-
-bool LocalAuthCredentialsExist(const Profile* profile) {
-  return LocalAuthCredentialsExist(GetProfileInfoIndexOfProfile(profile));
-}
-
 }  // namespace chrome

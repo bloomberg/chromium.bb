@@ -1722,8 +1722,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                   IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
                   imageResourceId:IDR_ICON_PROFILES_MENU_LOCK
                            action:@selector(lockProfile:)];
-    if (!chrome::LocalAuthCredentialsExist(browser_->profile()))
-      [lockButton setEnabled:NO];
     [container addSubview:lockButton];
     viewRect.origin.y = NSMaxY([lockButton frame]);
 
