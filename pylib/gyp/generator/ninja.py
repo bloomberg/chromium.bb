@@ -2152,7 +2152,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   # short name of targets that were skipped because they didn't contain anything
   # interesting.
-  empty_target_names = []
+  # NOTE: there may be overlap between this an non_empty_target_names.
+  empty_target_names = set()
+
+  # Set of non-empty short target names.
+  # NOTE: there may be overlap between this an empty_target_names.
+  non_empty_target_names = set()
 
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
@@ -2197,8 +2202,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       target_outputs[qualified_target] = target
       if qualified_target in all_targets:
         all_outputs.add(target.FinalOutput())
+      non_empty_target_names.add(name)
     else:
-      empty_target_names.append(name)
+      empty_target_names.add(name)
 
   if target_short_names:
     # Write a short name to build this target.  This benefits both the
@@ -2210,10 +2216,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       master_ninja.build(short_name, 'phony', [x.FinalOutput() for x in
                                                target_short_names[short_name]])
 
+  # Write phony targets for any empty targets that weren't written yet. As
+  # short names are  not necessarily unique only do this for short names that
+  # haven't already been output for another target.
+  empty_target_names = empty_target_names - non_empty_target_names
   if empty_target_names:
-    # Write out any targets that were skipped because they didn't contain
-    # anything interesting. This way the targets can still be built without
-    # causing build errors.
     master_ninja.newline()
     master_ninja.comment('Empty targets (output for completeness).')
     for name in sorted(empty_target_names):
