@@ -402,7 +402,7 @@ void HTMLTreeBuilder::processToken(AtomicHTMLToken* token)
 
     // Any non-character token needs to cause us to flush any pending text immediately.
     // NOTE: flush() can cause any queued tasks to execute, possibly re-entering the parser.
-    m_tree.flush(FlushAlways);
+    m_tree.flush();
     m_shouldSkipLeadingNewline = false;
 
     switch (token->type()) {
@@ -2689,7 +2689,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
         return;
     }
 
-    m_tree.flush(FlushAlways);
+    m_tree.flush();
     HTMLStackItem* adjustedCurrentNode = adjustedCurrentStackItem();
 
     switch (token->type()) {
