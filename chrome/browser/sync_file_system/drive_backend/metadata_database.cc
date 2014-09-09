@@ -519,24 +519,35 @@ void RemoveFileTracker(int64 tracker_id,
 
 }  // namespace
 
-struct MetadataDatabase::CreateParam {
-  base::FilePath database_path;
-  leveldb::Env* env_override;
-
-  CreateParam(const base::FilePath& database_path,
-              leveldb::Env* env_override)
-      : database_path(database_path),
-        env_override(env_override) {}
-};
-
 // static
 void MetadataDatabase::Create(
     const base::FilePath& database_path,
     leveldb::Env* env_override,
     const CreateCallback& callback) {
-  CreateOnWorkerTaskRunner(
-      make_scoped_ptr(new CreateParam(database_path, env_override)),
-      callback);
+  bool enable_on_disk_index = !CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableMetadataDatabaseOnDisk);
+  scoped_ptr<MetadataDatabase> metadata_database(
+      new MetadataDatabase(database_path,
+                           enable_on_disk_index,
+                           env_override));
+
+  SyncStatusCode status = metadata_database->Initialize();
+  if (status == SYNC_DATABASE_ERROR_FAILED) {
+    // Delete the previous instance to avoid creating a LevelDB instance for
+    // the same path.
+    metadata_database.reset();
+
+    metadata_database.reset(
+        new MetadataDatabase(database_path,
+                             enable_on_disk_index,
+                             env_override));
+    status = metadata_database->Initialize();
+  }
+
+  if (status != SYNC_STATUS_OK)
+    metadata_database.reset();
+
+  callback.Run(status, metadata_database.Pass());
 }
 
 // static
@@ -1314,36 +1325,6 @@ MetadataDatabase::MetadataDatabase(
       enable_on_disk_index_(enable_on_disk_index),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
-}
-
-// static
-void MetadataDatabase::CreateOnWorkerTaskRunner(
-    scoped_ptr<CreateParam> create_param,
-    const CreateCallback& callback) {
-  bool enable_on_disk_index = !CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableMetadataDatabaseOnDisk);
-  scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(create_param->database_path,
-                           enable_on_disk_index,
-                           create_param->env_override));
-
-  SyncStatusCode status = metadata_database->Initialize();
-  if (status == SYNC_DATABASE_ERROR_FAILED) {
-    // Delete the previous instance to avoid creating a LevelDB instance for
-    // the same path.
-    metadata_database.reset();
-
-    metadata_database.reset(
-        new MetadataDatabase(create_param->database_path,
-                             enable_on_disk_index,
-                             create_param->env_override));
-    status = metadata_database->Initialize();
-  }
-
-  if (status != SYNC_STATUS_OK)
-    metadata_database.reset();
-
-  callback.Run(status, metadata_database.Pass());
 }
 
 SyncStatusCode MetadataDatabase::Initialize() {

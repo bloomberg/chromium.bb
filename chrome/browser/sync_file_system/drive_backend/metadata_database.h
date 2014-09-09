@@ -352,15 +352,10 @@ class MetadataDatabase {
 
  private:
   friend class MetadataDatabaseTest;
-  struct CreateParam;
 
-  MetadataDatabase(
-      const base::FilePath& database_path,
-      bool enable_on_disk_index,
-      leveldb::Env* env_override);
-  static void CreateOnWorkerTaskRunner(
-      scoped_ptr<CreateParam> create_param,
-      const CreateCallback& callback);
+  MetadataDatabase(const base::FilePath& database_path,
+                   bool enable_on_disk_index,
+                   leveldb::Env* env_override);
   SyncStatusCode Initialize();
 
   // Database manipulation methods.
