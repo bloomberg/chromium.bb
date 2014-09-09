@@ -557,8 +557,12 @@ FFmpegDemuxer::~FFmpegDemuxer() {}
 
 void FFmpegDemuxer::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  url_protocol_->Abort();
+
+  // The order of Stop() and Abort() is important here.  If Abort() is called
+  // first, control may pass into FFmpeg where it can destruct buffers that are
+  // in the process of being fulfilled by the DataSource.
   data_source_->Stop();
+  url_protocol_->Abort();
 
   // This will block until all tasks complete. Note that after this returns it's
   // possible for reply tasks (e.g., OnReadFrameDone()) to be queued on this
