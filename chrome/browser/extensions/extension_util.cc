@@ -34,6 +34,7 @@ namespace extensions {
 namespace util {
 
 namespace {
+
 // The entry into the ExtensionPrefs for allowing an extension to script on
 // all urls without explicit permission.
 const char kExtensionAllowedOnAllUrlsPrefName[] =
@@ -54,6 +55,27 @@ bool IsWhitelistedForIncognito(const std::string& extension_id) {
           kExtensionWhitelist,
           kExtensionWhitelist + arraysize(kExtensionWhitelist)));
 }
+
+// Returns |extension_id|. See note below.
+std::string ReloadExtensionIfEnabled(const std::string& extension_id,
+                                     content::BrowserContext* context) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  bool extension_is_enabled =
+      registry->enabled_extensions().Contains(extension_id);
+
+  if (!extension_is_enabled)
+    return extension_id;
+
+  // When we reload the extension the ID may be invalidated if we've passed it
+  // by const ref everywhere. Make a copy to be safe. http://crbug.com/103762
+  std::string id = extension_id;
+  ExtensionService* service =
+      ExtensionSystem::Get(context)->extension_service();
+  CHECK(service);
+  service->ReloadExtension(id);
+  return id;
+}
+
 }  // namespace
 
 bool IsIncognitoEnabled(const std::string& extension_id,
@@ -79,10 +101,9 @@ bool IsIncognitoEnabled(const std::string& extension_id,
 void SetIsIncognitoEnabled(const std::string& extension_id,
                            content::BrowserContext* context,
                            bool enabled) {
-  ExtensionService* service =
-      ExtensionSystem::Get(context)->extension_service();
-  CHECK(service);
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const Extension* extension =
+      registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
 
   if (extension) {
     if (!extension->can_be_incognito_enabled())
@@ -95,12 +116,12 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
       DCHECK(sync_helper::IsSyncable(extension));
 
       // If we are here, make sure the we aren't trying to change the value.
-      DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id, service->profile()));
+      DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id, context));
       return;
     }
   }
 
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(service->profile());
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(context);
   // Broadcast unloaded and loaded events to update browser state. Only bother
   // if the value changed and the extension is actually enabled, since there is
   // no UI otherwise.
@@ -110,19 +131,13 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
 
   extension_prefs->SetIsIncognitoEnabled(extension_id, enabled);
 
-  bool extension_is_enabled = service->extensions()->Contains(extension_id);
-
-  // When we reload the extension the ID may be invalidated if we've passed it
-  // by const ref everywhere. Make a copy to be safe.
-  std::string id = extension_id;
-  if (extension_is_enabled)
-    service->ReloadExtension(id);
+  std::string id = ReloadExtensionIfEnabled(extension_id, context);
 
   // Reloading the extension invalidates the |extension| pointer.
-  extension = service->GetInstalledExtension(id);
+  extension = registry->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
   if (extension) {
-    ExtensionSyncService::Get(service->profile())->
-        SyncExtensionChangeIfNeeded(*extension);
+    Profile* profile = Profile::FromBrowserContext(context);
+    ExtensionSyncService::Get(profile)->SyncExtensionChangeIfNeeded(*extension);
   }
 }
 
@@ -157,10 +172,6 @@ bool AllowFileAccess(const std::string& extension_id,
 void SetAllowFileAccess(const std::string& extension_id,
                         content::BrowserContext* context,
                         bool allow) {
-  ExtensionService* service =
-      ExtensionSystem::Get(context)->extension_service();
-  CHECK(service);
-
   // Reload to update browser state. Only bother if the value changed and the
   // extension is actually enabled, since there is no UI otherwise.
   if (allow == AllowFileAccess(extension_id, context))
@@ -168,9 +179,7 @@ void SetAllowFileAccess(const std::string& extension_id,
 
   ExtensionPrefs::Get(context)->SetAllowFileAccess(extension_id, allow);
 
-  bool extension_is_enabled = service->extensions()->Contains(extension_id);
-  if (extension_is_enabled)
-    service->ReloadExtension(extension_id);
+  ReloadExtensionIfEnabled(extension_id, context);
 }
 
 bool AllowedScriptingOnAllUrls(const std::string& extension_id,

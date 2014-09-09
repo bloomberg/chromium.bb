@@ -262,6 +262,9 @@ class ExtensionService
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing.
   // Allows noisy failures.
+  // NOTE: Reloading an extension can invalidate |extension_id| and Extension
+  // pointers for the given extension. Consider making a copy of |extension_id|
+  // first and retrieving a new Extension pointer afterwards.
   void ReloadExtension(const std::string& extension_id);
 
   // Suppresses noisy failures.
