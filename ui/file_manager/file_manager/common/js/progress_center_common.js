@@ -115,7 +115,9 @@ var ProgressCenterItem = function() {
    */
   this.cancelCallback = null;
 
-  Object.seal(this);
+  // This object is instantiated many time. Object.seal use more memory
+  // than Object.preventExtensions (crbug.com/412307)
+  Object.preventExtensions(this);
 };
 
 ProgressCenterItem.prototype = {
