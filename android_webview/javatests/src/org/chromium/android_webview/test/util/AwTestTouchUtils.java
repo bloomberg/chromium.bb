@@ -76,5 +76,29 @@ public class AwTestTouchUtils {
             }
         });
     }
+
+    /**
+     * Performs a single touch on the center of the supplied view.
+     * This is safe to call from the instrumentation thread and will invoke the touch
+     * asynchronously.
+     *
+     * @param view The view the coordinates are relative to.
+     */
+    public static void simulateTouchCenterOfView(final View view) throws Throwable {
+        view.post(new Runnable() {
+            @Override
+            public void run() {
+                long eventTime = SystemClock.uptimeMillis();
+                float x = (float) (view.getRight() - view.getLeft()) / 2;
+                float y = (float) (view.getBottom() - view.getTop()) / 2;
+                view.onTouchEvent(MotionEvent.obtain(
+                        eventTime, eventTime, MotionEvent.ACTION_DOWN,
+                        x, y, 0));
+                view.onTouchEvent(MotionEvent.obtain(
+                        eventTime, eventTime, MotionEvent.ACTION_UP,
+                        x, y, 0));
+            }
+        });
+    }
 }
 

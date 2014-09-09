@@ -4,12 +4,16 @@
 
 package org.chromium.android_webview.test;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.ShouldInterceptRequestParams;
 import org.chromium.android_webview.AwWebResourceResponse;
+import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
@@ -236,9 +240,25 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(false,
                 mShouldInterceptRequestHelper.getParamsForUrl(pageWithLinkUrl).hasUserGesture);
 
+        // TODO(mkosiba): Remove this once we have a real API to wait for the page to load and
+        // display.
+        // http://crbug.com/364612
+        //
+        // The code here is waiting for the "link" (which is a full-screen blue div) to appear on
+        // screen.
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                Bitmap bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                canvas.translate(-(float)mTestContainerView.getWidth() / 2,
+                        -(float)mTestContainerView.getHeight() / 2);
+                mAwContents.onDraw(canvas);
+                return bitmap.getPixel(0, 0) == Color.BLUE;
+            }
+        });
         callCount = mShouldInterceptRequestHelper.getCallCount();
-        JSUtils.clickOnLinkUsingJs(this, mAwContents,
-                mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
+        AwTestTouchUtils.simulateTouchCenterOfView(mTestContainerView);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals(true,
                 mShouldInterceptRequestHelper.getParamsForUrl(aboutPageUrl).hasUserGesture);

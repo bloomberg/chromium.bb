@@ -6,14 +6,13 @@ package org.chromium.android_webview.test;
 
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.webkit.WebView.HitTestResult;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -62,23 +61,6 @@ public class WebKitHitTestTest extends AwTestBase {
                 href + "\" " + "onclick=\"return false;\">" + anchorText + "</a>");
     }
 
-    private void simulateTouchCenterOfWebViewOnUiThread() throws Throwable {
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                long eventTime = SystemClock.uptimeMillis();
-                float x = (float) (mTestView.getRight() - mTestView.getLeft()) / 2;
-                float y = (float) (mTestView.getBottom() - mTestView.getTop()) / 2;
-                mAwContents.onTouchEvent(MotionEvent.obtain(
-                        eventTime, eventTime, MotionEvent.ACTION_DOWN,
-                        x, y, 0));
-                mAwContents.onTouchEvent(MotionEvent.obtain(
-                        eventTime, eventTime, MotionEvent.ACTION_UP,
-                        x, y, 0));
-            }
-        });
-    }
-
     private void simulateTabDownUpOnUiThread() throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override
@@ -95,7 +77,7 @@ public class WebKitHitTestTest extends AwTestBase {
         // Send a touch click event if byTouch is true. Otherwise, send a TAB
         // key event to change the focused element of the page.
         if (byTouch) {
-            simulateTouchCenterOfWebViewOnUiThread();
+            AwTestTouchUtils.simulateTouchCenterOfView(mTestView);
         } else {
             simulateTabDownUpOnUiThread();
         }
@@ -334,7 +316,7 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = CommonResources.makeHtmlPageFrom("",
                 "<img class=\"full_view\" src=\"" + relImageSrc + "\">");
         setServerResponseAndLoad(page);
-        simulateTouchCenterOfWebViewOnUiThread();
+        AwTestTouchUtils.simulateTouchCenterOfView(mTestView);
         pollForHitTestDataOnUiThread(HitTestResult.IMAGE_TYPE, fullImageSrc);
         pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc);
     }
@@ -403,7 +385,7 @@ public class WebKitHitTestTest extends AwTestBase {
                 return mAwContents.getContentViewCore().getTitle().equals(title);
             }
         });
-        simulateTouchCenterOfWebViewOnUiThread();
+        AwTestTouchUtils.simulateTouchCenterOfView(mTestView);
         pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null);
     }
 
@@ -434,7 +416,7 @@ public class WebKitHitTestTest extends AwTestBase {
         // Touch image. Now the focus based hit test path will try to null out
         // the results and the touch based path will update with the result of
         // the image.
-        simulateTouchCenterOfWebViewOnUiThread();
+        AwTestTouchUtils.simulateTouchCenterOfView(mTestView);
 
         // Make sure the result of image sticks.
         for (int i = 0; i < 2; ++i) {
