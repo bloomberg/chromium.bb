@@ -34,15 +34,6 @@
               '-lexpat',
             ],
           },
-          'conditions': [
-            ['OS=="android"', {
-              'direct_dependent_settings': {
-                'include_dirs': [
-                  '<(android_src)/external/expat/lib',
-                ],
-              },
-            }],
-          ],
         },
       ],
     }, {  # else: use_system_expat != 1

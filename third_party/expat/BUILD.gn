@@ -2,10 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_android) {
-  import("//build/config/android/config.gni")
-}
-
 if (is_linux) {
   config("expat_config") {
     libs = [ "expat" ]
@@ -14,15 +10,9 @@ if (is_linux) {
   group("expat") {
     direct_dependent_configs = [ ":expat_config" ]
   }
-
-  # TODO(GYP) Android needs direct dependent includes of
-  # <android_src>/external/expat/lib
 } else {
   config("expat_config") {
     include_dirs = [ "files/lib" ]
-    if (is_android) {
-      include_dirs += [ "$android_src/external/expat/lib" ]
-    }
     defines = [ "XML_STATIC" ]
   }
 
