@@ -1321,6 +1321,104 @@ TEST_P(GLES2DecoderTest, LoseContextCHROMIUMInvalidArgs1_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
+ public:
+  GLES2DecoderDoCommandsTest() {
+    for (int i = 0; i < 3; i++) {
+      cmds_[i].Init(GL_BLEND);
+    }
+    entries_per_cmd_ = ComputeNumEntries(cmds_[0].ComputeSize());
+  }
+
+  void SetExpectationsForNCommands(int num_commands) {
+    for (int i = 0; i < num_commands; i++)
+      SetupExpectationsForEnableDisable(GL_BLEND, true);
+  }
+
+ protected:
+  Enable cmds_[3];
+  int entries_per_cmd_;
+};
+
+// Test that processing with 0 entries does nothing.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOneOfZero) {
+  int num_processed = -1;
+  SetExpectationsForNCommands(0);
+  EXPECT_EQ(
+      error::kNoError,
+      decoder_->DoCommands(1, &cmds_, entries_per_cmd_ * 0, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(0, num_processed);
+}
+
+// Test processing at granularity of single commands.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOneOfOne) {
+  int num_processed = -1;
+  SetExpectationsForNCommands(1);
+  EXPECT_EQ(
+      error::kNoError,
+      decoder_->DoCommands(1, &cmds_, entries_per_cmd_ * 1, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_, num_processed);
+}
+
+// Test processing at granularity of multiple commands.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsThreeOfThree) {
+  int num_processed = -1;
+  SetExpectationsForNCommands(3);
+  EXPECT_EQ(
+      error::kNoError,
+      decoder_->DoCommands(3, &cmds_, entries_per_cmd_ * 3, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_ * 3, num_processed);
+}
+
+// Test processing a request smaller than available entries.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsTwoOfThree) {
+  int num_processed = -1;
+  SetExpectationsForNCommands(2);
+  EXPECT_EQ(
+      error::kNoError,
+      decoder_->DoCommands(2, &cmds_, entries_per_cmd_ * 3, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_ * 2, num_processed);
+}
+
+// Test that processing stops on a command with size 0.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsZeroCmdSize) {
+  cmds_[1].header.size = 0;
+  int num_processed = -1;
+  SetExpectationsForNCommands(1);
+  EXPECT_EQ(
+      error::kInvalidSize,
+      decoder_->DoCommands(2, &cmds_, entries_per_cmd_ * 2, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_, num_processed);
+}
+
+// Test that processing stops on a command with size greater than available.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOutOfBounds) {
+  int num_processed = -1;
+  SetExpectationsForNCommands(1);
+  EXPECT_EQ(error::kOutOfBounds,
+            decoder_->DoCommands(
+                2, &cmds_, entries_per_cmd_ * 2 - 1, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_, num_processed);
+}
+
+// Test that commands with bad argument size are skipped without processing.
+TEST_P(GLES2DecoderDoCommandsTest, DoCommandsBadArgSize) {
+  cmds_[1].header.size += 1;
+  int num_processed = -1;
+  SetExpectationsForNCommands(1);
+  EXPECT_EQ(error::kInvalidArguments,
+            decoder_->DoCommands(
+                2, &cmds_, entries_per_cmd_ * 2 + 1, &num_processed));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(entries_per_cmd_ + cmds_[1].header.size, num_processed);
+}
+
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());
@@ -1330,6 +1428,8 @@ INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderManualInitTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderRGBBackbufferTest,
                         ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

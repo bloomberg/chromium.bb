@@ -60,7 +60,7 @@ class BaseRingBufferTest : public testing::Test {
 
   virtual void SetUp() {
     delay_set_token_ = false;
-    api_mock_.reset(new AsyncAPIMock);
+    api_mock_.reset(new AsyncAPIMock(true));
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, 0, _))

@@ -167,17 +167,15 @@ class CommonDecoderTest : public testing::Test {
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
-    return decoder_.DoCommand(cmd.kCmdId,
-                              ComputeNumEntries(sizeof(cmd)) - 1,
-                              &cmd);
+    return decoder_.DoCommands(
+        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd)), 0);
   }
 
   template <typename T>
   error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    return decoder_.DoCommand(cmd.kCmdId,
-                              ComputeNumEntries(sizeof(cmd) + data_size) - 1,
-                              &cmd);
+    return decoder_.DoCommands(
+        1, (const void*)&cmd, ComputeNumEntries(sizeof(cmd) + data_size), 0);
   }
 
   MockCommandBufferEngine engine_;

@@ -48,6 +48,11 @@ class GpuSchedulerTest : public testing::Test {
         .WillByDefault(Return(default_state));
 
     decoder_.reset(new gles2::MockGLES2Decoder());
+    // Install FakeDoCommands handler so we can use individual DoCommand()
+    // expectations.
+    EXPECT_CALL(*decoder_, DoCommands(_, _, _, _)).WillRepeatedly(
+        Invoke(decoder_.get(), &gles2::MockGLES2Decoder::FakeDoCommands));
+
     scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                            decoder_.get(),
                                            decoder_.get()));
@@ -147,7 +152,6 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
 
   EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
     .WillOnce(Return(error::kNoError));
-  EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*decoder_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));

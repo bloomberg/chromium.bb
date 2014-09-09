@@ -12,11 +12,13 @@
 
 namespace gpu {
 
-using testing::Return;
-using testing::Mock;
-using testing::Truly;
-using testing::Sequence;
 using testing::_;
+using testing::Invoke;
+using testing::Mock;
+using testing::Return;
+using testing::Sequence;
+using testing::SetArgPointee;
+using testing::Truly;
 
 // Test fixture for CommandParser test - Creates a mock AsyncAPIInterface, and
 // a fixed size memory buffer. Also provides a simple API to create a
@@ -24,21 +26,19 @@ using testing::_;
 class CommandParserTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    api_mock_.reset(new AsyncAPIMock);
+    api_mock_.reset(new AsyncAPIMock(false));
     buffer_entry_count_ = 20;
     buffer_.reset(new CommandBufferEntry[buffer_entry_count_]);
   }
   virtual void TearDown() {}
 
-  // Adds a DoCommand expectation in the mock.
-  void AddDoCommandExpect(error::Error _return,
-                          unsigned int command,
-                          unsigned int arg_count,
-                          CommandBufferEntry *args) {
-    EXPECT_CALL(*api_mock(), DoCommand(command, arg_count,
-        Truly(AsyncAPIMock::IsArgs(arg_count, args))))
+  void AddDoCommandsExpect(error::Error _return,
+                           unsigned int num_commands,
+                           int num_entries,
+                           int num_processed) {
+    EXPECT_CALL(*api_mock_, DoCommands(num_commands, _, num_entries, _))
         .InSequence(sequence_)
-        .WillOnce(Return(_return));
+        .WillOnce(DoAll(SetArgPointee<3>(num_processed), Return(_return)));
   }
 
   // Creates a parser, with a buffer of the specified size (in entries).
@@ -82,12 +82,11 @@ TEST_F(CommandParserTest, TestSimple) {
   header.size = 1;
   header.command = 123;
   buffer()[put++].value_header = header;
-
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
 
-  AddDoCommandExpect(error::kNoError, 123, 0, NULL);
-  EXPECT_EQ(error::kNoError, parser->ProcessCommand());
+  AddDoCommandsExpect(error::kNoError, 1, 1, 1);
+  EXPECT_EQ(error::kNoError, parser->ProcessCommands(1));
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 
@@ -97,15 +96,11 @@ TEST_F(CommandParserTest, TestSimple) {
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 2134;
   buffer()[put++].value_float = 1.f;
-
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
 
-  CommandBufferEntry param_array[2];
-  param_array[0].value_int32 = 2134;
-  param_array[1].value_float = 1.f;
-  AddDoCommandExpect(error::kNoError, 456, 2, param_array);
-  EXPECT_EQ(error::kNoError, parser->ProcessCommand());
+  AddDoCommandsExpect(error::kNoError, 1, 3, 3);
+  EXPECT_EQ(error::kNoError, parser->ProcessCommands(1));
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 }
@@ -116,7 +111,7 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
   CommandBufferOffset put = parser->put();
   CommandHeader header;
 
-  // add 2 commands, test with single ProcessCommand()
+  // add 2 commands, test with single ProcessCommands()
   header.size = 2;
   header.command = 789;
   buffer()[put++].value_header = header;
@@ -127,20 +122,17 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
   header.command = 876;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 3434;
-
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
 
-  CommandBufferEntry param_array[2];
-  param_array[0].value_int32 = 5151;
-  AddDoCommandExpect(error::kNoError, 789, 1, param_array);
-  param_array[1].value_int32 = 3434;
-  AddDoCommandExpect(error::kNoError, 876, 1,
-                     param_array+1);
-
-  EXPECT_EQ(error::kNoError, parser->ProcessCommand());
+  // Process up to 1 command.  4 entries remaining.
+  AddDoCommandsExpect(error::kNoError, 1, 4, 2);
+  EXPECT_EQ(error::kNoError, parser->ProcessCommands(1));
   EXPECT_EQ(put_cmd2, parser->get());
-  EXPECT_EQ(error::kNoError, parser->ProcessCommand());
+
+  // Process up to 1 command.  2 entries remaining.
+  AddDoCommandsExpect(error::kNoError, 1, 2, 2);
+  EXPECT_EQ(error::kNoError, parser->ProcessCommands(1));
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 
@@ -154,16 +146,12 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
   header.command = 321;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 7878;
-
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
 
-  param_array[0].value_int32 = 5656;
-  AddDoCommandExpect(error::kNoError, 123, 1, param_array);
-  param_array[1].value_int32 = 7878;
-  AddDoCommandExpect(error::kNoError, 321, 1,
-                     param_array+1);
-
+  // 4 entries remaining.
+  AddDoCommandsExpect(
+      error::kNoError, CommandParser::kParseCommandsSlice, 4, 4);
   EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
@@ -180,11 +168,13 @@ TEST_F(CommandParserTest, TestWrap) {
     header.size = 1;
     header.command = i;
     buffer()[put++].value_header = header;
-    AddDoCommandExpect(error::kNoError, i, 0, NULL);
   }
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
-  EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
+
+  // Process up to 10 commands.  3 entries remaining to put.
+  AddDoCommandsExpect(error::kNoError, 10, 3, 3);
+  EXPECT_EQ(error::kNoError, parser->ProcessCommands(10));
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 
@@ -194,27 +184,25 @@ TEST_F(CommandParserTest, TestWrap) {
   header.command = 3;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 5;
-  CommandBufferEntry param;
-  param.value_int32 = 5;
-  AddDoCommandExpect(error::kNoError, 3, 1, &param);
 
   DCHECK_EQ(5, put);
   put = 0;
-  parser->set_put(put);
-  EXPECT_EQ(put, parser->put());
-  EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
-  EXPECT_EQ(put, parser->get());
-  Mock::VerifyAndClearExpectations(api_mock());
 
   // add 1 command with 1 arg (2 words).
   header.size = 2;
   header.command = 4;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 6;
-  param.value_int32 = 6;
-  AddDoCommandExpect(error::kNoError, 4, 1, &param);
+
+  // 2 entries remaining to end of buffer.
+  AddDoCommandsExpect(
+      error::kNoError, CommandParser::kParseCommandsSlice, 2, 2);
+  // 2 entries remaining to put.
+  AddDoCommandsExpect(
+      error::kNoError, CommandParser::kParseCommandsSlice, 2, 2);
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
+
   EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
@@ -237,6 +225,9 @@ TEST_F(CommandParserTest, TestError) {
 
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
+
+  AddDoCommandsExpect(
+      error::kInvalidSize, CommandParser::kParseCommandsSlice, 1, 0);
   EXPECT_EQ(error::kInvalidSize,
             parser->ProcessAllCommands());
   // check that no DoCommand call was made.
@@ -252,6 +243,9 @@ TEST_F(CommandParserTest, TestError) {
 
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
+
+  AddDoCommandsExpect(
+      error::kOutOfBounds, CommandParser::kParseCommandsSlice, 1, 0);
   EXPECT_EQ(error::kOutOfBounds,
             parser->ProcessAllCommands());
   // check that no DoCommand call was made.
@@ -272,7 +266,8 @@ TEST_F(CommandParserTest, TestError) {
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());
   // have the first command fail to parse.
-  AddDoCommandExpect(error::kUnknownCommand, 3, 0, NULL);
+  AddDoCommandsExpect(
+      error::kUnknownCommand, CommandParser::kParseCommandsSlice, 2, 1);
   EXPECT_EQ(error::kUnknownCommand,
             parser->ProcessAllCommands());
   // check that only one command was executed, and that get reflects that
@@ -280,7 +275,8 @@ TEST_F(CommandParserTest, TestError) {
   EXPECT_EQ(put_post_fail, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
   // make the second one succeed, and check that the parser recovered fine.
-  AddDoCommandExpect(error::kNoError, 4, 0, NULL);
+  AddDoCommandsExpect(
+      error::kNoError, CommandParser::kParseCommandsSlice, 1, 1);
   EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
   EXPECT_EQ(put, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
@@ -296,12 +292,10 @@ TEST_F(CommandParserTest, SetBuffer) {
   header.command = 123;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 456;
-
-  CommandBufferEntry param_array[1];
-  param_array[0].value_int32 = 456;
-
   parser->set_put(put);
-  AddDoCommandExpect(error::kNoError, 123, 1, param_array);
+
+  AddDoCommandsExpect(
+      error::kNoError, CommandParser::kParseCommandsSlice, 2, 2);
   EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
   // We should have advanced 2 entries
   EXPECT_EQ(2, parser->get());

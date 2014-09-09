@@ -85,7 +85,8 @@ class CommandBufferServiceLocked : public CommandBufferService {
 class CommandBufferHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    api_mock_.reset(new AsyncAPIMock);
+    api_mock_.reset(new AsyncAPIMock(true));
+
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, _, _))

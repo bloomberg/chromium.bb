@@ -26,8 +26,13 @@ namespace gpu {
 // Mocks an AsyncAPIInterface, using GMock.
 class AsyncAPIMock : public AsyncAPIInterface {
  public:
-  AsyncAPIMock();
+  explicit AsyncAPIMock(bool default_do_commands);
   virtual ~AsyncAPIMock();
+
+  error::Error FakeDoCommands(unsigned int num_commands,
+                              const void* buffer,
+                              int num_entries,
+                              int* entries_processed);
 
   // Predicate that matches args passed to DoCommand, by looking at the values.
   class IsArgs {
@@ -55,6 +60,12 @@ class AsyncAPIMock : public AsyncAPIInterface {
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data));
+
+  MOCK_METHOD4(DoCommands,
+               error::Error(unsigned int num_commands,
+                            const void* buffer,
+                            int num_entries,
+                            int* entries_processed));
 
   const char* GetCommandName(unsigned int command_id) const {
     return "";

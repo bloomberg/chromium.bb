@@ -33,6 +33,11 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder();
   virtual ~MockGLES2Decoder();
 
+  error::Error FakeDoCommands(unsigned int num_commands,
+                              const void* buffer,
+                              int num_entries,
+                              int* entries_processed);
+
   MOCK_METHOD6(Initialize,
                bool(const scoped_refptr<gfx::GLSurface>& surface,
                     const scoped_refptr<gfx::GLContext>& context,
@@ -86,6 +91,11 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
                                        const void* cmd_data));
+  MOCK_METHOD4(DoCommands,
+               error::Error(unsigned int num_commands,
+                            const void* buffer,
+                            int num_entries,
+                            int* entries_processed));
   MOCK_METHOD2(GetServiceTextureId, bool(uint32 client_texture_id,
                                          uint32* service_texture_id));
   MOCK_METHOD0(GetContextLostReason, error::ContextLostReason());

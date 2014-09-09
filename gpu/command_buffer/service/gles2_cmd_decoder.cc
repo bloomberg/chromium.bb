@@ -572,6 +572,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
                           unsigned int arg_count,
                           const void* args) OVERRIDE;
 
+  virtual error::Error DoCommands(unsigned int num_commands,
+                                  const void* buffer,
+                                  int num_entries,
+                                  int* entries_processed) OVERRIDE;
+
   // Overridden from AsyncAPIInterface.
   virtual const char* GetCommandName(unsigned int command_id) const OVERRIDE;
 
@@ -1639,6 +1644,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return error::kNoError;
   }
 
+  // Set remaining commands to process to 0 to force DoCommands to return
+  // and allow context preemption and GPU watchdog checks in GpuScheduler().
+  void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
+
   void ProcessPendingReadPixels();
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
@@ -1759,6 +1768,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   scoped_refptr<FeatureInfo> feature_info_;
 
   int frame_number_;
+
+  // Number of commands remaining to be processed in DoCommands().
+  int commands_to_process_;
 
   bool has_robustness_extension_;
   GLenum reset_status_;
@@ -3748,62 +3760,114 @@ const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
 }
 
-// Decode command with its arguments, and call the corresponding GL function.
-// Note: args is a pointer to the command buffer. As such, it could be changed
-// by a (malicious) client at any time, so if validation has to happen, it
-// should operate on a copy of them.
-error::Error GLES2DecoderImpl::DoCommand(
-    unsigned int command,
-    unsigned int arg_count,
-    const void* cmd_data) {
+// Decode a command, and call the corresponding GL functions.
+// NOTE: DoCommand() is slower than calling DoCommands() on larger batches
+// of commands at once, and is now only used for tests that need to track
+// individual commands.
+error::Error GLES2DecoderImpl::DoCommand(unsigned int command,
+                                         unsigned int arg_count,
+                                         const void* cmd_data) {
+  return DoCommands(1, cmd_data, arg_count + 1, 0);
+}
+
+// Decode multiple commands, and call the corresponding GL functions.
+// NOTE: 'buffer' is a pointer to the command buffer. As such, it could be
+// changed by a (malicious) client at any time, so if validation has to happen,
+// it should operate on a copy of them.
+// NOTE: This is duplicating code from AsyncAPIInterface::DoCommands() in the
+// interest of performance in this critical execution loop.
+error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
+                                          const void* buffer,
+                                          int num_entries,
+                                          int* entries_processed) {
+  commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
-  if (log_commands()) {
-    // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
-    // VLOG(1), no luck.
-    LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]" << "cmd: "
-               << GetCommandName(command);
-  }
-  unsigned int command_index = command - kStartPoint - 1;
-  if (command_index < arraysize(command_info)) {
-    const CommandInfo& info = command_info[command_index];
-    unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
-    if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
-        (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
-      bool doing_gpu_trace = false;
-      if (gpu_trace_commands_) {
-        if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
-          doing_gpu_trace = true;
-          gpu_tracer_->Begin(GetCommandName(command), kTraceDecoder);
+  const CommandBufferEntry* cmd_data =
+      static_cast<const CommandBufferEntry*>(buffer);
+  int process_pos = 0;
+  unsigned int command = 0;
+
+  while (process_pos < num_entries && result == error::kNoError &&
+         commands_to_process_--) {
+    const unsigned int size = cmd_data->value_header.size;
+    command = cmd_data->value_header.command;
+
+    if (size == 0) {
+      result = error::kInvalidSize;
+      break;
+    }
+
+    if (static_cast<int>(size) + process_pos > num_entries) {
+      result = error::kOutOfBounds;
+      break;
+    }
+
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
+                 GetCommandName(command));
+
+    if (log_commands()) {
+      LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
+                 << "cmd: " << GetCommandName(command);
+    }
+
+    const unsigned int arg_count = size - 1;
+    unsigned int command_index = command - kStartPoint - 1;
+    if (command_index < arraysize(command_info)) {
+      const CommandInfo& info = command_info[command_index];
+      unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
+      if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
+          (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
+        bool doing_gpu_trace = false;
+        if (gpu_trace_commands_) {
+          if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
+            doing_gpu_trace = true;
+            gpu_tracer_->Begin(GetCommandName(command), kTraceDecoder);
+          }
         }
-      }
 
-      uint32 immediate_data_size =
-          (arg_count - info_arg_count) * sizeof(CommandBufferEntry);  // NOLINT
+        uint32 immediate_data_size = (arg_count - info_arg_count) *
+                                     sizeof(CommandBufferEntry);  // NOLINT
 
-      result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
+        result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
 
-      if (doing_gpu_trace)
-        gpu_tracer_->End(kTraceDecoder);
+        if (doing_gpu_trace)
+          gpu_tracer_->End(kTraceDecoder);
 
-      if (debug()) {
-        GLenum error;
-        while ((error = glGetError()) != GL_NO_ERROR) {
-          LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
-                     << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
-                     << GetCommandName(command);
-          LOCAL_SET_GL_ERROR(error, "DoCommand", "GL error from driver");
+        if (debug()) {
+          GLenum error;
+          while ((error = glGetError()) != GL_NO_ERROR) {
+            LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
+                       << "GL ERROR: " << GLES2Util::GetStringEnum(error)
+                       << " : " << GetCommandName(command);
+            LOCAL_SET_GL_ERROR(error, "DoCommand", "GL error from driver");
+          }
         }
+      } else {
+        result = error::kInvalidArguments;
       }
     } else {
-      result = error::kInvalidArguments;
+      result = DoCommonCommand(command, arg_count, cmd_data);
     }
-  } else {
-    result = DoCommonCommand(command, arg_count, cmd_data);
-  }
-  if (result == error::kNoError && current_decoder_error_ != error::kNoError) {
+    if (result == error::kNoError &&
+        current_decoder_error_ != error::kNoError) {
       result = current_decoder_error_;
       current_decoder_error_ = error::kNoError;
+    }
+
+    if (result != error::kDeferCommandUntilLater) {
+      process_pos += size;
+      cmd_data += size;
+    }
   }
+
+  if (entries_processed)
+    *entries_processed = process_pos;
+
+  if (error::IsError(result)) {
+    LOG(ERROR) << "Error: " << result << " for Command "
+               << GetCommandName(command);
+  }
+
   return result;
 }
 
@@ -5698,6 +5762,10 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
         program_manager()->ClearUniforms(program);
     }
   }
+
+  // LinkProgram can be very slow.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
 };
 
 void GLES2DecoderImpl::DoTexParameterf(
@@ -6826,7 +6894,11 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
      translator,
      feature_info_->feature_flags().angle_translated_shader_source ?
          ProgramManager::kANGLE : ProgramManager::kGL);
-};
+
+  // CompileShader can be very slow.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+}
 
 void GLES2DecoderImpl::DoGetShaderiv(
     GLuint shader_id, GLenum pname, GLint* params) {
@@ -8325,6 +8397,10 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
         texture_ref, target, level, internal_format,
         width, height, 1, border, 0, 0, true);
   }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 
@@ -8472,6 +8548,10 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
     pixels, pixels_size};
   texture_manager()->ValidateAndDoTexImage2D(
       &texture_state_, &state_, &framebuffer_state_, args);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 
@@ -8530,6 +8610,10 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
   // CompressedTexImage2D already cleared the texture.
   glCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, image_size, data);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
 }
 
 static void Clip(
@@ -8675,6 +8759,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         texture_ref, target, level, internal_format, width, height, 1,
         border, internal_format, GL_UNSIGNED_BYTE, true);
   }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
 }
 
 void GLES2DecoderImpl::DoCopyTexSubImage2D(
@@ -8785,6 +8873,10 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
                         destX, destY, copyX, copyY,
                         copyWidth, copyHeight);
   }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
 }
 
 bool GLES2DecoderImpl::ValidateTexSubImage2D(
@@ -8915,6 +9007,10 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
   }
   texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 
@@ -9401,6 +9497,10 @@ void GLES2DecoderImpl::DoSwapBuffers() {
       LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
     }
   }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
 }
 
 error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(

@@ -78,7 +78,7 @@ void GpuScheduler::PutChanged() {
     DCHECK(IsScheduled());
     DCHECK(unschedule_fences_.empty());
 
-    error = parser_->ProcessCommand();
+    error = parser_->ProcessCommands(CommandParser::kParseCommandsSlice);
 
     if (error == error::kDeferCommandUntilLater) {
       DCHECK_GT(unscheduled_count_, 0);

@@ -7,14 +7,30 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mocks.h"
 
+using testing::Invoke;
+using testing::_;
+
 namespace gpu {
 
-AsyncAPIMock::AsyncAPIMock() {
+AsyncAPIMock::AsyncAPIMock(bool default_do_commands) {
   testing::DefaultValue<error::Error>::Set(
       error::kNoError);
+
+  if (default_do_commands) {
+    ON_CALL(*this, DoCommands(_, _, _, _))
+        .WillByDefault(Invoke(this, &AsyncAPIMock::FakeDoCommands));
+  }
 }
 
 AsyncAPIMock::~AsyncAPIMock() {}
+
+error::Error AsyncAPIMock::FakeDoCommands(unsigned int num_commands,
+                                          const void* buffer,
+                                          int num_entries,
+                                          int* entries_processed) {
+  return AsyncAPIInterface::DoCommands(
+      num_commands, buffer, num_entries, entries_processed);
+}
 
 void AsyncAPIMock::SetToken(unsigned int command,
                             unsigned int arg_count,

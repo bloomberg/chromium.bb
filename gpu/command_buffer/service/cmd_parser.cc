@@ -44,54 +44,73 @@ void CommandParser::SetBuffer(
 // conditions). This function only validates the header, leaving the arguments
 // validation to the handler, so it can pass a reference to them.
 // - get_ is modified *after* the command has been executed.
-error::Error CommandParser::ProcessCommand() {
-  CommandBufferOffset get = get_;
-  if (get == put_)
-    return error::kNoError;
+error::Error CommandParser::ProcessCommands(int num_commands) {
+  int num_entries = put_ < get_ ? entry_count_ - get_ : put_ - get_;
+  int entries_processed = 0;
 
-  CommandHeader header = buffer_[get].value_header;
-  if (header.size == 0) {
-    LOG(ERROR) << "Parse error: zero sized command in command buffer";
-    return error::kInvalidSize;
-  }
+  error::Error result = handler_->DoCommands(
+      num_commands, buffer_ + get_, num_entries, &entries_processed);
 
-  if (static_cast<int>(header.size) + get > entry_count_) {
-    LOG(ERROR) << "Parse error: get offset out of bounds";
-    return error::kOutOfBounds;
-  }
-
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
-               handler_->GetCommandName(header.command));
-
-  error::Error result = handler_->DoCommand(
-      header.command, header.size - 1, buffer_ + get);
-
-  if (error::IsError(result)) {
-    ReportError(header.command, result);
-  }
-
-  // If get was not set somewhere else advance it.
-  if (get == get_ && result != error::kDeferCommandUntilLater)
-    get_ = (get + header.size) % entry_count_;
+  get_ += entries_processed;
+  if (get_ == entry_count_)
+    get_ = 0;
 
   return result;
-}
-
-void CommandParser::ReportError(unsigned int command_id,
-                                error::Error result) {
-  LOG(ERROR) << "Error: " << result << " for Command "
-             << handler_->GetCommandName(command_id);
 }
 
 // Processes all the commands, while the buffer is not empty. Stop if an error
 // is encountered.
 error::Error CommandParser::ProcessAllCommands() {
   while (!IsEmpty()) {
-    error::Error error = ProcessCommand();
+    error::Error error = ProcessCommands(kParseCommandsSlice);
     if (error)
       return error;
   }
   return error::kNoError;
+}
+
+// Decode multiple commands, and call the corresponding GL functions.
+// NOTE: buffer is a pointer to the command buffer. As such, it could be
+// changed by a (malicious) client at any time, so if validation has to happen,
+// it should operate on a copy of them.
+error::Error AsyncAPIInterface::DoCommands(unsigned int num_commands,
+                                           const void* buffer,
+                                           int num_entries,
+                                           int* entries_processed) {
+  int commands_to_process = num_commands;
+  error::Error result = error::kNoError;
+  const CommandBufferEntry* cmd_data =
+      static_cast<const CommandBufferEntry*>(buffer);
+  int process_pos = 0;
+
+  while (process_pos < num_entries && result == error::kNoError &&
+         commands_to_process--) {
+    CommandHeader header = cmd_data->value_header;
+    if (header.size == 0) {
+      DVLOG(1) << "Error: zero sized command in command buffer";
+      return error::kInvalidSize;
+    }
+
+    if (static_cast<int>(header.size) + process_pos > num_entries) {
+      DVLOG(1) << "Error: get offset out of bounds";
+      return error::kOutOfBounds;
+    }
+
+    const unsigned int command = header.command;
+    const unsigned int arg_count = header.size - 1;
+
+    result = DoCommand(command, arg_count, cmd_data);
+
+    if (result != error::kDeferCommandUntilLater) {
+      process_pos += header.size;
+      cmd_data += header.size;
+    }
+  }
+
+  if (entries_processed)
+    *entries_processed = process_pos;
+
+  return result;
 }
 
 }  // namespace gpu

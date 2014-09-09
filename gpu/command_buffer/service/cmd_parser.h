@@ -19,6 +19,8 @@ class AsyncAPIInterface;
 // buffer, to implement some asynchronous RPC mechanism.
 class GPU_EXPORT CommandParser {
  public:
+  static const int kParseCommandsSlice = 20;
+
   explicit CommandParser(AsyncAPIInterface* handler);
 
   // Sets the buffer to read commands from.
@@ -55,13 +57,10 @@ class GPU_EXPORT CommandParser {
 
   // Processes one command, updating the get pointer. This will return an error
   // if there are no commands in the buffer.
-  error::Error ProcessCommand();
+  error::Error ProcessCommands(int num_commands);
 
   // Processes all commands until get == put.
   error::Error ProcessAllCommands();
-
-  // Reports an error.
-  void ReportError(unsigned int command_id, error::Error result);
 
  private:
   CommandBufferOffset get_;
@@ -73,12 +72,12 @@ class GPU_EXPORT CommandParser {
 
 // This class defines the interface for an asynchronous API handler, that
 // is responsible for de-multiplexing commands and their arguments.
-class AsyncAPIInterface {
+class GPU_EXPORT AsyncAPIInterface {
  public:
   AsyncAPIInterface() {}
   virtual ~AsyncAPIInterface() {}
 
-  // Executes a command.
+  // Executes a single command.
   // Parameters:
   //    command: the command index.
   //    arg_count: the number of CommandBufferEntry arguments.
@@ -90,6 +89,17 @@ class AsyncAPIInterface {
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data) = 0;
+
+  // Executes multiple commands.
+  // Parameters:
+  //    num_commands: maximum number of commands to execute from buffer.
+  //    buffer: pointer to first command entry to process.
+  //    num_entries: number of sequential command buffer entries in buffer.
+  //    entries_processed: if not 0, is set to the number of entries processed.
+  virtual error::Error DoCommands(unsigned int num_commands,
+                                  const void* buffer,
+                                  int num_entries,
+                                  int* entries_processed);
 
   // Returns a name for a command. Useful for logging / debuging.
   virtual const char* GetCommandName(unsigned int command_id) const = 0;
