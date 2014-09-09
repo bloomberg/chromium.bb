@@ -212,6 +212,9 @@ if (use_system_libsrtp) {
       if (is_android) {
         defines = [ "HAVE_SYS_SOCKET_H" ]
       }
+      if (is_clang) {
+        cflags = [ "-Wno-implicit-function-declaration" ]
+      }
     }
 
     executable("srtp_test_cipher_driver") {

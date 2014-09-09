@@ -44,7 +44,7 @@ class QuicInMemoryCache {
     Response() : response_type_(REGULAR_RESPONSE) {}
     ~Response() {}
 
-    const SpecialResponseType response_type() const { return response_type_; }
+    SpecialResponseType response_type() const { return response_type_; }
     const BalsaHeaders& headers() const { return headers_; }
     const base::StringPiece body() const { return base::StringPiece(body_); }
 

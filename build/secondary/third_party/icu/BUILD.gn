@@ -258,13 +258,20 @@ component("icui18n") {
   configs += [ ":icu_code" ]
   direct_dependent_configs = [ ":icu_config" ]
 
+  cflags = []
+  if (is_android || is_linux) {
+    cflags += [
+      # ICU uses its own deprecated functions.
+      "-Wno-deprecated-declarations",
+    ]
+  }
   if (is_clang) {
     # uspoof.h has a U_NAMESPACE_USE macro. That's a bug,
     # the header should use U_NAMESPACE_BEGIN instead.
     # http://bugs.icu-project.org/trac/ticket/9054
     configs -= [ "//build/config/clang:extra_warnings" ]
 
-    cflags = [
+    cflags += [
       "-Wno-header-hygiene",
       # Looks like a real issue, see http://crbug.com/114660
       "-Wno-return-type-c-linkage",

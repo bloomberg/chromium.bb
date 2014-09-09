@@ -11,7 +11,7 @@
 
 namespace content {
 
-const ui::PlatformCursor WebCursor::GetPlatformCursor() {
+ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (!IsCustom())
     return LoadCursor(NULL, IDC_ARROW);
 

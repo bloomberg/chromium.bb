@@ -133,7 +133,7 @@ class ASH_EXPORT ShelfView : public views::View,
   virtual void EndDrag(bool cancel) OVERRIDE;
 
   // Return the view model for test purposes.
-  const views::ViewModel* const view_model_for_test() const {
+  const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
   }
 

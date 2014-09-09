@@ -11,7 +11,7 @@
 
 namespace content {
 
-const ui::PlatformCursor WebCursor::GetPlatformCursor() {
+ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
     return platform_cursor_;
 

@@ -26,7 +26,7 @@ class ChromeLauncherAppMenuItem {
   const gfx::Image& icon() const { return icon_; }
 
   // Returns true if a separator should be inserted before this item.
-  const bool HasLeadingSeparator() const { return has_leading_separator_; }
+  bool HasLeadingSeparator() const { return has_leading_separator_; }
 
   // Returns true if the item is active.
   virtual bool IsActive() const;

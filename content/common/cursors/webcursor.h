@@ -104,7 +104,7 @@ class CONTENT_EXPORT WebCursor {
 #endif
 
 #if defined(USE_AURA)
-  const ui::PlatformCursor GetPlatformCursor();
+  ui::PlatformCursor GetPlatformCursor();
 
   // Updates |device_scale_factor_| and |rotation_| based on |display|.
   void SetDisplayInfo(const gfx::Display& display);
