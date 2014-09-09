@@ -4,6 +4,10 @@
 
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 
+#include <algorithm>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 
 namespace content {
@@ -29,116 +33,182 @@ AudioMirroringManager::AudioMirroringManager() {
 AudioMirroringManager::~AudioMirroringManager() {}
 
 void AudioMirroringManager::AddDiverter(
-    int render_process_id, int render_view_id, Diverter* diverter) {
+    int render_process_id, int render_frame_id, Diverter* diverter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(diverter);
 
-  // DCHECK(diverter not already in diverters_ under any key)
+  // DCHECK(diverter not already in routes_)
 #ifndef NDEBUG
-  for (DiverterMap::const_iterator it = diverters_.begin();
-       it != diverters_.end(); ++it) {
-    DCHECK_NE(diverter, it->second);
+  for (StreamRoutes::const_iterator it = routes_.begin();
+       it != routes_.end(); ++it) {
+    DCHECK_NE(diverter, it->diverter);
   }
 #endif
+  routes_.push_back(StreamRoutingState(
+      SourceFrameRef(render_process_id, render_frame_id),
+      diverter));
 
-  // Add the diverter to the set of active diverters.
-  const Target target(render_process_id, render_view_id);
-  diverters_.insert(std::make_pair(target, diverter));
+  // Query existing destinations to see whether to immediately start diverting
+  // the stream.
+  std::set<SourceFrameRef> candidates;
+  candidates.insert(routes_.back().source_render_frame);
+  InitiateQueriesToFindNewDestination(NULL, candidates);
+}
 
-  // If a mirroring session is active, start diverting the audio stream
-  // immediately.
-  SessionMap::iterator session_it = sessions_.find(target);
-  if (session_it != sessions_.end()) {
-    diverter->StartDiverting(
-        session_it->second->AddInput(diverter->GetAudioParameters()));
+void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Find and remove the entry from the routing table.  If the stream is being
+  // diverted, it is stopped.
+  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+    if (it->diverter == diverter) {
+      ChangeRoute(&(*it), NULL);
+      routes_.erase(it);
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
+void AudioMirroringManager::StartMirroring(MirroringDestination* destination) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(destination);
+
+  // Insert an entry into the set of active mirroring sessions, if this is a
+  // previously-unknown destination.
+  if (std::find(sessions_.begin(), sessions_.end(), destination) ==
+          sessions_.end()) {
+    sessions_.push_back(destination);
+  }
+
+  // Query the MirroringDestination to see which of the audio streams should be
+  // diverted.
+  std::set<SourceFrameRef> candidates;
+  for (StreamRoutes::const_iterator it = routes_.begin(); it != routes_.end();
+       ++it) {
+    if (!it->destination || it->destination == destination)
+      candidates.insert(it->source_render_frame);
+  }
+  if (!candidates.empty()) {
+    destination->QueryForMatches(
+        candidates,
+        base::Bind(&AudioMirroringManager::UpdateRoutesToDestination,
+                   base::Unretained(this),
+                   destination,
+                   false));
   }
 }
 
-void AudioMirroringManager::RemoveDiverter(
-    int render_process_id, int render_view_id, Diverter* diverter) {
+void AudioMirroringManager::StopMirroring(MirroringDestination* destination) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Stop diverting the audio stream if a mirroring session is active.
-  const Target target(render_process_id, render_view_id);
-  SessionMap::iterator session_it = sessions_.find(target);
-  if (session_it != sessions_.end())
-    diverter->StopDiverting();
+  // Stop diverting each audio stream in the mirroring session being stopped.
+  // Each stopped stream becomes a candidate to be diverted to another
+  // destination.
+  std::set<SourceFrameRef> redivert_candidates;
+  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+    if (it->destination == destination) {
+      ChangeRoute(&(*it), NULL);
+      redivert_candidates.insert(it->source_render_frame);
+    }
+  }
+  if (!redivert_candidates.empty())
+    InitiateQueriesToFindNewDestination(destination, redivert_candidates);
 
-  // Remove the diverter from the set of active diverters.
-  for (DiverterMap::iterator it = diverters_.lower_bound(target);
-       it != diverters_.end() && it->first == target; ++it) {
-    if (it->second == diverter) {
-      diverters_.erase(it);
-      break;
+  // Remove the entry from the set of active mirroring sessions.
+  const Destinations::iterator dest_it =
+      std::find(sessions_.begin(), sessions_.end(), destination);
+  if (dest_it == sessions_.end()) {
+    NOTREACHED();
+    return;
+  }
+  sessions_.erase(dest_it);
+}
+
+void AudioMirroringManager::InitiateQueriesToFindNewDestination(
+    MirroringDestination* old_destination,
+    const std::set<SourceFrameRef>& candidates) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (Destinations::const_iterator it = sessions_.begin();
+       it != sessions_.end(); ++it) {
+    if (*it != old_destination) {
+      (*it)->QueryForMatches(
+          candidates,
+          base::Bind(&AudioMirroringManager::UpdateRoutesToDestination,
+                     base::Unretained(this),
+                     *it,
+                     true));
     }
   }
 }
 
-void AudioMirroringManager::StartMirroring(
-    int render_process_id, int render_view_id,
-    MirroringDestination* destination) {
+void AudioMirroringManager::UpdateRoutesToDestination(
+    MirroringDestination* destination,
+    bool add_only,
+    const std::set<SourceFrameRef>& matches) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(destination);
 
-  // Insert an entry into the set of active mirroring sessions.  If a mirroring
-  // session is already active for |render_process_id| + |render_view_id|,
-  // replace the entry.
-  const Target target(render_process_id, render_view_id);
-  SessionMap::iterator session_it = sessions_.find(target);
-  MirroringDestination* old_destination;
-  if (session_it == sessions_.end()) {
-    old_destination = NULL;
-    sessions_.insert(std::make_pair(target, destination));
-
-    DVLOG(1) << "Start mirroring render_process_id:render_view_id="
-             << render_process_id << ':' << render_view_id
-             << " --> MirroringDestination@" << destination;
-  } else {
-    old_destination = session_it->second;
-    session_it->second = destination;
-
-    DVLOG(1) << "Switch mirroring of render_process_id:render_view_id="
-             << render_process_id << ':' << render_view_id
-             << "  MirroringDestination@" << old_destination
-             << " --> MirroringDestination@" << destination;
+  if (std::find(sessions_.begin(), sessions_.end(), destination) ==
+          sessions_.end()) {
+    return;  // Query result callback invoked after StopMirroring().
   }
 
-  // Divert audio streams coming from |target| to |destination|.  If streams
-  // were already diverted to the |old_destination|, remove them.
-  for (DiverterMap::iterator it = diverters_.lower_bound(target);
-       it != diverters_.end() && it->first == target; ++it) {
-    Diverter* const diverter = it->second;
-    if (old_destination)
-      diverter->StopDiverting();
-    diverter->StartDiverting(
-        destination->AddInput(diverter->GetAudioParameters()));
+  DVLOG(1) << (add_only ? "Add " : "Replace with ") << matches.size()
+           << " routes to MirroringDestination@" << destination;
+
+  // Start/stop diverting based on |matches|.  Any stopped stream becomes a
+  // candidate to be diverted to another destination.
+  std::set<SourceFrameRef> redivert_candidates;
+  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+    if (matches.find(it->source_render_frame) != matches.end()) {
+      // Only change the route if the stream is not already being diverted.
+      if (!it->destination)
+        ChangeRoute(&(*it), destination);
+    } else if (!add_only) {
+      // Only stop diverting if the stream is currently routed to |destination|.
+      if (it->destination == destination) {
+        ChangeRoute(&(*it), NULL);
+        redivert_candidates.insert(it->source_render_frame);
+      }
+    }
+  }
+  if (!redivert_candidates.empty())
+    InitiateQueriesToFindNewDestination(destination, redivert_candidates);
+}
+
+// static
+void AudioMirroringManager::ChangeRoute(
+    StreamRoutingState* route, MirroringDestination* new_destination) {
+  if (route->destination == new_destination)
+    return;  // No change.
+
+  if (route->destination) {
+    DVLOG(1) << "Stop diverting render_process_id:render_frame_id="
+             << route->source_render_frame.first << ':'
+             << route->source_render_frame.second
+             << " --> MirroringDestination@" << route->destination;
+    route->diverter->StopDiverting();
+    route->destination = NULL;
+  }
+
+  if (new_destination) {
+      DVLOG(1) << "Start diverting of render_process_id:render_frame_id="
+               << route->source_render_frame.first << ':'
+               << route->source_render_frame.second
+               << " --> MirroringDestination@" << new_destination;
+    route->diverter->StartDiverting(
+        new_destination->AddInput(route->diverter->GetAudioParameters()));
+    route->destination = new_destination;
   }
 }
 
-void AudioMirroringManager::StopMirroring(
-    int render_process_id, int render_view_id,
-    MirroringDestination* destination) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+AudioMirroringManager::StreamRoutingState::StreamRoutingState(
+    const SourceFrameRef& source_frame, Diverter* stream_diverter)
+  : source_render_frame(source_frame),
+    diverter(stream_diverter),
+    destination(NULL) {}
 
-  // Stop mirroring if there is an active session *and* the destination
-  // matches.
-  const Target target(render_process_id, render_view_id);
-  SessionMap::iterator session_it = sessions_.find(target);
-  if (session_it == sessions_.end() || destination != session_it->second)
-    return;
-
-  DVLOG(1) << "Stop mirroring render_process_id:render_view_id="
-           << render_process_id << ':' << render_view_id
-           << " --> MirroringDestination@" << destination;
-
-  // Stop diverting each audio stream in the mirroring session being stopped.
-  for (DiverterMap::iterator it = diverters_.lower_bound(target);
-       it != diverters_.end() && it->first == target; ++it) {
-    it->second->StopDiverting();
-  }
-
-  // Remove the entry from the set of active mirroring sessions.
-  sessions_.erase(session_it);
-}
+AudioMirroringManager::StreamRoutingState::~StreamRoutingState() {}
 
 }  // namespace content

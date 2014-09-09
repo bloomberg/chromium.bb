@@ -3,15 +3,12 @@
 // found in the LICENSE file.
 //
 // An AudioInputStream which provides a loop-back of all audio output generated
-// by the RenderView associated with a WebContents instance.  The single stream
-// of data is produced by format-converting and mixing all audio output from a
-// RenderView.  In other words, WebContentsAudioInputStream provides tab-level
+// by the entire RenderFrame tree associated with a WebContents instance.  The
+// single stream of data is produced by format-converting and mixing all audio
+// output streams.  As the RenderFrameHost tree mutates (e.g., due to page
+// navigations, or crashes/reloads), the stream will continue without
+// interruption.  In other words, WebContentsAudioInputStream provides tab-level
 // audio mirroring.
-//
-// The implementation observes a WebContents instance (which represents a
-// browser tab) so that it can track the replacement of RenderViews due to
-// navigation, crash/reload, etc. events; and take appropriate actions to
-// provide a seamless, uninterrupted mirroring experience.
 
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_

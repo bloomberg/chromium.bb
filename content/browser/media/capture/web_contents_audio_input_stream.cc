@@ -15,8 +15,11 @@
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "media/audio/virtual_audio_input_stream.h"
 #include "media/audio/virtual_audio_output_stream.h"
+#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
@@ -52,6 +55,8 @@ class WebContentsAudioInputStream::Impl
  private:
   friend class base::RefCountedThreadSafe<WebContentsAudioInputStream::Impl>;
 
+  typedef AudioMirroringManager::SourceFrameRef SourceFrameRef;
+
   enum State {
     CONSTRUCTED,
     OPENED,
@@ -61,18 +66,20 @@ class WebContentsAudioInputStream::Impl
 
   virtual ~Impl();
 
-  // Returns true if the mirroring target has been permanently lost.
-  bool IsTargetLost() const;
-
   // Notifies the consumer callback that the stream is now dead.
   void ReportError();
 
-  // Start/Stop mirroring by posting a call to AudioMirroringManager on the IO
-  // BrowserThread.
+  // (Re-)Start/Stop mirroring by posting a call to AudioMirroringManager on the
+  // IO BrowserThread.
   void StartMirroring();
   void StopMirroring();
 
   // AudioMirroringManager::MirroringDestination implementation
+  virtual void QueryForMatches(
+      const std::set<SourceFrameRef>& candidates,
+      const MatchesCallback& results_callback) OVERRIDE;
+  void QueryForMatchesOnUIThread(const std::set<SourceFrameRef>& candidates,
+                                 const MatchesCallback& results_callback);
   virtual media::AudioOutputStream* AddInput(
       const media::AudioParameters& params) OVERRIDE;
 
@@ -81,7 +88,7 @@ class WebContentsAudioInputStream::Impl
 
   // Called by WebContentsTracker when the target of the audio mirroring has
   // changed.
-  void OnTargetChanged(int render_process_id, int render_view_id);
+  void OnTargetChanged(RenderWidgetHost* target);
 
   // Injected dependencies.
   const int initial_render_process_id_;
@@ -94,10 +101,9 @@ class WebContentsAudioInputStream::Impl
 
   State state_;
 
-  // Current audio mirroring target.
-  bool target_identified_;
-  int target_render_process_id_;
-  int target_render_view_id_;
+  // Set to true if |tracker_| reports a NULL target, which indicates the target
+  // is permanently lost.
+  bool is_target_lost_;
 
   // Current callback used to consume the resulting mixed audio data.
   AudioInputCallback* callback_;
@@ -118,9 +124,7 @@ WebContentsAudioInputStream::Impl::Impl(
       tracker_(tracker),
       mixer_stream_(mixer_stream),
       state_(CONSTRUCTED),
-      target_identified_(false),
-      target_render_process_id_(-1),
-      target_render_view_id_(-1),
+      is_target_lost_(false),
       callback_(NULL) {
   DCHECK(mirroring_manager_);
   DCHECK(tracker_.get());
@@ -160,7 +164,7 @@ void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
     return;
 
   callback_ = callback;
-  if (IsTargetLost()) {
+  if (is_target_lost_) {
     ReportError();
     callback_ = NULL;
     return;
@@ -183,8 +187,7 @@ void WebContentsAudioInputStream::Impl::Stop() {
   mixer_stream_->Stop();
   callback_ = NULL;
 
-  if (!IsTargetLost())
-    StopMirroring();
+  StopMirroring();
 }
 
 void WebContentsAudioInputStream::Impl::Close() {
@@ -200,13 +203,6 @@ void WebContentsAudioInputStream::Impl::Close() {
 
   DCHECK_EQ(CONSTRUCTED, state_);
   state_ = CLOSED;
-}
-
-bool WebContentsAudioInputStream::Impl::IsTargetLost() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!target_identified_)
-    return false;
-  return target_render_process_id_ <= 0 || target_render_view_id_ <= 0;
 }
 
 void WebContentsAudioInputStream::Impl::ReportError() {
@@ -225,7 +221,6 @@ void WebContentsAudioInputStream::Impl::StartMirroring() {
       FROM_HERE,
       base::Bind(&AudioMirroringManager::StartMirroring,
                  base::Unretained(mirroring_manager_),
-                 target_render_process_id_, target_render_view_id_,
                  make_scoped_refptr(this)));
 }
 
@@ -237,8 +232,42 @@ void WebContentsAudioInputStream::Impl::StopMirroring() {
       FROM_HERE,
       base::Bind(&AudioMirroringManager::StopMirroring,
                  base::Unretained(mirroring_manager_),
-                 target_render_process_id_, target_render_view_id_,
                  make_scoped_refptr(this)));
+}
+
+void WebContentsAudioInputStream::Impl::QueryForMatches(
+    const std::set<SourceFrameRef>& candidates,
+    const MatchesCallback& results_callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&Impl::QueryForMatchesOnUIThread,
+                 this,
+                 candidates,
+                 media::BindToCurrentLoop(results_callback)));
+}
+
+void WebContentsAudioInputStream::Impl::QueryForMatchesOnUIThread(
+    const std::set<SourceFrameRef>& candidates,
+    const MatchesCallback& results_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::set<SourceFrameRef> matches;
+  WebContents* const contents = tracker_->web_contents();
+  if (contents) {
+    // Add each ID to |matches| if it maps to a RenderFrameHost that maps to the
+    // currently-tracked WebContents.
+    for (std::set<SourceFrameRef>::const_iterator i = candidates.begin();
+         i != candidates.end(); ++i) {
+      WebContents* const contents_containing_frame =
+          WebContents::FromRenderFrameHost(
+              RenderFrameHost::FromID(i->first, i->second));
+      if (contents_containing_frame == contents)
+        matches.insert(*i);
+    }
+  }
+
+  results_callback.Run(matches);
 }
 
 media::AudioOutputStream* WebContentsAudioInputStream::Impl::AddInput(
@@ -257,29 +286,14 @@ void WebContentsAudioInputStream::Impl::ReleaseInput(
   delete stream;
 }
 
-void WebContentsAudioInputStream::Impl::OnTargetChanged(int render_process_id,
-                                                        int render_view_id) {
+void WebContentsAudioInputStream::Impl::OnTargetChanged(
+    RenderWidgetHost* target) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (target_identified_ &&
-      target_render_process_id_ == render_process_id &&
-      target_render_view_id_ == render_view_id) {
-    return;
-  }
-
-  DVLOG(1) << "Target RenderView has changed from "
-           << target_render_process_id_ << ':' << target_render_view_id_
-           << " to " << render_process_id << ':' << render_view_id;
-
-  if (state_ == MIRRORING)
-    StopMirroring();
-
-  target_identified_ = true;
-  target_render_process_id_ = render_process_id;
-  target_render_view_id_ = render_view_id;
+  is_target_lost_ = !target;
 
   if (state_ == MIRRORING) {
-    if (IsTargetLost()) {
+    if (is_target_lost_) {
       ReportError();
       Stop();
     } else {
@@ -304,7 +318,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
   return new WebContentsAudioInputStream(
       render_process_id, main_render_frame_id,
       audio_mirroring_manager,
-      new WebContentsTracker(),
+      new WebContentsTracker(false),
       new media::VirtualAudioInputStream(
           params, worker_task_runner,
           media::VirtualAudioInputStream::AfterCloseCallback()));

@@ -41,9 +41,9 @@ namespace content {
 namespace {
 
 const int kRenderProcessId = 123;
-const int kRenderViewId = 456;
+const int kRenderFrameId = 456;
 const int kAnotherRenderProcessId = 789;
-const int kAnotherRenderViewId = 1;
+const int kAnotherRenderFrameId = 1;
 
 const AudioParameters& TestAudioParameters() {
   static const AudioParameters params(
@@ -59,12 +59,8 @@ class MockAudioMirroringManager : public AudioMirroringManager {
   MockAudioMirroringManager() : AudioMirroringManager() {}
   virtual ~MockAudioMirroringManager() {}
 
-  MOCK_METHOD3(StartMirroring,
-               void(int render_process_id, int render_view_id,
-                    MirroringDestination* destination));
-  MOCK_METHOD3(StopMirroring,
-               void(int render_process_id, int render_view_id,
-                    MirroringDestination* destination));
+  MOCK_METHOD1(StartMirroring, void(MirroringDestination* destination));
+  MOCK_METHOD1(StopMirroring, void(MirroringDestination* destination));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioMirroringManager);
@@ -72,10 +68,10 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 
 class MockWebContentsTracker : public WebContentsTracker {
  public:
-  MockWebContentsTracker() : WebContentsTracker() {}
+  MockWebContentsTracker() : WebContentsTracker(false) {}
 
   MOCK_METHOD3(Start,
-               void(int render_process_id, int render_view_id,
+               void(int render_process_id, int render_frame_id,
                     const ChangeCallback& callback));
   MOCK_METHOD0(Stop, void());
 
@@ -187,7 +183,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
         wcais_(NULL),
         destination_(NULL),
         current_render_process_id_(kRenderProcessId),
-        current_render_view_id_(kRenderViewId),
+        current_render_frame_id_(kRenderFrameId),
         on_data_event_(false, false) {
     audio_thread_.Start();
   }
@@ -210,16 +206,19 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     EXPECT_CALL(*mock_vais_, Close());  // At Close() time.
 
     ASSERT_EQ(kRenderProcessId, current_render_process_id_);
-    ASSERT_EQ(kRenderViewId, current_render_view_id_);
-    EXPECT_CALL(*mock_tracker_.get(), Start(kRenderProcessId, kRenderViewId, _))
+    ASSERT_EQ(kRenderFrameId, current_render_frame_id_);
+    EXPECT_CALL(*mock_tracker_.get(),
+                Start(kRenderProcessId, kRenderFrameId, _))
         .WillOnce(DoAll(
              SaveArg<2>(&change_callback_),
-             WithArgs<0, 1>(Invoke(&change_callback_,
-                                   &WebContentsTracker::ChangeCallback::Run))));
+             WithArgs<0, 1>(Invoke(this,
+                                   &WebContentsAudioInputStreamTest::
+                                       SimulateChangeCallback))));
+
     EXPECT_CALL(*mock_tracker_.get(), Stop());  // At Close() time.
 
     wcais_ = new WebContentsAudioInputStream(
-        current_render_process_id_, current_render_view_id_,
+        current_render_process_id_, current_render_frame_id_,
         mock_mirroring_manager_.get(),
         mock_tracker_, mock_vais_);
     wcais_->Open();
@@ -229,13 +228,11 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     EXPECT_CALL(*mock_vais_, Start(&mock_input_callback_));
     EXPECT_CALL(*mock_vais_, Stop());  // At Stop() time.
 
-    EXPECT_CALL(*mock_mirroring_manager_,
-                StartMirroring(kRenderProcessId, kRenderViewId, NotNull()))
-        .WillOnce(SaveArg<2>(&destination_))
+    EXPECT_CALL(*mock_mirroring_manager_, StartMirroring(NotNull()))
+        .WillOnce(SaveArg<0>(&destination_))
         .RetiresOnSaturation();
     // At Stop() time, or when the mirroring target changes:
-    EXPECT_CALL(*mock_mirroring_manager_,
-                StopMirroring(kRenderProcessId, kRenderViewId, NotNull()))
+    EXPECT_CALL(*mock_mirroring_manager_, StopMirroring(NotNull()))
         .WillOnce(Assign(
             &destination_,
             static_cast<AudioMirroringManager::MirroringDestination*>(NULL)))
@@ -309,38 +306,24 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     const int next_render_process_id =
         current_render_process_id_ == kRenderProcessId ?
             kAnotherRenderProcessId : kRenderProcessId;
-    const int next_render_view_id =
-        current_render_view_id_ == kRenderViewId ?
-            kAnotherRenderViewId : kRenderViewId;
+    const int next_render_frame_id =
+        current_render_frame_id_ == kRenderFrameId ?
+            kAnotherRenderFrameId : kRenderFrameId;
 
-    EXPECT_CALL(*mock_mirroring_manager_,
-                StartMirroring(next_render_process_id, next_render_view_id,
-                               NotNull()))
-        .WillOnce(SaveArg<2>(&destination_))
-        .RetiresOnSaturation();
-    // At Stop() time, or when the mirroring target changes:
-    EXPECT_CALL(*mock_mirroring_manager_,
-                StopMirroring(next_render_process_id, next_render_view_id,
-                              NotNull()))
-        .WillOnce(Assign(
-            &destination_,
-            static_cast<AudioMirroringManager::MirroringDestination*>(NULL)))
+    EXPECT_CALL(*mock_mirroring_manager_, StartMirroring(NotNull()))
+        .WillOnce(SaveArg<0>(&destination_))
         .RetiresOnSaturation();
 
-    // Simulate OnTargetChange() callback from WebContentsTracker.
-    EXPECT_FALSE(change_callback_.is_null());
-    change_callback_.Run(next_render_process_id, next_render_view_id);
+    SimulateChangeCallback(next_render_process_id, next_render_frame_id);
 
     current_render_process_id_ = next_render_process_id;
-    current_render_view_id_ = next_render_view_id;
+    current_render_frame_id_ = next_render_frame_id;
   }
 
   void LoseMirroringTarget() {
     EXPECT_CALL(mock_input_callback_, OnError(_));
 
-    // Simulate OnTargetChange() callback from WebContentsTracker.
-    EXPECT_FALSE(change_callback_.is_null());
-    change_callback_.Run(-1, -1);
+    SimulateChangeCallback(-1, -1);
   }
 
   void Stop() {
@@ -370,6 +353,17 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
  private:
+  void SimulateChangeCallback(int render_process_id, int render_frame_id) {
+    ASSERT_FALSE(change_callback_.is_null());
+    if (render_process_id == -1 || render_frame_id == -1) {
+      change_callback_.Run(NULL);
+    } else {
+      // For our tests, any non-NULL value will suffice since it will not be
+      // dereferenced.
+      change_callback_.Run(reinterpret_cast<RenderWidgetHost*>(0xdeadbee5));
+    }
+  }
+
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
   base::Thread audio_thread_;
 
@@ -392,9 +386,9 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   // to simulate: 1) calls to AddInput(); and 2) diverting audio data.
   AudioMirroringManager::MirroringDestination* destination_;
 
-  // Current target RenderView.  These get flipped in ChangedMirroringTarget().
+  // Current target RenderFrame.  These get flipped in ChangedMirroringTarget().
   int current_render_process_id_;
-  int current_render_view_id_;
+  int current_render_frame_id_;
 
   // Streams provided by calls to WebContentsAudioInputStream::AddInput().  Each
   // is started with a simulated source of audio data.

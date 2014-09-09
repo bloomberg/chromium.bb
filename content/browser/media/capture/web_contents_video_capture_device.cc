@@ -13,7 +13,7 @@
 //      video encoder -- is the performance bottleneck, and that the rate of
 //      frame capture should be throttled back.
 //
-//   2. Capture: A bitmap is snapshotted/copied from the RenderView's backing
+//   2. Capture: A bitmap is snapshotted/copied from the RenderWidget's backing
 //      store. This is initiated on the UI BrowserThread, and often occurs
 //      asynchronously. Where supported, the GPU scales and color converts
 //      frames to our desired size, and the readback happens directly into the
@@ -65,16 +65,18 @@
 #include "content/browser/media/capture/content_video_capture_device_core.h"
 #include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
+#include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/image_operations.h"
@@ -193,8 +195,11 @@ class ContentCaptureSubscription : public content::NotificationObserver {
  private:
   void OnTimer();
 
+  // Maintain a weak reference to the RenderWidgetHost (via its routing ID),
+  // since the instance could be destroyed externally during the lifetime of
+  // |this|.
   const int render_process_id_;
-  const int render_view_id_;
+  const int render_widget_id_;
 
   VideoFrameDeliveryLog delivery_log_;
   FrameSubscriber paint_subscriber_;
@@ -219,16 +224,9 @@ void RenderVideoFrame(const SkBitmap& input,
                       const scoped_refptr<media::VideoFrame>& output,
                       const base::Callback<void(bool)>& done_cb);
 
-// Keeps track of the RenderView to be sourced, and executes copying of the
-// backing store on the UI BrowserThread.
-//
-// TODO(nick): It would be nice to merge this with WebContentsTracker, but its
-// implementation is currently asynchronous -- in our case, the "rvh changed"
-// notification would get posted back to the UI thread and processed later, and
-// this seems disadvantageous.
-class WebContentsCaptureMachine
-    : public VideoCaptureMachine,
-      public WebContentsObserver {
+// Renews capture subscriptions based on feedback from WebContentsTracker, and
+// also executes copying of the backing store on the UI BrowserThread.
+class WebContentsCaptureMachine : public VideoCaptureMachine {
  public:
   WebContentsCaptureMachine(int render_process_id, int main_render_frame_id);
   virtual ~WebContentsCaptureMachine();
@@ -248,43 +246,11 @@ class WebContentsCaptureMachine
                const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
                    deliver_frame_cb);
 
-  // content::WebContentsObserver implementation.
-  virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
-    fullscreen_widget_id_ = routing_id;
-    RenewFrameSubscription();
-  }
-
-  virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE {
-    DCHECK_EQ(fullscreen_widget_id_, routing_id);
-    fullscreen_widget_id_ = MSG_ROUTING_NONE;
-    RenewFrameSubscription();
-  }
-
-  virtual void RenderViewReady() OVERRIDE {
-    RenewFrameSubscription();
-  }
-
-  virtual void AboutToNavigateRenderView(RenderViewHost* rvh) OVERRIDE {
-    RenewFrameSubscription();
-  }
-
-  virtual void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) OVERRIDE {
-    RenewFrameSubscription();
-  }
-
-  virtual void WebContentsDestroyed() OVERRIDE;
-
  private:
+  bool IsStarted() const;
+
   // Computes the preferred size of the target RenderWidget for optimal capture.
   gfx::Size ComputeOptimalTargetSize() const;
-
-  // Starts observing the web contents, returning false if lookup fails.
-  bool StartObservingWebContents();
-
-  // Helper function to determine the view that we are currently tracking.
-  RenderWidgetHost* GetTarget() const;
 
   // Response callback for RenderWidgetHost::CopyFromBackingStore().
   void DidCopyFromBackingStore(
@@ -302,14 +268,16 @@ class WebContentsCaptureMachine
           deliver_frame_cb,
       bool success);
 
-  // Remove the old subscription, and start a new one. This should be called
-  // after any change to the WebContents that affects the RenderWidgetHost or
-  // attached views.
-  void RenewFrameSubscription();
+  // Remove the old subscription, and start a new one if |rwh| is not NULL.
+  void RenewFrameSubscription(RenderWidgetHost* rwh);
 
   // Parameters saved in constructor.
   const int initial_render_process_id_;
   const int initial_main_render_frame_id_;
+
+  // Tracks events and calls back to RenewFrameSubscription() to maintain
+  // capture on the correct RenderWidgetHost.
+  const scoped_refptr<WebContentsTracker> tracker_;
 
   // A dedicated worker thread on which SkBitmap->VideoFrame conversion will
   // occur. Only used when this activity cannot be done on the GPU.
@@ -320,10 +288,6 @@ class WebContentsCaptureMachine
 
   // Video capture parameters that this machine is started with.
   media::VideoCaptureParams capture_params_;
-
-  // Routing ID of any active fullscreen render widget or MSG_ROUTING_NONE
-  // otherwise.
-  int fullscreen_widget_id_;
 
   // Last known RenderView size.
   gfx::Size last_view_size_;
@@ -363,7 +327,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
     const CaptureCallback& capture_callback)
     : render_process_id_(source.GetProcess()->GetID()),
-      render_view_id_(source.GetRoutingID()),
+      render_widget_id_(source.GetRoutingID()),
       delivery_log_(),
       paint_subscriber_(VideoCaptureOracle::kSoftwarePaint, oracle_proxy,
                         &delivery_log_),
@@ -373,8 +337,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
       timer_(true, true) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      source.GetView());
+  RenderWidgetHostView* const view = source.GetView();
 
   // Subscribe to accelerated presents. These will be serviced directly by the
   // oracle.
@@ -407,14 +370,11 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (kAcceleratedSubscriberIsSupported) {
-    RenderViewHost* source = RenderViewHost::FromID(render_process_id_,
-                                                    render_view_id_);
-    if (source) {
-      RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-          source->GetView());
-      if (view)
-        view->EndFrameSubscription();
-    }
+    RenderWidgetHost* const source =
+        RenderWidgetHost::FromID(render_process_id_, render_widget_id_);
+    RenderWidgetHostView* const view = source ? source->GetView() : NULL;
+    if (view)
+      view->EndFrameSubscription();
   }
 }
 
@@ -578,16 +538,21 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(int render_process_id,
                                                      int main_render_frame_id)
     : initial_render_process_id_(render_process_id),
       initial_main_render_frame_id_(main_render_frame_id),
-      fullscreen_widget_id_(MSG_ROUTING_NONE),
+      tracker_(new WebContentsTracker(true)),
       weak_ptr_factory_(this) {}
 
 WebContentsCaptureMachine::~WebContentsCaptureMachine() {}
+
+bool WebContentsCaptureMachine::IsStarted() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return weak_ptr_factory_.HasWeakPtrs();
+}
 
 bool WebContentsCaptureMachine::Start(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!weak_ptr_factory_.HasWeakPtrs());  // Should not be started.
+  DCHECK(!IsStarted());
 
   DCHECK(oracle_proxy.get());
   oracle_proxy_ = oracle_proxy;
@@ -600,26 +565,31 @@ bool WebContentsCaptureMachine::Start(
     return false;
   }
 
-  if (!StartObservingWebContents()) {
-    DVLOG(1) << "Failed to observe web contents.";
-    render_thread_.reset();
-    return false;
-  }
+  // Note: Creation of the first WeakPtr in the following statement will cause
+  // IsStarted() to return true from now on.
+  tracker_->Start(initial_render_process_id_, initial_main_render_frame_id_,
+                  base::Bind(&WebContentsCaptureMachine::RenewFrameSubscription,
+                             weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
 
 void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  subscription_.reset();
-  if (web_contents()) {
-    web_contents()->DecrementCapturerCount();
-    Observe(NULL);
+
+  if (!IsStarted()) {
+    callback.Run();
+    return;
   }
 
-  // Any callback that intend to use render_thread_ will not work after it is
-  // passed.
+  // The following cancels any outstanding callbacks and causes IsStarted() to
+  // return false from here onward.
   weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // Note: RenewFrameSubscription() must be called before stopping |tracker_| so
+  // the web_contents() can be notified that the capturing is ending.
+  RenewFrameSubscription(NULL);
+  tracker_->Stop();
 
   // The render thread cannot be stopped on the UI thread, so post a message
   // to the thread pool used for blocking operations.
@@ -638,10 +608,10 @@ void WebContentsCaptureMachine::Capture(
         deliver_frame_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderWidgetHost* rwh = GetTarget();
+  RenderWidgetHost* rwh = tracker_->GetTargetRenderWidgetHost();
   RenderWidgetHostViewBase* view =
       rwh ? static_cast<RenderWidgetHostViewBase*>(rwh->GetView()) : NULL;
-  if (!view || !rwh) {
+  if (!view) {
     deliver_frame_cb.Run(base::TimeTicks(), false);
     return;
   }
@@ -692,7 +662,7 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
   // render widget to the "preferred size," the widget will be physically
   // rendered at the exact capture size, thereby eliminating unnecessary scaling
   // operations in the graphics pipeline.
-  RenderWidgetHost* const rwh = GetTarget();
+  RenderWidgetHost* const rwh = tracker_->GetTargetRenderWidgetHost();
   RenderWidgetHostView* const rwhv = rwh ? rwh->GetView() : NULL;
   if (rwhv) {
     const gfx::NativeView view = rwhv->GetNativeView();
@@ -711,60 +681,6 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
 
   VLOG(1) << "Computed optimal target size: " << optimal_size.ToString();
   return optimal_size;
-}
-
-bool WebContentsCaptureMachine::StartObservingWebContents() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Look-up the RenderFrameHost and, from that, the WebContents that wraps it.
-  // If successful, begin observing the WebContents instance.
-  //
-  // Why this can be unsuccessful: The request for mirroring originates in a
-  // render process, and this request is based on the current main RenderFrame
-  // associated with a tab.  However, by the time we get up-and-running here,
-  // there have been multiple back-and-forth IPCs between processes, as well as
-  // a bit of indirection across threads.  It's easily possible that, in the
-  // meantime, the original RenderFrame may have gone away.
-  Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(
-      initial_render_process_id_, initial_main_render_frame_id_)));
-  DVLOG_IF(1, !web_contents())
-      << "Could not find WebContents associated with main RenderFrameHost "
-      << "referenced by render_process_id=" << initial_render_process_id_
-      << ", routing_id=" << initial_main_render_frame_id_;
-
-  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
-  if (contents) {
-    contents->IncrementCapturerCount(ComputeOptimalTargetSize());
-    fullscreen_widget_id_ = contents->GetFullscreenWidgetRoutingID();
-    RenewFrameSubscription();
-    return true;
-  }
-  return false;
-}
-
-void WebContentsCaptureMachine::WebContentsDestroyed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  subscription_.reset();
-  web_contents()->DecrementCapturerCount();
-  oracle_proxy_->ReportError("WebContentsDestroyed()");
-}
-
-RenderWidgetHost* WebContentsCaptureMachine::GetTarget() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!web_contents())
-    return NULL;
-
-  RenderWidgetHost* rwh = NULL;
-  if (fullscreen_widget_id_ != MSG_ROUTING_NONE) {
-    RenderProcessHost* process = web_contents()->GetRenderProcessHost();
-    if (process)
-      rwh = RenderWidgetHost::FromID(process->GetID(), fullscreen_widget_id_);
-  } else {
-    rwh = web_contents()->GetRenderViewHost();
-  }
-
-  return rwh;
 }
 
 void WebContentsCaptureMachine::DidCopyFromBackingStore(
@@ -809,15 +725,31 @@ void WebContentsCaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
   deliver_frame_cb.Run(start_time, success);
 }
 
-void WebContentsCaptureMachine::RenewFrameSubscription() {
+void WebContentsCaptureMachine::RenewFrameSubscription(RenderWidgetHost* rwh) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Always destroy the old subscription before creating a new one.
+  const bool had_subscription = !!subscription_;
   subscription_.reset();
 
-  RenderWidgetHost* rwh = GetTarget();
-  if (!rwh || !rwh->GetView())
+  DVLOG(1) << "Renewing frame subscription to RWH@" << rwh
+           << ", had_subscription=" << had_subscription;
+
+  if (!rwh) {
+    if (had_subscription && tracker_->web_contents())
+      tracker_->web_contents()->DecrementCapturerCount();
+    if (IsStarted()) {
+      // Tracking of WebContents and/or its main frame has failed before Stop()
+      // was called, so report this as an error:
+      oracle_proxy_->ReportError("WebContents and/or main frame are gone.");
+    }
     return;
+  }
+
+  if (!had_subscription && tracker_->web_contents()) {
+    tracker_->web_contents()->IncrementCapturerCount(
+        ComputeOptimalTargetSize());
+  }
 
   subscription_.reset(new ContentCaptureSubscription(*rwh, oracle_proxy_,
       base::Bind(&WebContentsCaptureMachine::Capture,

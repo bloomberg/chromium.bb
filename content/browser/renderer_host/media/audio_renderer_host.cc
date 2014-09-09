@@ -380,7 +380,7 @@ void AudioRendererHost::OnCreateStream(
       reader.PassAs<media::AudioOutputController::SyncReader>()));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(
-        render_process_id_, entry->render_view_id(), entry->controller());
+        render_process_id_, entry->render_frame_id(), entry->controller());
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
   audio_log_->OnCreated(stream_id, params, output_device_id);
@@ -445,10 +445,8 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
   audio_entries_.erase(i);
 
   media::AudioOutputController* const controller = entry->controller();
-  if (mirroring_manager_) {
-    mirroring_manager_->RemoveDiverter(
-        render_process_id_, entry->render_view_id(), controller);
-  }
+  if (mirroring_manager_)
+    mirroring_manager_->RemoveDiverter(controller);
   controller->Close(
       base::Bind(&AudioRendererHost::DeleteEntry, this, base::Passed(&entry)));
   audio_log_->OnClosed(stream_id);

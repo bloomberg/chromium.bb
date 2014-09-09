@@ -16,19 +16,15 @@ namespace content {
 class ContentVideoCaptureDeviceCore;
 
 // A virtualized VideoCaptureDevice that mirrors the displayed contents of a
-// tab (accessed via its associated WebContents instance), producing a stream of
-// video frames.
+// WebContents (i.e., the composition of an entire render frame tree), producing
+// a stream of video frames.
 //
 // An instance is created by providing a device_id.  The device_id contains
 // information necessary for finding a WebContents instance.  From then on,
-// WebContentsVideoCaptureDevice will capture from whatever render view is
-// currently associated with that WebContents instance.  This allows the
-// underlying render view to be swapped out (e.g., due to navigation or
-// crashes/reloads), without any interruption in capturing.
-//
-// TODO(miu): In a soon upcoming change, the cross-site isolation migration of
-// this code will be completed such that the main RenderFrameHost is tracked
-// instead of the RenderViewHost.
+// WebContentsVideoCaptureDevice will capture from the RenderWidgetHost that
+// encompasses the currently active RenderFrameHost tree for that that
+// WebContents instance.  As the RenderFrameHost tree mutates (e.g., due to page
+// navigations, or crashes/reloads), capture will continue without interruption.
 class CONTENT_EXPORT WebContentsVideoCaptureDevice
     : public media::VideoCaptureDevice {
  public:

@@ -43,12 +43,9 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 
   MOCK_METHOD3(AddDiverter,
                void(int render_process_id,
-                    int render_view_id,
+                    int render_frame_id,
                     Diverter* diverter));
-  MOCK_METHOD3(RemoveDiverter,
-               void(int render_process_id,
-                    int render_view_id,
-                    Diverter* diverter));
+  MOCK_METHOD1(RemoveDiverter, void(Diverter* diverter));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioMirroringManager);
@@ -176,7 +173,7 @@ class AudioRendererHostTest : public testing::Test {
     EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _));
 
     EXPECT_CALL(mirroring_manager_,
-                AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
+                AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()))
         .RetiresOnSaturation();
 
     // Send a create stream message to the audio output stream and wait until
@@ -206,8 +203,7 @@ class AudioRendererHostTest : public testing::Test {
 
     // At some point in the future, a corresponding RemoveDiverter() call must
     // be made.
-    EXPECT_CALL(mirroring_manager_,
-                RemoveDiverter(kRenderProcessId, kRenderViewId, NotNull()))
+    EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()))
         .RetiresOnSaturation();
     SyncWithAudioThread();
   }
