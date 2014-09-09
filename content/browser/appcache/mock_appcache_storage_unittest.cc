@@ -469,7 +469,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   const int64 kResponseId1 = 1;
   const int64 kResponseId2 = 2;
 
-  Manifest manifest;
+  AppCacheManifest manifest;
   manifest.fallback_namespaces.push_back(
       AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
                 kFallbackEntryUrl1, false));
@@ -581,7 +581,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   const GURL kOnlineNamespaceUrl("http://blah/online_namespace");
   const int64 kResponseId = 1;
 
-  Manifest manifest;
+  AppCacheManifest manifest;
   manifest.online_whitelist_namespaces.push_back(
       AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl,
                 GURL(), false));

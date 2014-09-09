@@ -70,15 +70,15 @@ enum InterceptVerb {
   UNKNOWN_VERB,
 };
 
-Manifest::Manifest()
+AppCacheManifest::AppCacheManifest()
     : online_whitelist_all(false),
       did_ignore_intercept_namespaces(false) {
 }
 
-Manifest::~Manifest() {}
+AppCacheManifest::~AppCacheManifest() {}
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
-                   ParseMode parse_mode, Manifest& manifest) {
+                   ParseMode parse_mode, AppCacheManifest& manifest) {
   // This is an implementation of the parsing algorithm specified in
   // the HTML5 offline web application docs:
   //   http://www.w3.org/TR/html5/offline.html

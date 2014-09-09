@@ -215,7 +215,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Creates the list of files that may need to be fetched and initiates
   // fetches. Section 6.9.4 steps 12-17
-  void BuildUrlFileList(const Manifest& manifest);
+  void BuildUrlFileList(const AppCacheManifest& manifest);
   void AddUrlToFileList(const GURL& url, int type);
   void FetchUrls();
   void CancelAllUrlFetches();

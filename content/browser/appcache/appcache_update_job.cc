@@ -579,7 +579,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     return;
   }
 
-  Manifest manifest;
+  AppCacheManifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(),
                      manifest_has_valid_mime_type_ ?
@@ -1094,7 +1094,7 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
   }
 }
 
-void AppCacheUpdateJob::BuildUrlFileList(const Manifest& manifest) {
+void AppCacheUpdateJob::BuildUrlFileList(const AppCacheManifest& manifest) {
   for (base::hash_set<std::string>::const_iterator it =
            manifest.explicit_urls.begin();
        it != manifest.explicit_urls.end(); ++it) {

@@ -15,7 +15,7 @@ class AppCacheManifestParserTest : public testing::Test {
 
 TEST(AppCacheManifestParserTest, NoData) {
   GURL url;
-  Manifest manifest;
+  AppCacheManifest manifest;
   EXPECT_FALSE(ParseManifest(url, "", 0,
                              PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_FALSE(ParseManifest(url, "CACHE MANIFEST\r", 0,  // Len is 0.
@@ -24,7 +24,7 @@ TEST(AppCacheManifestParserTest, NoData) {
 
 TEST(AppCacheManifestParserTest, CheckSignature) {
   GURL url;
-  Manifest manifest;
+  AppCacheManifest manifest;
 
   const std::string kBadSignatures[] = {
     "foo",
@@ -63,7 +63,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
 }
 
 TEST(AppCacheManifestParserTest, NoManifestUrl) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const std::string kData("CACHE MANIFEST\r"
     "relative/tobase.com\r"
     "http://absolute.com/addme.com");
@@ -77,7 +77,7 @@ TEST(AppCacheManifestParserTest, NoManifestUrl) {
 }
 
 TEST(AppCacheManifestParserTest, ExplicitUrls) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://www.foo.com");
   const std::string kData("CACHE MANIFEST\r"
     "relative/one\r"
@@ -114,7 +114,7 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
   EXPECT_TRUE(urls.find("http://www.foo.com/*") != urls.end());
 
   // We should get the same results with intercepts disallowed.
-  manifest = Manifest();
+  manifest = AppCacheManifest();
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_PER_STANDARD, manifest));
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
@@ -133,7 +133,7 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
 }
 
 TEST(AppCacheManifestParserTest, WhitelistUrls) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://www.bar.com");
   const std::string kData("CACHE MANIFEST\r"
     "NETWORK:\r"
@@ -174,7 +174,7 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
 }
 
 TEST(AppCacheManifestParserTest, FallbackUrls) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://glorp.com");
   const std::string kData("CACHE MANIFEST\r"
     "# a comment\r"
@@ -238,7 +238,7 @@ TEST(AppCacheManifestParserTest, FallbackUrls) {
 }
 
 TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://www.portme.com:1234");
   const std::string kData("CACHE MANIFEST\r"
     "FALLBACK:\r"
@@ -279,7 +279,7 @@ TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
 }
 
 TEST(AppCacheManifestParserTest, InterceptUrls) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://www.portme.com:1234");
   const std::string kData("CHROMIUM CACHE MANIFEST\r"
     "CHROMIUM-INTERCEPT:\r"
@@ -320,7 +320,7 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
             intercepts[2].target_url);
 
   // Disallow intercepts ths time.
-  manifest = Manifest();
+  manifest = AppCacheManifest();
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_PER_STANDARD, manifest));
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
@@ -331,7 +331,7 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
 }
 
 TEST(AppCacheManifestParserTest, ComboUrls) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://combo.com:42");
   const std::string kData("CACHE MANIFEST\r"
     "relative/explicit-1\r"
@@ -394,7 +394,7 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
 }
 
 TEST(AppCacheManifestParserTest, UnusualUtf8) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://bad.com");
   const std::string kData("CACHE MANIFEST\r"
     "\xC0" "invalidutf8\r"
@@ -407,7 +407,7 @@ TEST(AppCacheManifestParserTest, UnusualUtf8) {
 }
 
 TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("http://smorg.borg");
   const std::string kData(
     "CACHE MANIFEST\r"
@@ -420,7 +420,7 @@ TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
 }
 
 TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
-  Manifest manifest;
+  AppCacheManifest manifest;
   const GURL kUrl("https://www.foo.com");
   const std::string kData("CACHE MANIFEST\r"
     "CACHE: \r"
@@ -466,7 +466,7 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
       "http://foo.com/network_pattern* isPattern\r");
 
 
-  Manifest manifest;
+  AppCacheManifest manifest;
   EXPECT_TRUE(ParseManifest(kUrl, kManifestBody.c_str(),
                             kManifestBody.length(),
                             PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));

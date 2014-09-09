@@ -133,7 +133,7 @@ bool SortNamespacesByLength(
 }
 }
 
-void AppCache::InitializeWithManifest(Manifest* manifest) {
+void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
   DCHECK(manifest);
   intercept_namespaces_.swap(manifest->intercept_namespaces);
   fallback_namespaces_.swap(manifest->fallback_namespaces);

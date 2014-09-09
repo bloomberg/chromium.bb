@@ -43,9 +43,9 @@ class GURL;
 
 namespace content {
 
-struct CONTENT_EXPORT Manifest {
-  Manifest();
-  ~Manifest();
+struct CONTENT_EXPORT AppCacheManifest {
+  AppCacheManifest();
+  ~AppCacheManifest();
 
   base::hash_set<std::string> explicit_urls;
   AppCacheNamespaceVector intercept_namespaces;
@@ -65,7 +65,7 @@ CONTENT_EXPORT bool ParseManifest(
     const char* data,
     int length,
     ParseMode parse_mode,
-    Manifest& manifest);
+    AppCacheManifest& manifest);
 
 }  // namespace content
 
