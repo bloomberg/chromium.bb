@@ -55,7 +55,6 @@ static_library("sel") {
     "nacl_syscall_list.c",
     "nacl_text.c",
     "nacl_valgrind_hooks.c",
-    "name_service/default_name_service.c",
     "name_service/name_service.c",
     "sel_addrspace.c",
     "sel_ldr.c",

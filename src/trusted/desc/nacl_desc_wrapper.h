@@ -37,8 +37,6 @@ class DescWrapperFactory {
   // As with OpenHostFile, but with quota management.
   DescWrapper* OpenHostFileQuota(const char* fname, int flags, int mode,
                                  const uint8_t* file_id);
-  // Create a DescWrapper for a random number generator.
-  DescWrapper* OpenRng();
   // Create a DescWrapper for the designated invalid descriptor
   DescWrapper* MakeInvalid();
 

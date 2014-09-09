@@ -12,50 +12,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/name_service.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-
-#define RNG_OUTPUT_BYTES  1024
-
-#define BYTES_PER_LINE    32
-#define BYTE_SPACING      4
-
-void dump_output(int d, size_t nbytes) {
-  uint8_t *bytes;
-  int     got;
-  int     copied;
-  int     ix;
-
-  bytes = malloc(nbytes);
-  if (!bytes) {
-    perror("dump_output");
-    fprintf(stderr, "No memory\n");
-    return;
-  }
-  /* read output */
-  for (got = 0; got < nbytes; got += copied) {
-    copied = read(d, bytes + got, nbytes - got);
-    if (-1 == copied) {
-      perror("dump_output:read");
-      fprintf(stderr, "read failure\n");
-      break;
-    }
-    printf("read(%d, ..., %zd) -> %d\n", d, nbytes - got, copied);
-  }
-  /* hex dump it */
-  for (ix = 0; ix < got; ++ix) {
-    if (0 == (ix & (BYTES_PER_LINE-1))) {
-      printf("\n%04x:", ix);
-    } else if (0 == (ix & (BYTE_SPACING-1))) {
-      putchar(' ');
-    }
-    printf("%02x", bytes[ix]);
-  }
-  putchar('\n');
-
-  free(bytes);
-}
 
 int main(void) {
   int ns;
@@ -88,10 +48,15 @@ int main(void) {
     return 1;
   }
   printf("rpc status %d\n", status);
-  assert(NACL_NAME_SERVICE_SUCCESS == status);
-  printf("rng descriptor %d\n", rng);
-
-  dump_output(rng, RNG_OUTPUT_BYTES);
+  /*
+   * Now that the "SecureRandom" service has been removed, there is no
+   * service that is registered with the name service by default that we
+   * can test here.  "ManifestNameService" only gets registered after the
+   * "reverse service" is initialized, which doesn't normally happen in
+   * standalone sel_ldr.  So we just check that querying returns a sensible
+   * error here.
+   */
+  ASSERT_EQ(NACL_NAME_SERVICE_NAME_NOT_FOUND, status);
 
   return 0;
 }

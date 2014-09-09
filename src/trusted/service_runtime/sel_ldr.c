@@ -52,7 +52,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
-#include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -222,9 +221,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   }
   nap->name_service_conn_cap = NaClDescRef(nap->name_service->
                                            base.base.bound_and_cap[1]);
-  if (!NaClDefaultNameServiceInit(nap->name_service)) {
-    goto cleanup_name_service;
-  }
 
   nap->ignore_validator_result = 0;
   nap->skip_validator = 0;

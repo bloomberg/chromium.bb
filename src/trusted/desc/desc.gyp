@@ -66,8 +66,6 @@
           'nacl_desc_mutex.h',
           'nacl_desc_null.c',
           'nacl_desc_null.h',
-          'nacl_desc_rng.c',
-          'nacl_desc_rng.h',
           'nacl_desc_quota.c',
           'nacl_desc_quota.h',
           'nacl_desc_quota_interface.c',
