@@ -1,0 +1,69 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+if not env.Bit('bitcode') or not env.Bit('minsfi') or \
+   not trusted_env.Bit('build_x86') or trusted_env.Bit('windows'):
+  Return()
+
+def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0):
+  if ptrsize == 0:
+    ptrsize = 24 if trusted_env.Bit('build_x86_32') else 32
+
+  bc_env = env.Clone()
+  bc_env.Replace(CCFLAGS=[], LINKFLAGS=[])
+
+  # Compile the untrusted file.
+  # We cannot pass the source file directly to the ComponentProgram call
+  # because we want to reuse the same sandbox source for multiple tests and
+  # that requires giving each instance a different object file name.
+  input_obj = bc_env.ComponentObject(
+      test_name + '.obj.bc',
+      [sandbox_src])
+
+  # Link bitcode files into a single module. (flags set in naclsdk.py)
+  input_module = bc_env.ComponentProgram(
+      test_name + '.preopt.bc',
+      [input_obj])
+
+  # Run the PNaCl and MinSFI passes.
+  opt_result = env.Command(
+      test_name + '.postopt.bc',
+      [input_module],
+      '${PNACLOPT} '
+      '-strip-debug '
+      '-minsfi-strip-tls '
+      '-pnacl-abi-simplify-preopt '
+      '-pnacl-abi-simplify-postopt '
+      '-minsfi '
+      '-minsfi-ptrsize=%d '
+      '${SOURCES} -o ${TARGET}'
+       % ptrsize)
+
+  # Translate bitcode into native code.
+  llc_result = env.Command(
+      test_name + '.minsfi.o',
+      [opt_result],
+      '${LLC} ${SOURCES} -o ${TARGET}')
+
+  # Compile trusted part of the test and link everything together.
+  prog = trusted_env.ComponentProgram(
+      test_name,
+      [llc_result,  exerciser_src],
+      LIBS=['minsfi_runtime'])
+
+  # Register the test.
+  node = env.CommandTest('%s.out' % test_name, [prog])
+  env.AddNodeToTestSuite(
+      node,
+      ['small_tests', 'toolchain_tests', 'minsfi_tests'],
+      'run_minsfi_' + test_name + '_test')
+
+CompileSandbox('memory_layout', 'test_memory_layout.c', 'sandbox_dummy.c')
+CompileSandbox('initializer', 'test_initializer.c', 'sandbox_dummy.c')

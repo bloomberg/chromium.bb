@@ -330,6 +330,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pnacl_unsandboxed', default=False,
     desc='Translate pexe to an unsandboxed, host executable')
 
+  BitFromArgument(env, 'minsfi', default=False,
+    desc='Build MinSFI libraries and run tests')
+
   BitFromArgument(env, 'nonsfi_nacl', default=False,
     desc='Use Non-SFI Mode instead of the original SFI Mode.  This uses '
       'nonsfi_loader instead of sel_ldr, and it tells the PNaCl toolchain '
@@ -722,6 +725,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'exit_status_tests',
   'gdb_tests',
   'mmap_race_tests',
+  'minsfi_tests',
   'nonpexe_tests',
   'performance_tests',
   'pnacl_abi_tests',
@@ -2207,6 +2211,7 @@ def MakeBaseTrustedEnv(platform=None):
       # KEEP THIS SORTED PLEASE
       'build/package_version/build.scons',
       'pynacl/build.scons',
+      'src/minsfi/trusted/build.scons',
       'src/nonsfi/irt/build.scons',
       'src/nonsfi/loader/build.scons',
       'src/shared/gio/build.scons',
@@ -3307,6 +3312,7 @@ irt_variant_tests = [
     'tests/mandel/nacl.scons',
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
+    'tests/minsfi/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/mmap_main_nexe/nacl.scons',
     'tests/mmap_prot_exec/nacl.scons',

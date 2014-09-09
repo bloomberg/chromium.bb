@@ -437,6 +437,7 @@ tc-tests-fast() {
   scons-stage-noirt "${arch}" "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "${arch}" "${scons_flags} -j8 pnacl_generate_pexe=0" \
     "nonpexe_tests"
+  scons-stage-noirt "${arch}" "${scons_flags} -j8 minsfi=1" "minsfi_tests"
 }
 
 mode-buildbot-tc-x8664-linux() {
