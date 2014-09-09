@@ -45,7 +45,7 @@ source_set("gpu") {
   }
 
   if (is_chromeos && cpu_arch != "arm") {
-    configs += [ "//third_party/libva/libva_config" ]
+    configs += [ "//third_party/libva:libva_config" ]
   }
 
   if (use_x11) {

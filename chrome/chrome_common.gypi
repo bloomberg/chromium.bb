@@ -474,11 +474,6 @@
               'common/local_discovery/local_discovery_messages.h',
             ]
         }],
-        ['chromeos==1', {
-          'sources!': [
-            'common/chrome_version_info_linux.cc',
-          ],
-        }],
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',

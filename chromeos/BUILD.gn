@@ -12,6 +12,4 @@ proto_library("power_manager_proto") {
     "//third_party/cros_system_api/dbus/power_manager/power_supply_properties.proto",
     "//third_party/cros_system_api/dbus/power_manager/suspend.proto",
   ]
-  proto_in_dir = "//third_party/cros_system_api/dbus/power_manager"
-  proto_out_dir = "chromeos/dbus/power_manager"
 }

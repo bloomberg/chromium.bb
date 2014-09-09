@@ -48,6 +48,4 @@ proto_library("proto") {
   sources = [
     "pairing_api.proto",
   ]
-  'proto_in_dir' = 'pairing'
-  'proto_out_dir' = 'components/pairing'
 }

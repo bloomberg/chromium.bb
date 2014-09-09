@@ -142,6 +142,20 @@ if (use_brlapi) {
     output_cc = "libbrlapi_loader.cc"
     header = "<brlapi.h>"
     config = ":brlapi_config"
+
+    functions = [
+      "brlapi_getHandleSize",
+      "brlapi_error_location",
+      "brlapi_strerror",
+      "brlapi__acceptKeys",
+      "brlapi__openConnection",
+      "brlapi__closeConnection",
+      "brlapi__getDisplaySize",
+      "brlapi__enterTtyModeWithPath",
+      "brlapi__leaveTtyMode",
+      "brlapi__writeDots",
+      "brlapi__readKey",
+    ]
   }
 }
 

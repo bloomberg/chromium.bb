@@ -168,7 +168,6 @@ test("views_unittests") {
   if (is_chromeos) {
     sources -= [
       "ime/input_method_bridge_unittest.cc",
-      "widget/desktop_aura",
     ]
   }
 

@@ -193,10 +193,6 @@ static_library("common") {
     sources += [ "local_discovery/local_discovery_messages.h" ]
   }
 
-  if (is_chromeos) {
-    sources -= [ "chrome_version_info_linux.cc" ]
-  }
-
   if (is_mac) {
     sources -= [
       "chrome_version_info_posix.cc",
