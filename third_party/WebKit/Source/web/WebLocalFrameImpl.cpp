@@ -760,9 +760,6 @@ v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebSc
 {
     ASSERT(frame());
 
-    // TODO: Remove this after blink has rolled and chromium change landed. (crrev.com/516753002)
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
     return frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position));
 }
