@@ -19,7 +19,9 @@
  * run begin with a clean state.
  *
  * One of the simplifications this module makes is sub-directories are not
- * allowed, directories cannot exist in other directories.
+ * allowed, directories cannot exist in other directories. Another
+ * simplification is that only the owner permission bits are set, the unit
+ * tests should only test and set these sets of flags (IE S_IRWXU).
  *
  * This code also does not try to be thread-safe although real implementations
  * will need to be. Because these tests are only testing if the functions are
@@ -64,6 +66,7 @@ struct file_descriptor {
 };
 
 struct file_desc_environment {
+  time_t current_time;
   struct inode_data *current_dir;
   struct inode_data inode_datas[MAX_INODES];
   struct file_descriptor file_descs[MAX_FILE_DESCS];

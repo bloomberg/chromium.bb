@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_macros.h"
@@ -17,8 +19,15 @@
 
 #define TEST_DIRECTORY "test_directory"
 #define TEST_FILE "test_file.txt"
+#define TEST_TIME_VALUE 20
 
 static const char TEST_TEXT[] = "test text";
+
+/*
+ * TODO(dyen): remove this once this declarations get added to the prebuilt
+ * newlib toolchain.
+ */
+extern int utimes(const char *filename, const struct timeval times[2]);
 
 typedef int (*TYPE_file_test)(struct file_desc_environment *file_desc_env);
 
@@ -276,6 +285,192 @@ static int do_fread_stream_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_stat_test(struct file_desc_environment *file_desc_env) {
+  file_desc_env->current_time = TEST_TIME_VALUE;
+
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL ) {
+    irt_ext_test_print("do_stat_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct stat stat_result;
+  if (0 != stat(TEST_FILE, &stat_result)) {
+    irt_ext_test_print("do_stat_test: stat was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (stat_result.st_ctime != TEST_TIME_VALUE) {
+    irt_ext_test_print("do_stat_test: stat creation time not expected value:\n"
+                       "  Expected value: %d. Returned value: %d.\n",
+                       TEST_TIME_VALUE, (int) stat_result.st_ctime);
+    return 1;
+  }
+
+  struct stat fstat_result;
+  if (0 != fstat(fileno(fp), &fstat_result)) {
+    irt_ext_test_print("do_stat_test: fstat was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (fstat_result.st_ctime != TEST_TIME_VALUE) {
+    irt_ext_test_print("do_stat_test: fstat creation time not expected value:\n"
+                       "  Expected value: %d. Returned value: %d.\n",
+                       TEST_TIME_VALUE, (int) fstat_result.st_ctime);
+    return 1;
+  }
+
+  if (file_desc_env->current_time <= TEST_TIME_VALUE) {
+    irt_ext_test_print("do_stat_test: file env time was not touched.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_chmod_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL ) {
+    irt_ext_test_print("do_chmod_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_chmod_test: did not create inode.\n");
+    return 1;
+  }
+
+  if (0 == (file_node->mode & S_IRWXU)) {
+    irt_ext_test_print("do_chmod_test: created inode mode is 0.\n");
+    return 1;
+  }
+
+  mode_t original_mode = file_node->mode;
+  if (0 != chmod(TEST_FILE, 0)) {
+    irt_ext_test_print("do_chmod_test: chmod was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (0 != (file_node->mode & S_IRWXU)) {
+    irt_ext_test_print("do_chmod_test: chmod did not modify file inode.\n");
+    return 1;
+  }
+
+  file_node->mode = original_mode;
+  if (0 != fchmod(fileno(fp), 0)) {
+    irt_ext_test_print("do_chmod_test: fchmod was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (0 != (file_node->mode & S_IRWXU)) {
+    irt_ext_test_print("do_chmod_test: fchmod did not modify file inode.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_access_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL ) {
+    irt_ext_test_print("do_access_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_access_test: did not create inode.\n");
+    return 1;
+  }
+
+  file_node->mode &= ~S_IXUSR;
+  if (0 == access(TEST_FILE, X_OK)) {
+    irt_ext_test_print("do_access_test: access executable incorrect.\n");
+    return 1;
+  }
+
+  file_node->mode |= S_IXUSR;
+  if (0 != access(TEST_FILE, X_OK)) {
+    irt_ext_test_print("do_access_test: access not executable incorrect.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_utimes_test(struct file_desc_environment *file_desc_env) {
+  file_desc_env->current_time = TEST_TIME_VALUE;
+
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL ) {
+    irt_ext_test_print("do_utimes_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_utimes_test: did not create inode.\n");
+    return 1;
+  }
+
+  if (file_node->atime != TEST_TIME_VALUE ||
+      file_node->mtime != TEST_TIME_VALUE) {
+    irt_ext_test_print("do_utimes_test: inode has unexpected time stats:\n"
+                       "  Expected time: %d\n"
+                       "  atime: %d\n"
+                       "  mtime: %d\n",
+                       TEST_TIME_VALUE,
+                       (int) file_node->atime,
+                       (int) file_node->mtime);
+    return 1;
+  }
+
+  if (file_desc_env->current_time <= TEST_TIME_VALUE) {
+    irt_ext_test_print("do_utimes_test: file env time was not touched.\n");
+    return 1;
+  }
+
+  struct timeval times[2];
+  memset(times, sizeof(times), 0);
+  times[0].tv_sec = file_desc_env->current_time;
+  times[1].tv_sec = file_desc_env->current_time;
+
+  if (0 != utimes(TEST_FILE, times)) {
+    irt_ext_test_print("do_utimes_test: utimes was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (file_node->atime != file_desc_env->current_time ||
+      file_node->mtime != file_desc_env->current_time) {
+    irt_ext_test_print("do_utimes_test: file data was not updated correctly:\n"
+                       "  Expected time: %d\n"
+                       "  atime: %d\n"
+                       "  mtime: %d\n",
+                       (int) file_desc_env->current_time,
+                       (int) file_node->atime,
+                       (int) file_node->mtime);
+    return 1;
+  }
+
+  return 0;
+}
+
 /*
  * These tests should not be in alphabetical order but ordered by complexity,
  * simpler tests should break first. For example, changing to a directory
@@ -297,6 +492,12 @@ static const TYPE_file_test g_file_tests[] = {
   do_printf_stream_test,
   do_fprintf_stream_test,
   do_fread_stream_test,
+
+  /* File stat tests. */
+  do_stat_test,
+  do_chmod_test,
+  do_access_test,
+  do_utimes_test,
 };
 
 static void setup(struct file_desc_environment *file_desc_env) {

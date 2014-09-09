@@ -22,12 +22,12 @@
 static struct file_desc_environment *g_activated_env = NULL;
 static const struct inode_data g_default_inode = {
   .valid = false,
-  .mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP,
+  .mode = S_IRUSR | S_IWUSR,
 };
 
 static struct inode_data g_root_dir = {
   .valid = true,
-  .mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IFDIR,
+  .mode = S_IRUSR | S_IWUSR | S_IFDIR,
 };
 
 /* Helper allocation functions. */
@@ -90,6 +90,7 @@ static int my_read(int fd, void *buf, size_t count, size_t *nread) {
       read_count = filedata->size - filedata->position;
 
     memcpy(buf, &filedata->content[filedata->position], read_count);
+    filedata->atime = g_activated_env->current_time++;
     filedata->position += read_count;
 
     *nread = read_count;
@@ -115,6 +116,7 @@ static int my_write(int fd, const void *buf, size_t count, size_t *nwrote) {
     }
 
     memcpy(&filedata->content[filedata->position], buf, write_count);
+    filedata->mtime = g_activated_env->current_time++;
     filedata->position += write_count;
     if (filedata->size < filedata->position)
       filedata->size = filedata->position;
@@ -161,6 +163,21 @@ static int my_seek(int fd, nacl_irt_off_t offset, int whence,
 }
 
 static int my_fstat(int fd, struct stat *buf) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid &&
+      g_activated_env->file_descs[fd].data != NULL) {
+    struct inode_data *filedata = g_activated_env->file_descs[fd].data;
+    memset(buf, 0, sizeof(struct stat));
+    buf->st_mode = filedata->mode;
+    buf->st_size = filedata->size;
+    buf->st_atime = filedata->atime;
+    buf->st_mtime = filedata->mtime;
+    buf->st_ctime = filedata->ctime;
+    return 0;
+  }
+
   return EBADF;
 }
 
@@ -174,6 +191,18 @@ static int my_fchdir(int fd) {
 }
 
 static int my_fchmod(int fd, mode_t mode) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid &&
+      g_activated_env->file_descs[fd].data != NULL) {
+    struct inode_data *filedata = g_activated_env->file_descs[fd].data;
+
+    /* For the purposes of tests, only the owner permission bits can be set. */
+    filedata->mode = (filedata->mode & (~S_IRWXU)) | (mode & S_IRWXU);
+    return 0;
+  }
+
   return EBADF;
 }
 
@@ -245,6 +274,9 @@ static int my_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
         if (path_item == NULL) {
           return ENOSPC;
         }
+        path_item->ctime = g_activated_env->current_time++;
+        path_item->atime = path_item->ctime;
+        path_item->mtime = path_item->ctime;
         path_item->mode = cmode;
         path_item->parent_dir = parent_dir;
 
@@ -291,7 +323,26 @@ static int my_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
 }
 
 static int my_stat(const char *pathname, struct stat *buf) {
-  return ENOSYS;
+  if (g_activated_env) {
+    int fd = -1;
+    int ret = 0;
+
+    /*
+     * Usually this must work when the file descriptor table is full as well,
+     * but because this is only for testing we can just reuse the open function.
+     */
+    ret = my_open(pathname, O_RDONLY, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    ret = my_fstat(fd, buf);
+    if (ret != 0)
+      return ret;
+
+    return my_close(fd);
+  }
+
+  return EIO;
 }
 
 static int my_mkdir(const char *pathname, mode_t mode) {
@@ -428,11 +479,51 @@ static int my_symlink(const char *oldpath, const char *newpath) {
 }
 
 static int my_chmod(const char *path, mode_t mode) {
+  if (g_activated_env) {
+    int fd = -1;
+    int ret = 0;
+
+    /*
+     * Usually this must work when the file descriptor table is full as well,
+     * but because this is only for testing we can just reuse the open function.
+     */
+    ret = my_open(path, O_RDONLY, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    ret = my_fchmod(fd, mode);
+    if (ret != 0)
+      return ret;
+
+    return my_close(fd);
+  }
+
   return ENOSYS;
 }
 
 static int my_access(const char *path, int amode) {
-  return ENOSYS;
+  /* amode must be F_OK or a mask of R_OK, W_OK, and X_OK. */
+  if (0 != amode &&
+      F_OK != amode &&
+      0 != (amode & (~(R_OK | W_OK | X_OK)))) {
+    return EINVAL;
+  }
+
+  struct stat path_stat;
+  int ret = my_stat(path, &path_stat);
+  if (0 != ret) {
+    return ret;
+  } else if (F_OK == amode) {
+    return 0;
+  }
+
+  if (((amode & R_OK) && (S_IRUSR != (path_stat.st_mode & S_IRUSR))) ||
+      ((amode & W_OK) && (S_IWUSR != (path_stat.st_mode & S_IWUSR))) ||
+      ((amode & X_OK) && (S_IXUSR != (path_stat.st_mode & S_IXUSR)))) {
+    return EACCES;
+  }
+
+  return 0;
 }
 
 static int my_readlink(const char *path, char *buf, size_t count,
@@ -440,7 +531,29 @@ static int my_readlink(const char *path, char *buf, size_t count,
   return ENOSYS;
 }
 
-static int my_utimes(const char *filename, const struct timeval *times) {
+static int my_utimes(const char *path, const struct timeval *times) {
+  if (times == NULL)
+    return EINVAL;
+
+  if (g_activated_env) {
+    int fd = -1;
+    int ret = 0;
+
+    /*
+     * Usually this must work when the file descriptor table is full as well,
+     * but because this is only for testing we can just reuse the open function.
+     */
+    ret = my_open(path, O_WRONLY, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    struct inode_data *path_item = g_activated_env->file_descs[fd].data;
+    path_item->atime = times[0].tv_sec;
+    path_item->mtime = times[1].tv_sec;
+
+    return my_close(fd);
+  }
+
   return ENOSYS;
 }
 
