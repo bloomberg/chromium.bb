@@ -26,7 +26,3 @@ class ContextLostExpectations(test_expectations.TestExpectations):
 
     self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
               ['win'], bug=392891)
-
-    # Skipping because of assertion failure / tab crash
-    self.Skip('ContextLost.WebGLContextLostFromGPUProcessExit',
-              ['mac'], bug=411372)
