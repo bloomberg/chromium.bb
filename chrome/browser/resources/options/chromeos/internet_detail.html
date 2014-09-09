@@ -67,35 +67,28 @@
         <table class="option-control-table">
           <tr id="prefer-network">
             <td>
-              <div class="checkbox">
-                <span class="controlled-setting-with-label">
+              <div class="checkbox controlled-setting-with-label">
+                <label>
                   <input id="prefer-network-wifi" type="checkbox">
                   <span>
-                    <label for="prefer-network-wifi"
-                        i18n-content="inetPreferredNetwork">
-                    </label>
-                    <span class="controlled-setting-indicator"
-                        managed="Priority" for="prefer-network-wifi">
-                    </span>
+                    <span i18n-content="inetPreferredNetwork">
+                    <span class="controlled-setting-indicator"></span>
                   </span>
-                </span>
+                </label>
               </div>
             </td>
           </tr>
           <tr class="auto-connect-network">
             <td>
-              <div class="checkbox">
-                <span class="controlled-setting-with-label">
+              <div class="checkbox controlled-setting-with-label">
+                <label>
                   <input id="auto-connect-network-wifi" type="checkbox">
                   <span>
-                    <label for="auto-connect-network-wifi"
-                        i18n-content="inetAutoConnectNetwork">
-                    </label>
+                    <span i18n-content="inetAutoConnectNetwork">
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect" for="auto-connect-network-wifi">
-                    </span>
+                        managed="AutoConnect"></span>
                   </span>
-                </span>
+                </label>
               </div>
             </td>
           </tr>
@@ -157,18 +150,15 @@
         <table class="option-control-table">
           <tr class="auto-connect-network">
             <td>
-              <div class="checkbox">
-                <span class="controlled-setting-with-label">
+              <div class="checkbox controlled-setting-with-label">
+                <label>
                   <input id="auto-connect-network-wimax" type="checkbox">
                   <span>
-                    <label for="auto-connect-network-wimax"
-                        i18n-content="inetAutoConnectNetwork">
-                    </label>
+                    <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect" for="auto-connect-network-wimax">
-                    </span>
+                        managed="AutoConnect"></span>
                   </span>
-                </span>
+                </label>
               </div>
             </td>
           </tr>
@@ -209,18 +199,15 @@
         <table class="option-control-table">
           <tr class="auto-connect-network">
             <td>
-              <div class="checkbox">
-                <span class="controlled-setting-with-label">
+              <div class="checkbox controlled-setting-with-label">
+                <label>
                   <input id="auto-connect-network-vpn" type="checkbox">
                   <span>
-                    <label for="auto-connect-network-vpn"
-                        i18n-content="inetAutoConnectNetwork">
-                    </label>
+                    <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect" for="auto-connect-network-vpn">
-                    </span>
+                        managed="AutoConnect"></span>
                   </span>
-                </span>
+                </label>
               </div>
             </td>
           </tr>
@@ -232,8 +219,8 @@
             <td class="option-name" i18n-content="inetServerHostname"></td>
             <td>
               <input class="option-value" id="inet-server-hostname"></input>
-              <span class="controlled-setting-indicator"
-                  managed="VPN.Host" for="inet-server-hostname"></span>
+              <span class="controlled-setting-indicator" managed="VPN.Host">
+              </span>
             </td>
           </tr>
           <tr>
@@ -294,8 +281,8 @@
                 <option value="-1" i18n-content="cellularApnOther">
                 </option>
               </select>
-              <span class="controlled-setting-indicator" data="providerApnList"
-                  for="select-apn"></span>
+              <span class="controlled-setting-indicator" data="providerApnList">
+              </span>
             </td>
           </tr>
           <tr class="gsm-only apn-details-view">
@@ -329,19 +316,15 @@
           </tr>
           <tr>
             <td colspan="2">
-              <div class="checkbox">
-                <span class="controlled-setting-with-label">
+              <div class="checkbox controlled-setting-with-label">
+                <label>
                   <input id="auto-connect-network-cellular" type="checkbox">
                   <span>
-                    <label for="auto-connect-network-cellular"
-                        i18n-content="inetAutoConnectNetwork">
-                    </label>
+                    <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect"
-                        for="auto-connect-network-cellular">
-                    </span>
+                        managed="AutoConnect"></span>
                   </span>
-                </span>
+                </label>
               </div>
             </td>
           </tr>
@@ -417,19 +400,17 @@
         </table>
       </section>
       <section id="ipconfig-section">
-        <div id="ip-automatic-configuration" class="checkbox">
-          <span class="controlled-setting-with-label">
+        <div id="ip-automatic-configuration"
+            class="checkbox controlled-setting-with-label">
+          <label>
             <input id="ip-automatic-configuration-checkbox"
                 type="checkbox">
             <span>
-              <label for="ip-automatic-configuration-checkbox"
-                  i18n-content="ipAutomaticConfiguration">
-              </label>
-              <span class="controlled-setting-indicator" data="ipconfigDHCP"
-                  for="ip-automatic-configuration">
+              <span i18n-content="ipAutomaticConfiguration"></span>
+              <span class="controlled-setting-indicator" data="ipconfigDHCP">
               </span>
             </span>
-          </span>
+          </label>
         </div>
         <div>
         <table id="ip-address-settings">
@@ -509,24 +490,21 @@
          class="subpages-tab-contents cellular-details gsm-only">
       <div id="cellular-security-options">
         <section>
-          <div id="sim-pin-lock" class="checkbox">
-            <span class="controlled-setting-with-label">
+          <div id="sim-pin-lock" class="checkbox controlled-setting-with-label">
+            <label>
               <input id="sim-card-lock-enabled" type="checkbox">
               <span>
-                <label for="sim-card-lock-enabled" i18n-content="lockSimCard">
-                </label>
-                <span class="controlled-setting-indicator"
-                    data="simCardLockEnabled" for="sim-card-lock-enabled">
-                </span>
+                <span i18n-content="lockSimCard"></span>
+                <span class="controlled-setting-indicator"></span>
               </span>
-            </span>
+            </label>
           </div>
         </section>
         <section>
           <div id="change-pin-area">
             <button id="change-pin" i18n-content="changePinButton"></button>
-            <span class="controlled-setting-indicator" data="simCardLockEnabled"
-                for="change-pin"></span>
+            <span class="controlled-setting-indicator"
+                data="simCardLockEnabled"></span>
           </div>
         </section>
       </div>
