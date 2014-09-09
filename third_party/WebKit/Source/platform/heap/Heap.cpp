@@ -412,14 +412,11 @@ private:
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
+NO_SANITIZE_ADDRESS
 bool HeapObjectHeader::isMarked() const
 {
     checkHeader();
-    // We need to unpoison/poison the header on ASAN since
-    // acquireLoad doesn't have the NO_SANITIZE_ADDRESS flag.
-    ASAN_UNPOISON_MEMORY_REGION(this, sizeof(this));
-    unsigned size = acquireLoad(&m_size);
-    ASAN_POISON_MEMORY_REGION(this, sizeof(this));
+    unsigned size = asanUnsafeAcquireLoad(&m_size);
     return size & markBitMask;
 }
 

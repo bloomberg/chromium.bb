@@ -1497,6 +1497,7 @@ Address HeapObjectHeader::payloadEnd()
     return reinterpret_cast<Address>(this) + size();
 }
 
+NO_SANITIZE_ADDRESS
 void HeapObjectHeader::mark()
 {
     checkHeader();
@@ -1505,12 +1506,8 @@ void HeapObjectHeader::mark()
     // Multiple threads can still read the old value and all store the
     // new value. However, the new value will be the same for all of
     // the threads and the end result is therefore consistent.
-    // We need to unpoison/poison the header on ASAN since
-    // acquireLoad/releaseStore don't have the NO_SANITIZE_ADDRESS flag.
-    ASAN_UNPOISON_MEMORY_REGION(this, sizeof(this));
-    unsigned size = acquireLoad(&m_size);
-    releaseStore(&m_size, size | markBitMask);
-    ASAN_POISON_MEMORY_REGION(this, sizeof(this));
+    unsigned size = asanUnsafeAcquireLoad(&m_size);
+    asanUnsafeReleaseStore(&m_size, size | markBitMask);
 }
 
 Address FinalizedHeapObjectHeader::payload()
