@@ -9,7 +9,10 @@
 #
 # ChromeOS uses an up-to-date system one that we have control over, so we
 # don't want to bloat the binary more by including another copy.
-use_system_harfbuzz = is_chromeos
+
+declare_args() {
+  use_system_harfbuzz = is_chromeos
+}
 
 if (use_system_harfbuzz) {
   import("//build/config/linux/pkg_config.gni")
