@@ -405,10 +405,14 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_callbacks_.get());
 
+  // TODO(scherkus): Enforce that Renderer is only called on a single thread,
+  // even for accessing media time http://crbug.com/370634
+  scoped_ptr<Renderer> renderer;
   {
     base::AutoLock auto_lock(lock_);
-    renderer_.reset();
+    renderer.swap(renderer_);
   }
+  renderer.reset();
   text_renderer_.reset();
 
   if (demuxer_) {
