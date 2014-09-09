@@ -244,7 +244,13 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnClick) {
   EXPECT_TRUE(observer.was_called());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnKey) {
+// Crashes on Windows XP: http://crbug.com/412340
+#if defined(OS_WIN)
+#define MAYBE_FadeOnKey DISABLED_FadeOnKey
+#else
+#define MAYBE_FadeOnKey FadeOnKey
+#endif
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, MAYBE_FadeOnKey) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("data:text/html;charset=utf-8,<input type=\"text\" autofocus>"));
