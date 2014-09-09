@@ -4,10 +4,10 @@
 
 #include "athena/screen/public/screen_manager.h"
 
-#include "athena/common/container_priorities.h"
-#include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/screen_accelerator_handler.h"
+#include "athena/util/container_priorities.h"
+#include "athena/util/fill_layout_manager.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/screen_position_client.h"

@@ -4,9 +4,9 @@
 
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 
-#include "athena/common/container_priorities.h"
-#include "athena/common/fill_layout_manager.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/util/container_priorities.h"
+#include "athena/util/fill_layout_manager.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"

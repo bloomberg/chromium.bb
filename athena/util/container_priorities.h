@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_COMMON_CONTAINER_PRIORITIES_H_
-#define ATHENA_COMMON_CONTAINER_PRIORITIES_H_
+#ifndef ATHENA_UTIL_CONTAINER_PRIORITIES_H_
+#define ATHENA_UTIL_CONTAINER_PRIORITIES_H_
 
 namespace athena {
 
@@ -17,4 +17,4 @@ enum ContainerPriorities {
 
 }  // namespace athena
 
-#endif  // ATHENA_COMMON_CONTAINER_PRIORITIES_H_
+#endif  // ATHENA_UTIL_CONTAINER_PRIORITIES_H_

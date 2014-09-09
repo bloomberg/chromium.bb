@@ -4,8 +4,8 @@
 
 #include "athena/input/accelerator_manager_impl.h"
 
-#include "athena/common/switches.h"
 #include "athena/input/public/input_manager.h"
+#include "athena/util/switches.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator_manager.h"

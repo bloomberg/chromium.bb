@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "athena/common/container_priorities.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/util/container_priorities.h"
 #include "athena/wm/bezel_controller.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/split_view_controller.h"

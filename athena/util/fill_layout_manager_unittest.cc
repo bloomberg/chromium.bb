@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/common/fill_layout_manager.h"
+#include "athena/util/fill_layout_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"

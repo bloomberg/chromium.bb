@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_COMMON_SWITCHES_H_
-#define ATHENA_COMMON_SWITCHES_H_
+#ifndef ATHENA_UTIL_SWITCHES_H_
+#define ATHENA_UTIL_SWITCHES_H_
 
 namespace athena {
 namespace switches {
@@ -13,4 +13,4 @@ bool IsDebugAcceleratorsEnabled();
 }  // namespace switches
 }  // namespace athena
 
-#endif  // ATHENA_COMMON_SWITCHES_H_
+#endif  // ATHENA_UTIL_SWITCHES_H_

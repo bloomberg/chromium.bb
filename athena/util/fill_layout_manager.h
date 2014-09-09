@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_COMMON_FILL_LAYOUT_MANAGER_H_
-#define ATHENA_COMMON_FILL_LAYOUT_MANAGER_H_
+#ifndef ATHENA_UTIL_FILL_LAYOUT_MANAGER_H_
+#define ATHENA_UTIL_FILL_LAYOUT_MANAGER_H_
 
 #include "athena/athena_export.h"
 #include "ui/aura/layout_manager.h"
@@ -33,4 +33,4 @@ class ATHENA_EXPORT FillLayoutManager : public aura::LayoutManager {
 
 }  // namespace athena
 
-#endif  // ATHENA_COMMON_FILL_LAYOUT_MANAGER_H_
+#endif  // ATHENA_UTIL_FILL_LAYOUT_MANAGER_H_

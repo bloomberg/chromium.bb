@@ -4,8 +4,6 @@
 
 #include "athena/system/public/system_ui.h"
 
-#include "athena/common/container_priorities.h"
-#include "athena/common/fill_layout_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/background_controller.h"
 #include "athena/system/device_socket_listener.h"
@@ -13,6 +11,8 @@
 #include "athena/system/power_button_controller.h"
 #include "athena/system/status_icon_container_view.h"
 #include "athena/system/time_view.h"
+#include "athena/util/container_priorities.h"
+#include "athena/util/fill_layout_manager.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

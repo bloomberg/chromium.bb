@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "athena/common/container_priorities.h"
 #include "athena/test/athena_test_base.h"
+#include "athena/util/container_priorities.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"

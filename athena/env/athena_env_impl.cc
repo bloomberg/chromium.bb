@@ -4,7 +4,7 @@
 
 #include "athena/env/public/athena_env.h"
 
-#include "athena/common/fill_layout_manager.h"
+#include "athena/util/fill_layout_manager.h"
 #include "base/sys_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"

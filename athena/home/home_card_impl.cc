@@ -7,7 +7,6 @@
 #include <cmath>
 #include <limits>
 
-#include "athena/common/container_priorities.h"
 #include "athena/env/public/athena_env.h"
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/home/athena_start_page_view.h"
@@ -15,6 +14,7 @@
 #include "athena/home/minimized_home.h"
 #include "athena/home/public/app_model_builder.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/util/container_priorities.h"
 #include "athena/wm/public/window_manager.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/views/app_list_main_view.h"
