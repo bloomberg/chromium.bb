@@ -913,6 +913,8 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         m_activeSelectionAnchorIndex--;
     if (listIndex <= m_activeSelectionEndIndex)
         m_activeSelectionEndIndex--;
+    if (listIndex == selectedIndex())
+        setAutofilled(false);
 }
 
 void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)

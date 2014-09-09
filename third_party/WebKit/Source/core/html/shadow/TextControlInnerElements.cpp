@@ -231,6 +231,7 @@ void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
 
     if (event->type() == EventTypeNames::click && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         input->setValueForUser("");
+        input->setAutofilled(false);
         input->onSearch();
         event->setDefaultHandled();
     }

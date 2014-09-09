@@ -1,5 +1,5 @@
 This tests that foreground and background colors properly change for autofilled inputs or select options. It can only be run using the test harness.
-          
+         
 PASS successfullyParsed is true
 
 TEST COMPLETE
