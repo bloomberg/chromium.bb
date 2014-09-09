@@ -50,7 +50,7 @@ using namespace blink;
 
 namespace {
 
-PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

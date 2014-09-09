@@ -118,7 +118,7 @@ void V8SVGTestInterface::derefObject(ScriptWrappableBase* internalPointer)
     internalPointer->toImpl<SVGTestInterface>()->deref();
 }
 
-PersistentNode* V8SVGTestInterface::createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* V8SVGTestInterface::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

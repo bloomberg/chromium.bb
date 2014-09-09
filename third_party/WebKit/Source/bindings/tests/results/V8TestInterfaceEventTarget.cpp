@@ -129,10 +129,10 @@ void V8TestInterfaceEventTarget::derefObject(ScriptWrappableBase* internalPointe
 #endif
 }
 
-PersistentNode* V8TestInterfaceEventTarget::createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* V8TestInterfaceEventTarget::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new Persistent<TestInterfaceEventTarget>(internalPointer->toImpl<TestInterfaceEventTarget>());
+    return WrapperPersistent<TestInterfaceEventTarget>::create(internalPointer->toImpl<TestInterfaceEventTarget>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

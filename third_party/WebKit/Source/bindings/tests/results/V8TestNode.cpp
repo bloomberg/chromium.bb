@@ -244,10 +244,10 @@ void V8TestNode::derefObject(ScriptWrappableBase* internalPointer)
 #endif
 }
 
-PersistentNode* V8TestNode::createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* V8TestNode::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new Persistent<TestNode>(internalPointer->toImpl<TestNode>());
+    return WrapperPersistent<TestNode>::create(internalPointer->toImpl<TestNode>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

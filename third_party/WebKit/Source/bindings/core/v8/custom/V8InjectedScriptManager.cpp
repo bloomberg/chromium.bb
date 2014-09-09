@@ -72,12 +72,16 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
     // Create a weak reference to the v8 wrapper of InspectorBackend to deref
     // InspectorBackend when the wrapper is garbage collected.
     InjectedScriptManager::CallbackData* callbackData = injectedScriptManager->createCallbackData(injectedScriptManager);
+#if ENABLE(OILPAN)
+    callbackData->hostPtr = WrapperPersistent<InjectedScriptHost>::create(host.get());
+#else
     callbackData->host = host.get();
+#endif
     callbackData->handle.set(isolate, wrapper);
     callbackData->handle.setWeak(callbackData, &InjectedScriptManager::setWeakCallback);
 
 #if ENABLE(OILPAN)
-    V8DOMWrapper::setNativeInfoWithPersistentHandle(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, host->toScriptWrappableBase(), &callbackData->host);
+    V8DOMWrapper::setNativeInfoWithPersistentHandle(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, host->toScriptWrappableBase(), callbackData->hostPtr);
 #else
     V8DOMWrapper::setNativeInfo(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, host->toScriptWrappableBase());
 #endif

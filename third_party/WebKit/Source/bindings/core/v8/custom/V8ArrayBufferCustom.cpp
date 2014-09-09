@@ -73,7 +73,7 @@ void V8ArrayBuffer::derefObject(ScriptWrappableBase* internalPointer)
     toImpl(internalPointer)->deref();
 }
 
-PersistentNode* V8ArrayBuffer::createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* V8ArrayBuffer::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

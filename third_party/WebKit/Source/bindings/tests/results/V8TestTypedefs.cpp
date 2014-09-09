@@ -376,7 +376,7 @@ void V8TestTypedefs::derefObject(ScriptWrappableBase* internalPointer)
     internalPointer->toImpl<TestTypedefs>()->deref();
 }
 
-PersistentNode* V8TestTypedefs::createPersistentHandle(ScriptWrappableBase* internalPointer)
+WrapperPersistentNode* V8TestTypedefs::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;
