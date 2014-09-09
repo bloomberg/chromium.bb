@@ -830,6 +830,7 @@
     "contexts": ["unblessed_extension"]
   }],
   "webviewTag": {
+    "internal": true,
     "channel": "stable",
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]

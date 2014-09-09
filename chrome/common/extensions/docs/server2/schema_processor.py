@@ -126,7 +126,10 @@ class SchemaProcessor(object):
 
     api_features = self._features_bundle.GetAPIFeatures().Get()
     # We don't want to inline the events API, as it's handled differently
-    if schema.get('namespace', '') != 'events':
+    # Also, the webviewTag API is handled differently, as it only exists
+    # for the purpose of documentation, it's not a true internal api
+    namespace = schema.get('namespace', '')
+    if namespace != 'events' and namespace != 'webviewTag':
       internal_api = api_features.get(schema.get('namespace', ''), {}).get(
           'internal', False)
 
