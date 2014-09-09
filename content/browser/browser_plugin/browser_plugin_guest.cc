@@ -289,18 +289,6 @@ BrowserPluginGuest::GetBrowserPluginGuestManager() const {
   return GetWebContents()->GetBrowserContext()->GetGuestManager();
 }
 
-// screen.
-gfx::Rect BrowserPluginGuest::ToGuestRect(const gfx::Rect& bounds) {
-  gfx::Rect guest_rect(bounds);
-  guest_rect.Offset(guest_window_rect_.OffsetFromOrigin());
-  if (embedder_web_contents()->GetBrowserPluginGuest()) {
-     BrowserPluginGuest* embedder_guest =
-        embedder_web_contents()->GetBrowserPluginGuest();
-     guest_rect.Offset(embedder_guest->guest_window_rect_.OffsetFromOrigin());
-  }
-  return guest_rect;
-}
-
 void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
   embedder_visible_ = visible;
   UpdateVisibility();
@@ -647,17 +635,6 @@ void BrowserPluginGuest::OnHandleInputEvent(
     int browser_plugin_instance_id,
     const gfx::Rect& guest_window_rect,
     const blink::WebInputEvent* event) {
-  guest_window_rect_ = guest_window_rect;
-  // If the embedder's RWHV is destroyed then that means that the embedder's
-  // window has been closed but the embedder's WebContents has not yet been
-  // destroyed. Computing screen coordinates of a BrowserPlugin only makes sense
-  // if there is a visible embedder.
-  if (embedder_web_contents_->GetRenderWidgetHostView()) {
-    guest_screen_rect_ = guest_window_rect;
-    guest_screen_rect_.Offset(
-        embedder_web_contents_->GetRenderWidgetHostView()->
-            GetViewBounds().OffsetFromOrigin());
-  }
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
 

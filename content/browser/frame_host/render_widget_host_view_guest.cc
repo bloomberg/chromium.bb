@@ -128,10 +128,8 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
   gfx::Rect embedder_bounds;
   if (rwhv)
     embedder_bounds = rwhv->GetViewBounds();
-  gfx::Rect shifted_rect = guest_->ToGuestRect(embedder_bounds);
-  shifted_rect.set_width(size_.width());
-  shifted_rect.set_height(size_.height());
-  return shifted_rect;
+  return gfx::Rect(
+      guest_->GetScreenCoordinates(embedder_bounds.origin()), size_);
 }
 
 void RenderWidgetHostViewGuest::RenderProcessGone(
@@ -297,8 +295,9 @@ void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
     return;
   std::vector<gfx::Rect> guest_character_bounds;
   for (size_t i = 0; i < character_bounds.size(); ++i) {
-    gfx::Rect guest_rect = guest_->ToGuestRect(character_bounds[i]);
-    guest_character_bounds.push_back(guest_rect);
+    guest_character_bounds.push_back(gfx::Rect(
+        guest_->GetScreenCoordinates(character_bounds[i].origin()),
+        character_bounds[i].size()));
   }
   // Forward the information to embedding RWHV.
   rwhv->ImeCompositionRangeChanged(range, guest_character_bounds);
@@ -320,8 +319,10 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   if (!rwhv)
     return;
   ViewHostMsg_SelectionBounds_Params guest_params(params);
-  guest_params.anchor_rect = guest_->ToGuestRect(params.anchor_rect);
-  guest_params.focus_rect = guest_->ToGuestRect(params.focus_rect);
+  guest_params.anchor_rect.set_origin(
+      guest_->GetScreenCoordinates(params.anchor_rect.origin()));
+  guest_params.focus_rect.set_origin(
+      guest_->GetScreenCoordinates(params.focus_rect.origin()));
   rwhv->SelectionBoundsChanged(guest_params);
 }
 

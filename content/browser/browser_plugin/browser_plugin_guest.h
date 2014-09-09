@@ -183,7 +183,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Returns whether BrowserPluginGuest is interested in receiving the given
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
-  gfx::Rect ToGuestRect(const gfx::Rect& rect);
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
@@ -337,7 +336,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   int browser_plugin_instance_id_;
   float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
-  gfx::Rect guest_screen_rect_;
   bool focused_;
   bool mouse_locked_;
   bool pending_lock_request_;
