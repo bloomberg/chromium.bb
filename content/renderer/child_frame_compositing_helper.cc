@@ -491,6 +491,7 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     delegated_layer_ =
         cc::DelegatedRendererLayer::Create(frame_provider_.get());
     delegated_layer_->SetIsDrawable(true);
+    buffer_size_ = gfx::Size();
     SetContentsOpaque(opaque_);
     background_layer_->AddChild(delegated_layer_);
   } else {
