@@ -243,7 +243,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual ~Context() {}
 
   // We can optimize the handling of data URLs in most cases.
-  bool CanHandleDataURL(const GURL& url) const;
+  bool CanHandleDataURLRequestLocally() const;
   void HandleDataURL();
 
   WebURLLoaderImpl* loader_;
@@ -311,7 +311,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_ = request;  // Save the request.
 
   GURL url = request.url();
-  if (url.SchemeIs("data") && CanHandleDataURL(url)) {
+  if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
       sync_load_response->url = url;
@@ -655,8 +655,15 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   }
 }
 
-bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
-  DCHECK(url.SchemeIs("data"));
+bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
+  GURL url = request_.url();
+  if (!url.SchemeIs("data"))
+    return false;
+
+  // The fast paths for data URL, Start() and HandleDataURL(), don't support
+  // the downloadToFile option.
+  if (request_.downloadToFile())
+    return false;
 
   // Optimize for the case where we can handle a data URL locally.  We must
   // skip this for data URLs targetted at frames since those could trigger a
@@ -678,7 +685,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
     return true;
 
   std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(url, &mime_type, &unused_charset, NULL) &&
+  if (net::DataURL::Parse(request_.url(), &mime_type, &unused_charset, NULL) &&
       net::IsSupportedMimeType(mime_type))
     return true;
 
