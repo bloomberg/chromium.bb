@@ -45,13 +45,15 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
     # Why: productivity, top google properties
     self.AddPage(GooglePage('https://mail.google.com/mail/', self))
 
+    # Disabled: pegs CPU too much to get meaningful results.
     # Why: Image constantly changed in the background, above the fold
-    self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/eIutG', self))
+    # self.AddPage(CodePenPage(
+    #     'http://codepen.io/testificate364/debug/eIutG', self))
 
+    # Disabled: pegs CPU too much to get meaningful results.
     # Why: Image constantly changed in the background, below the fold
-    self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/zcDdv', self))
+    # self.AddPage(CodePenPage(
+    #     'http://codepen.io/testificate364/debug/zcDdv', self))
 
     # Why: CSS Animation, above the fold
     self.AddPage(CodePenPage(
@@ -101,21 +103,24 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
     self.AddPage(CodePenPage(
         'http://codepen.io/testificate364/debug/EFceH', self))
 
+    # Disabled: pegs CPU too much to get meaningful results.
     # Why: PostMessage between frames, above the fold
-    self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/pgBHu', self))
+    # self.AddPage(CodePenPage(
+    #    'http://codepen.io/testificate364/debug/pgBHu', self))
 
+    # Disabled: pegs CPU too much to get meaningful results.
     # Why: Asynchronous XHR continually running
-    self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/iwAfJ', self))
+    # self.AddPage(CodePenPage(
+    # 'http://codepen.io/testificate364/debug/iwAfJ', self))
 
+    # Disabled: pegs CPU too much to get meaningful results.
     # Why: Web Worker continually running
-    self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/ckItK', self))
+    # self.AddPage(CodePenPage(
+    #     'http://codepen.io/testificate364/debug/ckItK', self))
 
     # Why: flash video
     self.AddPage(CodePenPage(
-        'http://codepen.io/testificate364/debug/cFEaD', self))
+        'http://codepen.io/testificate364/debug/slBue', self))
 
     # Why: Blank page in the foreground
     self.AddPage(CodePenPage(
