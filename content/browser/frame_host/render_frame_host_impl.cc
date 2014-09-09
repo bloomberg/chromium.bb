@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -577,8 +579,19 @@ void RenderFrameHostImpl::OnDidRedirectProvisionalLoad(
     int32 page_id,
     const GURL& source_url,
     const GURL& target_url) {
+  if (render_view_host_->page_id_ != page_id) {
+    base::debug::SetCrashKeyValue("url1",
+                                  source_url.possibly_invalid_spec());
+    base::debug::SetCrashKeyValue("url2",
+                                  target_url.possibly_invalid_spec());
+    base::debug::SetCrashKeyValue(
+        "id1", base::IntToString(render_view_host_->page_id_));
+    base::debug::SetCrashKeyValue("id2",
+                                  base::IntToString(page_id));
+    CHECK(false);
+  }
   frame_tree_node_->navigator()->DidRedirectProvisionalLoad(
-      this, page_id, source_url, target_url);
+      this, render_view_host_->page_id_, source_url, target_url);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this
@@ -939,6 +952,15 @@ void RenderFrameHostImpl::OnUpdateTitle(
     int32 page_id,
     const base::string16& title,
     blink::WebTextDirection title_direction) {
+  if (render_view_host_->page_id_ != page_id) {
+    base::debug::SetCrashKeyValue(
+        "url1", GetLastCommittedURL().possibly_invalid_spec());
+    base::debug::SetCrashKeyValue(
+        "id1", base::IntToString(render_view_host_->page_id_));
+    base::debug::SetCrashKeyValue("id2",
+                                  base::IntToString(page_id));
+    CHECK(false);
+  }
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   if (title.length() > kMaxTitleChars) {
@@ -946,7 +968,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
     return;
   }
 
-  delegate_->UpdateTitle(this, page_id, title,
+  delegate_->UpdateTitle(this, render_view_host_->page_id_, title,
                          WebTextDirectionToChromeTextDirection(
                              title_direction));
 }
