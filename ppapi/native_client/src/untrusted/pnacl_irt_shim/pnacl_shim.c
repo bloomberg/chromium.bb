@@ -1475,6 +1475,22 @@ static int32_t Pnacl_M29_PPB_NetworkProxy_GetProxyForURL(PP_Instance instance, s
 
 /* End wrapper methods for PPB_NetworkProxy_1_0 */
 
+/* Not generating wrapper methods for PPB_OpenGLES2_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2InstancedArrays_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2FramebufferBlit_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2FramebufferMultisample_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2ChromiumEnableFeature_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2ChromiumMapSub_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2Query_1_0 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2VertexArrayObject_1_0 */
+
 /* Begin wrapper methods for PPB_TCPSocket_1_0 */
 
 static PP_Resource Pnacl_M29_PPB_TCPSocket_Create(PP_Instance instance) {
@@ -2418,6 +2434,8 @@ static void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, 
 /* End wrapper methods for PPB_IMEInputEvent_Dev_0_2 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
+
+/* Not generating wrapper methods for PPB_OpenGLES2DrawBuffers_Dev_1_0 */
 
 /* Begin wrapper methods for PPB_Printing_Dev_0_7 */
 
@@ -4845,6 +4863,22 @@ static const struct PPB_NetworkProxy_1_0 Pnacl_Wrappers_PPB_NetworkProxy_1_0 = {
     .GetProxyForURL = (int32_t (*)(PP_Instance instance, struct PP_Var url, struct PP_Var* proxy_string, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_NetworkProxy_GetProxyForURL
 };
 
+/* Not generating wrapper interface for PPB_OpenGLES2_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2InstancedArrays_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2FramebufferBlit_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2FramebufferMultisample_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2ChromiumEnableFeature_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2ChromiumMapSub_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2Query_1_0 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2VertexArrayObject_1_0 */
+
 static const struct PPB_TCPSocket_1_0 Pnacl_Wrappers_PPB_TCPSocket_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_TCPSocket_Create,
     .IsTCPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_TCPSocket_IsTCPSocket,
@@ -5121,6 +5155,8 @@ static const struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_D
 };
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
+
+/* Not generating wrapper interface for PPB_OpenGLES2DrawBuffers_Dev_1_0 */
 
 static const struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M23_PPB_Printing_Dev_Create,

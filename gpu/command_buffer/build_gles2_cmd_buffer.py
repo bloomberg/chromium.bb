@@ -6946,6 +6946,36 @@ class Function(object):
     else:
       return self.MakeTypedOriginalArgString(prefix, False)
 
+  def MapCTypeToPepperIdlType(self, ctype, is_for_return_type=False):
+    """Converts a C type name to the corresponding Pepper IDL type."""
+    idltype = {
+        'char*': '[out] str_t',
+        'const GLchar* const*': '[out] cstr_t',
+        'const char*': 'cstr_t',
+        'const void*': 'mem_t',
+        'void*': '[out] mem_t',
+        'void**': '[out] mem_ptr_t',
+    }.get(ctype, ctype)
+    # We use "GLxxx_ptr_t" for "GLxxx*".
+    matched = re.match(r'(const )?(GL\w+)\*$', ctype)
+    if matched:
+      idltype = matched.group(2) + '_ptr_t'
+      if not matched.group(1):
+        idltype = '[out] ' + idltype
+    # If an in/out specifier is not specified yet, prepend [in].
+    if idltype[0] != '[':
+      idltype = '[in] ' + idltype
+    # Strip the in/out specifier for a return type.
+    if is_for_return_type:
+      idltype = re.sub(r'\[\w+\] ', '', idltype)
+    return idltype
+
+  def MakeTypedPepperIdlArgStrings(self):
+    """Gets a list of arguments as they need to be for Pepper IDL."""
+    args = self.GetOriginalArgs()
+    return ["%s %s" % (self.MapCTypeToPepperIdlType(arg.type), arg.name)
+            for arg in args]
+
   def GetPepperName(self):
     if self.GetInfo("pepper_name"):
       return self.GetInfo("pepper_name")
@@ -8252,10 +8282,28 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
   def WritePepperGLES2Interface(self, filename, dev):
     """Writes the Pepper OpenGLES interface definition."""
-    file = CHeaderWriter(
-        filename,
-        "// OpenGL ES interface.\n")
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write(_DO_NOT_EDIT_WARNING)
 
+    file.Write("label Chrome {\n")
+    file.Write("  M39 = 1.0\n")
+    file.Write("};\n\n")
+
+    if not dev:
+      # Declare GL types.
+      file.Write("[version=1.0]\n")
+      file.Write("describe {\n")
+      for gltype in ['GLbitfield', 'GLboolean', 'GLbyte', 'GLclampf',
+                     'GLclampx', 'GLenum', 'GLfixed', 'GLfloat', 'GLint',
+                     'GLintptr', 'GLshort', 'GLsizei', 'GLsizeiptr',
+                     'GLubyte', 'GLuint', 'GLushort']:
+        file.Write("  %s;\n" % gltype)
+        file.Write("  %s_ptr_t;\n" % gltype)
+      file.Write("};\n\n")
+
+    # C level typedefs.
+    file.Write("#inline c\n")
     file.Write("#include \"ppapi/c/pp_resource.h\"\n")
     if dev:
       file.Write("#include \"ppapi/c/ppb_opengles2.h\"\n\n")
@@ -8271,28 +8319,29 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         file.Write("typedef %s %s;\n" % (v, k))
       file.Write("#endif  // _WIN64\n")
       file.Write("#endif  // __gl2_h_\n\n")
+    file.Write("#endinl\n")
 
     for interface in self.pepper_interfaces:
       if interface.dev != dev:
         continue
-      file.Write("#define %s_1_0 \"%s;1.0\"\n" %
-                 (interface.GetInterfaceName(), interface.GetInterfaceString()))
-      file.Write("#define %s %s_1_0\n" %
-                 (interface.GetInterfaceName(), interface.GetInterfaceName()))
-
-      file.Write("\nstruct %s {\n" % interface.GetStructName())
+      # Historically, we provide OpenGLES2 interfaces with struct
+      # namespace. Not to break code which uses the interface as
+      # "struct OpenGLES2", we put it in struct namespace.
+      file.Write('\n[macro="%s", force_struct_namespace]\n' %
+                 interface.GetInterfaceName())
+      file.Write("interface %s {\n" % interface.GetStructName())
       for func in self.original_functions:
         if not func.InPepperInterface(interface):
           continue
 
-        original_arg = func.MakeTypedPepperArgString("")
-        context_arg = "PP_Resource context"
-        if len(original_arg):
-          arg = context_arg + ", " + original_arg
-        else:
-          arg = context_arg
-        file.Write("  %s (*%s)(%s);\n" %
-                   (func.return_type, func.GetPepperName(), arg))
+        ret_type = func.MapCTypeToPepperIdlType(func.return_type,
+                                                is_for_return_type=True)
+        func_prefix = "  %s %s(" % (ret_type, func.GetPepperName())
+        file.Write(func_prefix)
+        file.Write("[in] PP_Resource context")
+        for arg in func.MakeTypedPepperIdlArgStrings():
+          file.Write(",\n" + " " * len(func_prefix) + arg)
+        file.Write(");\n")
       file.Write("};\n\n")
 
 
@@ -8497,8 +8546,8 @@ def main(argv):
   if options.output_dir != None:
     os.chdir(options.output_dir)
 
-  gen.WritePepperGLES2Interface("ppapi/c/ppb_opengles2.h", False)
-  gen.WritePepperGLES2Interface("ppapi/c/dev/ppb_opengles2ext_dev.h", True)
+  gen.WritePepperGLES2Interface("ppapi/api/ppb_opengles2.idl", False)
+  gen.WritePepperGLES2Interface("ppapi/api/dev/ppb_opengles2ext_dev.idl", True)
   gen.WriteGLES2ToPPAPIBridge("ppapi/lib/gl/gles2/gles2.c")
   gen.WritePepperGLES2Implementation(
       "ppapi/shared_impl/ppb_opengles2_shared.cc")

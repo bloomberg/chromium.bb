@@ -174,6 +174,21 @@ class CGen(object):
   'interface_t' : 'const void*'
   }
 
+  # Tell how to handle pointers to GL types.
+  for gltype in ['GLbitfield', 'GLboolean', 'GLbyte', 'GLclampf',
+                 'GLclampx', 'GLenum', 'GLfixed', 'GLfloat', 'GLint',
+                 'GLintptr', 'GLshort', 'GLsizei', 'GLsizeiptr',
+                 'GLubyte', 'GLuint', 'GLushort']:
+    ptrtype = gltype + '_ptr_t'
+    TypeMap[ptrtype] = {
+      'in': 'const %s',
+      'inout': '%s',
+      'out': '%s',
+      'return': 'const %s',
+      'store': '%s'
+    }
+    RemapName[ptrtype] = '%s*' % gltype
+
   def __init__(self):
     self.dbg_depth = 0
 
@@ -571,6 +586,22 @@ class CGen(object):
     return out
 
 
+  def DefineUnversionedInterface(self, node, rel):
+    out = '\n'
+    if node.GetProperty('force_struct_namespace'):
+      # Duplicate the definition to put it in struct namespace. This
+      # attribute is only for legacy APIs like OpenGLES2 and new APIs
+      # must not use this. See http://crbug.com/411799
+      out += self.DefineStructInternals(node, rel,
+                                        include_version=False, comment=True)
+    else:
+      # Define an unversioned typedef for the most recent version
+      out += 'typedef struct %s %s;\n' % (
+        self.GetStructName(node, rel, include_version=True),
+        self.GetStructName(node, rel, include_version=False))
+    return out
+
+
   def DefineStruct(self, node, releases, prefix='', comment=False):
     __pychecker__ = 'unusednames=comment,prefix'
     self.LogEnter('DefineStruct %s' % node)
@@ -601,10 +632,7 @@ class CGen(object):
       out = self.DefineStructInternals(node, last_rel,
                                        include_version=True, comment=True)
       if last_rel == newest_stable:
-        # Define an unversioned typedef for the most recent version
-        out += '\ntypedef struct %s %s;\n' % (
-            self.GetStructName(node, last_rel, include_version=True),
-            self.GetStructName(node, last_rel, include_version=False))
+        out += self.DefineUnversionedInterface(node, last_rel)
 
       # Build the rest without comments and with the version number appended
       for rel in build_list[0:-1]:
@@ -619,10 +647,7 @@ class CGen(object):
                                                  include_version=True,
                                                  comment=False)
         if rel == newest_stable:
-          # Define an unversioned typedef for the most recent version
-          out += '\ntypedef struct %s %s;\n' % (
-              self.GetStructName(node, rel, include_version=True),
-              self.GetStructName(node, rel, include_version=False))
+          out += self.DefineUnversionedInterface(node, rel)
 
     self.LogExit('Exit DefineStruct')
     return out
@@ -790,4 +815,3 @@ def main(args):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
-
