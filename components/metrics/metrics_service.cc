@@ -518,8 +518,8 @@ void MetricsService::OnAppEnterForeground() {
   StartSchedulerIfNecessary();
 }
 #else
-void MetricsService::LogNeedForCleanShutdown(PrefService* local_state) {
-  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+void MetricsService::LogNeedForCleanShutdown() {
+  local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
   // Redundant setting to be sure we call for a clean shutdown.
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }

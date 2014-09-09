@@ -1428,8 +1428,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/179143
 #if !defined(OS_ANDROID)
   // Start watching for a hang.
-  metrics::MetricsService::LogNeedForCleanShutdown(
-      g_browser_process->local_state());
+  browser_process_->metrics_service()->LogNeedForCleanShutdown();
 #endif
 
 #if defined(ENABLE_FULL_PRINTING)

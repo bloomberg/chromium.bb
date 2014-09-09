@@ -179,7 +179,7 @@ class MetricsService : public base::HistogramFlattener {
   void OnAppEnterForeground();
 #else
   // Set the dirty flag, which will require a later call to LogCleanShutdown().
-  static void LogNeedForCleanShutdown(PrefService* local_state);
+  void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   static void SetExecutionPhase(ExecutionPhase execution_phase,
