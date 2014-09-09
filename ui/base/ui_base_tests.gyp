@@ -14,6 +14,7 @@
       # buildbot code to reference the new 'ui_base_unittests' target.
       # After buildbot is updated, we can make the changes in Chromium and
       # remove 'ui_unittests' target. crbug.com/331829
+      # GN version: //ui/base:unittests
       'target_name': 'ui_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
