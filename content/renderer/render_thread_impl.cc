@@ -608,9 +608,6 @@ void RenderThreadImpl::Shutdown() {
   RemoveFilter(audio_input_message_filter_.get());
   audio_input_message_filter_ = NULL;
 
-  RemoveFilter(audio_message_filter_.get());
-  audio_message_filter_ = NULL;
-
 #if defined(ENABLE_WEBRTC)
   RTCPeerConnectionHandler::DestructAllHandlers();
 
@@ -632,6 +629,11 @@ void RenderThreadImpl::Shutdown() {
   }
 
   media_thread_.reset();
+
+  // AudioMessageFilter may be accessed on |media_thread_|, so shutdown after.
+  RemoveFilter(audio_message_filter_.get());
+  audio_message_filter_ = NULL;
+
   compositor_thread_.reset();
   input_handler_manager_.reset();
   if (input_event_filter_.get()) {

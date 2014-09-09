@@ -21,7 +21,9 @@ AudioRendererMixerManager::AudioRendererMixerManager(
 }
 
 AudioRendererMixerManager::~AudioRendererMixerManager() {
-  DCHECK(mixers_.empty());
+  // References to AudioRendererMixers may be owned by garbage collected
+  // objects.  During process shutdown they may be leaked, so, transitively,
+  // |mixers_| may leak (i.e., may be non-empty at this time) as well.
 }
 
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
