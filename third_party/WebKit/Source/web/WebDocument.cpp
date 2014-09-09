@@ -49,6 +49,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLLinkElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -334,6 +335,15 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
     if (exceptionState.hadException())
         return v8::Handle<v8::Value>();
     return constructor.v8Value();
+}
+
+WebURL WebDocument::manifestURL() const
+{
+    const Document* document = constUnwrap<Document>();
+    HTMLLinkElement* linkElement = document->linkManifest();
+    if (!linkElement)
+        return WebURL();
+    return linkElement->href();
 }
 
 WebDocument::WebDocument(const PassRefPtrWillBeRawPtr<Document>& elem)

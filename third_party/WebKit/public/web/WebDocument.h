@@ -143,6 +143,8 @@ public:
 
     BLINK_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
 
+    BLINK_EXPORT WebURL manifestURL() const;
+
 #if BLINK_IMPLEMENTATION
     WebDocument(const PassRefPtrWillBeRawPtr<Document>&);
     WebDocument& operator=(const PassRefPtrWillBeRawPtr<Document>&);
