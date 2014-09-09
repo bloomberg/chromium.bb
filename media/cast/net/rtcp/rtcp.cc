@@ -18,7 +18,7 @@ using base::TimeDelta;
 namespace media {
 namespace cast {
 
-static const int32 kMaxRttMs = 10000;  // 10 seconds.
+static const int32 kStatsHistoryWindowMs = 10000;  // 10 seconds.
 // Reject packets that are older than 0.5 seconds older than
 // the newest packet we've seen so far. This protect internal
 // states from crazy routers. (Based on RRTR)
@@ -72,9 +72,7 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
       last_report_truncated_ntp_(0),
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
       lip_sync_rtp_timestamp_(0),
-      lip_sync_ntp_timestamp_(0),
-      min_rtt_(TimeDelta::FromMilliseconds(kMaxRttMs)),
-      number_of_rtt_in_avg_(0) {
+      lip_sync_ntp_timestamp_(0) {
 }
 
 Rtcp::~Rtcp() {}
@@ -211,11 +209,9 @@ void Rtcp::SendRtcpFromRtpReceiver(
   if (rtp_receiver_statistics) {
     report_block.remote_ssrc = 0;            // Not needed to set send side.
     report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
-    if (rtp_receiver_statistics) {
-      rtp_receiver_statistics->GetStatistics(
-          &report_block.fraction_lost, &report_block.cumulative_lost,
-          &report_block.extended_high_sequence_number, &report_block.jitter);
-    }
+    rtp_receiver_statistics->GetStatistics(
+        &report_block.fraction_lost, &report_block.cumulative_lost,
+        &report_block.extended_high_sequence_number, &report_block.jitter);
 
     report_block.last_sr = last_report_truncated_ntp_;
     if (!time_last_report_received_.is_null()) {
@@ -271,8 +267,9 @@ void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
 
   // TODO(miu): This clock offset calculation does not account for packet
   // transit time over the network.  End2EndTest.EvilNetwork confirms that this
-  // contributes a very significant source of error here.  Fix this along with
-  // the RTT clean-up.
+  // contributes a very significant source of error here.  Determine whether
+  // RTT should be factored-in, and how that changes the rest of the
+  // calculation.
   const base::TimeDelta measured_offset =
       now - ConvertNtpToTimeTicks(ntp_seconds, ntp_fraction);
   local_clock_ahead_by_.Update(now, measured_offset);
@@ -326,8 +323,20 @@ void Rtcp::OnReceivedDelaySinceLastReport(uint32 last_report,
     return;  // Feedback on another report.
   }
 
-  base::TimeDelta sender_delay = clock_->NowTicks() - it->second;
-  UpdateRtt(sender_delay, ConvertFromNtpDiff(delay_since_last_report));
+  const base::TimeDelta sender_delay = clock_->NowTicks() - it->second;
+  const base::TimeDelta receiver_delay =
+      ConvertFromNtpDiff(delay_since_last_report);
+  current_round_trip_time_ = sender_delay - receiver_delay;
+  // If the round trip time was computed as less than 1 ms, assume clock
+  // imprecision by one or both peers caused a bad value to be calculated.
+  // While plenty of networks do easily achieve less than 1 ms round trip time,
+  // such a level of precision cannot be measured with our approach; and 1 ms is
+  // good enough to represent "under 1 ms" for our use cases.
+  current_round_trip_time_ =
+      std::max(current_round_trip_time_, base::TimeDelta::FromMilliseconds(1));
+
+  if (!rtt_callback_.is_null())
+    rtt_callback_.Run(current_round_trip_time_);
 }
 
 void Rtcp::OnReceivedCastFeedback(const RtcpCastMessage& cast_message) {
@@ -348,7 +357,8 @@ void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
   last_reports_sent_map_[last_report] = now;
   last_reports_sent_queue_.push(std::make_pair(last_report, now));
 
-  base::TimeTicks timeout = now - TimeDelta::FromMilliseconds(kMaxRttMs);
+  const base::TimeTicks timeout =
+      now - TimeDelta::FromMilliseconds(kStatsHistoryWindowMs);
 
   // Cleanup old statistics older than |timeout|.
   while (!last_reports_sent_queue_.empty()) {
@@ -360,48 +370,6 @@ void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
       break;
     }
   }
-}
-
-void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
-                     const base::TimeDelta& receiver_delay) {
-  base::TimeDelta rtt = sender_delay - receiver_delay;
-  // TODO(miu): Find out why this must be >= 1 ms, and remove the fudge if it's
-  // bogus.
-  rtt = std::max(rtt, base::TimeDelta::FromMilliseconds(1));
-  rtt_ = rtt;
-  min_rtt_ = std::min(min_rtt_, rtt);
-  max_rtt_ = std::max(max_rtt_, rtt);
-
-  // TODO(miu): Replace "average for all time" with an EWMA, or suitable
-  // "average over recent past" mechanism.
-  if (number_of_rtt_in_avg_ != 0) {
-    // Integer math equivalent of (ac/(ac+1.0))*avg_rtt_ + (1.0/(ac+1.0))*rtt).
-    // (TimeDelta only supports math with other TimeDeltas and int64s.)
-    avg_rtt_ = (avg_rtt_ * number_of_rtt_in_avg_ + rtt) /
-        (number_of_rtt_in_avg_ + 1);
-  } else {
-    avg_rtt_ = rtt;
-  }
-  number_of_rtt_in_avg_++;
-
-  if (!rtt_callback_.is_null())
-    rtt_callback_.Run(rtt, avg_rtt_, min_rtt_, max_rtt_);
-}
-
-bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
-               base::TimeDelta* min_rtt, base::TimeDelta* max_rtt) const {
-  DCHECK(rtt) << "Invalid argument";
-  DCHECK(avg_rtt) << "Invalid argument";
-  DCHECK(min_rtt) << "Invalid argument";
-  DCHECK(max_rtt) << "Invalid argument";
-
-  if (number_of_rtt_in_avg_ == 0) return false;
-
-  *rtt = rtt_;
-  *avg_rtt = avg_rtt_;
-  *min_rtt = min_rtt_;
-  *max_rtt = max_rtt_;
-  return true;
 }
 
 void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {

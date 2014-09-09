@@ -27,7 +27,6 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
-      rtt_available_(false),
       rtcp_interval_(rtcp_interval),
       max_frame_rate_(max_frame_rate),
       frames_in_encoder_(0),
@@ -39,7 +38,9 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       congestion_control_(congestion_control),
       is_audio_(is_audio),
       weak_factory_(this) {
+  DCHECK(transport_sender_);
   DCHECK_GT(rtp_timebase_, 0);
+  DCHECK(congestion_control_);
   SetTargetPlayoutDelay(playout_delay);
   send_target_playout_delay_ = false;
   memset(frame_rtp_timestamps_, 0, sizeof(frame_rtp_timestamps_));
@@ -88,15 +89,9 @@ void FrameSender::SendRtcpReport(bool schedule_future_reports) {
     ScheduleNextRtcpReport();
 }
 
-void FrameSender::OnReceivedRtt(base::TimeDelta rtt,
-                                base::TimeDelta avg_rtt,
-                                base::TimeDelta min_rtt,
-                                base::TimeDelta max_rtt) {
-  rtt_available_ = true;
-  rtt_ = rtt;
-  avg_rtt_ = avg_rtt;
-  min_rtt_ = min_rtt;
-  max_rtt_ = max_rtt;
+void FrameSender::OnMeasuredRoundTripTime(base::TimeDelta rtt) {
+  DCHECK(rtt > base::TimeDelta());
+  current_round_trip_time_ = rtt;
 }
 
 void FrameSender::SetTargetPlayoutDelay(
@@ -241,22 +236,11 @@ void FrameSender::SendEncodedFrame(
 void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  base::TimeDelta rtt;
-  base::TimeDelta avg_rtt;
-  base::TimeDelta min_rtt;
-  base::TimeDelta max_rtt;
-  if (is_rtt_available()) {
-    rtt = rtt_;
-    avg_rtt = avg_rtt_;
-    min_rtt = min_rtt_;
-    max_rtt = max_rtt_;
+  const bool have_valid_rtt = current_round_trip_time_ > base::TimeDelta();
+  if (have_valid_rtt) {
+    congestion_control_->UpdateRtt(current_round_trip_time_);
 
-    congestion_control_->UpdateRtt(rtt);
-
-    // Don't use a RTT lower than our average.
-    rtt = std::max(rtt, avg_rtt);
-
-    // Having the RTT values implies the receiver sent back a receiver report
+    // Having the RTT value implies the receiver sent back a receiver report
     // based on it having received a report from here.  Therefore, ensure this
     // sender stops aggressively sending reports.
     if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
@@ -265,9 +249,6 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       num_aggressive_rtcp_reports_sent_ = kNumAggressiveReportsSentAtStart;
       ScheduleNextRtcpReport();
     }
-  } else {
-    // We have no measured value use default.
-    rtt = base::TimeDelta::FromMilliseconds(kStartRttMs);
   }
 
   if (last_send_time_.is_null())

@@ -50,12 +50,7 @@ class FrameSender {
   void ScheduleNextRtcpReport();
   void SendRtcpReport(bool schedule_future_reports);
 
-  void OnReceivedRtt(base::TimeDelta rtt,
-                     base::TimeDelta avg_rtt,
-                     base::TimeDelta min_rtt,
-                     base::TimeDelta max_rtt);
-
-  bool is_rtt_available() const { return rtt_available_; }
+  void OnMeasuredRoundTripTime(base::TimeDelta rtt);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
 
@@ -67,13 +62,6 @@ class FrameSender {
   CastTransportSender* const transport_sender_;
 
   const uint32 ssrc_;
-
-  // RTT information from RTCP.
-  bool rtt_available_;
-  base::TimeDelta rtt_;
-  base::TimeDelta avg_rtt_;
-  base::TimeDelta min_rtt_;
-  base::TimeDelta max_rtt_;
 
  protected:
   // Schedule and execute periodic checks for re-sending packets.  If no
@@ -174,6 +162,9 @@ class FrameSender {
   // through the Record/GetXXX() methods.
   base::TimeTicks frame_reference_times_[256];
   RtpTimestamp frame_rtp_timestamps_[256];
+
+  // The most recently measured round trip time.
+  base::TimeDelta current_round_trip_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;

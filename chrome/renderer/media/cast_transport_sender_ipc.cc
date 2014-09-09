@@ -90,21 +90,14 @@ void CastTransportSenderIPC::OnRawEvents(
   raw_events_callback_.Run(packet_events, frame_events);
 }
 
-void CastTransportSenderIPC::OnRtt(
-    uint32 ssrc,
-    const media::cast::RtcpRttReport& rtt_report) {
+void CastTransportSenderIPC::OnRtt(uint32 ssrc, base::TimeDelta rtt) {
   ClientMap::iterator it = clients_.find(ssrc);
   if (it == clients_.end()) {
     LOG(ERROR) << "Received RTT report from for unknown SSRC: " << ssrc;
     return;
   }
-  if (it->second.rtt_cb.is_null())
-    return;
-  it->second.rtt_cb.Run(
-      rtt_report.rtt,
-      rtt_report.avg_rtt,
-      rtt_report.min_rtt,
-      rtt_report.max_rtt);
+  if (!it->second.rtt_cb.is_null())
+    it->second.rtt_cb.Run(rtt);
 }
 
 void CastTransportSenderIPC::OnRtcpCastMessage(

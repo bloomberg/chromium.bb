@@ -61,16 +61,8 @@ void CastTransportHostFilter::SendRawEvents(
 
 void CastTransportHostFilter::SendRtt(int32 channel_id,
                                       uint32 ssrc,
-                                      base::TimeDelta rtt,
-                                      base::TimeDelta avg_rtt,
-                                      base::TimeDelta min_rtt,
-                                      base::TimeDelta max_rtt) {
-  media::cast::RtcpRttReport report;
-  report.rtt = rtt;
-  report.avg_rtt = avg_rtt;
-  report.min_rtt = min_rtt;
-  report.max_rtt = max_rtt;
-  Send(new CastMsg_Rtt(channel_id, ssrc, report));
+                                      base::TimeDelta rtt) {
+  Send(new CastMsg_Rtt(channel_id, ssrc, rtt));
 }
 
 void CastTransportHostFilter::SendCastMessage(

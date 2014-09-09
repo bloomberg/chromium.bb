@@ -71,7 +71,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       transport_config,
       base::Bind(&AudioSender::OnReceivedCastFeedback,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&AudioSender::OnReceivedRtt, weak_factory_.GetWeakPtr()));
+      base::Bind(&AudioSender::OnMeasuredRoundTripTime,
+                 weak_factory_.GetWeakPtr()));
 }
 
 AudioSender::~AudioSender() {}

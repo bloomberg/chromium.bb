@@ -89,15 +89,6 @@ class Rtcp {
   // this session, e.g. SSRC doesn't match.
   bool IncomingRtcpPacket(const uint8* data, size_t length);
 
-  // TODO(miu): Clean up this method and downstream code: Only VideoSender uses
-  // this (for congestion control), and only the |rtt| and |avg_rtt| values, and
-  // it's not clear that any of the downstream code is doing the right thing
-  // with this data.
-  bool Rtt(base::TimeDelta* rtt,
-           base::TimeDelta* avg_rtt,
-           base::TimeDelta* min_rtt,
-           base::TimeDelta* max_rtt) const;
-
   // If available, returns true and sets the output arguments to the latest
   // lip-sync timestamps gleaned from the sender reports.  While the sender
   // provides reference NTP times relative to its own wall clock, the
@@ -108,9 +99,13 @@ class Rtcp {
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
 
+  // If greater than zero, this is the last measured network round trip time.
+  base::TimeDelta current_round_trip_time() const {
+    return current_round_trip_time_;
+  }
+
   static bool IsRtcpPacket(const uint8* packet, size_t length);
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
-  const base::TimeDelta& rtt() const { return rtt_; }
 
  protected:
   void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);
@@ -123,9 +118,6 @@ class Rtcp {
                                       uint32 delay_since_last_report);
 
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_message);
-
-  void UpdateRtt(const base::TimeDelta& sender_delay,
-                 const base::TimeDelta& receiver_delay);
 
   void SaveLastSentNtpTime(const base::TimeTicks& now,
                            uint32 last_ntp_seconds,
@@ -167,11 +159,10 @@ class Rtcp {
   uint32 lip_sync_rtp_timestamp_;
   uint64 lip_sync_ntp_timestamp_;
 
-  base::TimeDelta rtt_;
-  base::TimeDelta min_rtt_;
-  base::TimeDelta max_rtt_;
-  int number_of_rtt_in_avg_;
-  base::TimeDelta avg_rtt_;
+  // The last measured network round trip time.  This is updated with each
+  // sender report --> receiver report round trip.  If this is zero, then the
+  // round trip time has not been measured yet.
+  base::TimeDelta current_round_trip_time_;
 
   base::TimeTicks largest_seen_timestamp_;
 

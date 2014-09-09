@@ -33,8 +33,5 @@ RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() {}
 RtcpEvent::RtcpEvent() : type(UNKNOWN), packet_id(0u) {}
 RtcpEvent::~RtcpEvent() {}
 
-RtcpRttReport::RtcpRttReport() {}
-RtcpRttReport::~RtcpRttReport() {}
-
 }  // namespace cast
 }  // namespace media

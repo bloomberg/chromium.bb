@@ -34,12 +34,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       int32 channel_id,
       const std::vector<media::cast::PacketEvent>& packet_events,
       const std::vector<media::cast::FrameEvent>& frame_events);
-  void SendRtt(int32 channel_id,
-               uint32 ssrc,
-               base::TimeDelta rtt,
-               base::TimeDelta avg_rtt,
-               base::TimeDelta min_rtt,
-               base::TimeDelta max_rtt);
+  void SendRtt(int32 channel_id, uint32 ssrc, base::TimeDelta rtt);
   void SendCastMessage(int32 channel_id,
                        uint32 ssrc,
                        const media::cast::RtcpCastMessage& cast_message);

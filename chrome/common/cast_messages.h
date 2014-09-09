@@ -82,19 +82,12 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpCastMessage)
   IPC_STRUCT_TRAITS_MEMBER(missing_frames_and_packets)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpRttReport)
-  IPC_STRUCT_TRAITS_MEMBER(rtt)
-  IPC_STRUCT_TRAITS_MEMBER(avg_rtt)
-  IPC_STRUCT_TRAITS_MEMBER(min_rtt)
-  IPC_STRUCT_TRAITS_MEMBER(max_rtt)
-IPC_STRUCT_TRAITS_END()
-
 // Cast messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL3(CastMsg_Rtt,
                      int32 /* channel_id */,
                      uint32 /* ssrc */,
-                     media::cast::RtcpRttReport /* rtt_report */)
+                     base::TimeDelta /* rtt */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_RtcpCastMessage,
                      int32 /* channel_id */,

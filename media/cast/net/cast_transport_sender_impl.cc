@@ -222,12 +222,14 @@ void CastTransportSenderImpl::ResendFrameForKickstart(uint32 ssrc,
                                                       uint32 frame_id) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     DCHECK(audio_rtcp_session_);
-    audio_sender_->ResendFrameForKickstart(frame_id,
-                                           audio_rtcp_session_->rtt());
+    audio_sender_->ResendFrameForKickstart(
+        frame_id,
+        audio_rtcp_session_->current_round_trip_time());
   } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
     DCHECK(video_rtcp_session_);
-    video_sender_->ResendFrameForKickstart(frame_id,
-                                           video_rtcp_session_->rtt());
+    video_sender_->ResendFrameForKickstart(
+        frame_id,
+        video_rtcp_session_->current_round_trip_time());
   } else {
     NOTREACHED() << "Invalid request for kickstart.";
   }
@@ -338,7 +340,7 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
     last_byte_acked_for_audio_ =
         std::max(acked_bytes, last_byte_acked_for_audio_);
   } else if (video_sender_ && video_sender_->ssrc() == ssrc) {
-    dedup_info.resend_interval = video_rtcp_session_->rtt();
+    dedup_info.resend_interval = video_rtcp_session_->current_round_trip_time();
 
     // Only use audio stream to dedup if there is one.
     if (audio_sender_) {

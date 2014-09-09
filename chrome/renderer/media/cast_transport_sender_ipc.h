@@ -51,7 +51,7 @@ class CastTransportSenderIPC
       media::cast::CastTransportStatus status);
   void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events,
                    const std::vector<media::cast::FrameEvent>& frame_events);
-  void OnRtt(uint32 ssrc, const media::cast::RtcpRttReport& rtt_report);
+  void OnRtt(uint32 ssrc, base::TimeDelta rtt);
   void OnRtcpCastMessage(uint32 ssrc,
                          const media::cast::RtcpCastMessage& cast_message);
 

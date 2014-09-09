@@ -32,7 +32,6 @@ const uint32 kStartFrameId = UINT32_C(0xffffffff);
 // can handle wrap around and compare two frame IDs.
 const int kMaxUnackedFrames = 120;
 
-const int kStartRttMs = 20;
 const int64 kCastMessageUpdateIntervalMs = 33;
 const int64 kNackRepeatIntervalMs = 30;
 

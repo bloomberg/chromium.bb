@@ -77,7 +77,8 @@ VideoSender::VideoSender(
       transport_config,
       base::Bind(&VideoSender::OnReceivedCastFeedback,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&VideoSender::OnReceivedRtt, weak_factory_.GetWeakPtr()));
+      base::Bind(&VideoSender::OnMeasuredRoundTripTime,
+                 weak_factory_.GetWeakPtr()));
 }
 
 VideoSender::~VideoSender() {

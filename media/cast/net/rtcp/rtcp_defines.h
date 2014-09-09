@@ -104,21 +104,8 @@ struct RtcpEvent {
   uint16 packet_id;
 };
 
-struct RtcpRttReport {
-  RtcpRttReport();
-  ~RtcpRttReport();
-
-  base::TimeDelta rtt;
-  base::TimeDelta avg_rtt;
-  base::TimeDelta min_rtt;
-  base::TimeDelta max_rtt;
-};
-
 typedef base::Callback<void(const RtcpCastMessage&)> RtcpCastMessageCallback;
-typedef base::Callback<void(base::TimeDelta,
-                            base::TimeDelta,
-                            base::TimeDelta,
-                            base::TimeDelta)> RtcpRttCallback;
+typedef base::Callback<void(base::TimeDelta)> RtcpRttCallback;
 typedef
 base::Callback<void(const RtcpReceiverLogMessage&)> RtcpLogMessageCallback;
 
