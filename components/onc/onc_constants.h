@@ -29,7 +29,6 @@ ONC_EXPORT extern const char kAugmentationActiveSetting[];
 // The one of different setting sources (user/device policy, user/shared
 // settings) that has highest priority over the others.
 ONC_EXPORT extern const char kAugmentationEffectiveSetting[];
-ONC_EXPORT extern const char kAugmentationUnmanaged[];
 ONC_EXPORT extern const char kAugmentationUserPolicy[];
 ONC_EXPORT extern const char kAugmentationDevicePolicy[];
 ONC_EXPORT extern const char kAugmentationUserSetting[];

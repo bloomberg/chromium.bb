@@ -316,14 +316,8 @@ var availableTests = [
       "stub_wifi2",
       callbackPass(function(result) {
         assertEq({
-                   "Connectable": {
-                     "Active": true,
-                     "Effective": "Unmanaged"
-                   },
-                   "ConnectionState": {
-                     "Active": "NotConnected",
-                     "Effective": "Unmanaged"
-                   },
+                   "Connectable": true,
+                   "ConnectionState": "NotConnected",
                    "GUID": "stub_wifi2",
                    "Name": {
                      "Active": "wifi2_PSK",
@@ -340,14 +334,8 @@ var availableTests = [
                        "Active": false,
                        "UserEditable": true
                      },
-                     "Frequency" : {
-                       "Active": 5000,
-                       "Effective": "Unmanaged"
-                     },
-                     "FrequencyList" : {
-                       "Active": [2400, 5000],
-                       "Effective": "Unmanaged"
-                     },
+                     "Frequency" : 5000,
+                     "FrequencyList" : [2400, 5000],
                      "Passphrase": {
                        "Effective": "UserSetting",
                        "UserEditable": true,
@@ -363,10 +351,7 @@ var availableTests = [
                        "Effective": "UserPolicy",
                        "UserPolicy": "WPA-PSK"
                      },
-                     "SignalStrength": {
-                       "Active": 80,
-                       "Effective": "Unmanaged"
-                     }
+                     "SignalStrength": 80,
                    }
                  }, result);
       }));

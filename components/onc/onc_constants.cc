@@ -9,7 +9,6 @@ namespace onc {
 
 const char kAugmentationActiveSetting[] = "Active";
 const char kAugmentationEffectiveSetting[] = "Effective";
-const char kAugmentationUnmanaged[] = "Unmanaged";
 const char kAugmentationUserPolicy[] = "UserPolicy";
 const char kAugmentationDevicePolicy[] = "DevicePolicy";
 const char kAugmentationUserSetting[] = "UserSetting";
