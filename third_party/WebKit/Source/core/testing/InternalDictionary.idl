@@ -6,8 +6,15 @@
     GarbageCollected
 ] dictionary InternalDictionary {
     long longMember;
-    DOMString stringMember = "defaultStringValue";
-    boolean? booleanOrNullMember = null;
-    double? doubleOrNullMember;
+    long longMemberWithDefault = 42;
+    long? longOrNullMember;
+    long? longOrNullMemberWithDefault = null;
+    boolean booleanMember;
+    double doubleMember;
+    DOMString stringMember;
+    DOMString stringMemberWithDefault = "defaultStringValue";
     sequence<DOMString> stringSequenceMember;
+    sequence<DOMString>? stringSequenceOrNullMember;
+    Element elementMember;
+    Element? elementOrNullMember;
 };

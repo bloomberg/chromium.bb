@@ -21,7 +21,7 @@ namespace blink {
     Dictionary dictionary(v8Value, isolate);
     {% for member in members %}
     {{member.cpp_type}} {{member.name}};
-    if (DictionaryHelper::get(dictionary, "{{member.name}}", {{member.name}}))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "{{member.name}}", {{member.name}}))
         impl->{{member.setter_name}}({{member.name}});
     {% endfor %}
     return impl;

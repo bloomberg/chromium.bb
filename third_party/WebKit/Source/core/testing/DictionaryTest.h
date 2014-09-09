@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -36,13 +37,22 @@ private:
     void reset();
 
     // The reason to use Nullable<T> is convenience; we use Nullable<T> here to
-    // record whether the member field is set or not. |stringMember| isn't
-    // wrapped with Nullable because |stringMember| has a non-null default value
-    Nullable<unsigned> m_longMember;
+    // record whether the member field is set or not. Some members are not
+    // wrapped with Nullable because:
+    //  - |longMemberWithDefault| has a non-null default value
+    //  - String and PtrTypes can express whether they are null
+    Nullable<int> m_longMember;
+    int m_longMemberWithDefault;
+    Nullable<int> m_longOrNullMember;
+    Nullable<int> m_longOrNullMemberWithDefault;
+    Nullable<bool> m_booleanMember;
+    Nullable<double> m_doubleMember;
     String m_stringMember;
-    Nullable<bool> m_booleanOrNullMember;
-    Nullable<double> m_doubleOrNullMember;
+    String m_stringMemberWithDefault;
     Nullable<Vector<String> > m_stringSequenceMember;
+    Nullable<Vector<String> > m_stringSequenceOrNullMember;
+    RefPtrWillBeMember<Element> m_elementMember;
+    RefPtrWillBeMember<Element> m_elementOrNullMember;
 };
 
 } // namespace blink

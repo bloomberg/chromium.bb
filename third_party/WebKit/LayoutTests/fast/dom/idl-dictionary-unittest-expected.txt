@@ -5,24 +5,51 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test for setting an empty dictionary
 PASS dict.longMember is undefined.
-PASS dict.stringMember is "defaultStringValue"
-PASS dict.booleanOrNullMember is null
-PASS dict.doubleOrNullMember is undefined.
+PASS dict.longMemberWithDefault is 42
+PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMemberWithDefault is null
+PASS dict.booleanMember is undefined.
+PASS dict.doubleMember is undefined.
+PASS dict.stringMember is undefined.
+PASS dict.stringMemberWithDefault is "defaultStringValue"
 PASS dict.stringSequenceMember is undefined.
+PASS dict.stringSequenceOrNullMember is undefined.
+PASS dict.elementMember is undefined.
+PASS dict.elementOrNullMember is undefined.
 
 Test for setting undefined
 PASS dict.longMember is undefined.
-PASS dict.stringMember is "defaultStringValue"
-PASS dict.booleanOrNullMember is null
-PASS dict.doubleOrNullMember is undefined.
+PASS dict.longMemberWithDefault is 42
+PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMemberWithDefault is null
+PASS dict.booleanMember is undefined.
+PASS dict.doubleMember is undefined.
+PASS dict.stringMember is undefined.
+PASS dict.stringMemberWithDefault is "defaultStringValue"
 PASS dict.stringSequenceMember is undefined.
+PASS dict.stringSequenceOrNullMember is undefined.
+PASS dict.elementMember is undefined.
+PASS dict.elementOrNullMember is undefined.
 
 Test for setting valid values
-PASS dict.longMember is 3
-PASS dict.stringMember is "modifiedString"
-PASS dict.booleanOrNullMember is true
-PASS dict.doubleOrNullMember is 2.0
+PASS dict.longMember is 1
+PASS dict.longMemberWithDefault is 2
+PASS dict.longOrNullMember is 3
+PASS dict.longOrNullMemberWithDefault is 4
+PASS dict.stringMember is "modifiedString1"
+PASS dict.stringMemberWithDefault is "modifiedString2"
+PASS dict.booleanMember is true
+PASS dict.doubleMember is 3.14
 PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
+PASS dict.stringSequenceOrNullMember is []
+PASS dict.elementMember is element1
+PASS dict.elementOrNullMember is undefined.
+
+Test for explicit undefined or null, and missing members
+PASS dict.longMember is undefined.
+PASS dict.longMemberWithDefault is 42
+PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMemberWithDefault is null
 
 Test for setting invalid member
 PASS dict.invalidMember is undefined.

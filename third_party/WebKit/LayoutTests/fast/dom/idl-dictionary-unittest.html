@@ -10,48 +10,83 @@ if (window.internals && internals.dictionaryTest) {
     dictionaryTest.set({});
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
-    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
-    shouldBeNull('dict.booleanOrNullMember');
-    shouldBeUndefined('dict.doubleOrNullMember');
+    shouldBe('dict.longMemberWithDefault', '42');
+    shouldBeUndefined('dict.longOrNullMember');
+    shouldBeNull('dict.longOrNullMemberWithDefault');
+    shouldBeUndefined('dict.booleanMember');
+    shouldBeUndefined('dict.doubleMember');
+    shouldBeUndefined('dict.stringMember');
+    shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.stringSequenceMember');
+    shouldBeUndefined('dict.stringSequenceOrNullMember');
+    shouldBeUndefined('dict.elementMember');
+    shouldBeUndefined('dict.elementOrNullMember');
     debug('');
 
     debug('Test for setting undefined');
     dictionaryTest.set(undefined);
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
-    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
-    shouldBeNull('dict.booleanOrNullMember');
-    shouldBeUndefined('dict.doubleOrNullMember');
+    shouldBe('dict.longMemberWithDefault', '42');
+    shouldBeUndefined('dict.longOrNullMember');
+    shouldBeNull('dict.longOrNullMemberWithDefault');
+    shouldBeUndefined('dict.booleanMember');
+    shouldBeUndefined('dict.doubleMember');
+    shouldBeUndefined('dict.stringMember');
+    shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.stringSequenceMember');
+    shouldBeUndefined('dict.stringSequenceOrNullMember');
+    shouldBeUndefined('dict.elementMember');
+    shouldBeUndefined('dict.elementOrNullMember');
     debug('');
+
+    var element1 = document.createElement('div');
 
     debug('Test for setting valid values');
-    dictionaryTest.set({longMember: 3, stringMember: 'modifiedString',
-              booleanOrNullMember: true, doubleOrNullMember: 2.0,
-              stringSequenceMember: ['foo', 'bar', 'baz']});
+    dictionaryTest.set({
+        longMember: 1,
+        longMemberWithDefault: 2,
+        longOrNullMember: 3,
+        longOrNullMemberWithDefault: 4,
+        stringMember: 'modifiedString1',
+        stringMemberWithDefault: 'modifiedString2',
+        booleanMember: true,
+        doubleMember: 3.14,
+        stringSequenceMember: ['foo', 'bar', 'baz'],
+        stringSequenceOrNullMember: [],
+        elementMember: element1,
+        elementOrNullMember: null,
+    });
     dict = dictionaryTest.get();
-    shouldBe('dict.longMember', '3');
-    shouldBeEqualToString('dict.stringMember', 'modifiedString');
-    shouldBeTrue('dict.booleanOrNullMember');
-    shouldBe('dict.doubleOrNullMember', '2.0');
+    shouldBe('dict.longMember', '1');
+    shouldBe('dict.longMemberWithDefault', '2');
+    shouldBe('dict.longOrNullMember', '3');
+    shouldBe('dict.longOrNullMemberWithDefault', '4');
+    shouldBeEqualToString('dict.stringMember', 'modifiedString1');
+    shouldBeEqualToString('dict.stringMemberWithDefault', 'modifiedString2');
+    shouldBeTrue('dict.booleanMember');
+    shouldBe('dict.doubleMember', '3.14');
     shouldBe('dict.stringSequenceMember', '["foo", "bar", "baz"]');
+    shouldBe('dict.stringSequenceOrNullMember', '[]');
+    shouldBe('dict.elementMember', 'element1');
+    // This will be undefined as the spec says
+    shouldBeUndefined('dict.elementOrNullMember');
     debug('');
 
-    // FIXME: Following test doesn't pass. Make it pass.
-/*
     debug('Test for explicit undefined or null, and missing members');
-    dictionaryTest.reset();
-    dictionaryTest.set({longMember: undefined, stringMember: undefined,
-                        booleanOrNullMember: null});
+    dictionaryTest.set({
+        longMember: undefined,
+        longMemberWithDefault: null,
+        longOrNullMember: undefined,
+        longOrNullMemberWithDefault: null,
+    });
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
-    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
-    shouldBeNull('dict.booleanOrNullMember');
-    shouldBeUndefined('dict.doubleOrNullMember');
-    shouldBeUndefined('dict.stringSequenceMember');
+    shouldBe('dict.longMemberWithDefault', '42');
+    shouldBeUndefined('dict.longOrNullMember');
+    // Nullable and its default value is null
+    shouldBeNull('dict.longOrNullMemberWithDefault');
     debug('');
-*/
 
     debug('Test for setting invalid member');
     dictionaryTest.set({invalidMember: 'shouldNotBeSet'});

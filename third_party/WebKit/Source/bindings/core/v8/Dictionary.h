@@ -134,9 +134,9 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
 
-private:
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
 
+private:
     v8::Handle<v8::Value> m_options;
     v8::Isolate* m_isolate;
 };
@@ -156,6 +156,14 @@ struct DictionaryHelper {
     static bool get(const Dictionary&, const String& key, T& value);
     template <typename T>
     static bool get(const Dictionary&, const String& key, T& value, bool& hasValue);
+    template <typename T>
+    static bool getWithUndefinedOrNullCheck(const Dictionary& dictionary, const String& key, T& value)
+    {
+        v8::Local<v8::Value> v8Value;
+        if (!dictionary.getKey(key, v8Value) || isUndefinedOrNull(v8Value))
+            return false;
+        return DictionaryHelper::get(dictionary, key, value);
+    }
     template <template <typename> class PointerType, typename T>
     static bool get(const Dictionary&, const String& key, PointerType<T>& value);
     template <typename T>

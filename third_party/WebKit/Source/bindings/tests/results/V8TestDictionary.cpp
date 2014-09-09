@@ -21,43 +21,43 @@ TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Va
     // https://crbug.com/321462
     Dictionary dictionary(v8Value, isolate);
     bool booleanMember;
-    if (DictionaryHelper::get(dictionary, "booleanMember", booleanMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "booleanMember", booleanMember))
         impl->setBooleanMember(booleanMember);
     double doubleOrNullMember;
-    if (DictionaryHelper::get(dictionary, "doubleOrNullMember", doubleOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember))
         impl->setDoubleOrNullMember(doubleOrNullMember);
     int longMember;
-    if (DictionaryHelper::get(dictionary, "longMember", longMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "longMember", longMember))
         impl->setLongMember(longMember);
     Vector<String> stringArrayMember;
-    if (DictionaryHelper::get(dictionary, "stringArrayMember", stringArrayMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringArrayMember", stringArrayMember))
         impl->setStringArrayMember(stringArrayMember);
     String stringMember;
-    if (DictionaryHelper::get(dictionary, "stringMember", stringMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringMember", stringMember))
         impl->setStringMember(stringMember);
     String stringOrNullMember;
-    if (DictionaryHelper::get(dictionary, "stringOrNullMember", stringOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringOrNullMember", stringOrNullMember))
         impl->setStringOrNullMember(stringOrNullMember);
     Vector<String> stringSequenceMember;
-    if (DictionaryHelper::get(dictionary, "stringSequenceMember", stringSequenceMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringSequenceMember", stringSequenceMember))
         impl->setStringSequenceMember(stringSequenceMember);
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceGarbageCollectedMember", testInterfaceGarbageCollectedMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedMember", testInterfaceGarbageCollectedMember))
         impl->setTestInterfaceGarbageCollectedMember(testInterfaceGarbageCollectedMember);
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedOrNullMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceGarbageCollectedOrNullMember", testInterfaceGarbageCollectedOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedOrNullMember", testInterfaceGarbageCollectedOrNullMember))
         impl->setTestInterfaceGarbageCollectedOrNullMember(testInterfaceGarbageCollectedOrNullMember);
     RefPtr<TestInterfaceImplementation> testInterfaceMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceMember", testInterfaceMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceMember", testInterfaceMember))
         impl->setTestInterfaceMember(testInterfaceMember);
     RefPtr<TestInterfaceImplementation> testInterfaceOrNullMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceOrNullMember", testInterfaceOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceOrNullMember", testInterfaceOrNullMember))
         impl->setTestInterfaceOrNullMember(testInterfaceOrNullMember);
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceWillBeGarbageCollectedMember", testInterfaceWillBeGarbageCollectedMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedMember", testInterfaceWillBeGarbageCollectedMember))
         impl->setTestInterfaceWillBeGarbageCollectedMember(testInterfaceWillBeGarbageCollectedMember);
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedOrNullMember;
-    if (DictionaryHelper::get(dictionary, "testInterfaceWillBeGarbageCollectedOrNullMember", testInterfaceWillBeGarbageCollectedOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedOrNullMember", testInterfaceWillBeGarbageCollectedOrNullMember))
         impl->setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
     return impl;
 }
