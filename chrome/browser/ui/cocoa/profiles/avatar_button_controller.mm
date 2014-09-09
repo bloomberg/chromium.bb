@@ -182,6 +182,10 @@ NSImage* GetImageFromResourceID(int resourceId) {
         profiles::GetSigninErrorController(browser->profile());
 
     [button_ setCell:cell.get()];
+
+    if (errorController)
+      [cell setHasError:errorController->HasError() withTitle:[button_ title]];
+
     [self setView:button_];
 
     [button_ setBezelStyle:NSShadowlessSquareBezelStyle];
@@ -196,8 +200,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button_ setAction:@selector(buttonClicked:)];
 
     [self updateAvatarButtonAndLayoutParent:NO];
-    if (errorController)
-      [cell setHasError:errorController->HasError() withTitle:[button_ title]];
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
