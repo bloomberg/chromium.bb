@@ -915,7 +915,7 @@
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org'],
     'overview_mode': ['tdanderson+overview@chromium.org'],
-    'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org],
+    'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'password_manager': ['mkwst+watchlist@chromium.org',
