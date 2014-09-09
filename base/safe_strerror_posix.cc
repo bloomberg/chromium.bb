@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(__ANDROID__)
+// Post-L versions of bionic define the GNU-specific strerror_r if _GNU_SOURCE
+// is defined, but the symbol is renamed to __gnu_strerror_r which only exists
+// on those later versions. To preserve ABI compatibility with older versions,
+// undefine _GNU_SOURCE and use the POSIX version.
+#undef _GNU_SOURCE
+#endif
+
 #include "build/build_config.h"
 #include "base/safe_strerror_posix.h"
 
@@ -9,8 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define USE_HISTORICAL_STRERRO_R (defined(__GLIBC__) || defined(__BIONIC__) || \
-                                  defined(OS_NACL))
+#define USE_HISTORICAL_STRERRO_R (defined(__GLIBC__) || defined(OS_NACL))
 
 #if USE_HISTORICAL_STRERRO_R && defined(__GNUC__)
 // GCC will complain about the unused second wrap function unless we tell it
