@@ -101,7 +101,7 @@ TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   EXPECT_EQ(0, tracker().GetLiveV8ObjectVarsForTest(pp_instance2));
 }
 
-// Make sure that using the same NPObject should give the same PP_Var
+// Make sure that using the same v8 object should give the same PP_Var
 // each time.
 TEST_F(HostVarTrackerTest, ReuseVar) {
   PepperTryCatchForTest try_catch(instance());

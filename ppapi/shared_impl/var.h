@@ -19,7 +19,6 @@ namespace ppapi {
 class ArrayBufferVar;
 class ArrayVar;
 class DictionaryVar;
-class NPObjectVar;
 class ProxyObjectVar;
 class ResourceVar;
 class StringVar;
@@ -36,7 +35,6 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
 
   virtual StringVar* AsStringVar();
   virtual ArrayBufferVar* AsArrayBufferVar();
-  virtual NPObjectVar* AsNPObjectVar();
   virtual V8ObjectVar* AsV8ObjectVar();
   virtual ProxyObjectVar* AsProxyObjectVar();
   virtual ArrayVar* AsArrayVar();

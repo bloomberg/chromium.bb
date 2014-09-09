@@ -23,7 +23,7 @@ namespace ppapi {
 
 // Represents a JavaScript object Var. By itself, this represents random
 // v8 objects that a given plugin (identified by the resource's module) wants to
-// reference. If two different modules reference the same NPObject (like the
+// reference. If two different modules reference the same v8 object (like the
 // "window" object), then there will be different V8ObjectVar's (and hence
 // PP_Var IDs) for each module. This allows us to track all references owned by
 // a given module and free them when the plugin exits independently of other
