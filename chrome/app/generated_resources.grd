@@ -3557,9 +3557,6 @@ Make sure you do not expose any sensitive information.
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle wake ups
           </message>
-          <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
-            Goats teleported
-          </message>
           <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
             Image cache
           </message>
@@ -3618,9 +3615,6 @@ Make sure you do not expose any sensitive information.
           </message>
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle Wake Ups
-          </message>
-          <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
-            Goats Teleported
           </message>
           <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
             Image Cache

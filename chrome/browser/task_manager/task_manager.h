@@ -182,7 +182,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   base::string16 GetResourceVideoMemory(int index) const;
   base::string16 GetResourceSqliteMemoryUsed(int index) const;
   base::string16 GetResourceIdleWakeupsPerSecond(int index) const;
-  base::string16 GetResourceGoatsTeleported(int index) const;
   base::string16 GetResourceV8MemoryAllocatedSize(int index) const;
 
   // Gets the private memory (in bytes) that should be displayed for the passed
@@ -229,9 +228,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Returns true if resource for the given row can be activated.
   bool CanActivate(int index) const;
-
-  // See design doc at http://go/at-teleporter for more information.
-  int GetGoatsTeleported(int index) const;
 
   // Returns true if the resource is first/last in its group (resources
   // rendered by the same process are groupped together).
@@ -346,9 +342,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
     bool is_process_id_valid;
     base::ProcessId process_id;
-
-    bool is_goats_teleported_valid;
-    int goats_teleported;
 
     bool is_webcore_stats_valid;
     blink::WebCache::ResourceTypeStats webcore_stats;
@@ -539,9 +532,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Whether the IO thread is currently in the process of updating; accessed
   // only on the IO thread.
   bool is_updating_byte_count_;
-
-  // A salt lick for the goats.
-  uint64 goat_salt_;
 
   // Buffer for coalescing BytesReadParam so we don't have to post a task on
   // each NotifyBytesRead() call.

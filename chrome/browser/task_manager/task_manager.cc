@@ -9,7 +9,6 @@
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/process/process_metrics.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -197,8 +196,6 @@ TaskManagerModel::PerResourceValues::PerResourceValues()
       network_usage(0),
       is_process_id_valid(false),
       process_id(0),
-      is_goats_teleported_valid(false),
-      goats_teleported(0),
       is_webcore_stats_valid(false),
       is_sqlite_memory_bytes_valid(false),
       sqlite_memory_bytes(0),
@@ -241,8 +238,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       update_requests_(0),
       listen_requests_(0),
       update_state_(IDLE),
-      is_updating_byte_count_(false),
-      goat_salt_(base::RandUint64()) {
+      is_updating_byte_count_(false) {
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
@@ -362,9 +358,6 @@ base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
 
     case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
       return GetResourceIdleWakeupsPerSecond(index);
-
-    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
-      return GetResourceGoatsTeleported(index);
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
       return GetResourceWebCoreImageCacheSize(index);
@@ -527,11 +520,6 @@ base::string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
 base::string16 TaskManagerModel::GetResourceIdleWakeupsPerSecond(int index)
     const {
   return base::FormatNumber(GetIdleWakeupsPerSecond(GetResource(index)));
-}
-
-base::string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return base::FormatNumber(GetGoatsTeleported(index));
 }
 
 base::string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
@@ -701,16 +689,6 @@ bool TaskManagerModel::GetV8MemoryUsed(int index, size_t* result) const {
 bool TaskManagerModel::CanActivate(int index) const {
   CHECK_LT(index, ResourceCount());
   return GetResourceWebContents(index) != NULL;
-}
-
-int TaskManagerModel::GetGoatsTeleported(int index) const {
-  PerResourceValues& values(GetPerResourceValues(index));
-  if (!values.is_goats_teleported_valid) {
-    values.is_goats_teleported_valid = true;
-    values.goats_teleported = goat_salt_ * (index + 1);
-    values.goats_teleported = (values.goats_teleported >> 16) & 255;
-  }
-  return values.goats_teleported;
 }
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
@@ -906,9 +884,6 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       return value1_valid && value2_valid ? ValueCompare(value1, value2) :
           OrderUnavailableValue(value1_valid, value2_valid);
     }
-
-    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
-      return ValueCompare(GetGoatsTeleported(row1), GetGoatsTeleported(row2));
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
       return ValueCompareMember(
@@ -1145,8 +1120,6 @@ void TaskManagerModel::ModelChanged() {
 }
 
 void TaskManagerModel::Refresh() {
-  goat_salt_ = base::RandUint64();
-
   per_resource_cache_.clear();
   per_process_cache_.clear();
 
