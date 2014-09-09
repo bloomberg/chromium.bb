@@ -38,14 +38,6 @@ struct CompositionUnderline {
         , thick(false)
         , backgroundColor(Color::transparent) { }
 
-    // FIXME(huangs): remove this constructor.
-    CompositionUnderline(unsigned s, unsigned e, const Color& c, bool t)
-        : startOffset(s)
-        , endOffset(e)
-        , color(c)
-        , thick(t)
-        , backgroundColor(Color::transparent) { }
-
     CompositionUnderline(unsigned s, unsigned e, const Color& c, bool t, const Color& bc)
         : startOffset(s)
         , endOffset(e)
