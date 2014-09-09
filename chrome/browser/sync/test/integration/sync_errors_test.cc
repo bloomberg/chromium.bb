@@ -37,8 +37,32 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
   }
 };
 
+class TypeDisabledChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit TypeDisabledChecker(ProfileSyncService* service,
+                               syncer::ModelType type)
+      : SingleClientStatusChangeChecker(service), type_(type) {}
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE {
+    return !service()->GetActiveDataTypes().Has(type_);
+  }
+
+  virtual std::string GetDebugMessage() const OVERRIDE {
+    return "Type disabled";
+  }
+ private:
+   syncer::ModelType type_;
+};
+
 bool AwaitSyncDisabled(ProfileSyncService* service) {
   SyncDisabledChecker checker(service);
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
+bool AwaitTypeDisabled(ProfileSyncService* service,
+                       syncer::ModelType type) {
+  TypeDisabledChecker checker(service, type);
   checker.Wait();
   return !checker.TimedOut();
 }
@@ -203,12 +227,9 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DisableDatatypeWhileRunning) {
   GetProfile(0)->GetPrefs()->SetBoolean(
       prefs::kSavingBrowserHistoryDisabled, true);
 
-  // Flush any tasks posted by observers of the pref change.
-  base::RunLoop().RunUntilIdle();
-
-  synced_datatypes = GetSyncService((0))->GetActiveDataTypes();
-  ASSERT_FALSE(synced_datatypes.Has(syncer::TYPED_URLS));
-  ASSERT_FALSE(synced_datatypes.Has(syncer::SESSIONS));
+  // Wait for reconfigurations.
+  ASSERT_TRUE(AwaitTypeDisabled(GetSyncService(0), syncer::TYPED_URLS));
+  ASSERT_TRUE(AwaitTypeDisabled(GetSyncService(0), syncer::SESSIONS));
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");

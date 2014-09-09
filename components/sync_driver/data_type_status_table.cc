@@ -63,6 +63,7 @@ bool DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
 }
 
 void DataTypeStatusTable::Reset() {
+  DVLOG(1) << "Resetting data type errors.";
   unrecoverable_errors_.clear();
   data_type_errors_.clear();
   crypto_errors_.clear();

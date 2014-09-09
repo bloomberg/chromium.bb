@@ -10,6 +10,7 @@
 #include <string>
 
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/data_type_status_table.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -52,6 +53,7 @@ class DataTypeManager {
 
     ConfigureStatus status;
     syncer::ModelTypeSet requested_types;
+    DataTypeStatusTable data_type_status_table;
   };
 
   virtual ~DataTypeManager() {}
@@ -77,6 +79,9 @@ class DataTypeManager {
   // Resets the error state for |type| and triggers a reconfiguration if
   // necessary.
   virtual void ReenableType(syncer::ModelType type) = 0;
+
+  // Resets all data type error state.
+  virtual void ResetDataTypeErrors() = 0;
 
   virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                                  syncer::ConfigureReason reason) = 0;

@@ -59,7 +59,7 @@ ACTION_P3(InvokeOnConfigureDone, pss, error_callback, result) {
   DataTypeManager::ConfigureResult configure_result =
       static_cast<DataTypeManager::ConfigureResult>(result);
   if (result.status == sync_driver::DataTypeManager::ABORTED)
-    error_callback.Run();
+    error_callback.Run(&configure_result);
   service->OnConfigureDone(configure_result);
 }
 
@@ -87,8 +87,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
-        sync_(NULL),
-        data_type_status_table_(NULL) {}
+        sync_(NULL) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
   }
@@ -148,14 +147,14 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return static_cast<FakeSigninManagerForTesting*>(sync_->signin());
   }
 
-  void SetError() {
+  void SetError(DataTypeManager::ConfigureResult* result) {
     sync_driver::DataTypeStatusTable::TypeErrorMap errors;
     errors[syncer::BOOKMARKS] =
         syncer::SyncError(FROM_HERE,
                           syncer::SyncError::UNRECOVERABLE_ERROR,
                           "Error",
                           syncer::BOOKMARKS);
-    data_type_status_table_->UpdateFailedDataTypes(errors);
+    result->data_type_status_table.UpdateFailedDataTypes(errors);
   }
 
  protected:
@@ -175,9 +174,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(*components_factory_mock(),
-                CreateDataTypeManager(_, _, _, _, _, _)).
-        WillOnce(DoAll(SaveArg<5>(&data_type_status_table_),
-                       Return(data_type_manager)));
+                CreateDataTypeManager(_, _, _, _, _)).
+        WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
 
@@ -195,7 +193,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   TestingProfile* profile_;
   ProfileSyncService* sync_;
   ProfileSyncServiceObserverMock observer_;
-  sync_driver::DataTypeStatusTable* data_type_status_table_;
+  sync_driver::DataTypeStatusTable data_type_status_table_;
 };
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
@@ -279,7 +277,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   EXPECT_CALL(*components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->Initialize();
 
@@ -353,7 +351,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 #endif
 TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
   EXPECT_CALL(*components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*components_factory_mock(),
               CreateSyncBackendHost(_, _, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
@@ -496,7 +494,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
   // Disable sync through policy.
   profile_->GetPrefs()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
   EXPECT_CALL(*components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   sync_->Initialize();
@@ -528,7 +526,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncManaged);
 }
