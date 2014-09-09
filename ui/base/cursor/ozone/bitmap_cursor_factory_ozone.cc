@@ -52,6 +52,15 @@ PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(
   return ToPlatformCursor(cursor);
 }
 
+PlatformCursor BitmapCursorFactoryOzone::CreateAnimatedCursor(
+    const std::vector<SkBitmap>& bitmaps,
+    const gfx::Point& hotspot,
+    int frame_delay_ms) {
+  DCHECK_LT(0U, bitmaps.size());
+  NOTIMPLEMENTED();
+  return CreateImageCursor(bitmaps[0], hotspot);
+}
+
 void BitmapCursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {
   ToBitmapCursorOzone(cursor)->AddRef();
 }

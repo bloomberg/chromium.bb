@@ -38,6 +38,14 @@ PlatformCursor CursorFactoryOzone::CreateImageCursor(
   return NULL;
 }
 
+PlatformCursor CursorFactoryOzone::CreateAnimatedCursor(
+    const std::vector<SkBitmap>& bitmaps,
+    const gfx::Point& hotspot,
+    int frame_delay_ms) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void CursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED();
 }

@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
 #define UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
 
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_base_export.h"
 
@@ -34,6 +36,15 @@ class OZONE_BASE_EXPORT CursorFactoryOzone {
   // CreateImageCursor call must be matched with a call to UnrefImageCursor.
   virtual PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
                                            const gfx::Point& hotspot);
+
+  // Return a animated cursor from the specified image & hotspot. Animated
+  // cursors are referenced counted and have an initial refcount of 1.
+  // Therefore, each CreateAnimatedCursor call must be matched with a call to
+  // UnrefImageCursor.
+  virtual PlatformCursor CreateAnimatedCursor(
+      const std::vector<SkBitmap>& bitmaps,
+      const gfx::Point& hotspot,
+      int frame_delay_ms);
 
   // Increment platform image cursor refcount.
   virtual void RefImageCursor(PlatformCursor cursor);

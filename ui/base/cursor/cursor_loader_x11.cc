@@ -12,10 +12,8 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -156,58 +154,35 @@ CursorLoaderX11::~CursorLoaderX11() {
 void CursorLoaderX11::LoadImageCursor(int id,
                                       int resource_id,
                                       const gfx::Point& hot) {
-  const gfx::ImageSkia* image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
-  SkBitmap bitmap = image_rep.sk_bitmap();
-  gfx::Point hotpoint = hot;
-  // TODO(oshima): The cursor should use resource scale factor when
-  // fractional scale factor is enabled. crbug.com/372212
-  ScaleAndRotateCursorBitmapAndHotpoint(
-      scale() / image_rep.scale(), rotation(), &bitmap, &hotpoint);
+  SkBitmap bitmap;
+  gfx::Point hotspot = hot;
 
-  XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotpoint);
+  GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
+  XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotspot);
   cursors_[id] = CreateReffedCustomXCursor(x_image);
-  // |image_rep| is owned by the resource bundle. So we do not need to free it.
 }
 
 void CursorLoaderX11::LoadAnimatedCursor(int id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
-  // TODO(oshima|tdanderson): Support rotation and fractional scale factor.
-  const gfx::ImageSkia* image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
-  SkBitmap bitmap = image_rep.sk_bitmap();
-  int frame_width = bitmap.height();
-  int frame_height = frame_width;
-  int total_width = bitmap.width();
-  DCHECK_EQ(total_width % frame_width, 0);
-  int frame_count = total_width / frame_width;
-  DCHECK_GT(frame_count, 0);
-  XcursorImages* x_images = XcursorImagesCreate(frame_count);
-  x_images->nimage = frame_count;
+  std::vector<SkBitmap> bitmaps;
+  gfx::Point hotspot = hot;
 
-  for (int frame = 0; frame < frame_count; ++frame) {
-    gfx::Point hotpoint = hot;
-    int x_offset = frame_width * frame;
-    DCHECK_LE(x_offset + frame_width, total_width);
+  GetAnimatedCursorBitmaps(
+      resource_id, scale(), rotation(), &hotspot, &bitmaps);
 
-    SkBitmap cropped = SkBitmapOperations::CreateTiledBitmap(
-        bitmap, x_offset, 0, frame_width, frame_height);
-    DCHECK_EQ(frame_width, cropped.width());
-    DCHECK_EQ(frame_height, cropped.height());
+  XcursorImages* x_images = XcursorImagesCreate(bitmaps.size());
+  x_images->nimage = bitmaps.size();
 
-    XcursorImage* x_image = SkBitmapToXcursorImage(&cropped, hotpoint);
-
+  for (unsigned int frame = 0; frame < bitmaps.size(); ++frame) {
+    XcursorImage* x_image = SkBitmapToXcursorImage(&bitmaps[frame], hotspot);
     x_image->delay = frame_delay_ms;
     x_images->images[frame] = x_image;
   }
 
   animated_cursors_[id] = std::make_pair(
       XcursorImagesLoadCursor(gfx::GetXDisplay(), x_images), x_images);
-  // |bitmap| is owned by the resource bundle. So we do not need to free it.
 }
 
 void CursorLoaderX11::UnloadAll() {

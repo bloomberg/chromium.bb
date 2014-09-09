@@ -4,9 +4,10 @@
 
 #include "ui/base/cursor/cursor_loader_ozone.h"
 
+#include <vector>
+
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/base/cursor/cursor_util.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
@@ -18,21 +19,27 @@ CursorLoaderOzone::~CursorLoaderOzone() {}
 void CursorLoaderOzone::LoadImageCursor(int id,
                                         int resource_id,
                                         const gfx::Point& hot) {
-  const gfx::ImageSkia* image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  const gfx::ImageSkiaRep& image_rep =
-      image->GetRepresentation(scale());
-  SkBitmap bitmap = image_rep.sk_bitmap();
+  SkBitmap bitmap;
+  gfx::Point hotspot = hot;
+
+  GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
+
   cursors_[id] =
-      CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hot);
+      CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hotspot);
 }
 
 void CursorLoaderOzone::LoadAnimatedCursor(int id,
                                            int resource_id,
                                            const gfx::Point& hot,
                                            int frame_delay_ms) {
-  // TODO(dnicoara) Add support: crbug.com/343245
-  NOTIMPLEMENTED();
+  std::vector<SkBitmap> bitmaps;
+  gfx::Point hotspot = hot;
+
+  GetAnimatedCursorBitmaps(
+      resource_id, scale(), rotation(), &hotspot, &bitmaps);
+
+  cursors_[id] = CursorFactoryOzone::GetInstance()->CreateAnimatedCursor(
+      bitmaps, hotspot, frame_delay_ms);
 }
 
 void CursorLoaderOzone::UnloadAll() {
