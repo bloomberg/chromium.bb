@@ -11,13 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "extensions/browser/api/power/power_api_manager.h"
+#include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
-
-namespace utils = extension_function_test_utils;
+#include "extensions/common/test_util.h"
 
 namespace extensions {
 
@@ -129,19 +128,16 @@ class PowerSaveBlockerStubManager {
 
 }  // namespace
 
-class PowerApiTest : public BrowserWithTestWindowTest {
+class PowerApiTest : public ApiUnitTest {
  public:
   virtual void SetUp() OVERRIDE {
-    BrowserWithTestWindowTest::SetUp();
-    manager_.reset(new PowerSaveBlockerStubManager(profile()));
-    extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Manifest::UNPACKED);
+    ApiUnitTest::SetUp();
+    manager_.reset(new PowerSaveBlockerStubManager(browser_context()));
   }
 
   virtual void TearDown() OVERRIDE {
-    extension_ = NULL;
     manager_.reset();
-    BrowserWithTestWindowTest::TearDown();
+    ApiUnitTest::TearDown();
   }
 
  protected:
@@ -156,7 +152,7 @@ class PowerApiTest : public BrowserWithTestWindowTest {
   // arguments, on behalf of |extension|.
   bool CallFunction(FunctionType type,
                     const std::string& args,
-                    extensions::Extension* extension) {
+                    const extensions::Extension* extension) {
     scoped_refptr<UIThreadExtensionFunction> function(
         type == REQUEST ?
         static_cast<UIThreadExtensionFunction*>(
@@ -164,34 +160,33 @@ class PowerApiTest : public BrowserWithTestWindowTest {
         static_cast<UIThreadExtensionFunction*>(
             new PowerReleaseKeepAwakeFunction));
     function->set_extension(extension);
-    return utils::RunFunction(function.get(), args, browser(), utils::NONE);
+    return api_test_utils::RunFunction(function.get(), args, browser_context());
   }
 
   // Send a notification to PowerApiManager saying that |extension| has
   // been unloaded.
-  void UnloadExtension(extensions::Extension* extension) {
-    PowerApiManager::Get(profile())->OnExtensionUnloaded(
-        profile(), extension, UnloadedExtensionInfo::REASON_UNINSTALL);
+  void UnloadExtension(const extensions::Extension* extension) {
+    PowerApiManager::Get(browser_context())->OnExtensionUnloaded(
+        browser_context(), extension, UnloadedExtensionInfo::REASON_UNINSTALL);
   }
 
   scoped_ptr<PowerSaveBlockerStubManager> manager_;
-  scoped_refptr<extensions::Extension> extension_;
 };
 
 TEST_F(PowerApiTest, RequestAndRelease) {
   // Simulate an extension making and releasing a "display" request and a
   // "system" request.
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
-  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(UNBLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension()));
   EXPECT_EQ(BLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
-  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(UNBLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
@@ -200,11 +195,11 @@ TEST_F(PowerApiTest, RequestWithoutRelease) {
   // Simulate an extension calling requestKeepAwake() without calling
   // releaseKeepAwake().  The override should be automatically removed when
   // the extension is unloaded.
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  UnloadExtension(extension_.get());
+  UnloadExtension(extension());
   EXPECT_EQ(UNBLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
@@ -212,7 +207,7 @@ TEST_F(PowerApiTest, RequestWithoutRelease) {
 TEST_F(PowerApiTest, ReleaseWithoutRequest) {
   // Simulate an extension calling releaseKeepAwake() without having
   // calling requestKeepAwake() earlier.  The call should be ignored.
-  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
@@ -221,16 +216,16 @@ TEST_F(PowerApiTest, UpgradeRequest) {
   // requestKeepAwake("display").  When the second call is made, a
   // display-sleep-blocking request should be made before the initial
   // app-suspension-blocking request is released.
-  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension()));
   EXPECT_EQ(BLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(UNBLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(UNBLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
@@ -240,46 +235,42 @@ TEST_F(PowerApiTest, DowngradeRequest) {
   // requestKeepAwake("system").  When the second call is made, an
   // app-suspension-blocking request should be made before the initial
   // display-sleep-blocking request is released.
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension()));
   EXPECT_EQ(BLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(UNBLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
-  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(RELEASE, kEmptyArgs, extension()));
   EXPECT_EQ(UNBLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 }
 
 TEST_F(PowerApiTest, MultipleExtensions) {
   // Simulate an extension blocking the display from sleeping.
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
   // Create a second extension that blocks system suspend.  No additional
   // PowerSaveBlocker is needed; the blocker from the first extension
   // already covers the behavior requested by the second extension.
-  scoped_ptr<base::DictionaryValue> extension_value(
-      utils::ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
-  scoped_refptr<extensions::Extension> extension2(
-      utils::CreateExtension(extensions::Manifest::UNPACKED,
-                             extension_value.get(), "second_extension"));
+  scoped_refptr<Extension> extension2(test_util::CreateExtensionWithID("id2"));
   ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension2.get()));
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
   // When the first extension is unloaded, a new app-suspension blocker
   // should be created before the display-sleep blocker is destroyed.
-  UnloadExtension(extension_.get());
+  UnloadExtension(extension());
   EXPECT_EQ(BLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(UNBLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
   // Make the first extension block display-sleep again.
-  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension_.get()));
+  ASSERT_TRUE(CallFunction(REQUEST, kDisplayArgs, extension()));
   EXPECT_EQ(BLOCK_DISPLAY_SLEEP, manager_->PopFirstRequest());
   EXPECT_EQ(UNBLOCK_APP_SUSPENSION, manager_->PopFirstRequest());
   EXPECT_EQ(NONE, manager_->PopFirstRequest());

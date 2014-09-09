@@ -82,6 +82,9 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
 // we can refactor when we see what is needed.
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
+                 content::BrowserContext* context);
+bool RunFunction(UIThreadExtensionFunction* function,
+                 const std::string& args,
                  content::BrowserContext* context,
                  scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags);

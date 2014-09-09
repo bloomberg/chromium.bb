@@ -1014,6 +1014,7 @@
         'browser/api/cast_channel/cast_socket_unittest.cc',
         'browser/api/cast_channel/logger_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
+        'browser/api/power/power_api_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
         'browser/api/storage/settings_quota_unittest.cc',
         'browser/api/storage/storage_api_unittest.cc',

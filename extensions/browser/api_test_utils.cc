@@ -155,6 +155,15 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
 
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
+                 content::BrowserContext* context) {
+  TestFunctionDispatcherDelegate delegate;
+  scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
+      new ExtensionFunctionDispatcher(context, &delegate));
+  return RunFunction(function, args, context, dispatcher.Pass(), NONE);
+}
+
+bool RunFunction(UIThreadExtensionFunction* function,
+                 const std::string& args,
                  content::BrowserContext* context,
                  scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags) {

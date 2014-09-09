@@ -533,7 +533,6 @@
         # http://crbug.com/348066. They are duplicated here because we haven't
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
-        '../extensions/browser/api/power/power_api_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
         '../extensions/common/features/base_feature_provider_unittest.cc',
         '../extensions/common/features/complex_feature_unittest.cc',
