@@ -20,6 +20,10 @@ namespace {
 // For MSan the slowdown depends heavily on the value of msan_track_origins GYP
 // flag. The multiplier below corresponds to msan_track_origins=1.
 static const int kTimeoutMultiplier = 6;
+#elif defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+// Asan/Win has not been optimized yet, give it a higher
+// timeout multiplier. See http://crbug.com/412471
+static const int kTimeoutMultiplier = 3;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN)
 static const int kTimeoutMultiplier = 2;
