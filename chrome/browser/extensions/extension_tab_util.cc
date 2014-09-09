@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -273,6 +274,26 @@ Browser* ExtensionTabUtil::GetBrowserFromWindowID(
     return GetBrowserInProfileWithId(function->GetProfile(),
                                      window_id,
                                      function->include_incognito(),
+                                     error);
+  }
+}
+
+Browser* ExtensionTabUtil::GetBrowserFromWindowID(
+    const ChromeExtensionFunctionDetails& details,
+    int window_id,
+    std::string* error) {
+  if (window_id == extension_misc::kCurrentWindowId) {
+    Browser* result = details.GetCurrentBrowser();
+    if (!result || !result->window()) {
+      if (error)
+        *error = keys::kNoCurrentWindowError;
+      return NULL;
+    }
+    return result;
+  } else {
+    return GetBrowserInProfileWithId(details.GetProfile(),
+                                     window_id,
+                                     details.function()->include_incognito(),
                                      error);
   }
 }

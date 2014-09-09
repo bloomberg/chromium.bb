@@ -11,7 +11,9 @@
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
+class ChromeExtensionFunctionDetails;
 class ChromeUIThreadExtensionFunction;
+class ExtensionFunction;
 class GURL;
 class Profile;
 class TabStripModel;
@@ -72,8 +74,17 @@ class ExtensionTabUtil {
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static base::ListValue* CreateTabList(const Browser* browser,
                                         const Extension* extension);
+
+  // DEPRECATED: Please consider using ChromeExtensionFunctionDetails instead
+  // of the deprecated ChromeUIThreadExtensionFunction and use the overload
+  // below
   static Browser* GetBrowserFromWindowID(
       ChromeUIThreadExtensionFunction* function,
+      int window_id,
+      std::string* error_message);
+
+  static Browser* GetBrowserFromWindowID(
+      const ChromeExtensionFunctionDetails& details,
       int window_id,
       std::string* error_message);
 

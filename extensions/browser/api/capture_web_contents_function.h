@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_H_
 #define EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_H_
 
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/api/extension_types.h"
 
 class SkBitmap;
@@ -17,10 +18,7 @@ namespace extensions {
 
 // Base class for capturing visibile area of a WebContents.
 // This is used by both webview.captureVisibleRegion and tabs.captureVisibleTab.
-// The template parameter T should be either AsyncExtensionFunction or
-// ChromeAsyncExtensionFunction (in the cases the chrome Profile is required)
-template <typename T>
-class CaptureWebContentsFunction : public T {
+class CaptureWebContentsFunction : public AsyncExtensionFunction {
  public:
   CaptureWebContentsFunction() {}
 
@@ -40,9 +38,6 @@ class CaptureWebContentsFunction : public T {
     FAILURE_REASON_VIEW_INVISIBLE
   };
   virtual void OnCaptureFailure(FailureReason reason) = 0;
-
-  // ValidationFailure override to match RunAsync().
-  static bool ValidationFailure(CaptureWebContentsFunction* function);
 
  private:
   typedef core_api::extension_types::ImageDetails ImageDetails;

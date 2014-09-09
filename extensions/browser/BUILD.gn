@@ -73,6 +73,8 @@ source_set("browser") {
       "api/bluetooth_socket/bluetooth_socket_api.h",
       "api/bluetooth_socket/bluetooth_socket_event_dispatcher.cc",
       "api/bluetooth_socket/bluetooth_socket_event_dispatcher.h",
+      "api/capture_web_contents_function.cc",
+      "api/capture_web_contents_function.h",
       "api/cast_channel/cast_auth_util.cc",
       "api/cast_channel/cast_auth_util.h",
       "api/cast_channel/cast_channel_api.cc",

@@ -214,7 +214,7 @@ class WebViewInternalInsertCSSFunction
 };
 
 class WebViewInternalCaptureVisibleRegionFunction
-    : public extensions::CaptureWebContentsFunction<AsyncExtensionFunction> {
+    : public extensions::CaptureWebContentsFunction {
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
                              WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
 

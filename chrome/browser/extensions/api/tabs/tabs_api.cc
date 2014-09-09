@@ -64,7 +64,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/api/capture_web_contents_function_impl.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_util.h"
@@ -105,8 +104,6 @@ namespace tabs = api::tabs;
 
 using core_api::extension_types::InjectDetails;
 
-template class CaptureWebContentsFunction<ChromeAsyncExtensionFunction>;
-
 namespace {
 
 bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
@@ -118,6 +115,22 @@ bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
       ExtensionTabUtil::GetBrowserFromWindowID(function, window_id, &error);
   if (!result) {
     function->SetError(error);
+    return false;
+  }
+
+  *browser = result;
+  return true;
+}
+
+bool GetBrowserFromWindowID(ChromeExtensionFunctionDetails* details,
+                            int window_id,
+                            Browser** browser) {
+  std::string error;
+  Browser* result;
+  result =
+      ExtensionTabUtil::GetBrowserFromWindowID(*details, window_id, &error);
+  if (!result) {
+    details->function()->SetError(error);
     return false;
   }
 
@@ -1498,8 +1511,12 @@ bool TabsRemoveFunction::RemoveTab(int tab_id) {
   return true;
 }
 
+TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction()
+    : chrome_details_(this) {
+}
+
 bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
-  PrefService* service = GetProfile()->GetPrefs();
+  PrefService* service = chrome_details_.GetProfile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
     error_ = keys::kScreenshotsDisabled;
     return false;
@@ -1509,7 +1526,7 @@ bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
 
 WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  if (!GetBrowserFromWindowID(&chrome_details_, window_id, &browser))
     return NULL;
 
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();

@@ -62,6 +62,10 @@ class ChromeExtensionFunctionDetails {
   // contents then defaults to the foremost one.
   content::WebContents* GetAssociatedWebContents();
 
+  // Returns a pointer to the associated UIThreadExtensionFunction
+  UIThreadExtensionFunction* function() { return function_; }
+  const UIThreadExtensionFunction* function() const { return function_; }
+
  private:
   // The function for which these details have been created. Must outlive the
   // ChromeExtensionFunctionDetails instance.

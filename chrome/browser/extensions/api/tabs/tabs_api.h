@@ -196,15 +196,17 @@ class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
 };
 class TabsCaptureVisibleTabFunction
-    : public extensions::CaptureWebContentsFunction<
-          ChromeAsyncExtensionFunction> {
+    : public extensions::CaptureWebContentsFunction {
  public:
+  TabsCaptureVisibleTabFunction();
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   virtual ~TabsCaptureVisibleTabFunction() {}
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   // extensions::CaptureWebContentsFunction:
   virtual bool IsScreenshotEnabled() OVERRIDE;
   virtual content::WebContents* GetWebContentsForID(int id) OVERRIDE;
