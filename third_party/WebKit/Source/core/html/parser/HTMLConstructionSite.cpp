@@ -231,9 +231,13 @@ static String atomizeIfAllWhitespace(const String& string, WhitespaceMode whites
     return string;
 }
 
-void HTMLConstructionSite::flushPendingText()
+void HTMLConstructionSite::flushPendingText(FlushMode mode)
 {
     if (m_pendingText.isEmpty())
+        return;
+
+    if (mode == FlushIfAtTextLimit
+        && !shouldUseLengthLimit(*m_pendingText.parent))
         return;
 
     PendingText pendingText;
@@ -269,7 +273,7 @@ void HTMLConstructionSite::flushPendingText()
 
 void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
 {
-    flushPendingText();
+    flushPendingText(FlushAlways);
     ASSERT(m_pendingText.isEmpty());
     m_taskQueue.append(task);
 }
@@ -533,7 +537,7 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(const String& name, c
 void HTMLConstructionSite::processEndOfFile()
 {
     ASSERT(currentNode());
-    flush();
+    flush(FlushAlways);
     openElements()->popAll();
 }
 
@@ -541,7 +545,7 @@ void HTMLConstructionSite::finishedParsing()
 {
     // We shouldn't have any queued tasks but we might have pending text which we need to promote to tasks and execute.
     ASSERT(m_taskQueue.isEmpty());
-    flush();
+    flush(FlushAlways);
     m_document->finishedParsing();
 }
 
@@ -689,7 +693,7 @@ void HTMLConstructionSite::insertTextNode(const String& string, WhitespaceMode w
     // The nextChild != dummy.nextChild case occurs whenever foster parenting happened and we hit a new text node "<table>a</table>b"
     // In either case we have to flush the pending text into the task queue before making more.
     if (!m_pendingText.isEmpty() && (m_pendingText.parent != dummyTask.parent ||  m_pendingText.nextChild != dummyTask.nextChild))
-        flushPendingText();
+        flushPendingText(FlushAlways);
     m_pendingText.append(dummyTask.parent, dummyTask.nextChild, string, whitespaceMode);
 }
 
