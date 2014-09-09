@@ -248,7 +248,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The 'change' or 'splice' event.
      */
     handleChangeList_: function(e) {
-      webkitRequestAnimationFrame(this.header_.updateWidth.bind(this.header_));
+      requestAnimationFrame(this.header_.updateWidth.bind(this.header_));
     },
 
     /**
