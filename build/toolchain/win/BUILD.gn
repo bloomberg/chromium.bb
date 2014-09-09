@@ -18,6 +18,9 @@ gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
 exec_script("setup_toolchain.py",
             [ visual_studio_path, gyp_win_tool_path, windows_sdk_path ])
 
+# This value will be inherited in the toolchain below.
+concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
+
 # Parameters:
 #  cpu_arch: cpu_arch to pass as a build arg
 #  environment: File name of environment file.
