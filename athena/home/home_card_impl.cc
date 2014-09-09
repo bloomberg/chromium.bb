@@ -172,9 +172,6 @@ class HomeCardView : public views::WidgetDelegateView {
     else
       GetWidget()->GetFocusManager()->ClearFocus();
 
-    if (state == HomeCard::VISIBLE_MINIMIZED)
-      return;
-
     main_view_->SetLayoutStateWithAnimation(
         (state == HomeCard::VISIBLE_CENTERED) ? 1.0f : 0.0f);
   }
