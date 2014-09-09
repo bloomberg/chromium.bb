@@ -57,7 +57,7 @@ def get_unique(footers, key):
 
 
 def get_position(footers):
-  """Get the chrome commit position from a footer multimap using a heuristic.
+  """Get the commit position from the footers multimap using a heuristic.
 
   Returns:
     A tuple of the branch and the position on that branch. For example,
@@ -79,8 +79,12 @@ def get_position(footers):
   if svn_commit:
     match = GIT_SVN_ID_PATTERN.match(svn_commit)
     assert match, 'Invalid git-svn-id value: %s' % svn_commit
-    if re.match('.*/chrome/trunk/src$', match.group(1)):
+    # Assume that any trunk svn revision will match the commit-position
+    # semantics.
+    if re.match('.*/trunk/.*$', match.group(1)):
       return ('refs/heads/master', match.group(2))
+
+    # But for now only support faking branch-heads for chrome.
     branch_match = re.match('.*/chrome/branches/([\w/-]+)/src$', match.group(1))
     if branch_match:
       # svn commit numbers do not map to branches.
