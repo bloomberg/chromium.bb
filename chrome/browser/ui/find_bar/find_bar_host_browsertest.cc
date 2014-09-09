@@ -839,7 +839,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(1, ordinal);
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
+// Verify that the find bar is hidden on reload and navigation.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       HideFindBarOnNavigateAndReload) {
   // First we navigate to our special focus tracking page.
   GURL url = GetURL(kSimple);
   GURL url2 = GetURL(kFramePage);
@@ -854,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
-  // Reload the tab and make sure Find window doesn't go away.
+  // Reload and make sure the find window goes away.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
@@ -862,11 +864,17 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
               GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_FALSE(fully_visible);
 
+  // Open the find bar again.
+  chrome::ShowFindBar(browser());
+
+  // Make sure it is open.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
-  // Navigate and make sure the Find window goes away.
+  // Navigate and make sure the find window goes away.
   ui_test_utils::NavigateToURL(browser(), url2);
 
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));

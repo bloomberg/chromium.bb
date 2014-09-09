@@ -155,22 +155,12 @@ void FindBarController::Observe(int type,
           content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =
           commit_details->entry->GetTransitionType();
-      // We hide the FindInPage window when the user navigates away, except on
-      // reload (and when clicking on anchors within web pages).
-      if (find_bar_->IsFindBarVisible()) {
-        if (content::PageTransitionStripQualifier(transition_type) !=
-            content::PAGE_TRANSITION_RELOAD) {
-          // This is a new navigation (not reload), but we still don't want the
-          // Find box to disappear if the navigation is just to a fragment
-          // within the page.
-          if (commit_details->is_navigation_to_different_page())
-            EndFindSession(kKeepSelectionOnPage, kClearResultsInFindBox);
-        } else {
-          // On Reload we want to make sure FindNext is converted to a full Find
-          // to make sure highlights for inactive matches are repainted.
-          find_tab_helper->set_find_op_aborted(true);
-        }
-      }
+      // Hide the find bar on reload or navigation.
+      if (find_bar_->IsFindBarVisible() &&
+          (content::PageTransitionStripQualifier(transition_type) ==
+               content::PAGE_TRANSITION_RELOAD ||
+           commit_details->is_navigation_to_different_page()))
+        EndFindSession(kKeepSelectionOnPage, kClearResultsInFindBox);
     }
   }
 }
