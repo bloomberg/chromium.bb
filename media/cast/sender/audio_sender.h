@@ -51,17 +51,20 @@ class AudioSender : public FrameSender,
                    const base::TimeTicks& recorded_time);
 
  protected:
+  virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
   virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:
   // Called by the |audio_encoder_| with the next EncodedFrame to send.
-  void SendEncodedAudioFrame(int requested_bitrate_before_encode,
-                             scoped_ptr<EncodedFrame> audio_frame);
+  void OnEncodedAudioFrame(int encoder_bitrate,
+                           scoped_ptr<EncodedFrame> encoded_frame,
+                           int samples_skipped);
 
   // Encodes AudioBuses into EncodedFrames.
   scoped_ptr<AudioEncoder> audio_encoder_;
 
-  uint64 samples_sent_to_encoder_;
+  // The number of audio samples enqueued in |audio_encoder_|.
+  int samples_in_encoder_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<AudioSender> weak_factory_;

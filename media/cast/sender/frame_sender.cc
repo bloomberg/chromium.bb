@@ -29,7 +29,6 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       ssrc_(ssrc),
       rtcp_interval_(rtcp_interval),
       max_frame_rate_(max_frame_rate),
-      frames_in_encoder_(0),
       num_aggressive_rtcp_reports_sent_(0),
       last_sent_frame_id_(0),
       latest_acked_frame_id_(0),
@@ -163,14 +162,10 @@ RtpTimestamp FrameSender::GetRecordedRtpTimestamp(uint32 frame_id) const {
   return frame_rtp_timestamps_[frame_id % arraysize(frame_rtp_timestamps_)];
 }
 
-
 void FrameSender::SendEncodedFrame(
     int requested_bitrate_before_encode,
     scoped_ptr<EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-
-  DCHECK_GT(frames_in_encoder_, 0) << " is_audio: " << is_audio_;
-  frames_in_encoder_--;
 
   const uint32 frame_id = encoded_frame->frame_id;
 
@@ -315,11 +310,11 @@ bool FrameSender::ShouldDropNextFrame(base::TimeTicks capture_time) const {
           capture_time - GetRecordedReferenceTime(oldest_unacked_frame_id);
     }
   }
-  frames_in_flight += frames_in_encoder_;
+  frames_in_flight += GetNumberOfFramesInEncoder();
   VLOG(2) << frames_in_flight
           << " frames in flight; last sent: " << last_sent_frame_id_
           << "; latest acked: " << latest_acked_frame_id_
-          << "; frames in encoder: " << frames_in_encoder_
+          << "; frames in encoder: " << GetNumberOfFramesInEncoder()
           << "; duration in flight: "
           << duration_in_flight.InMicroseconds() << " usec ("
           << (target_playout_delay_ > base::TimeDelta() ?

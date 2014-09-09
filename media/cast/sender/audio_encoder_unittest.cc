@@ -39,7 +39,8 @@ class TestEncodedAudioFrameReceiver {
     upper_bound_ = upper_bound;
   }
 
-  void FrameEncoded(scoped_ptr<EncodedFrame> encoded_frame) {
+  void FrameEncoded(scoped_ptr<EncodedFrame> encoded_frame,
+                    int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
     EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
               encoded_frame->frame_id);

@@ -40,6 +40,7 @@ VideoSender::VideoSender(
         video_config.target_playout_delay,
         NewFixedCongestionControl(
             (video_config.min_bitrate + video_config.max_bitrate) / 2)),
+      frames_in_encoder_(0),
       last_bitrate_(0),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_VIDEO_UNINITIALIZED;
@@ -126,7 +127,7 @@ void VideoSender::InsertRawVideoFrame(
   if (video_encoder_->EncodeVideoFrame(
           video_frame,
           capture_time,
-          base::Bind(&FrameSender::SendEncodedFrame,
+          base::Bind(&VideoSender::OnEncodedVideoFrame,
                      weak_factory_.GetWeakPtr(),
                      bitrate))) {
     frames_in_encoder_++;
@@ -135,8 +136,23 @@ void VideoSender::InsertRawVideoFrame(
   }
 }
 
+int VideoSender::GetNumberOfFramesInEncoder() const {
+  return frames_in_encoder_;
+}
+
 void VideoSender::OnAck(uint32 frame_id) {
   video_encoder_->LatestFrameIdToReference(frame_id);
+}
+
+void VideoSender::OnEncodedVideoFrame(
+    int encoder_bitrate,
+    scoped_ptr<EncodedFrame> encoded_frame) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  frames_in_encoder_--;
+  DCHECK_GE(frames_in_encoder_, 0);
+
+  SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
 }
 
 }  // namespace cast

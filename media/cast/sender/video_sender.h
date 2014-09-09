@@ -57,13 +57,21 @@ class VideoSender : public FrameSender,
                            const base::TimeTicks& capture_time);
 
  protected:
+  virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
   virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:
+  // Called by the |video_encoder_| with the next EncodedFrame to send.
+  void OnEncodedVideoFrame(int encoder_bitrate,
+                           scoped_ptr<EncodedFrame> encoded_frame);
+
   // Encodes media::VideoFrame images into EncodedFrames.  Per configuration,
   // this will point to either the internal software-based encoder or a proxy to
   // a hardware-based encoder.
   scoped_ptr<VideoEncoder> video_encoder_;
+
+  // The number of frames queued for encoding, but not yet sent.
+  int frames_in_encoder_;
 
   // Remember what we set the bitrate to before, no need to set it again if
   // we get the same value.

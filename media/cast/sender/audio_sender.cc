@@ -35,7 +35,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
         kAudioFrameRate * 2.0, // We lie to increase max outstanding frames.
         audio_config.target_playout_delay,
         NewFixedCongestionControl(audio_config.bitrate)),
-      samples_sent_to_encoder_(0),
+      samples_in_encoder_(0),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
   VLOG(1) << "max_unacked_frames " << max_unacked_frames_;
@@ -48,7 +48,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          audio_config.frequency,
                          audio_config.bitrate,
                          audio_config.codec,
-                         base::Bind(&FrameSender::SendEncodedFrame,
+                         base::Bind(&AudioSender::OnEncodedAudioFrame,
                                     weak_factory_.GetWeakPtr(),
                                     audio_config.bitrate)));
     cast_initialization_status_ = audio_encoder_->InitializationResult();
@@ -86,22 +86,38 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
   }
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
 
+  // TODO(miu): An |audio_bus| that represents more duration than a single
+  // frame's duration can defeat our logic here, causing too much data to become
+  // enqueued.  This will be addressed in a soon-upcoming change.
   if (ShouldDropNextFrame(recorded_time)) {
     VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
     return;
   }
 
-  int64 old_frames_sent =
-      samples_sent_to_encoder_ * kAudioFrameRate / rtp_timebase_;
-  samples_sent_to_encoder_ += audio_bus->frames();
-  int64 new_frames_sent =
-      samples_sent_to_encoder_ * kAudioFrameRate / rtp_timebase_;
-  frames_in_encoder_ += new_frames_sent - old_frames_sent;
+  samples_in_encoder_ += audio_bus->frames();
 
   audio_encoder_->InsertAudio(audio_bus.Pass(), recorded_time);
 }
 
+int AudioSender::GetNumberOfFramesInEncoder() const {
+  // Note: It's possible for a partial frame to be in the encoder, but returning
+  // the floor() is good enough for the "design limit" check in FrameSender.
+  return samples_in_encoder_ / audio_encoder_->GetSamplesPerFrame();
+}
+
 void AudioSender::OnAck(uint32 frame_id) {
+}
+
+void AudioSender::OnEncodedAudioFrame(
+    int encoder_bitrate,
+    scoped_ptr<EncodedFrame> encoded_frame,
+    int samples_skipped) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  samples_in_encoder_ -= audio_encoder_->GetSamplesPerFrame() + samples_skipped;
+  DCHECK_GE(samples_in_encoder_, 0);
+
+  SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
 }
 
 }  // namespace cast

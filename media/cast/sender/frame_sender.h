@@ -46,6 +46,13 @@ class FrameSender {
                         scoped_ptr<EncodedFrame> encoded_frame);
 
  protected:
+  // Returns the number of frames in the encoder's backlog.
+  virtual int GetNumberOfFramesInEncoder() const = 0;
+
+  // Called when we get an ACK for a frame.
+  virtual void OnAck(uint32 frame_id) = 0;
+
+ protected:
   // Schedule and execute periodic sending of RTCP report.
   void ScheduleNextRtcpReport();
   void SendRtcpReport(bool schedule_future_reports);
@@ -92,9 +99,6 @@ class FrameSender {
   base::TimeTicks GetRecordedReferenceTime(uint32 frame_id) const;
   RtpTimestamp GetRecordedRtpTimestamp(uint32 frame_id) const;
 
-  // Called when we get an ACK for a frame.
-  virtual void OnAck(uint32 frame_id) = 0;
-
   const base::TimeDelta rtcp_interval_;
 
   // The total amount of time between a frame's capture/recording on the sender
@@ -114,9 +118,6 @@ class FrameSender {
   // Maximum number of outstanding frames before the encoding and sending of
   // new frames shall halt.
   int max_unacked_frames_;
-
-  // The number of frames currently being processed in |video_encoder_|.
-  int frames_in_encoder_;
 
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
   // frame) at the start of the session.  Once a threshold is reached, RTCP

@@ -56,7 +56,8 @@ class AudioEncoder::ImplBase
         cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
         buffer_fill_end_(0),
         frame_id_(0),
-        frame_rtp_timestamp_(0) {
+        frame_rtp_timestamp_(0),
+        samples_dropped_from_buffer_(0) {
     // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
     const int kMaxSamplesTimesChannelsPerFrame = 48 * 2 * 100;
     if (num_channels_ <= 0 || samples_per_frame_ <= 0 ||
@@ -68,6 +69,10 @@ class AudioEncoder::ImplBase
 
   CastInitializationStatus InitializationResult() const {
     return cast_initialization_status_;
+  }
+
+  int samples_per_frame() const {
+    return samples_per_frame_;
   }
 
   void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
@@ -90,6 +95,7 @@ class AudioEncoder::ImplBase
           recorded_time - (frame_capture_time_ + buffer_fill_duration);
       if (amount_ahead_by >
               base::TimeDelta::FromMilliseconds(kUnderrunThresholdMillis)) {
+        samples_dropped_from_buffer_ += buffer_fill_end_;
         buffer_fill_end_ = 0;
         buffer_fill_duration = base::TimeDelta();
         const int64 num_frames_missed = amount_ahead_by /
@@ -129,7 +135,10 @@ class AudioEncoder::ImplBase
         cast_environment_->PostTask(
             CastEnvironment::MAIN,
             FROM_HERE,
-            base::Bind(callback_, base::Passed(&audio_frame)));
+            base::Bind(callback_,
+                       base::Passed(&audio_frame),
+                       samples_dropped_from_buffer_));
+        samples_dropped_from_buffer_ = 0;
       }
 
       // Reset the internal buffer, frame ID, and timestamps for the next frame.
@@ -181,6 +190,10 @@ class AudioEncoder::ImplBase
   // progression is expected to drift relative to the elapsed time implied by
   // the RTP timestamps.
   base::TimeTicks frame_capture_time_;
+
+  // Set to non-zero to indicate the next output frame skipped over audio
+  // samples in order to recover from an input underrun.
+  int samples_dropped_from_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
@@ -365,11 +378,20 @@ CastInitializationStatus AudioEncoder::InitializationResult() const {
   return STATUS_UNSUPPORTED_AUDIO_CODEC;
 }
 
+int AudioEncoder::GetSamplesPerFrame() const {
+  DCHECK(insert_thread_checker_.CalledOnValidThread());
+  if (InitializationResult() != STATUS_AUDIO_INITIALIZED) {
+    NOTREACHED();
+    return std::numeric_limits<int>::max();
+  }
+  return impl_->samples_per_frame();
+}
+
 void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,
                                const base::TimeTicks& recorded_time) {
   DCHECK(insert_thread_checker_.CalledOnValidThread());
   DCHECK(audio_bus.get());
-  if (!impl_.get()) {
+  if (InitializationResult() != STATUS_AUDIO_INITIALIZED) {
     NOTREACHED();
     return;
   }

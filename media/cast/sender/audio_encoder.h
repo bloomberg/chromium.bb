@@ -20,7 +20,9 @@ namespace cast {
 
 class AudioEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
+  // Callback to deliver each EncodedFrame, plus the number of audio samples
+  // skipped since the last frame.
+  typedef base::Callback<void(scoped_ptr<EncodedFrame>, int)>
       FrameEncodedCallback;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
@@ -32,6 +34,8 @@ class AudioEncoder {
   virtual ~AudioEncoder();
 
   CastInitializationStatus InitializationResult() const;
+
+  int GetSamplesPerFrame() const;
 
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
