@@ -100,6 +100,10 @@ class WiFiServiceMac : public WiFiService {
   // Converts |CWSecurityMode| into onc::wifi::k{WPA|WEP}* security constant.
   std::string SecurityFromCWSecurityMode(CWSecurityMode security) const;
 
+  // Returns onc::wifi::k{WPA|WEP}* security constant supported by the
+  // |CWNetwork|.
+  std::string SecurityFromCWNetwork(const CWNetwork* network) const;
+
   // Converts |CWChannelBand| into Frequency constant.
   Frequency FrequencyFromCWChannelBand(CWChannelBand band) const;
 
@@ -505,10 +509,26 @@ void WiFiServiceMac::NetworkPropertiesFromCWNetwork(
   properties->frequency = FrequencyFromCWChannelBand(
       static_cast<CWChannelBand>([[network wlanChannel] channelBand]));
   properties->frequency_set.insert(properties->frequency);
-  properties->security = SecurityFromCWSecurityMode(
-      static_cast<CWSecurityMode>([[network securityMode] intValue]));
 
-  properties->signal_strength = [[network rssi] intValue];
+  // -[CWNetwork supportsSecurity:] is available from 10.7 SDK while
+  // -[CWNetwork securityMode] is deprecated and hidden as private since
+  // 10.9 SDK. The latter is kept for now to support running on 10.6. It
+  // should be removed when 10.6 support is dropped.
+  if ([network respondsToSelector:@selector(supportsSecurity:)]) {
+    properties->security = SecurityFromCWNetwork(network);
+  } else {
+    properties->security = SecurityFromCWSecurityMode(
+        static_cast<CWSecurityMode>([[network securityMode] intValue]));
+  }
+
+  // rssiValue property of CWNetwork is available from 10.7 SDK while
+  // -[CWNetwork rssi] is deprecated and hidden as private since 10.9 SDK.
+  // The latter is kept for now to support running on 10.6. It should be
+  // removed when 10.6 support is dropped.
+  if ([network respondsToSelector:@selector(rssiValue)])
+    properties->signal_strength = [network rssiValue];
+  else
+    properties->signal_strength = [[network rssi] intValue];
 }
 
 std::string WiFiServiceMac::SecurityFromCWSecurityMode(
@@ -529,6 +549,31 @@ std::string WiFiServiceMac::SecurityFromCWSecurityMode(
     case kCWSecurityModeDynamicWEP:
       return onc::wifi::kWPA_EAP;
   }
+  return onc::wifi::kWPA_EAP;
+}
+
+std::string WiFiServiceMac::SecurityFromCWNetwork(
+    const CWNetwork* network) const {
+  if ([network supportsSecurity:kCWSecurityWPAEnterprise] ||
+      [network supportsSecurity:kCWSecurityWPA2Enterprise]) {
+    return onc::wifi::kWPA_EAP;
+  }
+
+  if ([network supportsSecurity:kCWSecurityWPAPersonal] ||
+      [network supportsSecurity:kCWSecurityWPA2Personal]) {
+    return onc::wifi::kWPA_PSK;
+  }
+
+  if ([network supportsSecurity:kCWSecurityWEP])
+    return onc::wifi::kWEP_PSK;
+
+  if ([network supportsSecurity:kCWSecurityNone])
+    return onc::wifi::kSecurityNone;
+
+  // TODO(mef): Figure out correct mapping.
+  if ([network supportsSecurity:kCWSecurityDynamicWEP])
+    return onc::wifi::kWPA_EAP;
+
   return onc::wifi::kWPA_EAP;
 }
 

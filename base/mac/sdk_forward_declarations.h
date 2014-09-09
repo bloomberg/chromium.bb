@@ -257,6 +257,51 @@ typedef NSUInteger NSWindowOcclusionState;
 - (NSWindowOcclusionState)occlusionState;
 @end
 
+// 10.6 SDK don't have CWSecurity while 10.9 SDK don't have CWSecurityMode, to
+// build with SDKs from 10.6 to 10.9 both need to be forward declared and use
+// runtime checks to ensure correct methods are used on different OS X versions.
+enum {
+   kCWSecurityNone = 0,
+   kCWSecurityWEP = 1,
+   kCWSecurityWPAPersonal = 2,
+   kCWSecurityWPAPersonalMixed = 3,
+   kCWSecurityWPA2Personal = 4,
+   kCWSecurityPersonal = 5,
+   kCWSecurityDynamicWEP = 6,
+   kCWSecurityWPAEnterprise = 7,
+   kCWSecurityWPAEnterpriseMixed = 8,
+   kCWSecurityWPA2Enterprise = 9,
+   kCWSecurityEnterprise = 10,
+   kCWSecurityUnknown = NSIntegerMax,
+};
+
+typedef NSInteger CWSecurity;
+
+@interface CWNetwork (MavericksSDK)
+@property(readonly) NSInteger rssiValue;
+- (BOOL)supportsSecurity:(CWSecurity)security;
+@end
+
+#else  // !MAC_OS_X_VERSION_10_9
+
+typedef enum {
+   kCWSecurityModeOpen = 0,
+   kCWSecurityModeWEP,
+   kCWSecurityModeWPA_PSK,
+   kCWSecurityModeWPA2_PSK,
+   kCWSecurityModeWPA_Enterprise,
+   kCWSecurityModeWPA2_Enterprise,
+   kCWSecurityModeWPS,
+   kCWSecurityModeDynamicWEP
+} CWSecurityMode;
+
+@interface CWNetwork (SnowLeopardSDK)
+@property(readonly) NSNumber* rssi;
+@property(readonly) NSNumber* securityMode;
+@end
+
+BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
+
 #endif  // MAC_OS_X_VERSION_10_9
 
 #if !defined(MAC_OS_X_VERSION_10_10) || \
