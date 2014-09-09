@@ -11,8 +11,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
-#include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
+#include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 
 struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
@@ -46,7 +46,7 @@ class RenderViewImpl;
 class CONTENT_EXPORT RenderFrameProxy
     : public IPC::Listener,
       public IPC::Sender,
-      NON_EXPORTED_BASE(public blink::WebFrameClient) {
+      NON_EXPORTED_BASE(public blink::WebRemoteFrameClient) {
  public:
   // This method should be used to create a RenderFrameProxy, which will replace
   // an existing RenderFrame during its cross-process navigation from the
@@ -92,6 +92,13 @@ class CONTENT_EXPORT RenderFrameProxy
   int routing_id() { return routing_id_; }
   RenderViewImpl* render_view() { return render_view_; }
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
+
+  // blink::WebRemoteFrameClient implementation:
+  virtual void postMessageEvent(
+      blink::WebLocalFrame* sourceFrame,
+      blink::WebRemoteFrame* targetFrame,
+      blink::WebSecurityOrigin target,
+      blink::WebDOMMessageEvent event);
 
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
