@@ -988,7 +988,7 @@ TEST_F(TouchDispositionGestureFilterTest,
   PushGesture(ET_GESTURE_END);
   ReleaseTouchPoint();
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_END, ET_GESTURE_SCROLL_END),
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_END, ET_GESTURE_END),
                             GetAndResetSentGestures()));
   EXPECT_EQ(LastSentGestureLocation(), gfx::PointF(2, 2));
 
@@ -1099,6 +1099,27 @@ TEST_F(TouchDispositionGestureFilterTest, ShowPressBoundingBox) {
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS, ET_GESTURE_TAP),
                             GetAndResetSentGestures()));
   EXPECT_EQ(gfx::RectF(5, 5, 10, 10), ShowPressBoundingBox());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, TapCancelledBeforeGestureEnd) {
+  PushGesture(ET_GESTURE_BEGIN);
+  PushGesture(ET_GESTURE_TAP_DOWN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_BEGIN, ET_GESTURE_TAP_DOWN),
+                            GetAndResetSentGestures()));
+  SendTimeoutGesture(ET_GESTURE_SHOW_PRESS);
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS),
+                            GetAndResetSentGestures()));
+
+  SendTimeoutGesture(ET_GESTURE_LONG_PRESS);
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_LONG_PRESS),
+                            GetAndResetSentGestures()));
+  PushGesture(ET_GESTURE_END);
+  CancelTouchPoint();
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL, ET_GESTURE_END),
+                            GetAndResetSentGestures()));
 }
 
 }  // namespace ui
