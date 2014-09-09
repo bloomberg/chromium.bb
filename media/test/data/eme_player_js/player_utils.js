@@ -57,12 +57,23 @@ PlayerUtils.registerEMEEventListeners = function(player) {
                   message.contentType + ', initData: ' +
                   Utils.getHexString(message.initData));
     try {
-      var session = message.target.mediaKeys.createSession(
-          message.contentType, message.initData);
-      session.then(addMediaKeySessionListeners)
+      if (message.target.mediaKeys.createSession.length == 0) {
+        // FIXME(jrummell): Remove this test (and else branch) once blink
+        // uses the new API.
+        var session = message.target.mediaKeys.createSession();
+        addMediaKeySessionListeners(session);
+        session.generateRequest(message.contentType, message.initData)
           .catch(function(error) {
             Utils.failTest(error, KEY_ERROR);
           });
+      } else {
+        var session = message.target.mediaKeys.createSession(
+            message.contentType, message.initData);
+        session.then(addMediaKeySessionListeners)
+            .catch(function(error) {
+              Utils.failTest(error, KEY_ERROR);
+            });
+      }
     } catch (e) {
       Utils.failTest(e);
     }
