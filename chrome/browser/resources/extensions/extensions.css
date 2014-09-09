@@ -360,10 +360,9 @@ html[dir=rtl] .extension-commands-config {
   -webkit-transition: opacity 200ms;
   height: 22px;
   opacity: 0.8;
-  position: absolute;
+  position: relative;
   right: 0;
-  top: 3px;
-  vertical-align: middle;
+  top: 6px;
 }
 
 html[dir='rtl'] #extension-settings .trash {

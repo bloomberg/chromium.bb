@@ -432,12 +432,15 @@ cr.define('extensions', function() {
     var measuringDiv = $('font-measuring-div');
     measuringDiv.textContent =
         loadTimeData.getString('extensionSettingsEnabled');
+    measuringDiv.className = 'enabled-text';
     var pxWidth = measuringDiv.clientWidth + trashWidth;
     measuringDiv.textContent =
         loadTimeData.getString('extensionSettingsEnable');
+    measuringDiv.className = 'enable-text';
     pxWidth = Math.max(measuringDiv.clientWidth + trashWidth, pxWidth);
     measuringDiv.textContent =
         loadTimeData.getString('extensionSettingsDeveloperMode');
+    measuringDiv.className = '';
     pxWidth = Math.max(measuringDiv.clientWidth, pxWidth);
 
     var style = document.createElement('style');
