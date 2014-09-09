@@ -420,7 +420,7 @@ ntdll.dll!RtlExitUserThread
 GDI USAGE ERROR
 name=http://crbug.com/266484
 skia.dll!HDCOffscreen::draw
-skia.dll!SkScalerContext_GDI::generateImage
+...
 skia.dll!SkScalerContext::getImage
 skia.dll!SkGlyphCache::findImage
 skia.dll!D1G_RectClip
