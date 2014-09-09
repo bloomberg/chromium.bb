@@ -181,26 +181,6 @@
       ],
     },
     {
-      # A demonstration program for the seccomp-bpf sandbox.
-      'target_name': 'seccomp_bpf_demo',
-      'conditions': [
-        ['compile_seccomp_bpf_demo==1', {
-          'type': 'executable',
-          'sources': [
-            'seccomp-bpf/demo.cc',
-          ],
-          'dependencies': [
-            'seccomp_bpf',
-          ],
-        }, {
-          'type': 'none',
-        }],
-      ],
-      'include_dirs': [
-        '../../',
-      ],
-    },
-    {
       # The setuid sandbox, for Linux
       'target_name': 'chrome_sandbox',
       'type': 'executable',

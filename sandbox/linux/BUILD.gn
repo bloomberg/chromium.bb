@@ -186,18 +186,6 @@ component("seccomp_bpf_helpers") {
   ]
 }
 
-if (compile_seccomp_bpf_demo) {
-  # A demonstration program for the seccomp-bpf sandbox.
-  executable("seccomp_bpf_demo") {
-    sources = [
-      "seccomp-bpf/demo.cc",
-    ]
-    deps = [
-      ":seccomp_bpf",
-    ]
-  }
-}
-
 # The setuid sandbox for Linux.
 executable("chrome_sandbox") {
   sources = [
