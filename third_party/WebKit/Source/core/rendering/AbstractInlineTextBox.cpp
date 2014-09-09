@@ -132,6 +132,11 @@ void AbstractInlineTextBox::wordBoundaries(Vector<WordBoundaries>& words) const
     String text = this->text();
     int len = text.length();
     TextBreakIterator* iterator = wordBreakIterator(text, 0, len);
+
+    // FIXME: When http://crbug.com/411764 is fixed, replace this with an ASSERT.
+    if (!iterator)
+        return;
+
     int pos = iterator->first();
     while (pos >= 0 && pos < len) {
         int next = iterator->next();
