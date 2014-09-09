@@ -41,8 +41,7 @@ demo:2[]
 
 SEE ALSO
 --------
-linkgit:git-cherry-pick[1]
-linkgit:git-revert[1]
+linkgit:git-cherry-pick[1], linkgit:git-revert[1]
 
 include::_footer.txt[]
 

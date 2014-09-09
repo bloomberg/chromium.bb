@@ -780,9 +780,9 @@ at least once to fetch the branches.</p></div>
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
 <span style="font-weight: bold; color: #ffffff">$ git fetch</span>
 
-# Here's the commit we want to 'drover'.
+# Here's a commit (from some.committer) that we want to 'drover'.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543
+commit 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some.committer &lt;some.committer@chromium.org&gt;
@@ -796,25 +796,25 @@ Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
 
 # Now do the 'drover'.
 # IMPORTANT!!! Do Not leave off the '-x' flag
-<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543</span>
-[drover_9999 1d9c1a1] This change needs to go to branch 9999
+<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b</span>
+[drover_9999 19d3d0b] This change needs to go to branch 9999
  Author: some.committer &lt;some.committer@chromium.org&gt;
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
  create mode 100644 modified_file
 
-# That took the code authored by some.commiter and commited it to the
-# branch by branch.maintainer (us).
+# That took the code authored by some.committer and committed it to
+# the branch by the person who drovered it (i.e. you).
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 1d9c1a1b768f2248c884495f4d47739c2ff249f7
+commit 19d3d0b9d8f802df8e2fd563cbc919679d310ecd
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
-Commit:     branch.maintainer &lt;branch.maintainer@chromium.org&gt;
+Commit:     you &lt;you@chromium.org&gt;
 CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543)
+    (cherry picked from commit 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b)
 
 # Looks good. Ship it!
 <span style="font-weight: bold; color: #ffffff">$ git cl upload</span>
@@ -834,24 +834,24 @@ Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
 
 # Here's the commit we want to revert.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
-commit aca17ebfc070673e98afb6d36f6028eae6b0b8ca
+commit 590b333cbc04d13da67b2a1c5282835d4f27e398
 Author: some.committer &lt;some.committer@chromium.org&gt;
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken.
 
 # Now do the revert.
-<span style="font-weight: bold; color: #ffffff">$ git revert aca17ebfc070673e98afb6d36f6028eae6b0b8ca</span>
+<span style="font-weight: bold; color: #ffffff">$ git revert 590b333cbc04d13da67b2a1c5282835d4f27e398</span>
 
 # That reverted the change and committed the revert.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
-commit d27f8f3fd56621c5e3a92cb5e64100e2bc2137a2
-Author: branch.maintainer &lt;branch.maintainer@chromium.org&gt;
+commit 6f541155a9adf98f4e7f94dd561d022fb022d43f
+Author: you &lt;you@chromium.org&gt;
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken."
 
-    This reverts commit aca17ebfc070673e98afb6d36f6028eae6b0b8ca.
+    This reverts commit 590b333cbc04d13da67b2a1c5282835d4f27e398.
 
 # As with old drover, reverts are generally OK to commit without LGTM.
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r some.committer@chromium.org --send-mail</span>
@@ -864,8 +864,7 @@ Date:   Thu Apr 10 09:11:36 2014 +0000
 <div class="sect1">
 <h2 id="_see_also">SEE ALSO</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><a href="git-cherry-pick.html">git-cherry-pick(1)</a>
-<a href="git-revert.html">git-revert(1)</a></p></div>
+<div class="paragraph"><p><a href="git-cherry-pick.html">git-cherry-pick(1)</a>, <a href="git-revert.html">git-revert(1)</a></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -880,7 +879,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-09-05 16:32:10 PDT
+Last updated 2014-09-09 13:42:13 PDT
 </div>
 </div>
 </body>

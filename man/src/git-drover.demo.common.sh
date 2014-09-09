@@ -7,7 +7,7 @@ drover_c() {
   set_user some.committer
   c "$1"
   silent git tag -f pick_commit
-  set_user branch.maintainer
+  set_user you
   tick 1000
 }
 

@@ -2,12 +2,12 @@
 .\"     Title: git-drover
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 09/05/2014
+.\"      Date: 09/09/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 2171f9c
+.\"    Source: depot_tools 6e7202b
 .\"  Language: English
 .\"
-.TH "GIT\-DROVER" "1" "09/05/2014" "depot_tools 2171f9c" "Chromium depot_tools Manual"
+.TH "GIT\-DROVER" "1" "09/09/2014" "depot_tools 6e7202b" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,9 +60,9 @@ Before working with branches, you must \fIgclient sync \-\-with_branch_heads\fR 
 # Make sure we have the most up\-to\-date branch sources\&.
 \fB$ git fetch\fR
 
-# Here\*(Aqs the commit we want to \*(Aqdrover\*(Aq\&.
+# Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 14293306d7969cff815969e2502f47794a63fbc5
+commit 0421d3583f73220c8f88b1a96898fcd81222fe73
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -76,25 +76,25 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Now do the \*(Aqdrover\*(Aq\&.
 # IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
-\fB$ git cherry\-pick \-x 14293306d7969cff815969e2502f47794a63fbc5\fR
-[drover_9999 3200a8c] This change needs to go to branch 9999
+\fB$ git cherry\-pick \-x 0421d3583f73220c8f88b1a96898fcd81222fe73\fR
+[drover_9999 5c0a17d] This change needs to go to branch 9999
  Author: some\&.committer <some\&.committer@chromium\&.org>
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
  create mode 100644 modified_file
 
-# That took the code authored by some\&.commiter and commited it to the
-# branch by branch\&.maintainer (us)\&.
+# That took the code authored by some\&.committer and committed it to
+# the branch by the person who drovered it (i\&.e\&. you)\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 3200a8cb2072a7c84aaba52baaecbf5e4d17ad00
+commit 5c0a17dd382cd098182ac9f486ccd6b86c28d96e
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
-Commit:     branch\&.maintainer <branch\&.maintainer@chromium\&.org>
+Commit:     you <you@chromium\&.org>
 CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit 14293306d7969cff815969e2502f47794a63fbc5)
+    (cherry picked from commit 0421d3583f73220c8f88b1a96898fcd81222fe73)
 
 # Looks good\&. Ship it!
 \fB$ git cl upload\fR
@@ -131,24 +131,24 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Here\*(Aqs the commit we want to revert\&.
 \fB$ git log \-n 1\fR
-commit 4803efead17077ecd40440caef2e78d1c66098cf
+commit 28bb44fa7f9d5e19b73a670ae923d3a96dec250a
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken\&.
 
 # Now do the revert\&.
-\fB$ git revert 4803efead17077ecd40440caef2e78d1c66098cf\fR
+\fB$ git revert 28bb44fa7f9d5e19b73a670ae923d3a96dec250a\fR
 
 # That reverted the change and committed the revert\&.
 \fB$ git log \-n 1\fR
-commit 52350f2809ce71352326f1518feae57ac5152f18
-Author: branch\&.maintainer <branch\&.maintainer@chromium\&.org>
+commit 4618467de1407aa159624015c8c8461ec35fbaf1
+Author: you <you@chromium\&.org>
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken\&."
 
-    This reverts commit 4803efead17077ecd40440caef2e78d1c66098cf\&.
+    This reverts commit 28bb44fa7f9d5e19b73a670ae923d3a96dec250a\&.
 
 # As with old drover, reverts are generally OK to commit without LGTM\&.
 \fB$ git cl upload \-r some\&.committer@chromium\&.org \-\-send\-mail\fR
@@ -161,7 +161,7 @@ Date:   Thu Apr 10 09:11:36 2014 +0000
 .RE
 .SH "SEE ALSO"
 .sp
-\fBgit-cherry-pick\fR(1) \fBgit-revert\fR(1)
+\fBgit-cherry-pick\fR(1), \fBgit-revert\fR(1)
 .SH "CHROMIUM DEPOT_TOOLS"
 .sp
 Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assist with the development of chromium and related projects\&. Download the tools from \m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
