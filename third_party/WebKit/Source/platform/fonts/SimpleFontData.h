@@ -147,10 +147,6 @@ public:
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }
 
-#ifndef NDEBUG
-    virtual String description() const OVERRIDE;
-#endif
-
 #if OS(MACOSX)
     const SimpleFontData* getCompositeFontReferenceFontData(NSFont *key) const;
     NSFont* getNSFont() const { return m_platformData.font(); }

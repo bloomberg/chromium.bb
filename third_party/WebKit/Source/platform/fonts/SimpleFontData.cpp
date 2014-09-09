@@ -218,18 +218,6 @@ PassRefPtr<SimpleFontData> SimpleFontData::brokenIdeographFontData() const
     return m_derivedFontData->brokenIdeograph;
 }
 
-#ifndef NDEBUG
-String SimpleFontData::description() const
-{
-    if (isSVGFont())
-        return "[SVG font]";
-    if (isCustomFont())
-        return "[custom font]";
-
-    return platformData().description();
-}
-#endif
-
 PassOwnPtr<SimpleFontData::DerivedFontData> SimpleFontData::DerivedFontData::create(bool forCustomFont)
 {
     return adoptPtr(new DerivedFontData(forCustomFont));

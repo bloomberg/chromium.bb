@@ -383,41 +383,5 @@ void GlyphPageTreeNode::pruneFontData(const SimpleFontData* fontData, unsigned l
         it->value->pruneFontData(fontData, level);
 }
 
-#ifndef NDEBUG
-    void GlyphPageTreeNode::showSubtree()
-    {
-        Vector<char> indent(level());
-        indent.fill('\t', level());
-        indent.append(0);
-
-        GlyphPageTreeNodeMap::iterator end = m_children.end();
-        for (GlyphPageTreeNodeMap::iterator it = m_children.begin(); it != end; ++it) {
-            printf("%s\t%p %s\n", indent.data(), it->key, it->key->description().utf8().data());
-            it->value->showSubtree();
-        }
-        if (m_systemFallbackChild) {
-            printf("%s\t* fallback\n", indent.data());
-            m_systemFallbackChild->showSubtree();
-        }
-    }
-#endif
-
 } // namespace blink
 
-#ifndef NDEBUG
-void showGlyphPageTrees()
-{
-    printf("Page 0:\n");
-    showGlyphPageTree(0);
-    HashMap<int, blink::GlyphPageTreeNode*>::iterator end = blink::GlyphPageTreeNode::roots->end();
-    for (HashMap<int, blink::GlyphPageTreeNode*>::iterator it = blink::GlyphPageTreeNode::roots->begin(); it != end; ++it) {
-        printf("\nPage %d:\n", it->key);
-        showGlyphPageTree(it->key);
-    }
-}
-
-void showGlyphPageTree(unsigned pageNumber)
-{
-    blink::GlyphPageTreeNode::getRoot(pageNumber)->showSubtree();
-}
-#endif

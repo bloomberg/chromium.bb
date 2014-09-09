@@ -99,11 +99,4 @@ bool SegmentedFontData::shouldSkipDrawing() const
     return false;
 }
 
-#ifndef NDEBUG
-String SegmentedFontData::description() const
-{
-    return "[segmented font]";
-}
-#endif
-
 } // namespace blink

@@ -139,10 +139,6 @@ public:
     PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
 #endif
 
-#ifndef NDEBUG
-    String description() const;
-#endif
-
 #if !OS(MACOSX)
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.
     const FontRenderStyle& fontRenderStyle() const { return m_style; }

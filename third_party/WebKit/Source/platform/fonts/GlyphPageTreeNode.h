@@ -37,11 +37,6 @@
 #include "wtf/RefCounted.h"
 #include "wtf/unicode/Unicode.h"
 
-#ifndef NDEBUG
-void PLATFORM_EXPORT showGlyphPageTrees();
-void PLATFORM_EXPORT showGlyphPageTree(unsigned pageNumber);
-#endif
-
 namespace blink {
 
 class FontData;
@@ -130,10 +125,6 @@ private:
 
 #if ENABLE(ASSERT)
     unsigned m_pageNumber;
-#endif
-#ifndef NDEBUG
-    friend void ::showGlyphPageTrees();
-    friend void ::showGlyphPageTree(unsigned pageNumber);
 #endif
 };
 

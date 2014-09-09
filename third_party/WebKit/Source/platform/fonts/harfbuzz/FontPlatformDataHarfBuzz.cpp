@@ -170,13 +170,6 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
     return *this;
 }
 
-#ifndef NDEBUG
-String FontPlatformData::description() const
-{
-    return String();
-}
-#endif
-
 SkFontID FontPlatformData::uniqueID() const
 {
     return m_typeface->uniqueID();

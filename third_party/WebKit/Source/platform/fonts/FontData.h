@@ -59,10 +59,6 @@ public:
     void setMaxGlyphPageTreeLevel(unsigned level) const { m_maxGlyphPageTreeLevel = level; }
     unsigned maxGlyphPageTreeLevel() const { return m_maxGlyphPageTreeLevel; }
 
-#ifndef NDEBUG
-    virtual String description() const = 0;
-#endif
-
 private:
     mutable unsigned m_maxGlyphPageTreeLevel;
 };

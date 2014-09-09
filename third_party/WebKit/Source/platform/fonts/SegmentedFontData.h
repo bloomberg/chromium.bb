@@ -64,10 +64,6 @@ public:
     const FontDataRange& rangeAt(unsigned i) const { return m_ranges[i]; }
     bool containsCharacter(UChar32) const;
 
-#ifndef NDEBUG
-    virtual String description() const OVERRIDE;
-#endif
-
 private:
     SegmentedFontData() { }
 

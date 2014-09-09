@@ -327,13 +327,5 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
     return m_harfBuzzFace.get();
 }
 
-#ifndef NDEBUG
-String FontPlatformData::description() const
-{
-    RetainPtr<CFStringRef> cgFontDescription(AdoptCF, CFCopyDescription(cgFont()));
-    return String(cgFontDescription.get()) + " " + String::number(m_textSize)
-            + (m_syntheticBold ? " synthetic bold" : "") + (m_syntheticItalic ? " synthetic oblique" : "") + (m_orientation ? " vertical orientation" : "");
-}
-#endif
 
 } // namespace blink
