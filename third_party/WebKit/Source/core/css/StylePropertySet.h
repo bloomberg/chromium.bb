@@ -201,7 +201,6 @@ public:
 
     // These do not. FIXME: This is too messy, we can do better.
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
-    bool setProperty(CSSPropertyID, CSSPropertyID identifier, bool important = false);
     void appendPrefixingVariantProperty(const CSSProperty&);
     void setPrefixingVariantProperty(const CSSProperty&);
     void setProperty(const CSSProperty&, CSSProperty* slot = 0);
