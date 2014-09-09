@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_ftp_job.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "net/base/host_port_pair.h"
@@ -125,10 +126,10 @@ class URLRequestFtpJobPriorityTest : public testing::Test {
  protected:
   URLRequestFtpJobPriorityTest()
       : proxy_service_(new SimpleProxyConfigService, NULL, NULL),
-        req_(GURL("ftp://ftp.example.com"),
-             DEFAULT_PRIORITY,
-             &delegate_,
-             &context_) {
+        req_(context_.CreateRequest(GURL("ftp://ftp.example.com"),
+                                    DEFAULT_PRIORITY,
+                                    &delegate_,
+                                    NULL)) {
     context_.set_proxy_service(&proxy_service_);
     context_.set_http_transaction_factory(&network_layer_);
   }
@@ -139,14 +140,14 @@ class URLRequestFtpJobPriorityTest : public testing::Test {
   FtpAuthCache ftp_auth_cache_;
   TestURLRequestContext context_;
   TestDelegate delegate_;
-  TestURLRequest req_;
+  scoped_ptr<URLRequest> req_;
 };
 
 // Make sure that SetPriority actually sets the URLRequestFtpJob's
 // priority, both before and after start.
 TEST_F(URLRequestFtpJobPriorityTest, SetPriorityBasic) {
   scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(
-      &req_, &ftp_factory_, &ftp_auth_cache_));
+      req_.get(), &ftp_factory_, &ftp_auth_cache_));
   EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
 
   job->SetPriority(LOWEST);
@@ -166,7 +167,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetPriorityBasic) {
 // transaction on start.
 TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriorityOnStart) {
   scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(
-      &req_, &ftp_factory_, &ftp_auth_cache_));
+      req_.get(), &ftp_factory_, &ftp_auth_cache_));
   job->SetPriority(LOW);
 
   EXPECT_FALSE(network_layer_.last_transaction());
@@ -181,7 +182,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriorityOnStart) {
 // its transaction.
 TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriority) {
   scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(
-      &req_, &ftp_factory_, &ftp_auth_cache_));
+      req_.get(), &ftp_factory_, &ftp_auth_cache_));
   job->SetPriority(LOW);
   job->Start();
   ASSERT_TRUE(network_layer_.last_transaction());
@@ -195,7 +196,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriority) {
 // newly-created transactions after the first one.
 TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
   scoped_refptr<TestURLRequestFtpJob> job(new TestURLRequestFtpJob(
-      &req_, &ftp_factory_, &ftp_auth_cache_));
+      req_.get(), &ftp_factory_, &ftp_auth_cache_));
   job->Start();
 
   job->SetPriority(LOW);

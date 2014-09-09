@@ -298,12 +298,13 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
       { "CONNECT", false },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    net::TestURLRequest request(GURL("http://www.google.com/"),
-                                net::DEFAULT_PRIORITY,
-                                NULL,
-                                &context);
-    request.set_method(tests[i].method);
-    EXPECT_EQ(tests[i].expected_result, IsRequestIdempotent(&request));
+    scoped_ptr<net::URLRequest> request(
+        context.CreateRequest(GURL("http://www.google.com/"),
+                              net::DEFAULT_PRIORITY,
+                              NULL,
+                              NULL));
+    request->set_method(tests[i].method);
+    EXPECT_EQ(tests[i].expected_result, IsRequestIdempotent(request.get()));
   }
 }
 
@@ -347,14 +348,15 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
         new HttpResponseHeaders(headers));
     scoped_refptr<HttpResponseHeaders> override_response_headers;
     TestDelegate test_delegate;
-    net::TestURLRequest request(GURL("http://www.google.com/"),
-                           net::DEFAULT_PRIORITY,
-                           NULL,
-                           &context);
-    OverrideResponseAsRedirect(
-        &request, original_response_headers.get(), &override_response_headers);
+    scoped_ptr<net::URLRequest> request(
+        context.CreateRequest(GURL("http://www.google.com/"),
+                              net::DEFAULT_PRIORITY,
+                              NULL,
+                              NULL));
+    OverrideResponseAsRedirect(request.get(), original_response_headers.get(),
+                               &override_response_headers);
     int expected_flags = net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY;
-    EXPECT_EQ(expected_flags, request.load_flags());
+    EXPECT_EQ(expected_flags, request->load_flags());
     std::string override_headers;
     override_response_headers->GetNormalizedHeaders(&override_headers);
     EXPECT_EQ(std::string(tests[i].expected_headers), override_headers);

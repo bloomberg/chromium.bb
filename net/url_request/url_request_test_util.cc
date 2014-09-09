@@ -130,15 +130,6 @@ void TestURLRequestContext::Init() {
     context_storage_.set_job_factory(new URLRequestJobFactoryImpl);
 }
 
-TestURLRequest::TestURLRequest(const GURL& url,
-                               RequestPriority priority,
-                               Delegate* delegate,
-                               TestURLRequestContext* context)
-    : URLRequest(url, priority, delegate, context, NULL, NULL) {}
-
-TestURLRequest::~TestURLRequest() {
-}
-
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : network_task_runner_(network_task_runner) {

@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -1827,12 +1828,12 @@ TEST_F(URLRequestTest, InterceptLoadTimingEarlyConnectWithProxy) {
 TEST_F(URLRequestTest, Identifiers) {
   TestDelegate d;
   TestURLRequestContext context;
-  TestURLRequest req(
-      GURL("http://example.com"), DEFAULT_PRIORITY, &d, &context);
-  TestURLRequest other_req(
-      GURL("http://example.com"), DEFAULT_PRIORITY, &d, &context);
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL("http://example.com"), DEFAULT_PRIORITY, &d, NULL));
+  scoped_ptr<URLRequest> other_req(context.CreateRequest(
+      GURL("http://example.com"), DEFAULT_PRIORITY, &d, NULL));
 
-  ASSERT_NE(req.identifier(), other_req.identifier());
+  ASSERT_NE(req->identifier(), other_req->identifier());
 }
 
 // Check that a failure to connect to the proxy is reported to the network

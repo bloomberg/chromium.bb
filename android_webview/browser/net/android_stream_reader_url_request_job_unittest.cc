@@ -7,12 +7,14 @@
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/input_stream_reader.h"
 #include "base/format_macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -25,7 +27,7 @@ using net::TestDelegate;
 using net::TestJobInterceptor;
 using net::TestNetworkDelegate;
 using net::TestURLRequestContext;
-using net::TestURLRequest;
+using net::URLRequest;
 using testing::DoAll;
 using testing::Ge;
 using testing::Gt;
@@ -188,10 +190,10 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
   virtual void SetUp() {
     context_.set_job_factory(&factory_);
     context_.set_network_delegate(&network_delegate_);
-    req_.reset(new TestURLRequest(GURL("content://foo"),
+    req_ = context_.CreateRequest(GURL("content://foo"),
                                   net::DEFAULT_PRIORITY,
                                   &url_request_delegate_,
-                                  &context_));
+                                  NULL);
     req_->set_method("GET");
   }
 
@@ -235,7 +237,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
   android_webview::AwURLRequestJobFactory factory_;
   TestDelegate url_request_delegate_;
   TestNetworkDelegate network_delegate_;
-  scoped_ptr<TestURLRequest> req_;
+  scoped_ptr<URLRequest> req_;
 };
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {

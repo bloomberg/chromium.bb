@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +26,7 @@
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "url/gurl.h"
 
@@ -1182,10 +1184,11 @@ content::ResourceThrottle* RequestTestResourceThrottle(
     TestResourceController* controller,
     const char* crx_id) {
   net::TestURLRequestContext context;
-  net::TestURLRequest url_request(GURL("http://foo.example.com/thing.bin"),
-                                  net::DEFAULT_PRIORITY,
-                                  NULL,
-                                  &context);
+  scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
+      GURL("http://foo.example.com/thing.bin"),
+      net::DEFAULT_PRIORITY,
+      NULL,
+      NULL));
 
   content::ResourceThrottle* rt = GetOnDemandResourceThrottle(cus, crx_id);
   rt->set_controller_for_testing(controller);

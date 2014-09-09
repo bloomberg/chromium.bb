@@ -122,17 +122,6 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 
 //-----------------------------------------------------------------------------
 
-class TestURLRequest : public URLRequest {
- public:
-  TestURLRequest(const GURL& url,
-                 RequestPriority priority,
-                 Delegate* delegate,
-                 TestURLRequestContext* context);
-  virtual ~TestURLRequest();
-};
-
-//-----------------------------------------------------------------------------
-
 class TestDelegate : public URLRequest::Delegate {
  public:
   TestDelegate();

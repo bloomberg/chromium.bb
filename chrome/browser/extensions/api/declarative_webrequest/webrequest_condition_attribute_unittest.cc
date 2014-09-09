@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
@@ -13,6 +14,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/base/request_priority.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,30 +97,30 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_EQ(std::string(keys::kResourceTypeKey), attribute->GetName());
 
   net::TestURLRequestContext context;
-  net::TestURLRequest url_request_ok(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
+  scoped_ptr<net::URLRequest> url_request_ok(context.CreateRequest(
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
-      &url_request_ok,
+      url_request_ok.get(),
       content::RESOURCE_TYPE_SUB_FRAME,
       NULL,
       -1,
       -1,
       -1,
       false);
-  EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(&url_request_ok,
+  EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(url_request_ok.get(),
                                                     ON_BEFORE_REQUEST)));
 
-  net::TestURLRequest url_request_fail(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
+  scoped_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
-      &url_request_fail,
+      url_request_fail.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
       NULL,
       -1,
       -1,
       -1,
       false);
-  EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(&url_request_fail,
+  EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(url_request_fail.get(),
                                                      ON_BEFORE_REQUEST)));
 }
 
@@ -136,11 +138,12 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(test_server.GetURL("/headers.html"),
-                                  net::DEFAULT_PRIORITY,
-                                  &delegate,
-                                  &context);
-  url_request.Start();
+  scoped_ptr<net::URLRequest> url_request(
+      context.CreateRequest(test_server.GetURL("/headers.html"),
+                            net::DEFAULT_PRIORITY,
+                            &delegate,
+                            NULL));
+  url_request->Start();
   base::MessageLoop::current()->Run();
 
   base::ListValue content_types;
@@ -151,11 +154,11 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_include.get());
   EXPECT_FALSE(attribute_include->IsFulfilled(
-      WebRequestData(&url_request, ON_BEFORE_REQUEST,
-                     url_request.response_headers())));
+      WebRequestData(url_request.get(), ON_BEFORE_REQUEST,
+                     url_request->response_headers())));
   EXPECT_TRUE(attribute_include->IsFulfilled(
-      WebRequestData(&url_request, ON_HEADERS_RECEIVED,
-                     url_request.response_headers())));
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+                     url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kContentTypeKey), attribute_include->GetName());
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_exclude =
@@ -164,8 +167,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_exclude.get());
   EXPECT_FALSE(attribute_exclude->IsFulfilled(
-      WebRequestData(&url_request, ON_HEADERS_RECEIVED,
-                     url_request.response_headers())));
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+                     url_request->response_headers())));
 
   content_types.Clear();
   content_types.Append(new base::StringValue("something/invalid"));
@@ -175,8 +178,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unincluded.get());
   EXPECT_FALSE(attribute_unincluded->IsFulfilled(
-      WebRequestData(&url_request, ON_HEADERS_RECEIVED,
-                     url_request.response_headers())));
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+                     url_request->response_headers())));
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_unexcluded =
       WebRequestConditionAttribute::Create(
@@ -184,8 +187,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unexcluded.get());
   EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
-      WebRequestData(&url_request, ON_HEADERS_RECEIVED,
-                     url_request.response_headers())));
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+                     url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kExcludeContentTypeKey),
             attribute_unexcluded->GetName());
 }
@@ -222,30 +225,30 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   const GURL url_b("http://b.com");
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(
-      url_a, net::DEFAULT_PRIORITY, &delegate, &context);
+  scoped_ptr<net::URLRequest> url_request(
+      context.CreateRequest(url_a, net::DEFAULT_PRIORITY, &delegate, NULL));
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
     if (!(kActiveStages & i))
       continue;
     const RequestStage stage = static_cast<RequestStage>(i);
-    url_request.set_first_party_for_cookies(url_empty);
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                   stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                  stage)));
+    url_request->set_first_party_for_cookies(url_empty);
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
 
-    url_request.set_first_party_for_cookies(url_b);
-    EXPECT_TRUE(third_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                  stage)));
-    EXPECT_FALSE(first_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                   stage)));
+    url_request->set_first_party_for_cookies(url_b);
+    EXPECT_TRUE(third_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
+    EXPECT_FALSE(first_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
 
-    url_request.set_first_party_for_cookies(url_a);
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                   stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestData(&url_request,
-                                                                  stage)));
+    url_request->set_first_party_for_cookies(url_a);
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(
+        WebRequestData(url_request.get(), stage)));
   }
 }
 
@@ -313,21 +316,21 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   const GURL url_empty;
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(
-      url_empty, net::DEFAULT_PRIORITY, &delegate, &context);
+  scoped_ptr<net::URLRequest> url_request(
+      context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate, NULL));
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
-        WebRequestData(&url_request, active_stages[i].first)));
+        WebRequestData(url_request.get(), active_stages[i].first)));
 
     for (size_t j = 0; j < one_stage_attributes.size(); ++j) {
       EXPECT_EQ(i == j,
                 one_stage_attributes[j]->IsFulfilled(
-                    WebRequestData(&url_request, active_stages[i].first)));
+                    WebRequestData(url_request.get(), active_stages[i].first)));
     }
 
     EXPECT_TRUE(attribute_with_all->IsFulfilled(
-        WebRequestData(&url_request, active_stages[i].first)));
+        WebRequestData(url_request.get(), active_stages[i].first)));
   }
 }
 
@@ -438,13 +441,14 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(GURL("http://example.com"),  // Dummy URL.
-                                  net::DEFAULT_PRIORITY,
-                                  &delegate,
-                                  &context);
-  url_request.SetExtraRequestHeaderByName(
+  scoped_ptr<net::URLRequest> url_request(
+      context.CreateRequest(GURL("http://example.com"),  // Dummy URL.
+                            net::DEFAULT_PRIORITY,
+                            &delegate,
+                            NULL));
+  url_request->SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
-  url_request.Start();
+  url_request->Start();
   base::MessageLoop::current()->Run();
 
   std::vector<std::vector<const std::string*> > tests;
@@ -462,11 +466,12 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   const size_t kPassingConditionSizes[] = { arraysize(kPassingCondition) };
   GetArrayAsVector(kPassingCondition, kPassingConditionSizes, 1u, &tests);
   // Positive filter, passing (conjunction of tests).
-  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(
+      tests, keys::kRequestHeadersKey, stage, url_request.get(), &result);
   EXPECT_TRUE(result);
   // Negative filter, failing (conjunction of tests).
-  MatchAndCheck(
-      tests, keys::kExcludeRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeRequestHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_FALSE(result);
 
   // Second set of test data -- failing disjunction.
@@ -479,32 +484,35 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   const size_t kFailConditionSizes[] = { 2u, 2u, 2u, 2u };
   GetArrayAsVector(kFailCondition, kFailConditionSizes, 4u, &tests);
   // Positive filter, failing (disjunction of tests).
-  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
   // Negative filter, passing (disjunction of tests).
-  MatchAndCheck(
-      tests, keys::kExcludeRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeRequestHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_TRUE(result);
 
   // Third set of test data, corner case -- empty disjunction.
   GetArrayAsVector(NULL, NULL, 0u, &tests);
   // Positive filter, failing (no test to pass).
-  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
   // Negative filter, passing (no test to fail).
-  MatchAndCheck(
-      tests, keys::kExcludeRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeRequestHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_TRUE(result);
 
   // Fourth set of test data, corner case -- empty conjunction.
   const size_t kEmptyConjunctionSizes[] = { 0u };
   GetArrayAsVector(NULL, kEmptyConjunctionSizes, 1u, &tests);
   // Positive filter, passing (trivial test).
-  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kRequestHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
   // Negative filter, failing.
-  MatchAndCheck(
-      tests, keys::kExcludeRequestHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeRequestHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_FALSE(result);
 }
 
@@ -523,11 +531,12 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(test_server.GetURL("/headers.html"),
-                                  net::DEFAULT_PRIORITY,
-                                  &delegate,
-                                  &context);
-  url_request.Start();
+  scoped_ptr<net::URLRequest> url_request(
+      context.CreateRequest(test_server.GetURL("/headers.html"),
+                            net::DEFAULT_PRIORITY,
+                            &delegate,
+                            NULL));
+  url_request->Start();
   base::MessageLoop::current()->Run();
 
   // In all the tests below we assume that the server includes the headers
@@ -552,7 +561,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kPassingConditionSizes[] = { arraysize(kPassingCondition) };
   GetArrayAsVector(kPassingCondition, kPassingConditionSizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 1.b. -- None of the following tests in the discjunction should pass.
@@ -564,7 +574,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kFailConditionSizes[] = { 2u, 2u, 2u, 2u };
   GetArrayAsVector(kFailCondition, kFailConditionSizes, 4u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
 
   // 1.c. -- This should fail (mixing name and value from different headers)
@@ -574,7 +585,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kMixingConditionSizes[] = { arraysize(kMixingCondition) };
   GetArrayAsVector(kMixingCondition, kMixingConditionSizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
 
   // 1.d. -- Test handling multiple values for one header (both should pass).
@@ -584,7 +596,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kMoreValues1Sizes[] = { arraysize(kMoreValues1) };
   GetArrayAsVector(kMoreValues1, kMoreValues1Sizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
   const std::string kMoreValues2[] = {
     keys::kNameEqualsKey, "Custom-header-b",
@@ -592,7 +605,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kMoreValues2Sizes[] = { arraysize(kMoreValues2) };
   GetArrayAsVector(kMoreValues2, kMoreValues2Sizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 1.e. -- This should fail as conjunction but pass as disjunction.
@@ -603,12 +617,14 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // First disjunction, no conflict.
   const size_t kNoConflictSizes[] = { 2u, 2u };
   GetArrayAsVector(kConflict, kNoConflictSizes, 2u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
   // Then conjunction, conflict.
   const size_t kConflictSizes[] = { arraysize(kConflict) };
   GetArrayAsVector(kConflict, kConflictSizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
 
   // 1.f. -- This should pass, checking for correct treatment of ',' in values.
@@ -618,7 +634,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kCommaSizes[] = { arraysize(kComma) };
   GetArrayAsVector(kComma, kCommaSizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 1.g. -- This should pass, empty values are values as well.
@@ -628,7 +645,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kEmptySizes[] = { arraysize(kEmpty) };
   GetArrayAsVector(kEmpty, kEmptySizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 1.h. -- Values are case-sensitive, this should fail.
@@ -644,7 +662,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kLowercaseSizes[] = { 4u, 4u, 4u, 4u };  // As disjunction.
   GetArrayAsVector(kLowercase, kLowercaseSizes, 4u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_FALSE(result);
 
   // 1.i. -- Names are case-insensitive, this should pass.
@@ -656,7 +675,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kUppercaseSizes[] = { arraysize(kUppercase) };  // Conjunction.
   GetArrayAsVector(kUppercase, kUppercaseSizes, 1u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 2.a. -- This should pass as disjunction, because one of the tests passes.
@@ -668,7 +688,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kDisjunctionSizes[] = { 2u, 2u, 2u, 2u };
   GetArrayAsVector(kDisjunction, kDisjunctionSizes, 4u, &tests);
-  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                &result);
   EXPECT_TRUE(result);
 
   // 3.a. -- This should pass.
@@ -678,8 +699,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kNonExistentSizes[] = { arraysize(kNonExistent) };
   GetArrayAsVector(kNonExistent, kNonExistentSizes, 1u, &tests);
-  MatchAndCheck(
-      tests, keys::kExcludeResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeResponseHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_TRUE(result);
 
   // 3.b. -- This should fail.
@@ -689,8 +710,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   };
   const size_t kExistingSize[] = { arraysize(kExisting) };
   GetArrayAsVector(kExisting, kExistingSize, 1u, &tests);
-  MatchAndCheck(
-      tests, keys::kExcludeResponseHeadersKey, stage, &url_request, &result);
+  MatchAndCheck(tests, keys::kExcludeResponseHeadersKey, stage,
+                url_request.get(), &result);
   EXPECT_FALSE(result);
 }
 

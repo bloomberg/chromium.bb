@@ -11,6 +11,7 @@
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
@@ -272,18 +273,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
    protected:
     virtual ~Delegate() {}
   };
-
-  // URLRequests should almost always be created by calling
-  // URLRequestContext::CreateRequest.
-  //
-  // If no cookie store or network delegate are passed in, will use the ones
-  // from the URLRequestContext.
-  URLRequest(const GURL& url,
-             RequestPriority priority,
-             Delegate* delegate,
-             const URLRequestContext* context,
-             CookieStore* cookie_store,
-             NetworkDelegate* network_delegate);
 
   // If destroyed after Start() has been called but while IO is pending,
   // then the request will be effectively canceled and the delegate
@@ -714,6 +703,18 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
  private:
   friend class URLRequestJob;
+  friend class URLRequestContext;
+
+  // URLRequests are always created by calling URLRequestContext::CreateRequest.
+  //
+  // If no cookie store or network delegate are passed in, will use the ones
+  // from the URLRequestContext.
+  URLRequest(const GURL& url,
+             RequestPriority priority,
+             Delegate* delegate,
+             const URLRequestContext* context,
+             CookieStore* cookie_store,
+             NetworkDelegate* network_delegate);
 
   // Registers or unregisters a network interception class.
   static void RegisterRequestInterceptor(Interceptor* interceptor);

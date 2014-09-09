@@ -198,47 +198,6 @@ void URLRequest::Delegate::OnBeforeNetworkStart(URLRequest* request,
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest
 
-URLRequest::URLRequest(const GURL& url,
-                       RequestPriority priority,
-                       Delegate* delegate,
-                       const URLRequestContext* context,
-                       CookieStore* cookie_store,
-                       NetworkDelegate* network_delegate)
-    : context_(context),
-      network_delegate_(network_delegate ? network_delegate
-                                         : context->network_delegate()),
-      net_log_(BoundNetLog::Make(context->net_log(),
-                                 NetLog::SOURCE_URL_REQUEST)),
-      url_chain_(1, url),
-      method_("GET"),
-      referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
-      first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
-      load_flags_(LOAD_NORMAL),
-      delegate_(delegate),
-      is_pending_(false),
-      is_redirecting_(false),
-      redirect_limit_(kMaxRedirects),
-      priority_(priority),
-      identifier_(GenerateURLRequestIdentifier()),
-      calling_delegate_(false),
-      use_blocked_by_as_load_param_(false),
-      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
-                                          base::Unretained(this))),
-      has_notified_completion_(false),
-      received_response_content_length_(0),
-      creation_time_(base::TimeTicks::Now()),
-      notified_before_network_start_(false),
-      cookie_store_(cookie_store ? cookie_store : context->cookie_store()) {
-  SIMPLE_STATS_COUNTER("URLRequestCount");
-
-  // Sanity check out environment.
-  DCHECK(base::MessageLoop::current())
-      << "The current base::MessageLoop must exist";
-
-  context->url_requests()->insert(this);
-  net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
-}
-
 URLRequest::~URLRequest() {
   Cancel();
 
@@ -260,17 +219,6 @@ URLRequest::~URLRequest() {
   if (status_.status() == URLRequestStatus::FAILED)
     net_error = status_.error();
   net_log_.EndEventWithNetErrorCode(NetLog::TYPE_REQUEST_ALIVE, net_error);
-}
-
-// static
-void URLRequest::RegisterRequestInterceptor(Interceptor* interceptor) {
-  URLRequestJobManager::GetInstance()->RegisterRequestInterceptor(interceptor);
-}
-
-// static
-void URLRequest::UnregisterRequestInterceptor(Interceptor* interceptor) {
-  URLRequestJobManager::GetInstance()->UnregisterRequestInterceptor(
-      interceptor);
 }
 
 void URLRequest::EnableChunkedUpload() {
@@ -633,6 +581,58 @@ void URLRequest::Start() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+URLRequest::URLRequest(const GURL& url,
+                       RequestPriority priority,
+                       Delegate* delegate,
+                       const URLRequestContext* context,
+                       CookieStore* cookie_store,
+                       NetworkDelegate* network_delegate)
+    : context_(context),
+      network_delegate_(network_delegate ? network_delegate
+                                         : context->network_delegate()),
+      net_log_(BoundNetLog::Make(context->net_log(),
+                                 NetLog::SOURCE_URL_REQUEST)),
+      url_chain_(1, url),
+      method_("GET"),
+      referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
+      load_flags_(LOAD_NORMAL),
+      delegate_(delegate),
+      is_pending_(false),
+      is_redirecting_(false),
+      redirect_limit_(kMaxRedirects),
+      priority_(priority),
+      identifier_(GenerateURLRequestIdentifier()),
+      calling_delegate_(false),
+      use_blocked_by_as_load_param_(false),
+      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
+                                          base::Unretained(this))),
+      has_notified_completion_(false),
+      received_response_content_length_(0),
+      creation_time_(base::TimeTicks::Now()),
+      notified_before_network_start_(false),
+      cookie_store_(cookie_store ? cookie_store : context->cookie_store()) {
+  SIMPLE_STATS_COUNTER("URLRequestCount");
+
+  // Sanity check out environment.
+  DCHECK(base::MessageLoop::current())
+      << "The current base::MessageLoop must exist";
+
+  context->url_requests()->insert(this);
+  net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
+}
+
+// static
+void URLRequest::RegisterRequestInterceptor(Interceptor* interceptor) {
+  URLRequestJobManager::GetInstance()->RegisterRequestInterceptor(interceptor);
+}
+
+// static
+void URLRequest::UnregisterRequestInterceptor(Interceptor* interceptor) {
+  URLRequestJobManager::GetInstance()->UnregisterRequestInterceptor(
+      interceptor);
+}
 
 void URLRequest::BeforeRequestComplete(int error) {
   DCHECK(!job_.get());

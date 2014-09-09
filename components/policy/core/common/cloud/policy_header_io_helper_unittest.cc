@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,36 +51,36 @@ class PolicyHeaderIOHelperTest : public testing::Test {
 }  // namespace
 
 TEST_F(PolicyHeaderIOHelperTest, InitialHeader) {
-  net::TestURLRequest request(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(request.url(), &request);
-  ValidateHeader(request.extra_request_headers(), kInitialPolicyHeader);
+  scoped_ptr<net::URLRequest> request(context_.CreateRequest(
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request->url(), request.get());
+  ValidateHeader(request->extra_request_headers(), kInitialPolicyHeader);
 }
 
 TEST_F(PolicyHeaderIOHelperTest, NoHeaderOnNonMatchingURL) {
-  net::TestURLRequest request(
-      GURL("http://non-matching.com"), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(request.url(), &request);
-  EXPECT_TRUE(request.extra_request_headers().IsEmpty());
+  scoped_ptr<net::URLRequest> request(context_.CreateRequest(
+      GURL("http://non-matching.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request->url(), request.get());
+  EXPECT_TRUE(request->extra_request_headers().IsEmpty());
 }
 
 TEST_F(PolicyHeaderIOHelperTest, HeaderChange) {
   std::string new_header = "new_header";
   helper_->UpdateHeader(new_header);
   task_runner_->RunUntilIdle();
-  net::TestURLRequest request(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(request.url(), &request);
-  ValidateHeader(request.extra_request_headers(), new_header);
+  scoped_ptr<net::URLRequest> request(context_.CreateRequest(
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request->url(), request.get());
+  ValidateHeader(request->extra_request_headers(), new_header);
 }
 
 TEST_F(PolicyHeaderIOHelperTest, ChangeToNoHeader) {
   helper_->UpdateHeader("");
   task_runner_->RunUntilIdle();
-  net::TestURLRequest request(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(request.url(), &request);
-  EXPECT_TRUE(request.extra_request_headers().IsEmpty());
+  scoped_ptr<net::URLRequest> request(context_.CreateRequest(
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request->url(), request.get());
+  EXPECT_TRUE(request->extra_request_headers().IsEmpty());
 }
 
 }  // namespace policy

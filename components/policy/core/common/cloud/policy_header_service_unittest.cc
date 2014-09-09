@@ -4,6 +4,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -11,6 +12,7 @@
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,20 +108,20 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   task_runner_->RunUntilIdle();
 
   net::TestURLRequestContext context;
-  net::TestURLRequest request(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
-  helper_->AddPolicyHeaders(request.url(), &request);
-  ValidateHeader(request.extra_request_headers(), expected_dmtoken,
+  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request->url(), request.get());
+  ValidateHeader(request->extra_request_headers(), expected_dmtoken,
                  expected_policy_token);
 
   // Now blow away the policy data.
   user_store_.SetPolicy(scoped_ptr<PolicyData>());
   task_runner_->RunUntilIdle();
 
-  net::TestURLRequest request2(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
-  helper_->AddPolicyHeaders(request2.url(), &request2);
-  ValidateHeader(request2.extra_request_headers(), "", "");
+  scoped_ptr<net::URLRequest> request2(context.CreateRequest(
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+  helper_->AddPolicyHeaders(request2->url(), request2.get());
+  ValidateHeader(request2->extra_request_headers(), "", "");
 }
 
 }  // namespace policy

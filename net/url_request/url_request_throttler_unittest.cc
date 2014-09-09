@@ -15,6 +15,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_header_interface.h"
@@ -170,7 +171,8 @@ struct GurlAndString {
 class URLRequestThrottlerEntryTest : public testing::Test {
  protected:
   URLRequestThrottlerEntryTest()
-      : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
+      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
+  }
 
   virtual void SetUp();
 
@@ -179,11 +181,11 @@ class URLRequestThrottlerEntryTest : public testing::Test {
   scoped_refptr<MockURLRequestThrottlerEntry> entry_;
 
   TestURLRequestContext context_;
-  TestURLRequest request_;
+  scoped_ptr<URLRequest> request_;
 };
 
 void URLRequestThrottlerEntryTest::SetUp() {
-  request_.SetLoadFlags(0);
+  request_->SetLoadFlags(0);
 
   now_ = TimeTicks::Now();
   entry_ = new MockURLRequestThrottlerEntry(&manager_);
@@ -201,10 +203,10 @@ TEST_F(URLRequestThrottlerEntryTest, CanThrottleRequest) {
       entry_->fake_time_now_ + TimeDelta::FromMilliseconds(1));
 
   d.set_can_throttle_requests(false);
-  EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
+  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_,
                                            context_.network_delegate()));
   d.set_can_throttle_requests(true);
-  EXPECT_TRUE(entry_->ShouldRejectRequest(request_,
+  EXPECT_TRUE(entry_->ShouldRejectRequest(*request_,
                                           context_.network_delegate()));
 }
 
@@ -212,12 +214,12 @@ TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
   base::HistogramTester histogram_tester;
   entry_->set_exponential_backoff_release_time(
       entry_->fake_time_now_ + TimeDelta::FromMilliseconds(1));
-  EXPECT_TRUE(entry_->ShouldRejectRequest(request_,
+  EXPECT_TRUE(entry_->ShouldRejectRequest(*request_,
                                           context_.network_delegate()));
 
   // Also end-to-end test the load flags exceptions.
-  request_.SetLoadFlags(LOAD_MAYBE_USER_GESTURE);
-  EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
+  request_->SetLoadFlags(LOAD_MAYBE_USER_GESTURE);
+  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_,
                                            context_.network_delegate()));
 
   histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 0, 1);
@@ -227,11 +229,11 @@ TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
 TEST_F(URLRequestThrottlerEntryTest, InterfaceNotDuringExponentialBackoff) {
   base::HistogramTester histogram_tester;
   entry_->set_exponential_backoff_release_time(entry_->fake_time_now_);
-  EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
+  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_,
                                            context_.network_delegate()));
   entry_->set_exponential_backoff_release_time(
       entry_->fake_time_now_ - TimeDelta::FromMilliseconds(1));
-  EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
+  EXPECT_FALSE(entry_->ShouldRejectRequest(*request_,
                                            context_.network_delegate()));
 
   histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 0, 2);
@@ -352,10 +354,11 @@ TEST_F(URLRequestThrottlerEntryTest, ExplicitUserRequest) {
 class URLRequestThrottlerManagerTest : public testing::Test {
  protected:
   URLRequestThrottlerManagerTest()
-      : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
+      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
+  }
 
   virtual void SetUp() {
-    request_.SetLoadFlags(0);
+    request_->SetLoadFlags(0);
   }
 
   void ExpectEntryAllowsAllOnErrorIfOptedOut(
@@ -388,7 +391,7 @@ class URLRequestThrottlerManagerTest : public testing::Test {
 
   // context_ must be declared before request_.
   TestURLRequestContext context_;
-  TestURLRequest request_;
+  scoped_ptr<URLRequest> request_;
 };
 
 TEST_F(URLRequestThrottlerManagerTest, IsUrlStandardised) {
@@ -468,13 +471,13 @@ TEST_F(URLRequestThrottlerManagerTest, OptOutHeader) {
   entry->UpdateWithResponse("www.google.com", &response_adapter);
 
   // Ensure that the same entry on error always allows everything.
-  ExpectEntryAllowsAllOnErrorIfOptedOut(entry.get(), true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(entry.get(), true, *request_);
 
   // Ensure that a freshly created entry (for a different URL on an
   // already opted-out host) also gets "always allow" behavior.
   scoped_refptr<URLRequestThrottlerEntryInterface> other_entry =
       manager.RegisterRequestUrl(GURL("http://www.google.com/bingobob"));
-  ExpectEntryAllowsAllOnErrorIfOptedOut(other_entry.get(), true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(other_entry.get(), true, *request_);
 
   // Fake a response with the opt-out header incorrectly specified.
   scoped_refptr<URLRequestThrottlerEntryInterface> no_opt_out_entry =
@@ -483,12 +486,12 @@ TEST_F(URLRequestThrottlerManagerTest, OptOutHeader) {
       std::string(), "yesplease", 200);
   no_opt_out_entry->UpdateWithResponse("www.nike.com", &wrong_adapter);
   ExpectEntryAllowsAllOnErrorIfOptedOut(
-      no_opt_out_entry.get(), false, request_);
+      no_opt_out_entry.get(), false, *request_);
 
   // A localhost entry should always be opted out.
   scoped_refptr<URLRequestThrottlerEntryInterface> localhost_entry =
       manager.RegisterRequestUrl(GURL("http://localhost/hello"));
-  ExpectEntryAllowsAllOnErrorIfOptedOut(localhost_entry.get(), true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(localhost_entry.get(), true, *request_);
 }
 
 TEST_F(URLRequestThrottlerManagerTest, ClearOnNetworkChange) {
@@ -501,7 +504,7 @@ TEST_F(URLRequestThrottlerManagerTest, ClearOnNetworkChange) {
       // Host doesn't really matter in this scenario so we skip it.
       entry_before->UpdateWithResponse(std::string(), &failure_adapter);
     }
-    EXPECT_TRUE(entry_before->ShouldRejectRequest(request_,
+    EXPECT_TRUE(entry_before->ShouldRejectRequest(*request_,
                                                   context_.network_delegate()));
 
     switch (i) {
@@ -522,7 +525,7 @@ TEST_F(URLRequestThrottlerManagerTest, ClearOnNetworkChange) {
     scoped_refptr<URLRequestThrottlerEntryInterface> entry_after =
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
     EXPECT_FALSE(entry_after->ShouldRejectRequest(
-                     request_, context_.network_delegate()));
+                     *request_, context_.network_delegate()));
   }
 }
 

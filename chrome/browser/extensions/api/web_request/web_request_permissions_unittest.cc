@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "content/public/browser/resource_request_info.h"
@@ -12,6 +13,7 @@
 #include "extensions/common/constants.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,38 +101,36 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   // Check that requests are rejected based on the destination
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
     GURL sensitive_url(sensitive_urls[i]);
-    net::TestURLRequest request(
-        sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    EXPECT_TRUE(
-        WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
-        << sensitive_urls[i];
+    scoped_ptr<net::URLRequest> request(context.CreateRequest(
+        sensitive_url, net::DEFAULT_PRIORITY, NULL, NULL));
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(
+        extension_info_map_.get(), request.get())) << sensitive_urls[i];
   }
   // Check that requests are accepted if they don't touch sensitive urls.
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
     GURL non_sensitive_url(non_sensitive_urls[i]);
-    net::TestURLRequest request(
-        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    EXPECT_FALSE(
-        WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
-        << non_sensitive_urls[i];
+    scoped_ptr<net::URLRequest> request(context.CreateRequest(
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, NULL));
+    EXPECT_FALSE(WebRequestPermissions::HideRequest(
+        extension_info_map_.get(), request.get())) << non_sensitive_urls[i];
   }
 
   // Check protection of requests originating from the frame showing the Chrome
   // WebStore.
   // Normally this request is not protected:
   GURL non_sensitive_url("http://www.google.com/test.js");
-  net::TestURLRequest non_sensitive_request(
-      non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-  EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
-                                                  &non_sensitive_request));
+  scoped_ptr<net::URLRequest> non_sensitive_request(context.CreateRequest(
+      non_sensitive_url, net::DEFAULT_PRIORITY, NULL, NULL));
+  EXPECT_FALSE(WebRequestPermissions::HideRequest(
+      extension_info_map_.get(), non_sensitive_request.get()));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
   {
     int process_id = 42;
     int site_instance_id = 23;
     int view_id = 17;
-    net::TestURLRequest sensitive_request(
-        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    ResourceRequestInfo::AllocateForTesting(&sensitive_request,
+    scoped_ptr<net::URLRequest> sensitive_request(context.CreateRequest(
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, NULL));
+    ResourceRequestInfo::AllocateForTesting(sensitive_request.get(),
                                             content::RESOURCE_TYPE_SCRIPT,
                                             NULL,
                                             process_id,
@@ -139,54 +139,54 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             false);
     extension_info_map_->RegisterExtensionProcess(
         extensions::kWebStoreAppId, process_id, site_instance_id);
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
-                                                   &sensitive_request));
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(
+        extension_info_map_.get(), sensitive_request.get()));
   }
   // If the process is the signin process, it becomes protected.
   {
     int process_id = kSigninProcessId;
     int view_id = 19;
-    net::TestURLRequest sensitive_request(
-        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    ResourceRequestInfo::AllocateForTesting(&sensitive_request,
+    scoped_ptr<net::URLRequest> sensitive_request(context.CreateRequest(
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, NULL));
+    ResourceRequestInfo::AllocateForTesting(sensitive_request.get(),
                                             content::RESOURCE_TYPE_SCRIPT,
                                             NULL,
                                             process_id,
                                             view_id,
                                             MSG_ROUTING_NONE,
                                             false);
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
-                                                   &sensitive_request));
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(
+        extension_info_map_.get(), sensitive_request.get()));
   }
 }
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
        TestCanExtensionAccessURL_HostPermissions) {
-  net::TestURLRequest request(
-      GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL, &context);
+  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL, NULL));
 
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map_.get(),
       permissionless_extension_->id(),
-      request.url(),
+      request->url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::DO_NOT_CHECK_HOST));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map_.get(),
       permissionless_extension_->id(),
-      request.url(),
+      request->url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map_.get(),
       com_extension_->id(),
-      request.url(),
+      request->url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map_.get(),
       com_extension_->id(),
-      request.url(),
+      request->url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_ALL_URLS));
 }

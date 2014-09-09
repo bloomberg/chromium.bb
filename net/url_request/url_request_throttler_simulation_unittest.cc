@@ -17,10 +17,12 @@
 #include <vector>
 
 #include "base/environment.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -125,7 +127,8 @@ class Server : public DiscreteTimeSimulation::Actor {
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
         max_experienced_queries_per_tick_(0),
-        mock_request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
+        mock_request_(context_.CreateRequest(
+            GURL(), DEFAULT_PRIORITY, NULL, NULL)) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
     start_downtime_ = start_time;
@@ -189,7 +192,7 @@ class Server : public DiscreteTimeSimulation::Actor {
   }
 
   const URLRequest& mock_request() const {
-    return mock_request_;
+    return *mock_request_.get();
   }
 
   std::string VisualizeASCII(int terminal_width) {
@@ -291,7 +294,7 @@ class Server : public DiscreteTimeSimulation::Actor {
   std::vector<int> requests_per_tick_;
 
   TestURLRequestContext context_;
-  TestURLRequest mock_request_;
+  scoped_ptr<URLRequest> mock_request_;
 
   DISALLOW_COPY_AND_ASSIGN(Server);
 };

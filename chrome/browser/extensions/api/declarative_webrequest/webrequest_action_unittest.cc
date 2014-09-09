@@ -25,6 +25,7 @@
 #include "extensions/common/extension.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,12 +141,12 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
     const std::string& extension_id,
     const WebRequestActionSet* action_set,
     RequestStage stage) {
-  net::TestURLRequest regular_request(
-      GURL(url_string), net::DEFAULT_PRIORITY, NULL, &context_);
+  scoped_ptr<net::URLRequest> regular_request(context_.CreateRequest(
+      GURL(url_string), net::DEFAULT_PRIORITY, NULL, NULL));
   std::list<LinkedPtrEventResponseDelta> deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
-  WebRequestData request_data(&regular_request, stage, headers.get());
+  WebRequestData request_data(regular_request.get(), stage, headers.get());
   std::set<std::string> ignored_tags;
   WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),
                                              request_data,

@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -60,13 +61,13 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
 TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
-  TestURLRequest request(
-      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, &request_context);
-  request.Start();
+  scoped_ptr<URLRequest> request(request_context.CreateRequest(
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, NULL));
+  request->Start();
 
   base::MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().error());
+  EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request->status().error());
 }
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
@@ -75,13 +76,13 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
-  TestURLRequest request(
-      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, &request_context);
-  request.Start();
+  scoped_ptr<URLRequest> request(request_context.CreateRequest(
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, NULL));
+  request->Start();
 
   base::MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::SUCCESS, request.status().status());
-  EXPECT_EQ(OK, request.status().error());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, request->status().status());
+  EXPECT_EQ(OK, request->status().error());
 }
 
 TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {

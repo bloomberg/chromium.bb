@@ -54,23 +54,23 @@ TEST(URLRequestFilter, BasicMatching) {
   TestURLRequestContext request_context;
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
 
-  GURL url_1("http://foo.com/");
-  TestURLRequest request_1(
-      url_1, DEFAULT_PRIORITY, &delegate, &request_context);
+  const GURL kUrl1("http://foo.com/");
+  scoped_ptr<URLRequest> request1(request_context.CreateRequest(
+      kUrl1, DEFAULT_PRIORITY, &delegate, NULL));
 
-  GURL url_2("http://bar.com/");
-  TestURLRequest request_2(
-      url_2, DEFAULT_PRIORITY, &delegate, &request_context);
+  const GURL kUrl2("http://bar.com/");
+  scoped_ptr<URLRequest> request2(request_context.CreateRequest(
+      kUrl2, DEFAULT_PRIORITY, &delegate, NULL));
 
   // Check AddUrlHandler checks for invalid URLs.
   EXPECT_FALSE(filter->AddUrlHandler(GURL(), &FactoryA));
 
   // Check URL matching.
   filter->ClearHandlers();
-  EXPECT_TRUE(filter->AddUrlHandler(url_1, &FactoryA));
+  EXPECT_TRUE(filter->AddUrlHandler(kUrl1, &FactoryA));
   {
     scoped_refptr<URLRequestJob> found =
-        filter->MaybeInterceptRequest(&request_1, NULL);
+        filter->MaybeInterceptRequest(request1.get(), NULL);
     EXPECT_EQ(job_a, found.get());
     EXPECT_TRUE(job_a != NULL);
     job_a = NULL;
@@ -78,21 +78,21 @@ TEST(URLRequestFilter, BasicMatching) {
   EXPECT_EQ(filter->hit_count(), 1);
 
   // Check we don't match other URLs.
-  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_2, NULL) == NULL);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove URL matching.
-  filter->RemoveUrlHandler(url_1);
-  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_1, NULL) == NULL);
+  filter->RemoveUrlHandler(kUrl1);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check hostname matching.
   filter->ClearHandlers();
   EXPECT_EQ(0, filter->hit_count());
-  filter->AddHostnameHandler(url_1.scheme(), url_1.host(), &FactoryB);
+  filter->AddHostnameHandler(kUrl1.scheme(), kUrl1.host(), &FactoryB);
   {
     scoped_refptr<URLRequestJob> found =
-        filter->MaybeInterceptRequest(&request_1, NULL);
+        filter->MaybeInterceptRequest(request1.get(), NULL);
     EXPECT_EQ(job_b, found.get());
     EXPECT_TRUE(job_b != NULL);
     job_b = NULL;
@@ -100,23 +100,23 @@ TEST(URLRequestFilter, BasicMatching) {
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we don't match other hostnames.
-  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_2, NULL) == NULL);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove hostname matching.
-  filter->RemoveHostnameHandler(url_1.scheme(), url_1.host());
-  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_1, NULL) == NULL);
+  filter->RemoveHostnameHandler(kUrl1.scheme(), kUrl1.host());
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check URLRequestInterceptor hostname matching.
   filter->ClearHandlers();
   EXPECT_EQ(0, filter->hit_count());
   filter->AddHostnameInterceptor(
-      url_1.scheme(), url_1.host(),
+      kUrl1.scheme(), kUrl1.host(),
       scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found =
-        filter->MaybeInterceptRequest(&request_1, NULL);
+        filter->MaybeInterceptRequest(request1.get(), NULL);
     EXPECT_EQ(job_c, found.get());
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
@@ -127,11 +127,11 @@ TEST(URLRequestFilter, BasicMatching) {
   filter->ClearHandlers();
   EXPECT_EQ(0, filter->hit_count());
   filter->AddUrlInterceptor(
-      url_2,
+      kUrl2,
       scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found =
-        filter->MaybeInterceptRequest(&request_2, NULL);
+        filter->MaybeInterceptRequest(request2.get(), NULL);
     EXPECT_EQ(job_c, found.get());
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
