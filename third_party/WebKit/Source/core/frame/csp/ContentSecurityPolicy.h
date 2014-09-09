@@ -84,6 +84,16 @@ public:
     static const char ReflectedXSS[];
     static const char Referrer[];
 
+    enum ReportingStatus {
+        SendReport,
+        SuppressReport
+    };
+
+    enum SideEffectDisposition {
+        ApplySideEffectsToExecutionContext,
+        DoNotApplySideEffectsToExecutionContext
+    };
+
     static PassRefPtr<ContentSecurityPolicy> create(ExecutionContext* executionContext)
     {
         return adoptRef(new ContentSecurityPolicy(executionContext));
@@ -92,13 +102,8 @@ public:
 
     void copyStateFrom(const ContentSecurityPolicy*);
 
-    enum ReportingStatus {
-        SendReport,
-        SuppressReport
-    };
-
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
-    void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource, SideEffectDisposition = ApplySideEffectsToExecutionContext);
 
     // These functions are wrong because they assume that there is only one header.
     // FIXME: Replace them with functions that return vectors.
@@ -169,7 +174,7 @@ public:
 
     const KURL url() const;
     KURL completeURL(const String&) const;
-    void enforceSandboxFlags(SandboxFlags) const;
+    void enforceSandboxFlags(SandboxFlags);
     String evalDisabledErrorMessage() const;
 
     bool urlMatchesSelf(const KURL&) const;
@@ -185,6 +190,8 @@ public:
 
 private:
     explicit ContentSecurityPolicy(ExecutionContext*);
+
+    void applyPolicySideEffectsToExecutionContext();
 
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
@@ -206,6 +213,11 @@ private:
     // for validation.
     uint8_t m_scriptHashAlgorithmsUsed;
     uint8_t m_styleHashAlgorithmsUsed;
+
+    // State flags used to configure the environment after parsing a policy.
+    SandboxFlags m_sandboxMask;
+    ReferrerPolicy m_referrerPolicy;
+    String m_disableEvalErrorMessage;
 
     OwnPtr<CSPSource> m_selfSource;
 };

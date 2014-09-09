@@ -136,8 +136,28 @@ ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
     , m_overrideInlineStyleAllowed(false)
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
+    , m_sandboxMask(0)
+    , m_referrerPolicy(ReferrerPolicyDefault)
 {
+}
+
+void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
+{
+    // Ensure that 'self' processes correctly.
     m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), false, false));
+
+    // If we're in a Document, set the referrer policy and sandbox flags.
+    if (Document* document = this->document()) {
+        document->enforceSandboxFlags(m_sandboxMask);
+        if (didSetReferrerPolicy())
+            document->setReferrerPolicy(m_referrerPolicy);
+    }
+
+    // We disable 'eval()' even in the case of report-only policies, and rely on the check in the
+    // V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the
+    // call should execute or not.
+    if (!m_disableEvalErrorMessage.isNull())
+        executionContext()->disableEval(m_disableEvalErrorMessage);
 }
 
 ContentSecurityPolicy::~ContentSecurityPolicy()
@@ -154,19 +174,29 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
     ASSERT(m_policies.isEmpty());
     for (CSPDirectiveListVector::const_iterator iter = other->m_policies.begin(); iter != other->m_policies.end(); ++iter)
         addPolicyFromHeaderValue((*iter)->header(), (*iter)->headerType(), (*iter)->headerSource());
+
+    // FIXME: This ought to be a step distinct from copyStateFrom(). https://crbug.com/411889
+    applyPolicySideEffectsToExecutionContext();
 }
 
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (!headers.contentSecurityPolicy().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP, DoNotApplySideEffectsToExecutionContext);
     if (!headers.contentSecurityPolicyReportOnly().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP, DoNotApplySideEffectsToExecutionContext);
+
+    // FIXME: This ought to be a step distinct from didReceiveHeaders(). https://crbug.com/411889
+    applyPolicySideEffectsToExecutionContext();
 }
 
-void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
+void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source, SideEffectDisposition sideEffectDisposition)
 {
     addPolicyFromHeaderValue(header, type, source);
+
+    // FIXME: This ought to be a step distinct from didReceiveHeader(). https://crbug.com/411889
+    if (sideEffectDisposition == ApplySideEffectsToExecutionContext)
+        applyPolicySideEffectsToExecutionContext();
 }
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
@@ -185,7 +215,6 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         }
     }
 
-
     Vector<UChar> characters;
     header.appendTo(characters);
 
@@ -203,9 +232,13 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         //        ^                  ^
         OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
 
-        // We disable 'eval()' even in the case of report-only policies, and rely on the check in the V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the call should execute or not.
-        if (!policy->allowEval(0, SuppressReport))
-            m_executionContext->disableEval(policy->evalDisabledErrorMessage());
+        if (type != ContentSecurityPolicyHeaderTypeReport && policy->didSetReferrerPolicy()) {
+            // FIXME: We need a 'ReferrerPolicyUnset' enum to avoid confusing code like this.
+            m_referrerPolicy = didSetReferrerPolicy() ? mergeReferrerPolicies(m_referrerPolicy, policy->referrerPolicy()) : policy->referrerPolicy();
+        }
+
+        if (!policy->allowEval(0, SuppressReport) && m_disableEvalErrorMessage.isNull())
+            m_disableEvalErrorMessage = policy->evalDisabledErrorMessage();
 
         m_policies.append(policy.release());
 
@@ -214,9 +247,6 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         skipExactly<UChar>(position, end, ',');
         begin = position;
     }
-
-    if (document && type != ContentSecurityPolicyHeaderTypeReport && didSetReferrerPolicy())
-        document->setReferrerPolicy(referrerPolicy());
 }
 
 void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value)
@@ -546,10 +576,9 @@ KURL ContentSecurityPolicy::completeURL(const String& url) const
     return m_executionContext->contextCompleteURL(url);
 }
 
-void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask) const
+void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask)
 {
-    if (Document* document = this->document())
-        document->enforceSandboxFlags(mask);
+    m_sandboxMask |= mask;
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)
