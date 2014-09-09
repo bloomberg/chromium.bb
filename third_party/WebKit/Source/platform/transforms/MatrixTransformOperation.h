@@ -50,8 +50,6 @@ public:
     }
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return m_a == 1 && !m_b && !m_c && m_d == 1 && !m_e && !m_f; }
-
     virtual OperationType type() const OVERRIDE { return Matrix; }
 
     virtual bool operator==(const TransformOperation& o) const OVERRIDE

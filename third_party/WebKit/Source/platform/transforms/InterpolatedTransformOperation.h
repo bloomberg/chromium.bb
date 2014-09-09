@@ -50,8 +50,6 @@ public:
     }
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return false; }
-
     virtual OperationType type() const OVERRIDE { return Interpolated; }
 
     virtual bool operator==(const TransformOperation&) const OVERRIDE;

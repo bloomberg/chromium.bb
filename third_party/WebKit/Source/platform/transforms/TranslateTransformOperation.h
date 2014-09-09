@@ -53,8 +53,6 @@ public:
     double z() const { return m_z; }
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return !floatValueForLength(m_x, 1) && !floatValueForLength(m_y, 1) && !m_z; }
-
     virtual OperationType type() const OVERRIDE { return m_type; }
 
     virtual bool operator==(const TransformOperation& o) const OVERRIDE

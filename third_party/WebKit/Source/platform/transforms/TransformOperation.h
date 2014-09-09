@@ -57,8 +57,6 @@ public:
     virtual bool operator==(const TransformOperation&) const = 0;
     bool operator!=(const TransformOperation& o) const { return !(*this == o); }
 
-    virtual bool isIdentity() const = 0;
-
     virtual void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const = 0;
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) = 0;

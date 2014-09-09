@@ -53,8 +53,6 @@ public:
     virtual OperationType type() const OVERRIDE { return m_type; }
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return !m_angle; }
-
     virtual bool operator==(const TransformOperation& o) const OVERRIDE
     {
         if (!isSameType(o))

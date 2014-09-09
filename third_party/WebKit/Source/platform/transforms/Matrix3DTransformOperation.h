@@ -45,8 +45,6 @@ public:
     }
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return m_matrix.isIdentity(); }
-
     virtual OperationType type() const OVERRIDE { return Matrix3D; }
 
     virtual bool operator==(const TransformOperation& o) const OVERRIDE

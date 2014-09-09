@@ -48,8 +48,6 @@ public:
     virtual bool canBlendWith(const TransformOperation& other) const;
 
 private:
-    virtual bool isIdentity() const OVERRIDE { return m_x == 1 &&  m_y == 1 &&  m_z == 1; }
-
     virtual OperationType type() const OVERRIDE { return m_type; }
 
     virtual bool operator==(const TransformOperation& o) const OVERRIDE
