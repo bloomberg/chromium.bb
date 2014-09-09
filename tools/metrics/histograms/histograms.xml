@@ -14120,16 +14120,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AuthGenerateToken_basic" units="milliseconds">
+  <obsolete>
+    Deprecated 01/2011 in https://crrev.com/70740
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time to generate a Basic HTTP authentication token.</summary>
 </histogram>
 
 <histogram name="Net.AuthGenerateToken_digest" units="milliseconds">
+  <obsolete>
+    Deprecated 01/2011 in https://crrev.com/70740
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time to generate a Digest HTTP authentication token.</summary>
 </histogram>
 
 <histogram name="Net.AuthGenerateToken_negotiate" units="milliseconds">
+  <obsolete>
+    Deprecated 01/2011 in https://crrev.com/70740
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time to generate a Negotiate (or SPNEGO) HTTP authentication token.
@@ -14137,6 +14146,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.AuthGenerateToken_ntlm" units="milliseconds">
+  <obsolete>
+    Deprecated 01/2011 in https://crrev.com/70740
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time to generate an NTLM HTTP authentication token.</summary>
 </histogram>
