@@ -228,6 +228,9 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   thread_wrapper_.reset(
       new jingle_glue::JingleThreadWrapper(plugin_task_runner_));
   media::InitializeCPUSpecificYUVConversions();
+
+  // Register a global log handler.
+  ChromotingInstance::RegisterLogMessageHandler();
 #else
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 #endif
