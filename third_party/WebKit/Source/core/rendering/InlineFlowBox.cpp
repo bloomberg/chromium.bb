@@ -382,12 +382,19 @@ float InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inlin
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
             RenderText& rt = text->renderer();
+            float space = 0;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
-                    logicalLeft += rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
+                    space = rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
                 needsWordSpacing = !isSpaceOrNewline(rt.characterAt(text->end()));
             }
-            text->setLogicalLeft(logicalLeft);
+            if (isLeftToRightDirection()) {
+                logicalLeft += space;
+                text->setLogicalLeft(logicalLeft);
+            } else {
+                text->setLogicalLeft(logicalLeft);
+                logicalLeft += space;
+            }
             if (knownToHaveNoOverflow())
                 minLogicalLeft = std::min(logicalLeft, minLogicalLeft);
             logicalLeft += text->logicalWidth();

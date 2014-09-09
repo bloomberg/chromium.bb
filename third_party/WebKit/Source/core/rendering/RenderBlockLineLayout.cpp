@@ -568,7 +568,7 @@ void RenderBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
     // The widths of all runs are now known. We can now place every inline box (and
     // compute accurate widths for the inline flow boxes).
-    needsWordSpacing = false;
+    needsWordSpacing = lineBox->isLeftToRightDirection() ? false: true;
     lineBox->placeBoxesInInlineDirection(lineLogicalLeft, needsWordSpacing);
 }
 
