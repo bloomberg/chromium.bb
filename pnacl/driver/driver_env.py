@@ -18,7 +18,7 @@ INITIAL_ENV = {
   # Set by DriverMain
   'DRIVER_PATH'     : '', # Absolute path to this driver invocation
   'DRIVER_BIN'      : '', # PNaCl driver bin/ directory
-  'DRIVER_REV_FILE' : '${DRIVER_BIN}/REV',
+  'DRIVER_REV_FILE' : '${BASE}/REV',
 
   'BASE_NACL'       : '${@FindBaseNaCl}',      # Absolute path of native_client/
   'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/OS_ARCH/

@@ -37,6 +37,8 @@ python_lib_dir = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
 sys.path.insert(0, python_lib_dir)
 import argparse
 
+PNACL_DRIVER_DIR = os.path.join(NACL_DIR, 'pnacl', 'driver')
+
 # Scons tests can check this version number to decide whether to enable tests
 # for toolchain bug fixes or new features.  This allows tests to be enabled on
 # the toolchain buildbots/trybots before the new toolchain version is pinned
@@ -378,7 +380,7 @@ def HostTools(host, options):
       H('driver'): {
         'type': 'build',
         'output_subdir': BinSubdir(host),
-        'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+        'inputs': { 'src': PNACL_DRIVER_DIR },
         'commands': [
             command.Runnable(
                 None,
@@ -474,7 +476,7 @@ def TargetLibCompiler(host):
           'type': 'work',
           'output_subdir': 'target_lib_compiler',
           'dependencies': [ H('binutils_pnacl'), H('llvm') ],
-          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'inputs': { 'driver': PNACL_DRIVER_DIR },
           'commands': [
               command.CopyRecursive(
                   '%(' + H('llvm') + ')s',
@@ -493,17 +495,22 @@ def TargetLibCompiler(host):
   return compiler
 
 
-# TODO(dschuff): The REV file should probably go here rather than in the driver
-# dir
-def Metadata():
+def Metadata(revisions):
   data = {
       'metadata': {
           'type': 'build',
-          'inputs': { 'readme': os.path.join(NACL_DIR, 'pnacl', 'README') },
+          'inputs': { 'readme': os.path.join(NACL_DIR, 'pnacl', 'README'),
+                      'COMPONENT_REVISIONS': GIT_DEPS_FILE,
+                      'driver': PNACL_DRIVER_DIR },
           'commands': [
               command.Copy('%(readme)s', os.path.join('%(output)s', 'README')),
               command.WriteData(str(FEATURE_VERSION),
                                 os.path.join('%(output)s', 'FEATURE_VERSION')),
+              command.Runnable(None, pnacl_commands.WriteREVFile,
+                               os.path.join('%(output)s', 'REV'),
+                               GIT_BASE_URL,
+                               GIT_REPOS,
+                               revisions),
           ],
       }
   }
@@ -712,7 +719,7 @@ if __name__ == '__main__':
         packages.update(pnacl_targetlibs.BitcodeLibs(bias, is_canonical))
       for arch in ALL_ARCHES:
         packages.update(pnacl_targetlibs.NativeLibs(arch, is_canonical))
-      packages.update(Metadata())
+      packages.update(Metadata(rev))
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
           'x86-32-%s' % pynacl.platform.GetOS()))

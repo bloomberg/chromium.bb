@@ -72,17 +72,6 @@ def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
     print >> f, 'HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32'
     for line in extra_config:
       print >> f, subst.Substitute(line)
-  # Install the REV file
-  rev_file = os.path.join(dstdir, 'REV')
-  logger.debug('  Installing: %s', rev_file)
-  with open(rev_file, 'w') as f:
-    try:
-      url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
-      repotype = 'GIT'
-    except subprocess.CalledProcessError:
-      url, rev = pynacl.repo_tools.SvnRevInfo(NACL_DIR)
-      repotype = 'SVN'
-    print >> f, '[%s] %s: %s' % (repotype, url, rev)
 
 
 def CheckoutGitBundleForTrybot(repo, destination):
@@ -117,3 +106,21 @@ def CmdCheckoutGitBundleForTrybot(logger, subst, repo, destination):
   destination = subst.SubstituteAbsPaths(destination)
   logger.debug('Checking out Git Bundle for Trybot: %s [%s]', destination, repo)
   return CheckoutGitBundleForTrybot(repo, destination)
+
+
+def WriteREVFile(logger, subst, dstfile, base_url, repos, revisions):
+  # Install the REV file with repo info for all the components
+  rev_file = subst.SubstituteAbsPaths(dstfile)
+  logger.debug('  Installing: %s', rev_file)
+  with open(rev_file, 'w') as f:
+    try:
+      url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
+      repotype = 'GIT'
+    except subprocess.CalledProcessError:
+      url, rev = pynacl.repo_tools.SvnRevInfo(NACL_DIR)
+      repotype = 'SVN'
+    print >> f, '[%s] %s: %s' % (repotype, url, rev)
+
+    for name, revision in revisions.iteritems():
+      repo = base_url + repos[name]
+      print >> f, '[GIT] %s: %s' % (repo, revision)
