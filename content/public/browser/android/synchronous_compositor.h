@@ -80,11 +80,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   // releases all hardware resources.
   virtual void ReleaseHwDraw() = 0;
 
-  // Get the share context of the compositor. The returned context is owned
-  // by the compositor and is only valid between InitializeHwDraw and
-  // ReleaseHwDraw.
-  virtual gpu::GLInProcessContext* GetShareContext() = 0;
-
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(

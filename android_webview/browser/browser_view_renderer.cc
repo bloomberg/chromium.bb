@@ -268,9 +268,6 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
     if (hardware_enabled_) {
       tile_manager_key_ = GlobalTileManager::GetInstance()->PushBack(this);
-      gpu::GLInProcessContext* share_context = compositor_->GetShareContext();
-      DCHECK(share_context);
-      shared_renderer_state_->SetSharedContext(share_context);
     }
   }
   if (!hardware_enabled_)
@@ -476,7 +473,6 @@ void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(shared_renderer_state_->ReturnedResourcesEmpty());
 
   compositor_->ReleaseHwDraw();
-  shared_renderer_state_->SetSharedContext(NULL);
   hardware_enabled_ = false;
 
   SynchronousCompositorMemoryPolicy zero_policy;

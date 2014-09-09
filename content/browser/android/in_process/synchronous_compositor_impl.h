@@ -53,7 +53,6 @@ class SynchronousCompositorImpl
       OVERRIDE;
   virtual bool InitializeHwDraw() OVERRIDE;
   virtual void ReleaseHwDraw() OVERRIDE;
-  virtual gpu::GLInProcessContext* GetShareContext() OVERRIDE;
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,

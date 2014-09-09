@@ -190,6 +190,13 @@ InProcessCommandBuffer::Service::Service() {}
 
 InProcessCommandBuffer::Service::~Service() {}
 
+scoped_refptr<gles2::MailboxManager>
+InProcessCommandBuffer::Service::mailbox_manager() {
+  if (!mailbox_manager_.get())
+    mailbox_manager_ = new gles2::MailboxManager();
+  return mailbox_manager_;
+}
+
 scoped_refptr<InProcessCommandBuffer::Service>
 InProcessCommandBuffer::GetDefaultService() {
   base::AutoLock lock(default_thread_clients_lock_.Get());
@@ -342,7 +349,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_.reset(gles2::GLES2Decoder::Create(
       params.context_group
           ? params.context_group->decoder_->GetContextGroup()
-          : new gles2::ContextGroup(NULL,
+          : new gles2::ContextGroup(service_->mailbox_manager(),
                                     NULL,
                                     service_->shader_translator_cache(),
                                     NULL,

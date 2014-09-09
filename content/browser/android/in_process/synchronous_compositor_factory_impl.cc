@@ -60,7 +60,6 @@ scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
 
 scoped_ptr<gpu::GLInProcessContext> CreateContext(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    gpu::GLInProcessContext* share_context,
     const gpu::GLInProcessContextSharedMemoryLimits& mem_limits) {
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
   gpu::gles2::ContextCreationAttribHelper in_process_attribs;
@@ -74,7 +73,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
       false /* is_offscreen */,
       gfx::kNullAcceleratedWidget,
       gfx::Size(1, 1),
-      share_context,
+      NULL /* share_context */,
       false /* share_resources */,
       in_process_attribs,
       gpu_preference,
@@ -187,22 +186,13 @@ scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
     CreateOnscreenContextProviderForCompositorThread() {
   DCHECK(service_);
 
-  if (!share_context_.get()) {
-    share_context_ = CreateContext(
-        service_, NULL, gpu::GLInProcessContextSharedMemoryLimits());
-  }
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;
   // This is half of what RenderWidget uses because synchronous compositor
   // pipeline is only one frame deep.
   mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
   return webkit::gpu::ContextProviderInProcess::Create(
-      WrapContext(CreateContext(service_, share_context_.get(), mem_limits)),
+      WrapContext(CreateContext(service_, mem_limits)),
       "Child-Compositor");
-}
-
-gpu::GLInProcessContext* SynchronousCompositorFactoryImpl::GetShareContext() {
-  DCHECK(share_context_.get());
-  return share_context_.get();
 }
 
 scoped_refptr<StreamTextureFactory>
@@ -252,11 +242,9 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
 
   if (!video_context_provider_) {
     DCHECK(service_);
-    DCHECK(share_context_.get());
 
     video_context_provider_ = new VideoContextProvider(
         CreateContext(service_,
-                      share_context_.get(),
                       gpu::GLInProcessContextSharedMemoryLimits()));
   }
   return video_context_provider_;

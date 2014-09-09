@@ -80,8 +80,7 @@ SharedRendererState::SharedRendererState(
       client_on_ui_(client),
       weak_factory_on_ui_thread_(this),
       ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
-      inside_hardware_release_(false),
-      share_context_(NULL) {
+      inside_hardware_release_(false) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
   ResetRequestDrawGLCallback();
@@ -177,18 +176,6 @@ void SharedRendererState::SetInsideHardwareRelease(bool inside) {
 bool SharedRendererState::IsInsideHardwareRelease() const {
   base::AutoLock lock(lock_);
   return inside_hardware_release_;
-}
-
-void SharedRendererState::SetSharedContext(gpu::GLInProcessContext* context) {
-  base::AutoLock lock(lock_);
-  DCHECK(!share_context_ || !context);
-  share_context_ = context;
-}
-
-gpu::GLInProcessContext* SharedRendererState::GetSharedContext() const {
-  base::AutoLock lock(lock_);
-  DCHECK(share_context_);
-  return share_context_;
 }
 
 void SharedRendererState::InsertReturnedResources(

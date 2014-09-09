@@ -115,11 +115,6 @@ void SynchronousCompositorImpl::ReleaseHwDraw() {
   g_factory.Get().CompositorReleasedHardwareDraw();
 }
 
-gpu::GLInProcessContext* SynchronousCompositorImpl::GetShareContext() {
-  DCHECK(CalledOnValidThread());
-  return g_factory.Get().GetShareContext();
-}
-
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,

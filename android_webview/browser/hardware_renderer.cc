@@ -38,8 +38,7 @@ using webkit::gpu::WebGraphicsContext3DImpl;
 
 scoped_refptr<cc::ContextProvider> CreateContext(
     scoped_refptr<gfx::GLSurface> surface,
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    gpu::GLInProcessContext* share_context) {
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   blink::WebGraphicsContext3D::Attributes attributes;
@@ -59,7 +58,7 @@ scoped_refptr<cc::ContextProvider> CreateContext(
       surface->IsOffscreen(),
       gfx::kNullAcceleratedWidget,
       surface->GetSize(),
-      share_context,
+      NULL /* share_context */,
       false /* share_resources */,
       attribs_for_gles2,
       gpu_preference,
@@ -242,8 +241,7 @@ scoped_ptr<cc::OutputSurface> HardwareRenderer::CreateOutputSurface(
   DCHECK(!fallback);
   scoped_refptr<cc::ContextProvider> context_provider =
       CreateContext(gl_surface_,
-                    DeferredGpuCommandService::GetInstance(),
-                    shared_renderer_state_->GetSharedContext());
+                    DeferredGpuCommandService::GetInstance());
   scoped_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(context_provider));
   output_surface_ = output_surface_holder.get();

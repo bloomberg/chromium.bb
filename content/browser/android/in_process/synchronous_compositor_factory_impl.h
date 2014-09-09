@@ -60,7 +60,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   scoped_refptr<cc::ContextProvider>
       CreateOnscreenContextProviderForCompositorThread();
-  gpu::GLInProcessContext* GetShareContext();
 
  private:
   bool CanCreateMainThreadContext();
@@ -70,7 +69,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   SynchronousInputEventFilter synchronous_input_event_filter_;
 
   scoped_refptr<gpu::InProcessCommandBuffer::Service> service_;
-  scoped_ptr<gpu::GLInProcessContext> share_context_;
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       video_context_provider_;
 

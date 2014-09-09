@@ -64,9 +64,6 @@ class SharedRendererState {
 
   const ParentCompositorDrawConstraints ParentDrawConstraints() const;
 
-  void SetSharedContext(gpu::GLInProcessContext* context);
-  gpu::GLInProcessContext* GetSharedContext() const;
-
   void InsertReturnedResources(const cc::ReturnedResourceArray& resources);
   void SwapReturnedResources(cc::ReturnedResourceArray* resources);
   bool ReturnedResourcesEmpty() const;
@@ -91,7 +88,6 @@ class SharedRendererState {
   scoped_ptr<DrawGLInput> draw_gl_input_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
-  gpu::GLInProcessContext* share_context_;
   cc::ReturnedResourceArray returned_resources_;
   base::Closure request_draw_gl_closure_;
 

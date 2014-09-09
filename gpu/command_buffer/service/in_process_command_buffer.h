@@ -48,6 +48,7 @@ namespace gpu {
 
 namespace gles2 {
 class GLES2Decoder;
+class MailboxManager;
 class ShaderTranslatorCache;
 }
 
@@ -153,6 +154,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
         shader_translator_cache() = 0;
+    scoped_refptr<gles2::MailboxManager> mailbox_manager();
+
+   private:
+    scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   };
 
 #if defined(OS_ANDROID)
