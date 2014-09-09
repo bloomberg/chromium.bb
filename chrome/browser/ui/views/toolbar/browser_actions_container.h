@@ -295,8 +295,13 @@ class BrowserActionsContainer
   // Called when a browser action's visibility may have changed.
   void OnBrowserActionVisibilityChanged();
 
-  // Sets the initial container width.
-  void SetContainerWidth();
+  // Returns the preferred width of the container in order to show all icons
+  // that should be visible and, optionally, the chevron.
+  int GetPreferredWidth();
+
+  // Sets the chevron to be visible or not based on whether all browser actions
+  // are displayed.
+  void SetChevronVisibility();
 
   // Closes the overflow menu if open.
   void CloseOverflowMenu();

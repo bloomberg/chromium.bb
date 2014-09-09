@@ -192,8 +192,10 @@ void BrowserActionsContainer::Init() {
 
   // We wait to set the container width until now so that the chevron images
   // will be loaded.  The width calculation needs to know the chevron size.
-  if (model_ && model_->extensions_initialized())
-    SetContainerWidth();
+  if (model_ && model_->extensions_initialized()) {
+    container_width_ = GetPreferredWidth();
+    SetChevronVisibility();
+  }
 }
 
 BrowserActionView* BrowserActionsContainer::GetViewForExtension(
@@ -640,6 +642,7 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   animation_target_size_ = 0;
   resize_amount_ = 0;
   suppress_chevron_ = false;
+  SetChevronVisibility();
   OnBrowserActionVisibilityChanged();
 
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
@@ -803,17 +806,28 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
   if (!model_->extensions_initialized())
     return;
 
-  // Enlarge the container if it was already at maximum size and we're not in
-  // the middle of upgrading.
-  if ((model_->GetVisibleIconCount() < 0) &&
-      !extensions::ExtensionSystem::Get(profile_)->runtime_data()->
+  // If this is just an upgrade, then don't worry about resizing.
+  if (!extensions::ExtensionSystem::Get(profile_)->runtime_data()->
           IsBeingUpgraded(extension)) {
-    suppress_chevron_ = true;
-    Animate(gfx::Tween::LINEAR, browser_action_views_.size());
-  } else {
-    // Just redraw the (possibly modified) visible icon set.
-    OnBrowserActionVisibilityChanged();
+    // We need to resize if either:
+    // - The container is set to display all icons (visible count = -1), or
+    // - The container will need to expand to include the chevron. This can
+    //   happen when the container is set to display <n> icons, where <n> is
+    //   the number of icons before the new icon. With the new icon, the chevron
+    //   will need to be displayed.
+    int model_icon_count = model_->GetVisibleIconCount();
+    if (model_icon_count == -1 ||
+        (static_cast<size_t>(model_icon_count) < browser_action_views_.size() &&
+         (chevron_ && !chevron_->visible()))) {
+      suppress_chevron_ = true;
+      Animate(gfx::Tween::LINEAR, GetIconCount());
+      return;
+    }
   }
+
+  // Otherwise, we don't have to resize, so just redraw the (possibly modified)
+  // visible icon set.
+  OnBrowserActionVisibilityChanged();
 }
 
 void BrowserActionsContainer::ToolbarExtensionRemoved(
@@ -902,9 +916,7 @@ bool BrowserActionsContainer::ShowExtensionActionPopup(
 }
 
 void BrowserActionsContainer::ToolbarVisibleCountChanged() {
-  int old_container_width = container_width_;
-  SetContainerWidth();
-  if (old_container_width != container_width_)
+  if (GetPreferredWidth() != container_width_)
     Animate(gfx::Tween::EASE_OUT, GetIconCount());
 }
 
@@ -916,7 +928,7 @@ void BrowserActionsContainer::ToolbarHighlightModeChanged(
   // the extra complexity to create and insert only the new extensions.
   DeleteBrowserActionViews();
   CreateBrowserActionViews();
-  Animate(gfx::Tween::LINEAR, browser_action_views_.size());
+  Animate(gfx::Tween::LINEAR, GetIconCount());
 }
 
 Browser* BrowserActionsContainer::GetBrowser() {
@@ -943,14 +955,16 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   }
 }
 
-void BrowserActionsContainer::SetContainerWidth() {
-  int visible_actions = GetIconCount();
-  if (chevron_) {
-    chevron_->SetVisible(
-      static_cast<size_t>(visible_actions) < model_->toolbar_items().size());
-  }
-  container_width_ =
-      IconCountToWidth(visible_actions, chevron_ && chevron_->visible());
+int BrowserActionsContainer::GetPreferredWidth() {
+  size_t visible_actions = GetIconCount();
+  return IconCountToWidth(
+      visible_actions,
+      chevron_ && visible_actions < browser_action_views_.size());
+}
+
+void BrowserActionsContainer::SetChevronVisibility() {
+  if (chevron_)
+    chevron_->SetVisible(GetIconCount() < browser_action_views_.size());
 }
 
 void BrowserActionsContainer::CloseOverflowMenu() {

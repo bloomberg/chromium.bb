@@ -229,6 +229,30 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   ASSERT_TRUE(container->chevron());
   EXPECT_TRUE(container->chevron()->visible());
   EXPECT_FALSE(container->GetPreferredSize().IsEmpty());
+
+  // Reset visibility count to 2. State should be A, B, [C], and the chevron
+  // should be visible.
+  browser_actions_bar()->SetIconVisibilityCount(2);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(1));
+  EXPECT_TRUE(container->chevron()->visible());
+
+  // Disable C (the overflowed extension). State should now be A, B, and the
+  // chevron should be hidden.
+  DisableExtension(idC);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(1));
+  EXPECT_FALSE(container->chevron()->visible());
+
+  // Re-enable C. We should still only have 2 visible icons, and the chevron
+  // should be visible.
+  EnableExtension(idC);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(1));
+  EXPECT_TRUE(container->chevron()->visible());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
