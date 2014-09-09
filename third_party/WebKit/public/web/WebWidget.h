@@ -143,12 +143,6 @@ public:
     // Check whether the given point hits any registered touch event handlers.
     virtual bool hasTouchEventHandlersAt(const WebPoint&) { return true; }
 
-    // FIXME(bokan): Remove once Chromium-side patch lands
-    virtual void applyScrollAndScale(const WebSize& scrollDelta, float scaleFactor)
-    {
-        applyViewportDeltas(scrollDelta, scaleFactor, 0);
-    }
-
     // Applies viewport related properties during a commit from the compositor
     // thread.
     virtual void applyViewportDeltas(
