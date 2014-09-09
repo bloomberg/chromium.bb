@@ -26,6 +26,11 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
       const WebContentsCreatedCallback& callback) OVERRIDE;
   virtual void DidAttachToEmbedder() OVERRIDE;
 
+  // WebContentsDelegate implementation.
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+
  private:
   MimeHandlerViewGuest(content::BrowserContext* browser_context,
                        int guest_instance_id);
