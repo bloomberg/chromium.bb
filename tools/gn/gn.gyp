@@ -214,6 +214,7 @@
         'ninja_action_target_writer_unittest.cc',
         'ninja_binary_target_writer_unittest.cc',
         'ninja_copy_target_writer_unittest.cc',
+        'ninja_group_target_writer_unittest.cc',
         'ninja_target_writer_unittest.cc',
         'ninja_toolchain_writer_unittest.cc',
         'operators_unittest.cc',

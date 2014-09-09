@@ -28,7 +28,7 @@ void NinjaGroupTargetWriter::Run() {
   std::vector<OutputFile> data_output_files;
   const LabelTargetVector& datadeps = target_->datadeps();
   for (size_t i = 0; i < datadeps.size(); i++)
-    data_output_files.push_back(deps[i].ptr->dependency_output_file());
+    data_output_files.push_back(datadeps[i].ptr->dependency_output_file());
 
   WriteStampForTarget(output_files, data_output_files);
 }
