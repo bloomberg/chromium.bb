@@ -32,6 +32,7 @@
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/prefix_selector.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/painter.h"
@@ -410,6 +411,10 @@ gfx::Size Combobox::GetPreferredSize() const {
   // The preferred size will drive the local bounds which in turn is used to set
   // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();
+  insets += gfx::Insets(Textfield::kTextPadding,
+                        Textfield::kTextPadding,
+                        Textfield::kTextPadding,
+                        Textfield::kTextPadding);
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
       insets.width() + GetDisclosureArrowLeftPadding() +
       ArrowSize().width() + GetDisclosureArrowRightPadding();
@@ -628,7 +633,7 @@ void Combobox::UpdateFromModel() {
 void Combobox::UpdateBorder() {
   scoped_ptr<FocusableBorder> border(new FocusableBorder());
   if (style_ == STYLE_ACTION)
-    border->SetInsets(8, 13, 8, 13);
+    border->SetInsets(5, 10, 5, 10);
   if (invalid_)
     border->SetColor(kWarningColor);
   SetBorder(border.PassAs<Border>());
@@ -640,6 +645,7 @@ void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
 
 void Combobox::PaintText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
+  insets += gfx::Insets(0, Textfield::kTextPadding, 0, Textfield::kTextPadding);
 
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->ClipRect(GetContentsBounds());

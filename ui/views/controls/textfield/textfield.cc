@@ -238,6 +238,7 @@ int GetViewsCommand(const ui::TextEditCommandAuraLinux& command, bool rtl) {
 
 // static
 const char Textfield::kViewClassName[] = "Textfield";
+const int Textfield::kTextPadding = 3;
 
 // static
 size_t Textfield::GetCaretBlinkMs() {
@@ -549,6 +550,12 @@ bool Textfield::HasTextBeingDragged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
+
+gfx::Insets Textfield::GetInsets() const {
+  gfx::Insets insets = View::GetInsets();
+  insets += gfx::Insets(kTextPadding, kTextPadding, kTextPadding, kTextPadding);
+  return insets;
+}
 
 int Textfield::GetBaseline() const {
   return GetInsets().top() + GetRenderText()->GetBaseline();
@@ -919,7 +926,15 @@ void Textfield::GetAccessibleState(ui::AXViewState* state) {
 }
 
 void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  GetRenderText()->SetDisplayRect(GetContentsBounds());
+  // Textfield insets include a reasonable amount of whitespace on all sides of
+  // the default font list. Fallback fonts with larger heights may paint over
+  // the vertical whitespace as needed. Alternate solutions involve undesirable
+  // behavior like changing the default font size, shrinking some fallback fonts
+  // beyond their legibility, or enlarging controls dynamically with content.
+  gfx::Rect bounds = GetContentsBounds();
+  // GetContentsBounds() does not actually use the local GetInsets() override.
+  bounds.Inset(gfx::Insets(0, kTextPadding, 0, kTextPadding));
+  GetRenderText()->SetDisplayRect(bounds);
   OnCaretBoundsChanged();
 }
 

@@ -21,6 +21,7 @@ namespace views {
 class VIEWS_EXPORT FocusableBorder : public Border {
  public:
   FocusableBorder();
+  virtual ~FocusableBorder();
 
   // Sets the insets of the border.
   void SetInsets(int top, int left, int bottom, int right);

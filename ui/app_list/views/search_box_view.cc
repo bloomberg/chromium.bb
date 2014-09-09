@@ -94,8 +94,11 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     AddChildView(icon_view_);
   }
 
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kPadding, 0, kPadding);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           kPadding,
+                           0,
+                           kPadding - views::Textfield::kTextPadding);
   SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

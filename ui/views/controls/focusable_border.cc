@@ -11,21 +11,19 @@
 
 namespace {
 
-// Define the size of the insets
-const int kTopInsetSize = 4;
-const int kLeftInsetSize = 4;
-const int kBottomInsetSize = 4;
-const int kRightInsetSize = 4;
+const int kInsetSize = 1;
 
 }  // namespace
 
 namespace views {
 
 FocusableBorder::FocusableBorder()
-    : insets_(kTopInsetSize, kLeftInsetSize,
-              kBottomInsetSize, kRightInsetSize),
+    : insets_(kInsetSize, kInsetSize, kInsetSize, kInsetSize),
       override_color_(SK_ColorWHITE),
       use_default_color_(true) {
+}
+
+FocusableBorder::~FocusableBorder() {
 }
 
 void FocusableBorder::SetColor(SkColor color) {

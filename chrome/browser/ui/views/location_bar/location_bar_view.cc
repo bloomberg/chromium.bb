@@ -600,7 +600,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
     leading_width +=
         kItemPadding + location_icon_view_->GetMinimumSize().width();
   }
-  leading_width += kItemPadding - GetEditLeadingInternalSpace();
 
   // Compute width of omnibox-trailing content.
   int trailing_width = search_button_->visible() ?
@@ -612,7 +611,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
       IncrementalMinimumWidth(manage_passwords_icon_view_) +
       IncrementalMinimumWidth(zoom_view_) +
       IncrementalMinimumWidth(generated_credit_card_view_) +
-      IncrementalMinimumWidth(mic_search_view_) + kItemPadding;
+      IncrementalMinimumWidth(mic_search_view_);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
     trailing_width += IncrementalMinimumWidth((*i));
@@ -620,8 +619,8 @@ gfx::Size LocationBarView::GetPreferredSize() const {
        i != content_setting_views_.end(); ++i)
     trailing_width += IncrementalMinimumWidth((*i));
 
-  min_size.set_width(
-      leading_width + omnibox_view_->GetMinimumSize().width() + trailing_width);
+  min_size.set_width(leading_width + omnibox_view_->GetMinimumSize().width() +
+      2 * kItemPadding - omnibox_view_->GetInsets().width() + trailing_width);
   return min_size;
 }
 
@@ -637,9 +636,11 @@ void LocationBarView::Layout() {
 
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE,
-      kItemPadding - GetEditLeadingInternalSpace());
-  LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
-                                         kItemPadding);
+      kItemPadding - omnibox_view_->GetInsets().left() -
+          GetEditLeadingInternalSpace());
+  LocationBarLayout trailing_decorations(
+      LocationBarLayout::RIGHT_EDGE,
+      kItemPadding - omnibox_view_->GetInsets().right());
 
   const int origin_chip_preferred_width =
       origin_chip_view_->GetPreferredSize().width();
@@ -932,9 +933,8 @@ void LocationBarView::Layout() {
     }
   }
 
-  const gfx::Insets insets = omnibox_view_->GetInsets();
-  omnibox_view_->SetBorder(views::Border::CreateEmptyBorder(
-      insets.top(), insets.left(), insets.bottom(), omnibox_view_margin));
+  omnibox_view_->SetBorder(
+      views::Border::CreateEmptyBorder(0, 0, 0, omnibox_view_margin));
 
   // Layout |ime_inline_autocomplete_view_| next to the user input.
   if (ime_inline_autocomplete_view_->visible()) {

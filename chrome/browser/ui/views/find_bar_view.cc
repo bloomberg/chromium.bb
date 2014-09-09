@@ -37,12 +37,13 @@
 
 namespace {
 
-// The margins around the search field, match count label, and the close button.
+// The margins around the UI controls, derived from assets and design specs.
 const int kMarginLeftOfCloseButton = 3;
 const int kMarginRightOfCloseButton = 7;
-const int kMarginLeftOfMatchCountLabel = 2;
+const int kMarginLeftOfMatchCountLabel = 3;
 const int kMarginRightOfMatchCountLabel = 1;
 const int kMarginLeftOfFindTextfield = 12;
+const int kMarginVerticalFindTextfield = 6;
 
 // The margins around the match count label (We add extra space so that the
 // background highlight extends beyond just the text).
@@ -316,24 +317,27 @@ void FindBarView::Layout() {
   // of breathing room (margins around the text).
   sz.Enlarge(kMatchCountExtraWidth, 0);
   sz.SetToMax(gfx::Size(kMatchCountMinWidth, 0));
-  int match_count_x =
+  const int match_count_x =
       find_previous_button_->x() - kMarginRightOfMatchCountLabel - sz.width();
-  int find_text_y = (height() - find_text_->GetPreferredSize().height()) / 2;
+  const int find_text_y = kMarginVerticalFindTextfield;
+  const gfx::Insets find_text_insets(find_text_->GetInsets());
   match_count_text_->SetBounds(match_count_x,
-                               find_text_y + find_text_->GetBaseline() -
+                               find_text_y - find_text_insets.top() +
+                                   find_text_->GetBaseline() -
                                    match_count_text_->GetBaseline(),
                                sz.width(), sz.height());
 
-  // And whatever space is left in between, gets filled up by the find edit box.
-  int find_text_width = std::max(0, match_count_x -
-      kMarginLeftOfMatchCountLabel - kMarginLeftOfFindTextfield);
-  find_text_->SetBounds(kMarginLeftOfFindTextfield, find_text_y,
-      find_text_width, find_text_->GetPreferredSize().height());
+  // Fill the remaining width and available height with the textfield.
+  const int left_margin = kMarginLeftOfFindTextfield - find_text_insets.left();
+  const int find_text_width = std::max(0, match_count_x - left_margin -
+      kMarginLeftOfMatchCountLabel + find_text_insets.right());
+  find_text_->SetBounds(left_margin, find_text_y, find_text_width,
+                        height() - 2 * kMarginVerticalFindTextfield);
 
   // The focus forwarder view is a hidden view that should cover the area
   // between the find text box and the find button so that when the user clicks
   // in that area we focus on the find text box.
-  int find_text_edge = find_text_->x() + find_text_->width();
+  const int find_text_edge = find_text_->x() + find_text_->width();
   focus_forwarder_view_->SetBounds(
       find_text_edge, find_previous_button_->y(),
       find_previous_button_->x() - find_text_edge,
@@ -346,7 +350,8 @@ gfx::Size FindBarView::GetPreferredSize() const {
 
   // Add up all the preferred sizes and margins of the rest of the controls.
   prefsize.Enlarge(kMarginLeftOfCloseButton + kMarginRightOfCloseButton +
-                       kMarginLeftOfFindTextfield,
+                       kMarginLeftOfFindTextfield -
+                       find_text_->GetInsets().width(),
                    0);
   prefsize.Enlarge(find_previous_button_->GetPreferredSize().width(), 0);
   prefsize.Enlarge(find_next_button_->GetPreferredSize().width(), 0);
