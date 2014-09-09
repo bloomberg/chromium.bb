@@ -24,7 +24,7 @@ namespace {
 void GetChromeBundlePath(base::FilePath* chrome_bundle) {
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  path = path.Append(chrome::kBrowserProcessExecutableNameChromium);
+  path = path.Append(chrome::kBrowserProcessExecutableName);
   path = path.ReplaceExtension(base::FilePath::StringType("app"));
   *chrome_bundle = path;
 }
@@ -43,29 +43,7 @@ TEST(ChromeLocatorTest, FindNonExistentBundle) {
   EXPECT_FALSE(app_mode::FindBundleById(@"this.doesnt.exist", &dummy));
 }
 
-// GetChromeBundlePath doesn't work on official builds. Disable them until it's
-// fixed. http://crbug.com/409615
-#if defined(OFFICIAL_BUILD)
-#define MAYBE_GetNonExistentBundleInfo DISABLED_GetNonExistentBundleInfo
-#define MAYBE_GetChromeBundleInfo DISABLED_GetChromeBundleInfo
-#define MAYBE_GetChromeBundleInfoWithLatestVersion \
-    DISABLED_GetChromeBundleInfoWithLatestVersion
-#define MAYBE_GetChromeBundleInfoWithInvalidVersion \
-    DISABLED_GetChromeBundleInfoWithInvalidVersion
-#define MAYBE_GetChromeBundleInfoWithPreviousVersion \
-    DISABLED_GetChromeBundleInfoWithPreviousVersion
-#else
-#define MAYBE_GetNonExistentBundleInfo GetNonExistentBundleInfo
-#define MAYBE_GetChromeBundleInfo GetChromeBundleInfo
-#define MAYBE_GetChromeBundleInfoWithLatestVersion \
-    GetChromeBundleInfoWithLatestVersion
-#define MAYBE_GetChromeBundleInfoWithInvalidVersion \
-    GetChromeBundleInfoWithInvalidVersion
-#define MAYBE_GetChromeBundleInfoWithPreviousVersion \
-    GetChromeBundleInfoWithPreviousVersion
-#endif
-
-TEST(ChromeLocatorTest, MAYBE_GetNonExistentBundleInfo) {
+TEST(ChromeLocatorTest, GetNonExistentBundleInfo) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -79,7 +57,7 @@ TEST(ChromeLocatorTest, MAYBE_GetNonExistentBundleInfo) {
                                              &framework_path));
 }
 
-TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfo) {
+TEST(ChromeLocatorTest, GetChromeBundleInfo) {
   base::FilePath chrome_bundle_path;
   GetChromeBundlePath(&chrome_bundle_path);
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
@@ -97,7 +75,7 @@ TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfo) {
   EXPECT_TRUE(base::PathExists(framework_path));
 }
 
-TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfoWithLatestVersion) {
+TEST(ChromeLocatorTest, GetChromeBundleInfoWithLatestVersion) {
   base::FilePath chrome_bundle_path;
   GetChromeBundlePath(&chrome_bundle_path);
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
@@ -115,7 +93,7 @@ TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfoWithLatestVersion) {
   EXPECT_TRUE(base::PathExists(framework_path));
 }
 
-TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfoWithInvalidVersion) {
+TEST(ChromeLocatorTest, GetChromeBundleInfoWithInvalidVersion) {
   base::FilePath chrome_bundle_path;
   GetChromeBundlePath(&chrome_bundle_path);
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
@@ -134,7 +112,7 @@ TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfoWithInvalidVersion) {
   EXPECT_TRUE(base::PathExists(framework_path));
 }
 
-TEST(ChromeLocatorTest, MAYBE_GetChromeBundleInfoWithPreviousVersion) {
+TEST(ChromeLocatorTest, GetChromeBundleInfoWithPreviousVersion) {
   base::FilePath chrome_bundle_path;
   GetChromeBundlePath(&chrome_bundle_path);
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
