@@ -193,6 +193,10 @@ class BASE_EXPORT ProcessMetrics {
   bool GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage) const;
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+  int CalculateIdleWakeupsPerSecond(uint64 absolute_idle_wakeups);
+#endif
+
   ProcessHandle process_;
 
   int processor_count_;
@@ -202,7 +206,7 @@ class BASE_EXPORT ProcessMetrics {
   TimeTicks last_cpu_time_;
   int64 last_system_time_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
   // Same thing for idle wakeups.
   TimeTicks last_idle_wakeups_time_;
   uint64 last_absolute_idle_wakeups_;

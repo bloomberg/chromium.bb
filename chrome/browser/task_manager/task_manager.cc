@@ -1156,14 +1156,14 @@ void TaskManagerModel::Refresh() {
       values.is_cpu_usage_valid = true;
       values.cpu_usage = metrics_iter->second->GetCPUUsage();
     }
-#if defined(OS_MACOSX)
-    // TODO: Implement GetIdleWakeupsPerSecond() on other platforms,
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+    // TODO(port): Implement GetIdleWakeupsPerSecond() on other platforms,
     // crbug.com/120488
     if (!values.is_idle_wakeups_valid) {
       values.is_idle_wakeups_valid = true;
       values.idle_wakeups = metrics_iter->second->GetIdleWakeupsPerSecond();
     }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
   }
 
   // Send a request to refresh GPU memory consumption values

@@ -25,6 +25,15 @@ namespace base {
 
 namespace {
 
+void TrimKeyValuePairs(StringPairs* pairs) {
+  DCHECK(pairs);
+  StringPairs& p_ref = *pairs;
+  for (size_t i = 0; i < p_ref.size(); ++i) {
+    TrimWhitespaceASCII(p_ref[i].first, TRIM_ALL, &p_ref[i].first);
+    TrimWhitespaceASCII(p_ref[i].second, TRIM_ALL, &p_ref[i].second);
+  }
+}
+
 #if defined(OS_CHROMEOS)
 // Read a file with a single number string and return the number as a uint64.
 static uint64 ReadFileToUint64(const FilePath file) {
@@ -44,19 +53,19 @@ static uint64 ReadFileToUint64(const FilePath file) {
 size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
   std::string status;
   {
-    // Synchronously reading files in /proc is safe.
+    // Synchronously reading files in /proc does not hit the disk.
     ThreadRestrictions::ScopedAllowIO allow_io;
     FilePath stat_file = internal::GetProcPidDir(pid).Append("status");
     if (!ReadFileToString(stat_file, &status))
       return 0;
   }
 
-  std::vector<std::pair<std::string, std::string> > pairs;
+  StringPairs pairs;
   SplitStringIntoKeyValuePairs(status, ':', '\n', &pairs);
+  TrimKeyValuePairs(&pairs);
   for (size_t i = 0; i < pairs.size(); ++i) {
-    std::string key, value_str;
-    TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
-    TrimWhitespaceASCII(pairs[i].second, TRIM_ALL, &value_str);
+    const std::string& key = pairs[i].first;
+    const std::string& value_str = pairs[i].second;
     if (key == field) {
       std::vector<std::string> split_value_str;
       SplitString(value_str, ' ', &split_value_str);
@@ -76,6 +85,40 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
   return 0;
 }
 
+#if defined(OS_LINUX)
+// Read /proc/<pid>/sched and look for |field|. On succes, return true and
+// write the value for |field| into |result|.
+// Only works for fields in the form of "field    :     uint_value"
+bool ReadProcSchedAndGetFieldAsUint64(pid_t pid,
+                                      const std::string& field,
+                                      uint64* result) {
+  std::string sched_data;
+  {
+    // Synchronously reading files in /proc does not hit the disk.
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    FilePath sched_file = internal::GetProcPidDir(pid).Append("sched");
+    if (!ReadFileToString(sched_file, &sched_data))
+      return false;
+  }
+
+  StringPairs pairs;
+  SplitStringIntoKeyValuePairs(sched_data, ':', '\n', &pairs);
+  TrimKeyValuePairs(&pairs);
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    const std::string& key = pairs[i].first;
+    const std::string& value_str = pairs[i].second;
+    if (key == field) {
+      uint64 value;
+      if (!StringToUint64(value_str, &value))
+        return false;
+      *result = value;
+      return true;
+    }
+  }
+  return false;
+}
+#endif  // defined(OS_LINUX)
+
 // Get the total CPU of a single process.  Return value is number of jiffies
 // on success or -1 on error.
 int GetProcessCPU(pid_t pid) {
@@ -94,7 +137,7 @@ int GetProcessCPU(pid_t pid) {
     if (!tid)
       continue;
 
-    // Synchronously reading files in /proc is safe.
+    // Synchronously reading files in /proc does not hit the disk.
     ThreadRestrictions::ScopedAllowIO allow_io;
 
     std::string stat;
@@ -197,7 +240,7 @@ double ProcessMetrics::GetCPUUsage() {
 // To have /proc/self/io file you must enable CONFIG_TASK_IO_ACCOUNTING
 // in your kernel configuration.
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
-  // Synchronously reading files in /proc is safe.
+  // Synchronously reading files in /proc does not hit the disk.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
   std::string proc_io_contents;
@@ -208,12 +251,12 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   io_counters->OtherOperationCount = 0;
   io_counters->OtherTransferCount = 0;
 
-  std::vector<std::pair<std::string, std::string> > pairs;
+  StringPairs pairs;
   SplitStringIntoKeyValuePairs(proc_io_contents, ':', '\n', &pairs);
+  TrimKeyValuePairs(&pairs);
   for (size_t i = 0; i < pairs.size(); ++i) {
-    std::string key, value_str;
-    TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
-    TrimWhitespaceASCII(pairs[i].second, TRIM_ALL, &value_str);
+    const std::string& key = pairs[i].first;
+    const std::string& value_str = pairs[i].second;
     uint64* target_counter = NULL;
     if (key == "syscr")
       target_counter = &io_counters->ReadOperationCount;
@@ -234,6 +277,9 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       last_system_time_(0),
+#if defined(OS_LINUX)
+      last_absolute_idle_wakeups_(0),
+#endif
       last_cpu_(0) {
   processor_count_ = SysInfo::NumberOfProcessors();
 }
@@ -315,7 +361,7 @@ bool ProcessMetrics::GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage)
   std::string statm;
   {
     FilePath statm_file = internal::GetProcPidDir(process_).Append("statm");
-    // Synchronously reading files in /proc is safe.
+    // Synchronously reading files in /proc does not hit the disk.
     ThreadRestrictions::ScopedAllowIO allow_io;
     bool ret = ReadFileToString(statm_file, &statm);
     if (!ret || statm.length() == 0)
@@ -717,7 +763,7 @@ bool IsValidDiskName(const std::string& candidate) {
 }
 
 bool GetSystemDiskInfo(SystemDiskInfo* diskinfo) {
-  // Synchronously reading files in /proc is safe.
+  // Synchronously reading files in /proc does not hit the disk.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
   FilePath diskinfo_file("/proc/diskstats");
@@ -814,7 +860,7 @@ scoped_ptr<Value> SwapInfo::ToValue() const {
 }
 
 void GetSwapInfo(SwapInfo* swap_info) {
-  // Synchronously reading files in /sys/block/zram0 is safe.
+  // Synchronously reading files in /sys/block/zram0 does not hit the disk.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
   FilePath zram_path("/sys/block/zram0");
@@ -838,5 +884,14 @@ void GetSwapInfo(SwapInfo* swap_info) {
       ReadFileToUint64(zram_path.Append("mem_used_total"));
 }
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX)
+int ProcessMetrics::GetIdleWakeupsPerSecond() {
+  uint64 wake_ups;
+  const char kWakeupStat[] = "se.statistics.nr_wakeups";
+  return ReadProcSchedAndGetFieldAsUint64(process_, kWakeupStat, &wake_ups) ?
+      CalculateIdleWakeupsPerSecond(wake_ups) : 0;
+}
+#endif  // defined(OS_LINUX)
 
 }  // namespace base

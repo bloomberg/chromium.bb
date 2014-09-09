@@ -51,11 +51,37 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
 #endif
 }
 
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+int ProcessMetrics::CalculateIdleWakeupsPerSecond(
+    uint64 absolute_idle_wakeups) {
+  TimeTicks time = TimeTicks::Now();
+
+  if (last_absolute_idle_wakeups_ == 0) {
+    // First call, just set the last values.
+    last_idle_wakeups_time_ = time;
+    last_absolute_idle_wakeups_ = absolute_idle_wakeups;
+    return 0;
+  }
+
+  int64 wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
+  int64 time_delta = (time - last_idle_wakeups_time_).InMicroseconds();
+  if (time_delta == 0) {
+    NOTREACHED();
+    return 0;
+  }
+
+  last_idle_wakeups_time_ = time;
+  last_absolute_idle_wakeups_ = absolute_idle_wakeups;
+
+  // Round to average wakeups per second.
+  int64 wakeups_delta_for_ms = wakeups_delta * Time::kMicrosecondsPerSecond;
+  return (wakeups_delta_for_ms + time_delta / 2) / time_delta;
+}
+#else
 int ProcessMetrics::GetIdleWakeupsPerSecond() {
   NOTIMPLEMENTED();  // http://crbug.com/120488
   return 0;
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
 
 }  // namespace base

@@ -299,30 +299,8 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
     // where TASK_POWER_INFO isn't supported yet.
     return 0;
   }
-  uint64_t absolute_idle_wakeups = power_info_data.task_platform_idle_wakeups;
-
-  TimeTicks time = TimeTicks::Now();
-
-  if (last_absolute_idle_wakeups_ == 0) {
-    // First call, just set the last values.
-    last_idle_wakeups_time_ = time;
-    last_absolute_idle_wakeups_ = absolute_idle_wakeups;
-    return 0;
-  }
-
-  int64 wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
-  int64 time_delta = (time - last_idle_wakeups_time_).InMicroseconds();
-  if (time_delta == 0) {
-    NOTREACHED();
-    return 0;
-  }
-
-  last_idle_wakeups_time_ = time;
-  last_absolute_idle_wakeups_ = absolute_idle_wakeups;
-
-  // Round to average wakeups per second.
-  const int kMicrosecondsPerSecond = 1000 * 1000;
-  return (wakeups_delta * kMicrosecondsPerSecond + time_delta/2) / time_delta;
+  return CalculateIdleWakeupsPerSecond(
+      power_info_data.task_platform_idle_wakeups);
 }
 
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
