@@ -21,6 +21,8 @@
       'sources': [
         'NSString+CrStringDrawing.h',
         'NSString+CrStringDrawing.mm',
+        'uikit_util.h',
+        'uikit_util.mm',
       ],
     },
   ],

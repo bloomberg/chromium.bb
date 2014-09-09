@@ -5,25 +5,14 @@
 #import "ui/ios/NSString+CrStringDrawing.h"
 
 #include "base/logging.h"
-
-namespace {
-// Returns the closest pixel-aligned value higher than |value|, taking the scale
-// factor into account. At a scale of 1, equivalent to ceil().
-// TODO(lliabraa): Move this method to a common util file (crbug.com/409823).
-CGFloat alignValueToUpperPixel(CGFloat value) {
-  CGFloat scale = [[UIScreen mainScreen] scale];
-  return ceil(value * scale) / scale;
-}
-}  // namespace
+#include "ui/ios/uikit_util.h"
 
 @implementation NSString (CrStringDrawing)
 
 - (CGSize)cr_pixelAlignedSizeWithFont:(UIFont*)font {
   DCHECK(font) << "|font| can not be nil; it is used as a NSDictionary value";
   NSDictionary* attributes = @{ NSFontAttributeName : font };
-  CGSize size = [self sizeWithAttributes:attributes];
-  return CGSizeMake(alignValueToUpperPixel(size.width),
-                    alignValueToUpperPixel(size.height));
+  return ui::AlignSizeToUpperPixel([self sizeWithAttributes:attributes]);
 }
 
 - (CGSize)cr_sizeWithFont:(UIFont*)font {

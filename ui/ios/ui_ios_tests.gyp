@@ -19,6 +19,7 @@
       ],
       'sources' : [
         'NSString+CrStringDrawing_unittest.mm',
+        'uikit_util_unittest.mm',
       ],
     },
   ],
