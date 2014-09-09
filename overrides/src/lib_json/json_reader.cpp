@@ -14,16 +14,8 @@
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
-#ifdef __pnacl__
-// This file uses the following headers (at least in Reader::parse), but
-// the upstream version doesn't include them because iostream pulls in
-// static initializers.  This breaks the PNaCl build because it uses
-// libc++ which declares getline in <string> (as per the C++ standard)
-// but defines it in <iostream>. The code therefore fails linking, which
-// these includes fix.
 #include <string>
-#include <iostream>
-#endif
+#include <istream>
 
 #if _MSC_VER >= 1400 // VC++ 8.0
 #pragma warning( disable : 4996 )   // disable warning about strdup being deprecated.
