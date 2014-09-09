@@ -50,31 +50,13 @@ static const TYPE_mem_test g_mem_tests[] = {
   do_mprotect_test,
 };
 
-int run_mem_tests(void) {
-  struct mem_calls_environment mem_call_env;
-  int num_failures = 0;
-  irt_ext_test_print("Running %d mem tests...\n",
-                     NACL_ARRAY_SIZE(g_mem_tests));
-
-  for (int i = 0; i < NACL_ARRAY_SIZE(g_mem_tests); i++) {
-    init_mem_calls_environment(&mem_call_env);
-    activate_mem_calls_env(&mem_call_env);
-
-    if (0 != g_mem_tests[i](&mem_call_env)) {
-      num_failures++;
-    }
-
-    deactivate_mem_calls_env();
-  }
-
-  if (num_failures > 0) {
-    irt_ext_test_print("Mem Tests Failed [%d/%d]\n", num_failures,
-                       NACL_ARRAY_SIZE(g_mem_tests));
-  } else {
-    irt_ext_test_print("Mem Tests Passed [%d/%d]\n",
-                       NACL_ARRAY_SIZE(g_mem_tests),
-                       NACL_ARRAY_SIZE(g_mem_tests));
-  }
-
-  return num_failures;
+static void setup(struct mem_calls_environment *env) {
+  init_mem_calls_environment(env);
+  activate_mem_calls_env(env);
 }
+
+static void teardown(void) {
+  deactivate_mem_calls_env();
+}
+
+DEFINE_TEST(Mem, g_mem_tests, struct mem_calls_environment, setup, teardown)

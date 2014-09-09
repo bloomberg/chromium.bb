@@ -243,32 +243,14 @@ static const TYPE_basic_test g_basic_tests[] = {
   do_gettime_test,
 };
 
-int run_basic_tests(void) {
-  struct basic_calls_environment basic_calls_env;
-
-  int num_failures = 0;
-  irt_ext_test_print("Running %d basic tests...\n",
-                     NACL_ARRAY_SIZE(g_basic_tests));
-
-  for (int i = 0; i < NACL_ARRAY_SIZE(g_basic_tests); i++) {
-    init_basic_calls_environment(&basic_calls_env);
-    activate_basic_calls_env(&basic_calls_env);
-
-    if (0 != g_basic_tests[i](&basic_calls_env)) {
-      num_failures++;
-    }
-
-    deactivate_basic_calls_env();
-  }
-
-  if (num_failures > 0) {
-    irt_ext_test_print("Basic Tests Failed [%d/%d]\n", num_failures,
-                       NACL_ARRAY_SIZE(g_basic_tests));
-  } else {
-    irt_ext_test_print("Basic Tests Passed [%d/%d]\n",
-                       NACL_ARRAY_SIZE(g_basic_tests),
-                       NACL_ARRAY_SIZE(g_basic_tests));
-  }
-
-  return num_failures;
+static void setup(struct basic_calls_environment *basic_call_env) {
+  init_basic_calls_environment(basic_call_env);
+  activate_basic_calls_env(basic_call_env);
 }
+
+static void teardown(void) {
+  deactivate_basic_calls_env();
+}
+
+DEFINE_TEST(Basic, g_basic_tests, struct basic_calls_environment,
+            setup, teardown)

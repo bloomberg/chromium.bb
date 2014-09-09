@@ -12,6 +12,9 @@
 
 #include <stdio.h>
 
+/* Declare a macro we can later use for EXPAND_TEST_OPERATION. */
+#define RUN_TESTS(TEST_NAME) errors += TEST_FUNC_NAME(TEST_NAME)();
+
 int main(void) {
   int errors = 0;
 
@@ -24,9 +27,7 @@ int main(void) {
   init_mem_calls_module();
 
   /* Run tests. */
-  errors += run_basic_tests();
-  errors += run_file_tests();
-  errors += run_mem_tests();
+  EXPAND_TEST_OPERATION(RUN_TESTS);
 
   if (errors == 0)
     return TEST_EXIT_CODE;

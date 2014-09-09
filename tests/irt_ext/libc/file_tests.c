@@ -299,32 +299,13 @@ static const TYPE_file_test g_file_tests[] = {
   do_fread_stream_test,
 };
 
-int run_file_tests(void) {
-  struct file_desc_environment file_desc_env;
-  int num_failures = 0;
-
-  irt_ext_test_print("Running %d file tests...\n",
-                     NACL_ARRAY_SIZE(g_file_tests));
-
-  for (int i = 0; i < NACL_ARRAY_SIZE(g_file_tests); i++) {
-    init_file_desc_environment(&file_desc_env);
-    activate_file_desc_env(&file_desc_env);
-
-    if (0 != g_file_tests[i](&file_desc_env)) {
-      num_failures++;
-    }
-
-    deactivate_file_desc_env();
-  }
-
-  if (num_failures > 0) {
-    irt_ext_test_print("File Tests Failed [%d/%d]\n", num_failures,
-                       NACL_ARRAY_SIZE(g_file_tests));
-  } else {
-    irt_ext_test_print("File Tests Passed [%d/%d]\n",
-                       NACL_ARRAY_SIZE(g_file_tests),
-                       NACL_ARRAY_SIZE(g_file_tests));
-  }
-
-  return num_failures;
+static void setup(struct file_desc_environment *file_desc_env) {
+  init_file_desc_environment(file_desc_env);
+  activate_file_desc_env(file_desc_env);
 }
+
+static void teardown(void) {
+  deactivate_file_desc_env();
+}
+
+DEFINE_TEST(File, g_file_tests, struct file_desc_environment, setup, teardown)
