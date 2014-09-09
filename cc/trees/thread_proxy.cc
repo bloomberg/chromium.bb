@@ -1263,6 +1263,12 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   impl().scheduler.reset();
   impl().layer_tree_host_impl.reset();
   impl().weak_factory.InvalidateWeakPtrs();
+  // We need to explicitly cancel the notifier, since it isn't using weak ptrs.
+  // TODO(vmpstr): We should see if we can make it use weak ptrs and still keep
+  // the convention of having a weak ptr factory initialized last. Alternatively
+  // we should moved the notifier (and RenewTreePriority) to LTHI. See
+  // crbug.com/411972
+  impl().smoothness_priority_expiration_notifier.Cancel();
   impl().contents_texture_manager = NULL;
   completion->Signal();
 }
