@@ -86,7 +86,6 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   }
 
   MetadataDatabase::Create(
-      sync_context_->GetWorkerTaskRunner(),
       database_path_,
       env_override_,
       base::Bind(&SyncEngineInitializer::DidCreateMetadataDatabase,

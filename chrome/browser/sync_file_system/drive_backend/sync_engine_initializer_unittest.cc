@@ -109,7 +109,6 @@ class SyncEngineInitializerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<MetadataDatabase> database;
     MetadataDatabase::Create(
-        base::ThreadTaskRunnerHandle::Get(),
         database_path(),
         in_memory_env_.get(),
         CreateResultReceiver(&status, &database));

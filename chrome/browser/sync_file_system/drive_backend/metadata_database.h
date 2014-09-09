@@ -133,7 +133,6 @@ class MetadataDatabase {
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
   static void Create(
-      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const base::FilePath& database_path,
       leveldb::Env* env_override,
       const CreateCallback& callback);
@@ -356,7 +355,6 @@ class MetadataDatabase {
   struct CreateParam;
 
   MetadataDatabase(
-      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const base::FilePath& database_path,
       bool enable_on_disk_index,
       leveldb::Env* env_override);
@@ -411,10 +409,8 @@ class MetadataDatabase {
                                   const std::string& title,
                                   const std::string& file_id);
 
-  void DetachFromSequence();
   bool CanClearDirty(const FileTracker& tracker);
 
-  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   base::FilePath database_path_;
   leveldb::Env* env_override_;
   scoped_ptr<LevelDBWrapper> db_;
@@ -426,8 +422,6 @@ class MetadataDatabase {
   scoped_ptr<MetadataDatabaseIndexInterface> index_;
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
-
-  base::SequenceChecker worker_sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabase);
 };

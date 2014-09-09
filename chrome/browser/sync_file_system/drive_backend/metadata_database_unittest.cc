@@ -202,8 +202,7 @@ class MetadataDatabaseTest : public testing::Test {
 
   SyncStatusCode InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    MetadataDatabase::Create(base::ThreadTaskRunnerHandle::Get(),
-                             database_dir_.path(),
+    MetadataDatabase::Create(database_dir_.path(),
                              in_memory_env_.get(),
                              CreateResultReceiver(&status,
                                                   &metadata_database_));
