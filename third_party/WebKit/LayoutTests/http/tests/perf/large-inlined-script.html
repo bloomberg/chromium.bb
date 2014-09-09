@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="/js-test-resources/magnitude-perf.js"></script>
+<script>
+function setupFunction(magnitude) { }
+
+function test(magnitude, callback)
+{
+    function finish()
+    {
+        iframe.remove();
+        callback();
+    }
+    window._iframeLoaded = finish;
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.src = "resources/page-with-large-script.cgi?" + magnitude;
+}
+
+Magnitude.description("This tests time complexity of parsing HTML with large inlined script.");
+Magnitude.initialExponent = 15;
+Magnitude.numPoints = 4;
+Magnitude.tolerance = 0.25;
+Magnitude.numTrials = 5;
+Magnitude.successThreshold = 0.4; // 2 out of 5
+Magnitude.runAsync(setupFunction, test, Magnitude.LINEAR);
+</script>
+</head>
+<body>
+</body>
+</html>

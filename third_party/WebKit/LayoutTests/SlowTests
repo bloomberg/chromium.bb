@@ -69,6 +69,7 @@ crbug.com/24182 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Slow 
 crbug.com/24182 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Slow ]
 crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
+crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 
 # FIXME: Most inspector tests are slow. We should triage and consolidate these bugs and figure out if any are unusually slow.
 webkit.org/b/60109 inspector/elements/edit-dom-actions.html [ Slow ]
