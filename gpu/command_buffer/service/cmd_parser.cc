@@ -51,12 +51,12 @@ error::Error CommandParser::ProcessCommand() {
 
   CommandHeader header = buffer_[get].value_header;
   if (header.size == 0) {
-    DVLOG(1) << "Error: zero sized command in command buffer";
+    LOG(ERROR) << "Parse error: zero sized command in command buffer";
     return error::kInvalidSize;
   }
 
   if (static_cast<int>(header.size) + get > entry_count_) {
-    DVLOG(1) << "Error: get offset out of bounds";
+    LOG(ERROR) << "Parse error: get offset out of bounds";
     return error::kOutOfBounds;
   }
 
@@ -66,9 +66,6 @@ error::Error CommandParser::ProcessCommand() {
   error::Error result = handler_->DoCommand(
       header.command, header.size - 1, buffer_ + get);
 
-  // TODO(gman): If you want to log errors this is the best place to catch them.
-  //     It seems like we need an official way to turn on a debug mode and
-  //     get these errors.
   if (error::IsError(result)) {
     ReportError(header.command, result);
   }
@@ -82,8 +79,8 @@ error::Error CommandParser::ProcessCommand() {
 
 void CommandParser::ReportError(unsigned int command_id,
                                 error::Error result) {
-  DVLOG(1) << "Error: " << result << " for Command "
-           << handler_->GetCommandName(command_id);
+  LOG(ERROR) << "Error: " << result << " for Command "
+             << handler_->GetCommandName(command_id);
 }
 
 // Processes all the commands, while the buffer is not empty. Stop if an error
