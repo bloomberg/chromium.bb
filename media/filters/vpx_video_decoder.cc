@@ -202,6 +202,10 @@ VpxVideoDecoder::~VpxVideoDecoder() {
   CloseDecoder();
 }
 
+std::string VpxVideoDecoder::GetDisplayName() const {
+  return "VpxVideoDecoder";
+}
+
 void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool low_delay,
                                  const PipelineStatusCB& status_cb,

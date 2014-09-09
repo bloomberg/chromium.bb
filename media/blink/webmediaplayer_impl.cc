@@ -840,24 +840,23 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   // Create our audio decoders and renderer.
   ScopedVector<AudioDecoder> audio_decoders;
 
-  LogCB log_cb = base::Bind(&LogMediaSourceError, media_log_);
-  audio_decoders.push_back(new FFmpegAudioDecoder(media_task_runner_, log_cb));
-  audio_decoders.push_back(new OpusAudioDecoder(media_task_runner_));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(
+      media_task_runner_, base::Bind(&LogMediaSourceError, media_log_)));
+  audio_decoders.push_back(new media::OpusAudioDecoder(media_task_runner_));
 
-  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      media_task_runner_,
-      audio_source_provider_.get(),
-      audio_decoders.Pass(),
-      set_decryptor_ready_cb,
-      audio_hardware_config_));
+  scoped_ptr<AudioRenderer> audio_renderer(
+      new AudioRendererImpl(media_task_runner_,
+                            audio_source_provider_.get(),
+                            audio_decoders.Pass(),
+                            set_decryptor_ready_cb,
+                            audio_hardware_config_,
+                            media_log_));
 
   // Create our video decoders and renderer.
   ScopedVector<VideoDecoder> video_decoders;
 
-  if (gpu_factories_.get()) {
-    video_decoders.push_back(
-        new GpuVideoDecoder(gpu_factories_, media_log_));
-  }
+  if (gpu_factories_.get())
+    video_decoders.push_back(new GpuVideoDecoder(gpu_factories_));
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder(media_task_runner_));
@@ -865,13 +864,13 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
 
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner_));
 
-  scoped_ptr<VideoRenderer> video_renderer(
-      new VideoRendererImpl(
-          media_task_runner_,
-          video_decoders.Pass(),
-          set_decryptor_ready_cb,
-          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
-          true));
+  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+      media_task_runner_,
+      video_decoders.Pass(),
+      set_decryptor_ready_cb,
+      base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
+      true,
+      media_log_));
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(

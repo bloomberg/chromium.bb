@@ -32,6 +32,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual ~DecryptingVideoDecoder();
 
   // VideoDecoder implementation.
+  virtual std::string GetDisplayName() const OVERRIDE;
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           const PipelineStatusCB& status_cb,

@@ -32,6 +32,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   virtual ~VpxVideoDecoder();
 
   // VideoDecoder implementation.
+  virtual std::string GetDisplayName() const OVERRIDE;
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           const PipelineStatusCB& status_cb,

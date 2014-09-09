@@ -36,6 +36,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual ~FFmpegAudioDecoder();
 
   // AudioDecoder implementation.
+  virtual std::string GetDisplayName() const OVERRIDE;
   virtual void Initialize(const AudioDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
                           const OutputCB& output_cb) OVERRIDE;

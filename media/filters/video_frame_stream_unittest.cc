@@ -82,7 +82,8 @@ class VideoFrameStreamTest
         message_loop_.message_loop_proxy(),
         decoders.Pass(),
         base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
-                   base::Unretained(this))));
+                   base::Unretained(this)),
+        new MediaLog()));
 
     // Decryptor can only decrypt (not decrypt-and-decode) so that
     // DecryptingDemuxerStream will be used.

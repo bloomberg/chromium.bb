@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_VIDEO_DECODER_H_
 #define MEDIA_BASE_VIDEO_DECODER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
@@ -45,6 +47,9 @@ class MEDIA_EXPORT VideoDecoder {
   // Make sure the callbacks fired from this call doesn't post any task that
   // depends on |this|.
   virtual ~VideoDecoder();
+
+  // Returns the name of the decoder for logging purpose.
+  virtual std::string GetDisplayName() const = 0;
 
   // Initializes a VideoDecoder with the given |config|, executing the
   // |status_cb| upon completion. |output_cb| is called for each output frame

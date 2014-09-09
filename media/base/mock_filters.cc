@@ -52,8 +52,16 @@ VideoRotation MockDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
+std::string MockVideoDecoder::GetDisplayName() const {
+  return "MockVideoDecoder";
+}
+
 MockVideoDecoder::MockVideoDecoder() {
   EXPECT_CALL(*this, HasAlpha()).WillRepeatedly(Return(false));
+}
+
+std::string MockAudioDecoder::GetDisplayName() const {
+  return "MockAudioDecoder";
 }
 
 MockVideoDecoder::~MockVideoDecoder() {}

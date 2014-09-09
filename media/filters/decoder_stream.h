@@ -15,6 +15,7 @@
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/decoder_selector.h"
 #include "media/filters/decoder_stream_traits.h"
@@ -52,7 +53,8 @@ class MEDIA_EXPORT DecoderStream {
   DecoderStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       ScopedVector<Decoder> decoders,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb);
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      const scoped_refptr<MediaLog>& media_log);
   virtual ~DecoderStream();
 
   // Initializes the DecoderStream and returns the initialization result
@@ -158,6 +160,8 @@ class MEDIA_EXPORT DecoderStream {
   void OnDecoderReset();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  scoped_refptr<MediaLog> media_log_;
 
   State state_;
 

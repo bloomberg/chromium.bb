@@ -24,11 +24,13 @@ VideoRendererImpl::VideoRendererImpl(
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const PaintCB& paint_cb,
-    bool drop_frames)
+    bool drop_frames,
+    const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       video_frame_stream_(new VideoFrameStream(task_runner,
                                                decoders.Pass(),
-                                               set_decryptor_ready_cb)),
+                                               set_decryptor_ready_cb,
+                                               media_log)),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),

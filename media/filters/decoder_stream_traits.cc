@@ -15,7 +15,7 @@
 namespace media {
 
 std::string DecoderStreamTraits<DemuxerStream::AUDIO>::ToString() {
-  return "Audio";
+  return "audio";
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::Initialize(
@@ -47,7 +47,7 @@ scoped_refptr<DecoderStreamTraits<DemuxerStream::AUDIO>::OutputType>
 }
 
 std::string DecoderStreamTraits<DemuxerStream::VIDEO>::ToString() {
-  return "Video";
+  return "video";
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::Initialize(

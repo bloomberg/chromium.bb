@@ -121,7 +121,8 @@ void InitPipeline(
                                    video_decoders.Pass(),
                                    media::SetDecryptorReadyCB(),
                                    paint_cb,
-                                   true));
+                                   true,
+                                   new media::MediaLog()));
 
   ScopedVector<media::AudioDecoder> audio_decoders;
   audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner,
@@ -139,7 +140,8 @@ void InitPipeline(
                                    new media::NullAudioSink(task_runner),
                                    audio_decoders.Pass(),
                                    media::SetDecryptorReadyCB(),
-                                   hardware_config));
+                                   hardware_config,
+                                   new media::MediaLog()));
 
   scoped_ptr<media::Renderer> renderer(new media::RendererImpl(
       task_runner, demuxer, audio_renderer.Pass(), video_renderer.Pass()));

@@ -256,7 +256,8 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
                  decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
                  base::Unretained(this)),
-      false));
+      false,
+      new MediaLog()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
@@ -286,7 +287,8 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
                  decryptor),
-      hardware_config_));
+      hardware_config_,
+      new MediaLog()));
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();
 

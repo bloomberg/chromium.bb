@@ -30,6 +30,10 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       trace_id_(0),
       weak_factory_(this) {}
 
+std::string DecryptingVideoDecoder::GetDisplayName() const {
+  return "DecryptingVideoDecoder";
+}
+
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool /* low_delay */,
                                         const PipelineStatusCB& status_cb,

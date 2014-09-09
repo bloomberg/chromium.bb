@@ -45,13 +45,15 @@ AudioRendererImpl::AudioRendererImpl(
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
-    const AudioHardwareConfig& hardware_config)
+    const AudioHardwareConfig& hardware_config,
+    const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
       audio_buffer_stream_(new AudioBufferStream(task_runner,
                                                  decoders.Pass(),
-                                                 set_decryptor_ready_cb)),
+                                                 set_decryptor_ready_cb,
+                                                 media_log)),
       hardware_config_(hardware_config),
       playback_rate_(0),
       state_(kUninitialized),

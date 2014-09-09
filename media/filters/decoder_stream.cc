@@ -42,8 +42,10 @@ template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::DecoderStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<Decoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
+      media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
       low_delay_(false),
@@ -235,6 +237,12 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   state_ = STATE_NORMAL;
   decoder_ = selected_decoder.Pass();
   decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+
+  const std::string stream_type = DecoderStreamTraits<StreamType>::ToString();
+  media_log_->SetBooleanProperty((stream_type + "_dds").c_str(),
+                                 decrypting_demuxer_stream_);
+  media_log_->SetStringProperty((stream_type + "_decoder").c_str(),
+                                decoder_->GetDisplayName());
 
   if (StreamTraits::NeedsBitstreamConversion(decoder_.get()))
     stream_->EnableBitstreamConverter();

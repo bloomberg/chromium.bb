@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
@@ -53,7 +54,8 @@ class MEDIA_EXPORT VideoRendererImpl
       ScopedVector<VideoDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const PaintCB& paint_cb,
-      bool drop_frames);
+      bool drop_frames,
+      const scoped_refptr<MediaLog>& media_log);
   virtual ~VideoRendererImpl();
 
   // VideoRenderer implementation.

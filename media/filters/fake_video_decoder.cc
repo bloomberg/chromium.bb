@@ -40,6 +40,10 @@ FakeVideoDecoder::~FakeVideoDecoder() {
   decoded_frames_.clear();
 }
 
+std::string FakeVideoDecoder::GetDisplayName() const {
+  return "FakeVideoDecoder";
+}
+
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
                                   const PipelineStatusCB& status_cb,

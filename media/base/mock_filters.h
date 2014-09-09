@@ -78,6 +78,7 @@ class MockVideoDecoder : public VideoDecoder {
   virtual ~MockVideoDecoder();
 
   // VideoDecoder implementation.
+  virtual std::string GetDisplayName() const;
   MOCK_METHOD4(Initialize, void(const VideoDecoderConfig& config,
                                 bool low_delay,
                                 const PipelineStatusCB& status_cb,
@@ -97,6 +98,7 @@ class MockAudioDecoder : public AudioDecoder {
   virtual ~MockAudioDecoder();
 
   // AudioDecoder implementation.
+  virtual std::string GetDisplayName() const;
   MOCK_METHOD3(Initialize,
                void(const AudioDecoderConfig& config,
                     const PipelineStatusCB& status_cb,

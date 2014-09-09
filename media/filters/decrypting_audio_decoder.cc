@@ -44,6 +44,10 @@ DecryptingAudioDecoder::DecryptingAudioDecoder(
       key_added_while_decode_pending_(false),
       weak_factory_(this) {}
 
+std::string DecryptingAudioDecoder::GetDisplayName() const {
+  return "DecryptingAudioDecoder";
+}
+
 void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         const PipelineStatusCB& status_cb,
                                         const OutputCB& output_cb) {

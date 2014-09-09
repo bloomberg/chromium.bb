@@ -143,6 +143,10 @@ FFmpegAudioDecoder::~FFmpegAudioDecoder() {
   }
 }
 
+std::string FFmpegAudioDecoder::GetDisplayName() const {
+  return "FFmpegAudioDecoder";
+}
+
 void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                     const PipelineStatusCB& status_cb,
                                     const OutputCB& output_cb) {

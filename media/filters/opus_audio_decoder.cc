@@ -249,6 +249,10 @@ OpusAudioDecoder::OpusAudioDecoder(
       opus_decoder_(NULL),
       start_input_timestamp_(kNoTimestamp()) {}
 
+std::string OpusAudioDecoder::GetDisplayName() const {
+  return "OpusAudioDecoder";
+}
+
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   const PipelineStatusCB& status_cb,
                                   const OutputCB& output_cb) {

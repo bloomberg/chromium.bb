@@ -60,7 +60,8 @@ class VideoRendererImplTest : public ::testing::Test {
         decoders.Pass(),
         media::SetDecryptorReadyCB(),
         base::Bind(&StrictMock<MockCB>::Display, base::Unretained(&mock_cb_)),
-        true));
+        true,
+        new MediaLog()));
 
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
 

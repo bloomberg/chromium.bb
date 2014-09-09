@@ -18,7 +18,6 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
@@ -61,12 +60,10 @@ GpuVideoDecoder::BufferData::BufferData(
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
-    const scoped_refptr<GpuVideoAcceleratorFactories>& factories,
-    const scoped_refptr<MediaLog>& media_log)
+    const scoped_refptr<GpuVideoAcceleratorFactories>& factories)
     : needs_bitstream_conversion_(false),
       factories_(factories),
       state_(kNormal),
-      media_log_(media_log),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
@@ -138,6 +135,10 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
   cb.Run(status);
 }
 
+std::string GpuVideoDecoder::GetDisplayName() const {
+  return "GpuVideoDecoder";
+}
+
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
                                  const PipelineStatusCB& orig_status_cb,
@@ -187,7 +188,6 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
-  media_log_->SetStringProperty("video_decoder", "gpu");
   status_cb.Run(PIPELINE_OK);
 }
 

@@ -29,6 +29,7 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_log.h"
 #include "media/base/time_source.h"
 #include "media/filters/audio_renderer_algorithm.h"
 #include "media/filters/decoder_stream.h"
@@ -64,7 +65,8 @@ class MEDIA_EXPORT AudioRendererImpl
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
-      const AudioHardwareConfig& hardware_params);
+      const AudioHardwareConfig& hardware_params,
+      const scoped_refptr<MediaLog>& media_log);
   virtual ~AudioRendererImpl();
 
   // TimeSource implementation.
