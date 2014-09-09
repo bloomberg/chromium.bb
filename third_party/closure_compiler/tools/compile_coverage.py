@@ -12,6 +12,11 @@ _SRC_ROOT = os.path.join(_HERE, '..', '..', '..')
 _FROM_SRC = lambda p: os.path.abspath(os.path.join(_SRC_ROOT, p))
 
 
+from sys import path as sys_path
+sys_path.insert(0, os.path.join(_HERE, '..'))
+import processor
+
+
 # High priority code to compile.
 _NEED_TO_COMPILE = map(_FROM_SRC, [
   'chrome/browser/resources',
@@ -43,11 +48,16 @@ _RELEVANT_JS = lambda f: f.endswith('.js') and not f.startswith(_IGNORE_DIRS)
 def main():
   line_cache = {}
 
-  def js_files_in_dir(js_dir):
+  def js_files_and_deps_in_dir(js_dir):
     found_files = set()
+
     for root, dirs, files in os.walk(js_dir):
       abs_files = [os.path.abspath(os.path.join(root, f)) for f in files]
-      found_files.update(filter(_RELEVANT_JS, abs_files))
+      relevant_files = filter(_RELEVANT_JS, abs_files)
+      found_files.update(relevant_files)
+      for f in relevant_files:
+        found_files.update(processor.Processor(f).included_files)
+
     return found_files
 
   def num_lines(f):
@@ -72,6 +82,7 @@ def main():
       gyp_dir = os.path.dirname(gyp_file)
       target_file = os.path.join(gyp_dir, target['target_name'] + '.js')
       compiled.add(os.path.abspath(target_file))
+      compiled.update(processor.Processor(target_file).included_files)
 
       if 'variables' in target and 'depends' in target['variables']:
         depends = target['variables']['depends']
@@ -86,7 +97,7 @@ def main():
   files = set()
 
   for n in _NEED_TO_COMPILE:
-    files.update(js_files_in_dir(n))
+    files.update(js_files_and_deps_in_dir(n))
 
   need_lines = sum(map(num_lines, files))
   print 'need: %d files, %d lines' % (len(files), need_lines)
@@ -95,7 +106,7 @@ def main():
   print '%.2f%% done with the code we need to compile' % need_done
 
   for w in _WANT_TO_COMPILE:
-    files.update(js_files_in_dir(w))
+    files.update(js_files_and_deps_in_dir(w))
 
   want_lines = sum(map(num_lines, files))
   print 'want: %d files, %d lines' % (len(files), want_lines)
