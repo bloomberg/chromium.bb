@@ -41,7 +41,7 @@ class Config:
 class InstallerTest(unittest.TestCase):
   """Tests a test case in the config file."""
 
-  def __init__(self, name, test, config, variable_expander):
+  def __init__(self, name, test, config, variable_expander, quiet):
     """Constructor.
 
     Args:
@@ -56,6 +56,7 @@ class InstallerTest(unittest.TestCase):
     self._test = test
     self._config = config
     self._variable_expander = variable_expander
+    self._quiet = quiet
     self._verifier_runner = verifier_runner.VerifierRunner()
     self._clean_on_teardown = True
 
@@ -88,7 +89,11 @@ class InstallerTest(unittest.TestCase):
     # Starting at index 1, we loop through pairs of (action, state).
     for i in range(1, len(self._test), 2):
       action = self._test[i]
+      if not self._quiet:
+        sys.stderr.write('Beginning action %s\n' % action)
       RunCommand(self._config.actions[action], self._variable_expander)
+      if not self._quiet:
+        sys.stderr.write('Finished action %s\n' % action)
 
       state = self._test[i + 1]
       self._VerifyState(state)
@@ -118,6 +123,8 @@ class InstallerTest(unittest.TestCase):
     Args:
       state: A state name.
     """
+    if not self._quiet:
+      sys.stderr.write('Verifying state %s\n' % state)
     try:
       self._verifier_runner.VerifyAll(self._config.states[state],
                                       self._variable_expander)
@@ -276,8 +283,8 @@ def main():
                       help='Build target (Release or Debug)')
   parser.add_argument('--force-clean', action='store_true', default=False,
                       help='Force cleaning existing installations')
-  parser.add_argument('-v', '--verbose', action='count', default=0,
-                      help='Increase test runner verbosity level')
+  parser.add_argument('-q', '--quiet', action='store_true', default=False,
+                      help='Reduce test runner output')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
                       help='Path to write the list of full results to.')
   parser.add_argument('--config', metavar='FILENAME',
@@ -310,9 +317,10 @@ def main():
                                 test['name'])
       if not args.test or test_name in args.test:
         suite.addTest(InstallerTest(test['name'], test['traversal'], config,
-                                    variable_expander))
+                                    variable_expander, args.quiet))
 
-  result = unittest.TextTestRunner(verbosity=(args.verbose + 1)).run(suite)
+  verbosity = 2 if not args.quiet else 1
+  result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
   if is_component_build:
     print ('Component build is currently unsupported by the mini_installer: '
            'http://crbug.com/377839')
