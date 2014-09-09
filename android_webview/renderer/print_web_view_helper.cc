@@ -724,7 +724,7 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
 }
 
 void PrepareFrameAndViewForPrint::FinishPrinting() {
-  blink::WebFrame* frame = frame_.GetFrame();
+  blink::WebLocalFrame* frame = frame_.GetFrame();
   if (frame) {
     blink::WebView* web_view = frame->view();
     if (is_printing_started_) {
