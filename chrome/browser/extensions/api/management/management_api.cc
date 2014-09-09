@@ -599,7 +599,8 @@ bool ManagementUninstallFunctionBase::Uninstall(
     bool show_confirm_dialog) {
   extension_id_ = target_extension_id;
   const Extension* target_extension =
-      service()->GetExtensionById(extension_id_, true);
+      extensions::ExtensionRegistry::Get(browser_context())->
+          GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   if (!target_extension ||
       ui_util::ShouldNotBeVisible(target_extension, browser_context())) {
     error_ = ErrorUtils::FormatErrorMessage(
