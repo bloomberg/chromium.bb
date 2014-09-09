@@ -147,9 +147,9 @@ bool ToggleOverview(const ui::Accelerator& accelerator) {
   return true;
 }
 
-bool HandleFocusLauncher() {
+bool HandleFocusShelf() {
   Shell* shell = Shell::GetInstance();
-  base::RecordAction(base::UserMetricsAction("Accel_Focus_Launcher"));
+  base::RecordAction(base::UserMetricsAction("Accel_Focus_Shelf"));
   return shell->focus_cycler()->FocusWidget(
       Shelf::ForPrimaryDisplay()->shelf_widget());
 }
@@ -991,8 +991,8 @@ bool AcceleratorController::PerformAction(int action,
           shell->system_tray_delegate()->GetVolumeControlDelegate();
       return volume_delegate && volume_delegate->HandleVolumeUp(accelerator);
     }
-    case FOCUS_LAUNCHER:
-      return HandleFocusLauncher();
+    case FOCUS_SHELF:
+      return HandleFocusShelf();
     case FOCUS_NEXT_PANE:
       return HandleRotatePaneFocus(Shell::FORWARD);
     case FOCUS_PREVIOUS_PANE:

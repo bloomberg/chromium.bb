@@ -3943,65 +3943,65 @@ Battery full
     Type Ctrl+Alt+/ or Escape to hide
   </message>
   <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_LAUNCHER_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last launcher item).">
-    Activate last launcher item
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_SHELF_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last shelf item).">
+    Last shelf item
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate last tab
+    Last tab
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_1" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 1
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_1" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 1
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_2" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 2
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_2" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 2
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_3" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 3
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_3" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 3
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_4" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 4
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_4" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 4
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_5" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 5
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_5" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 5
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_6" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 6
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_6" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 6
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_7" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 7
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_7" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 7
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_8" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
-    Activate launcher item 8
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_8" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
+    Shelf item 8
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_NEXT_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate next tab
+    Next tab
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_PREVIOUS_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate previous tab
+    Previous tab
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_1" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 1
+    Tab 1
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_2" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 2
+    Tab 2
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_3" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 3
+    Tab 3
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_4" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 4
+    Tab 4
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_5" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 5
+    Tab 5
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_6" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 6
+    Tab 6
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_7" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 7
+    Tab 7
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_8" desc="The text in the keyboard overlay to explain the shortcut.">
-    Activate tab 8
+    Tab 8
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ADD_WWW_AND_COM_AND_OPEN_ADDRESS" desc="The text in the keyboard overlay to explain the shortcut.">
     Add www. and .com and open address
@@ -4010,7 +4010,7 @@ Battery full
     Bookmark all tabs
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Bookmark current page
+    Add bookmark
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the bookmark manager).">
     Bookmark manager
@@ -4034,7 +4034,7 @@ Battery full
     Cut
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Cycle through input methods
+    Next input method
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DECREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
     Decrease key brightness
@@ -4106,25 +4106,25 @@ Battery full
     Find text
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT_AGAIN" desc="The text in the keyboard overlay to explain the shortcut.">
-    Find text again
+    Find again
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Focus address bar
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus address bar in search mode
+    Focus address bar for search
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_BOOKMARKS" desc="The text in the keyboard overlay to explain the shortcut.">
     Focus bookmarks
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_LAUNCHER" desc="The text in the keyboard overlay to explain the shortcut (focus the application launcher).">
-    Focus launcher
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_SHELF" desc="The text in the keyboard overlay to explain the shortcut (focus the application shelf).">
+    Focus shelf
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_NEXT_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the next keyboard-accessible pane).">
-    Focus next pane
+    Next pane
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_PREVIOUS_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the previous keyboard-accessible pane).">
-    Focus previous pane
+    Previous pane
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Focus toolbar
@@ -4160,19 +4160,19 @@ Battery full
     Lock screen
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
-    Lock screen or power off
+    Lock / power
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_MAGNIFIER_DECREASE_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-    Magnifier decrease zoom
+    Demagnify
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_MAGNIFIER_INCREASE_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-    Magnifier increase zoom
+    Magnify
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_MAXIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (maximize or restore the window).">
-    Maximize window
+    Maximize
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_MINIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (minimize the window).">
-    Minimize window
+    Minimize
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_MIRROR_MONITORS" desc="The text in the keyboard overlay to explain the shortcut (Mirror the monitors).">
     Mirror monitors
@@ -4202,13 +4202,13 @@ Battery full
     Open
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Open address in new tab
+    Open in new tab
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (Open the file manager).">
-    Open file manager
+    File manager
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_GOOGLE_CLOUD_PRINT" desc="The text in the keyboard overlay to explain the shortcut (Opens the 'Google Cloud Print' dialog).">
-    Open Google Cloud Print
+    Google Cloud Print
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut (Page down).">
     Page down
@@ -4235,7 +4235,7 @@ Battery full
     Print
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_RELOAD_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reload current page
+    Reload
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
     Reload ignoring cache
@@ -4268,16 +4268,16 @@ Battery full
     Select all
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Select previous input method
+    Previous input method
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
     Select "word at a time"
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SHOW_MESSAGE_CENTER" desc="The text in the keyboard overlay to explain the shortcut (Show the message center).">
-    Show message center
+    Message center
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU" desc="The text in the keyboard overlay to explain the shortcut (show the status menu).">
-    Show status menu
+    Status menu
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
     Sign out
@@ -4286,31 +4286,31 @@ Battery full
     Swap primary monitor
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Take screenshot
+    Screenshot
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
     Task manager
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
-    Toggle bookmark bar
+    Bookmark bar
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable caps lock).">
-    Toggle caps lock
+    Caps Lock
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
-    Toggle ChromeVox (spoken feedback)
+    ChromeVox (spoken feedback)
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Toggle projection touch HUD
+    Projection touch HUD
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
-    Toggle speech input
+    Speech input
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
-    View keyboard overlay
+    Keyboard overlay
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_VIEW_SOURCE" desc="The text in the keyboard overlay to explain the shortcut.">
     View source
@@ -5128,10 +5128,10 @@ Battery full
   </message>
 
   <!-- Genius App -->
-  <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app launcher">
+  <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app shelf">
     Get Help
   </message>
-  <message name="IDS_GENIUS_APP_DESCRIPTION" desc="Description of the genius app in the app launcher">
+  <message name="IDS_GENIUS_APP_DESCRIPTION" desc="Description of the genius app in the app shelf">
     Get help with your Chrome device.
   </message>
   <message name="IDS_FILEMANAGER_APP_NAME" desc="Name for the File Manager app.">

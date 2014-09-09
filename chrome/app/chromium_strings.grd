@@ -1015,7 +1015,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <!-- Chrome OS keyboard overlay-->
       <if expr="chromeos">
         <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
-          Show the Chromium menu
+          Show Chromium menu
         </message>
       </if>
 
