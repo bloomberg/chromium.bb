@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/test/result_catcher.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -49,7 +50,7 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
     ExtensionTestMessageListener launched_listener("Launched", true);
     LoadAndLaunchPlatformApp("window_api_interactive", &launched_listener);
 
-    ResultCatcher catcher;
+    extensions::ResultCatcher catcher;
     launched_listener.Reply(testName);
 
     if (!catcher.GetNextResult()) {

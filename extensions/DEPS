@@ -7,6 +7,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+crypto",
+  "+extensions/test",
   "+grit/extensions_renderer_resources.h",
   "+grit/extensions_resources.h",
   "+mojo/public",

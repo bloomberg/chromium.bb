@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::DnsSdRegistry;
@@ -85,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterListener) {
   EXPECT_TRUE(RunExtensionSubtest("mdns/api", "register_listener.html"))
       << message_;
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   // Dispatch 3 events, one of which should not be sent to the test extension.
   DnsSdRegistry::DnsSdServiceList services;
 
@@ -128,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
                                   "register_multiple_listeners.html"))
       << message_;
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   DnsSdRegistry::DnsSdServiceList services;
 
   extensions::DnsSdService service;

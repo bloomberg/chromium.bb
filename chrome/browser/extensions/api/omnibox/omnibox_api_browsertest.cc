@@ -17,9 +17,11 @@
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "extensions/test/result_catcher.h"
 #include "ui/base/window_open_disposition.h"
 
 using base::ASCIIToUTF16;
+using extensions::ResultCatcher;
 using metrics::OmniboxEventProto;
 
 // http://crbug.com/167158
@@ -203,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   Profile* profile = browser()->profile();
   ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToProfile(profile->GetOffTheRecordProfile());
+  catcher_incognito.RestrictToBrowserContext(profile->GetOffTheRecordProfile());
 
   ASSERT_TRUE(RunExtensionTestIncognito("omnibox")) << message_;
 

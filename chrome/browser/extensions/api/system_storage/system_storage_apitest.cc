@@ -12,6 +12,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "extensions/browser/api/system_storage/storage_info_provider.h"
+#include "extensions/test/result_catcher.h"
 
 namespace {
 
@@ -121,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, StorageAttachment) {
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   ExtensionTestMessageListener attach_listener("attach", false);
   ExtensionTestMessageListener detach_listener("detach", false);
 

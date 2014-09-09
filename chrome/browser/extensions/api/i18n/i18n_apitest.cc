@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
@@ -38,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
 
   const extensions::Extension* extension = LoadExtension(extension_dir.path());
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
 
   // Test that the messages.json file is loaded and the i18n message is loaded.
   ui_test_utils::NavigateToURL(

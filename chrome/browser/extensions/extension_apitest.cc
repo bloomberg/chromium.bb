@@ -13,13 +13,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -141,73 +139,6 @@ ExtensionApiTest::ExtensionApiTest() {
 
 ExtensionApiTest::~ExtensionApiTest() {}
 
-ExtensionApiTest::ResultCatcher::ResultCatcher()
-    : profile_restriction_(NULL),
-      waiting_(false) {
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
-                 content::NotificationService::AllSources());
-}
-
-ExtensionApiTest::ResultCatcher::~ResultCatcher() {
-}
-
-bool ExtensionApiTest::ResultCatcher::GetNextResult() {
-  // Depending on the tests, multiple results can come in from a single call
-  // to RunMessageLoop(), so we maintain a queue of results and just pull them
-  // off as the test calls this, going to the run loop only when the queue is
-  // empty.
-  if (results_.empty()) {
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
-  }
-
-  if (!results_.empty()) {
-    bool ret = results_.front();
-    results_.pop_front();
-    message_ = messages_.front();
-    messages_.pop_front();
-    return ret;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-void ExtensionApiTest::ResultCatcher::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (profile_restriction_ &&
-      content::Source<Profile>(source).ptr() != profile_restriction_) {
-    return;
-  }
-
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_TEST_PASSED:
-      VLOG(1) << "Got EXTENSION_TEST_PASSED notification.";
-      results_.push_back(true);
-      messages_.push_back(std::string());
-      if (waiting_)
-        base::MessageLoopForUI::current()->Quit();
-      break;
-
-    case extensions::NOTIFICATION_EXTENSION_TEST_FAILED:
-      VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
-      results_.push_back(false);
-      messages_.push_back(*(content::Details<std::string>(details).ptr()));
-      if (waiting_)
-        base::MessageLoopForUI::current()->Quit();
-      break;
-
-    default:
-      NOTREACHED();
-  }
-}
-
 void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   DCHECK(!test_config_.get()) << "Previous test did not clear config state.";
   test_config_.reset(new base::DictionaryValue());
@@ -328,7 +259,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
   if (custom_arg && custom_arg[0])
     test_config_->SetString(kTestCustomArg, custom_arg);
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   DCHECK(!extension_name.empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
 

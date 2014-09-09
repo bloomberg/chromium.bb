@@ -16,11 +16,13 @@
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/test/result_catcher.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notifier_settings.h"
 
 using extensions::Extension;
+using extensions::ResultCatcher;
 
 namespace utils = extension_function_test_utils;
 

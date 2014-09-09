@@ -17,6 +17,7 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -78,8 +79,8 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpExtension) {
   // Test that sendTo() is properly resolving hostnames.
   host_port_pair.set_host("LOCALhost");
 
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("info_please", true);
 
@@ -92,8 +93,8 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, DISABLED_SocketsUdpMulticast) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("sockets_udp/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());

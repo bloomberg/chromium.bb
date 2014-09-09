@@ -23,7 +23,6 @@ namespace extensions {
 // GetNextResult() and message() if GetNextResult() return false. If there
 // are no results, this method will pump the UI message loop until one is
 // received.
-// TODO(yoz): Replace the version in ExtensionApiTest with this.
 class ResultCatcher : public content::NotificationObserver {
  public:
   ResultCatcher();

@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace {
@@ -144,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
   ASSERT_TRUE(installed_extensions->Contains(kTestExtensionId));
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(profile());
+  catcher.RestrictToBrowserContext(profile());
 
   const Extension* extension =
       extension_service()->extensions()->GetByID(kTestExtensionId);

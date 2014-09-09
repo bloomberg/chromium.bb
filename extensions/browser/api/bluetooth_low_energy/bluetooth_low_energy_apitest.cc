@@ -15,6 +15,7 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
+#include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using device::BluetoothUUID;
@@ -33,6 +34,7 @@ using device::MockBluetoothGattDescriptor;
 using device::MockBluetoothGattService;
 using device::MockBluetoothGattNotifySession;
 using extensions::BluetoothLowEnergyEventRouter;
+using extensions::ResultCatcher;
 using testing::Invoke;
 using testing::Return;
 using testing::ReturnRef;
@@ -260,7 +262,7 @@ BluetoothGattConnection* CreateGattConnection(
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetServices) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   std::vector<BluetoothGattService*> services;
   services.push_back(service0_.get());
@@ -289,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetServices) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -320,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   // Load the extension and let it set up.
   ExtensionTestMessageListener listener("ready", true);
@@ -356,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   // Load the extension and let it set up.
   ASSERT_TRUE(LoadExtension(
@@ -401,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_included_services")));
@@ -443,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   std::vector<BluetoothGattCharacteristic*> characteristics;
   characteristics.push_back(chrc0_.get());
@@ -477,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -515,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -575,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(1)
@@ -619,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   // Cause events to be sent to the extension.
   event_router()->GattServiceAdded(
@@ -688,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -728,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -770,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   std::vector<BluetoothGattDescriptor*> descriptors;
   descriptors.push_back(desc0_.get());
@@ -811,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptor) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -856,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptor) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(1)
@@ -907,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, DescriptorValueChanged) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -940,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, DescriptorValueChanged) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -986,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -1034,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, PermissionDenied) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/permission_denied")));
@@ -1043,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, PermissionDenied) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionMethods) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());
@@ -1075,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionMethods) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("ready", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
@@ -1106,8 +1108,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .WillRepeatedly(Return(static_cast<BluetoothDevice*>(NULL)));
@@ -1137,8 +1138,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress0))
       .WillRepeatedly(Return(device0_.get()));
@@ -1167,8 +1167,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress0))
       .WillRepeatedly(Return(device0_.get()));
@@ -1205,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   event_router()->GattServiceAdded(
       mock_adapter_, device0_.get(), service0_.get());

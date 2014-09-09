@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -52,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   ASSERT_TRUE(api.get());
   extensions::DialRegistry::DeviceList devices;
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
 
   DialDeviceData device1;
   device1.set_device_id("1");
@@ -94,8 +95,8 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DiscoveryNoListeners) {
 
 // Make sure this API is only accessible to whitelisted extensions.
 IN_PROC_BROWSER_TEST_F(DialAPITest, NonWhitelistedExtension) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("ready", true);
   const extensions::Extension* extension = LoadExtensionWithFlags(

@@ -17,6 +17,7 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -86,8 +87,8 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
   base::FilePath path = test_data_dir_.AppendASCII("sockets_tcp_server/api");
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(path));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerUnbindOnUnload) {
   base::FilePath path = test_data_dir_.AppendASCII("sockets_tcp_server/unload");
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   const Extension* extension = LoadExtension(path);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

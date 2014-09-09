@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -273,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
 
   AddTmpMountPoint(extension->id());
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
 
   GURL url = extension->GetResourceURL("test.html");
   ui_test_utils::NavigateToURL(browser(), url);

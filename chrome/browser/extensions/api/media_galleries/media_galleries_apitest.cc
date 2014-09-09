@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 #include "media/base/test_data_util.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -468,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
   const extensions::Extension* extension = LoadExtension(app_dir());
   ASSERT_TRUE(extension);
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   AppLaunchParams params(browser()->profile(),
                          extension,
                          extensions::LAUNCH_CONTAINER_NONE,

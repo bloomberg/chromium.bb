@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/test/result_catcher.h"
 #include "grit/browser_resources.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -55,7 +56,7 @@ class PDFExtensionTest : public ExtensionApiTest {
     ASSERT_TRUE(MimeTypesHandler::GetHandler(
         extension)->CanHandleMIMEType("application/pdf"));
 
-    ResultCatcher catcher;
+    extensions::ResultCatcher catcher;
 
     GURL url(embedded_test_server()->GetURL("/pdf/test.pdf"));
     GURL extension_url(

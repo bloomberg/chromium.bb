@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/test/result_catcher.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "google_apis/drive/time_util.h"
@@ -370,7 +371,7 @@ class FileSystemExtensionApiTestBase : public ExtensionApiTest {
       }
     }
 
-    ResultCatcher catcher;
+    extensions::ResultCatcher catcher;
 
     const Extension* file_browser = LoadExtensionAsComponentWithManifest(
         test_data_dir_.AppendASCII(filebrowser_path),

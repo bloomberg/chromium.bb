@@ -8,6 +8,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 
 using extensions::Extension;
 using extensions::FeatureSwitch;
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest,
       embedded->id().c_str());
 
   ExecuteScriptInBackgroundPage(embedder->id(), script);
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(),
                                embedder->GetResourceURL("test.html"));
   ASSERT_TRUE(catcher.GetNextResult());

@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 
 using content::WebContents;
 

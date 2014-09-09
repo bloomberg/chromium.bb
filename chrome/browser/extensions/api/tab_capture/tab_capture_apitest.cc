@@ -15,6 +15,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -127,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
                                     main_frame->GetRoutingID()));
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -177,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   before_whitelist_extension.Reply("");
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -228,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   fullscreen_entered.Reply("");
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -261,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   before_open_tab.Reply("");
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 

@@ -83,6 +83,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
@@ -3538,7 +3539,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionTest("webnavigation/prerender")) << message_;
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
 
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
@@ -3559,7 +3560,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionTest("tabs/on_replaced")) << message_;
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
 
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
@@ -3593,7 +3594,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
   // navigation had prerender not intercepted it.
   // streams_private/handle_mime_type reports success if it has handled the
   // application/msword type.
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   NavigateToDestURL();
   EXPECT_TRUE(catcher.GetNextResult());
 }

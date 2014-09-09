@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/test/result_catcher.h"
 
 // API tests for chrome.accessibilityFeatures API.
 // Note that the API is implemented using preference API infrastructure.

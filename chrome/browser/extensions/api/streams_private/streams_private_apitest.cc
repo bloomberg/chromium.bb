@@ -23,6 +23,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -38,6 +39,7 @@ using content::ResourceController;
 using content::WebContents;
 using extensions::Event;
 using extensions::ExtensionSystem;
+using extensions::ResultCatcher;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;

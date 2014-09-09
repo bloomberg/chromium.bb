@@ -44,6 +44,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/api/app_runtime.h"
+#include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -1089,7 +1090,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 #define MAYBE_Messaging Messaging
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
-  ExtensionApiTest::ResultCatcher result_catcher;
+  ResultCatcher result_catcher;
   LoadAndLaunchPlatformApp("messaging/app2", "Ready");
   LoadAndLaunchPlatformApp("messaging/app1", "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
@@ -1309,7 +1310,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
     ASSERT_TRUE(extension);
     extension_id = extension->id();
 
-    ExtensionApiTest::ResultCatcher result_catcher;
+    ResultCatcher result_catcher;
     EXPECT_TRUE(result_catcher.GetNextResult());
   }
 
@@ -1322,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
     ASSERT_TRUE(extension);
     ASSERT_EQ(extension_id, extension->id());
 
-    ExtensionApiTest::ResultCatcher result_catcher;
+    ResultCatcher result_catcher;
     EXPECT_TRUE(result_catcher.GetNextResult());
   }
 }

@@ -31,11 +31,13 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 using extensions::Extension;
+using extensions::ResultCatcher;
 
 namespace {
 
@@ -485,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
 // the event page is not loaded.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   const extensions::Extension* extension =
       LoadExtensionAndWait("event_dispatch_to_tab");

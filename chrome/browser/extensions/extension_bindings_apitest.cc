@@ -13,6 +13,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/test/result_catcher.h"
 
 namespace extensions {
 namespace {

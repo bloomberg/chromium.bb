@@ -13,6 +13,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 
 class SystemIndicatorApiTest : public ExtensionApiTest {
  public:
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, SystemIndicator) {
   extensions::SystemIndicatorManager* manager =
       extensions::SystemIndicatorManagerFactory::GetForProfile(profile());
   if (manager) {
-    ResultCatcher catcher;
+    extensions::ResultCatcher catcher;
 
     const extensions::Extension* extension =
         LoadExtensionAndWait("system_indicator/unloaded");

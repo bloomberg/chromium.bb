@@ -16,6 +16,7 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -74,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
   // Test that connect() is properly resolving hostnames.
   host_port_pair.set_host("lOcAlHoSt");
 
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("info_please", true);
 
@@ -99,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {
   int https_port = https_host_port_pair.port();
   ASSERT_GT(https_port, 0);
 
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  extensions::ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("info_please", true);
 

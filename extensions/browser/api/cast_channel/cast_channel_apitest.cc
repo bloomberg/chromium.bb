@@ -15,6 +15,7 @@
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/result_catcher.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -247,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
   EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
                                   "test_open_receive_close.html"));
 
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   CallOnMessage("some-message");
   CallOnMessage("some-message");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

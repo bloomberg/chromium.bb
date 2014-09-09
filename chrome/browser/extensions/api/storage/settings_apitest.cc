@@ -18,6 +18,7 @@
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/result_catcher.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -224,8 +225,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
-  catcher.RestrictToProfile(browser()->profile());
-  catcher_incognito.RestrictToProfile(
+  catcher.RestrictToBrowserContext(browser()->profile());
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
@@ -248,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
-  catcher.RestrictToProfile(browser()->profile());
-  catcher_incognito.RestrictToProfile(
+  catcher.RestrictToBrowserContext(browser()->profile());
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
@@ -271,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
-  catcher.RestrictToProfile(browser()->profile());
-  catcher_incognito.RestrictToProfile(
+  catcher.RestrictToBrowserContext(browser()->profile());
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
@@ -322,8 +323,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
-  catcher.RestrictToProfile(browser()->profile());
-  catcher_incognito.RestrictToProfile(
+  catcher.RestrictToBrowserContext(browser()->profile());
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   const Extension* extension =
@@ -367,8 +368,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
-  catcher.RestrictToProfile(browser()->profile());
-  catcher_incognito.RestrictToProfile(
+  catcher.RestrictToBrowserContext(browser()->profile());
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   const Extension* extension =

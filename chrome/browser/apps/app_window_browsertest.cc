@@ -12,8 +12,10 @@
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 
 using extensions::AppWindowGeometryCache;
+using extensions::ResultCatcher;
 
 // This helper class can be used to wait for changes in the app window
 // geometry cache registry for a specific window in a specific extension.

@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/result_catcher.h"
 
 namespace extensions {
 

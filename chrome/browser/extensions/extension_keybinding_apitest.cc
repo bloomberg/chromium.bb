@@ -23,6 +23,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/test/result_catcher.h"
 
 using content::WebContents;
 

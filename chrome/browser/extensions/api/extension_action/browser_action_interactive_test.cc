@@ -24,6 +24,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/test/result_catcher.h"
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_util.h"

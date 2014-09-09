@@ -14,10 +14,12 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/socket/socket_api.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 using extensions::Extension;
+using extensions::ResultCatcher;
 
 namespace {
 
@@ -69,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   host_port_pair.set_host("LOCALhost");
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("info_please", true);
 
@@ -97,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
   host_port_pair.set_host("lOcAlHoSt");
 
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("info_please", true);
 
@@ -111,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -137,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerUnbindOnUnload) {
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketMulticast) {
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());

@@ -64,47 +64,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   virtual ~ExtensionApiTest();
 
  protected:
-  // Helper class that observes tests failing or passing. Observation starts
-  // when the class is constructed. Get the next result by calling
-  // GetNextResult() and message() if GetNextResult() return false. If there
-  // are no results, this method will pump the UI message loop until one is
-  // received.
-  // DEPRECATED: Use extensions/test/result_catcher.h instead.
-  class ResultCatcher : public content::NotificationObserver {
-   public:
-    ResultCatcher();
-    virtual ~ResultCatcher();
-
-    // Pumps the UI loop until a notification is received that an API test
-    // succeeded or failed. Returns true if the test succeeded, false otherwise.
-    bool GetNextResult();
-
-    void RestrictToProfile(Profile* profile) { profile_restriction_ = profile; }
-
-    const std::string& message() { return message_; }
-
-   private:
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) OVERRIDE;
-
-    content::NotificationRegistrar registrar_;
-
-    // A sequential list of pass/fail notifications from the test extension(s).
-    std::deque<bool> results_;
-
-    // If it failed, what was the error message?
-    std::deque<std::string> messages_;
-    std::string message_;
-
-    // If non-NULL, we will listen to events from this profile only.
-    Profile* profile_restriction_;
-
-    // True if we're in a nested message loop waiting for results from
-    // the extension.
-    bool waiting_;
-  };
-
+  // InProcessBrowserTest:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 

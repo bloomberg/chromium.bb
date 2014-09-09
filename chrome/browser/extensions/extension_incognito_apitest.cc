@@ -14,10 +14,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
+using extensions::ResultCatcher;
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -127,9 +129,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
+  catcher.RestrictToBrowserContext(browser()->profile());
   ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToProfile(
+  catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
   ExtensionTestMessageListener listener("waiting", true);

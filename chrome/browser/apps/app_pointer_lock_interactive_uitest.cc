@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "extensions/test/result_catcher.h"
 
 class ExtensionPointerLockTest : public extensions::PlatformAppBrowserTest {
  public:
@@ -13,7 +14,7 @@ class ExtensionPointerLockTest : public extensions::PlatformAppBrowserTest {
     ExtensionTestMessageListener launched_listener("Launched", true);
     LoadAndLaunchPlatformApp(app_path, &launched_listener);
 
-    ResultCatcher catcher;
+    extensions::ResultCatcher catcher;
 
     if (!ui_test_utils::ShowAndFocusNativeWindow(
              GetFirstAppWindow()->GetNativeWindow())) {
