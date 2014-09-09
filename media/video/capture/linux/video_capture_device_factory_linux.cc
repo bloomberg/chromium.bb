@@ -155,15 +155,14 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
       frame_interval.pixel_format = pixel_format.pixelformat;
       frame_interval.width = frame_size.discrete.width;
       frame_interval.height = frame_size.discrete.height;
+      std::list<float> frame_rates;
       while (HANDLE_EINTR(ioctl(
                  fd.get(), VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval)) == 0) {
         if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
           if (frame_interval.discrete.numerator != 0) {
-            supported_format.frame_rate =
+            frame_rates.push_back(
                 static_cast<float>(frame_interval.discrete.denominator) /
-                static_cast<float>(frame_interval.discrete.numerator);
-          } else {
-            supported_format.frame_rate = 0;
+                static_cast<float>(frame_interval.discrete.numerator));
           }
         } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
           // TODO(mcasas): see http://crbug.com/249953, support these devices.
@@ -174,9 +173,20 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
           NOTIMPLEMENTED();
           break;
         }
+        ++frame_interval.index;
+      }
+
+      // Some devices, e.g. Kinect, do not enumerate any frame rates. For these
+      // devices, we do not want to lose all enumeration (pixel format and
+      // resolution), so we return a frame rate of zero instead.
+      if (frame_rates.empty())
+        frame_rates.push_back(0);
+
+      for (std::list<float>::iterator it = frame_rates.begin();
+           it != frame_rates.end(); ++it) {
+        supported_format.frame_rate = *it;
         supported_formats->push_back(supported_format);
         DVLOG(1) << device.name() << " " << supported_format.ToString();
-        ++frame_interval.index;
       }
       ++frame_size.index;
     }

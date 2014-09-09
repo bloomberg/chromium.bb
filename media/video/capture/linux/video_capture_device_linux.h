@@ -59,7 +59,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   // Called on the v4l2_thread_.
   void OnAllocateAndStart(int width,
                           int height,
-                          int frame_rate,
+                          float frame_rate,
                           scoped_ptr<Client> client);
   void OnStopAndDeAllocate();
   void OnCaptureTask();

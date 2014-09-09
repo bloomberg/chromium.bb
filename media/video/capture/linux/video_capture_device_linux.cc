@@ -204,7 +204,7 @@ void VideoCaptureDeviceLinux::SetRotationOnV4L2Thread(int rotation) {
 
 void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
                                                  int height,
-                                                 int frame_rate,
+                                                 float frame_rate,
                                                  scoped_ptr<Client> client) {
   DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
