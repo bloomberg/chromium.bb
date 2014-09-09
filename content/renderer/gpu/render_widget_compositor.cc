@@ -229,7 +229,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         render_thread->is_gpu_rasterization_forced();
     settings.gpu_rasterization_enabled =
         render_thread->is_gpu_rasterization_enabled();
-    settings.create_low_res_tiling = render_thread->is_low_res_tiling_enabled();
     settings.can_use_lcd_text = render_thread->is_lcd_text_enabled();
     settings.use_distance_field_text =
         render_thread->is_distance_field_text_enabled();
@@ -392,6 +391,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.should_clear_root_render_pass =
       !synchronous_compositor_factory;
 
+  // TODO(danakj): Only do this on low end devices.
+  settings.create_low_res_tiling = true;
+
 #elif !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
@@ -406,6 +408,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
 #endif
+
+  if (cmd->HasSwitch(switches::kEnableLowResTiling))
+    settings.create_low_res_tiling = true;
+  if (cmd->HasSwitch(switches::kDisableLowResTiling))
+    settings.create_low_res_tiling = false;
 
   compositor->Initialize(settings);
 
