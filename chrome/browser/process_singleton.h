@@ -105,21 +105,19 @@ class ProcessSingleton : public base::NonThreadSafe {
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(
       const base::CommandLine& command_line,
-      int timeout_seconds,
+      int retry_attempts,
+      const base::TimeDelta& timeout,
       bool kill_unresponsive);
   NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
       const base::CommandLine& command_line,
-      int timeout_seconds);
+      int retry_attempts,
+      const base::TimeDelta& timeout);
   void OverrideCurrentPidForTesting(base::ProcessId pid);
   void OverrideKillCallbackForTesting(
       const base::Callback<void(int)>& callback);
 #endif
 
  private:
-  // Timeout for the current browser process to respond. 20 seconds should be
-  // enough.
-  static const int kTimeoutInSeconds = 20;
-
   NotificationCallback notification_callback_;  // Handler for notifications.
 
 #if defined(OS_WIN)

@@ -92,10 +92,14 @@
 
 using content::BrowserThread;
 
-const int ProcessSingleton::kTimeoutInSeconds;
-
 namespace {
 
+// Timeout for the current browser process to respond. 20 seconds should be
+// enough.
+const int kTimeoutInSeconds = 20;
+// Number of retries to notify the browser. 20 retries over 20 seconds = 1 try
+// per second.
+const int kRetryAttempts = 20;
 static bool g_disable_prompt;
 const char kStartToken[] = "START";
 const char kACKToken[] = "ACK";
@@ -158,26 +162,34 @@ bool WriteToSocket(int fd, const char *message, size_t length) {
   return true;
 }
 
-// Wait a socket for read for a certain timeout in seconds.
+struct timeval TimeDeltaToTimeVal(const base::TimeDelta& delta) {
+  struct timeval result;
+  result.tv_sec = delta.InSeconds();
+  result.tv_usec = delta.InMicroseconds() % base::Time::kMicrosecondsPerSecond;
+  return result;
+}
+
+// Wait a socket for read for a certain timeout.
 // Returns -1 if error occurred, 0 if timeout reached, > 0 if the socket is
 // ready for read.
-int WaitSocketForRead(int fd, int timeout) {
+int WaitSocketForRead(int fd, const base::TimeDelta& timeout) {
   fd_set read_fds;
-  struct timeval tv;
+  struct timeval tv = TimeDeltaToTimeVal(timeout);
 
   FD_ZERO(&read_fds);
   FD_SET(fd, &read_fds);
-  tv.tv_sec = timeout;
-  tv.tv_usec = 0;
 
   return HANDLE_EINTR(select(fd + 1, &read_fds, NULL, NULL, &tv));
 }
 
-// Read a message from a socket fd, with an optional timeout in seconds.
+// Read a message from a socket fd, with an optional timeout.
 // If |timeout| <= 0 then read immediately.
 // Return number of bytes actually read, or -1 on error.
-ssize_t ReadFromSocket(int fd, char *buf, size_t bufsize, int timeout) {
-  if (timeout > 0) {
+ssize_t ReadFromSocket(int fd,
+                       char* buf,
+                       size_t bufsize,
+                       const base::TimeDelta& timeout) {
+  if (timeout > base::TimeDelta()) {
     int rv = WaitSocketForRead(fd, timeout);
     if (rv <= 0)
       return rv;
@@ -744,19 +756,25 @@ ProcessSingleton::~ProcessSingleton() {
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
-  return NotifyOtherProcessWithTimeout(*CommandLine::ForCurrentProcess(),
-                                       kTimeoutInSeconds,
-                                       true);
+  return NotifyOtherProcessWithTimeout(
+      *CommandLine::ForCurrentProcess(),
+      kRetryAttempts,
+      base::TimeDelta::FromSeconds(kTimeoutInSeconds),
+      true);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     const CommandLine& cmd_line,
-    int timeout_seconds,
+    int retry_attempts,
+    const base::TimeDelta& timeout,
     bool kill_unresponsive) {
-  DCHECK_GE(timeout_seconds, 0);
+  DCHECK_GE(retry_attempts, 0);
+  DCHECK_GE(timeout.InMicroseconds(), 0);
+
+  base::TimeDelta sleep_interval = timeout / retry_attempts;
 
   ScopedSocket socket;
-  for (int retries = 0; retries <= timeout_seconds; ++retries) {
+  for (int retries = 0; retries <= retry_attempts; ++retries) {
     // Try to connect to the socket.
     if (ConnectSocket(&socket, socket_path_, cookie_path_))
       break;
@@ -764,7 +782,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // If we're in a race with another process, they may be in Create() and have
     // created the lock but not attached to the socket.  So we check if the
     // process with the pid from the lockfile is currently running and is a
-    // chrome browser.  If so, we loop and try again for |timeout_seconds|.
+    // chrome browser.  If so, we loop and try again for |timeout|.
 
     std::string hostname;
     int pid;
@@ -802,18 +820,22 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       return PROCESS_NONE;
     }
 
-    if (retries == timeout_seconds) {
+    if (retries == retry_attempts) {
       // Retries failed.  Kill the unresponsive chrome process and continue.
       if (!kill_unresponsive || !KillProcessByLockPath())
         return PROFILE_IN_USE;
       return PROCESS_NONE;
     }
 
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    base::PlatformThread::Sleep(sleep_interval);
   }
 
-  timeval timeout = {timeout_seconds, 0};
-  setsockopt(socket.fd(), SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  timeval socket_timeout = TimeDeltaToTimeVal(timeout);
+  setsockopt(socket.fd(),
+             SOL_SOCKET,
+             SO_SNDTIMEO,
+             &socket_timeout,
+             sizeof(socket_timeout));
 
   // Found another process, prepare our command line
   // format is "START\0<current dir>\0<argv[0]>\0...\0<argv[n]>".
@@ -846,8 +868,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   // Read ACK message from the other process. It might be blocked for a certain
   // timeout, to make sure the other process has enough time to return ACK.
   char buf[kMaxACKMessageLength + 1];
-  ssize_t len =
-      ReadFromSocket(socket.fd(), buf, kMaxACKMessageLength, timeout_seconds);
+  ssize_t len = ReadFromSocket(socket.fd(), buf, kMaxACKMessageLength, timeout);
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
@@ -879,15 +900,17 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   return NotifyOtherProcessWithTimeoutOrCreate(
       *CommandLine::ForCurrentProcess(),
-      kTimeoutInSeconds);
+      kRetryAttempts,
+      base::TimeDelta::FromSeconds(kTimeoutInSeconds));
 }
 
 ProcessSingleton::NotifyResult
 ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
     const CommandLine& command_line,
-    int timeout_seconds) {
-  NotifyResult result = NotifyOtherProcessWithTimeout(command_line,
-                                                      timeout_seconds, true);
+    int retry_attempts,
+    const base::TimeDelta& timeout) {
+  NotifyResult result = NotifyOtherProcessWithTimeout(
+      command_line, retry_attempts, timeout, true);
   if (result != PROCESS_NONE)
     return result;
   if (Create())
@@ -897,7 +920,8 @@ ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
   // we did.)
   // This time, we don't want to kill anything if we aren't successful, since we
   // aren't going to try to take over the lock ourselves.
-  result = NotifyOtherProcessWithTimeout(command_line, timeout_seconds, false);
+  result = NotifyOtherProcessWithTimeout(
+      command_line, retry_attempts, timeout, false);
   if (result != PROCESS_NONE)
     return result;
 
