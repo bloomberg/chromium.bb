@@ -4,8 +4,8 @@ layer at (0,0) size 800x370
   RenderBlock {HTML} at (0,0) size 800x370
     RenderBody {BODY} at (8,10) size 784x350
       RenderBlock {DIV} at (300,0) size 184x50 [border: (1px solid #000000)]
-        RenderText {#text} at (72,2) size 11x46
-          text run at (72,2) width 11 RTL: "!"
+        RenderText {#text} at (172,2) size 11x46
+          text run at (172,2) width 11 RTL: "!"
         RenderInline {SPAN} at (0,0) size 47x46
           RenderText {#text} at (25,2) size 47x46
             text run at (25,2) width 47 RTL: " @"
