@@ -117,16 +117,18 @@ bool Product::SetMsiMarker(bool system_install, bool set) const {
   RegKey client_state_key;
   LONG result = client_state_key.Open(reg_root,
                                       distribution_->GetStateKey().c_str(),
-                                      KEY_READ | KEY_WRITE | KEY_WOW64_32KEY);
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_SUCCESS) {
     result = client_state_key.WriteValue(google_update::kRegMSIField,
                                          set ? 1 : 0);
   }
-
-  LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed to Open or Write MSI value"
-      "to client state key. error: " << result;
-
-  return (result == ERROR_SUCCESS);
+  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+    LOG(ERROR)
+        << "Failed to Open or Write MSI value to client state key. error: "
+        << result;
+    return false;
+  }
+  return true;
 }
 
 bool Product::ShouldCreateUninstallEntry() const {
