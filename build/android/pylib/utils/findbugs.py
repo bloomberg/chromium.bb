@@ -70,7 +70,10 @@ def _GetChromeJars(release_version):
   version = 'Debug'
   if release_version:
     version = 'Release'
-  path = os.path.join(constants.DIR_SOURCE_ROOT, 'out', version, 'lib.java')
+  path = os.path.join(constants.DIR_SOURCE_ROOT,
+                      os.environ.get('CHROMIUM_OUT_DIR', 'out'),
+                      version,
+                      'lib.java')
   cmd = 'find %s -name "*.jar"' % path
   out = cmd_helper.GetCmdOutput(shlex.split(cmd))
   out = [p for p in out.splitlines() if not p.endswith('.dex.jar')]
