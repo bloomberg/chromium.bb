@@ -634,7 +634,7 @@ class CastV2PerformanceTest
 
     MeanAndError frame_data = AnalyzeTraceDistance(
         analyzer.get(),
-        "OnSwapCompositorFrame");
+        TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
 
     EXPECT_GT(frame_data.num_values, 0UL);
     // Lower is better.
