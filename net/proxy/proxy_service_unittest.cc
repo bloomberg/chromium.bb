@@ -962,7 +962,7 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   // first proxy as bad.
   TestProxyFallbackNetworkDelegate test_delegate;
   service.ReportSuccess(info, &test_delegate);
-  EXPECT_EQ(info.proxy_server(), test_delegate.proxy_server());
+  EXPECT_EQ("foopy1:8080", test_delegate.proxy_server().ToURI());
   EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
             test_delegate.proxy_fallback_net_error());
 

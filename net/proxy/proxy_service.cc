@@ -1249,8 +1249,10 @@ void ProxyService::ReportSuccess(const ProxyInfo& result,
     if (existing == proxy_retry_info_.end()) {
       proxy_retry_info_[iter->first] = iter->second;
       if (network_delegate) {
+        const ProxyServer& bad_proxy =
+            ProxyServer::FromURI(iter->first, ProxyServer::SCHEME_HTTP);
         const ProxyRetryInfo& proxy_retry_info = iter->second;
-        network_delegate->NotifyProxyFallback(result.proxy_server(),
+        network_delegate->NotifyProxyFallback(bad_proxy,
                                               proxy_retry_info.net_error);
       }
     }
