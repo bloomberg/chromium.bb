@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
+#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -21,14 +22,6 @@
 namespace content {
 
 namespace {
-
-const char kTetheringBind[] = "Tethering.bind";
-const char kTetheringUnbind[] = "Tethering.unbind";
-
-const char kTetheringAccepted[] = "Tethering.accepted";
-
-const char kPortParam[] = "port";
-const char kConnectionIdParam[] = "connectionId";
 
 const char kLocalhost[] = "127.0.0.1";
 
@@ -170,8 +163,6 @@ class SocketPump : public net::StreamListenSocket::Delegate {
 
 }  // namespace
 
-const char TetheringHandler::kDomain[] = "Tethering";
-
 class TetheringHandler::BoundSocket {
  public:
   BoundSocket(TetheringHandler* handler,
@@ -245,10 +236,10 @@ class TetheringHandler::BoundSocket {
 
 TetheringHandler::TetheringHandler(DevToolsHttpHandlerDelegate* delegate)
     : delegate_(delegate) {
-  RegisterCommandHandler(kTetheringBind,
+  RegisterCommandHandler(devtools::Tethering::bind::kName,
                          base::Bind(&TetheringHandler::OnBind,
                                     base::Unretained(this)));
-  RegisterCommandHandler(kTetheringUnbind,
+  RegisterCommandHandler(devtools::Tethering::unbind::kName,
                          base::Bind(&TetheringHandler::OnUnbind,
                                     base::Unretained(this)));
 }
@@ -260,15 +251,17 @@ TetheringHandler::~TetheringHandler() {
 
 void TetheringHandler::Accepted(int port, const std::string& name) {
   base::DictionaryValue* params = new base::DictionaryValue();
-  params->SetInteger(kPortParam, port);
-  params->SetString(kConnectionIdParam, name);
-  SendNotification(kTetheringAccepted, params);
+  params->SetInteger(devtools::Tethering::accepted::kParamPort, port);
+  params->SetString(devtools::Tethering::accepted::kParamConnectionId, name);
+  SendNotification(devtools::Tethering::accepted::kName, params);
 }
 
-static int GetPort(scoped_refptr<DevToolsProtocol::Command> command) {
+static int GetPort(scoped_refptr<DevToolsProtocol::Command> command,
+                   const std::string& paramName) {
   base::DictionaryValue* params = command->params();
   int port = 0;
-  if (!params || !params->GetInteger(kPortParam, &port) ||
+  if (!params ||
+      !params->GetInteger(paramName, &port) ||
       port < kMinTetheringPort || port > kMaxTetheringPort)
     return 0;
   return port;
@@ -276,9 +269,10 @@ static int GetPort(scoped_refptr<DevToolsProtocol::Command> command) {
 
 scoped_refptr<DevToolsProtocol::Response>
 TetheringHandler::OnBind(scoped_refptr<DevToolsProtocol::Command> command) {
-  int port = GetPort(command);
+  const std::string& portParamName = devtools::Tethering::bind::kParamPort;
+  int port = GetPort(command, portParamName);
   if (port == 0)
-    return command->InvalidParamResponse(kPortParam);
+    return command->InvalidParamResponse(portParamName);
 
   if (bound_sockets_.find(port) != bound_sockets_.end())
     return command->InternalErrorResponse("Port already bound");
@@ -293,9 +287,10 @@ TetheringHandler::OnBind(scoped_refptr<DevToolsProtocol::Command> command) {
 
 scoped_refptr<DevToolsProtocol::Response>
 TetheringHandler::OnUnbind(scoped_refptr<DevToolsProtocol::Command> command) {
-  int port = GetPort(command);
+  const std::string& portParamName = devtools::Tethering::unbind::kParamPort;
+  int port = GetPort(command, portParamName);
   if (port == 0)
-    return command->InvalidParamResponse(kPortParam);
+    return command->InvalidParamResponse(portParamName);
 
   BoundSockets::iterator it = bound_sockets_.find(port);
   if (it == bound_sockets_.end())

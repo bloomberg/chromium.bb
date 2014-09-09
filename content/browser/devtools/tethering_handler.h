@@ -16,8 +16,6 @@ class DevToolsHttpHandlerDelegate;
 // This class implements reversed tethering handler.
 class TetheringHandler : public DevToolsProtocol::Handler {
  public:
-  static const char kDomain[];
-
   TetheringHandler(DevToolsHttpHandlerDelegate* delegate);
   virtual ~TetheringHandler();
 

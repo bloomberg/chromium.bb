@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
+#include "chrome/browser/devtools/devtools_protocol_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -42,11 +43,7 @@ enum {
   // Positive values are used to count open connections.
 };
 
-static const char kPortAttribute[] = "port";
-static const char kConnectionIdAttribute[] = "connectionId";
-static const char kTetheringAccepted[] = "Tethering.accepted";
-static const char kTetheringBind[] = "Tethering.bind";
-static const char kTetheringUnbind[] = "Tethering.unbind";
+namespace tethering = ::chrome::devtools::Tethering;
 
 static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
 const int kMinVersionPortForwarding = 28;
@@ -350,8 +347,10 @@ void PortForwardingController::Connection::UpdateForwardingMap(
     const ForwardingMap& new_forwarding_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (connected_) {
-    SerializeChanges(kTetheringUnbind, new_forwarding_map, forwarding_map_);
-    SerializeChanges(kTetheringBind, forwarding_map_, new_forwarding_map);
+    SerializeChanges(tethering::unbind::kName,
+        new_forwarding_map, forwarding_map_);
+    SerializeChanges(tethering::bind::kName,
+        forwarding_map_, new_forwarding_map);
   }
   forwarding_map_ = new_forwarding_map;
 }
@@ -377,10 +376,15 @@ void PortForwardingController::Connection::SendCommand(
     const std::string& method, int port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::DictionaryValue params;
-  params.SetInteger(kPortAttribute, port);
+  if (method == tethering::bind::kName) {
+    params.SetInteger(tethering::bind::kParamPort, port);
+  } else {
+    DCHECK_EQ(tethering::unbind::kName, method);
+    params.SetInteger(tethering::unbind::kParamPort, port);
+  }
   DevToolsProtocol::Command command(++command_id_, method, &params);
 
-  if (method == kTetheringBind) {
+  if (method == tethering::bind::kName) {
     pending_responses_[command.id()] =
         base::Bind(&Connection::ProcessBindResponse,
                    base::Unretained(this), port);
@@ -388,8 +392,6 @@ void PortForwardingController::Connection::SendCommand(
     port_status_[port] = kStatusConnecting;
 #endif  // defined(DEBUG_DEVTOOLS)
   } else {
-    DCHECK_EQ(kTetheringUnbind, method);
-
     PortStatusMap::iterator it = port_status_.find(port);
     if (it != port_status_.end() && it->second == kStatusError) {
       // The bind command failed on this port, do not attempt unbind.
@@ -473,7 +475,7 @@ void PortForwardingController::Connection::OnSocketOpened() {
     return;
   }
   connected_ = true;
-  SerializeChanges(kTetheringBind, ForwardingMap(), forwarding_map_);
+  SerializeChanges(tethering::bind::kName, ForwardingMap(), forwarding_map_);
 }
 
 void PortForwardingController::Connection::OnSocketClosed(
@@ -493,7 +495,7 @@ void PortForwardingController::Connection::OnFrameRead(
   if (!notification)
     return;
 
-  if (notification->method() != kTetheringAccepted)
+  if (notification->method() != tethering::accepted::kName)
     return;
 
   base::DictionaryValue* params = notification->params();
@@ -502,8 +504,9 @@ void PortForwardingController::Connection::OnFrameRead(
 
   int port;
   std::string connection_id;
-  if (!params->GetInteger(kPortAttribute, &port) ||
-      !params->GetString(kConnectionIdAttribute, &connection_id))
+  if (!params->GetInteger(tethering::accepted::kParamPort, &port) ||
+      !params->GetString(tethering::accepted::kParamConnectionId,
+                         &connection_id))
     return;
 
   std::map<int, std::string>::iterator it = forwarding_map_.find(port);

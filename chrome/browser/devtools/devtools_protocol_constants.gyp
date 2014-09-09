@@ -12,11 +12,13 @@
           'action_name': 'devtools_protocol_constants',
           'variables': {
             'blink_protocol': '../../../third_party/WebKit/Source/devtools/protocol.json',
+            'browser_protocol': '../../../content/browser/devtools/browser_protocol.json',
             'generator': '../../../content/public/browser/devtools_protocol_constants_generator.py',
             'package': 'chrome'
           },
           'inputs': [
             '<(blink_protocol)',
+            '<(browser_protocol)',
             '<(generator)',
           ],
           'outputs': [
@@ -30,8 +32,9 @@
             '<(SHARED_INTERMEDIATE_DIR)/<(package)/browser/devtools/devtools_protocol_constants.cc',
             '<(SHARED_INTERMEDIATE_DIR)/<(package)/browser/devtools/devtools_protocol_constants.h',
             '<(blink_protocol)',
+            '<(browser_protocol)',
           ],
-          'message': 'Generating DevTools protocol constants from <(blink_protocol)'
+          'message': 'Generating DevTools protocol constants from <(blink_protocol) and <(browser_protocol)'
         }
       ],
     },

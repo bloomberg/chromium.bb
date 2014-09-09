@@ -47,5 +47,39 @@
                 "handlers": ["browser"]
             }
         ]
+    },
+    {
+        "domain": "Tethering",
+        "description": "The Tethering domain defines methods and events for browser port binding.",
+        "hidden": true,
+        "commands": [
+            {
+                "name": "bind",
+                "description": "Request browser port binding.",
+                "parameters": [
+                    { "name": "port", "type": "number", "description": "Port number to bind." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "unbind",
+                "description": "Request browser port unbinding.",
+                "parameters": [
+                    { "name": "port", "type": "number", "description": "Port number to unbind." }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "accepted",
+                "description": "Informs that port was successfully bound and got a specified connection id.",
+                "parameters": [
+                    {"name": "port", "type": "number", "description": "Port number that was successfully bound." },
+                    {"name": "connectionId", "type": "string", "description": "Connection id to be used." }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
     }]
 }

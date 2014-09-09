@@ -6,7 +6,8 @@ action("devtools_protocol_constants") {
   script = "//content/public/browser/devtools_protocol_constants_generator.py"
 
   blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
-  inputs = [ blink_protocol ]
+  browser_protocol = "//content/browser/devtools/browser_protocol.json"
+  inputs = [ blink_protocol, browser_protocol ]
   outputs = [
     "$target_gen_dir/devtools_protocol_constants.cc",
     "$target_gen_dir/devtools_protocol_constants.h",
@@ -15,6 +16,7 @@ action("devtools_protocol_constants") {
   args = [ "chrome" ]
   args += rebase_path(outputs, root_build_dir)
   args += [ rebase_path(blink_protocol, root_build_dir) ]
+  args += [ rebase_path(browser_protocol, root_build_dir) ]
 }
 
 # GYP version: chrome/chrome_debugger.gypi:debugger

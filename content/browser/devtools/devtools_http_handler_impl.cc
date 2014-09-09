@@ -380,7 +380,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
         new DevToolsTracingHandler(DevToolsTracingHandler::Browser),
         true /* handle on UI thread */);
     browser_target->RegisterDomainHandler(
-        TetheringHandler::kDomain,
+        devtools::Tethering::kName,
         new TetheringHandler(delegate_.get()),
         false /* handle on this thread */);
     browser_target->RegisterDomainHandler(
