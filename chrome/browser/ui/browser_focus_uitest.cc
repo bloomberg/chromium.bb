@@ -471,7 +471,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
+#if defined(OS_MACOSX)
+#define MAYBE_FindFocusTest DISABLED_FindFocusTest
+#else
+#define MAYBE_FindFocusTest FindFocusTest
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FindFocusTest) {
   chrome::DisableFindBarAnimationsDuringTesting(true);
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   const GURL url = embedded_test_server()->GetURL(kTypicalPage);
