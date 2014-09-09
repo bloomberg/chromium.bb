@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_CONTENTS_SWITCHER_VIEW_H_
 #define UI_APP_LIST_VIEWS_CONTENTS_SWITCHER_VIEW_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -43,8 +45,8 @@ class ContentsSwitcherView : public views::View,
 
   ContentsView* contents_view_;  // Owned by views hierarchy.
 
-  // Stores Views owned by views hierarchy.
-  std::vector<views::View*> page_active_indicators_;
+  // Maps page indices to Views owned by views hierarchy.
+  std::map<int, views::View*> page_active_indicators_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsSwitcherView);
 };

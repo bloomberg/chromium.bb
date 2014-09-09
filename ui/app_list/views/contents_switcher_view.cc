@@ -61,7 +61,7 @@ void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
   indicator->set_background(
       views::Background::CreateSolidBackground(app_list::kPagerSelectedColor));
   indicator->SetVisible(false);
-  page_active_indicators_.push_back(indicator);
+  page_active_indicators_[page_index] = indicator;
 
   // A container view that will consume space when its child is not visible.
   // TODO(calamity): Remove this once BoxLayout supports space-consuming
@@ -92,12 +92,14 @@ void ContentsSwitcherView::SelectedPageChanged(int old_selected,
                                                int new_selected) {
   // Makes the indicator visible when it is first drawn and when the
   // selected page is changed.
-  int num_indicators = static_cast<int>(page_active_indicators_.size());
-  if (old_selected >= 0 && old_selected < num_indicators)
-    page_active_indicators_[old_selected]->SetVisible(false);
+  std::map<int, views::View*>::const_iterator it =
+      page_active_indicators_.find(old_selected);
+  if (it != page_active_indicators_.end())
+    it->second->SetVisible(false);
 
-  if (new_selected >= 0 && new_selected < num_indicators)
-    page_active_indicators_[new_selected]->SetVisible(true);
+  it = page_active_indicators_.find(new_selected);
+  if (it != page_active_indicators_.end())
+    it->second->SetVisible(true);
 }
 
 void ContentsSwitcherView::TransitionStarted() {
