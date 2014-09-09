@@ -187,18 +187,27 @@ ALWAYS_INLINE unsigned acquireLoad(volatile const unsigned* ptr)
 
 #if defined(ADDRESS_SANITIZER)
 
-__attribute__((no_sanitize_address)) ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
+// FIXME: See comment on NO_SANITIZE_ADDRESS in platform/heap/AddressSanitizer.h
+#if !OS(WIN) || COMPILER(CLANG)
+#define NO_SANITIZE_ADDRESS_ATOMICS __attribute__((no_sanitize_address))
+#else
+#define NO_SANITIZE_ADDRESS_ATOMICS
+#endif
+
+NO_SANITIZE_ADDRESS_ATOMICS ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
 {
     MEMORY_BARRIER();
     *ptr = value;
 }
 
-__attribute__((no_sanitize_address)) ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(volatile const unsigned* ptr)
+NO_SANITIZE_ADDRESS_ATOMICS ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(volatile const unsigned* ptr)
 {
     unsigned value = *ptr;
     MEMORY_BARRIER();
     return value;
 }
+
+#undef NO_SANITIZE_ADDRESS_ATOMICS
 
 #endif // defined(ADDRESS_SANITIZER)
 
