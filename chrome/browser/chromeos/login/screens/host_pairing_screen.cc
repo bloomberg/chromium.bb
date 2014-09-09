@@ -6,20 +6,22 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "components/pairing/bluetooth_host_pairing_controller.h"
+#include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
 
 using namespace host_pairing;
 using namespace pairing_chromeos;
 
-HostPairingScreen::HostPairingScreen(ScreenObserver* observer,
-                                     HostPairingScreenActor* actor)
+HostPairingScreen::HostPairingScreen(
+    ScreenObserver* observer,
+    HostPairingScreenActor* actor,
+    pairing_chromeos::HostPairingController* controller)
     : WizardScreen(observer),
       actor_(actor),
+      controller_(controller),
       current_stage_(HostPairingController::STAGE_NONE) {
   actor_->SetDelegate(this);
-  controller_.reset(new BluetoothHostPairingController());
   controller_->AddObserver(this);
 }
 

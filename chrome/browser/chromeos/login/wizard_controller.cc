@@ -74,6 +74,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/pairing/bluetooth_controller_pairing_controller.h"
+#include "components/pairing/bluetooth_host_pairing_controller.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -330,8 +331,13 @@ WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
         this, oobe_display_->GetControllerPairingScreenActor(),
         controller_pairing_controller_.get());
   } else if (screen_name == kHostPairingScreenName) {
+    if (!host_pairing_controller_) {
+      host_pairing_controller_.reset(
+          new pairing_chromeos::BluetoothHostPairingController());
+    }
     return new HostPairingScreen(this,
-                                 oobe_display_->GetHostPairingScreenActor());
+                                 oobe_display_->GetHostPairingScreenActor(),
+                                 host_pairing_controller_.get());
   }
   return NULL;
 }

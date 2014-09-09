@@ -31,6 +31,7 @@ class DictionaryValue;
 
 namespace pairing_chromeos {
 class ControllerPairingController;
+class HostPairingController;
 }
 
 namespace chromeos {
@@ -383,6 +384,9 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // Pairing controller for shark devices.
   scoped_ptr<pairing_chromeos::ControllerPairingController>
       controller_pairing_controller_;
+
+  // Pairing controller for remora devices.
+  scoped_ptr<pairing_chromeos::HostPairingController> host_pairing_controller_;
 
   // Maps screen ids to last time of their shows.
   base::hash_map<std::string, base::Time> screen_show_times_;
