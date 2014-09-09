@@ -15,10 +15,13 @@ const int16 kDefaultSoundLevel = 200;
 
 }  // namespace
 
-SpeechUIModel::SpeechUIModel(SpeechRecognitionState initial_state)
-    : state_(initial_state),
+SpeechUIModel::SpeechUIModel()
+    : is_final_(false),
+      sound_level_(0),
+      state_(app_list::SPEECH_RECOGNITION_OFF),
       minimum_sound_level_(kDefaultSoundLevel),
-      maximum_sound_level_(kDefaultSoundLevel) {}
+      maximum_sound_level_(kDefaultSoundLevel) {
+}
 
 SpeechUIModel::~SpeechUIModel() {}
 

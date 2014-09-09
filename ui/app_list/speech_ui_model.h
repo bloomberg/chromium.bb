@@ -17,7 +17,8 @@ namespace app_list {
 // SpeechUIModel provides the interface to update the UI for speech recognition.
 class APP_LIST_EXPORT SpeechUIModel {
  public:
-  explicit SpeechUIModel(SpeechRecognitionState initial_state);
+  // Construct the model, initially in state SPEECH_RECOGNITION_OFF.
+  SpeechUIModel();
   virtual ~SpeechUIModel();
 
   void SetSpeechResult(const base::string16& result, bool is_final);

@@ -173,6 +173,13 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
   }
 
   profile_manager->GetProfileInfoCache().AddObserver(this);
+  speech_ui_.reset(new app_list::SpeechUIModel);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  speech_ui_->set_logo(
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
+#endif
   SetProfile(profile);
 }
 
@@ -191,7 +198,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     // Note: |search_controller_| has a reference to |speech_ui_| so must be
     // destroyed first.
     search_controller_.reset();
-    speech_ui_.reset();
     custom_page_contents_.clear();
     app_list::StartPageService* start_page_service =
         app_list::StartPageService::Get(profile_);
@@ -204,8 +210,10 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   }
 
   profile_ = new_profile;
-  if (!profile_)
+  if (!profile_) {
+    speech_ui_->SetSpeechRecognitionState(app_list::SPEECH_RECOGNITION_OFF);
     return;
+  }
 
   model_ =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
@@ -228,15 +236,9 @@ void AppListViewDelegate::SetUpSearchUI() {
   if (start_page_service)
     start_page_service->AddObserver(this);
 
-  speech_ui_.reset(new app_list::SpeechUIModel(
-      start_page_service ? start_page_service->state()
-                         : app_list::SPEECH_RECOGNITION_OFF));
-
-#if defined(GOOGLE_CHROME_BUILD)
-  speech_ui_->set_logo(
-      *ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
-#endif
+  speech_ui_->SetSpeechRecognitionState(start_page_service
+                                            ? start_page_service->state()
+                                            : app_list::SPEECH_RECOGNITION_OFF);
 
   search_controller_.reset(new app_list::SearchController(profile_,
                                                           model_->search_box(),

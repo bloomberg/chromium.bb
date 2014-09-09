@@ -23,8 +23,7 @@ AppListTestViewDelegate::AppListTestViewDelegate()
       toggle_speech_recognition_count_(0),
       open_search_result_count_(0),
       next_profile_app_count_(0),
-      model_(new AppListTestModel),
-      speech_ui_(SPEECH_RECOGNITION_OFF) {
+      model_(new AppListTestModel) {
   model_->SetFoldersEnabled(true);
 }
 

@@ -28,8 +28,7 @@ namespace athena {
 
 AppListViewDelegate::AppListViewDelegate(AppModelBuilder* model_builder)
     : model_(new app_list::AppListModel),
-      speech_ui_(new app_list::SpeechUIModel(
-          app_list::SPEECH_RECOGNITION_OFF)) {
+      speech_ui_(new app_list::SpeechUIModel) {
   model_builder->PopulateApps(model_.get());
   // TODO(mukai): get the text from the resources.
   model_->search_box()->SetHintText(base::ASCIIToUTF16("Search"));
