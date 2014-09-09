@@ -367,7 +367,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 {
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
-    WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement");
+    WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement(%p)", this);
 
     if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
         m_userGestureRequiredForPlay = true;
@@ -378,7 +378,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 
 HTMLMediaElement::~HTMLMediaElement()
 {
-    WTF_LOG(Media, "HTMLMediaElement::~HTMLMediaElement");
+    WTF_LOG(Media, "HTMLMediaElement::~HTMLMediaElement(%p)", this);
 
 #if ENABLE(OILPAN)
     // If the HTMLMediaElement dies with the document we are not
@@ -480,7 +480,7 @@ void HTMLMediaElement::setCloseMediaSourceWhenFinalizing()
 
 void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 {
-    WTF_LOG(Media, "HTMLMediaElement::didMoveToNewDocument");
+    WTF_LOG(Media, "HTMLMediaElement::didMoveToNewDocument(%p)", this);
 
     if (m_shouldDelayLoadEvent) {
         document().incrementLoadEventDelayCount();
@@ -577,7 +577,7 @@ RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
 
 Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode* insertionPoint)
 {
-    WTF_LOG(Media, "HTMLMediaElement::insertedInto");
+    WTF_LOG(Media, "HTMLMediaElement::insertedInto(%p, %p)", this, insertionPoint);
 
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument()) {
@@ -597,7 +597,7 @@ void HTMLMediaElement::didNotifySubtreeInsertionsToDocument()
 
 void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 {
-    WTF_LOG(Media, "HTMLMediaElement::removedFrom");
+    WTF_LOG(Media, "HTMLMediaElement::removedFrom(%p, %p)", this, insertionPoint);
 
     m_active = false;
     if (insertionPoint->inDocument() && insertionPoint->document().isActive()) {
@@ -625,7 +625,7 @@ void HTMLMediaElement::didRecalcStyle(StyleRecalcChange)
 
 void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
 {
-    WTF_LOG(Media, "HTMLMediaElement::scheduleDelayedAction");
+    WTF_LOG(Media, "HTMLMediaElement::scheduleDelayedAction(%p)", this);
 
     if ((actionType & LoadMediaResource) && !(m_pendingActionFlags & LoadMediaResource)) {
         prepareForLoad();
@@ -654,7 +654,7 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 void HTMLMediaElement::scheduleEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
 #if LOG_MEDIA_EVENTS
-    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", event->type().ascii().data());
+    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent(%p) - scheduling '%s'", this, event->type().ascii().data());
 #endif
     m_asyncEventQueue->enqueueEvent(event);
 }
@@ -711,14 +711,14 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
             break;
     }
 
-    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%s, %s) -> %s", mimeType.utf8().data(), keySystem.utf8().data(), canPlay.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%p, %s, %s) -> %s", this, mimeType.utf8().data(), keySystem.utf8().data(), canPlay.utf8().data());
 
     return canPlay;
 }
 
 void HTMLMediaElement::load()
 {
-    WTF_LOG(Media, "HTMLMediaElement::load()");
+    WTF_LOG(Media, "HTMLMediaElement::load(%p)", this);
 
     if (UserGestureIndicator::processingUserGesture())
         m_userGestureRequiredForPlay = false;
@@ -730,7 +730,7 @@ void HTMLMediaElement::load()
 
 void HTMLMediaElement::prepareForLoad()
 {
-    WTF_LOG(Media, "HTMLMediaElement::prepareForLoad");
+    WTF_LOG(Media, "HTMLMediaElement::prepareForLoad(%p)", this);
 
     // Perform the cleanup required for the resource load algorithm to run.
     stopPeriodicTimers();
@@ -848,7 +848,7 @@ void HTMLMediaElement::loadInternal()
 
 void HTMLMediaElement::selectMediaResource()
 {
-    WTF_LOG(Media, "HTMLMediaElement::selectMediaResource");
+    WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p)", this);
 
     enum Mode { attribute, children };
 
@@ -870,7 +870,7 @@ void HTMLMediaElement::selectMediaResource()
             setShouldDelayLoadEvent(false);
             m_networkState = NETWORK_EMPTY;
 
-            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource, nothing to load");
+            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), nothing to load", this);
             return;
         }
     }
@@ -891,7 +891,7 @@ void HTMLMediaElement::selectMediaResource()
         KURL mediaURL = getNonEmptyURLAttribute(srcAttr);
         if (mediaURL.isEmpty()) {
             mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
-            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource, empty 'src'");
+            WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), empty 'src'", this);
             return;
         }
 
@@ -905,7 +905,7 @@ void HTMLMediaElement::selectMediaResource()
         // will have to pick a media engine based on the file extension.
         ContentType contentType((String()));
         loadResource(mediaURL, contentType, String());
-        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource, using 'src' attribute url");
+        WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using 'src' attribute url", this);
         return;
     }
 
@@ -934,7 +934,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 {
     ASSERT(isSafeToLoadURL(url, Complain));
 
-    WTF_LOG(Media, "HTMLMediaElement::loadResource(%s, %s, %s)", urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
 
     LocalFrame* frame = document().frame();
     if (!frame) {
@@ -949,7 +949,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     // cache is an internal detail not exposed through the media element API.
     m_currentSrc = url;
 
-    WTF_LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) - m_currentSrc -> %s", this, urlForLoggingMedia(m_currentSrc).utf8().data());
 
     startProgressEventTimer();
 
@@ -988,7 +988,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
         ASSERT(!webMediaPlayer());
 
         if (!m_havePreparedToPlay && !autoplay() && m_preload == MediaPlayer::None) {
-            WTF_LOG(Media, "HTMLMediaElement::loadResource : Delaying load because preload == 'none'");
+            WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) : Delaying load because preload == 'none'", this);
             deferLoad();
         } else {
             startPlayerLoad();
@@ -1460,7 +1460,7 @@ void HTMLMediaElement::endIgnoringTrackDisplayUpdateRequests()
 
 void HTMLMediaElement::textTrackAddCues(TextTrack* track, const TextTrackCueList* cues)
 {
-    WTF_LOG(Media, "HTMLMediaElement::textTrackAddCues");
+    WTF_LOG(Media, "HTMLMediaElement::textTrackAddCues(%p)", this);
     if (track->mode() == TextTrack::disabledKeyword())
         return;
 
@@ -1471,7 +1471,7 @@ void HTMLMediaElement::textTrackAddCues(TextTrack* track, const TextTrackCueList
 
 void HTMLMediaElement::textTrackRemoveCues(TextTrack*, const TextTrackCueList* cues)
 {
-    WTF_LOG(Media, "HTMLMediaElement::textTrackRemoveCues");
+    WTF_LOG(Media, "HTMLMediaElement::textTrackRemoveCues(%p)", this);
 
     TrackDisplayUpdateScope scope(this);
     for (size_t i = 0; i < cues->length(); ++i)
@@ -1522,7 +1522,7 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtrWillBeRawPtr<Tex
 bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionIfInvalid)
 {
     if (!url.isValid()) {
-        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%s) -> FALSE because url is invalid", urlForLoggingMedia(url).utf8().data());
+        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%p, %s) -> FALSE because url is invalid", this, urlForLoggingMedia(url).utf8().data());
         return false;
     }
 
@@ -1530,12 +1530,12 @@ bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionI
     if (!frame || !document().securityOrigin()->canDisplay(url)) {
         if (actionIfInvalid == Complain)
             FrameLoader::reportLocalLoadFailed(frame, url.elidedString());
-        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%s) -> FALSE rejected by SecurityOrigin", urlForLoggingMedia(url).utf8().data());
+        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%p, %s) -> FALSE rejected by SecurityOrigin", this, urlForLoggingMedia(url).utf8().data());
         return false;
     }
 
     if (!document().contentSecurityPolicy()->allowMediaFromSource(url)) {
-        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%s) -> rejected by Content Security Policy", urlForLoggingMedia(url).utf8().data());
+        WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%p, %s) -> rejected by Content Security Policy", this, urlForLoggingMedia(url).utf8().data());
         return false;
     }
 
@@ -1554,7 +1554,7 @@ void HTMLMediaElement::startProgressEventTimer()
 
 void HTMLMediaElement::waitForSourceChange()
 {
-    WTF_LOG(Media, "HTMLMediaElement::waitForSourceChange");
+    WTF_LOG(Media, "HTMLMediaElement::waitForSourceChange(%p)", this);
 
     stopPeriodicTimers();
     m_loadState = WaitingForSource;
@@ -1573,7 +1573,7 @@ void HTMLMediaElement::waitForSourceChange()
 
 void HTMLMediaElement::noneSupported()
 {
-    WTF_LOG(Media, "HTMLMediaElement::noneSupported");
+    WTF_LOG(Media, "HTMLMediaElement::noneSupported(%p)", this);
 
     stopPeriodicTimers();
     m_loadState = WaitingForSource;
@@ -1613,7 +1613,7 @@ void HTMLMediaElement::noneSupported()
 void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
 {
     ASSERT(m_readyState >= HAVE_METADATA);
-    WTF_LOG(Media, "HTMLMediaElement::mediaEngineError(%d)", static_cast<int>(err->code()));
+    WTF_LOG(Media, "HTMLMediaElement::mediaEngineError(%p, %d)", this, static_cast<int>(err->code()));
 
     // 1 - The user agent should cancel the fetching process.
     stopPeriodicTimers();
@@ -1638,7 +1638,7 @@ void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
 
 void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 {
-    WTF_LOG(Media, "HTMLMediaElement::cancelPendingEventsAndCallbacks");
+    WTF_LOG(Media, "HTMLMediaElement::cancelPendingEventsAndCallbacks(%p)", this);
     m_asyncEventQueue->cancelAllEvents();
 
     for (HTMLSourceElement* source = Traversal<HTMLSourceElement>::firstChild(*this); source; source = Traversal<HTMLSourceElement>::nextSibling(*source))
@@ -1663,7 +1663,7 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         if (m_currentSourceNode)
             m_currentSourceNode->scheduleErrorEvent();
         else
-            WTF_LOG(Media, "HTMLMediaElement::setNetworkState - error event not sent, <source> was removed");
+            WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%p) - error event not sent, <source> was removed", this);
 
         // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous section consists of all the remaining steps of this algorithm until the algorithm says the synchronous section has ended.
 
@@ -1671,10 +1671,10 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         forgetResourceSpecificTracks();
 
         if (havePotentialSourceChild()) {
-            WTF_LOG(Media, "HTMLMediaElement::setNetworkState - scheduling next <source>");
+            WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%p) - scheduling next <source>", this);
             scheduleNextSourceChild();
         } else {
-            WTF_LOG(Media, "HTMLMediaElement::setNetworkState - no more <source> elements, waiting");
+            WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%p) - no more <source> elements, waiting", this);
             waitForSourceChange();
         }
 
@@ -1697,7 +1697,7 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
 
 void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%d) - current state is %d", static_cast<int>(state), static_cast<int>(m_networkState));
+    WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%p, %d) - current state is %d", this, static_cast<int>(state), static_cast<int>(m_networkState));
 
     if (state == WebMediaPlayer::NetworkStateEmpty) {
         // Just update the cached state and leave, we can't do anything.
@@ -1754,7 +1754,7 @@ void HTMLMediaElement::mediaPlayerReadyStateChanged()
 
 void HTMLMediaElement::setReadyState(ReadyState state)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setReadyState(%d) - current state is %d,", static_cast<int>(state), static_cast<int>(m_readyState));
+    WTF_LOG(Media, "HTMLMediaElement::setReadyState(%p, %d) - current state is %d,", this, static_cast<int>(state), static_cast<int>(m_readyState));
 
     // Set "wasPotentiallyPlaying" BEFORE updating m_readyState, potentiallyPlaying() uses it
     bool wasPotentiallyPlaying = potentiallyPlaying();
@@ -1895,7 +1895,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 
 void HTMLMediaElement::addPlayedRange(double start, double end)
 {
-    WTF_LOG(Media, "HTMLMediaElement::addPlayedRange(%f, %f)", start, end);
+    WTF_LOG(Media, "HTMLMediaElement::addPlayedRange(%p, %f, %f)", this, start, end);
     if (!m_playedTimeRanges)
         m_playedTimeRanges = TimeRanges::create();
     m_playedTimeRanges->add(start, end);
@@ -1919,7 +1919,7 @@ void HTMLMediaElement::prepareToPlay()
 
 void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "HTMLMediaElement::seek(%f)", time);
+    WTF_LOG(Media, "HTMLMediaElement::seek(%p, %f)", this, time);
 
     // 4.8.10.9 Seeking
 
@@ -1961,7 +1961,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     // fire a 'seeked' event.
     double mediaTime = webMediaPlayer()->mediaTimeForTimeValue(time);
     if (time != mediaTime) {
-        WTF_LOG(Media, "HTMLMediaElement::seek(%f) - media timeline equivalent is %f", time, mediaTime);
+        WTF_LOG(Media, "HTMLMediaElement::seek(%p, %f) - media timeline equivalent is %f", this, time, mediaTime);
         time = mediaTime;
     }
 
@@ -2010,7 +2010,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
 void HTMLMediaElement::finishSeek()
 {
-    WTF_LOG(Media, "HTMLMediaElement::finishSeek");
+    WTF_LOG(Media, "HTMLMediaElement::finishSeek(%p)", this);
 
     // 4.8.10.9 Seeking completion
     // 12 - Set the seeking IDL attribute to false.
@@ -2050,7 +2050,7 @@ void HTMLMediaElement::refreshCachedTime() const
 
 void HTMLMediaElement::invalidateCachedTime()
 {
-    WTF_LOG(Media, "HTMLMediaElement::invalidateCachedTime");
+    WTF_LOG(Media, "HTMLMediaElement::invalidateCachedTime(%p)", this);
     m_cachedTime = MediaPlayer::invalidTime();
 }
 
@@ -2061,7 +2061,7 @@ double HTMLMediaElement::currentTime() const
         return 0;
 
     if (m_seeking) {
-        WTF_LOG(Media, "HTMLMediaElement::currentTime - seeking, returning %f", m_lastSeekTime);
+        WTF_LOG(Media, "HTMLMediaElement::currentTime(%p) - seeking, returning %f", this, m_lastSeekTime);
         return m_lastSeekTime;
     }
 
@@ -2070,7 +2070,7 @@ double HTMLMediaElement::currentTime() const
         static const double minCachedDeltaForWarning = 0.01;
         double delta = m_cachedTime - webMediaPlayer()->currentTime();
         if (delta > minCachedDeltaForWarning)
-            WTF_LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when paused", delta);
+            WTF_LOG(Media, "HTMLMediaElement::currentTime(%p) - WARNING, cached time is %f seconds off of media time when paused", this, delta);
 #endif
         return m_cachedTime;
     }
@@ -2139,7 +2139,7 @@ double HTMLMediaElement::playbackRate() const
 
 void HTMLMediaElement::setPlaybackRate(double rate)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setPlaybackRate(%f)", rate);
+    WTF_LOG(Media, "HTMLMediaElement::setPlaybackRate(%p, %f)", this, rate);
 
     if (m_playbackRate != rate) {
         m_playbackRate = rate;
@@ -2200,13 +2200,13 @@ String HTMLMediaElement::preload() const
 
 void HTMLMediaElement::setPreload(const AtomicString& preload)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setPreload(%s)", preload.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::setPreload(%p, %s)", this, preload.utf8().data());
     setAttribute(preloadAttr, preload);
 }
 
 void HTMLMediaElement::play()
 {
-    WTF_LOG(Media, "HTMLMediaElement::play()");
+    WTF_LOG(Media, "HTMLMediaElement::play(%p)", this);
 
     if (m_userGestureRequiredForPlay && !UserGestureIndicator::processingUserGesture())
         return;
@@ -2218,7 +2218,7 @@ void HTMLMediaElement::play()
 
 void HTMLMediaElement::playInternal()
 {
-    WTF_LOG(Media, "HTMLMediaElement::playInternal");
+    WTF_LOG(Media, "HTMLMediaElement::playInternal(%p)", this);
 
     // 4.8.10.9. Playing the media resource
     if (!m_player || m_networkState == NETWORK_EMPTY)
@@ -2248,7 +2248,7 @@ void HTMLMediaElement::playInternal()
 
 void HTMLMediaElement::pause()
 {
-    WTF_LOG(Media, "HTMLMediaElement::pause()");
+    WTF_LOG(Media, "HTMLMediaElement::pause(%p)", this);
 
     if (!m_player || m_networkState == NETWORK_EMPTY)
         scheduleDelayedAction(LoadMediaResource);
@@ -2280,7 +2280,7 @@ bool HTMLMediaElement::loop() const
 
 void HTMLMediaElement::setLoop(bool b)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setLoop(%s)", boolString(b));
+    WTF_LOG(Media, "HTMLMediaElement::setLoop(%p, %s)", this, boolString(b));
     setBooleanAttribute(loopAttr, b);
 }
 
@@ -2306,7 +2306,7 @@ double HTMLMediaElement::volume() const
 
 void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
+    WTF_LOG(Media, "HTMLMediaElement::setVolume(%p, %f)", this, vol);
 
     if (m_volume == vol)
         return;
@@ -2328,7 +2328,7 @@ bool HTMLMediaElement::muted() const
 
 void HTMLMediaElement::setMuted(bool muted)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setMuted(%s)", boolString(muted));
+    WTF_LOG(Media, "HTMLMediaElement::setMuted(%p, %s)", this, boolString(muted));
 
     if (m_muted == muted)
         return;
@@ -2454,7 +2454,7 @@ AudioTrackList& HTMLMediaElement::audioTracks()
 
 void HTMLMediaElement::audioTrackChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::audioTrackChanged()");
+    WTF_LOG(Media, "HTMLMediaElement::audioTrackChanged(%p)", this);
     ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     audioTracks().scheduleChangeEvent();
@@ -2480,8 +2480,8 @@ void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
 WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const String& id, blink::WebMediaPlayerClient::AudioTrackKind kind, const AtomicString& label, const AtomicString& language, bool enabled)
 {
     AtomicString kindString = AudioKindToString(kind);
-    WTF_LOG(Media, "HTMLMediaElement::addAudioTrack('%s', '%s', '%s', '%s', %d)",
-        id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), enabled);
+    WTF_LOG(Media, "HTMLMediaElement::addAudioTrack(%p, '%s', '%s', '%s', '%s', %d)",
+        this, id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), enabled);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return 0;
@@ -2494,7 +2494,7 @@ WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const String& id, blink:
 
 void HTMLMediaElement::removeAudioTrack(WebMediaPlayer::TrackId trackId)
 {
-    WTF_LOG(Media, "HTMLMediaElement::removeAudioTrack()");
+    WTF_LOG(Media, "HTMLMediaElement::removeAudioTrack(%p)", this);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return;
@@ -2510,7 +2510,7 @@ VideoTrackList& HTMLMediaElement::videoTracks()
 
 void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
 {
-    WTF_LOG(Media, "HTMLMediaElement::selectedVideoTrackChanged()");
+    WTF_LOG(Media, "HTMLMediaElement::selectedVideoTrackChanged(%p)", this);
     ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     if (selectedTrackId)
@@ -2524,8 +2524,8 @@ void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* select
 WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const String& id, blink::WebMediaPlayerClient::VideoTrackKind kind, const AtomicString& label, const AtomicString& language, bool selected)
 {
     AtomicString kindString = VideoKindToString(kind);
-    WTF_LOG(Media, "HTMLMediaElement::addVideoTrack('%s', '%s', '%s', '%s', %d)",
-        id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), selected);
+    WTF_LOG(Media, "HTMLMediaElement::addVideoTrack(%p, '%s', '%s', '%s', '%s', %d)",
+        this, id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), selected);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return 0;
@@ -2542,7 +2542,7 @@ WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const String& id, blink:
 
 void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId)
 {
-    WTF_LOG(Media, "HTMLMediaElement::removeVideoTrack()");
+    WTF_LOG(Media, "HTMLMediaElement::removeVideoTrack(%p)", this);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return;
@@ -2698,7 +2698,7 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement)
 {
 #if !LOG_DISABLED
     KURL url = trackElement->getNonEmptyURLAttribute(srcAttr);
-    WTF_LOG(Media, "HTMLMediaElement::didRemoveTrackElement - 'src' is %s", urlForLoggingMedia(url).utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::didRemoveTrackElement(%p) - 'src' is %s", this, urlForLoggingMedia(url).utf8().data());
 #endif
 
     RefPtrWillBeRawPtr<TextTrack> textTrack = trackElement->track();
@@ -2746,7 +2746,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 {
     ASSERT(group.tracks.size());
 
-    WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
+    WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%p, %d)", this, group.kind);
 
     // First, find the track in the group that should be enabled (if any).
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > currentlyEnabledTracks;
@@ -2894,13 +2894,13 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
     // Don't log if this was just called to find out if there are any valid <source> elements.
     bool shouldLog = actionIfInvalid != DoNothing;
     if (shouldLog)
-        WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild");
+        WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p)", this);
 #endif
 
     if (!m_nextChildNodeToConsider) {
 #if !LOG_DISABLED
         if (shouldLog)
-            WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild -> 0x0000, \"\"");
+            WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) -> 0x0000, \"\"", this);
 #endif
         return KURL();
     }
@@ -2933,7 +2933,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         mediaURL = source->getNonEmptyURLAttribute(srcAttr);
 #if !LOG_DISABLED
         if (shouldLog)
-            WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'src' is %s", urlForLoggingMedia(mediaURL).utf8().data());
+            WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'src' is %s", this, urlForLoggingMedia(mediaURL).utf8().data());
 #endif
         if (mediaURL.isEmpty())
             goto check_again;
@@ -2945,7 +2945,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         if (!type.isEmpty() || !system.isEmpty()) {
 #if !LOG_DISABLED
             if (shouldLog)
-                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'type' is '%s' - key system is '%s'", type.utf8().data(), system.utf8().data());
+                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'type' is '%s' - key system is '%s'", this, type.utf8().data(), system.utf8().data());
 #endif
             if (!supportsType(ContentType(type), system))
                 goto check_again;
@@ -2977,18 +2977,18 @@ check_again:
 
 #if !LOG_DISABLED
     if (shouldLog)
-        WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild -> %p, %s", m_currentSourceNode.get(), canUseSourceElement ? urlForLoggingMedia(mediaURL).utf8().data() : "");
+        WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) -> %p, %s", this, m_currentSourceNode.get(), canUseSourceElement ? urlForLoggingMedia(mediaURL).utf8().data() : "");
 #endif
     return canUseSourceElement ? mediaURL : KURL();
 }
 
 void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
 {
-    WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded(%p)", source);
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded(%p, %p)", this, source);
 
 #if !LOG_DISABLED
     KURL url = source->getNonEmptyURLAttribute(srcAttr);
-    WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded - 'src' is %s", urlForLoggingMedia(url).utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded(%p) - 'src' is %s", this, urlForLoggingMedia(url).utf8().data());
 #endif
 
     // We should only consider a <source> element when there is not src attribute at all.
@@ -3005,7 +3005,7 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     }
 
     if (m_currentSourceNode && source == m_currentSourceNode->nextSibling()) {
-        WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded - <source> inserted immediately after current source");
+        WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded(%p) - <source> inserted immediately after current source", this);
         m_nextChildNodeToConsider = source;
         return;
     }
@@ -3033,11 +3033,11 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
 
 void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
 {
-    WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved(%p)", source);
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved(%p, %p)", this, source);
 
 #if !LOG_DISABLED
     KURL url = source->getNonEmptyURLAttribute(srcAttr);
-    WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved - 'src' is %s", urlForLoggingMedia(url).utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved(%p) - 'src' is %s", this, urlForLoggingMedia(url).utf8().data());
 #endif
 
     if (source != m_currentSourceNode && source != m_nextChildNodeToConsider)
@@ -3046,19 +3046,19 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
     if (source == m_nextChildNodeToConsider) {
         if (m_currentSourceNode)
             m_nextChildNodeToConsider = m_currentSourceNode->nextSibling();
-        WTF_LOG(Media, "HTMLMediaElement::sourceRemoved - m_nextChildNodeToConsider set to %p", m_nextChildNodeToConsider.get());
+        WTF_LOG(Media, "HTMLMediaElement::sourceRemoved(%p) - m_nextChildNodeToConsider set to %p", this, m_nextChildNodeToConsider.get());
     } else if (source == m_currentSourceNode) {
         // Clear the current source node pointer, but don't change the movie as the spec says:
         // 4.8.8 - Dynamically modifying a source element and its attribute when the element is already
         // inserted in a video or audio element will have no effect.
         m_currentSourceNode = nullptr;
-        WTF_LOG(Media, "HTMLMediaElement::sourceRemoved - m_currentSourceNode set to 0");
+        WTF_LOG(Media, "HTMLMediaElement::sourceRemoved(%p) - m_currentSourceNode set to 0", this);
     }
 }
 
 void HTMLMediaElement::mediaPlayerTimeChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged");
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged(%p)", this);
 
     updateActiveTextTrackCues(currentTime());
 
@@ -3111,7 +3111,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
 
 void HTMLMediaElement::mediaPlayerDurationChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged");
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged(%p)", this);
     // FIXME: Change MediaPlayerClient & WebMediaPlayer to convey
     // the currentTime when the duration change occured. The current
     // WebMediaPlayer implementations always clamp currentTime() to
@@ -3121,13 +3121,13 @@ void HTMLMediaElement::mediaPlayerDurationChanged()
 
 void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
 {
-    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%f, %d)", duration, requestSeek);
+    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%p, %f, %d)", this, duration, requestSeek);
 
     // Abort if duration unchanged.
     if (m_duration == duration)
         return;
 
-    WTF_LOG(Media, "HTMLMediaElement::durationChanged : %f -> %f", m_duration, duration);
+    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%p) : %f -> %f", this, m_duration, duration);
     m_duration = duration;
     scheduleEvent(EventTypeNames::durationchange);
 
@@ -3142,7 +3142,7 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
 
 void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged");
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged(%p)", this);
 
     if (!m_player || m_pausedInternal)
         return;
@@ -3155,7 +3155,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
 
 void HTMLMediaElement::mediaPlayerRequestFullscreen()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerRequestFullscreen");
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerRequestFullscreen(%p)", this);
 
     // The player is responsible for only invoking this callback in response to
     // user interaction or when it is technically required to play the video.
@@ -3187,7 +3187,7 @@ void HTMLMediaElement::mediaPlayerRepaint()
 
 void HTMLMediaElement::mediaPlayerSizeChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged(%p)", this);
 
     ASSERT(hasVideo()); // "resize" makes no sense absent video.
     if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
@@ -3301,8 +3301,8 @@ void HTMLMediaElement::updatePlayState()
 
     bool shouldBePlaying = potentiallyPlaying();
 
-    WTF_LOG(Media, "HTMLMediaElement::updatePlayState - shouldBePlaying = %s, isPlaying = %s",
-        boolString(shouldBePlaying), boolString(isPlaying));
+    WTF_LOG(Media, "HTMLMediaElement::updatePlayState(%p) - shouldBePlaying = %s, isPlaying = %s",
+        this, boolString(shouldBePlaying), boolString(isPlaying));
 
     if (shouldBePlaying) {
         setDisplayMode(Video);
@@ -3359,7 +3359,7 @@ void HTMLMediaElement::stopPeriodicTimers()
 
 void HTMLMediaElement::userCancelledLoad()
 {
-    WTF_LOG(Media, "HTMLMediaElement::userCancelledLoad");
+    WTF_LOG(Media, "HTMLMediaElement::userCancelledLoad(%p)", this);
 
     // If the media data fetching process is aborted by the user:
 
@@ -3435,7 +3435,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
 void HTMLMediaElement::stop()
 {
-    WTF_LOG(Media, "HTMLMediaElement::stop");
+    WTF_LOG(Media, "HTMLMediaElement::stop(%p)", this);
 
     m_active = false;
     userCancelledLoad();
@@ -3476,14 +3476,14 @@ bool HTMLMediaElement::isFullscreen() const
 
 void HTMLMediaElement::enterFullscreen()
 {
-    WTF_LOG(Media, "HTMLMediaElement::enterFullscreen");
+    WTF_LOG(Media, "HTMLMediaElement::enterFullscreen(%p)", this);
 
     Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedVideoRequest);
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
-    WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
+    WTF_LOG(Media, "HTMLMediaElement::exitFullscreen(%p)", this);
 
     Fullscreen::from(document()).exitFullscreen();
 }
@@ -3531,7 +3531,7 @@ bool HTMLMediaElement::closedCaptionsVisible() const
 
 void HTMLMediaElement::updateTextTrackDisplay()
 {
-    WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay");
+    WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay(%p)", this);
 
     if (!createMediaControls())
         return;
@@ -3541,7 +3541,7 @@ void HTMLMediaElement::updateTextTrackDisplay()
 
 void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setClosedCaptionsVisible(%s)", boolString(closedCaptionVisible));
+    WTF_LOG(Media, "HTMLMediaElement::setClosedCaptionsVisible(%p, %s)", this, boolString(closedCaptionVisible));
 
     if (!m_player || !hasClosedCaptions())
         return;
@@ -3580,7 +3580,7 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
     if (m_shouldDelayLoadEvent == shouldDelay)
         return;
 
-    WTF_LOG(Media, "HTMLMediaElement::setShouldDelayLoadEvent(%s)", boolString(shouldDelay));
+    WTF_LOG(Media, "HTMLMediaElement::setShouldDelayLoadEvent(%p, %s)", this, boolString(shouldDelay));
 
     m_shouldDelayLoadEvent = shouldDelay;
     if (shouldDelay)
@@ -3645,7 +3645,7 @@ void HTMLMediaElement::configureMediaControls()
 void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assumption)
 {
     ASSERT(m_textTracks);
-    WTF_LOG(Media, "HTMLMediaElement::configureTextTrackDisplay");
+    WTF_LOG(Media, "HTMLMediaElement::configureTextTrackDisplay(%p)", this);
 
     if (m_processingPreferenceChange)
         return;
