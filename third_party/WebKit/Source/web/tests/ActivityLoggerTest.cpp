@@ -33,11 +33,6 @@ public:
         m_loggedActivities.append(apiName + " | " + toCoreStringWithUndefinedOrNullCheck(newValue));
     }
 
-    void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue, const v8::Handle<v8::Value>& oldValue) OVERRIDE
-    {
-        m_loggedActivities.append(apiName + " | " + toCoreStringWithUndefinedOrNullCheck(oldValue) + " | " + toCoreStringWithUndefinedOrNullCheck(newValue));
-    }
-
     void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) OVERRIDE
     {
         String activityString = apiName;

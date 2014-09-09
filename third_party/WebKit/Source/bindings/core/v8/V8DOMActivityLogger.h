@@ -45,7 +45,6 @@ public:
 
     virtual void logGetter(const String& apiName) { }
     virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) { }
-    virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue, const v8::Handle<v8::Value>& oldValue) { }
     virtual void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) { }
     virtual void logEvent(const String& eventName, int argc, const String* argv) { }
 

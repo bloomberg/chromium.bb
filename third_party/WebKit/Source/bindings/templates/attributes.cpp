@@ -313,16 +313,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     {% else %}
     if (contextData && contextData->activityLogger()) {
     {% endif %}
-        {% if attribute.activity_logging_include_old_value_for_setter %}
-        {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-        {% if attribute.cpp_value_original %}
-        {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
-        {% endif %}
-        v8::Handle<v8::Value> originalValue = {{attribute.cpp_value_to_v8_value}};
-        contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value, originalValue);
-        {% else %}
         contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value);
-        {% endif %}
     }
     {% endif %}
     {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}

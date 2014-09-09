@@ -251,8 +251,6 @@ interface TestObject {
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
-    [LogActivity=SetterOnly, LogPreviousValue] attribute DOMString? activityLoggingSetterOnlyLogPreviousValueAttribute;
-    [LogActivity, LogPreviousValue] attribute TestInterfaceEmpty activityLoggingLogPreviousValueInterfaceAttribute;
 
 
     // Methods

@@ -86,7 +86,6 @@ def attribute_context(interface, attribute):
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
-        'activity_logging_include_old_value_for_setter': 'LogPreviousValue' in extended_attributes,  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
         'argument_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
@@ -189,7 +188,6 @@ def getter_context(interface, attribute, context):
     elif (idl_type.is_explicit_nullable or
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
-        'LogPreviousValue' in extended_attributes or
         'ReflectOnly' in extended_attributes or
         context['is_keep_alive_for_gc'] or
         context['is_getter_raises_exception']):
