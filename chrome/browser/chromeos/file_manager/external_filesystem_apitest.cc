@@ -773,6 +773,15 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
       FLAGS_USE_FILE_HANDLER)) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
+                       FileSystemFileOriginURL) {
+  EXPECT_TRUE(RunFileSystemExtensionApiTest(
+      "file_browser/filesystem_file_origin_url",
+      FILE_PATH_LITERAL("manifest.json"),
+      "",
+      FLAGS_NONE)) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
                        CrossProfileCopy) {
   ASSERT_TRUE(AddTestHostedDocuments());
