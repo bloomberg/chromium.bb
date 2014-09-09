@@ -677,6 +677,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (roleValue() == DialogRole)
         return false;
 
+    if (roleValue() == FigcaptionRole)
+        return false;
+
     if (roleValue() == FigureRole)
         return false;
 
