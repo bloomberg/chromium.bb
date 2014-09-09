@@ -23,7 +23,6 @@ class BypassPageSet(page_set_module.PageSet):
 
     urls_list = [
       'http://aws1.mdw.la/bypass/',
-      'http://aws1.mdw.la/piatek/bypass-demo'
     ]
 
     for url in urls_list:
