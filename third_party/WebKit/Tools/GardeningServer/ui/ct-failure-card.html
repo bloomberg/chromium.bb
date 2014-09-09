@@ -4,6 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="../model/ct-builder-list.html">
 <link rel="import" href="ct-bot-failure-card.html">
 <link rel="import" href="ct-trooper-card.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
@@ -62,7 +63,7 @@ found in the LICENSE file.
     </style>
     <div class="card {{ { snoozed: group.isSnoozed } | tokenList }}">
       <template if="{{ group.data.type == 'sheriff' }}">
-        <ct-bot-failure-card class='card' group="{{ group.data }}"></ct-bot-failure-card>
+        <ct-bot-failure-card class='card' group="{{ group.data }}" builderList="{{ _builderList }}"></ct-bot-failure-card>
       </template>
       <template if="{{ group.data.type != 'sheriff' }}">
         <ct-trooper-card class='card' group="{{ group.data }}"></ct-trooper-card>
@@ -95,11 +96,13 @@ found in the LICENSE file.
     Polymer({
       group: null,
       commitLog: null,
+      _builderList: null,
       tree: '',
 
       observe: {
         group: '_updateCommitList',
-        commitLog: '_updateCommitList'
+        commitLog: '_updateCommitList',
+        'group.data.failures': '_updateBuilderList',
       },
 
       examine: function() {
@@ -117,6 +120,11 @@ found in the LICENSE file.
       _updateCommitList: function() {
         if (this.group && this.group.commitList && this.commitLog)
           this.group.commitList.update(this.commitLog);
+      },
+
+      _updateBuilderList: function() {
+        if (this.group.data.type == 'sheriff')
+          this._builderList = new CTBuilderList(this.group.data.failures);
       },
 
       linkBug: function() {
