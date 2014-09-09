@@ -282,9 +282,12 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   virtual void Layout() OVERRIDE { test_hooks_->Layout(); }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
-    test_hooks_->ApplyScrollAndScale(scroll_delta, scale);
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
+    test_hooks_->ApplyViewportDeltas(scroll_delta,
+                                     scale,
+                                     top_controls_delta);
   }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)

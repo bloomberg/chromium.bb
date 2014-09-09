@@ -460,9 +460,8 @@ void RenderWidgetCompositor::UpdateTopControlsState(
                                            animate);
 }
 
-void RenderWidgetCompositor::SetTopControlsLayoutHeight(
-    float top_controls_layout_height) {
-  layer_tree_host_->SetTopControlsLayoutHeight(top_controls_layout_height);
+void RenderWidgetCompositor::SetTopControlsLayoutHeight(float height) {
+  layer_tree_host_->SetTopControlsLayoutHeight(height);
 }
 
 void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
@@ -757,6 +756,10 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
+void RenderWidgetCompositor::setTopControlsContentOffset(float offset) {
+  layer_tree_host_->SetTopControlsContentOffset(offset);
+}
+
 void RenderWidgetCompositor::WillBeginMainFrame(int frame_id) {
   widget_->InstrumentWillBeginFrame(frame_id);
   widget_->willBeginCompositorFrame();
@@ -782,10 +785,14 @@ void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 }
 
-void RenderWidgetCompositor::ApplyScrollAndScale(
+void RenderWidgetCompositor::ApplyViewportDeltas(
     const gfx::Vector2d& scroll_delta,
-    float page_scale) {
-  widget_->webwidget()->applyScrollAndScale(scroll_delta, page_scale);
+    float page_scale,
+    float top_controls_delta) {
+  widget_->webwidget()->applyViewportDeltas(
+      scroll_delta,
+      page_scale,
+      top_controls_delta);
 }
 
 scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface(

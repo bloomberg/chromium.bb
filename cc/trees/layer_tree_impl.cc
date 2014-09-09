@@ -92,7 +92,11 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       needs_full_tree_sync_(true),
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
-      render_surface_layer_list_id_(0) {
+      render_surface_layer_list_id_(0),
+      top_controls_layout_height_(0),
+      top_controls_top_offset_(0),
+      top_controls_delta_(0),
+      sent_top_controls_delta_(0) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
@@ -199,6 +203,13 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   }
 
   target_tree->PassSwapPromises(&swap_promise_list_);
+
+  target_tree->top_controls_layout_height_ = top_controls_layout_height_;
+  target_tree->top_controls_top_offset_ = top_controls_top_offset_;
+  target_tree->top_controls_delta_ =
+      target_tree->top_controls_delta_ -
+          target_tree->sent_top_controls_delta_;
+  target_tree->sent_top_controls_delta_ = 0.f;
 
   target_tree->SetPageScaleValues(
       page_scale_factor(), min_page_scale_factor(), max_page_scale_factor(),
@@ -375,6 +386,10 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   page_scale_factor_ *= sent_page_scale_delta_;
   page_scale_delta_ /= sent_page_scale_delta_;
   sent_page_scale_delta_ = 1.f;
+
+  top_controls_top_offset_ += sent_top_controls_delta_;
+  top_controls_delta_ -= sent_top_controls_delta_;
+  sent_top_controls_delta_ = 0.f;
 
   if (!root_layer())
     return;

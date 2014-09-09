@@ -86,8 +86,9 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     }
   }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
     num_scrolls_++;
   }
 
@@ -170,8 +171,9 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
     }
   }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
     num_scrolls_++;
   }
 
@@ -342,8 +344,9 @@ class LayerTreeHostScrollTestScrollAbortedCommit
     }
   }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
     num_impl_scrolls_++;
   }
 
@@ -513,8 +516,9 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     final_scroll_offset_ = expected_scroll_layer_->scroll_offset();
   }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
     num_scrolls_++;
   }
 
@@ -851,8 +855,9 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     }
   }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float top_controls_delta) OVERRIDE {
     num_scrolls_++;
   }
 

@@ -137,9 +137,10 @@ void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
 void WebLayerTreeViewImplForTesting::Layout() {
 }
 
-void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
+void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
     const gfx::Vector2d& scroll_delta,
-    float page_scale) {}
+    float page_scale,
+    float top_controls_delta) {}
 
 scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {

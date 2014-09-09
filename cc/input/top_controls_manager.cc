@@ -42,7 +42,6 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
     : client_(client),
       animation_direction_(NO_ANIMATION),
       permitted_state_(BOTH),
-      controls_top_offset_(0.f),
       top_controls_height_(top_controls_height),
       current_scroll_delta_(0.f),
       controls_scroll_begin_offset_(0.f),
@@ -55,6 +54,14 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
 }
 
 TopControlsManager::~TopControlsManager() {
+}
+
+float TopControlsManager::ControlsTopOffset() {
+  return client_->ControlsTopOffset();
+}
+
+float TopControlsManager::ContentTopOffset() {
+  return client_->ControlsTopOffset() + top_controls_height_;
 }
 
 void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
@@ -74,7 +81,7 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
   if (constraints == HIDDEN || current == HIDDEN) {
     final_controls_position = -top_controls_height_;
   }
-  if (final_controls_position == controls_top_offset_) {
+  if (final_controls_position == client_->ControlsTopOffset()) {
     return;
   }
 
@@ -85,7 +92,7 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
   if (animate) {
     SetupAnimation(animation_direction);
   } else {
-    controls_top_offset_ = final_controls_position;
+    client_->SetControlsTopOffset(final_controls_position);
   }
   client_->DidChangeTopControlsPosition();
 }
@@ -94,7 +101,7 @@ void TopControlsManager::ScrollBegin() {
   DCHECK(!pinch_gesture_active_);
   ResetAnimations();
   current_scroll_delta_ = 0.f;
-  controls_scroll_begin_offset_ = controls_top_offset_;
+  controls_scroll_begin_offset_ = client_->ControlsTopOffset();
 }
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
@@ -109,19 +116,19 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
 
   current_scroll_delta_ += pending_delta.y();
 
-  float old_offset = controls_top_offset_;
+  float old_offset = client_->ControlsTopOffset();
   SetControlsTopOffset(controls_scroll_begin_offset_ - current_scroll_delta_);
 
   // If the controls are fully visible, treat the current position as the
   // new baseline even if the gesture didn't end.
-  if (controls_top_offset_ == 0.f) {
+  if (client_->ControlsTopOffset() == 0.f) {
     current_scroll_delta_ = 0.f;
     controls_scroll_begin_offset_ = 0.f;
   }
 
   ResetAnimations();
 
-  gfx::Vector2dF applied_delta(0.f, old_offset - controls_top_offset_);
+  gfx::Vector2dF applied_delta(0.f, old_offset - client_->ControlsTopOffset());
   return pending_delta - applied_delta;
 }
 
@@ -148,10 +155,10 @@ void TopControlsManager::SetControlsTopOffset(float controls_top_offset) {
   controls_top_offset = std::max(controls_top_offset, -top_controls_height_);
   controls_top_offset = std::min(controls_top_offset, 0.f);
 
-  if (controls_top_offset_ == controls_top_offset)
+  if (client_->ControlsTopOffset() == controls_top_offset)
     return;
 
-  controls_top_offset_ = controls_top_offset;
+  client_->SetControlsTopOffset(controls_top_offset);
 
   client_->DidChangeTopControlsPosition();
 }
@@ -162,13 +169,13 @@ gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
 
   double time = (monotonic_time - base::TimeTicks()).InMillisecondsF();
 
-  float old_offset = controls_top_offset_;
+  float old_offset = client_->ControlsTopOffset();
   SetControlsTopOffset(top_controls_animation_->GetValue(time));
 
   if (IsAnimationCompleteAtTime(monotonic_time))
     ResetAnimations();
 
-  gfx::Vector2dF scroll_delta(0.f, controls_top_offset_ - old_offset);
+  gfx::Vector2dF scroll_delta(0.f, client_->ControlsTopOffset() - old_offset);
   return scroll_delta;
 }
 
@@ -182,11 +189,11 @@ void TopControlsManager::ResetAnimations() {
 void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   DCHECK(direction != NO_ANIMATION);
 
-  if (direction == SHOWING_CONTROLS && controls_top_offset_ == 0)
+  if (direction == SHOWING_CONTROLS && client_->ControlsTopOffset() == 0)
     return;
 
   if (direction == HIDING_CONTROLS &&
-      controls_top_offset_ == -top_controls_height_) {
+      client_->ControlsTopOffset() == -top_controls_height_) {
     return;
   }
 
@@ -197,27 +204,27 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   double start_time =
       (gfx::FrameTime::Now() - base::TimeTicks()).InMillisecondsF();
   top_controls_animation_->AddKeyframe(
-      FloatKeyframe::Create(start_time, controls_top_offset_,
+      FloatKeyframe::Create(start_time, client_->ControlsTopOffset(),
                             scoped_ptr<TimingFunction>()));
   float max_ending_offset =
       (direction == SHOWING_CONTROLS ? 1 : -1) * top_controls_height_;
   top_controls_animation_->AddKeyframe(
       FloatKeyframe::Create(start_time + kShowHideMaxDurationMs,
-                            controls_top_offset_ + max_ending_offset,
+                            client_->ControlsTopOffset() + max_ending_offset,
                             EaseTimingFunction::Create()));
   animation_direction_ = direction;
   client_->DidChangeTopControlsPosition();
 }
 
 void TopControlsManager::StartAnimationIfNecessary() {
-  if (controls_top_offset_ != 0
-      && controls_top_offset_ != -top_controls_height_) {
+  if (client_->ControlsTopOffset() != 0
+      && client_->ControlsTopOffset() != -top_controls_height_) {
     AnimationDirection show_controls = NO_ANIMATION;
 
-    if (controls_top_offset_ >= -top_controls_show_height_) {
+    if (client_->ControlsTopOffset() >= -top_controls_show_height_) {
       // If we're showing so much that the hide threshold won't trigger, show.
       show_controls = SHOWING_CONTROLS;
-    } else if (controls_top_offset_ <= -top_controls_hide_height_) {
+    } else if (client_->ControlsTopOffset() <= -top_controls_hide_height_) {
       // If we're showing so little that the show threshold won't trigger, hide.
       show_controls = HIDING_CONTROLS;
     } else {

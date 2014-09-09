@@ -863,8 +863,9 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float scale) OVERRIDE {
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float scale,
+                                   float) OVERRIDE {
     gfx::Vector2d offset = scroll_layer_->scroll_offset();
     scroll_layer_->SetScrollOffset(offset + scroll_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);

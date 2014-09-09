@@ -196,7 +196,8 @@ class CC_EXPORT LayerTreeHost {
   bool UseGpuRasterization() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
-  void SetTopControlsLayoutHeight(float top_controls_layout_height);
+  void SetTopControlsLayoutHeight(float height);
+  void SetTopControlsContentOffset(float offset);
 
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
@@ -388,6 +389,7 @@ class CC_EXPORT LayerTreeHost {
 
   gfx::Size device_viewport_size_;
   float top_controls_layout_height_;
+  float top_controls_content_offset_;
   float device_scale_factor_;
 
   bool visible_;

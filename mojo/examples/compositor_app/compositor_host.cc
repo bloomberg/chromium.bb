@@ -72,8 +72,9 @@ void CompositorHost::BeginMainFrame(const cc::BeginFrameArgs& args) {
 }
 
 void CompositorHost::Layout() {}
-void CompositorHost::ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                         float page_scale) {}
+void CompositorHost::ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                         float page_scale,
+                                         float top_controls_delta) {}
 
 scoped_ptr<cc::OutputSurface> CompositorHost::CreateOutputSurface(
     bool fallback) {

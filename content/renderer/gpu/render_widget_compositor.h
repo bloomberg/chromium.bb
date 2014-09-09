@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void UpdateTopControlsState(cc::TopControlsState constraints,
                               cc::TopControlsState current,
                               bool animate);
-  void SetTopControlsLayoutHeight(float top_controls_layout_height);
+  void SetTopControlsLayoutHeight(float height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit
@@ -125,14 +125,16 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setShowDebugBorders(bool show);
   virtual void setContinuousPaintingEnabled(bool enabled);
   virtual void setShowScrollBottleneckRects(bool show);
+  virtual void setTopControlsContentOffset(float);
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;
   virtual void DidBeginMainFrame() OVERRIDE;
   virtual void BeginMainFrame(const cc::BeginFrameArgs& args) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float page_scale) OVERRIDE;
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float page_scale,
+                                   float top_controls_delta) OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE;
   virtual void DidInitializeOutputSurface() OVERRIDE;

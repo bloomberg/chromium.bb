@@ -292,6 +292,35 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
+  void set_top_controls_layout_height(float height) {
+    top_controls_layout_height_ = height;
+  }
+  void set_top_controls_top_offset(float offset) {
+    top_controls_top_offset_ = offset;
+  }
+  void set_top_controls_delta(float delta) {
+    top_controls_delta_ = delta;
+  }
+  void set_sent_top_controls_delta(float sent_delta) {
+    sent_top_controls_delta_ = sent_delta;
+  }
+
+  float top_controls_layout_height() const {
+    return top_controls_layout_height_;
+  }
+  float top_controls_top_offset() const {
+    return top_controls_top_offset_;
+  }
+  float top_controls_delta() const {
+    return top_controls_delta_;
+  }
+  float sent_top_controls_delta() const {
+    return sent_top_controls_delta_;
+  }
+  float total_top_controls_top_offset() const {
+    return top_controls_top_offset_ + top_controls_delta_;
+  }
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
   void ReleaseResourcesRecursive(LayerImpl* current);
@@ -351,6 +380,17 @@ class CC_EXPORT LayerTreeImpl {
   UIResourceRequestQueue ui_resource_request_queue_;
 
   int render_surface_layer_list_id_;
+
+  // The top controls content offset at the time of the last layout (and thus,
+  // viewport resize) in Blink. i.e. How much the viewport was shrunk by the top
+  // controls.
+  float top_controls_layout_height_;
+
+  // The up-to-date content offset of the top controls, i.e. the amount that the
+  // web contents have been shifted down from the top of the device viewport.
+  float top_controls_top_offset_;
+  float top_controls_delta_;
+  float sent_top_controls_delta_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

@@ -140,6 +140,7 @@ struct CC_EXPORT ScrollAndScaleSet {
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;
+  float top_controls_delta;
   ScopedPtrVector<SwapPromise> swap_promises;
 };
 

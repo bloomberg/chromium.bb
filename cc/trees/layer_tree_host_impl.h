@@ -159,6 +159,8 @@ class CC_EXPORT LayerTreeHostImpl
       ui::LatencyInfo* latency) OVERRIDE;
 
   // TopControlsManagerClient implementation.
+  virtual void SetControlsTopOffset(float offset) OVERRIDE;
+  virtual float ControlsTopOffset() const OVERRIDE;
   virtual void DidChangeTopControlsPosition() OVERRIDE;
   virtual bool HaveRootScrollLayer() const OVERRIDE;
 
@@ -343,11 +345,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetViewportSize(const gfx::Size& device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
-  void SetTopControlsLayoutHeight(float top_controls_layout_height);
-  float top_controls_layout_height() const {
-    return top_controls_layout_height_;
-  }
-
   void SetOverhangUIResource(UIResourceId overhang_ui_resource_id,
                              const gfx::Size& overhang_ui_resource_size);
 
@@ -484,6 +481,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   void GetPictureLayerImplPairs(
       std::vector<PictureLayerImpl::Pair>* layers) const;
+
+  void SetTopControlsLayoutHeight(float height);
 
  protected:
   LayerTreeHostImpl(
@@ -663,9 +662,6 @@ class CC_EXPORT LayerTreeHostImpl
   // UI resource to use for drawing overhang gutters.
   UIResourceId overhang_ui_resource_id_;
   gfx::Size overhang_ui_resource_size_;
-
-  // Height of the top controls as known by Blink.
-  float top_controls_layout_height_;
 
   // Optional top-level constraints that can be set by the OutputSurface.
   // - external_transform_ applies a transform above the root layer

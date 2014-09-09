@@ -257,7 +257,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       zero_budget_(false),
       device_scale_factor_(1.f),
       overhang_ui_resource_id_(0),
-      top_controls_layout_height_(0.f),
       resourceless_software_draw_(false),
       begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
@@ -1479,9 +1478,9 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   if (top_controls_manager_) {
     metadata.location_bar_offset =
-        gfx::Vector2dF(0.f, top_controls_manager_->controls_top_offset());
+        gfx::Vector2dF(0.f, top_controls_manager_->ControlsTopOffset());
     metadata.location_bar_content_translation =
-        gfx::Vector2dF(0.f, top_controls_manager_->content_top_offset());
+        gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
   }
 
   active_tree_->GetViewportSelection(&metadata.selection_start,
@@ -1692,11 +1691,21 @@ void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
   if (!container_layer)
     return;
 
-  if (top_controls_manager_)
+  if (top_controls_manager_) {
     container_layer->SetBoundsDelta(
-        gfx::Vector2dF(0,
-                       top_controls_layout_height_ -
-                           top_controls_manager_->content_top_offset()));
+        gfx::Vector2dF(0, active_tree_->top_controls_layout_height() -
+            active_tree_->total_top_controls_top_offset() -
+            top_controls_manager_->controls_height()));
+  }
+}
+
+void LayerTreeHostImpl::SetTopControlsLayoutHeight(float height) {
+  if (active_tree_->top_controls_layout_height() == height)
+    return;
+
+  active_tree_->set_top_controls_layout_height(height);
+  UpdateInnerViewportContainerSize();
+  SetFullRootLayerDamage();
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -1761,8 +1770,12 @@ void LayerTreeHostImpl::CreatePendingTree() {
   // Update the delta from the active tree, which may have
   // adjusted its delta prior to the pending tree being created.
   DCHECK_EQ(1.f, pending_tree_->sent_page_scale_delta());
+  DCHECK_EQ(0.f, pending_tree_->sent_top_controls_delta());
   pending_tree_->SetPageScaleDelta(active_tree_->page_scale_delta() /
                                    active_tree_->sent_page_scale_delta());
+  pending_tree_->set_top_controls_delta(
+      active_tree_->top_controls_delta() -
+      active_tree_->sent_top_controls_delta());
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
@@ -1805,6 +1818,12 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->SetRootLayerScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
+
+    if (top_controls_manager_) {
+      top_controls_manager_->SetControlsTopOffset(
+          active_tree_->total_top_controls_top_offset());
+    }
+
     UpdateInnerViewportContainerSize();
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
@@ -2158,16 +2177,6 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   active_tree_->set_needs_update_draw_properties();
 }
 
-void LayerTreeHostImpl::SetTopControlsLayoutHeight(
-    float top_controls_layout_height) {
-  if (top_controls_layout_height_ == top_controls_layout_height)
-    return;
-  top_controls_layout_height_ = top_controls_layout_height;
-
-  UpdateInnerViewportContainerSize();
-  SetFullRootLayerDamage();
-}
-
 void LayerTreeHostImpl::SetOverhangUIResource(
     UIResourceId overhang_ui_resource_id,
     const gfx::Size& overhang_ui_resource_size) {
@@ -2218,6 +2227,15 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   SetNeedsAnimate();
   active_tree_->set_needs_update_draw_properties();
   SetFullRootLayerDamage();
+}
+
+void LayerTreeHostImpl::SetControlsTopOffset(float offset) {
+  active_tree_->set_top_controls_delta(
+      offset - active_tree_->top_controls_top_offset());
+}
+
+float LayerTreeHostImpl::ControlsTopOffset() const {
+  return active_tree_->total_top_controls_top_offset();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
@@ -2920,6 +2938,8 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->page_scale_delta = active_tree_->page_scale_delta();
   active_tree_->set_sent_page_scale_delta(scroll_info->page_scale_delta);
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
+  scroll_info->top_controls_delta = active_tree()->top_controls_delta();
+  active_tree_->set_sent_top_controls_delta(scroll_info->top_controls_delta);
 
   return scroll_info.Pass();
 }

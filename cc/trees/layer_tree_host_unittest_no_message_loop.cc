@@ -57,8 +57,9 @@ class LayerTreeHostNoMessageLoopTest
   virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void DidBeginMainFrame() OVERRIDE {}
   virtual void Layout() OVERRIDE {}
-  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
-                                   float page_scale) OVERRIDE {}
+  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                                   float page_scale,
+                                   float top_controls_delta) OVERRIDE {}
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(
       bool fallback) OVERRIDE {
     return make_scoped_ptr<OutputSurface>(new NoMessageLoopOutputSurface);
