@@ -199,6 +199,12 @@ void Node::SetType(int type) {
   stat_.st_mode |= type;
 }
 
+void Node::SetMode(int mode) {
+  assert((mode & S_IFMT) == 0);
+  stat_.st_mode &= S_IFMT;
+  stat_.st_mode |= mode;
+}
+
 bool Node::IsaDir() {
   return GetType() == S_IFDIR;
 }

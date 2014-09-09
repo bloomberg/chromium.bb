@@ -35,6 +35,7 @@ class HttpFs : public Filesystem {
 
   virtual Error Init(const FsInitArgs& args);
   virtual void Destroy();
+  ScopedNode FindExistingNode(const Path& path);
   Error FindOrCreateDir(const Path& path, ScopedNode* out_node);
   Error LoadManifest(const std::string& path, char** out_manifest);
   Error ParseManifest(const char* text);

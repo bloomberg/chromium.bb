@@ -37,7 +37,6 @@ class HttpFsNode : public Node {
   virtual Error GetSize(off_t* out_size);
 
   void SetCachedSize(off_t size);
-  void SetMode(int mode);
 
  protected:
   HttpFsNode(Filesystem* filesystem,

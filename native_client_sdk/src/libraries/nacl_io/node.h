@@ -92,6 +92,7 @@ class Node : public sdk_util::RefObject {
 
   virtual int GetLinks();
   virtual int GetMode();
+  virtual void SetMode(int mode);
   virtual int GetType();
   virtual void SetType(int type);
   // Assume that |out_size| is non-NULL.

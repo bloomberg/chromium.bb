@@ -178,8 +178,7 @@ TEST_P(HttpFsTest, GetStat) {
 
   struct stat statbuf;
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-            statbuf.st_mode);
+  EXPECT_EQ(S_IFREG | S_IRUSR | S_IRGRP | S_IROTH, statbuf.st_mode);
   EXPECT_EQ(strlen(contents), statbuf.st_size);
   // These are not currently set.
   EXPECT_EQ(0, statbuf.st_atime);
@@ -253,8 +252,7 @@ TEST_P(HttpFsLargeFileTest, GetStat) {
 
   struct stat statbuf;
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-            statbuf.st_mode);
+  EXPECT_EQ(S_IFREG | S_IRUSR | S_IRGRP | S_IROTH, statbuf.st_mode);
   EXPECT_EQ(size, statbuf.st_size);
   // These are not currently set.
   EXPECT_EQ(0, statbuf.st_atime);
@@ -269,6 +267,21 @@ INSTANTIATE_TEST_CASE_P(Default,
                         HttpFsLargeFileTest,
                         ::testing::Values((uint32_t)kStringMapParamCacheNone,
                                           (uint32_t)kStringMapParamCacheStat));
+
+TEST(HttpFsDirTest, Root) {
+  StringMap_t args;
+  HttpFsForTesting fs(args, NULL);
+
+  // Check root node is directory
+  ScopedNode node;
+  ASSERT_EQ(0, fs.Open(Path("/"), O_RDONLY, &node));
+  ASSERT_TRUE(node->IsaDir());
+
+  // We have to r+w access to the root node
+  ASSERT_EQ(0, fs.Access(Path("/"), R_OK));
+  ASSERT_EQ(0, fs.Access(Path("/"), X_OK));
+  ASSERT_EQ(EACCES, fs.Access(Path("/"), W_OK));
+}
 
 TEST(HttpFsDirTest, Mkdir) {
   StringMap_t args;
@@ -369,24 +382,30 @@ TEST(HttpFsDirTest, ParseManifest) {
 }
 
 TEST(HttpFsBlobUrlTest, Basic) {
-  const char* kUrl =
-      "blob:http%3A//example.com/6b87a5a6-713e-46a4-9f0c-78066406455d";
+  const char* kUrl = "blob:http%3A//example.com/6b87a5a6-713e";
+  const char* kContent = "hello";
   FakePepperInterfaceURLLoader ppapi;
-  ASSERT_TRUE(ppapi.server_template()->SetBlobEntity(kUrl, "", NULL));
+  ASSERT_TRUE(ppapi.server_template()->SetBlobEntity(kUrl, kContent, NULL));
 
   StringMap_t args;
   args["SOURCE"] = kUrl;
 
   HttpFsForTesting fs(args, &ppapi);
 
-  // We have to read from the mount root to read a Blob URL.
+  // Check access to root folder
   ASSERT_EQ(0, fs.Access(Path("/"), R_OK));
   ASSERT_EQ(EACCES, fs.Access(Path("/"), W_OK));
   ASSERT_EQ(EACCES, fs.Access(Path("/"), X_OK));
 
   // Any other path will fail.
   ScopedNode foo;
-  ASSERT_EQ(ENOENT, fs.Access(Path(""), R_OK));
-  ASSERT_EQ(ENOENT, fs.Access(Path("."), R_OK));
-  ASSERT_EQ(ENOENT, fs.Access(Path("blah"), R_OK));
+  ASSERT_EQ(ENOENT, fs.Access(Path("/blah"), R_OK));
+
+  // Verify file size
+  ScopedNode node;
+  struct stat statbuf;
+  ASSERT_EQ(0, fs.Open(Path("/"), O_RDONLY, &node));
+  ASSERT_EQ(0, node->GetStat(&statbuf));
+  ASSERT_EQ(0, node->GetStat(&statbuf));
+  ASSERT_EQ(strlen(kContent), statbuf.st_size);
 }
