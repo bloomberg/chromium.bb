@@ -14575,7 +14575,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CountOfAlternateProtocolServers">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bnc@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
+  <owner>rtenneti@chromium.org</owner>
   <summary>
     The total number of severs to which alternative protocol was used. This
     counts the number of servers persisted to prefs file.
@@ -14594,14 +14596,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CountOfSpdyServers">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bnc@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
+  <owner>rtenneti@chromium.org</owner>
   <summary>
     The total number of SPDY server names persisted to prefs file.
   </summary>
 </histogram>
 
 <histogram name="Net.CountOfSpdySettings">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bnc@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
+  <owner>rtenneti@chromium.org</owner>
   <summary>
     The total number of SPDY Settings properties persisted to prefs file.
   </summary>
