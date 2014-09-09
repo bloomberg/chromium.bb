@@ -6294,14 +6294,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NUM_RASTER_THREADS_FOUR" desc="">
         4
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME" desc="Title for the flag to enable a simplified Mac fullscreen interface.">
-          Enables simplified fullscreen.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_DESCRIPTION" desc="Description for the flag to enable a simplified Mac fullscreen interface.">
-          Enables a simplified and improved fullscreen experience on Mac.
-        </message>
-      </if>
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME" desc="Name of the flag to reset the app launcher install state.">
         Reset the App Launcher install state on every restart.
       </message>
