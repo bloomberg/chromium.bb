@@ -269,7 +269,11 @@ function createParam() {
         min: config.min,
         step: config.step * (config.type === "month" ? 1 : 86400000),
         stepBase: "0",
-        currentValue: config.value
+        currentValue: config.value,
+        axShowMonthSelector: "Show month selection panel",
+        axShowNextMonth: "Show next month",
+        axShowPreviousMonth: "Show previous month",
+        todayLabel: "Today",
     }
 };
 

@@ -37,6 +37,9 @@ struct WebLocalizedString {
     enum Name {
         AXAMPMFieldText,
         AXButtonActionVerb,
+        AXCalendarShowMonthSelector,
+        AXCalendarShowNextMonth,
+        AXCalendarShowPreviousMonth,
         AXCheckedCheckBoxActionVerb,
         AXDateTimeFieldEmptyValueText,
         AXDayOfMonthFieldText,

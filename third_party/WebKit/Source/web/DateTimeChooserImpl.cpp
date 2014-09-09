@@ -138,6 +138,9 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addProperty("todayLabel", todayLabelString, data);
     addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), data);
     addProperty("weekLabel", locale().queryString(WebLocalizedString::WeekNumberLabel), data);
+    addProperty("axShowMonthSelector", locale().queryString(WebLocalizedString::AXCalendarShowMonthSelector), data);
+    addProperty("axShowNextMonth", locale().queryString(WebLocalizedString::AXCalendarShowNextMonth), data);
+    addProperty("axShowPreviousMonth", locale().queryString(WebLocalizedString::AXCalendarShowPreviousMonth), data);
     addProperty("weekStartDay", m_locale->firstDayOfWeek(), data);
     addProperty("shortMonthLabels", m_locale->shortMonthLabels(), data);
     addProperty("dayLabels", m_locale->weekDayShortLabels(), data);

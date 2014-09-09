@@ -2763,6 +2763,7 @@ MonthPopupView.prototype.onClick = function(event) {
  */
 function MonthPopupButton(maxWidth) {
     View.call(this, createElement("button", MonthPopupButton.ClassNameMonthPopupButton));
+    this.element.setAttribute("aria-label", global.params.axShowMonthSelector);
 
     /**
      * @type {!Element}
@@ -2951,6 +2952,7 @@ function CalendarHeaderView(calendarPicker) {
     this._previousMonthButton.attachTo(this);
     this._previousMonthButton.on(CalendarNavigationButton.EventTypeButtonClick, this.onNavigationButtonClick);
     this._previousMonthButton.on(CalendarNavigationButton.EventTypeRepeatingButtonClick, this.onNavigationButtonClick);
+    this._previousMonthButton.element.setAttribute("aria-label", global.params.axShowPreviousMonth);
 
     /**
      * @type {!CalendarNavigationButton}
@@ -2962,6 +2964,7 @@ function CalendarHeaderView(calendarPicker) {
     this._todayButton.element.classList.add(CalendarHeaderView.ClassNameTodayButton);
     var monthContainingToday = Month.createFromToday();
     this._todayButton.setDisabled(monthContainingToday < this.calendarPicker.minimumMonth || monthContainingToday > this.calendarPicker.maximumMonth);
+    this._todayButton.element.setAttribute("aria-label", global.params.todayLabel);
 
     /**
      * @type {!CalendarNavigationButton}
@@ -2971,6 +2974,7 @@ function CalendarHeaderView(calendarPicker) {
     this._nextMonthButton.attachTo(this);
     this._nextMonthButton.on(CalendarNavigationButton.EventTypeButtonClick, this.onNavigationButtonClick);
     this._nextMonthButton.on(CalendarNavigationButton.EventTypeRepeatingButtonClick, this.onNavigationButtonClick);
+    this._nextMonthButton.element.setAttribute("aria-label", global.params.axShowNextMonth);
 
     if (global.params.isLocaleRTL) {
         this._nextMonthButton.element.innerHTML = CalendarHeaderView._BackwardTriangle;
