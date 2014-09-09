@@ -16,7 +16,7 @@ window.jsTestIsAsync = true;
 testRunner.setMIDISysexPermission(true);
 
 navigator.requestMIDIAccess({sysex: true}).then(function (a) {
-    output = a.outputs[Symbol.iterator]().next().value;
+    output = a.outputs.values().next().value;
 
     // Note on(off).
     output.send([0xff, 0x90, 0x00, 0x00, 0x90, 0x07, 0x00]);

@@ -13,26 +13,30 @@ var output;
 
 function checkInputMap(inputs) {
     window.inputs = inputs;
-    shouldBe("access.inputs.size", "1");
-    for (var input of inputs) {
+    debug("for (var input of inputs.values())");
+    for (var input of inputs.values()) {
         window.input = input;
         shouldBeEqualToString("input.id", "MockInputID");
         shouldBeEqualToString("input.manufacturer", "MockInputManufacturer");
         shouldBeEqualToString("input.name", "MockInputName");
         shouldBeEqualToString("input.version", "MockInputVersion");
     }
+    debug("for (var input of inputs.keys())");
     for (var key of inputs.keys()) {
         window.inputKey = key;
         shouldBeEqualToString("inputKey", "MockInputID");
     }
+    debug("for (var input of inputs.entries())");
     for (var entry of inputs.entries()) {
         window.entry = entry;
         shouldBe("entry[0]", "inputKey");
         shouldBe("entry[1]", "input");
     }
-    for (var input of inputs.values()) {
-        window.inputValue = input;
-        shouldBe("inputValue", "input");
+    debug("for (var input of inputs)");
+    for (var entry of inputs) {
+        window.entry = entry;
+        shouldBe("entry[0]", "inputKey");
+        shouldBe("entry[1]", "input");
     }
     shouldBeTrue("inputs.has('MockInputID')");
     shouldBeFalse("inputs.has('MockOutputID')");
@@ -42,6 +46,7 @@ function checkInputMap(inputs) {
 
 function checkOutputMap(outputs) {
     window.outputs = outputs;
+    debug("for (var output of outputs.values())");
     for (var output of outputs.values()) {
         window.output = output;
         shouldBeEqualToString("output.id", "MockOutputID");
@@ -49,18 +54,22 @@ function checkOutputMap(outputs) {
         shouldBeEqualToString("output.name", "MockOutputName");
         shouldBeEqualToString("output.version", "MockOutputVersion");
     }
+    debug("for (var output of outputs.keys())");
     for (var key of outputs.keys()) {
         window.outputKey = key;
         shouldBeEqualToString("outputKey", "MockOutputID");
     }
+    debug("for (var output of outputs.entries())");
     for (var entry of outputs.entries()) {
         window.entry = entry;
         shouldBe("entry[0]", "outputKey");
         shouldBe("entry[1]", "output");
     }
-    for (var output of outputs.values()) {
-        window.outputValue = output;
-        shouldBe("outputValue", "output");
+    debug("for (var output of outputs)");
+    for (var entry of outputs) {
+        window.entry = entry;
+        shouldBe("entry[0]", "outputKey");
+        shouldBe("entry[1]", "output");
     }
     shouldBeTrue("outputs.has('MockOutputID')");
     shouldBeFalse("outputs.has('MockInputID')");
@@ -76,11 +85,12 @@ function successCallback1(a) {
     // Validate the values of the attributes on the access.
     shouldBeDefined("access.sysexEnabled");
     shouldBeFalse("access.sysexEnabled");
-
+    shouldBe("access.inputs.size", "1");
+    shouldBe("access.outputs.size", "1");
     checkInputMap(access.inputs);
     checkOutputMap(access.outputs);
 
-    window.output = access.outputs[Symbol.iterator]().next().value;
+    window.output = access.outputs.values().next().value;
     // Test sending of MIDI data with a Uint8Array.
     var typedArrayData = new Uint8Array([0x90, 0x45, 0x7f]);
     output.send(typedArrayData);
