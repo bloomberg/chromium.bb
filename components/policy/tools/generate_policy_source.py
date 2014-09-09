@@ -54,6 +54,9 @@ class PolicyDetails:
   def __init__(self, policy, os, is_chromium_os):
     self.id = policy['id']
     self.name = policy['name']
+    features = policy.get('features', {})
+    self.can_be_recommended = features.get('can_be_recommended', False)
+    self.can_be_mandatory = features.get('can_be_mandatory', True)
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
     self.schema = policy.get('schema', {})
@@ -785,6 +788,9 @@ def _WritePolicyProto(f, policy, fields):
                    json.dumps(policy.schema, sort_keys=True, indent=4,
                               separators=(',', ': ')))
   _OutputComment(f, '\nSupported on: %s' % ', '.join(policy.platforms))
+  if policy.can_be_recommended and not policy.can_be_mandatory:
+    _OutputComment(f, '\nNote: this policy must have a RECOMMENDED ' +\
+                      'PolicyMode set in PolicyOptions.')
   f.write('message %sProto {\n' % policy.name)
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
