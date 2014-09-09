@@ -85,33 +85,17 @@ public:
     // stepUp()/stepDown() for user-interaction.
     bool isSteppable() const;
 
+    // Returns true if the type is button, reset, or submit.
     bool isTextButton() const;
-
-    bool isRadioButton() const;
+    // Returns true if the type is email, number, password, search, tel, text,
+    // or url.
     bool isTextField() const;
-    bool isSearchField() const;
-    bool isInputTypeHidden() const;
-    bool isPasswordField() const;
-    bool isCheckbox() const;
-    bool isRangeControl() const;
-
+    // Returns true if the type is email, password, search, tel, text, or url.
     // FIXME: It's highly likely that any call site calling this function should instead
     // be using a different one. Many input elements behave like text fields, and in addition
     // any unknown input type is treated as text. Consider, for example, isTextField or
     // isTextField && !isPasswordField.
     bool isText() const;
-
-    bool isEmailField() const;
-    bool isFileUpload() const;
-    bool isImageButton() const;
-    bool isNumberField() const;
-    bool isTelephoneField() const;
-    bool isURLField() const;
-    bool isDateField() const;
-    bool isDateTimeLocalField() const;
-    bool isMonthField() const;
-    bool isTimeField() const;
-    bool isWeekField() const;
 
     bool checked() const { return m_isChecked; }
     void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);

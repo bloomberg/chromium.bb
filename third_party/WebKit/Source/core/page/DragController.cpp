@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
@@ -302,7 +303,7 @@ static HTMLInputElement* asFileInput(Node* node)
 {
     ASSERT(node);
     for (; node; node = node->shadowHost()) {
-        if (isHTMLInputElement(*node) && toHTMLInputElement(node)->isFileUpload())
+        if (isHTMLInputElement(*node) && toHTMLInputElement(node)->type() == InputTypeNames::file)
             return toHTMLInputElement(node);
     }
     return 0;

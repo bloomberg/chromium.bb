@@ -77,11 +77,6 @@ bool SearchInputType::shouldRespectSpeechAttribute()
     return true;
 }
 
-bool SearchInputType::isSearchField() const
-{
-    return true;
-}
-
 bool SearchInputType::needsContainer() const
 {
     return true;

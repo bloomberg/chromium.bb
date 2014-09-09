@@ -25,6 +25,7 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
@@ -253,7 +254,7 @@ void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
     bool shouldDrawCapsLockIndicator = false;
 
     if (LocalFrame* frame = document().frame())
-        shouldDrawCapsLockIndicator = inputElement()->isPasswordField() && frame->selection().isFocusedAndActive() && document().focusedElement() == node() && PlatformKeyboardEvent::currentCapsLockState();
+        shouldDrawCapsLockIndicator = inputElement()->type() == InputTypeNames::password && frame->selection().isFocusedAndActive() && document().focusedElement() == node() && PlatformKeyboardEvent::currentCapsLockState();
 
     if (shouldDrawCapsLockIndicator != m_shouldDrawCapsLockIndicator) {
         m_shouldDrawCapsLockIndicator = shouldDrawCapsLockIndicator;

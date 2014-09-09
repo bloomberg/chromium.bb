@@ -47,7 +47,6 @@ private:
     virtual void handleKeyupEvent(KeyboardEvent*) OVERRIDE;
     virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() OVERRIDE;
     virtual void didDispatchClick(Event*, const ClickHandlingState&) OVERRIDE;
-    virtual bool isCheckbox() const OVERRIDE;
     virtual bool shouldAppearIndeterminate() const OVERRIDE;
 };
 

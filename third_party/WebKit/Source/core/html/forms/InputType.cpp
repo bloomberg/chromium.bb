@@ -147,11 +147,6 @@ bool InputType::isTextType() const
     return false;
 }
 
-bool InputType::isRangeControl() const
-{
-    return false;
-}
-
 bool InputType::shouldSaveAndRestoreFormControlState() const
 {
     return true;
@@ -625,89 +620,9 @@ bool InputType::isTextButton() const
     return false;
 }
 
-bool InputType::isRadioButton() const
-{
-    return false;
-}
-
-bool InputType::isSearchField() const
-{
-    return false;
-}
-
-bool InputType::isHiddenType() const
-{
-    return false;
-}
-
-bool InputType::isPasswordField() const
-{
-    return false;
-}
-
-bool InputType::isCheckbox() const
-{
-    return false;
-}
-
-bool InputType::isEmailField() const
-{
-    return false;
-}
-
-bool InputType::isFileUpload() const
-{
-    return false;
-}
-
-bool InputType::isImageButton() const
-{
-    return false;
-}
-
 bool InputType::isInteractiveContent() const
 {
     return true;
-}
-
-bool InputType::isNumberField() const
-{
-    return false;
-}
-
-bool InputType::isTelephoneField() const
-{
-    return false;
-}
-
-bool InputType::isURLField() const
-{
-    return false;
-}
-
-bool InputType::isDateField() const
-{
-    return false;
-}
-
-bool InputType::isDateTimeLocalField() const
-{
-    return false;
-}
-
-bool InputType::isMonthField() const
-{
-    return false;
-}
-
-bool InputType::isTimeField() const
-{
-    return false;
-}
-
-bool InputType::isWeekField() const
-{
-    return false;
 }
 
 bool InputType::isEnumeratable()
@@ -721,11 +636,6 @@ bool InputType::isCheckable()
 }
 
 bool InputType::isSteppable() const
-{
-    return false;
-}
-
-bool InputType::isColorControl() const
 {
     return false;
 }

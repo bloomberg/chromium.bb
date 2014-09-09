@@ -27,6 +27,7 @@
 #include "core/html/RadioNodeList.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLFormElement.h"
@@ -56,7 +57,7 @@ static inline HTMLInputElement* toRadioButtonInputElement(Element& element)
     if (!isHTMLInputElement(element))
         return 0;
     HTMLInputElement& inputElement = toHTMLInputElement(element);
-    if (!inputElement.isRadioButton() || inputElement.value().isEmpty())
+    if (inputElement.type() != InputTypeNames::radio || inputElement.value().isEmpty())
         return 0;
     return &inputElement;
 }
@@ -122,7 +123,7 @@ bool RadioNodeList::elementMatches(const Element& element) const
     if (!isHTMLObjectElement(element) && !element.isFormControlElement())
         return false;
 
-    if (isHTMLInputElement(element) && toHTMLInputElement(element).isImageButton())
+    if (isHTMLInputElement(element) && toHTMLInputElement(element).type() == InputTypeNames::image)
         return false;
 
     return checkElementMatchesRadioNodeListFilter(element);

@@ -160,7 +160,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
         settings.selectedFiles = m_fileList->pathsForUserVisibleFiles();
-        settings.useMediaCapture = RuntimeEnabledFeatures::mediaCaptureEnabled() && input.isFileUpload() && input.fastHasAttribute(captureAttr);
+        settings.useMediaCapture = RuntimeEnabledFeatures::mediaCaptureEnabled() && input.fastHasAttribute(captureAttr);
         chrome->runOpenPanel(input.document().frame(), newFileChooser(settings));
     }
     event->setDefaultHandled();
@@ -248,11 +248,6 @@ PassRefPtrWillBeRawPtr<FileList> FileInputType::createFileList(const Vector<File
     for (size_t i = 0; i < size; i++)
         fileList->append(File::createForUserProvidedFile(files[i].path, files[i].displayName));
     return fileList;
-}
-
-bool FileInputType::isFileUpload() const
-{
-    return true;
 }
 
 void FileInputType::createShadowSubtree()

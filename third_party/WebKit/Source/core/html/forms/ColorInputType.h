@@ -55,7 +55,6 @@ public:
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
     virtual void countUsage() OVERRIDE;
-    virtual bool isColorControl() const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool supportsRequired() const OVERRIDE;
     virtual String fallbackValue() const OVERRIDE;

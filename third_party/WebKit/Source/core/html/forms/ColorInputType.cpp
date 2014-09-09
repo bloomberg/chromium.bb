@@ -89,11 +89,6 @@ void ColorInputType::countUsage()
     countUsageIfVisible(UseCounter::InputTypeColor);
 }
 
-bool ColorInputType::isColorControl() const
-{
-    return true;
-}
-
 const AtomicString& ColorInputType::formControlType() const
 {
     return InputTypeNames::color;

@@ -32,6 +32,7 @@
 #include "core/page/PageSerializer.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"
@@ -231,7 +232,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
             addImageToResources(cachedImage, imageElement.renderer(), url);
         } else if (isHTMLInputElement(element)) {
             HTMLInputElement& inputElement = toHTMLInputElement(element);
-            if (inputElement.isImageButton() && inputElement.hasImageLoader()) {
+            if (inputElement.type() == InputTypeNames::image && inputElement.hasImageLoader()) {
                 KURL url = inputElement.src();
                 ImageResource* cachedImage = inputElement.imageLoader()->image();
                 addImageToResources(cachedImage, inputElement.renderer(), url);

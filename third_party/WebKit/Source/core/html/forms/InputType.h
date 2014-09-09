@@ -74,28 +74,10 @@ public:
     // inflexible because it's harder to add new input types if there is
     // scattered code with special cases for various types.
 
-    virtual bool isCheckbox() const;
-    virtual bool isColorControl() const;
-    virtual bool isDateField() const;
-    virtual bool isDateTimeLocalField() const;
-    virtual bool isEmailField() const;
-    virtual bool isFileUpload() const;
-    virtual bool isHiddenType() const;
-    virtual bool isImageButton() const;
     virtual bool isInteractiveContent() const;
-    virtual bool isMonthField() const;
-    virtual bool isNumberField() const;
-    virtual bool isPasswordField() const;
-    virtual bool isRadioButton() const;
-    virtual bool isRangeControl() const;
-    virtual bool isSearchField() const;
-    virtual bool isTelephoneField() const;
     virtual bool isTextButton() const;
     virtual bool isTextField() const;
     virtual bool isTextType() const;
-    virtual bool isTimeField() const;
-    virtual bool isURLField() const;
-    virtual bool isWeekField() const;
 
     // Form value functions
 

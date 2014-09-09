@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -1289,7 +1290,7 @@ bool ReplaceSelectionCommand::shouldPerformSmartReplace() const
         return false;
 
     HTMLTextFormControlElement* textControl = enclosingTextFormControl(positionAtStartOfInsertedContent().deepEquivalent());
-    if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isPasswordField())
+    if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->type() == InputTypeNames::password)
         return false; // Disable smart replace for password fields.
 
     return true;

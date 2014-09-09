@@ -32,6 +32,7 @@
 #include "public/web/WebSearchableFormData.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -139,7 +140,7 @@ bool IsInDefaultState(HTMLFormControlElement* formElement)
     ASSERT(formElement);
     if (isHTMLInputElement(*formElement)) {
         const HTMLInputElement& inputElement = toHTMLInputElement(*formElement);
-        if (inputElement.isCheckbox() || inputElement.isRadioButton())
+        if (inputElement.type() == InputTypeNames::checkbox || inputElement.type() == InputTypeNames::radio)
             return inputElement.checked() == inputElement.hasAttribute(checkedAttr);
     } else if (isHTMLSelectElement(*formElement)) {
         return IsSelectInDefaultState(toHTMLSelectElement(formElement));
@@ -173,7 +174,7 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
             const HTMLInputElement& input = toHTMLInputElement(*control);
 
             // Return nothing if a file upload field or a password field are found.
-            if (input.isFileUpload() || input.isPasswordField())
+            if (input.type() == InputTypeNames::file || input.type() == InputTypeNames::password)
                 return 0;
 
             if (input.isTextField()) {

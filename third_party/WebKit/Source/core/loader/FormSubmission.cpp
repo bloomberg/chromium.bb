@@ -32,6 +32,7 @@
 #include "core/loader/FormSubmission.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/html/DOMFormData.h"
@@ -220,7 +221,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
             control->appendFormData(*domFormData, isMultiPartForm);
         if (isHTMLInputElement(element)) {
             HTMLInputElement& input = toHTMLInputElement(element);
-            if (input.isPasswordField() && !input.value().isEmpty())
+            if (input.type() == InputTypeNames::password && !input.value().isEmpty())
                 containsPasswordData = true;
         }
     }

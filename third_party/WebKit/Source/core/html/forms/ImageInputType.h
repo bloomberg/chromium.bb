@@ -56,7 +56,6 @@ private:
     virtual void startResourceLoading() OVERRIDE;
     virtual bool shouldRespectAlignAttribute() OVERRIDE;
     virtual bool canBeSuccessfulSubmitButton() OVERRIDE;
-    virtual bool isImageButton() const OVERRIDE;
     virtual bool isEnumeratable() OVERRIDE;
     virtual bool shouldRespectHeightAndWidthAttributes() OVERRIDE;
     virtual unsigned height() const OVERRIDE;

@@ -33,6 +33,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
@@ -2240,33 +2241,34 @@ WebTextInputType WebViewImpl::textInputType()
 
     if (isHTMLInputElement(*element)) {
         HTMLInputElement& input = toHTMLInputElement(*element);
+        const AtomicString& type = input.type();
 
         if (input.isDisabledOrReadOnly())
             return WebTextInputTypeNone;
 
-        if (input.isPasswordField())
+        if (type == InputTypeNames::password)
             return WebTextInputTypePassword;
-        if (input.isSearchField())
+        if (type == InputTypeNames::search)
             return WebTextInputTypeSearch;
-        if (input.isEmailField())
+        if (type == InputTypeNames::email)
             return WebTextInputTypeEmail;
-        if (input.isNumberField())
+        if (type == InputTypeNames::number)
             return WebTextInputTypeNumber;
-        if (input.isTelephoneField())
+        if (type == InputTypeNames::tel)
             return WebTextInputTypeTelephone;
-        if (input.isURLField())
+        if (type == InputTypeNames::url)
             return WebTextInputTypeURL;
-        if (input.isDateField())
+        if (type == InputTypeNames::date)
             return WebTextInputTypeDate;
-        if (input.isDateTimeLocalField())
+        if (type == InputTypeNames::datetime_local)
             return WebTextInputTypeDateTimeLocal;
-        if (input.isMonthField())
+        if (type == InputTypeNames::month)
             return WebTextInputTypeMonth;
-        if (input.isTimeField())
+        if (type == InputTypeNames::time)
             return WebTextInputTypeTime;
-        if (input.isWeekField())
+        if (type == InputTypeNames::week)
             return WebTextInputTypeWeek;
-        if (input.isTextField())
+        if (type == InputTypeNames::text)
             return WebTextInputTypeText;
 
         return WebTextInputTypeNone;

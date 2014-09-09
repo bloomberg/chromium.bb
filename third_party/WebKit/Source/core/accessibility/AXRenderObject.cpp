@@ -30,6 +30,7 @@
 #include "core/accessibility/AXRenderObject.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/InputTypeNames.h"
 #include "core/accessibility/AXImageMapLink.h"
 #include "core/accessibility/AXInlineTextBox.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -304,15 +305,14 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
 
     if (isHTMLInputElement(node)) {
         HTMLInputElement& input = toHTMLInputElement(*node);
-        if (input.isCheckbox())
+        const AtomicString& type = input.type();
+        if (type == InputTypeNames::checkbox)
             return CheckBoxRole;
-        if (input.isRadioButton())
+        if (type == InputTypeNames::radio)
             return RadioButtonRole;
         if (input.isTextButton())
             return buttonRoleType();
-
-        const AtomicString& type = input.getAttribute(typeAttr);
-        if (equalIgnoringCase(type, "color"))
+        if (type == InputTypeNames::color)
             return ColorWellRole;
     }
 
@@ -450,12 +450,7 @@ bool AXRenderObject::isAttachment() const
 
 bool AXRenderObject::isFileUploadButton() const
 {
-    if (m_renderer && isHTMLInputElement(m_renderer->node())) {
-        HTMLInputElement& input = toHTMLInputElement(*m_renderer->node());
-        return input.isFileUpload();
-    }
-
-    return false;
+    return m_renderer && isHTMLInputElement(m_renderer->node()) && toHTMLInputElement(*m_renderer->node()).type() == InputTypeNames::file;
 }
 
 static bool isLinkable(const AXObject& object)

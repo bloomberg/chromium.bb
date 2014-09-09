@@ -22,6 +22,7 @@
 #include "core/rendering/RenderFileUploadControl.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/PositionWithAffinity.h"
@@ -58,7 +59,7 @@ RenderFileUploadControl::~RenderFileUploadControl()
 void RenderFileUploadControl::updateFromElement()
 {
     HTMLInputElement* input = toHTMLInputElement(node());
-    ASSERT(input->isFileUpload());
+    ASSERT(input->type() == InputTypeNames::file);
 
     if (HTMLInputElement* button = uploadButton()) {
         bool newCanReceiveDroppedFilesState = input->canReceiveDroppedFiles();

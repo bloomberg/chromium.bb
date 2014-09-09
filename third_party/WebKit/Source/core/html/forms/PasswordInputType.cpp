@@ -86,11 +86,6 @@ bool PasswordInputType::shouldRespectSpeechAttribute()
     return true;
 }
 
-bool PasswordInputType::isPasswordField() const
-{
-    return true;
-}
-
 void PasswordInputType::enableSecureTextInput()
 {
     if (element().document().frame())

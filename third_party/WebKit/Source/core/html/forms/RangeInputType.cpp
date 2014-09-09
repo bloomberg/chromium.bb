@@ -90,11 +90,6 @@ void RangeInputType::countUsage()
     countUsageIfVisible(UseCounter::InputTypeRange);
 }
 
-bool RangeInputType::isRangeControl() const
-{
-    return true;
-}
-
 const AtomicString& RangeInputType::formControlType() const
 {
     return InputTypeNames::range;

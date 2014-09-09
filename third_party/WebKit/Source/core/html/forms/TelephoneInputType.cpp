@@ -56,9 +56,4 @@ bool TelephoneInputType::shouldRespectSpeechAttribute()
     return true;
 }
 
-bool TelephoneInputType::isTelephoneField() const
-{
-    return true;
-}
-
 } // namespace blink

@@ -45,7 +45,6 @@ public:
 private:
     RangeInputType(HTMLInputElement&);
     virtual void countUsage() OVERRIDE;
-    virtual bool isRangeControl() const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;
     virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;

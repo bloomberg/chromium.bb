@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderSlider.h"
 
+#include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -38,7 +39,7 @@ RenderSlider::RenderSlider(HTMLInputElement* element)
     : RenderFlexibleBox(element)
 {
     // We assume RenderSlider works only with <input type=range>.
-    ASSERT(element->isRangeControl());
+    ASSERT(element->type() == InputTypeNames::range);
 }
 
 RenderSlider::~RenderSlider()

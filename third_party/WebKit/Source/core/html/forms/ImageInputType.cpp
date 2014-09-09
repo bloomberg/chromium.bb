@@ -169,11 +169,6 @@ bool ImageInputType::canBeSuccessfulSubmitButton()
     return true;
 }
 
-bool ImageInputType::isImageButton() const
-{
-    return true;
-}
-
 bool ImageInputType::isEnumeratable()
 {
     return false;

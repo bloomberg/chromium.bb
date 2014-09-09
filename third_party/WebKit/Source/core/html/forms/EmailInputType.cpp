@@ -237,11 +237,6 @@ String EmailInputType::typeMismatchText() const
     return locale().queryString(WebLocalizedString::ValidationTypeMismatchForEmail);
 }
 
-bool EmailInputType::isEmailField() const
-{
-    return true;
-}
-
 bool EmailInputType::supportsSelectionAPI() const
 {
     return false;

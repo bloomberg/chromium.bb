@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXNodeObject.h"
 
+#include "core/InputTypeNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
@@ -192,19 +193,17 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return buttonRoleType();
     if (isHTMLInputElement(*node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.isCheckbox())
+        const AtomicString& type = input.type();
+        if (type == InputTypeNames::checkbox)
             return CheckBoxRole;
-        if (input.isRadioButton())
+        if (type == InputTypeNames::radio)
             return RadioButtonRole;
         if (input.isTextButton())
             return buttonRoleType();
-        if (input.isRangeControl())
+        if (type == InputTypeNames::range)
             return SliderRole;
-
-        const AtomicString& type = input.getAttribute(typeAttr);
-        if (equalIgnoringCase(type, "color"))
+        if (type == InputTypeNames::color)
             return ColorWellRole;
-
         return TextFieldRole;
     }
     if (isHTMLSelectElement(*node())) {
@@ -513,7 +512,7 @@ bool AXNodeObject::isInputImage() const
 {
     Node* node = this->node();
     if (roleValue() == ButtonRole && isHTMLInputElement(node))
-        return toHTMLInputElement(*node).isImageButton();
+        return toHTMLInputElement(*node).type() == InputTypeNames::image;
 
     return false;
 }
@@ -551,7 +550,7 @@ bool AXNodeObject::isNativeCheckboxOrRadio() const
         return false;
 
     HTMLInputElement* input = toHTMLInputElement(node);
-    return input->isCheckbox() || input->isRadioButton();
+    return input->type() == InputTypeNames::checkbox || input->type() == InputTypeNames::radio;
 }
 
 bool AXNodeObject::isNativeImage() const
@@ -567,7 +566,7 @@ bool AXNodeObject::isNativeImage() const
         return true;
 
     if (isHTMLInputElement(*node))
-        return toHTMLInputElement(*node).isImageButton();
+        return toHTMLInputElement(*node).type() == InputTypeNames::image;
 
     return false;
 }
@@ -583,7 +582,7 @@ bool AXNodeObject::isNativeTextControl() const
 
     if (isHTMLInputElement(*node)) {
         HTMLInputElement* input = toHTMLInputElement(node);
-        return input->isText() || input->isNumberField();
+        return input->isText() || input->type() == InputTypeNames::number;
     }
 
     return false;
@@ -612,7 +611,7 @@ bool AXNodeObject::isPasswordField() const
     if (ariaRoleAttribute() != UnknownRole)
         return false;
 
-    return toHTMLInputElement(node)->isPasswordField();
+    return toHTMLInputElement(node)->type() == InputTypeNames::password;
 }
 
 bool AXNodeObject::isProgressIndicator() const
@@ -956,7 +955,7 @@ float AXNodeObject::valueForRange() const
 
     if (isHTMLInputElement(node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.isRangeControl())
+        if (input.type() == InputTypeNames::range)
             return input.valueAsNumber();
     }
 
@@ -970,7 +969,7 @@ float AXNodeObject::maxValueForRange() const
 
     if (isHTMLInputElement(node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.isRangeControl())
+        if (input.type() == InputTypeNames::range)
             return input.maximum();
     }
 
@@ -984,7 +983,7 @@ float AXNodeObject::minValueForRange() const
 
     if (isHTMLInputElement(node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.isRangeControl())
+        if (input.type() == InputTypeNames::range)
             return input.minimum();
     }
 

@@ -97,11 +97,6 @@ void CheckboxInputType::didDispatchClick(Event* event, const ClickHandlingState&
     event->setDefaultHandled();
 }
 
-bool CheckboxInputType::isCheckbox() const
-{
-    return true;
-}
-
 bool CheckboxInputType::shouldAppearIndeterminate() const
 {
     return element().indeterminate();

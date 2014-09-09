@@ -49,7 +49,6 @@ private:
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
     virtual bool rendererIsNeeded() OVERRIDE;
     virtual bool storesValueSeparateFromAttribute() OVERRIDE;
-    virtual bool isHiddenType() const OVERRIDE;
     virtual bool isInteractiveContent() const OVERRIDE { return false; }
     virtual bool shouldRespectHeightAndWidthAttributes() OVERRIDE;
     virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE;

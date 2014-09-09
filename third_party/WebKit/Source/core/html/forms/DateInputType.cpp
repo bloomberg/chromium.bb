@@ -89,11 +89,6 @@ bool DateInputType::setMillisecondToDateComponents(double value, DateComponents*
     return date->setMillisecondsSinceEpochForDate(value);
 }
 
-bool DateInputType::isDateField() const
-{
-    return true;
-}
-
 void DateInputType::warnIfValueIsInvalid(const String& value) const
 {
     if (value != element().sanitizeValue(value)) {

@@ -822,7 +822,7 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
         return;
 
     HTMLInputElement* input = toHTMLInputElement(node);
-    if (!input->isRangeControl())
+    if (input->type() != InputTypeNames::range)
         return;
 
     HTMLDataListElement* dataList = input->dataList();
@@ -907,7 +907,7 @@ double RenderTheme::animationDurationForProgressBar(RenderProgress*) const
 
 bool RenderTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
 {
-    return inputElement->isSteppable() && !inputElement->isRangeControl();
+    return inputElement->isSteppable() && inputElement->type() != InputTypeNames::range;
 }
 
 void RenderTheme::adjustMenuListButtonStyle(RenderStyle*, Element*) const

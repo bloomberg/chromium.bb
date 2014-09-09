@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -312,7 +313,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     }
 
     if (r.isSelected()) {
-        if (!isHTMLInputElement(*r.innerNonSharedNode()) || !toHTMLInputElement(r.innerNonSharedNode())->isPasswordField())
+        if (!isHTMLInputElement(*r.innerNonSharedNode()) || toHTMLInputElement(r.innerNonSharedNode())->type() != InputTypeNames::password)
             data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
     }
 

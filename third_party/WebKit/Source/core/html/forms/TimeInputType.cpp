@@ -100,11 +100,6 @@ bool TimeInputType::setMillisecondToDateComponents(double value, DateComponents*
     return date->setMillisecondsSinceMidnight(value);
 }
 
-bool TimeInputType::isTimeField() const
-{
-    return true;
-}
-
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
 String TimeInputType::localizeValue(const String& proposedValue) const

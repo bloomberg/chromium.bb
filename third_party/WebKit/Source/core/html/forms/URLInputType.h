@@ -46,7 +46,6 @@ private:
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual bool typeMismatch() const OVERRIDE;
     virtual String typeMismatchText() const OVERRIDE;
-    virtual bool isURLField() const OVERRIDE;
 };
 
 } // namespace blink

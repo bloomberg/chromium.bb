@@ -32,6 +32,7 @@
 #include "public/web/WebInputElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
@@ -58,27 +59,27 @@ bool WebInputElement::isText() const
 
 bool WebInputElement::isEmailField() const
 {
-    return constUnwrap<HTMLInputElement>()->isEmailField();
+    return constUnwrap<HTMLInputElement>()->type() == InputTypeNames::email;
 }
 
 bool WebInputElement::isPasswordField() const
 {
-    return constUnwrap<HTMLInputElement>()->isPasswordField();
+    return constUnwrap<HTMLInputElement>()->type() == InputTypeNames::password;
 }
 
 bool WebInputElement::isImageButton() const
 {
-    return constUnwrap<HTMLInputElement>()->isImageButton();
+    return constUnwrap<HTMLInputElement>()->type() == InputTypeNames::image;
 }
 
 bool WebInputElement::isRadioButton() const
 {
-    return constUnwrap<HTMLInputElement>()->isRadioButton();
+    return constUnwrap<HTMLInputElement>()->type() == InputTypeNames::radio;
 }
 
 bool WebInputElement::isCheckbox() const
 {
-    return constUnwrap<HTMLInputElement>()->isCheckbox();
+    return constUnwrap<HTMLInputElement>()->type() == InputTypeNames::checkbox;
 }
 
 int WebInputElement::maxLength() const

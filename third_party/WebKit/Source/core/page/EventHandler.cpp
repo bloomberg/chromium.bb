@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/SVGNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
@@ -975,7 +976,7 @@ static LocalFrame* subframeForHitTestResult(const MouseEventWithHitTestResults& 
 
 static bool isSubmitImage(Node* node)
 {
-    return isHTMLInputElement(node) && toHTMLInputElement(node)->isImageButton();
+    return isHTMLInputElement(node) && toHTMLInputElement(node)->type() == InputTypeNames::image;
 }
 
 bool EventHandler::useHandCursor(Node* node, bool isOverLink)

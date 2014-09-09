@@ -51,7 +51,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
-    virtual bool isSearchField() const OVERRIDE;
     virtual bool needsContainer() const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;

@@ -83,11 +83,6 @@ bool WeekInputType::setMillisecondToDateComponents(double value, DateComponents*
     return date->setMillisecondsSinceEpochForWeek(value);
 }
 
-bool WeekInputType::isWeekField() const
-{
-    return true;
-}
-
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String WeekInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const

@@ -266,11 +266,6 @@ bool NumberInputType::supportsPlaceholder() const
     return true;
 }
 
-bool NumberInputType::isNumberField() const
-{
-    return true;
-}
-
 void NumberInputType::minOrMaxAttributeChanged()
 {
     InputType::minOrMaxAttributeChanged();

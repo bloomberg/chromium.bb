@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"
@@ -1432,7 +1433,7 @@ PassRefPtrWillBeRawPtr<Range> FrameSelection::firstRange() const
 bool FrameSelection::isInPasswordField() const
 {
     HTMLTextFormControlElement* textControl = enclosingTextFormControl(start());
-    return isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isPasswordField();
+    return isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->type() == InputTypeNames::password;
 }
 
 void FrameSelection::notifyAccessibilityForSelectionChange()

@@ -66,7 +66,6 @@ private:
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual bool receiveDroppedFiles(const DragData*) OVERRIDE;
     virtual String droppedFileSystemId() OVERRIDE;
-    virtual bool isFileUpload() const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;
     virtual void disabledAttributeChanged() OVERRIDE;
     virtual void multipleAttributeChanged() OVERRIDE;

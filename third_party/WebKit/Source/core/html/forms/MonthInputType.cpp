@@ -123,11 +123,6 @@ bool MonthInputType::setMillisecondToDateComponents(double value, DateComponents
     return date->setMonthsSinceEpoch(value);
 }
 
-bool MonthInputType::isMonthField() const
-{
-    return true;
-}
-
 bool MonthInputType::canSetSuggestedValue()
 {
     return true;

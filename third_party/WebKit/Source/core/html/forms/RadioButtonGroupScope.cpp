@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
 
+#include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "wtf/HashSet.h"
 
@@ -80,7 +81,7 @@ void RadioButtonGroup::setCheckedButton(HTMLInputElement* button)
 
 void RadioButtonGroup::add(HTMLInputElement* button)
 {
-    ASSERT(button->isRadioButton());
+    ASSERT(button->type() == InputTypeNames::radio);
     if (!m_members.add(button).isNewEntry)
         return;
     bool groupWasValid = isValid();
@@ -101,7 +102,7 @@ void RadioButtonGroup::add(HTMLInputElement* button)
 
 void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
 {
-    ASSERT(button->isRadioButton());
+    ASSERT(button->type() == InputTypeNames::radio);
     ASSERT(m_members.contains(button));
     bool wasValid = isValid();
     if (button->checked()) {
@@ -121,7 +122,7 @@ void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
 
 void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 {
-    ASSERT(button->isRadioButton());
+    ASSERT(button->type() == InputTypeNames::radio);
     ASSERT(m_members.contains(button));
     bool wasValid = isValid();
     if (button->isRequired()) {
@@ -136,7 +137,7 @@ void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 
 void RadioButtonGroup::remove(HTMLInputElement* button)
 {
-    ASSERT(button->isRadioButton());
+    ASSERT(button->type() == InputTypeNames::radio);
     WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement> >::iterator it = m_members.find(button);
     if (it == m_members.end())
         return;
@@ -168,7 +169,7 @@ void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
     Iterator end = m_members.end();
     for (Iterator it = m_members.begin(); it != end; ++it) {
         HTMLInputElement* button = *it;
-        ASSERT(button->isRadioButton());
+        ASSERT(button->type() == InputTypeNames::radio);
         button->setNeedsValidityCheck();
     }
 }
@@ -201,7 +202,7 @@ RadioButtonGroupScope::~RadioButtonGroupScope()
 
 void RadioButtonGroupScope::addButton(HTMLInputElement* element)
 {
-    ASSERT(element->isRadioButton());
+    ASSERT(element->type() == InputTypeNames::radio);
     if (element->name().isEmpty())
         return;
 
@@ -216,7 +217,7 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element)
 
 void RadioButtonGroupScope::updateCheckedState(HTMLInputElement* element)
 {
-    ASSERT(element->isRadioButton());
+    ASSERT(element->type() == InputTypeNames::radio);
     if (element->name().isEmpty())
         return;
     ASSERT(m_nameToGroupMap);
@@ -229,7 +230,7 @@ void RadioButtonGroupScope::updateCheckedState(HTMLInputElement* element)
 
 void RadioButtonGroupScope::requiredAttributeChanged(HTMLInputElement* element)
 {
-    ASSERT(element->isRadioButton());
+    ASSERT(element->type() == InputTypeNames::radio);
     if (element->name().isEmpty())
         return;
     ASSERT(m_nameToGroupMap);
@@ -250,7 +251,7 @@ HTMLInputElement* RadioButtonGroupScope::checkedButtonForGroup(const AtomicStrin
 
 bool RadioButtonGroupScope::isInRequiredGroup(HTMLInputElement* element) const
 {
-    ASSERT(element->isRadioButton());
+    ASSERT(element->type() == InputTypeNames::radio);
     if (element->name().isEmpty())
         return false;
     if (!m_nameToGroupMap)
@@ -261,7 +262,7 @@ bool RadioButtonGroupScope::isInRequiredGroup(HTMLInputElement* element) const
 
 void RadioButtonGroupScope::removeButton(HTMLInputElement* element)
 {
-    ASSERT(element->isRadioButton());
+    ASSERT(element->type() == InputTypeNames::radio);
     if (element->name().isEmpty())
         return;
     if (!m_nameToGroupMap)

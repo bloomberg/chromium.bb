@@ -97,11 +97,6 @@ bool DateTimeLocalInputType::setMillisecondToDateComponents(double value, DateCo
     return date->setMillisecondsSinceEpochForDateTimeLocal(value);
 }
 
-bool DateTimeLocalInputType::isDateTimeLocalField() const
-{
-    return true;
-}
-
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 // FIXME: It is better to share code for DateTimeInputType::formatDateTimeFieldsState()
 // and DateTimeInputLocalType::formatDateTimeFieldsState().
