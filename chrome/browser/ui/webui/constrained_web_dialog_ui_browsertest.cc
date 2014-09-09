@@ -64,10 +64,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
   ASSERT_TRUE(web_contents);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      CreateConstrainedWebDialog(browser()->profile(),
-                                 delegate,
-                                 NULL,
-                                 web_contents);
+      CreateConstrainedWebDialog(browser()->profile(), delegate, web_contents);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
@@ -84,10 +81,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   ASSERT_TRUE(web_contents);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      CreateConstrainedWebDialog(browser()->profile(),
-                                 delegate,
-                                 NULL,
-                                 web_contents);
+      CreateConstrainedWebDialog(browser()->profile(), delegate, web_contents);
   ASSERT_TRUE(dialog_delegate);
   scoped_ptr<WebContents> new_tab(dialog_delegate->GetWebContents());
   ASSERT_TRUE(new_tab.get());

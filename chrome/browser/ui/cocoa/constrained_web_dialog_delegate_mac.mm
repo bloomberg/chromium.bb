@@ -28,10 +28,8 @@ class ConstrainedWebDialogDelegateMac
  public:
   ConstrainedWebDialogDelegateMac(
       content::BrowserContext* browser_context,
-      WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate)
-      : ConstrainedWebDialogDelegateBase(
-            browser_context, delegate, tab_delegate) {}
+      WebDialogDelegate* delegate)
+      : ConstrainedWebDialogDelegateBase(browser_context, delegate, NULL) {}
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
@@ -58,7 +56,6 @@ class ConstrainedWebDialogDelegateViewMac :
   ConstrainedWebDialogDelegateViewMac(
       content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate,
       content::WebContents* web_contents);
   virtual ~ConstrainedWebDialogDelegateViewMac() {}
 
@@ -102,11 +99,8 @@ class ConstrainedWebDialogDelegateViewMac :
 ConstrainedWebDialogDelegateViewMac::ConstrainedWebDialogDelegateViewMac(
     content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
-    WebDialogWebContentsDelegate* tab_delegate,
     content::WebContents* web_contents)
-    : impl_(new ConstrainedWebDialogDelegateMac(browser_context,
-                                                delegate,
-                                                tab_delegate)) {
+    : impl_(new ConstrainedWebDialogDelegateMac(browser_context, delegate)) {
   // Create a window to hold web_contents in the constrained sheet:
   gfx::Size size;
   delegate->GetDialogSize(&size);
@@ -128,11 +122,10 @@ ConstrainedWebDialogDelegateViewMac::ConstrainedWebDialogDelegateViewMac(
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
         content::BrowserContext* browser_context,
         WebDialogDelegate* delegate,
-        WebDialogWebContentsDelegate* tab_delegate,
         content::WebContents* web_contents) {
   // Deleted when the dialog closes.
   ConstrainedWebDialogDelegateViewMac* constrained_delegate =
       new ConstrainedWebDialogDelegateViewMac(
-          browser_context, delegate, tab_delegate, web_contents);
+          browser_context, delegate, web_contents);
   return constrained_delegate;
 }

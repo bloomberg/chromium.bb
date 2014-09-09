@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
@@ -15,30 +18,60 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-#if defined(USE_AURA)
-#include "content/public/browser/render_widget_host_view.h"
-#include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/client/focus_client.h"
-#endif
-
-using ui::WebDialogDelegate;
-using ui::WebDialogWebContentsDelegate;
-
 namespace {
+
+class WebDialogWebContentsDelegateViews
+    : public ui::WebDialogWebContentsDelegate {
+ public:
+  WebDialogWebContentsDelegateViews(content::BrowserContext* browser_context,
+                                    content::WebContents* initiator,
+                                    views::WebView* web_view)
+      : ui::WebDialogWebContentsDelegate(browser_context,
+                                         new ChromeWebContentsHandler()),
+        initiator_(initiator),
+        web_view_(web_view) {
+  }
+  virtual ~WebDialogWebContentsDelegateViews() {}
+
+  // ui::WebDialogWebContentsDelegate:
+  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE {
+    // Ensure the WebView is focused when its WebContents is focused.
+    web_view_->RequestFocus();
+  }
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+    // Forward shortcut keys in dialog to the browser. http://crbug.com/104586
+    // Disabled on Mac due to http://crbug.com/112173
+#if !defined(OS_MACOSX)
+    Browser* current_browser = chrome::FindBrowserWithWebContents(initiator_);
+    if (!current_browser)
+      return;
+    current_browser->window()->HandleKeyboardEvent(event);
+#endif
+  }
+
+ private:
+  content::WebContents* initiator_;
+  views::WebView* web_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegateViews);
+};
 
 class ConstrainedWebDialogDelegateViews
     : public ConstrainedWebDialogDelegateBase {
  public:
   ConstrainedWebDialogDelegateViews(content::BrowserContext* context,
-                                    WebDialogDelegate* delegate,
-                                    WebDialogWebContentsDelegate* tab_delegate,
+                                    ui::WebDialogDelegate* delegate,
+                                    content::WebContents* web_contents,
                                     views::WebView* view)
-      : ConstrainedWebDialogDelegateBase(context, delegate, tab_delegate),
+      : ConstrainedWebDialogDelegateBase(context, delegate,
+            new WebDialogWebContentsDelegateViews(context, web_contents, view)),
         view_(view) {}
 
   virtual ~ConstrainedWebDialogDelegateViews() {}
 
-  // WebDialogWebContentsDelegate:
+  // ui::WebDialogWebContentsDelegate:
   virtual void CloseContents(content::WebContents* source) OVERRIDE {
     view_->GetWidget()->Close();
   }
@@ -65,44 +98,6 @@ class ConstrainedWebDialogDelegateViews
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViews);
 };
 
-#if defined(USE_AURA)
-// TODO(msw): Make this part of WebView? Modify various WebContentsDelegates?
-class WebViewFocusHelper : public aura::client::FocusChangeObserver {
- public:
-  explicit WebViewFocusHelper(views::WebView* web_view)
-      : web_view_(web_view),
-        window_(NULL),
-        focus_client_(NULL) {
-    if (web_view_ && web_view_->web_contents()) {
-      content::RenderWidgetHostView* host_view =
-          web_view_->web_contents()->GetRenderWidgetHostView();
-      window_ = host_view ? host_view->GetNativeView() : NULL;
-    }
-    focus_client_ = window_ ? aura::client::GetFocusClient(window_) : NULL;
-    if (focus_client_)
-      focus_client_->AddObserver(this);
-  }
-
-  virtual ~WebViewFocusHelper() {
-    if (focus_client_)
-      focus_client_->RemoveObserver(this);
-  }
-
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) OVERRIDE {
-    if (gained_focus == window_ && !web_view_->HasFocus())
-      web_view_->RequestFocus();
-  }
-
- private:
-  views::WebView* web_view_;
-  aura::Window* window_;
-  aura::client::FocusClient* focus_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewFocusHelper);
-};
-#endif
-
 class ConstrainedWebDialogDelegateViewViews
     : public views::WebView,
       public ConstrainedWebDialogDelegate,
@@ -110,21 +105,21 @@ class ConstrainedWebDialogDelegateViewViews
  public:
   ConstrainedWebDialogDelegateViewViews(
       content::BrowserContext* browser_context,
-      WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate)
+      ui::WebDialogDelegate* delegate,
+      content::WebContents* web_contents)
       : views::WebView(browser_context),
         impl_(new ConstrainedWebDialogDelegateViews(browser_context, delegate,
-                                                    tab_delegate, this)) {
+                                                    web_contents, this)) {
     SetWebContents(GetWebContents());
     AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   }
   virtual ~ConstrainedWebDialogDelegateViewViews() {}
 
   // ConstrainedWebDialogDelegate:
-  virtual const WebDialogDelegate* GetWebDialogDelegate() const OVERRIDE {
+  virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const OVERRIDE {
     return impl_->GetWebDialogDelegate();
   }
-  virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
+  virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
     return impl_->GetWebDialogDelegate();
   }
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
@@ -191,17 +186,8 @@ class ConstrainedWebDialogDelegateViewViews
     return gfx::Size();
   }
 
-  void OnShow() {
-#if defined(USE_AURA)
-  web_view_focus_helper_.reset(new WebViewFocusHelper(this));
-#endif
-  }
-
  private:
   scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
-#if defined(USE_AURA)
-  scoped_ptr<WebViewFocusHelper> web_view_focus_helper_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewViews);
 };
@@ -210,13 +196,11 @@ class ConstrainedWebDialogDelegateViewViews
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
     content::BrowserContext* browser_context,
-    WebDialogDelegate* delegate,
-    WebDialogWebContentsDelegate* tab_delegate,
+    ui::WebDialogDelegate* delegate,
     content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateViewViews* dialog =
       new ConstrainedWebDialogDelegateViewViews(
-          browser_context, delegate, tab_delegate);
+          browser_context, delegate, web_contents);
   ShowWebModalDialogViews(dialog, web_contents);
-  dialog->OnShow();
   return dialog;
 }

@@ -151,8 +151,7 @@ void ProfileSigninConfirmationDialog::Close() const {
 
 void ProfileSigninConfirmationDialog::Show(bool prompt) {
   prompt_for_new_profile_ = prompt;
-  dialog_delegate_ =
-      CreateConstrainedWebDialog(profile_, this, NULL, web_contents_);
+  dialog_delegate_ = CreateConstrainedWebDialog(profile_, this, web_contents_);
 }
 
 ui::ModalType ProfileSigninConfirmationDialog::GetDialogModalType() const {

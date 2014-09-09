@@ -228,11 +228,8 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
                                    gfx::NativeWindow parent) {
   // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
   // on the title for Aura ConstrainedWebDialogUI.
-  dialog_ = CreateConstrainedWebDialog(
-      web_contents->GetBrowserContext(),
-      this,
-      NULL,
-      web_contents);
+  dialog_ = CreateConstrainedWebDialog(web_contents->GetBrowserContext(), this,
+                                       web_contents);
 }
 
 NativeWebContentsModalDialog

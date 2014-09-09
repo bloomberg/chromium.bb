@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_view_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -42,14 +41,10 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
-#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
-using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
-using ui::WebDialogDelegate;
-using ui::WebDialogWebContentsDelegate;
 
 namespace {
 
@@ -70,9 +65,8 @@ void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
       GURL(), pdf_plugin);
 }
 
-// WebDialogDelegate that specifies what the print preview dialog
-// will look like.
-class PrintPreviewDialogDelegate : public WebDialogDelegate {
+// A ui::WebDialogDelegate that specifies the print preview dialog appearance.
+class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
  public:
   explicit PrintPreviewDialogDelegate(WebContents* initiator);
   virtual ~PrintPreviewDialogDelegate();
@@ -165,44 +159,6 @@ void PrintPreviewDialogDelegate::OnCloseContents(WebContents* /* source */,
 
 bool PrintPreviewDialogDelegate::ShouldShowDialogTitle() const {
   return false;
-}
-
-// WebContentsDelegate that forwards shortcut keys in the print preview
-// renderer to the browser.
-class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate {
- public:
-  PrintPreviewWebContentDelegate(Profile* profile, WebContents* initiator);
-  virtual ~PrintPreviewWebContentDelegate();
-
-  // Overridden from WebDialogWebContentsDelegate:
-  virtual void HandleKeyboardEvent(
-      WebContents* source,
-      const NativeWebKeyboardEvent& event) OVERRIDE;
-
- private:
-  WebContents* initiator_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebContentDelegate);
-};
-
-PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
-    Profile* profile,
-    WebContents* initiator)
-    : WebDialogWebContentsDelegate(profile, new ChromeWebContentsHandler),
-      initiator_(initiator) {}
-
-PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
-
-void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
-    WebContents* source,
-    const NativeWebKeyboardEvent& event) {
-  // Disabled on Mac due to http://crbug.com/112173
-#if !defined(OS_MACOSX)
-  Browser* current_browser = chrome::FindBrowserWithWebContents(initiator_);
-  if (!current_browser)
-    return;
-  current_browser->window()->HandleKeyboardEvent(event);
-#endif
 }
 
 }  // namespace
@@ -412,22 +368,14 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
 WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
     WebContents* initiator) {
   base::AutoReset<bool> auto_reset(&is_creating_print_preview_dialog_, true);
-  Profile* profile =
-      Profile::FromBrowserContext(initiator->GetBrowserContext());
 
-  // |web_dialog_ui_delegate| deletes itself in
-  // PrintPreviewDialogDelegate::OnDialogClosed().
-  WebDialogDelegate* web_dialog_delegate =
-      new PrintPreviewDialogDelegate(initiator);
-  // |web_dialog_delegate|'s owner is |constrained_delegate|.
-  PrintPreviewWebContentDelegate* pp_wcd =
-      new PrintPreviewWebContentDelegate(profile, initiator);
-  ConstrainedWebDialogDelegate* constrained_delegate =
-      CreateConstrainedWebDialog(profile,
-                                 web_dialog_delegate,
-                                 pp_wcd,
+  // The dialog delegates are deleted when the dialog is closed.
+  ConstrainedWebDialogDelegate* web_dialog_delegate =
+      CreateConstrainedWebDialog(initiator->GetBrowserContext(),
+                                 new PrintPreviewDialogDelegate(initiator),
                                  initiator);
-  WebContents* preview_dialog = constrained_delegate->GetWebContents();
+
+  WebContents* preview_dialog = web_dialog_delegate->GetWebContents();
   EnableInternalPDFPluginForContents(preview_dialog);
   PrintViewManager::CreateForWebContents(preview_dialog);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(

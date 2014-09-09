@@ -82,15 +82,10 @@ class ConstrainedWebDialogUI : public content::WebUIController {
 // |browser_context| is used to construct the constrained HTML dialog's
 //                   WebContents.
 // |delegate| controls the behavior of the dialog.
-// |tab_delegate| is optional, pass one in to use a custom
-//                WebDialogWebContentsDelegate with the dialog, or NULL to
-//                use the default one. The dialog takes ownership of
-//                |tab_delegate|.
 // |overshadowed| is the tab being overshadowed by the dialog.
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
     content::BrowserContext* browser_context,
     ui::WebDialogDelegate* delegate,
-    ui::WebDialogWebContentsDelegate* tab_delegate,
     content::WebContents* overshadowed);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
