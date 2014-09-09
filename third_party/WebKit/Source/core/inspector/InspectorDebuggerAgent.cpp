@@ -1504,8 +1504,10 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
     visitor->trace(m_asyncCallStackTracker);
+#if ENABLE(OILPAN)
+    visitor->trace(m_promiseTracker);
+#endif
     InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
-

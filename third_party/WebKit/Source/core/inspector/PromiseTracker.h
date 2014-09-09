@@ -6,6 +6,7 @@
 #define PromiseTracker_h
 
 #include "core/InspectorTypeBuilder.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -16,8 +17,9 @@ namespace blink {
 
 class ScriptState;
 
-class PromiseTracker {
+class PromiseTracker FINAL {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
+    DISALLOW_ALLOCATION();
 public:
     PromiseTracker();
     ~PromiseTracker();
@@ -33,12 +35,14 @@ public:
 
     class PromiseData;
 
-    typedef Vector<RefPtr<PromiseData> > PromiseDataVector;
-    typedef HashMap<int, PromiseDataVector> PromiseDataMap;
+    typedef WillBeHeapVector<RefPtrWillBeMember<PromiseData> > PromiseDataVector;
+    typedef WillBeHeapHashMap<int, PromiseDataVector> PromiseDataMap;
+
+    void trace(Visitor*);
 
 private:
     int circularSequentialId();
-    PassRefPtr<PromiseData> createPromiseDataIfNeeded(v8::Isolate*, v8::Handle<v8::Object> promise);
+    PassRefPtrWillBeRawPtr<PromiseData> createPromiseDataIfNeeded(v8::Isolate*, v8::Handle<v8::Object> promise);
 
     bool m_isEnabled;
     int m_circularSequentialId;
