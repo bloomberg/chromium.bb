@@ -28,7 +28,7 @@
 namespace {
 
 // Hardcoded value for the secure version of Acrobat Reader.
-const char kSecureVersion[] = "11.0.7.79";
+const char kSecureVersion[] = "11.0.8.4";
 
 const char kAdobeReaderIdentifier[] = "adobe-reader";
 const char kPdfMimeType[] = "application/pdf";
