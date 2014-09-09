@@ -226,18 +226,18 @@ def VerifyV14ResourcesInDir(input_dir, resource_type):
   don't use attributes that cause crashes on certain devices. Print an error if
   they have."""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    warning_message = ('warning : ' + input_filename + ' has an RTL attribute, '
-                       'i.e., attribute that has "start" or "end" in its name.'
-                       ' Pre-v17 resources should not include it because it '
-                       'can cause crashes on certain devices. Please refer to '
-                       'http://crbug.com/243952 for the details.')
+    exception_message = ('error : ' + input_filename + ' has an RTL attribute, '
+                        'i.e., attribute that has "start" or "end" in its name.'
+                        ' Pre-v17 resources should not include it because it '
+                        'can cause crashes on certain devices. Please refer to '
+                        'http://crbug.com/243952 for the details.')
     dom = minidom.parse(input_filename)
     if resource_type in ('layout', 'xml'):
       if GenerateV14LayoutResourceDom(dom, input_filename, False):
-        print warning_message
+        raise Exception(exception_message)
     elif resource_type == 'values':
       if GenerateV14StyleResourceDom(dom, input_filename, False):
-        print warning_message
+        raise Exception(exception_message)
 
 
 def AssertNoDeprecatedAttributesInDir(input_dir, resource_type):
