@@ -239,8 +239,7 @@ def report_on_exception_exit(server):
     # server they also own. Please send a CL if you desire this functionality.
     return False
 
-  _SERVER = net.get_http_service(
-      server, allow_cached=False, use_count_key=False)
+  _SERVER = net.get_http_service(server, allow_cached=False)
   atexit.register(_check_for_exception_on_exit)
   return True
 

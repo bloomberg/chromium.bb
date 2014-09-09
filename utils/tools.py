@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 
-from third_party import requests
+import utils
 from utils import zip_package
 
 
@@ -202,7 +202,6 @@ def get_cacerts_bundle():
     if _ca_certs is not None and os.path.exists(_ca_certs):
       return _ca_certs
     # Some rogue process clears /tmp and causes cacert.pem to disappear. Extract
-    # to current directory instead. We use requests' copy of cacert.pem.
-    _ca_certs = zip_package.extract_resource(
-        requests, 'cacert.pem', temp_dir='.')
+    # to current directory instead. We use our own bundled copy of cacert.pem.
+    _ca_certs = zip_package.extract_resource(utils, 'cacert.pem', temp_dir='.')
     return _ca_certs

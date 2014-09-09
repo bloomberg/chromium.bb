@@ -16,25 +16,17 @@ import random
 import re
 import socket
 import ssl
-import sys
 import threading
 import time
 import urllib
-import urllib2
 import urlparse
 
 from third_party import requests
 from third_party.requests import adapters
 from third_party.requests import structures
-from third_party.rietveld import upload
 
 from utils import oauth
 from utils import tools
-
-# Hack out upload logging.info()
-upload.logging = logging.getLogger('upload')
-# Mac pylint choke on this line.
-upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
 # TODO(vadimsh): Remove this once we don't have to support python 2.6 anymore.
@@ -50,9 +42,6 @@ def monkey_patch_httplib():
     httplib.HTTPConnection._tunnel_host = None
 monkey_patch_httplib()
 
-
-# The name of the key to store the count of url attempts.
-COUNT_KEY = 'UrlOpenAttempt'
 
 # Default maximum number of attempts to trying opening a url before aborting.
 URL_OPEN_MAX_ATTEMPTS = 30
@@ -78,8 +67,6 @@ CONTENT_ENCODERS = {
     lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
 }
 
-# File to use to store all auth cookies.
-COOKIE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_cookies')
 
 # Google Storage URL regular expression.
 GS_STORAGE_HOST_URL_RE = re.compile(r'https://.*\.storage\.googleapis\.com')
@@ -89,20 +76,14 @@ GS_STORAGE_HOST_URL_RE = re.compile(r'https://.*\.storage\.googleapis\.com')
 # Order is important: it's visible in commands --help output.
 AUTH_METHODS = [
   ('oauth', oauth.OAuthConfig),
-  ('cookie', None),
   ('bot', None),
   ('none', None),
 ]
-
 
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
 # Used by get_http_service to cache HttpService instances.
 _http_services = {}
 _http_services_lock = threading.Lock()
-
-# CookieJar reused by all services + lock that protects its instantiation.
-_cookie_jar = None
-_cookie_jar_lock = threading.Lock()
 
 # This lock ensures that user won't be confused with multiple concurrent
 # login prompts.
@@ -127,10 +108,7 @@ class NetError(IOError):
     if verbose:
       headers = None
       body = None
-      if isinstance(self.inner_exc, urllib2.HTTPError):
-        headers = self.inner_exc.hdrs.items()
-        body = self.inner_exc.read()
-      elif isinstance(self.inner_exc, requests.HTTPError):
+      if isinstance(self.inner_exc, requests.HTTPError):
         headers = self.inner_exc.response.headers.items()
         body = self.inner_exc.response.content
       if headers or body:
@@ -240,23 +218,18 @@ def split_server_request_url(url):
   return urlhost, urlpath
 
 
-def get_http_service(urlhost, allow_cached=True, use_count_key=None):
+def get_http_service(urlhost, allow_cached=True):
   """Returns existing or creates new instance of HttpService that can send
   requests to given base urlhost.
   """
   def new_service():
     return HttpService(
         urlhost,
-        engine=RequestsLibEngine(tools.get_cacerts_bundle()),
-        authenticator=create_authenticator(urlhost),
-        use_count_key=use_count_key)
+        engine=RequestsLibEngine(),
+        authenticator=create_authenticator(urlhost))
 
   # Ensure consistency in url naming.
   urlhost = str(urlhost).lower().rstrip('/')
-
-  # Do not use COUNT_KEY with Google Storage (since it breaks a signature).
-  if use_count_key is None:
-    use_count_key = not GS_STORAGE_HOST_URL_RE.match(urlhost)
 
   if not allow_cached:
     return new_service()
@@ -266,18 +239,6 @@ def get_http_service(urlhost, allow_cached=True, use_count_key=None):
       service = new_service()
       _http_services[urlhost] = service
     return service
-
-
-def get_cookie_jar():
-  """Returns global CoookieJar object that stores cookies in the file."""
-  global _cookie_jar
-  with _cookie_jar_lock:
-    if _cookie_jar is not None:
-      return _cookie_jar
-    jar = ThreadSafeCookieJar(COOKIE_FILE)
-    jar.load()
-    _cookie_jar = jar
-    return jar
 
 
 def get_default_auth_config():
@@ -299,9 +260,8 @@ def configure_auth(method, config=None):
 
   Possible authentication methods are:
     'bot' - use HMAC authentication based on a secret key.
-    'cookie' - use cookie-based authentication.
-    'none' - do not use authentication.
     'oauth' - use oauth-based authentication.
+    'none' - do not use authentication.
 
   Arguments:
     method: what method to use.
@@ -350,12 +310,10 @@ def create_authenticator(urlhost):
       # TODO(vadimsh): Implement it. Use IP whitelist (that doesn't require
       # any authenticator instance) for now.
       return None
-    elif _auth_method == 'cookie':
-      return CookieBasedAuthenticator(urlhost, get_cookie_jar())
-    elif _auth_method == 'none':
-      return None
     elif _auth_method == 'oauth':
       return OAuthAuthenticator(urlhost, _auth_method_config)
+    elif _auth_method == 'none':
+      return None
   raise AssertionError('Invalid auth method: %s' % _auth_method)
 
 
@@ -377,11 +335,10 @@ class HttpService(object):
     - Thread safe.
   """
 
-  def __init__(self, urlhost, engine, authenticator=None, use_count_key=True):
+  def __init__(self, urlhost, engine, authenticator=None):
     self.urlhost = urlhost
     self.engine = engine
     self.authenticator = authenticator
-    self.use_count_key = use_count_key
 
   @staticmethod
   def is_transient_http_error(code, retry_404, retry_50x):
@@ -419,7 +376,7 @@ class HttpService(object):
     failed (i.e. this function returns False).
 
     'request' method always uses non-interactive login, so long-lived
-    authentication tokens (cookie, OAuth2 refresh token, etc) have to be set up
+    authentication tokens (OAuth2 refresh token, etc) have to be set up
     manually by developer (by calling 'auth.py login' perhaps) prior running
     any swarming or isolate scripts.
     """
@@ -520,9 +477,9 @@ class HttpService(object):
 
       try:
         # Prepare and send a new request.
-        request = HttpRequest(method, resource_url, query_params, body,
+        request = HttpRequest(
+            method, resource_url, query_params, body,
             headers, read_timeout, stream)
-        self.prepare_request(request, attempt.attempt)
         if self.authenticator:
           self.authenticator.authorize(request)
         response = self.engine.perform_request(request)
@@ -628,12 +585,6 @@ class HttpService(object):
     except ValueError:
       logging.error('Not a JSON response when calling %s: %s', urlpath, text)
       return None
-
-  def prepare_request(self, request, attempt):  # pylint: disable=R0201
-    """Modify HttpRequest before sending it by adding COUNT_KEY parameter."""
-    # Add COUNT_KEY only on retries.
-    if self.use_count_key and attempt:
-      request.params += [(COUNT_KEY, attempt)]
 
 
 class HttpRequest(object):
@@ -745,12 +696,12 @@ class RequestsLibEngine(object):
   # Maximum number of internal connection retries in a connection pool.
   CONNECTION_RETRIES = 0
 
-  def __init__(self, ca_certs):
+  def __init__(self):
     super(RequestsLibEngine, self).__init__()
     self.session = requests.Session()
     # Configure session.
     self.session.trust_env = False
-    self.session.verify = ca_certs
+    self.session.verify = tools.get_cacerts_bundle()
     # Configure connection pools.
     for protocol in ('https://', 'http://'):
       self.session.mount(protocol, adapters.HTTPAdapter(
@@ -791,123 +742,6 @@ class RequestsLibEngine(object):
       raise HttpError(e.response.status_code, e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
-
-
-# TODO(vadimsh): Remove once everything is using OAuth or HMAC-based auth.
-class CookieBasedAuthenticator(Authenticator):
-  """Uses cookies (that AppEngine recognizes) to authenticate to |urlhost|."""
-
-  def __init__(self, urlhost, cookie_jar):
-    super(CookieBasedAuthenticator, self).__init__()
-    self.urlhost = urlhost
-    self.cookie_jar = cookie_jar
-    self.email = None
-    self.password = None
-    self._keyring = None
-    self._lock = threading.Lock()
-
-  def authorize(self, request):
-    # Copy all cookies from authenticator cookie jar to request cookie jar.
-    with self._lock:
-      with self.cookie_jar:
-        for cookie in self.cookie_jar:
-          request.cookies.set_cookie(cookie)
-
-  def login(self, allow_user_interaction):
-    # Cookie authentication is always interactive (it asks for user name).
-    if not allow_user_interaction:
-      print >> sys.stderr, 'Cookie authentication requires interactive login'
-      return False
-    # To be used from inside AuthServer.
-    cookie_jar = self.cookie_jar
-    # RPC server that uses AuthenticationSupport's cookie jar.
-    class AuthServer(upload.AbstractRpcServer):
-      def _GetOpener(self):
-        # Authentication code needs to know about 302 response.
-        # So make OpenerDirector without HTTPRedirectHandler.
-        opener = urllib2.OpenerDirector()
-        opener.add_handler(urllib2.ProxyHandler())
-        opener.add_handler(urllib2.UnknownHandler())
-        opener.add_handler(urllib2.HTTPHandler())
-        opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-        opener.add_handler(urllib2.HTTPSHandler())
-        opener.add_handler(urllib2.HTTPErrorProcessor())
-        opener.add_handler(urllib2.HTTPCookieProcessor(cookie_jar))
-        return opener
-      def PerformAuthentication(self):
-        self._Authenticate()
-        return self.authenticated
-    with self._lock:
-      with cookie_jar:
-        rpc_server = AuthServer(self.urlhost, self.get_credentials)
-        return rpc_server.PerformAuthentication()
-
-  def logout(self):
-    domain = urlparse.urlparse(self.urlhost).netloc
-    try:
-      with self.cookie_jar:
-        self.cookie_jar.clear(domain)
-    except KeyError:
-      pass
-
-  def get_credentials(self):
-    """Called during authentication process to get the credentials.
-
-    May be called multiple times if authentication fails.
-
-    Returns tuple (email, password).
-    """
-    if self.email and self.password:
-      return (self.email, self.password)
-    self._keyring = self._keyring or upload.KeyringCreds(self.urlhost,
-        self.urlhost, self.email)
-    return self._keyring.GetUserCredentials()
-
-
-# TODO(vadimsh): Remove once everything is using OAuth or HMAC-based auth.
-class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
-  """MozillaCookieJar with thread safe load and save."""
-
-  def __enter__(self):
-    """Context manager interface."""
-    return self
-
-  def __exit__(self, *_args):
-    """Saves cookie jar when exiting the block."""
-    self.save()
-    return False
-
-  def load(self, filename=None, ignore_discard=False, ignore_expires=False):
-    """Loads cookies from the file if it exists."""
-    filename = os.path.expanduser(filename or self.filename)
-    with self._cookies_lock:
-      if os.path.exists(filename):
-        try:
-          cookielib.MozillaCookieJar.load(
-              self, filename, ignore_discard, ignore_expires)
-          logging.debug('Loaded cookies from %s', filename)
-        except (cookielib.LoadError, IOError):
-          pass
-      else:
-        try:
-          fd = os.open(filename, os.O_CREAT, 0600)
-          os.close(fd)
-        except OSError:
-          logging.debug('Failed to create %s', filename)
-      try:
-        os.chmod(filename, 0600)
-      except OSError:
-        logging.debug('Failed to fix mode for %s', filename)
-
-  def save(self, filename=None, ignore_discard=False, ignore_expires=False):
-    """Saves cookies to the file, completely overwriting it."""
-    logging.debug('Saving cookies to %s', filename or self.filename)
-    with self._cookies_lock:
-      try:
-        cookielib.MozillaCookieJar.save(
-            self, filename, ignore_discard, ignore_expires)
-      except OSError:
-        logging.error('Failed to save %s', filename)
 
 
 class OAuthAuthenticator(Authenticator):

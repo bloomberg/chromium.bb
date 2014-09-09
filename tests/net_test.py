@@ -79,12 +79,10 @@ class GetHttpServiceTest(unittest.TestCase):
   def test_get_http_service(self):
     def assert_is_appengine_service(service):
       """Verifies HttpService is configured for App Engine communications."""
-      self.assertTrue(service.use_count_key)
       self.assertIsNotNone(service.authenticator)
 
     def assert_is_googlestorage_service(service):
       """Verifies HttpService is configured for GS communications."""
-      self.assertFalse(service.use_count_key)
       self.assertIsNone(service.authenticator)
 
     # Can recognize app engine URLs.
@@ -182,10 +180,11 @@ class HttpServiceTest(RetryLoopMockedTest):
 
   def test_request_success_after_failure(self):
     response = 'True'
+    attempts = []
 
     def mock_perform_request(request):
-      params = dict(request.params)
-      if params.get(net.COUNT_KEY) != 1:
+      attempts.append(request)
+      if len(attempts) == 1:
         raise net.ConnectionError()
       return request.make_fake_response(response)
 
@@ -234,12 +233,13 @@ class HttpServiceTest(RetryLoopMockedTest):
 
   def test_request_HTTP_error_retry_404(self):
     response = 'data'
+    attempts = []
 
     def mock_perform_request(request):
-      params = dict(request.params)
-      if params.get(net.COUNT_KEY) == 1:
-        return request.make_fake_response(response)
-      raise net.HttpError(404)
+      attempts.append(request)
+      if len(attempts) == 1:
+        raise net.HttpError(404)
+      return request.make_fake_response(response)
 
     service = self.mocked_http_service(perform_request=mock_perform_request)
     result = service.request('/', data={}, retry_404=True)
@@ -248,10 +248,11 @@ class HttpServiceTest(RetryLoopMockedTest):
 
   def test_request_HTTP_error_with_retry(self):
     response = 'response'
+    attempts = []
 
     def mock_perform_request(request):
-      params = dict(request.params)
-      if params.get(net.COUNT_KEY) != 1:
+      attempts.append(request)
+      if len(attempts) == 1:
         raise net.HttpError(500)
       return request.make_fake_response(response)
 

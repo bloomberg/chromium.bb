@@ -886,7 +886,7 @@ def main(args):
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(data_group, options)
+  isolateserver.process_isolate_server_options(parser, options)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
