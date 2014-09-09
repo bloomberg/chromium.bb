@@ -125,14 +125,16 @@ BASE_EXPORT bool CreateOrUpdateShortcutLink(
     const ShortcutProperties& properties,
     ShortcutOperation operation);
 
-// Resolves Windows shortcut (.LNK file)
+// Resolves Windows shortcut (.LNK file).
 // This methods tries to resolve selected properties of a shortcut .LNK file.
 // The path of the shortcut to resolve is in |shortcut_path|. |options| is a bit
 // field composed of ShortcutProperties::IndividualProperties, to specify which
 // properties to read. It should be non-0. The resulting data are read into
-// |properties|, which must not be NULL. The function returns true if all
-// requested properties are successfully read. Otherwise some reads have failed
-// and intermediate values written to |properties| should be ignored.
+// |properties|, which must not be NULL. Note: PROPERTIES_TARGET will retrieve
+// the target path as stored in the shortcut but won't attempt to resolve that
+// path so it may not be valid. The function returns true if all requested
+// properties are successfully read. Otherwise some reads have failed and
+// intermediate values written to |properties| should be ignored.
 BASE_EXPORT bool ResolveShortcutProperties(const FilePath& shortcut_path,
                                            uint32 options,
                                            ShortcutProperties* properties);

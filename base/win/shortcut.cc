@@ -204,9 +204,6 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
 
   wchar_t temp[MAX_PATH];
   if (options & ShortcutProperties::PROPERTIES_TARGET) {
-    // Try to find the target of a shortcut.
-    if (FAILED(i_shell_link->Resolve(0, SLR_NO_UI | SLR_NOSEARCH)))
-      return false;
     if (FAILED(i_shell_link->GetPath(temp, MAX_PATH, NULL, SLGP_UNCPRIORITY)))
       return false;
     properties->set_target(FilePath(temp));
