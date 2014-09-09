@@ -10,11 +10,9 @@ If proguard is not enabled or 'Release' is not in the configuration name,
 obfuscation will be a no-op.
 """
 
-import fnmatch
 import optparse
 import os
 import sys
-import zipfile
 
 from util import build_utils
 
@@ -86,19 +84,9 @@ def main(argv):
   dependency_class_filters = [
       '*R.class', '*R$*.class', '*Manifest.class', '*BuildConfig.class']
 
-  def DependencyClassFilter(name):
-    for name_filter in dependency_class_filters:
-      if fnmatch.fnmatch(name, name_filter):
-        return False
-    return True
-
   if options.testapp:
-    with zipfile.ZipFile(options.test_jar_path, 'w') as test_jar:
-      for jar in input_jars:
-        with zipfile.ZipFile(jar, 'r') as jar_zip:
-          for name in filter(DependencyClassFilter, jar_zip.namelist()):
-            with jar_zip.open(name) as zip_entry:
-              test_jar.writestr(name, zip_entry.read())
+    build_utils.MergeZips(
+        options.test_jar_path, input_jars, dependency_class_filters)
 
   if options.configuration_name == 'Release' and options.proguard_enabled:
     proguard_cmd = [

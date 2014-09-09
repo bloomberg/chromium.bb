@@ -165,6 +165,12 @@ def main(argv):
     dex_deps_files = [c['dex_path'] for c in all_library_deps]
     dex_config['dependency_dex_files'] = dex_deps_files
 
+    config['dist_jar'] = {
+      'dependency_jars': [
+        c['jar_path'] for c in all_library_deps
+      ]
+    }
+
     library_paths = []
     java_libraries_list = []
     if options.native_libs:

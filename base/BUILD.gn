@@ -1338,6 +1338,7 @@ test("base_unittests") {
 }
 
 if (is_android) {
+  # GYP: //base.gyp:base_jni_headers
   generate_jni("base_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/ApplicationStatus.java",
@@ -1363,6 +1364,7 @@ if (is_android) {
     jni_package = "base"
   }
 
+  # GYP: //base.gyp:base_java
   android_library("base_java") {
     srcjar_deps = [
       ":base_java_application_state",
@@ -1384,6 +1386,16 @@ if (is_android) {
     ]
   }
 
+  # GYP: //base.gyp:base_javatests
+  android_library("base_javatests") {
+    deps = [
+      ":base_java",
+      ":base_java_test_support",
+    ]
+    DEPRECATED_java_in_dir = "android/javatests/src"
+  }
+
+  # GYP: //base.gyp:base_java_test_support
   android_library("base_java_test_support") {
     deps = [
       ":base_java",
@@ -1391,6 +1403,7 @@ if (is_android) {
     DEPRECATED_java_in_dir = "test/android/javatests/src"
   }
 
+  # GYP: //base.gyp:base_java_application_state
   java_cpp_template("base_java_application_state") {
     sources = [
       "android/java/src/org/chromium/base/ApplicationState.template",
@@ -1402,6 +1415,7 @@ if (is_android) {
     package_name = "org/chromium/base"
   }
 
+  # GYP: //base.gyp:base_java_memory_pressure_level_list
   java_cpp_template("base_java_memory_pressure_level_list") {
     sources = [
       "android/java/src/org/chromium/base/MemoryPressureLevelList.template",
@@ -1413,6 +1427,7 @@ if (is_android) {
     package_name = "org/chromium/base"
   }
 
+  # GYP: //base/base.gyp:base_native_libraries_gen
   java_cpp_template("base_native_libraries_gen") {
     sources = [
       "android/java/templates/NativeLibraries.template",
@@ -1420,6 +1435,7 @@ if (is_android) {
     package_name = "org/chromium/base/library_loader"
   }
 
+  # GYP: //base.gyp:base_java_unittest_support
   android_library("base_java_unittest_support") {
     deps = [":base_java"]
     java_files = [
@@ -1427,6 +1443,7 @@ if (is_android) {
     ]
   }
 
+  # GYP: //base.gyp:base_unittests_apk
   unittest_apk("base_unittests_apk") {
     deps = [
       ":base_java",

@@ -53,7 +53,7 @@ template("android_gcc_toolchain") {
     # the following definition.
     soname = "{{target_output_name}}{{output_extension}}"
 
-    stripped_soname = "lib.stripped/${soname}.tmp"
+    stripped_soname = "lib.stripped/${soname}"
     temp_stripped_soname = "${stripped_soname}.tmp"
 
     android_strip = "${tool_prefix}strip"

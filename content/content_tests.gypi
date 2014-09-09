@@ -1346,7 +1346,7 @@
               'sources!': [
                 # These tests depend on single process mode, which is disabled
                 # in official builds.
-    'renderer/browser_render_view_browsertest.cc',
+                'renderer/browser_render_view_browsertest.cc',
                 'renderer/dom_serializer_browsertest.cc',
                 'renderer/resource_fetcher_browsertest.cc',
                 'renderer/savable_resources_browsertest.cc',
@@ -1544,6 +1544,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # TODO(GN)
           'target_name': 'content_gl_tests_apk',
           'type': 'none',
           'dependencies': [
@@ -1558,6 +1559,7 @@
           ],
         },
         {
+          # TODO(GN)
           'target_name': 'content_unittests_apk',
           'type': 'none',
           'dependencies': [
@@ -1570,6 +1572,7 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [
@@ -1597,6 +1600,7 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'content_perftests_apk',
           'type': 'none',
           'dependencies': [
@@ -1609,6 +1613,7 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'chromium_linker_test_apk',
           'type': 'none',
           'conditions': [
@@ -1642,6 +1647,7 @@
           ],
         },
         {
+          # TODO(GN)
           'target_name': 'chromium_android_linker_test',
           'type': 'shared_library',
           'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -1658,6 +1664,7 @@
           ],
         },
         {
+          # TODO(GN)
           'target_name': 'chromium_android_linker_test_jni_headers',
           'type': 'none',
           'sources': [
@@ -1669,6 +1676,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'video_decode_accelerator_unittest_apk',
           'type': 'none',
           'dependencies': [
@@ -1679,11 +1687,8 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
         {
+          # GN: //content/public/test/android:test_support_content_jni_headers
           'target_name': 'test_support_content_jni_headers',
           'type': 'none',
           'sources': [
@@ -1695,6 +1700,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # GN: //content/public/test/android:content_java_test_support
           'target_name': 'content_java_test_support',
           'type': 'none',
           'dependencies': [
@@ -1709,6 +1715,8 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //content/shell/android:content_shell_test_apk
+          #     and //content/public/android:content_javatests
           'target_name': 'content_shell_test_apk',
           'type': 'none',
           'dependencies': [

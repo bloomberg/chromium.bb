@@ -27,7 +27,7 @@ android_library("content_java") {
   deps = [
     ":content_java_resources",
     "//base:base_java",
-    "//media:media_java",
+    "//media/base/android:media_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
     "//third_party/guava:guava_javalib",
@@ -207,5 +207,24 @@ generate_jar_jni("content_jni_headers") {
     "java/util/HashSet.class",
   ]
 }
+
+android_library("content_javatests") {
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//content/shell/android:content_shell_java",
+    "//content/shell/android:content_shell_apk_java",
+    "//content/shell/android:content_shell_test_java",
+    "//media/base/android:media_java",
+    "//net/android:net_java",
+    "//net/android:net_java_test_support",
+    "//ui/android:ui_java",
+    ":content_java",
+  ]
+
+  DEPRECATED_java_in_dir = "javatests/src"
+}
+
 
 # TODO(GYP): content_icudata

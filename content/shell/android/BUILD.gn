@@ -44,7 +44,7 @@ android_library("content_shell_java") {
   deps = [
     "//base:base_java",
     "//content/public/android:content_java",
-    "//media:media_java",
+    "//media/base/android:media_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
     ":content_shell_java_resources",
@@ -60,6 +60,19 @@ android_resources("content_shell_apk_resources") {
   android_manifest = "shell_apk/AndroidManifest.xml"
 }
 
+android_library("content_shell_apk_java") {
+  deps = [
+    ":content_shell_apk_resources",
+    ":content_shell_java",
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//media/base/android:media_java",
+    "//net/android:net_java",
+    "//ui/android:ui_java",
+  ]
+  DEPRECATED_java_in_dir = "shell_apk/src"
+}
+
 android_apk("content_shell_apk") {
   datadeps = [
     # "//tools/android/forwarder",
@@ -67,18 +80,18 @@ android_apk("content_shell_apk") {
   deps = [
     ":content_shell_apk_resources",
     ":content_shell_java",
+    ":content_shell_apk_java",
     ":libcontent_shell_content_view",
     "//base:base_java",
     "//content/public/android:content_java",
     "//content/public/android:content_java_resources",
-    "//media:media_java",
+    "//media/base/android:media_java",
     "//net/android:net_java",
     #"//third_party/mesa:osmesa_in_lib_dir",
     "//ui/android:ui_java",
   ]
   apk_name = "ContentShell"
   android_manifest = "shell_apk/AndroidManifest.xml"
-  DEPRECATED_java_in_dir = "shell_apk/src"
   native_libs = [
     "$root_build_dir/lib.stripped/libcontent_shell_content_view.so"
   ]
@@ -95,4 +108,27 @@ android_apk("content_shell_apk") {
   if (is_android_webview_build) {
     # TODO(GYP)
   }
+}
+
+android_library("content_shell_test_java") {
+  deps = [
+    ":content_shell_java",
+    ":content_shell_apk_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//content/shell/android:content_shell_java",
+    "//content/public/android:content_java",
+  ]
+  DEPRECATED_java_in_dir = "javatests/src"
+}
+
+android_apk("content_shell_test_apk") {
+  deps = [
+    "//content/public/android:content_javatests",
+    "//base:base_javatests",
+    "//net/android:net_javatests",
+  ]
+  apk_name = "ContentShellTest"
+  android_manifest = "javatests/AndroidManifest.xml"
 }

@@ -232,6 +232,22 @@ def ZipDir(output, base_dir):
         outfile.write(path, archive_path)
 
 
+def MergeZips(output, inputs, exclude_patterns=None):
+  def Allow(name):
+    if exclude_patterns is not None:
+      for p in exclude_patterns:
+        if fnmatch.fnmatch(name, p):
+          return False
+    return True
+
+  with zipfile.ZipFile(output, 'w') as out_zip:
+    for in_file in inputs:
+      with zipfile.ZipFile(in_file, 'r') as in_zip:
+        for name in in_zip.namelist():
+          if Allow(name):
+            out_zip.writestr(name, in_zip.read(name))
+
+
 def PrintWarning(message):
   print 'WARNING: ' + message
 

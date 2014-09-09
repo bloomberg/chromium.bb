@@ -1620,6 +1620,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # TODO(GN)
           'target_name': 'media_unittests_apk',
           'type': 'none',
           'dependencies': [
@@ -1632,6 +1633,7 @@
           'includes': ['../build/apk_test.gypi'],
         },
         {
+          # TODO(GN)
           'target_name': 'media_perftests_apk',
           'type': 'none',
           'dependencies': [
@@ -1644,6 +1646,7 @@
           'includes': ['../build/apk_test.gypi'],
         },
         {
+          # GN: //media/base/android:media_android_jni_headers
           'target_name': 'media_android_jni_headers',
           'type': 'none',
           'sources': [
@@ -1663,6 +1666,7 @@
           'includes': ['../build/jni_generator.gypi'],
         },
         {
+          # GN: //media/base/android:video_capture_android_jni_headers
           'target_name': 'video_capture_android_jni_headers',
           'type': 'none',
           'sources': [
@@ -1675,6 +1679,7 @@
           'includes': ['../build/jni_generator.gypi'],
         },
         {
+          # GN: //media/base/android:android
           'target_name': 'player_android',
           'type': 'static_library',
           'sources': [
@@ -1720,6 +1725,7 @@
           ],
         },
         {
+          # GN: //media/base/android:media_java
           'target_name': 'media_java',
           'type': 'none',
           'dependencies': [
@@ -1735,6 +1741,7 @@
           'includes': ['../build/java.gypi'],
         },
         {
+          # GN: //media/base/android:media_android_imageformat_list
           'target_name': 'media_android_imageformat_list',
           'type': 'none',
           'sources': [

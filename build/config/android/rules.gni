@@ -620,12 +620,23 @@ template("android_apk") {
   } else if (defined(invoker.apk_name)) {
     _final_apk_path = "$root_build_dir/apks/" + invoker.apk_name + ".apk"
   }
+  _dist_jar_path_list = process_file_template(
+      [ _final_apk_path ],
+      "$root_build_dir/test.lib.java/{{source_name_part}}.jar"
+      )
+  _dist_jar_path = _dist_jar_path_list[0]
 
   _native_libs = []
   if (defined(invoker.native_libs)) {
     _native_libs = invoker.native_libs
     _native_libs_dir = base_path + "/libs"
   }
+
+  _has_java = (
+      defined(invoker.java_files)
+      || defined(invoker.DEPRECATED_java_in_dir)
+      || _native_libs != []
+      )
 
   _keystore_path = android_default_keystore_path
   _keystore_name = android_default_keystore_name
@@ -707,25 +718,63 @@ template("android_apk") {
     _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
   }
 
-  final_deps += [":${_template_name}__java"]
-  android_java_library("${_template_name}__java") {
-    android_manifest = invoker.android_manifest
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    } else {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+  if (_has_java) {
+    final_deps += [ ":${_template_name}__java" ]
+    android_java_library("${_template_name}__java") {
+      android_manifest = invoker.android_manifest
+      if (defined(invoker.java_files)) {
+        java_files = invoker.java_files
+      } else if (defined(invoker.DEPRECATED_java_in_dir)) {
+        DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+      } else {
+        assert(_srcjar_deps != [])
+        java_files = []
+      }
+      srcjar_deps = _srcjar_deps
+      dex_path = base_path + ".dex.jar"
     }
-    srcjar_deps = _srcjar_deps
-    dex_path = base_path + ".dex.jar"
+  } else {
+    assert(_srcjar_deps == [])
+  }
+
+  if (_dist_jar_path != "") {
+    # TODO(cjhopman): This is only ever needed to calculate the list of tests to
+    # run. See build/android/pylib/instrumentation/test_jar.py. We should be
+    # able to just do that calculation at build time instead.
+    action("${_template_name}__create_dist_jar") {
+      script = "//build/android/gyp/create_dist_jar.py"
+      depfile = "$target_gen_dir/$target_name.d"
+      inputs = [ build_config ]
+      outputs = [
+        depfile,
+        _dist_jar_path,
+      ]
+      args = [
+        "--depfile", rebase_path(depfile, root_build_dir),
+        "--output", rebase_path(_dist_jar_path, root_build_dir),
+        "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)",
+      ]
+      if (_has_java) {
+        inputs += [ jar_path ]
+        _rebased_jar_path = rebase_path([ jar_path ], root_build_dir)
+        args += [
+          "--inputs=$_rebased_jar_path",
+        ]
+      }
+    }
   }
 
   final_deps += [":${_template_name}__final_dex"]
   dex("${_template_name}__final_dex") {
-    sources = [jar_path]
-    inputs = [build_config]
+    sources = []
+    if (_has_java) {
+      deps = [ ":${_template_name}__java" ]
+      sources += [ jar_path ]
+    }
+    inputs = [ build_config ]
     output = final_dex_path
     dex_arg_key = "${_rebased_build_config}:apk_dex:dependency_dex_files"
-    args = ["--inputs=@FileArg($dex_arg_key)"]
+    args = [ "--inputs=@FileArg($dex_arg_key)" ]
   }
 
   if (_native_libs != []) {

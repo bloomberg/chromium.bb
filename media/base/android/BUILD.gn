@@ -90,3 +90,25 @@ generate_jni("video_capture_jni_headers") {
   ]
   jni_package = "media"
 }
+
+java_cpp_template("media_android_imageformat_list") {
+  package_name = "org/chromium/media"
+  sources = [
+    "java/src/org/chromium/media/ImageFormat.template",
+  ]
+  inputs = [
+    "//media/video/capture/android/imageformat_list.h"
+  ]
+}
+
+android_library("media_java") {
+  deps = [
+    "//base:base_java",
+  ]
+
+  srcjar_deps = [
+    ":media_android_imageformat_list",
+  ]
+
+  DEPRECATED_java_in_dir = "java/src"
+}

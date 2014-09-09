@@ -298,7 +298,7 @@ component("media") {
       "//media/base/android:video_capture_jni_headers",
     ]
     if (!is_android_webview_build) {
-      deps += [ ":media_java" ]
+      deps += [ "//media/base/android:media_java" ]
     }
   }
 
@@ -483,7 +483,30 @@ test("media_unittests") {
     "formats/webm/webm_webvtt_parser_unittest.cc",
   ]
 
-  if (!is_android) {
+  deps = [
+    ":media",
+    ":test_support",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//media/audio:unittests",
+    "//media/audio:test_support",
+    "//media/base:unittests",
+    "//media/base:test_support",
+    "//skia",  # Direct dependency required to inherit config.
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/widevine/cdm:version_h",
+    "//ui/gfx:test_support",
+    "//url",
+  ]
+
+  if (is_android) {
+    deps += [
+      "//media/base/android",
+      # TODO(GYP)
+      #"//testing/android:native_test_native_code"
+    ]
+  } else {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",
@@ -496,12 +519,6 @@ test("media_unittests") {
       "filters/pipeline_integration_test.cc",
       "filters/pipeline_integration_test_base.cc",
     ]
-  } else {
-# TODO(ajwong): Blocked on android.
-#    deps += [
-#      ":player_android",
-#      "//testing/android:native_test_native_code"
-#    ]
   }
 
   if (cpu_arch != "arm" && is_chromeos && use_x11) {
@@ -552,32 +569,6 @@ test("media_unittests") {
 
   configs += [ ":media_config" ]
 
-# TODO(ajwong): This was in the original gyp, but it seems silly.
-#        ['os_posix==1 and OS!="mac"', {
-#          'conditions': [
-#            ['use_allocator!="none"', {
-#              'dependencies': [
-#                '../base/allocator/allocator.gyp:allocator',
-#              ],
-#            }],
-#          ],
-#        }],
-  deps = [
-    ":media",
-    ":test_support",
-    "//base/test:test_support",
-    "//media/audio:unittests",
-    "//media/audio:test_support",
-    "//media/base:unittests",
-    "//media/base:test_support",
-    "//skia",  # Direct dependency required to inherit config.
-    "//testing/gmock",
-    "//testing/gtest",
-    # TODO(dalecurtis): Port the rest of Widevine stuff.
-    "//third_party/widevine/cdm:version_h",
-    "//ui/gfx:test_support",
-    "//url",
-  ]
   if (media_use_ffmpeg) {
     deps += [
       "//third_party/ffmpeg",  # Direct dependency required to inherit config.
@@ -732,25 +723,5 @@ if (use_x11) {
       "//ui/gfx",
       "//ui/gfx/geometry",
     ]
-  }
-}
-
-if (is_android) {
-  import("//build/config/android/rules.gni")
-  android_library("media_java") {
-    srcjar_deps = [
-      ":media_android_imageformat_list",
-    ]
-    java_files = []
-  }
-
-  java_cpp_template("media_android_imageformat_list") {
-    sources = [
-      "base/android/java/src/org/chromium/media/ImageFormat.template",
-    ]
-    inputs = [
-      "video/capture/android/imageformat_list.h"
-    ]
-    package_name = "org/chromium/media"
   }
 }

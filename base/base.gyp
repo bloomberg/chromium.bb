@@ -1231,6 +1231,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN: //base:base_jni_headers
           'target_name': 'base_jni_headers',
           'type': 'none',
           'sources': [
@@ -1260,6 +1261,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'base_unittests_jni_headers',
           'type': 'none',
           'sources': [
@@ -1271,6 +1273,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # GN: //base:base_native_libraries_gen
           'target_name': 'base_native_libraries_gen',
           'type': 'none',
           'sources': [
@@ -1283,6 +1286,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //base:base_java
           'target_name': 'base_java',
           'type': 'none',
           'variables': {
@@ -1304,6 +1308,7 @@
           ],
         },
         {
+          # GN: //base:base_java_unittest_support
           'target_name': 'base_java_unittest_support',
           'type': 'none',
           'dependencies': [
@@ -1315,6 +1320,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //base:base_java_application_state
           'target_name': 'base_java_application_state',
           'type': 'none',
           # This target is used to auto-generate ApplicationState.java
@@ -1331,6 +1337,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //base:base_java_memory_pressure_level_list
           'target_name': 'base_java_memory_pressure_level_list',
           'type': 'none',
           'sources': [
@@ -1343,6 +1350,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //base:base_java_test_support
           'target_name': 'base_java_test_support',
           'type': 'none',
           'dependencies': [
@@ -1354,6 +1362,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //base:base_javatests
           'target_name': 'base_javatests',
           'type': 'none',
           'dependencies': [
@@ -1366,6 +1375,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # TODO(GN)
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'conditions': [
@@ -1389,12 +1399,8 @@
             }],
           ],
         },
-
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
         {
+          # TODO(GN)
           'target_name': 'base_perftests_apk',
           'type': 'none',
           'dependencies': [
@@ -1402,6 +1408,19 @@
           ],
           'variables': {
             'test_suite_name': 'base_perftests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
+          # GN: //base:base_unittests_apk
+          'target_name': 'base_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'base_java',
+            'base_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'base_unittests',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
@@ -1420,22 +1439,6 @@
               'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
             },
           },
-        },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
-        {
-          'target_name': 'base_unittests_apk',
-          'type': 'none',
-          'dependencies': [
-            'base_java',
-            'base_unittests',
-          ],
-          'variables': {
-            'test_suite_name': 'base_unittests',
-          },
-          'includes': [ '../build/apk_test.gypi' ],
         },
       ],
     }],
