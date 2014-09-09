@@ -164,23 +164,27 @@ bool EnumRelocsCallback(const base::win::PEImage& mem_peimage,
   if (!AddrIsInCodeSection(address, mem_code_addr, code_size))
     return true;
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.ModuleBaseRelocation", type);
-
   switch (type) {
-    case IMAGE_REL_BASED_HIGHLOW: {
-      AddBytesCorrectedByReloc(reinterpret_cast<uintptr_t>(address), state);
-      break;
-    }
-    case IMAGE_REL_BASED_ABSOLUTE:
+    case IMAGE_REL_BASED_ABSOLUTE:  // 0
       // Absolute type relocations are a noop, sometimes used to pad a section
       // of relocations.
       break;
-    default: {
+    case IMAGE_REL_BASED_HIGHLOW:  // 3
+      // The base relocation applies all 32 bits of the difference to the 32-bit
+      // field at offset.
+      AddBytesCorrectedByReloc(reinterpret_cast<uintptr_t>(address), state);
+      break;
+    case IMAGE_REL_BASED_DIR64:  // 10
+      // The base relocation applies the difference to the 64-bit field at
+      // offset.
+      // TODO(robertshield): Handle this type of reloc.
+      break;
+    default:
       // TODO(robertshield): Find a reliable description of the behaviour of the
       // remaining types of relocation and handle them.
+      UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.ModuleBaseRelocation", type);
       state->unknown_reloc_type = true;
       break;
-    }
   }
   return true;
 }
