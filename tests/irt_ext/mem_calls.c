@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_extension.h"
+#include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/mem_calls.h"
 
 static struct mem_calls_environment *g_activated_env = NULL;
@@ -41,7 +41,8 @@ static int my_mprotect(void *addr, size_t len, int prot) {
 void init_mem_calls_module(void) {
   size_t bytes = nacl_interface_query(NACL_IRT_MEMORY_v0_3,
                                       &g_irt_memory, sizeof(g_irt_memory));
-  ASSERT_EQ(bytes, sizeof(g_irt_memory));
+  IRT_EXT_ASSERT_MSG(bytes == sizeof(g_irt_memory),
+                     "Could not query interface: " NACL_IRT_MEMORY_v0_3);
 
   struct nacl_irt_memory mem = {
     my_mmap,
@@ -49,9 +50,10 @@ void init_mem_calls_module(void) {
     my_mprotect
   };
 
-  bytes = nacl_interface_ext_supply(NACL_IRT_MEMORY_v0_3, &mem,
-                                    sizeof(mem));
-  ASSERT_EQ(bytes, sizeof(mem));
+  bytes = nacl_interface_ext_supply(NACL_IRT_MEMORY_v0_3,
+                                    &mem, sizeof(mem));
+  IRT_EXT_ASSERT_MSG(bytes == sizeof(mem),
+                     "Could not supply interface: " NACL_IRT_MEMORY_v0_3);
 }
 
 void init_mem_calls_environment(struct mem_calls_environment *env) {

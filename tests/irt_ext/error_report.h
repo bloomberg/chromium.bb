@@ -16,8 +16,20 @@
 #ifndef NATIVE_CLIENT_TESTS_IRT_EXT_ERROR_REPORT_H
 #define NATIVE_CLIENT_TESTS_IRT_EXT_ERROR_REPORT_H
 
+#include "native_client/src/include/portability.h"
+
 void init_error_report_module(void);
 
 void irt_ext_test_print(const char *format, ...);
+
+#define IRT_EXT_ASSERT_MSG(bool_expr, msg) do {                               \
+    if (!(bool_expr)) {                                                       \
+      irt_ext_test_print("Error at line %d, %s: " #bool_expr  " is FALSE\n"   \
+                         "  %s\n",                                            \
+                         __LINE__, __FILE__, msg);                            \
+      irt_ext_test_print("FAIL\n");                                           \
+      exit(1);                                                                \
+    }                                                                         \
+  } while (0)
 
 #endif /* NATIVE_CLIENT_TESTS_IRT_EXT_ERROR_REPORT_H */

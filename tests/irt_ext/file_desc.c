@@ -8,10 +8,10 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_extension.h"
+#include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/file_desc.h"
 
 /* Non-POSIX flags for open() helps with link logic. */
@@ -465,12 +465,14 @@ void init_file_desc_module(void) {
 
   size_t size = nacl_interface_ext_supply(NACL_IRT_DEV_FDIO_v0_3, &fdio,
                                           sizeof(fdio));
-  ASSERT_EQ(size, sizeof(fdio));
+  IRT_EXT_ASSERT_MSG(size == sizeof(fdio),
+                     "Could not supply interface: " NACL_IRT_DEV_FDIO_v0_3);
 
   /* nacl_irt_fdio shares the same prefix as nacl_irt_dev_fdio. */
   size = nacl_interface_ext_supply(NACL_IRT_FDIO_v0_1, &fdio,
                                    sizeof(struct nacl_irt_fdio));
-  ASSERT_EQ(size, sizeof(struct nacl_irt_fdio));
+  IRT_EXT_ASSERT_MSG(size == sizeof(struct nacl_irt_fdio),
+                     "Could not supply interface: " NACL_IRT_FDIO_v0_1);
 
   struct nacl_irt_dev_filename fname = {
     my_open,
@@ -493,7 +495,8 @@ void init_file_desc_module(void) {
 
   size = nacl_interface_ext_supply(NACL_IRT_DEV_FILENAME_v0_3, &fname,
                                    sizeof(fname));
-  ASSERT_EQ(size, sizeof(fname));
+  IRT_EXT_ASSERT_MSG(size == sizeof(fname),
+                     "Could not supply interface: " NACL_IRT_DEV_FILENAME_v0_3);
 }
 
 void init_inode_data(struct inode_data *inode_data) {
