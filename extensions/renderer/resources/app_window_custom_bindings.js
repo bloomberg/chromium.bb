@@ -193,6 +193,10 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     return windows.length > 0 ? windows[0] : null;
   });
 
+  apiFunctions.setHandleRequest('canSetVisibleOnAllWorkspaces', function() {
+    return /Mac/.test(navigator.platform) || /Linux/.test(navigator.userAgent);
+  });
+
   // This is an internal function, but needs to be bound into a closure
   // so the correct JS context is used for global variables such as
   // currentWindowInternal, appWindowData, etc.

@@ -41408,6 +41408,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="887" label="MEDIAGALLERIES_GETALLGALLERYWATCH"/>
   <int value="888" label="MEDIAGALLERIES_REMOVEALLGALLERYWATCH"/>
   <int value="889" label="MANAGEMENT_GETSELF"/>
+  <int value="890" label="APP_CURRENTWINDOWINTERNAL_SETVISIBLEONALLWORKSPACES"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -27,6 +27,8 @@ namespace SetIcon = app_current_window_internal::SetIcon;
 namespace SetBadgeIcon = app_current_window_internal::SetBadgeIcon;
 namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
+namespace SetVisibleOnAllWorkspaces =
+    app_current_window_internal::SetVisibleOnAllWorkspaces;
 
 using app_current_window_internal::Bounds;
 using app_current_window_internal::Region;
@@ -394,6 +396,20 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
       SetAlwaysOnTop::Params::Create(*args_));
   CHECK(params.get());
   window->SetAlwaysOnTop(params->always_on_top);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
+    AppWindow* window) {
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    error_ = kDevChannelOnly;
+    return false;
+  }
+
+  scoped_ptr<SetVisibleOnAllWorkspaces::Params> params(
+      SetVisibleOnAllWorkspaces::Params::Create(*args_));
+  CHECK(params.get());
+  window->GetBaseWindow()->SetVisibleOnAllWorkspaces(params->always_visible);
   return true;
 }
 

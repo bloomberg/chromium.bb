@@ -160,7 +160,8 @@ AppWindow::CreateParams::CreateParams()
       hidden(false),
       resizable(true),
       focused(true),
-      always_on_top(false) {
+      always_on_top(false),
+      visible_on_all_workspaces(false) {
 }
 
 AppWindow::CreateParams::~CreateParams() {}

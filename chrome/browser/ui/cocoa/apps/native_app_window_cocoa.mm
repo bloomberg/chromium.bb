@@ -60,6 +60,15 @@ void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
   [window setCollectionBehavior:behavior];
 }
 
+void SetWorkspacesCollectionBehavior(NSWindow* window, bool always_visible) {
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  if (always_visible)
+    behavior |= NSWindowCollectionBehaviorCanJoinAllSpaces;
+  else
+    behavior &= ~NSWindowCollectionBehaviorCanJoinAllSpaces;
+  [window setCollectionBehavior:behavior];
+}
+
 void InitCollectionBehavior(NSWindow* window) {
   // Since always-on-top windows have a higher window level
   // than NSNormalWindowLevel, they will default to
@@ -378,6 +387,8 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   if (params.always_on_top)
     [window setLevel:AlwaysOnTopWindowLevel()];
   InitCollectionBehavior(window);
+
+  SetWorkspacesCollectionBehavior(window, params.visible_on_all_workspaces);
 
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
@@ -965,6 +976,10 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
 void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
   [window() setLevel:(always_on_top ? AlwaysOnTopWindowLevel() :
                                       NSNormalWindowLevel)];
+}
+
+void NativeAppWindowCocoa::SetVisibleOnAllWorkspaces(bool always_visible) {
+  SetWorkspacesCollectionBehavior(window(), always_visible);
 }
 
 NativeAppWindowCocoa::~NativeAppWindowCocoa() {

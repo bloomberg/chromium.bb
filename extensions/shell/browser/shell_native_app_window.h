@@ -75,6 +75,7 @@ class ShellNativeAppWindow : public NativeAppWindow {
   virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) OVERRIDE;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
   virtual bool CanHaveAlphaEnabled() const OVERRIDE;
 
  private:
