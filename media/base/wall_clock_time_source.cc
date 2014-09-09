@@ -57,6 +57,10 @@ base::TimeDelta WallClockTimeSource::CurrentMediaTime() {
              (now - reference_wall_ticks_).InMicroseconds() * playback_rate_);
 }
 
+base::TimeDelta WallClockTimeSource::CurrentMediaTimeForSyncingVideo() {
+  return CurrentMediaTime();
+}
+
 void WallClockTimeSource::SetTickClockForTesting(
     scoped_ptr<base::TickClock> tick_clock) {
   tick_clock_.swap(tick_clock);

@@ -37,8 +37,7 @@ class MEDIA_EXPORT Renderer {
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
-                          const BufferingStateCB& buffering_state_cb,
-                          const TimeDeltaCB& get_duration_cb) = 0;
+                          const BufferingStateCB& buffering_state_cb) = 0;
 
   // The following functions must be called after Initialize().
 

@@ -43,10 +43,6 @@ MATCHER_P(HasTimestamp, ms, "") {
   return arg->timestamp().InMilliseconds() == ms;
 }
 
-// Arbitrary value. Has to be larger to cover any timestamp value used in tests
-// and kTimeToDeclareHaveNothing.
-static const int kVideoDurationInMs = 10000;
-
 class VideoRendererImplTest : public ::testing::Test {
  public:
   VideoRendererImplTest()
@@ -71,14 +67,9 @@ class VideoRendererImplTest : public ::testing::Test {
                        scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
     EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*this, OnTimeUpdate(_))
-        .Times(AnyNumber());
   }
 
   virtual ~VideoRendererImplTest() {}
-
-  // Callbacks passed into Initialize().
-  MOCK_METHOD1(OnTimeUpdate, void(base::TimeDelta));
 
   void Initialize() {
     InitializeWithLowDelay(false);
@@ -114,15 +105,11 @@ class VideoRendererImplTest : public ::testing::Test {
         status_cb,
         base::Bind(&MockStatisticsCB::OnStatistics,
                    base::Unretained(&statistics_cb_object_)),
-        base::Bind(&VideoRendererImplTest::OnTimeUpdate,
-                   base::Unretained(this)),
         base::Bind(&StrictMock<MockCB>::BufferingStateChange,
                    base::Unretained(&mock_cb_)),
         ended_event_.GetClosure(),
         error_event_.GetPipelineStatusCB(),
-        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)),
-        base::Bind(&VideoRendererImplTest::GetDuration,
-                   base::Unretained(this)));
+        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)));
   }
 
   void StartPlaying() {
@@ -257,7 +244,6 @@ class VideoRendererImplTest : public ::testing::Test {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     base::AutoLock l(lock_);
     time_ += base::TimeDelta::FromMilliseconds(time_ms);
-    DCHECK_LE(time_.InMicroseconds(), GetDuration().InMicroseconds());
   }
 
  protected:
@@ -279,10 +265,6 @@ class VideoRendererImplTest : public ::testing::Test {
   base::TimeDelta GetTime() {
     base::AutoLock l(lock_);
     return time_;
-  }
-
-  base::TimeDelta GetDuration() {
-    return base::TimeDelta::FromMilliseconds(kVideoDurationInMs);
   }
 
   void DecodeRequested(const scoped_refptr<DecoderBuffer>& buffer,
@@ -390,29 +372,6 @@ TEST_F(VideoRendererImplTest, FlushWithNothingBuffered) {
   // We shouldn't expect a buffering state change since we never reached
   // BUFFERING_HAVE_ENOUGH.
   Flush();
-  Destroy();
-}
-
-TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
-  Initialize();
-  QueueFrames("0");
-  EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
-  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
-
-  // Next frame has timestamp way past duration. Its timestamp will be adjusted
-  // to match the duration of the video.
-  QueueFrames(base::IntToString(kVideoDurationInMs + 1000));
-  SatisfyPendingRead();
-  WaitForPendingRead();
-
-  // Queue the end of stream frame and wait for the last frame to be rendered.
-  SatisfyPendingReadWithEndOfStream();
-
-  EXPECT_CALL(mock_cb_, Display(HasTimestamp(kVideoDurationInMs)));
-  AdvanceTimeInMs(kVideoDurationInMs);
-  WaitForEnded();
-
   Destroy();
 }
 

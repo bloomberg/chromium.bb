@@ -110,23 +110,19 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    bool low_delay,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
-                                   const TimeCB& max_time_cb,
                                    const BufferingStateCB& buffering_state_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb,
-                                   const TimeDeltaCB& get_time_cb,
-                                   const TimeDeltaCB& get_duration_cb) {
+                                   const TimeDeltaCB& get_time_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
-  DCHECK(!max_time_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!get_time_cb.is_null());
-  DCHECK(!get_duration_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
 
   low_delay_ = low_delay;
@@ -136,12 +132,10 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   init_cb_ = BindToCurrentLoop(init_cb);
 
   statistics_cb_ = statistics_cb;
-  max_time_cb_ = max_time_cb;
   buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   get_time_cb_ = get_time_cb;
-  get_duration_cb_ = get_duration_cb;
   state_ = kInitializing;
 
   video_frame_stream_->Initialize(
@@ -365,21 +359,7 @@ void VideoRendererImpl::TransitionToHaveEnough_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
-  if (received_end_of_stream_)
-    max_time_cb_.Run(get_duration_cb_.Run());
-
   if (!ready_frames_.empty()) {
-    // Max time isn't reported while we're in a have nothing state as we could
-    // be discarding frames to find |start_timestamp_|.
-    if (!received_end_of_stream_) {
-      base::TimeDelta max_timestamp = ready_frames_[0]->timestamp();
-      for (size_t i = 1; i < ready_frames_.size(); ++i) {
-        if (ready_frames_[i]->timestamp() > max_timestamp)
-          max_timestamp = ready_frames_[i]->timestamp();
-      }
-      max_time_cb_.Run(max_timestamp);
-    }
-
     // Because the clock might remain paused in for an undetermined amount
     // of time (e.g., seeking while paused), paint the first frame.
     PaintNextReadyFrame_Locked();
@@ -395,26 +375,9 @@ void VideoRendererImpl::AddReadyFrame_Locked(
   lock_.AssertAcquired();
   DCHECK(!frame->end_of_stream());
 
-  // Adjust the incoming frame if its rendering stop time is past the duration
-  // of the video itself. This is typically the last frame of the video and
-  // occurs if the container specifies a duration that isn't a multiple of the
-  // frame rate.  Another way for this to happen is for the container to state
-  // a smaller duration than the largest packet timestamp.
-  base::TimeDelta duration = get_duration_cb_.Run();
-  if (frame->timestamp() > duration) {
-    frame->set_timestamp(duration);
-  }
-
   ready_frames_.push_back(frame);
   DCHECK_LE(ready_frames_.size(),
             static_cast<size_t>(limits::kMaxVideoFrames));
-
-  // FrameReady() may add frames but discard them when we're decoding frames to
-  // reach |start_timestamp_|. In this case we'll only want to update the max
-  // time when we know we've reached |start_timestamp_| and have buffered enough
-  // frames to being playback.
-  if (buffering_state_ == BUFFERING_HAVE_ENOUGH)
-    max_time_cb_.Run(frame->timestamp());
 
   // Avoid needlessly waking up |thread_| unless playing.
   if (state_ == kPlaying)

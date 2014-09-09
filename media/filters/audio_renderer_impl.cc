@@ -63,7 +63,6 @@ AudioRendererImpl::AudioRendererImpl(
       pending_read_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
-      last_timestamp_update_(kNoTimestamp()),
       weak_factory_(this) {
   audio_buffer_stream_->set_splice_observer(base::Bind(
       &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
@@ -151,18 +150,29 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
 
   start_timestamp_ = time;
   ended_timestamp_ = kInfiniteDuration();
+  last_render_ticks_ = base::TimeTicks();
   audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(scherkus): Finish implementing when ready to switch Pipeline to using
-  // TimeSource http://crbug.com/370634
-  NOTIMPLEMENTED();
+  // In practice the Render() method is called with a high enough frequency
+  // that returning only the front timestamp is good enough and also prevents
+  // returning values that go backwards in time.
+  base::AutoLock auto_lock(lock_);
+  return audio_clock_->front_timestamp();
+}
 
-  return base::TimeDelta();
+base::TimeDelta AudioRendererImpl::CurrentMediaTimeForSyncingVideo() {
+  DVLOG(2) << __FUNCTION__;
+
+  base::AutoLock auto_lock(lock_);
+  if (last_render_ticks_.is_null())
+    return audio_clock_->front_timestamp();
+
+  return audio_clock_->TimestampSinceWriting(base::TimeTicks::Now() -
+                                             last_render_ticks_);
 }
 
 TimeSource* AudioRendererImpl::GetTimeSource() {
@@ -206,10 +216,8 @@ void AudioRendererImpl::ResetDecoderDone() {
     DCHECK_EQ(state_, kFlushed);
     DCHECK(!flush_cb_.is_null());
 
-    audio_clock_.reset();
     received_end_of_stream_ = false;
     rendered_end_of_stream_ = false;
-    last_timestamp_update_ = kNoTimestamp();
 
     // Flush() may have been called while underflowed/not fully buffered.
     if (buffering_state_ != BUFFERING_HAVE_NOTHING)
@@ -243,7 +251,6 @@ void AudioRendererImpl::StartPlaying() {
 void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
-                                   const TimeCB& time_cb,
                                    const BufferingStateCB& buffering_state_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb) {
@@ -252,7 +259,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
-  DCHECK(!time_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
@@ -265,7 +271,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   // failed.
   init_cb_ = BindToCurrentLoop(init_cb);
 
-  time_cb_ = time_cb;
   buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
@@ -552,6 +557,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
   int frames_written = 0;
   {
     base::AutoLock auto_lock(lock_);
+    last_render_ticks_ = base::TimeTicks::Now();
 
     // Ensure Stop() hasn't destroyed our |algorithm_| on the pipeline thread.
     if (!algorithm_) {
@@ -622,23 +628,10 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                                         weak_factory_.GetWeakPtr()));
     }
 
-    if (last_timestamp_update_ != audio_clock_->front_timestamp()) {
-      // Since |max_time| uses linear interpolation, only provide an upper bound
-      // that is for audio data at the same playback rate. Failing to do so can
-      // make time jump backwards when the linear interpolated time advances
-      // past buffered regions of audio at different rates.
-      last_timestamp_update_ = audio_clock_->front_timestamp();
-      base::TimeDelta max_time =
-          last_timestamp_update_ +
-          audio_clock_->contiguous_audio_data_buffered_at_same_rate();
-      task_runner_->PostTask(
-          FROM_HERE, base::Bind(time_cb_, last_timestamp_update_, max_time));
-
-      if (last_timestamp_update_ >= ended_timestamp_ &&
-          !rendered_end_of_stream_) {
-        rendered_end_of_stream_ = true;
-        task_runner_->PostTask(FROM_HERE, ended_cb_);
-      }
+    if (audio_clock_->front_timestamp() >= ended_timestamp_ &&
+        !rendered_end_of_stream_) {
+      rendered_end_of_stream_ = true;
+      task_runner_->PostTask(FROM_HERE, ended_cb_);
     }
   }
 

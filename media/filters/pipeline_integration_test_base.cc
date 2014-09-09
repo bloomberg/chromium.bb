@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "media/base/media_log.h"
-#include "media/base/time_delta_interpolator.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -302,10 +301,8 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   // machine, valgrind).
   renderer_impl->DisableUnderflowForTesting();
 
-  if (clockless_playback_) {
-    renderer_impl->SetTimeDeltaInterpolatorForTesting(
-        new TimeDeltaInterpolator(&dummy_clock_));
-  }
+  if (clockless_playback_)
+    renderer_impl->EnableClocklessVideoPlaybackForTesting();
 
   return renderer_impl.PassAs<Renderer>();
 }

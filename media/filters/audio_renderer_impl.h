@@ -75,12 +75,12 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual void SetMediaTime(base::TimeDelta time) OVERRIDE;
   virtual base::TimeDelta CurrentMediaTime() OVERRIDE;
+  virtual base::TimeDelta CurrentMediaTimeForSyncingVideo() OVERRIDE;
 
   // AudioRenderer implementation.
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
-                          const TimeCB& time_cb,
                           const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) OVERRIDE;
@@ -215,7 +215,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callbacks provided during Initialize().
   PipelineStatusCB init_cb_;
-  TimeCB time_cb_;
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
@@ -250,9 +249,17 @@ class MEDIA_EXPORT AudioRendererImpl
 
   scoped_ptr<AudioClock> audio_clock_;
 
+  // The media timestamp to begin playback at after seeking. Set via
+  // SetMediaTime().
   base::TimeDelta start_timestamp_;
+
+  // The media timestamp to signal end of audio playback. Determined during
+  // Render() when writing the final frames of decoded audio data.
   base::TimeDelta ended_timestamp_;
-  base::TimeDelta last_timestamp_update_;
+
+  // Set every Render() and used to provide an interpolated time value to
+  // CurrentMediaTimeForSyncingVideo().
+  base::TimeTicks last_render_ticks_;
 
   // End variables which must be accessed under |lock_|. ----------------------
 

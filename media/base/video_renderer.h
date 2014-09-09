@@ -19,10 +19,6 @@ class VideoDecoder;
 
 class MEDIA_EXPORT VideoRenderer {
  public:
-  // Used to update the pipeline's clock time. The parameter is the time that
-  // the clock should not exceed.
-  typedef base::Callback<void(base::TimeDelta)> TimeCB;
-
   // Used to query the current time or duration of the media.
   typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
 
@@ -37,8 +33,6 @@ class MEDIA_EXPORT VideoRenderer {
   // |statistics_cb| is executed periodically with video rendering stats, such
   // as dropped frames.
   //
-  // |time_cb| is executed whenever time has advanced by way of video rendering.
-  //
   // |buffering_state_cb| is executed when video rendering has either run out of
   // data or has enough data to continue playback.
   //
@@ -47,18 +41,14 @@ class MEDIA_EXPORT VideoRenderer {
   // |error_cb| is executed if an error was encountered.
   //
   // |get_time_cb| is used to query the current media playback time.
-  //
-  // |get_duration_cb| is used to query the media duration.
   virtual void Initialize(DemuxerStream* stream,
                           bool low_delay,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
-                          const TimeCB& time_cb,
                           const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
-                          const TimeDeltaCB& get_time_cb,
-                          const TimeDeltaCB& get_duration_cb) = 0;
+                          const TimeDeltaCB& get_time_cb) = 0;
 
   // Discards any video data and stops reading from |stream|, executing
   // |callback| when completed.

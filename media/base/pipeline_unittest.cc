@@ -163,7 +163,7 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetRendererExpectations() {
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _))
         .WillOnce(DoAll(SaveArg<2>(&ended_cb_),
                         SaveArg<4>(&buffering_state_cb_),
                         RunCallback<0>()));
@@ -828,13 +828,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             RunCallback<0>()));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _))
             .WillOnce(DoAll(RunCallback<3>(status), RunCallback<0>()));
       }
 
@@ -842,7 +842,7 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _))
         .WillOnce(DoAll(SaveArg<4>(&buffering_state_cb_),
                         RunCallback<0>()));
 

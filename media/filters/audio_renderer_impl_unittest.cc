@@ -61,8 +61,6 @@ class AudioRendererImplTest : public ::testing::Test {
       : hardware_config_(AudioParameters(), AudioParameters()),
         demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()),
-        last_time_update_(kNoTimestamp()),
-        last_max_time_(kNoTimestamp()),
         ended_(false) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
@@ -116,19 +114,11 @@ class AudioRendererImplTest : public ::testing::Test {
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD1(OnError, void(PipelineStatus));
 
-  void OnAudioTimeCallback(TimeDelta current_time, TimeDelta max_time) {
-    CHECK(current_time <= max_time);
-    last_time_update_ = current_time;
-    last_max_time_ = max_time;
-  }
-
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
     renderer_->Initialize(
         &demuxer_stream_,
         pipeline_status_cb,
         base::Bind(&AudioRendererImplTest::OnStatistics,
-                   base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnAudioTimeCallback,
                    base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnBufferingStateChange,
                    base::Unretained(this)),
@@ -333,11 +323,9 @@ class AudioRendererImplTest : public ::testing::Test {
     return renderer_->splicer_->HasNextBuffer();
   }
 
-  base::TimeDelta last_time_update() const {
-    return last_time_update_;
+  base::TimeDelta CurrentMediaTime() {
+    return renderer_->CurrentMediaTime();
   }
-
-  base::TimeDelta last_max_time() const { return last_max_time_; }
 
   bool ended() const { return ended_; }
 
@@ -408,8 +396,6 @@ class AudioRendererImplTest : public ::testing::Test {
   base::Closure wait_for_pending_decode_cb_;
 
   PipelineStatusCB init_decoder_cb_;
-  base::TimeDelta last_time_update_;
-  base::TimeDelta last_max_time_;
   bool ended_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
@@ -633,34 +619,27 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   StartTicking();
 
   AudioTimestampHelper timestamp_helper(kOutputSamplesPerSecond);
-  EXPECT_EQ(kNoTimestamp(), last_time_update());
-  EXPECT_EQ(kNoTimestamp(), last_max_time());
+  timestamp_helper.SetBaseTimestamp(base::TimeDelta());
 
-  // Preroll() should be buffered some data, consume half of it now.
+  // Time should be the starting timestamp as nothing's been consumed yet.
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
+
+  // Consume some audio data.
   OutputFrames frames_to_consume(frames_buffered().value / 2);
   EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
   WaitForPendingRead();
-  base::RunLoop().RunUntilIdle();
 
-  // ConsumeBufferedData() uses an audio delay of zero, so ensure we received
-  // a time update that's equal to |kFramesToConsume| from above.
-  timestamp_helper.SetBaseTimestamp(base::TimeDelta());
-  timestamp_helper.AddFrames(frames_to_consume.value);
-  EXPECT_EQ(base::TimeDelta(), last_time_update());
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
+  // Time shouldn't change just yet because we've only sent the initial audio
+  // data to the hardware.
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 
-  // The next time update should match the remaining frames_buffered(), but only
-  // after running the message loop.
+  // Consume some more audio data.
   frames_to_consume = frames_buffered();
   EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
-  EXPECT_EQ(base::TimeDelta(), last_time_update());
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
 
-  // Now the times should be updated.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+  // Now time should change now that the audio hardware has called back.
   timestamp_helper.AddFrames(frames_to_consume.value);
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 }
 
 TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {

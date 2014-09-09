@@ -63,12 +63,10 @@ class MEDIA_EXPORT VideoRendererImpl
                           bool low_delay,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
-                          const TimeCB& max_time_cb,
                           const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
-                          const TimeDeltaCB& get_time_cb,
-                          const TimeDeltaCB& get_duration_cb) OVERRIDE;
+                          const TimeDeltaCB& get_time_cb) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void StartPlaying() OVERRIDE;
 
@@ -183,12 +181,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // Event callbacks.
   PipelineStatusCB init_cb_;
   StatisticsCB statistics_cb_;
-  TimeCB max_time_cb_;
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   TimeDeltaCB get_time_cb_;
-  TimeDeltaCB get_duration_cb_;
 
   base::TimeDelta start_timestamp_;
 

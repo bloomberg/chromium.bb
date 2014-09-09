@@ -11,7 +11,6 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/base/time_delta_interpolator.h"
 #include "media/filters/renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,25 +25,13 @@ using ::testing::StrictMock;
 namespace media {
 
 const int64 kStartPlayingTimeInMs = 100;
-const int64 kDurationInMs = 3000;
-const int64 kAudioUpdateTimeMs = 150;
-const int64 kAudioUpdateMaxTimeMs = 1000;
 
 ACTION_P2(SetBufferingState, cb, buffering_state) {
   cb->Run(buffering_state);
 }
 
-ACTION_P3(UpdateAudioTime, cb, time, max_time) {
-  cb->Run(base::TimeDelta::FromMilliseconds(time),
-          base::TimeDelta::FromMilliseconds(max_time));
-}
-
 ACTION_P2(AudioError, cb, error) {
   cb->Run(error);
-}
-
-static base::TimeDelta GetDuration() {
-  return base::TimeDelta::FromMilliseconds(kDurationInMs);
 }
 
 class RendererImplTest : public ::testing::Test {
@@ -103,24 +90,19 @@ class RendererImplTest : public ::testing::Test {
   // Sets up expectations to allow the audio renderer to initialize.
   void SetAudioRendererInitializeExpectations(PipelineStatus status) {
     EXPECT_CALL(*audio_renderer_,
-                Initialize(audio_stream_.get(), _, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<3>(&audio_time_cb_),
-                        SaveArg<4>(&audio_buffering_state_cb_),
-                        SaveArg<5>(&audio_ended_cb_),
-                        SaveArg<6>(&audio_error_cb_),
+                Initialize(audio_stream_.get(), _,  _, _, _, _))
+        .WillOnce(DoAll(SaveArg<3>(&audio_buffering_state_cb_),
+                        SaveArg<4>(&audio_ended_cb_),
+                        SaveArg<5>(&audio_error_cb_),
                         RunCallback<1>(status)));
-    if (status == PIPELINE_OK) {
-      EXPECT_CALL(*audio_renderer_, GetTimeSource())
-          .WillOnce(Return(&time_source_));
-    }
   }
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetVideoRendererInitializeExpectations(PipelineStatus status) {
     EXPECT_CALL(*video_renderer_,
-                Initialize(video_stream_.get(), _, _, _, _, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<5>(&video_buffering_state_cb_),
-                        SaveArg<6>(&video_ended_cb_),
+                Initialize(video_stream_.get(), _, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<4>(&video_buffering_state_cb_),
+                        SaveArg<5>(&video_ended_cb_),
                         RunCallback<2>(status)));
   }
 
@@ -130,6 +112,11 @@ class RendererImplTest : public ::testing::Test {
 
     EXPECT_CALL(callbacks_, OnInitialize());
 
+    if (start_status == PIPELINE_OK && audio_stream_) {
+      EXPECT_CALL(*audio_renderer_, GetTimeSource())
+          .WillOnce(Return(&time_source_));
+    }
+
     renderer_impl_->Initialize(
         base::Bind(&CallbackHelper::OnInitialize,
                    base::Unretained(&callbacks_)),
@@ -138,8 +125,7 @@ class RendererImplTest : public ::testing::Test {
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&GetDuration));
+                   base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -273,7 +259,6 @@ class RendererImplTest : public ::testing::Test {
   scoped_ptr<StrictMock<MockDemuxerStream> > audio_stream_;
   scoped_ptr<StrictMock<MockDemuxerStream> > video_stream_;
   MockDemuxerStreamVector streams_;
-  AudioRenderer::TimeCB audio_time_cb_;
   BufferingStateCB audio_buffering_state_cb_;
   BufferingStateCB video_buffering_state_cb_;
   base::Closure audio_ended_cb_;
@@ -365,86 +350,6 @@ TEST_F(RendererImplTest, SetVolume) {
   InitializeWithAudioAndVideo();
   EXPECT_CALL(*audio_renderer_, SetVolume(2.0f));
   renderer_impl_->SetVolume(2.0f);
-}
-
-TEST_F(RendererImplTest, GetMediaTime) {
-  // Replace what's used for interpolating to simulate wall clock time.
-  renderer_impl_->SetTimeDeltaInterpolatorForTesting(
-      new TimeDeltaInterpolator(&test_tick_clock_));
-
-  InitializeWithAudioAndVideo();
-  Play();
-
-  EXPECT_EQ(kStartPlayingTimeInMs, GetMediaTimeMs());
-
-  // Verify that the clock doesn't advance since it hasn't been started by
-  // a time update from the audio stream.
-  EXPECT_FALSE(IsMediaTimeAdvancing());
-
-  // Provide an initial time update so that the pipeline transitions out of the
-  // "waiting for time update" state.
-  audio_time_cb_.Run(base::TimeDelta::FromMilliseconds(kAudioUpdateTimeMs),
-                     base::TimeDelta::FromMilliseconds(kAudioUpdateMaxTimeMs));
-  EXPECT_EQ(kAudioUpdateTimeMs, GetMediaTimeMs());
-
-  // Advance the clock so that GetMediaTime() also advances. This also verifies
-  // that the default playback rate is 1.
-  EXPECT_TRUE(IsMediaTimeAdvancing());
-
-  // Verify that playback rate affects the rate GetMediaTime() advances.
-  SetPlaybackRate(2.0f);
-  EXPECT_TRUE(IsMediaTimeAdvancing(2.0f));
-
-  // Verify that GetMediaTime() is bounded by audio max time.
-  DCHECK_GT(GetMediaTimeMs() + 2000, kAudioUpdateMaxTimeMs);
-  test_tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
-  EXPECT_EQ(kAudioUpdateMaxTimeMs, GetMediaTimeMs());
-}
-
-TEST_F(RendererImplTest, AudioTimeUpdateDuringFlush) {
-  // Replace what's used for interpolating to simulate wall clock time.
-  renderer_impl_->SetTimeDeltaInterpolatorForTesting(
-      new TimeDeltaInterpolator(&test_tick_clock_));
-
-  InitializeWithAudio();
-  Play();
-
-  // Provide an initial time update so that the pipeline transitions out of the
-  // "waiting for time update" state.
-  audio_time_cb_.Run(base::TimeDelta::FromMilliseconds(kAudioUpdateTimeMs),
-                     base::TimeDelta::FromMilliseconds(kAudioUpdateMaxTimeMs));
-  EXPECT_EQ(kAudioUpdateTimeMs, GetMediaTimeMs());
-
-  int64 start_time = GetMediaTimeMs();
-
-  EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(DoAll(
-      UpdateAudioTime(
-          &audio_time_cb_, kAudioUpdateTimeMs + 100, kAudioUpdateMaxTimeMs),
-      SetBufferingState(&audio_buffering_state_cb_, BUFFERING_HAVE_NOTHING),
-      RunClosure<0>()));
-  EXPECT_CALL(time_source_, StopTicking());
-  EXPECT_CALL(callbacks_, OnFlushed());
-  renderer_impl_->Flush(
-      base::Bind(&CallbackHelper::OnFlushed, base::Unretained(&callbacks_)));
-
-  // Audio time update during Flush() has no effect.
-  EXPECT_EQ(start_time, GetMediaTimeMs());
-
-  // Verify that the clock doesn't advance since it hasn't been started by
-  // a time update from the audio stream.
-  EXPECT_FALSE(IsMediaTimeAdvancing());
-}
-
-TEST_F(RendererImplTest, PostTimeUpdateDuringDestroy) {
-  InitializeWithAudioAndVideo();
-
-  // Simulate the case where TimeCB is posted during ~AudioRenderer(), which is
-  // triggered in ~Renderer().
-  base::TimeDelta time = base::TimeDelta::FromMilliseconds(100);
-  message_loop_.PostTask(FROM_HERE, base::Bind(audio_time_cb_, time, time));
-
-  renderer_impl_.reset();
-  message_loop_.RunUntilIdle();
 }
 
 TEST_F(RendererImplTest, AudioStreamEnded) {

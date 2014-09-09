@@ -18,10 +18,6 @@ class TimeSource;
 
 class MEDIA_EXPORT AudioRenderer {
  public:
-  // First parameter is the current time that has been rendered.
-  // Second parameter is the maximum time value that the clock cannot exceed.
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
-
   AudioRenderer();
 
   // Stop all operations and fire all pending callbacks.
@@ -32,8 +28,6 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |statistics_cb| is executed periodically with audio rendering stats.
   //
-  // |time_cb| is executed whenever time has advanced by way of audio rendering.
-  //
   // |buffering_state_cb| is executed when audio rendering has either run out of
   // data or has enough data to continue playback.
   //
@@ -43,7 +37,6 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
-                          const TimeCB& time_cb,
                           const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) = 0;

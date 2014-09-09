@@ -25,17 +25,16 @@ namespace media {
 
 class AudioRenderer;
 class Demuxer;
-class TimeDeltaInterpolator;
 class TimeSource;
 class VideoRenderer;
+class WallClockTimeSource;
 
 class MEDIA_EXPORT RendererImpl : public Renderer {
  public:
   // Renders audio/video streams in |demuxer| using |audio_renderer| and
   // |video_renderer| provided. All methods except for GetMediaTime() run on the
   // |task_runner|. GetMediaTime() runs on the render main thread because it's
-  // part of JS sync API. |get_duration_cb| is used to get the duration of the
-  // stream.
+  // part of JS sync API.
   RendererImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                Demuxer* demuxer,
                scoped_ptr<AudioRenderer> audio_renderer,
@@ -48,8 +47,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
-                          const BufferingStateCB& buffering_state_cb,
-                          const TimeDeltaCB& get_duration_cb) OVERRIDE;
+                          const BufferingStateCB& buffering_state_cb) OVERRIDE;
   virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
   virtual void StartPlayingFrom(base::TimeDelta time) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
@@ -61,7 +59,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
-  void SetTimeDeltaInterpolatorForTesting(TimeDeltaInterpolator* interpolator);
+  void EnableClocklessVideoPlaybackForTesting();
 
  private:
   enum State {
@@ -72,7 +70,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     STATE_ERROR
   };
 
-  base::TimeDelta GetMediaDuration();
+  base::TimeDelta GetMediaTimeForSyncingVideo();
 
   // Helper functions and callbacks for Initialize().
   void InitializeAudioRenderer();
@@ -85,12 +83,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void OnAudioRendererFlushDone();
   void FlushVideoRenderer();
   void OnVideoRendererFlushDone();
-
-  // Callback executed by audio renderer to update clock time.
-  void OnAudioTimeUpdate(base::TimeDelta time, base::TimeDelta max_time);
-
-  // Callback executed by video renderer to update clock time.
-  void OnVideoTimeUpdate(base::TimeDelta max_time);
 
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);
@@ -110,12 +102,10 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void PausePlayback();
   void StartPlayback();
 
-  void PauseClockAndStopTicking_Locked();
-  void StartClockIfWaitingForTimeUpdate_Locked();
-
   // Callbacks executed when a renderer has ended.
   void OnAudioRendererEnded();
   void OnVideoRendererEnded();
+  bool PlaybackHasEnded() const;
   void RunEndedCallbackIfNeeded();
 
   // Callback executed when a runtime error happens.
@@ -129,9 +119,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   Demuxer* demuxer_;
-
-  // Permanent callback to get the media duration.
-  TimeDeltaCB get_duration_cb_;
 
   // Permanent callbacks to notify various renderer states/stats.
   StatisticsCB statistics_cb_;
@@ -148,6 +135,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Renderer-provided time source used to control playback.
   TimeSource* time_source_;
+  scoped_ptr<WallClockTimeSource> wall_clock_time_source_;
+  bool time_ticking_;
 
   // The time to start playback from after starting/seeking has completed.
   base::TimeDelta start_time_;
@@ -160,32 +149,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool video_ended_;
 
   bool underflow_disabled_for_testing_;
-
-  // Protects time interpolation related member variables, i.e. |interpolator_|,
-  // |default_tick_clock_| and |interpolation_state_|. This is because
-  // |interpolator_| can be used on different threads (see GetMediaTime()).
-  mutable base::Lock interpolator_lock_;
-
-  // Tracks the most recent media time update and provides interpolated values
-  // as playback progresses.
-  scoped_ptr<TimeDeltaInterpolator> interpolator_;
-
-  // base::TickClock used by |interpolator_|.
-  // TODO(xhwang): This can be TimeDeltaInterpolator's implementation detail.
-  base::DefaultTickClock default_tick_clock_;
-
-  enum InterpolationState {
-    // Audio (if present) is not rendering. Time isn't being interpolated.
-    INTERPOLATION_STOPPED,
-
-    // Audio (if present) is rendering. Time isn't being interpolated.
-    INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE,
-
-    // Audio (if present) is rendering. Time is being interpolated.
-    INTERPOLATION_STARTED,
-  };
-
-  InterpolationState interpolation_state_;
+  bool clockless_video_playback_enabled_for_testing_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<RendererImpl> weak_factory_;

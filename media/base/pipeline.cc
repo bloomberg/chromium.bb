@@ -690,8 +690,7 @@ void Pipeline::InitializeRenderer(const base::Closure& done_cb) {
       base::Bind(&Pipeline::OnUpdateStatistics, weak_this),
       base::Bind(&Pipeline::OnRendererEnded, weak_this),
       base::Bind(&Pipeline::OnError, weak_this),
-      base::Bind(&Pipeline::BufferingStateChanged, weak_this),
-      base::Bind(&Pipeline::GetMediaDuration, base::Unretained(this)));
+      base::Bind(&Pipeline::BufferingStateChanged, weak_this));
 }
 
 void Pipeline::ReportMetadata() {

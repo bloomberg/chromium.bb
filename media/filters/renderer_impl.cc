@@ -12,9 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
-#include "media/base/time_delta_interpolator.h"
 #include "media/base/time_source.h"
 #include "media/base/video_renderer.h"
+#include "media/base/wall_clock_time_source.h"
 
 namespace media {
 
@@ -29,25 +29,26 @@ RendererImpl::RendererImpl(
       audio_renderer_(audio_renderer.Pass()),
       video_renderer_(video_renderer.Pass()),
       time_source_(NULL),
+      time_ticking_(false),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
       audio_ended_(false),
       video_ended_(false),
       underflow_disabled_for_testing_(false),
-      interpolator_(new TimeDeltaInterpolator(&default_tick_clock_)),
-      interpolation_state_(INTERPOLATION_STOPPED),
+      clockless_video_playback_enabled_for_testing_(false),
       weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()) {
   DVLOG(1) << __FUNCTION__;
-  interpolator_->SetBounds(base::TimeDelta(), base::TimeDelta());
 }
 
 RendererImpl::~RendererImpl() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  audio_renderer_.reset();
+  // Tear down in opposite order of construction as |video_renderer_| can still
+  // need |time_source_| (which can be |audio_renderer_|) to be alive.
   video_renderer_.reset();
+  audio_renderer_.reset();
 
   FireAllPendingCallbacks();
 }
@@ -56,8 +57,7 @@ void RendererImpl::Initialize(const base::Closure& init_cb,
                               const StatisticsCB& statistics_cb,
                               const base::Closure& ended_cb,
                               const PipelineStatusCB& error_cb,
-                              const BufferingStateCB& buffering_state_cb,
-                              const TimeDeltaCB& get_duration_cb) {
+                              const BufferingStateCB& buffering_state_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED) << state_;
@@ -66,7 +66,6 @@ void RendererImpl::Initialize(const base::Closure& init_cb,
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!get_duration_cb.is_null());
   DCHECK(demuxer_->GetStream(DemuxerStream::AUDIO) ||
          demuxer_->GetStream(DemuxerStream::VIDEO));
 
@@ -74,7 +73,6 @@ void RendererImpl::Initialize(const base::Closure& init_cb,
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   buffering_state_cb_ = buffering_state_cb;
-  get_duration_cb_ = get_duration_cb;
 
   init_cb_ = init_cb;
   state_ = STATE_INITIALIZING;
@@ -87,13 +85,12 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   DCHECK_EQ(state_, STATE_PLAYING) << state_;
   DCHECK(flush_cb_.is_null());
 
-  {
-    base::AutoLock auto_lock(interpolator_lock_);
-    PauseClockAndStopTicking_Locked();
-  }
-
   flush_cb_ = flush_cb;
   state_ = STATE_FLUSHING;
+
+  if (time_ticking_)
+    PausePlayback();
+
   FlushAudioRenderer();
 }
 
@@ -102,13 +99,8 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING) << state_;
 
-  {
-    base::AutoLock auto_lock(interpolator_lock_);
-    interpolator_->SetBounds(time, time);
-  }
+  time_source_->SetMediaTime(time);
 
-  if (time_source_)
-    time_source_->SetMediaTime(time);
   if (audio_renderer_)
     audio_renderer_->StartPlaying();
   if (video_renderer_)
@@ -123,13 +115,7 @@ void RendererImpl::SetPlaybackRate(float playback_rate) {
   if (state_ != STATE_PLAYING)
     return;
 
-  {
-    base::AutoLock auto_lock(interpolator_lock_);
-    interpolator_->SetPlaybackRate(playback_rate);
-  }
-
-  if (time_source_)
-    time_source_->SetPlaybackRate(playback_rate);
+  time_source_->SetPlaybackRate(playback_rate);
 }
 
 void RendererImpl::SetVolume(float volume) {
@@ -143,8 +129,7 @@ void RendererImpl::SetVolume(float volume) {
 base::TimeDelta RendererImpl::GetMediaTime() {
   // No BelongsToCurrentThread() checking because this can be called from other
   // threads.
-  base::AutoLock auto_lock(interpolator_lock_);
-  return interpolator_->GetInterpolatedTime();
+  return time_source_->CurrentMediaTime();
 }
 
 bool RendererImpl::HasAudio() {
@@ -173,18 +158,26 @@ void RendererImpl::DisableUnderflowForTesting() {
   underflow_disabled_for_testing_ = true;
 }
 
-void RendererImpl::SetTimeDeltaInterpolatorForTesting(
-    TimeDeltaInterpolator* interpolator) {
+void RendererImpl::EnableClocklessVideoPlaybackForTesting() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK(underflow_disabled_for_testing_)
+      << "Underflow must be disabled for clockless video playback";
 
-  interpolator_.reset(interpolator);
+  clockless_video_playback_enabled_for_testing_ = true;
 }
 
-base::TimeDelta RendererImpl::GetMediaDuration() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return get_duration_cb_.Run();
+base::TimeDelta RendererImpl::GetMediaTimeForSyncingVideo() {
+  // No BelongsToCurrentThread() checking because this can be called from other
+  // threads.
+  //
+  // TODO(scherkus): Currently called from VideoRendererImpl's internal thread,
+  // which should go away at some point http://crbug.com/110814
+  if (clockless_video_playback_enabled_for_testing_)
+    return base::TimeDelta::Max();
+
+  return time_source_->CurrentMediaTimeForSyncingVideo();
 }
 
 void RendererImpl::InitializeAudioRenderer() {
@@ -206,7 +199,6 @@ void RendererImpl::InitializeAudioRenderer() {
       demuxer_->GetStream(DemuxerStream::AUDIO),
       done_cb,
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&RendererImpl::OnAudioTimeUpdate, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &audio_buffering_state_),
       base::Bind(&RendererImpl::OnAudioRendererEnded, weak_this_),
@@ -224,9 +216,6 @@ void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
     OnError(status);
     return;
   }
-
-  if (audio_renderer_)
-    time_source_ = audio_renderer_->GetTimeSource();
 
   InitializeVideoRenderer();
 }
@@ -251,13 +240,13 @@ void RendererImpl::InitializeVideoRenderer() {
       demuxer_->GetLiveness() == Demuxer::LIVENESS_LIVE,
       done_cb,
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&RendererImpl::OnVideoTimeUpdate, weak_this_),
-      base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
+      base::Bind(&RendererImpl::OnBufferingStateChanged,
+                 weak_this_,
                  &video_buffering_state_),
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
       base::Bind(&RendererImpl::OnError, weak_this_),
-      base::Bind(&RendererImpl::GetMediaTime, base::Unretained(this)),
-      base::Bind(&RendererImpl::GetMediaDuration, base::Unretained(this)));
+      base::Bind(&RendererImpl::GetMediaTimeForSyncingVideo,
+                 base::Unretained(this)));
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
@@ -273,7 +262,15 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
     return;
   }
 
+  if (audio_renderer_) {
+    time_source_ = audio_renderer_->GetTimeSource();
+  } else {
+    wall_clock_time_source_.reset(new WallClockTimeSource());
+    time_source_ = wall_clock_time_source_.get();
+  }
+
   state_ = STATE_PLAYING;
+  DCHECK(time_source_);
   DCHECK(audio_renderer_ || video_renderer_);
   base::ResetAndReturn(&init_cb_).Run();
 }
@@ -343,42 +340,6 @@ void RendererImpl::OnVideoRendererFlushDone() {
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
-void RendererImpl::OnAudioTimeUpdate(base::TimeDelta time,
-                                     base::TimeDelta max_time) {
-  DVLOG(2) << __FUNCTION__ << "(" << time.InMilliseconds()
-           << ", " << max_time.InMilliseconds() << ")";
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
-
-  base::AutoLock auto_lock(interpolator_lock_);
-
-  if (interpolation_state_ == INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE &&
-      time < interpolator_->GetInterpolatedTime()) {
-    return;
-  }
-
-  if (state_ == STATE_FLUSHING)
-    return;
-
-  interpolator_->SetBounds(time, max_time);
-  StartClockIfWaitingForTimeUpdate_Locked();
-}
-
-void RendererImpl::OnVideoTimeUpdate(base::TimeDelta max_time) {
-  DVLOG(2) << __FUNCTION__ << "(" << max_time.InMilliseconds() << ")";
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (audio_renderer_)
-    return;
-
-  if (state_ == STATE_FLUSHING)
-    return;
-
-  base::AutoLock auto_lock(interpolator_lock_);
-  DCHECK_NE(interpolation_state_, INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE);
-  interpolator_->SetUpperBound(max_time);
-}
-
 void RendererImpl::OnUpdateStatistics(const PipelineStatistics& stats) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   statistics_cb_.Run(stats);
@@ -396,7 +357,7 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
 
   // Disable underflow by ignoring updates that renderers have ran out of data.
   if (state_ == STATE_PLAYING && underflow_disabled_for_testing_ &&
-      interpolation_state_ != INTERPOLATION_STOPPED) {
+      time_ticking_) {
     DVLOG(1) << "Update ignored because underflow is disabled for testing.";
     return;
   }
@@ -432,63 +393,37 @@ bool RendererImpl::WaitingForEnoughData() const {
 void RendererImpl::PausePlayback() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_PLAYING);
-  DCHECK(WaitingForEnoughData());
+  DCHECK(time_ticking_);
+  switch (state_) {
+    case STATE_PLAYING:
+      DCHECK(PlaybackHasEnded() || WaitingForEnoughData())
+          << "Playback should only pause due to ending or underflowing";
+      break;
 
-  base::AutoLock auto_lock(interpolator_lock_);
-  PauseClockAndStopTicking_Locked();
+    case STATE_FLUSHING:
+      // It's OK to pause playback when flushing.
+      break;
+
+    case STATE_UNINITIALIZED:
+    case STATE_INITIALIZING:
+    case STATE_ERROR:
+      NOTREACHED() << "Invalid state: " << state_;
+      break;
+  }
+
+  time_ticking_ = false;
+  time_source_->StopTicking();
 }
 
 void RendererImpl::StartPlayback() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING);
-  DCHECK_EQ(interpolation_state_, INTERPOLATION_STOPPED);
+  DCHECK(!time_ticking_);
   DCHECK(!WaitingForEnoughData());
 
-  if (time_source_) {
-    // We use audio stream to update the interpolator. So if there is such a
-    // stream, we pause the interpolator until we receive a valid time update.
-    base::AutoLock auto_lock(interpolator_lock_);
-    interpolation_state_ = INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE;
-    time_source_->StartTicking();
-  } else {
-    base::TimeDelta duration = get_duration_cb_.Run();
-    base::AutoLock auto_lock(interpolator_lock_);
-    interpolation_state_ = INTERPOLATION_STARTED;
-    interpolator_->SetUpperBound(duration);
-    interpolator_->StartInterpolating();
-  }
-}
-
-void RendererImpl::PauseClockAndStopTicking_Locked() {
-  DVLOG(1) << __FUNCTION__;
-  interpolator_lock_.AssertAcquired();
-  switch (interpolation_state_) {
-    case INTERPOLATION_STOPPED:
-      return;
-
-    case INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE:
-      time_source_->StopTicking();
-      break;
-
-    case INTERPOLATION_STARTED:
-      if (time_source_)
-        time_source_->StopTicking();
-      interpolator_->StopInterpolating();
-      break;
-  }
-
-  interpolation_state_ = INTERPOLATION_STOPPED;
-}
-
-void RendererImpl::StartClockIfWaitingForTimeUpdate_Locked() {
-  interpolator_lock_.AssertAcquired();
-  if (interpolation_state_ != INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE)
-    return;
-
-  interpolation_state_ = INTERPOLATION_STARTED;
-  interpolator_->StartInterpolating();
+  time_ticking_ = true;
+  time_source_->StartTicking();
 }
 
 void RendererImpl::OnAudioRendererEnded() {
@@ -517,20 +452,28 @@ void RendererImpl::OnVideoRendererEnded() {
   RunEndedCallbackIfNeeded();
 }
 
-void RendererImpl::RunEndedCallbackIfNeeded() {
+bool RendererImpl::PlaybackHasEnded() const {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_ && !audio_ended_)
-    return;
+    return false;
 
   if (video_renderer_ && !video_ended_)
+    return false;
+
+  return true;
+}
+
+void RendererImpl::RunEndedCallbackIfNeeded() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!PlaybackHasEnded())
     return;
 
-  {
-    base::AutoLock auto_lock(interpolator_lock_);
-    PauseClockAndStopTicking_Locked();
-  }
+  if (time_ticking_)
+    PausePlayback();
 
   ended_cb_.Run();
 }
