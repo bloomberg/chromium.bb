@@ -166,7 +166,7 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
     return result;
 }
 
-v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus)
+v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus, double* compilationFinishTime)
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(m_frame, source.url().string(), source.startLine()));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
@@ -188,6 +188,9 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
 
         v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, m_isolate, corsStatus, v8CacheOptions);
 
+        if (compilationFinishTime) {
+            *compilationFinishTime = WTF::monotonicallyIncreasingTime();
+        }
         // Keep LocalFrame (and therefore ScriptController) alive.
         RefPtr<LocalFrame> protect(m_frame);
         result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
@@ -568,10 +571,10 @@ void ScriptController::executeScriptInMainWorld(const String& script, ExecuteScr
     evaluateScriptInMainWorld(ScriptSourceCode(script), NotSharableCrossOrigin, policy);
 }
 
-void ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus)
+void ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, double* compilationFinishTime)
 {
     v8::HandleScope handleScope(m_isolate);
-    evaluateScriptInMainWorld(sourceCode, corsStatus, DoNotExecuteScriptWhenScriptsDisabled);
+    evaluateScriptInMainWorld(sourceCode, corsStatus, DoNotExecuteScriptWhenScriptsDisabled, compilationFinishTime);
 }
 
 v8::Local<v8::Value> ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode)
@@ -579,7 +582,7 @@ v8::Local<v8::Value> ScriptController::executeScriptInMainWorldAndReturnValue(co
     return evaluateScriptInMainWorld(sourceCode, NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
 }
 
-v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, ExecuteScriptPolicy policy)
+v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, ExecuteScriptPolicy policy, double* compilationFinishTime)
 {
     if (policy == DoNotExecuteScriptWhenScriptsDisabled && !canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
@@ -603,7 +606,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(m_frame, sourceCode);
     const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;
 
-    v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCodeToCompile, corsStatus);
+    v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCodeToCompile, corsStatus, compilationFinishTime);
     m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())

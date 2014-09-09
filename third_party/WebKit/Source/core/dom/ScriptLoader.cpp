@@ -290,7 +290,7 @@ bool isSVGScriptLoader(Element* element)
     return isSVGScriptElement(*element);
 }
 
-void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
+void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* compilationFinishTime)
 {
     ASSERT(m_alreadyStarted);
 
@@ -340,7 +340,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     // Create a script from the script element node, using the script
     // block's source and the script block's type.
     // Note: This is where the script is compiled and actually executed.
-    frame->script().executeScriptInMainWorld(sourceCode, corsCheck);
+    frame->script().executeScriptInMainWorld(sourceCode, corsCheck, compilationFinishTime);
 
     if (isHTMLScriptLoader(m_element)) {
         ASSERT(contextDocument->currentScript() == m_element);

@@ -46,7 +46,7 @@ public:
 
     String scriptCharset() const { return m_characterEncoding; }
     String scriptContent() const;
-    void executeScript(const ScriptSourceCode&);
+    void executeScript(const ScriptSourceCode&, double* compilationFinishTime = 0);
     void execute(ScriptResource*);
 
     // XML parser calls these

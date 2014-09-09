@@ -49,6 +49,7 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
     , m_host(host)
     , m_scriptNestingLevel(0)
     , m_hasScriptsWaitingForResources(false)
+    , m_parserBlockingScriptAlreadyLoaded(false)
 {
     ASSERT(m_host);
 }
@@ -125,6 +126,7 @@ void HTMLScriptRunner::executeParsingBlockingScript()
 void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript, PendingScriptType pendingScriptType)
 {
     bool errorOccurred = false;
+    double loadFinishTime = pendingScript.resource() ? pendingScript.resource()->loadFinishTime() : 0;
     ScriptSourceCode sourceCode = pendingScript.getSource(documentURLForScriptExecution(m_document), errorOccurred);
 
     // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
@@ -142,6 +144,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 
     // Clear the pending script before possible rentrancy from executeScript()
     RefPtrWillBeRawPtr<Element> element = pendingScript.releaseElementAndClear();
+    double compilationFinishTime = 0;
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
@@ -149,14 +152,14 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
             scriptLoader->dispatchErrorEvent();
         else {
             ASSERT(isExecutingScript());
-            scriptLoader->executeScript(sourceCode);
+            scriptLoader->executeScript(sourceCode, &compilationFinishTime);
             element->dispatchEvent(createScriptLoadEvent());
         }
     }
-    if (sourceCode.resource()) {
-        double timeBetweenLoadedAndCompiledMs = (WTF::monotonicallyIncreasingTime() - sourceCode.resource()->loadFinishTime()) * 1000;
-        const char* histogramName = pendingScriptType == PendingScriptBlockingParser ? "WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled" : "WebCore.Scripts.Deferred.TimeBetweenLoadedAndCompiled";
-        blink::Platform::current()->histogramCustomCounts(histogramName, timeBetweenLoadedAndCompiledMs, 0, 10000, 50);
+    // The exact value doesn't matter; valid time stamps are much bigger than this value.
+    const double epsilon = 1;
+    if (pendingScriptType == PendingScriptBlockingParser && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
+        blink::Platform::current()->histogramCustomCounts("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", (compilationFinishTime - loadFinishTime) * 1000, 0, 10000, 50);
     }
 
     ASSERT(!isExecutingScript());
@@ -247,11 +250,12 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
 
     ASSERT(m_parserBlockingScript.resource());
 
-    blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.AlreadyLoaded", m_parserBlockingScript.resource()->isLoaded() ? 1 : 0, 2);
+    m_parserBlockingScriptAlreadyLoaded = m_parserBlockingScript.resource()->isLoaded();
+    blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.AlreadyLoaded", m_parserBlockingScriptAlreadyLoaded ? 1 : 0, 2);
     // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
-    if (!m_parserBlockingScript.resource()->isLoaded())
+    if (!m_parserBlockingScriptAlreadyLoaded)
         m_parserBlockingScript.watchForLoad(this);
 }
 

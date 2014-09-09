@@ -101,6 +101,11 @@ private:
     // cause nested script execution when parsing <style> tags since </style>
     // tags can cause Document to call executeScriptsWaitingForResources.
     bool m_hasScriptsWaitingForResources;
+
+    // For tracking the times between script load and compilation, we need to
+    // know whether a parser blocking script was loaded previously, or whether
+    // it's really loaded when requested.
+    bool m_parserBlockingScriptAlreadyLoaded;
 };
 
 }
