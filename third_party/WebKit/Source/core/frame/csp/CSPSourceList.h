@@ -51,6 +51,7 @@ private:
     ContentSecurityPolicy* m_policy;
     Vector<CSPSource> m_list;
     String m_directiveName;
+    bool m_allowSelf;
     bool m_allowStar;
     bool m_allowInline;
     bool m_allowEval;

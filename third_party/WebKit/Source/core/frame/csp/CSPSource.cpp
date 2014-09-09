@@ -35,12 +35,8 @@ bool CSPSource::matches(const KURL& url) const
 
 bool CSPSource::schemeMatches(const KURL& url) const
 {
-    if (m_scheme.isEmpty()) {
-        String protectedResourceScheme(m_policy->securityOrigin()->protocol());
-        if (equalIgnoringCase("http", protectedResourceScheme))
-            return url.protocolIs("http") || url.protocolIs("https");
-        return equalIgnoringCase(url.protocol(), protectedResourceScheme);
-    }
+    if (m_scheme.isEmpty())
+        return m_policy->protocolMatchesSelf(url);
     return equalIgnoringCase(url.protocol(), m_scheme);
 }
 

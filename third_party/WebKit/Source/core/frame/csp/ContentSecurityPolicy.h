@@ -49,6 +49,7 @@ namespace blink {
 
 class ContentSecurityPolicyResponseHeaders;
 class CSPDirectiveList;
+class CSPSource;
 class DOMStringList;
 class Document;
 class JSONObject;
@@ -168,9 +169,11 @@ public:
 
     const KURL url() const;
     KURL completeURL(const String&) const;
-    SecurityOrigin* securityOrigin() const;
     void enforceSandboxFlags(SandboxFlags) const;
     String evalDisabledErrorMessage() const;
+
+    bool urlMatchesSelf(const KURL&) const;
+    bool protocolMatchesSelf(const KURL&) const;
 
     bool experimentalFeaturesEnabled() const;
 
@@ -184,6 +187,7 @@ private:
     explicit ContentSecurityPolicy(ExecutionContext*);
 
     Document* document() const;
+    SecurityOrigin* securityOrigin() const;
 
     void logToConsole(const String& message, MessageLevel = ErrorMessageLevel) const;
     void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
@@ -202,6 +206,8 @@ private:
     // for validation.
     uint8_t m_scriptHashAlgorithmsUsed;
     uint8_t m_styleHashAlgorithmsUsed;
+
+    OwnPtr<CSPSource> m_selfSource;
 };
 
 }

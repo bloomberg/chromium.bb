@@ -35,6 +35,7 @@ static bool isSourceListNone(const UChar* begin, const UChar* end)
 CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& directiveName)
     : m_policy(policy)
     , m_directiveName(directiveName)
+    , m_allowSelf(false)
     , m_allowStar(false)
     , m_allowInline(false)
     , m_allowEval(false)
@@ -48,6 +49,9 @@ bool CSPSourceList::matches(const KURL& url) const
         return true;
 
     KURL effectiveURL = SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
+
+    if (m_allowSelf && m_policy->urlMatchesSelf(effectiveURL))
+        return true;
 
     for (size_t i = 0; i < m_list.size(); ++i) {
         if (m_list[i].matches(effectiveURL))
@@ -452,7 +456,7 @@ bool CSPSourceList::parsePort(const UChar* begin, const UChar* end, int& port, b
 
 void CSPSourceList::addSourceSelf()
 {
-    m_list.append(CSPSource(m_policy, m_policy->securityOrigin()->protocol(), m_policy->securityOrigin()->host(), m_policy->securityOrigin()->port(), String(), false, false));
+    m_allowSelf = true;
 }
 
 void CSPSourceList::addSourceStar()

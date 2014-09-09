@@ -137,6 +137,7 @@ ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
 {
+    m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), false, false));
 }
 
 ContentSecurityPolicy::~ContentSecurityPolicy()
@@ -770,6 +771,19 @@ void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String
 bool ContentSecurityPolicy::experimentalFeaturesEnabled() const
 {
     return RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled();
+}
+
+bool ContentSecurityPolicy::urlMatchesSelf(const KURL& url) const
+{
+    return m_selfSource->matches(url);
+}
+
+bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const
+{
+    String protectedResourceScheme(securityOrigin()->protocol());
+    if (equalIgnoringCase("http", protectedResourceScheme))
+        return url.protocolIsInHTTPFamily();
+    return equalIgnoringCase(url.protocol(), protectedResourceScheme);
 }
 
 bool ContentSecurityPolicy::shouldBypassMainWorld(ExecutionContext* context)
