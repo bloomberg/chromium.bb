@@ -410,8 +410,6 @@ crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailur
 
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
-Bug(esprehn) fast/repaint/opacity-change-on-overflow-float.html [ NeedsRebaseline ]
-
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
