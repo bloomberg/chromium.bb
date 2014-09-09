@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -123,13 +123,13 @@ void UpdateBrowserModalDialogPosition(views::Widget* widget,
 views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents) {
-  extensions::WebViewGuest* web_view_guest =
-      extensions::WebViewGuest::FromWebContents(initiator_web_contents);
+  extensions::GuestViewBase* guest_view =
+      extensions::GuestViewBase::FromWebContents(initiator_web_contents);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
   content::WebContents* web_contents =
-      web_view_guest && web_view_guest->embedder_web_contents() ?
-          web_view_guest->embedder_web_contents() : initiator_web_contents;
+      guest_view && guest_view->embedder_web_contents() ?
+          guest_view->embedder_web_contents() : initiator_web_contents;
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   web_modal::PopupManager* popup_manager =
       web_modal::PopupManager::FromWebContents(web_contents);

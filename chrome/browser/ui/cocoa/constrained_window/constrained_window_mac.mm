@@ -14,7 +14,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 
 using web_modal::WebContentsModalDialogManager;
 using web_modal::NativeWebContentsModalDialog;
@@ -28,12 +28,12 @@ ConstrainedWindowMac::ConstrainedWindowMac(
       sheet_([sheet retain]),
       shown_(false) {
   DCHECK(web_contents);
-  extensions::WebViewGuest* web_view_guest =
-    extensions::WebViewGuest::FromWebContents(web_contents);
+  extensions::GuestViewBase* guest_view =
+      extensions::GuestViewBase::FromWebContents(web_contents);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
-  web_contents_ = web_view_guest && web_view_guest->embedder_web_contents() ?
-                      web_view_guest->embedder_web_contents() : web_contents;
+  web_contents_ = guest_view && guest_view->embedder_web_contents() ?
+                      guest_view->embedder_web_contents() : web_contents;
   DCHECK(sheet_.get());
   web_modal::PopupManager* popup_manager =
       web_modal::PopupManager::FromWebContents(web_contents_);
