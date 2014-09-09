@@ -673,13 +673,15 @@ void PepperPluginInstanceImpl::MessageChannelDestroyed() {
 }
 
 v8::Local<v8::Context> PepperPluginInstanceImpl::GetContext() {
-  if (!container_)
+  if (!container_ ||
+      container_->element().isNull() ||
+      container_->element().document().isNull() ||
+      !container_->element().document().frame()) {
     return v8::Handle<v8::Context>();
-  WebLocalFrame* frame = container_->element().document().frame();
-  if (!frame)
-    return v8::Handle<v8::Context>();
+  }
 
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context =
+      container_->element().document().frame()->mainWorldScriptContext();
   DCHECK(context->GetIsolate() == isolate_);
   return context;
 }
