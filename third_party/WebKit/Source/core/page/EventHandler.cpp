@@ -2576,14 +2576,16 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
             hitType |= HitTestRequest::ReadOnly;
     }
 
-    // Perform the rect-based hit-test. Note that we don't yet apply hover/active state here
-    // because we need to resolve touch adjustment first so that we apply hover/active it to
-    // the final adjusted node.
+    // Perform the rect-based hit-test (or point-based if adjustment is disabled). Note that
+    // we don't yet apply hover/active state here because we need to resolve touch adjustment
+    // first so that we apply hover/active it to the final adjusted node.
     IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
-    IntSize touchRadius = gestureEvent.area();
-    touchRadius.scale(1.f / 2);
-    // FIXME: We should not do a rect-based hit-test if touch adjustment is disabled.
-    HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, touchRadius);
+    LayoutSize padding;
+    if (shouldApplyTouchAdjustment(gestureEvent)) {
+        padding = gestureEvent.area();
+        padding.scale(1.f / 2);
+    }
+    HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, padding);
 
     // Hit-test the main frame scrollbars (in addition to the child-frame and RenderLayer
     // scroll bars checked by the hit-test code.
@@ -2614,6 +2616,10 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
             }
         }
     }
+
+    // If we did a rect-based hit test it must be resolved to the best single node by now to
+    // ensure consumers don't accidentally use one of the other candidates.
+    ASSERT(!hitTestResult.isRectBasedTest());
 
     // Now apply hover/active state to the final target.
     // FIXME: This is supposed to send mouseenter/mouseleave events, but doesn't because we

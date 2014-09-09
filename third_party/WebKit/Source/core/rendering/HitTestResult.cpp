@@ -464,15 +464,19 @@ HitTestResult::NodeSet& HitTestResult::mutableRectBasedTestResult()
 
 void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame)
 {
-    // FIXME: For maximum fidelity with point-based hit tests we should probably make use
-    // of RenderObject::updateHitTestResult here. See http://crbug.com/398914.
     ASSERT(isRectBasedTest());
     ASSERT(m_hitTestLocation.containsPoint(resolvedPointInMainFrame));
-    setInnerNode(resolvedInnerNode);
-    setInnerNonSharedNode(resolvedInnerNode);
     m_hitTestLocation = HitTestLocation(resolvedPointInMainFrame);
     m_pointInInnerNodeFrame = resolvedPointInMainFrame;
+    m_innerNode = nullptr;
+    m_innerNonSharedNode = nullptr;
+    m_innerPossiblyPseudoNode = nullptr;
     m_rectBasedTestResult = nullptr;
+
+    // Update the HitTestResult as if the supplied node had been hit in normal point-based hit-test.
+    // Note that we don't know the local point after a rect-based hit-test, but we never use
+    // it so shouldn't bother with the cost of computing it.
+    resolvedInnerNode->renderer()->updateHitTestResult(*this, LayoutPoint());
     ASSERT(!isRectBasedTest());
 }
 

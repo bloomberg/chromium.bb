@@ -53,7 +53,7 @@ public:
 
     HitTestResult();
     HitTestResult(const LayoutPoint&);
-    // Pass non-negative padding values to perform a rect-based hit test.
+    // Pass positive padding values to perform a rect-based hit test.
     HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding);
     HitTestResult(const HitTestLocation&);
     HitTestResult(const HitTestResult&);
