@@ -9,6 +9,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -69,8 +70,12 @@ void DetachableResourceHandler::Detach() {
   // Resume if necessary. The request may have been deferred, say, waiting on a
   // full buffer in AsyncResourceHandler. Now that it has been detached, resume
   // and drain it.
-  if (is_deferred_)
+  if (is_deferred_) {
+    // The nested ResourceHandler may have logged that it's blocking the
+    // request.  Log it as no longer doing so, to avoid a DCHECK on resume.
+    request()->LogUnblocked();
     Resume();
+  }
 }
 
 void DetachableResourceHandler::SetController(ResourceController* controller) {
