@@ -131,9 +131,9 @@ const SimpleFontData* SimpleFontData::getCompositeFontReferenceFontData(NSFont *
 
             CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(substituteFont));
             bool syntheticBold = platformData().syntheticBold() && !(traits & kCTFontBoldTrait);
-            bool syntheticOblique = platformData().syntheticOblique() && !(traits & kCTFontItalicTrait);
+            bool syntheticItalic = platformData().syntheticItalic() && !(traits & kCTFontItalicTrait);
 
-            FontPlatformData substitutePlatform(substituteFont, platformData().size(), syntheticBold, syntheticOblique, platformData().orientation(), platformData().widthVariant());
+            FontPlatformData substitutePlatform(substituteFont, platformData().size(), syntheticBold, syntheticItalic, platformData().orientation(), platformData().widthVariant());
             SimpleFontData* value = new SimpleFontData(substitutePlatform, isCustomFont() ? CustomFontData::create() : nullptr);
             if (value) {
                 CFDictionaryAddValue(dictionary, key, value);
@@ -215,7 +215,7 @@ void SimpleFontData::platformInit()
     iLineGap = CGFontGetLeading(m_platformData.cgFont());
     unitsPerEm = CGFontGetUnitsPerEm(m_platformData.cgFont());
 
-    float pointSize = m_platformData.m_size;
+    float pointSize = m_platformData.m_textSize;
     float ascent = scaleEmToUnits(iAscent, unitsPerEm) * pointSize;
     float descent = -scaleEmToUnits(iDescent, unitsPerEm) * pointSize;
     float lineGap = scaleEmToUnits(iLineGap, unitsPerEm) * pointSize;
@@ -281,7 +281,7 @@ void SimpleFontData::platformCharWidthInit()
     if (os2Table && CFDataGetLength(os2Table.get()) >= 4) {
         const UInt8* os2 = CFDataGetBytePtr(os2Table.get());
         SInt16 os2AvgCharWidth = os2[2] * 256 + os2[3];
-        m_avgCharWidth = scaleEmToUnits(os2AvgCharWidth, m_fontMetrics.unitsPerEm()) * m_platformData.m_size;
+        m_avgCharWidth = scaleEmToUnits(os2AvgCharWidth, m_fontMetrics.unitsPerEm()) * m_platformData.m_textSize;
     }
 
     RetainPtr<CFDataRef> headTable(AdoptCF, copyFontTableForTag(m_platformData, 'head'));
@@ -292,7 +292,7 @@ void SimpleFontData::platformCharWidthInit()
         SInt16 xMin = static_cast<SInt16>(uxMin);
         SInt16 xMax = static_cast<SInt16>(uxMax);
         float diff = static_cast<float>(xMax - xMin);
-        m_maxCharWidth = scaleEmToUnits(diff, m_fontMetrics.unitsPerEm()) * m_platformData.m_size;
+        m_maxCharWidth = scaleEmToUnits(diff, m_fontMetrics.unitsPerEm()) * m_platformData.m_textSize;
     }
 
     // Fallback to a cross-platform estimate, which will populate these values if they are non-positive.
@@ -315,7 +315,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
 {
     if (isCustomFont()) {
         FontPlatformData scaledFontData(m_platformData);
-        scaledFontData.m_size = scaledFontData.m_size * scaleFactor;
+        scaledFontData.m_textSize = scaledFontData.m_textSize * scaleFactor;
         return SimpleFontData::create(scaledFontData, CustomFontData::create());
     }
 
@@ -332,12 +332,12 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
 
         if (m_platformData.m_syntheticBold)
             fontTraits |= NSBoldFontMask;
-        if (m_platformData.m_syntheticOblique)
+        if (m_platformData.m_syntheticItalic)
             fontTraits |= NSItalicFontMask;
 
         NSFontTraitMask scaledFontTraits = [fontManager traitsOfFont:scaledFontData.font()];
         scaledFontData.m_syntheticBold = (fontTraits & NSBoldFontMask) && !(scaledFontTraits & NSBoldFontMask);
-        scaledFontData.m_syntheticOblique = (fontTraits & NSItalicFontMask) && !(scaledFontTraits & NSItalicFontMask);
+        scaledFontData.m_syntheticItalic = (fontTraits & NSItalicFontMask) && !(scaledFontTraits & NSItalicFontMask);
 
         // SimpleFontData::platformDestroy() takes care of not deleting the cached font data twice.
         return FontCache::fontCache()->fontDataFromFontPlatformData(&scaledFontData);
@@ -388,7 +388,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
         if (font && platformData().isColorBitmapFont())
             advance = NSSizeToCGSize([font advancementForGlyph:glyph]);
         else {
-            float pointSize = platformData().m_size;
+            float pointSize = platformData().m_textSize;
             CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
             if (!CGFontGetGlyphAdvancesForStyle(platformData().cgFont(), &m, cgFontRenderingModeForNSFont(font), &glyph, 1, &advance)) {
                 WTF_LOG_ERROR("Unable to cache glyph widths for %@ %f", [font displayName], pointSize);

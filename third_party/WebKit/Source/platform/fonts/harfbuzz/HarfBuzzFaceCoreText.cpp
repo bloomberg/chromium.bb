@@ -133,7 +133,7 @@ hb_font_t* HarfBuzzFace::createFont()
 {
     hb_font_t* font = hb_font_create(m_face);
     hb_font_set_funcs(font, harfBuzzCoreTextGetFontFuncs(), m_platformData, 0);
-    const float size = m_platformData->m_size;
+    const float size = m_platformData->m_textSize;
     hb_font_set_ppem(font, size, size);
     const int scale = (1 << 16) * static_cast<int>(size);
     hb_font_set_scale(font, scale, scale);
