@@ -1,0 +1,89 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var promise = new Promise(function promiseConstructor(resolve, reject) {
+        resolve("Resolved!");
+    });
+    promise
+        .then(thenCallback, errorCallback)
+        .then(thenCallback2, errorCallback);
+}
+
+function thenCallback() { }
+
+function thenCallback2()
+{
+    debugger;
+}
+
+function errorCallback() { }
+
+var test = function ()
+{
+    var output = [];
+
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.enablePromiseTracker();
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        DebuggerAgent.getPromises(didGetPromises);
+    }
+
+    function didGetPromises(error, response)
+    {
+        function comparePromiseData(x, y)
+        {
+            if (x.id < y.id)
+                return -1;
+            else if (x.id === y.id)
+                return 0;
+            else
+                return 1;
+        }
+
+        var minPromiseId;
+        if (response.length) {
+            minPromiseId = response[0].id;
+            for (var i = 0; i < response.length; i++)
+                minPromiseId = Math.min(minPromiseId, response[i].id);
+        }
+        response.sort(comparePromiseData);
+        for (var i = 0; i < response.length; i++) {
+            var promise = response[i];
+            var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
+            var promiseInfo = "Promise:" +
+                              "\n    id: " + (promise.id - minPromiseId) +
+                              "\n    status: " + promise.status +
+                              "\n    parent id: " + parentId;
+            var callFrame = promise.callFrame;
+            if (callFrame)
+                promiseInfo += "\n    " + callFrame.functionName + " " + callFrame.url + ":" + callFrame.lineNumber;
+            output.push(promiseInfo);
+        }
+
+        InspectorTest.addResults(output);
+        DebuggerAgent.disablePromiseTracker();
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests promise tracker in debugger.
+</p>
+</body>
+</html>

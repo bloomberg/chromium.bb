@@ -5,6 +5,7 @@
 #ifndef PromiseTracker_h
 #define PromiseTracker_h
 
+#include "core/InspectorTypeBuilder.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -22,12 +23,13 @@ public:
     ~PromiseTracker();
 
     bool isEnabled() const { return m_isEnabled; }
-    void enable();
-    void disable();
+    void setEnabled(bool);
 
     void clear();
 
     void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status);
+
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> > promises();
 
     class PromiseData;
 
@@ -35,7 +37,11 @@ public:
     typedef HashMap<int, PromiseDataVector> PromiseDataMap;
 
 private:
+    int circularSequentialId();
+    PassRefPtr<PromiseData> createPromiseDataIfNeeded(v8::Isolate*, v8::Handle<v8::Object> promise);
+
     bool m_isEnabled;
+    int m_circularSequentialId;
     PromiseDataMap m_promiseDataMap;
 };
 

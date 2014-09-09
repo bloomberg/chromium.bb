@@ -58,6 +58,7 @@ using blink::TypeBuilder::Debugger::CallFrame;
 using blink::TypeBuilder::Debugger::CollectionEntry;
 using blink::TypeBuilder::Debugger::ExceptionDetails;
 using blink::TypeBuilder::Debugger::FunctionDetails;
+using blink::TypeBuilder::Debugger::PromiseDetails;
 using blink::TypeBuilder::Debugger::ScriptId;
 using blink::TypeBuilder::Debugger::StackTrace;
 using blink::TypeBuilder::Runtime::RemoteObject;
@@ -77,6 +78,7 @@ static const char debuggerEnabled[] = "debuggerEnabled";
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
+static const char promiseTrackerEnabled[] = "promiseTrackerEnabled";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -164,6 +166,7 @@ void InspectorDebuggerAgent::disable()
     m_state->setString(DebuggerAgentState::skipStackPattern, "");
     m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
     scriptDebugServer().clearBreakpoints();
@@ -229,6 +232,7 @@ void InspectorDebuggerAgent::restore()
             m_state->setBoolean(DebuggerAgentState::skipAllPauses, false);
         }
         asyncCallStackTracker().setAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
+        m_promiseTracker.setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled));
     }
 }
 
@@ -1164,6 +1168,25 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
 {
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
     asyncCallStackTracker().setAsyncCallStackDepth(depth);
+}
+
+void InspectorDebuggerAgent::enablePromiseTracker(ErrorString*)
+{
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, true);
+    m_promiseTracker.setEnabled(true);
+}
+
+void InspectorDebuggerAgent::disablePromiseTracker(ErrorString*)
+{
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
+    m_promiseTracker.setEnabled(false);
+}
+
+void InspectorDebuggerAgent::getPromises(ErrorString*, RefPtr<Array<PromiseDetails> >& promises)
+{
+    if (!m_promiseTracker.isEnabled())
+        return;
+    promises = m_promiseTracker.promises();
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)

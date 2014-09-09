@@ -146,6 +146,9 @@ public:
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId) OVERRIDE FINAL;
     virtual void skipStackFrames(ErrorString*, const String* pattern, const bool* skipContentScripts) OVERRIDE FINAL;
     virtual void setAsyncCallStackDepth(ErrorString*, int depth) OVERRIDE FINAL;
+    virtual void enablePromiseTracker(ErrorString*) OVERRIDE FINAL;
+    virtual void disablePromiseTracker(ErrorString*) OVERRIDE FINAL;
+    virtual void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) OVERRIDE FINAL;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);

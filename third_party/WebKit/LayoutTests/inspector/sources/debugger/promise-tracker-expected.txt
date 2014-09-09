@@ -1,0 +1,21 @@
+Tests promise tracker in debugger.
+
+Set timer for test function.
+Script execution paused.
+Promise:
+    id: 0
+    status: resolved
+    parent id: undefined
+    testFunction :9
+Promise:
+    id: 1
+    status: resolved
+    parent id: 0
+    testFunction :13
+Promise:
+    id: 2
+    status: pending
+    parent id: 1
+    testFunction :14
+Script execution resumed.
+
