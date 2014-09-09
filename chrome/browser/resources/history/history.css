@@ -157,9 +157,9 @@ html[dir='rtl'] .display-filter-button {
 }
 
 #display-filter-controls label span {
-  -webkit-align-items: flex-start;
   -webkit-appearance: none;
   -webkit-user-select: none;
+  align-items: flex-start;
   background-color: buttonface;
   background-image: -webkit-linear-gradient(rgb(237, 237, 237),
                                             rgb(237, 237, 237) 38%,
@@ -246,9 +246,9 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
 
 .entry-box,
 .site-domain-row {
-  -webkit-align-items: center;
+  align-items: center;
   cursor: default;
-  display: -webkit-flex;
+  display: flex;
   /* An odd line-height ensures a consistent baseline on all platforms. */
   line-height: 1.75em;
   margin-bottom: 6px;
@@ -260,7 +260,7 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
 
 .site-domain-wrapper {
   cursor: pointer;
-  display: -webkit-flex;
+  display: flex;
   width: 100%;
 }
 
@@ -366,7 +366,7 @@ html[dir='rtl'] .site-domain {
 }
 
 .filter-status > div {
-  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
   -webkit-transition: background-color 150ms;
   border-radius: 3px;
   display: none;
@@ -429,11 +429,11 @@ html[dir='rtl'] .site-domain {
 }
 
 .entry-box-container {
-  display: -webkit-flex;
+  display: flex;
 }
 
 .entry .visit-entry {
-  display: -webkit-flex;
+  display: flex;
   min-width: 0;
 }
 
