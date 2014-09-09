@@ -94,10 +94,10 @@ class ChannelMultiplexerTest : public testing::Test {
                      scoped_ptr<net::StreamSocket>* host_socket,
                      scoped_ptr<net::StreamSocket>* client_socket) {
     int counter = 2;
-    host_mux_->CreateStreamChannel(name, base::Bind(
+    host_mux_->CreateChannel(name, base::Bind(
         &ChannelMultiplexerTest::OnChannelConnected, base::Unretained(this),
         host_socket, &counter));
-    client_mux_->CreateStreamChannel(name, base::Bind(
+    client_mux_->CreateChannel(name, base::Bind(
         &ChannelMultiplexerTest::OnChannelConnected, base::Unretained(this),
         client_socket, &counter));
 
@@ -355,9 +355,9 @@ TEST_F(ChannelMultiplexerTest, SessionFail) {
   MockConnectCallback cb1;
   MockConnectCallback cb2;
 
-  host_mux_->CreateStreamChannel(kTestChannelName, base::Bind(
+  host_mux_->CreateChannel(kTestChannelName, base::Bind(
       &MockConnectCallback::OnConnected, base::Unretained(&cb1)));
-  host_mux_->CreateStreamChannel(kTestChannelName2, base::Bind(
+  host_mux_->CreateChannel(kTestChannelName2, base::Bind(
       &MockConnectCallback::OnConnected, base::Unretained(&cb2)));
 
   EXPECT_CALL(cb1, OnConnectedPtr(NULL))

@@ -332,56 +332,29 @@ void FakeSession::Close() {
   closed_ = true;
 }
 
-void FakeSession::CreateStreamChannel(
-    const std::string& name,
-    const StreamChannelCallback& callback) {
+void FakeSession::CreateChannel(const std::string& name,
+                                const ChannelCreatedCallback& callback) {
   scoped_ptr<FakeSocket> channel;
   // If we are in the error state then we put NULL in the channels list, so that
-  // NotifyStreamChannelCallback() still calls the callback.
+  // NotifyChannelCreated() still calls the callback.
   if (error_ == OK)
     channel.reset(new FakeSocket());
   stream_channels_[name] = channel.release();
 
   if (async_creation_) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
-        &FakeSession::NotifyStreamChannelCallback, weak_factory_.GetWeakPtr(),
+        &FakeSession::NotifyChannelCreated, weak_factory_.GetWeakPtr(),
         name, callback));
   } else {
-    NotifyStreamChannelCallback(name, callback);
+    NotifyChannelCreated(name, callback);
   }
 }
 
-void FakeSession::NotifyStreamChannelCallback(
+void FakeSession::NotifyChannelCreated(
     const std::string& name,
-    const StreamChannelCallback& callback) {
+    const ChannelCreatedCallback& callback) {
   if (stream_channels_.find(name) != stream_channels_.end())
     callback.Run(scoped_ptr<net::StreamSocket>(stream_channels_[name]));
-}
-
-void FakeSession::CreateDatagramChannel(
-    const std::string& name,
-    const DatagramChannelCallback& callback) {
-  scoped_ptr<FakeUdpSocket> channel;
-  // If we are in the error state then we put NULL in the channels list, so that
-  // NotifyStreamChannelCallback() still calls the callback.
-  if (error_ == OK)
-    channel.reset(new FakeUdpSocket());
-  datagram_channels_[name] = channel.release();
-
-  if (async_creation_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &FakeSession::NotifyDatagramChannelCallback, weak_factory_.GetWeakPtr(),
-        name, callback));
-  } else {
-    NotifyDatagramChannelCallback(name, callback);
-  }
-}
-
-void FakeSession::NotifyDatagramChannelCallback(
-    const std::string& name,
-    const DatagramChannelCallback& callback) {
-  if (datagram_channels_.find(name) != datagram_channels_.end())
-    callback.Run(scoped_ptr<net::Socket>(datagram_channels_[name]));
 }
 
 void FakeSession::CancelChannelCreation(const std::string& name) {

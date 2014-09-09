@@ -250,30 +250,14 @@ void JingleSession::AddPendingRemoteCandidates(Transport* channel,
   }
 }
 
-void JingleSession::CreateStreamChannel(
-      const std::string& name,
-      const StreamChannelCallback& callback) {
+void JingleSession::CreateChannel(const std::string& name,
+                                  const ChannelCreatedCallback& callback) {
   DCHECK(!channels_[name]);
 
   scoped_ptr<ChannelAuthenticator> channel_authenticator =
       authenticator_->CreateChannelAuthenticator();
   scoped_ptr<StreamTransport> channel =
       session_manager_->transport_factory_->CreateStreamTransport();
-  channel->Initialize(name, this, channel_authenticator.Pass());
-  channel->Connect(callback);
-  AddPendingRemoteCandidates(channel.get(), name);
-  channels_[name] = channel.release();
-}
-
-void JingleSession::CreateDatagramChannel(
-    const std::string& name,
-    const DatagramChannelCallback& callback) {
-  DCHECK(!channels_[name]);
-
-  scoped_ptr<ChannelAuthenticator> channel_authenticator =
-      authenticator_->CreateChannelAuthenticator();
-  scoped_ptr<DatagramTransport> channel =
-      session_manager_->transport_factory_->CreateDatagramTransport();
   channel->Initialize(name, this, channel_authenticator.Pass());
   channel->Connect(callback);
   AddPendingRemoteCandidates(channel.get(), name);

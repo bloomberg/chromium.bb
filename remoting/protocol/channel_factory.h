@@ -22,9 +22,7 @@ class ChannelFactory : public base::NonThreadSafe {
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
   typedef base::Callback<void(scoped_ptr<net::StreamSocket>)>
-      StreamChannelCallback;
-  typedef base::Callback<void(scoped_ptr<net::Socket>)>
-      DatagramChannelCallback;
+      ChannelCreatedCallback;
 
   ChannelFactory() {}
 
@@ -35,15 +33,12 @@ class ChannelFactory : public base::NonThreadSafe {
   // before the factory is destroyed and CancelChannelCreation() must be called
   // to cancel creation of channels for which the |callback| hasn't been called
   // yet.
-  virtual void CreateStreamChannel(
-      const std::string& name, const StreamChannelCallback& callback) = 0;
-  virtual void CreateDatagramChannel(
-      const std::string& name, const DatagramChannelCallback& callback) = 0;
+  virtual void CreateChannel(const std::string& name,
+                             const ChannelCreatedCallback& callback) = 0;
 
-  // Cancels a pending CreateStreamChannel() or CreateDatagramChannel()
-  // operation for the named channel. If the channel creation already
-  // completed then canceling it has no effect. When shutting down
-  // this method must be called for each channel pending creation.
+  // Cancels a pending CreateChannel() operation for the named channel. If the
+  // channel creation already completed then canceling it has no effect. When
+  // shutting down this method must be called for each channel pending creation.
   virtual void CancelChannelCreation(const std::string& name) = 0;
 
  protected:

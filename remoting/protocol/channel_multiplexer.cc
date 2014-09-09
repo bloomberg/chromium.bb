@@ -58,11 +58,11 @@ const char ChannelMultiplexer::kMuxChannelName[] = "mux";
 
 struct ChannelMultiplexer::PendingChannel {
   PendingChannel(const std::string& name,
-                 const StreamChannelCallback& callback)
+                 const ChannelCreatedCallback& callback)
       : name(name), callback(callback) {
   }
   std::string name;
-  StreamChannelCallback callback;
+  ChannelCreatedCallback callback;
 };
 
 class ChannelMultiplexer::MuxChannel {
@@ -370,9 +370,8 @@ ChannelMultiplexer::~ChannelMultiplexer() {
     base_channel_factory_->CancelChannelCreation(base_channel_name_);
 }
 
-void ChannelMultiplexer::CreateStreamChannel(
-    const std::string& name,
-    const StreamChannelCallback& callback) {
+void ChannelMultiplexer::CreateChannel(const std::string& name,
+                                       const ChannelCreatedCallback& callback) {
   if (base_channel_.get()) {
     // Already have |base_channel_|. Create new multiplexed channel
     // synchronously.
@@ -386,19 +385,12 @@ void ChannelMultiplexer::CreateStreamChannel(
 
     // If this is the first multiplexed channel then create the base channel.
     if (pending_channels_.size() == 1U) {
-      base_channel_factory_->CreateStreamChannel(
+      base_channel_factory_->CreateChannel(
           base_channel_name_,
           base::Bind(&ChannelMultiplexer::OnBaseChannelReady,
                      base::Unretained(this)));
     }
   }
-}
-
-void ChannelMultiplexer::CreateDatagramChannel(
-    const std::string& name,
-    const DatagramChannelCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(scoped_ptr<net::Socket>());
 }
 
 void ChannelMultiplexer::CancelChannelCreation(const std::string& name) {

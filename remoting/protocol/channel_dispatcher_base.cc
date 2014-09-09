@@ -44,7 +44,7 @@ void ChannelDispatcherBase::Init(Session* session,
 
   initialized_callback_ = callback;
 
-  channel_factory_->CreateStreamChannel(channel_name_, base::Bind(
+  channel_factory_->CreateChannel(channel_name_, base::Bind(
       &ChannelDispatcherBase::OnChannelReady, base::Unretained(this)));
 }
 

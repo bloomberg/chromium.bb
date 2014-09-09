@@ -28,7 +28,7 @@ void ProtobufVideoWriter::Init(protocol::Session* session,
   channel_factory_ = session->GetTransportChannelFactory();
   initialized_callback_ = callback;
 
-  channel_factory_->CreateStreamChannel(
+  channel_factory_->CreateChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoWriter::OnChannelReady, base::Unretained(this)));
 }

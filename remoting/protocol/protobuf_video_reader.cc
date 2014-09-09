@@ -32,7 +32,7 @@ void ProtobufVideoReader::Init(protocol::Session* session,
   initialized_callback_ = callback;
   video_stub_ = video_stub;
 
-  channel_factory_->CreateStreamChannel(
+  channel_factory_->CreateChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
 }

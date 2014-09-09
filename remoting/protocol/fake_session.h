@@ -178,21 +178,13 @@ class FakeSession : public Session,
   virtual void Close() OVERRIDE;
 
   // ChannelFactory interface.
-  virtual void CreateStreamChannel(
-      const std::string& name,
-      const StreamChannelCallback& callback) OVERRIDE;
-  virtual void CreateDatagramChannel(
-      const std::string& name,
-      const DatagramChannelCallback& callback) OVERRIDE;
+  virtual void CreateChannel(const std::string& name,
+                             const ChannelCreatedCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
 
  public:
-  void NotifyStreamChannelCallback(
-      const std::string& name,
-      const StreamChannelCallback& callback);
-  void NotifyDatagramChannelCallback(
-      const std::string& name,
-      const DatagramChannelCallback& callback);
+  void NotifyChannelCreated(const std::string& name,
+                            const ChannelCreatedCallback& callback);
 
   EventHandler* event_handler_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
