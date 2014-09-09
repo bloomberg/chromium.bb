@@ -39,7 +39,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       unsigned internalformat,
       unsigned usage) OVERRIDE;
   virtual void DeleteGpuMemoryBuffer(
-      scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE {}
+      scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE;
 
   // GpuMemoryBufferFactoryHost implementation.
   virtual void CreateGpuMemoryBuffer(
@@ -72,6 +72,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
  private:
   struct CreateRequest;
+  struct AllocateGpuMemoryBufferRequest;
   class EstablishRequest;
 
   BrowserGpuChannelHostFactory();
@@ -86,20 +87,12 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                                        CreateCommandBufferResult result);
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
-
-  void CreateGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
-                                 const gfx::Size& size,
-                                 unsigned internalformat,
-                                 unsigned usage,
-                                 uint32 request_id);
-  void GpuMemoryBufferCreatedOnIO(
-      uint32 request_id,
-      const gfx::GpuMemoryBufferHandle& handle);
-  void OnGpuMemoryBufferCreated(
-      uint32 request_id,
-      const gfx::GpuMemoryBufferHandle& handle);
-  void DestroyGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
-                                  int32 sync_point);
+  static void AllocateGpuMemoryBufferOnIO(
+      AllocateGpuMemoryBufferRequest* request);
+  static void DeleteGpuMemoryBufferOnIO(
+      scoped_ptr<gfx::GpuMemoryBuffer> buffer);
+  void OnGpuMemoryBufferCreated(uint32 request_id,
+                                const gfx::GpuMemoryBufferHandle& handle);
 
   const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
@@ -107,7 +100,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<base::Closure> established_callbacks_;
-
   uint32 next_create_gpu_memory_buffer_request_id_;
   typedef std::map<uint32, CreateGpuMemoryBufferCallback>
       CreateGpuMemoryBufferCallbackMap;

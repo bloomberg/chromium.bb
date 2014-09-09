@@ -25,11 +25,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-#if defined(OS_MACOSX)
-#include <IOSurface/IOSurfaceAPI.h>
-#include "base/mac/scoped_cftyperef.h"
-#endif
-
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -37,7 +32,6 @@ class MessageLoop;
 
 namespace gfx {
 class Size;
-struct GpuMemoryBufferHandle;
 }
 
 namespace content {
@@ -325,17 +319,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SendDisableAecDumpToRenderer();
 #endif
 
-  // GpuMemoryBuffer allocation handler.
-  void OnAllocateGpuMemoryBuffer(uint32 width,
-                                 uint32 height,
-                                 uint32 internalformat,
-                                 uint32 usage,
-                                 IPC::Message* reply);
-  void GpuMemoryBufferAllocated(IPC::Message* reply,
-                                const gfx::GpuMemoryBufferHandle& handle);
-  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
-                                const gfx::GpuMemoryBufferId& id);
-
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
   bool mojo_activation_required_;
 
@@ -454,10 +437,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::TimeTicks survive_for_worker_start_time_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
-
-#if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<IOSurfaceRef> last_io_surface_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

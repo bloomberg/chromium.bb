@@ -27,10 +27,13 @@
 #include "media/base/channel_layout.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
+#include <IOSurface/IOSurfaceAPI.h>
+#include "base/mac/scoped_cftyperef.h"
 #include "content/common/mac/font_loader.h"
 #endif
 
@@ -53,6 +56,10 @@ namespace base {
 class ProcessMetrics;
 class SharedMemory;
 class TaskRunner;
+}
+
+namespace gfx {
+struct GpuMemoryBufferHandle;
 }
 
 namespace media {
@@ -281,6 +288,16 @@ class RenderMessageFilter : public BrowserMessageFilter {
     const std::string& selector,
     const std::string& markup);
 
+  void OnAllocateGpuMemoryBuffer(uint32 width,
+                                 uint32 height,
+                                 uint32 internalformat,
+                                 uint32 usage,
+                                 IPC::Message* reply);
+  void GpuMemoryBufferAllocated(IPC::Message* reply,
+                                const gfx::GpuMemoryBufferHandle& handle);
+  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                const gfx::GpuMemoryBufferId& id);
+
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
@@ -318,6 +335,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
+
+#if defined(OS_MACOSX)
+  base::ScopedCFTypeRef<IOSurfaceRef> last_io_surface_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
