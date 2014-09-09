@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/css/FontFace.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CSSValueKeywords.h"
@@ -42,6 +41,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/FontFaceDescriptors.h"
 #include "core/css/LocalFontFaceSource.h"
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/css/StylePropertySet.h"
@@ -70,7 +70,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, 
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const Dictionary& descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const FontFaceDescriptors* descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
 
@@ -82,14 +82,14 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, con
     return fontFace.release();
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary& descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors* descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->data()), source->byteLength());
     return fontFace.release();
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBufferView> source, const Dictionary& descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBufferView> source, const FontFaceDescriptors* descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->baseAddress()), source->byteLength());
@@ -130,24 +130,17 @@ FontFace::FontFace()
 {
 }
 
-FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const Dictionary& descriptors)
+FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const FontFaceDescriptors* descriptors)
     : m_family(family)
     , m_status(Unloaded)
 {
     Document* document = toDocument(context);
-    String value;
-    if (DictionaryHelper::get(descriptors, "style", value))
-        setPropertyFromString(document, value, CSSPropertyFontStyle);
-    if (DictionaryHelper::get(descriptors, "weight", value))
-        setPropertyFromString(document, value, CSSPropertyFontWeight);
-    if (DictionaryHelper::get(descriptors, "stretch", value))
-        setPropertyFromString(document, value, CSSPropertyFontStretch);
-    if (DictionaryHelper::get(descriptors, "unicodeRange", value))
-        setPropertyFromString(document, value, CSSPropertyUnicodeRange);
-    if (DictionaryHelper::get(descriptors, "variant", value))
-        setPropertyFromString(document, value, CSSPropertyFontVariant);
-    if (DictionaryHelper::get(descriptors, "featureSettings", value))
-        setPropertyFromString(document, value, CSSPropertyWebkitFontFeatureSettings);
+    setPropertyFromString(document, descriptors->style(), CSSPropertyFontStyle);
+    setPropertyFromString(document, descriptors->weight(), CSSPropertyFontWeight);
+    // FIXME: we don't implement 'font-strech' property yet so we can't set the property.
+    setPropertyFromString(document, descriptors->unicodeRange(), CSSPropertyUnicodeRange);
+    setPropertyFromString(document, descriptors->variant(), CSSPropertyFontVariant);
+    setPropertyFromString(document, descriptors->featureSettings(), CSSPropertyWebkitFontFeatureSettings);
 }
 
 FontFace::~FontFace()

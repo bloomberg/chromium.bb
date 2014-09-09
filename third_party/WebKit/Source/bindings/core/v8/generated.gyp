@@ -131,8 +131,7 @@
       '../../modules/generated.gyp:interfaces_info',
     ],
     'sources': [
-      # FIXME: Add '<@(core_dictionary_idl_files)',
-      # See comment on core/core.gypi
+      '<@(core_dictionary_idl_files)',
       '<@(core_testing_dictionary_idl_files)',
     ],
     'actions': [{
@@ -149,8 +148,7 @@
         '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
       ],
       'outputs': [
-        # FIXME: Add '<@(generated_core_dictionary_files)',
-        # See comment on core/core.gypi
+        '<@(generated_core_dictionary_files)',
         '<@(generated_core_testing_dictionary_files)',
       ],
       'action': [
