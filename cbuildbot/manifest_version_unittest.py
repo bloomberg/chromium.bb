@@ -174,6 +174,8 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     self.tmpmandir = os.path.join(self.tempdir, 'man')
     osutils.SafeMakedirs(self.tmpmandir)
     self.manager.manifest_dir = self.tmpmandir
+    # Shorten the sleep between attempts.
+    self.manager.SLEEP_TIMEOUT = 1
 
   def testPublishManifestCommitMessageWithBuildId(self):
     """Tests that PublishManifest writes a build id."""
