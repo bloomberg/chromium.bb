@@ -6,5 +6,9 @@ License File: LICENSE
 Security Critical: yes
 
 Description:
-The libjingle/webrtc/liblouis_nacl uses jsoncpp for signaling message serialization and deserialization.
+The libjingle/webrtc/liblouis_nacl uses jsoncpp for signaling message
+serialization and deserialization.
 
+Local modifications:
+The overrides are used to eliminate static initializers in json_value.cpp and
+json_reader.cpp adds includes for <string> and <istream> to build on libc++.
