@@ -413,6 +413,9 @@
             ],
           },
           'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other gbm)',
+            ],
             'libraries': [
               '<!@(<(pkg-config) --libs-only-l gbm)',
             ],
