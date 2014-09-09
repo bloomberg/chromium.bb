@@ -19,11 +19,16 @@ DriWindowDelegateProxy::~DriWindowDelegateProxy() {
 }
 
 void DriWindowDelegateProxy::Initialize() {
-  bool status = sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
-  DCHECK(status);
+  TRACE_EVENT1("dri", "DriWindowDelegateProxy::Initialize", "widget", widget_);
+  sender_->AddChannelObserver(this);
 }
 
 void DriWindowDelegateProxy::Shutdown() {
+  TRACE_EVENT1("dri", "DriWindowDelegateProxy::Shutdown", "widget", widget_);
+  sender_->RemoveChannelObserver(this);
+  if (!sender_->IsConnected())
+    return;
+
   bool status = sender_->Send(new OzoneGpuMsg_DestroyWindowDelegate(widget_));
   DCHECK(status);
 }
@@ -38,9 +43,32 @@ HardwareDisplayController* DriWindowDelegateProxy::GetController() {
 }
 
 void DriWindowDelegateProxy::OnBoundsChanged(const gfx::Rect& bounds) {
+  TRACE_EVENT2("dri",
+               "DriWindowDelegateProxy::OnBoundsChanged",
+               "widget",
+               widget_,
+               "bounds",
+               bounds.ToString());
+  bounds_ = bounds;
+  if (!sender_->IsConnected())
+    return;
+
   bool status =
       sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds));
   DCHECK(status);
+}
+
+void DriWindowDelegateProxy::OnChannelEstablished() {
+  TRACE_EVENT1(
+      "dri", "DriWindowDelegateProxy::OnChannelEstablished", "widget", widget_);
+  bool status = sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
+  DCHECK(status);
+  OnBoundsChanged(bounds_);
+}
+
+void DriWindowDelegateProxy::OnChannelDestroyed() {
+  TRACE_EVENT1(
+      "dri", "DriWindowDelegateProxy::OnChannelDestroyed", "widget", widget_);
 }
 
 }  // namespace ui

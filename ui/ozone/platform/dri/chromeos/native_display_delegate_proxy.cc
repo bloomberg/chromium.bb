@@ -113,15 +113,21 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
 
   if (event.action_type() == DeviceEvent::CHANGE) {
     VLOG(1) << "Got display changed event";
-    proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays());
+    proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(
+        std::vector<DisplaySnapshot_Params>()));
   }
 }
 
 void NativeDisplayDelegateProxy::OnChannelEstablished(
     int host_id, IPC::Sender* sender) {
+  std::vector<DisplaySnapshot_Params> display_params;
+  for (size_t i = 0; i < displays_.size(); ++i)
+    display_params.push_back(GetDisplaySnapshotParams(*displays_[i]));
+
   // Force an initial configure such that the browser process can get the actual
-  // state.
-  proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays());
+  // state. Pass in the current display state since the GPU process may have
+  // crashed and we want to re-synchronize the state between processes.
+  proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(display_params));
 }
 
 void NativeDisplayDelegateProxy::OnChannelDestroyed(int host_id) {
