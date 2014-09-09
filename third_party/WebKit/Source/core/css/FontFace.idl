@@ -39,9 +39,9 @@ enum FontFaceLoadStatus {
 
 [
     // FIXME: should be union type http://crbug.com/240176
-    Constructor(DOMString family, DOMString source, optional FontFaceDescriptors descriptors),
-    Constructor(DOMString family, ArrayBuffer source, optional FontFaceDescriptors descriptors),
-    Constructor(DOMString family, ArrayBufferView source, optional FontFaceDescriptors descriptors),
+    Constructor(DOMString family, DOMString source, optional Dictionary descriptors),
+    Constructor(DOMString family, ArrayBuffer source, optional Dictionary descriptors),
+    Constructor(DOMString family, ArrayBufferView source, optional Dictionary descriptors),
     ConstructorCallWith=ExecutionContext,
     WillBeGarbageCollected,
 ] interface FontFace {

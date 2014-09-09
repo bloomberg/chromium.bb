@@ -8,10 +8,6 @@ import("//third_party/WebKit/Source/core/core.gni")
 # Don't actually read idl.gypi since that just defines variables in terms of
 # others, which gypi_to_gn doesn't handle.
 
-core_definition_idl_files =
-  core_dictionary_idl_files +
-  core_idl_files
-
 core_testing_definition_idl_files =
   core_testing_dictionary_idl_files +
   webcore_testing_idl_files
@@ -19,13 +15,13 @@ core_testing_definition_idl_files =
 # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 # Interface IDL files: generate individual bindings (includes testing)
 core_interface_idl_files =
-  core_definition_idl_files +
+  core_idl_files +
   core_testing_definition_idl_files +
   generated_webcore_testing_idl_files
 
 # Static IDL files
 core_static_interface_idl_files =
-  core_definition_idl_files +
+  core_idl_files +
   core_testing_definition_idl_files
 core_static_dependency_idl_files =
   core_dependency_idl_files +

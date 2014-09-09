@@ -18,8 +18,6 @@ _gypi = exec_script(
 # Files for which bindings (.cpp and .h files) will be generated.
 core_idl_files = get_path_info(_gypi.core_idl_files, "abspath")
 
-core_dictionary_idl_files =
-  get_path_info(_gypi.core_dictionary_idl_files, "abspath")
 core_testing_dictionary_idl_files =
   get_path_info(_gypi.core_testing_dictionary_idl_files, "abspath")
 
@@ -39,8 +37,6 @@ webcore_testing_idl_files =
   get_path_info(_gypi.webcore_testing_idl_files, "abspath")
 webcore_testing_dependency_idl_files =
   get_path_info(_gypi.webcore_testing_dependency_idl_files, "abspath")
-generated_core_dictionary_files =
-  get_path_info(_gypi.generated_core_dictionary_files, "abspath")
 generated_core_testing_dictionary_files =
   get_path_info(_gypi.generated_core_testing_dictionary_files, "abspath")
 generated_webcore_testing_idl_files =

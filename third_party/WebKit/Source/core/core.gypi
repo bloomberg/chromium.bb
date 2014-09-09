@@ -3336,13 +3336,18 @@
             'svg/properties/SVGAnimatedProperty.cpp',
             'svg/properties/SVGPropertyTearOff.cpp',
         ],
-        'core_dictionary_idl_files': [
-          'css/FontFaceDescriptors.idl',
-        ],
-        'generated_core_dictionary_files': [
-          '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
-          '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
-        ],
+        # FIXME: http://crbug.com/403150
+        # Add 'core_dictionary_idl_files' and
+        # 'generated_core_dictionary_files' variables.
+        # The variables should contain IDL dictionary files and generated files
+        # They would look like below:
+        # 'core_dictionary_idl_files': [
+        #   'css/FontFaceDescriptors.idl',
+        # ],
+        # 'generated_core_dictionary_files': [
+        #   '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
+        #   '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
+        # ],
         'core_testing_dictionary_idl_files': [
           'testing/InternalDictionary.idl',
         ],
