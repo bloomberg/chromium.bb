@@ -70,6 +70,7 @@ public:
     unsigned rowIndex() const
     {
         ASSERT(rowIndexWasSet());
+        ASSERT(!section() || !section()->needsCellRecalc()); // index may be bogus if cells need recalc.
         return m_rowIndex;
     }
 

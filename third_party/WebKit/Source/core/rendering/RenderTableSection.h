@@ -206,7 +206,7 @@ public:
 
     LayoutUnit rowBaseline(unsigned row) { return m_grid[row].baseline; }
 
-    void rowLogicalHeightChanged(unsigned rowIndex);
+    void rowLogicalHeightChanged(RenderTableRow*);
 
     void removeCachedCollapsedBorders(const RenderTableCell*);
     void setCachedCollapsedBorder(const RenderTableCell*, CollapsedBorderSide, CollapsedBorderValue);

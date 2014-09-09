@@ -76,7 +76,7 @@ void RenderTableRow::styleDidChange(StyleDifference diff, const RenderStyle* old
     propagateStyleToAnonymousChildren();
 
     if (section() && oldStyle && style()->logicalHeight() != oldStyle->logicalHeight())
-        section()->rowLogicalHeightChanged(rowIndex());
+        section()->rowLogicalHeightChanged(this);
 
     // If border was changed, notify table.
     if (parent()) {
