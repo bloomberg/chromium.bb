@@ -61,7 +61,7 @@ class MockFilterContext : public FilterContext {
   virtual bool IsDownload() const OVERRIDE;
 
   // Was this data flagged as a response to a request with an SDCH dictionary?
-  virtual bool IsSdchResponse() const OVERRIDE;
+  virtual bool SdchResponseExpected() const OVERRIDE;
 
   // How many bytes were fed to filter(s) so far?
   virtual int64 GetByteReadCount() const OVERRIDE;

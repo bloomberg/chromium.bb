@@ -28707,6 +28707,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Each sample is the report of a distinct problem code.</summary>
 </histogram>
 
+<histogram name="Sdch3.ResponseCorruptionDetection.Cached"
+    enum="SdchResponseCorruptionDetectionCauses">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    Attempted SDCH decoding can fail at the Read() filter processing stage.  In
+    some of those cases, the request is corrupted enough that it must be either
+    retried or failed completely.  This histogram records the details of why the
+    request was considered corrupted, for results returned from the cache.
+  </summary>
+</histogram>
+
+<histogram name="Sdch3.ResponseCorruptionDetection.Uncached"
+    enum="SdchResponseCorruptionDetectionCauses">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    Attempted SDCH decoding can fail at the Read() filter processing stage.  In
+    some of those cases, the request is corrupted enough that it must be either
+    retried or failed completely.  This histogram records the details of why the
+    request was considered corrupted for results returned from the network.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.UnflushedBufferSize" units="bytes">
   <owner>rdsmith@chromium.org</owner>
   <summary>
@@ -49329,6 +49351,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="95" label="PRIOR_TO_DICTIONARY"/>
   <int value="96" label="DECODE_ERROR"/>
   <int value="100" label="LATENCY_TEST_DISALLOWED"/>
+</enum>
+
+<enum name="SdchResponseCorruptionDetectionCauses" type="int">
+  <summary>
+    SDCH decode corruption detection cases, listed in net/filter/sdch_filter.cc.
+    See also comments in SdchFilter::ReadFilteredData in the same file.
+  </summary>
+  <int value="1" label="RESPONSE_404"/>
+  <int value="2" label="RESPONSE_NOT_200"/>
+  <int value="3" label="RESPONSE_OLD_UNENCODED"/>
+  <int value="4" label="RESPONSE_TENTATIVE_SDCH"/>
+  <int value="5" label="RESPONSE_NO_DICTIONARY"/>
+  <int value="6" label="RESPONSE_CORRUPT_SDCH"/>
+  <int value="7" label="RESPONSE_ENCODING_LIE"/>
 </enum>
 
 <enum name="SearchAccessPoint" type="int">

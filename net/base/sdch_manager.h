@@ -140,7 +140,8 @@ class NET_EXPORT SdchManager
     META_REFRESH_RECOVERY = 70,            // Dictionary not found.
     // defunct =  71, // Almost the same as META_REFRESH_UNSUPPORTED.
     // defunct = 72,  // Almost the same as CACHED_META_REFRESH_UNSUPPORTED.
-    // defunct = 73,  // PASSING_THROUGH_NON_SDCH plus DISCARD_TENTATIVE_SDCH.
+    // defunct = 73,  // PASSING_THROUGH_NON_SDCH plus
+                      // RESPONSE_TENTATIVE_SDCH in ../filter/sdch_filter.cc.
     META_REFRESH_UNSUPPORTED = 74,         // Unrecoverable error.
     CACHED_META_REFRESH_UNSUPPORTED = 75,  // As above, but pulled from cache.
     PASSING_THROUGH_NON_SDCH = 76,  // Tagged sdch but missing dictionary-hash.
@@ -153,7 +154,7 @@ class NET_EXPORT SdchManager
 
     // Common decoded recovery methods.
     META_REFRESH_CACHED_RECOVERY = 80,  // Probably startup tab loading.
-    DISCARD_TENTATIVE_SDCH = 81,        // Server decided not to use sdch.
+    // defunct = 81, // Now tracked by ResponseCorruptionDetectionCause histo.
 
     // Non SDCH problems, only accounted for to make stat counting complete
     // (i.e., be able to be sure all dictionary advertisements are accounted

@@ -64,7 +64,7 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   virtual base::Time GetRequestTime() const OVERRIDE;
   virtual bool IsCachedContent() const OVERRIDE;
   virtual bool IsDownload() const OVERRIDE;
-  virtual bool IsSdchResponse() const OVERRIDE;
+  virtual bool SdchResponseExpected() const OVERRIDE;
   virtual int64 GetByteReadCount() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual const URLRequestContext* GetURLRequestContext() const OVERRIDE;
@@ -124,7 +124,7 @@ void URLRequestHttpJob::HttpFilterContext::ResetSdchResponseToFalse() {
   job_->sdch_dictionary_advertised_ = false;
 }
 
-bool URLRequestHttpJob::HttpFilterContext::IsSdchResponse() const {
+bool URLRequestHttpJob::HttpFilterContext::SdchResponseExpected() const {
   return job_->sdch_dictionary_advertised_;
 }
 
@@ -1024,7 +1024,7 @@ Filter* URLRequestHttpJob::SetupFilter() const {
     encoding_types.push_back(Filter::ConvertEncodingToType(encoding_type));
   }
 
-  if (filter_context_->IsSdchResponse()) {
+  if (filter_context_->SdchResponseExpected()) {
     // We are wary of proxies that discard or damage SDCH encoding.  If a server
     // explicitly states that this is not SDCH content, then we can correct our
     // assumption that this is an SDCH response, and avoid the need to recover

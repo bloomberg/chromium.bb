@@ -89,7 +89,7 @@ class NET_EXPORT_PRIVATE FilterContext {
   virtual bool IsDownload() const = 0;
 
   // Was this data flagged as a response to a request with an SDCH dictionary?
-  virtual bool IsSdchResponse() const = 0;
+  virtual bool SdchResponseExpected() const = 0;
 
   // How many bytes were read from the net or cache so far (and potentially
   // pushed into a filter for processing)?

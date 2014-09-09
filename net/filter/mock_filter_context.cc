@@ -54,7 +54,9 @@ bool MockFilterContext::IsCachedContent() const { return is_cached_content_; }
 
 bool MockFilterContext::IsDownload() const { return is_download_; }
 
-bool MockFilterContext::IsSdchResponse() const { return is_sdch_response_; }
+bool MockFilterContext::SdchResponseExpected() const {
+  return is_sdch_response_;
+}
 
 int64 MockFilterContext::GetByteReadCount() const { return 0; }
 

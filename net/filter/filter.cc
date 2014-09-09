@@ -206,7 +206,7 @@ void Filter::FixupEncodingTypes(
   }
 
   // If the request was for SDCH content, then we might need additional fixups.
-  if (!filter_context.IsSdchResponse()) {
+  if (!filter_context.SdchResponseExpected()) {
     // It was not an SDCH request, so we'll just record stats.
     if (1 < encoding_types->size()) {
       // Multiple filters were intended to only be used for SDCH (thus far!)
