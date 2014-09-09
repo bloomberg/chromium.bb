@@ -106,7 +106,6 @@ StringResource kStringResources[] = {
     {"hardwareAddress", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS},
     {"detailsInternetDismiss", IDS_CLOSE},
     {"activateButton", IDS_OPTIONS_SETTINGS_ACTIVATE},
-    {"buyplanButton", IDS_OPTIONS_SETTINGS_BUY_PLAN},
     {"connectButton", IDS_OPTIONS_SETTINGS_CONNECT},
     {"configureButton", IDS_OPTIONS_SETTINGS_CONFIGURE},
     {"disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT},

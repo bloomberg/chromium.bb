@@ -90,7 +90,6 @@ const char kUpdateCarrierFunction[] =
     "options.internet.DetailsInternetPage.updateCarrier";
 
 // These are used to register message handlers with JavaScript.
-const char kBuyDataPlanMessage[] = "buyDataPlan";
 const char kChangePinMessage[] = "changePin";
 const char kDisableCellularMessage[] = "disableCellular";
 const char kDisableWifiMessage[] = "disableWifi";
@@ -459,9 +458,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kDisableWimaxMessage,
       base::Bind(&InternetOptionsHandler::DisableWimaxCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kBuyDataPlanMessage,
-      base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kShowMorePlanInfoMessage,
       base::Bind(&InternetOptionsHandler::ShowMorePlanInfoCallback,
                  base::Unretained(this)));
@@ -544,17 +540,6 @@ void InternetOptionsHandler::DisableWimaxCallback(const base::ListValue* args) {
 
 void InternetOptionsHandler::ShowMorePlanInfoCallback(
     const base::ListValue* args) {
-  if (!web_ui())
-    return;
-  std::string service_path;
-  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
-    NOTREACHED();
-    return;
-  }
-  ash::network_connect::ShowMobileSetup(service_path);
-}
-
-void InternetOptionsHandler::BuyDataPlanCallback(const base::ListValue* args) {
   if (!web_ui())
     return;
   std::string service_path;

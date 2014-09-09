@@ -2126,9 +2126,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACTIVATE" desc="In the settings tab, the text on the button to activate a cellular network.">
     Activate
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_BUY_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
-    Buy plan
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
     Options...
   </message>

@@ -12,8 +12,6 @@ cr.define('cr.onc', function() {
 
   function OncData(data) {
     this.data_ = data;
-    // For convenience set 'type' to the active 'Type' value.
-    this.type = this.getActiveValue('Type');
   }
 
   OncData.prototype = {
@@ -104,7 +102,7 @@ cr.define('cr.onc', function() {
         return value;
       var oncString = 'Onc' + key + value;
       // Handle special cases
-      if (key == 'Name' && this.type == 'Ethernet')
+      if (key == 'Name' && this.getActiveValue('Type') == 'Ethernet')
         return loadTimeData.getString('ethernetName');
       if (key == 'VPN.Type' && value == 'L2TP-IPsec') {
         var auth = this.getActiveValue('VPN.IPsec.AuthenticationType');
@@ -132,6 +130,21 @@ cr.define('cr.onc', function() {
         return property['DevicePolicy'];
       // No value recommended by policy.
       return undefined;
+    },
+
+    /**
+     * Updates the properties of |data_| from the properties in |update|.
+     * Note: this only looks at top level entries, so if a dictionary is
+     * updated the entire dictionary is written over. TODO(stevenjb):
+     * eliminate this function when |data_| contains only ONC entries and
+     * any updates consist of complete ONC dictionaries.
+     * @param {Object} update Dictionary containing the updated properties.
+     */
+    updateData: function(update) {
+      for (var prop in update) {
+        if (prop in this.data_)
+          this.data_[prop] = update[prop];
+      }
     },
 
     /**

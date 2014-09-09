@@ -58,7 +58,6 @@ class InternetOptionsHandler
   void EnableWimaxCallback(const base::ListValue* args);
   void DisableWimaxCallback(const base::ListValue* args);
   void ShowMorePlanInfoCallback(const base::ListValue* args);
-  void BuyDataPlanCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
   void SetApnProperties(const base::ListValue* args,
                         const std::string& service_path,
