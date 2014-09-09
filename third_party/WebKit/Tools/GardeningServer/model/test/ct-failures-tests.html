@@ -75,17 +75,21 @@ describe('ct-failures', function() {
         {
           reason: 'reason',
           master_url: 'https://build.chromium.org/p/chromium.webkit',
+          tree: 'blink',
         },
         {
           reason: 'reason:type',
           master_url: 'https://build.chromium.org/p/chromium.chrome',
+          tree: 'chromium',
         },
         {
           master_url: 'https://build.chromium.org/p/chromium.gpu',
+          tree: 'chromium',
         },
         {
           reason: 'reason:type',
           failureType: 'actual_type',
+          tree: undefined,
         },
       ];
       analyzer._mungeAlerts(alerts);
@@ -272,7 +276,7 @@ describe('ct-failures', function() {
               builder_name: "Linux Tests (dbg)(1)",
               key: "f1",
               step_name: "compile",
-              tree_name: null,
+              tree: 'chromium',
               passing_revisions: {
                 v8: 50,
                 chromium: 99,
@@ -359,6 +363,38 @@ describe('ct-failures', function() {
         assert(failure.data.data.should_appear);
       });
       assert(analyzer.failures['trooper'].length == 2);
+    });
+  });
+
+  describe('processFailuresForRangeGroup', function() {
+    it('should use tree name from json', function() {
+      var analyzer = new CTFailures(null);
+
+      var annotations = Promise.resolve({
+        'test-key': 'test-annotation',
+      })
+      var range_groups = {
+        'failure_keys': ['test-key'],
+        'likely_revisions': []
+      }
+      var alertsByKey = {
+          'test-key': {
+              'key': 'test-key',
+              'step_name': 'bot_update',
+              'tree': 'test-tree',
+              'builder_name': 'Linux',
+              'last_failing_build': 1234,
+              'failing_build': 1234,
+              'master_url': 'http://build.chromium.org/p/chromium',
+              'failing_build_count': 1,
+              'reason': 'test-reason',
+          }
+      }
+      var newFailures = {}
+
+      analyzer._processFailuresForRangeGroup(newFailures, range_groups, alertsByKey, annotations)
+      assert.ok('test-tree' in newFailures)
+      assert.notOk('chromium' in newFailures)
     });
   });
 

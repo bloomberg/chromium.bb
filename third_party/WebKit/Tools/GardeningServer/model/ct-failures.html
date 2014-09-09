@@ -20,24 +20,6 @@ function CTFailures(commitLog) {
   // Maps a tree id to an array of CTFailureGroups within that tree.
   this.failures = null;
   this.lastUpdateDate = null;
-
-  // FIXME: Get this from
-  // https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/gatekeeper_trees.json?format=text.
-  this._trees = {
-    blink: [
-      "https://build.chromium.org/p/chromium.webkit",
-    ],
-    chromium: [
-      "https://build.chromium.org/p/chromium",
-      "https://build.chromium.org/p/chromium.chrome",
-      "https://build.chromium.org/p/chromium.chromiumos",
-      "https://build.chromium.org/p/chromium.gpu",
-      "https://build.chromium.org/p/chromium.linux",
-      "https://build.chromium.org/p/chromium.mac",
-      "https://build.chromium.org/p/chromium.memory",
-      "https://build.chromium.org/p/chromium.win"
-    ],
-  };
 }
 
 (function() {
@@ -86,13 +68,6 @@ CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
 
 // Updates the format of the alerts array to be easier to parse.
 CTFailures.prototype._mungeAlerts = function(alerts) {
-  var masterToTree = {};
-  Object.keys(this._trees, function(tree, masters) {
-    masters.forEach(function(master) {
-      masterToTree[master] = tree;
-    });
-  });
-
   alerts.forEach(function(failure) {
     // FIXME: Have the server store the actual failure type in a different
     // field instead of smashing it into the reason.
@@ -107,10 +82,6 @@ CTFailures.prototype._mungeAlerts = function(alerts) {
         failure.failureType = 'UNKNOWN';
       }
     }
-
-    // FIXME: Figure out what tree masters that aren't in masterToTree
-    // we should have.
-    failure.tree = masterToTree[failure.master_url];
   });
 };
 
