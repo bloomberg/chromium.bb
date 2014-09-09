@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
+#include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -378,9 +379,23 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
+views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  switch (base::nix::GetDesktopEnvironment(env.get())) {
+    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+      // Starting with KDE 4.4, windows' titlebars can be dragged with the
+      // middle mouse button to create tab groups. We don't support that in
+      // Chrome, but at least avoid lowering windows in response to middle
+      // clicks to avoid surprising users who expect the KDE behavior.
+      return views::LinuxUI::MIDDLE_CLICK_ACTION_NONE;
+    default:
+      return views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
+  }
+}
+
 }  // namespace
 
-Gtk2UI::Gtk2UI() : middle_click_action_(MIDDLE_CLICK_ACTION_LOWER) {
+Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 }
 
