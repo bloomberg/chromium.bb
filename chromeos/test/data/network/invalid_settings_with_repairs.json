@@ -89,11 +89,11 @@
         "GUID": "guid",
         "Type": "Ethernet",
         "Name": "name",
-        "IPConfigs": [
-            { "Type": "IPv4",
-              "IPAddress": "127.0.0.1",
-              "RoutingPrefix": 123 }
-        ],
+        "StaticIPConfig": {
+            "Type": "IPv4",
+            "IPAddress": "127.0.0.1",
+            "RoutingPrefix": 123
+        },
         "Ethernet": {
             "Authentication": "None"
         }
@@ -170,11 +170,11 @@
         "GUID": "guid",
         "Type": "Ethernet",
         "Name": "name",
-        "IPConfigs": [
-            { "Type": "IPv4",
-              "IPAddress": "127.0.0.1",
-              "RoutingPrefix": 123 }
-        ],
+        "StaticIPConfig": {
+            "Type": "IPv4",
+            "IPAddress": "127.0.0.1",
+            "RoutingPrefix": 123
+        },
         "Ethernet": {
             "Authentication": "None"
         }
@@ -223,6 +223,19 @@
         "Ethernet": {
             "Authentication": "None"
         }
+    },
+    "network-with-ipconfigs": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "IPConfigs": [ {
+            "Type": "IPv4",
+            "IPAddress": "127.0.0.1",
+            "RoutingPrefix": 123
+        } ],
     },
     "network-with-client-cert-pattern": {
         "GUID": "guid",

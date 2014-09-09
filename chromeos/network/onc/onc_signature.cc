@@ -170,7 +170,6 @@ const OncFieldSignature ethernet_fields[] = {
     { ::onc::ethernet::kEAP, &kEAPSignature},
     {NULL}};
 
-// Not supported for policy but for reading network state.
 const OncFieldSignature ipconfig_fields[] = {
     { ::onc::ipconfig::kGateway, &kStringSignature},
     { ::onc::ipconfig::kIPAddress, &kStringSignature},
@@ -289,10 +288,6 @@ const OncFieldSignature network_configuration_fields[] = {
     { ::onc::network_config::kEthernet, &kEthernetSignature},
     { ::onc::network_config::kGUID, &kStringSignature},
 
-    // Not supported for policy but for reading network state.
-    // TODO(pneubeck@): Resolve IPConfigs vs. StaticIPConfig, crbug.com/410877
-    { ::onc::network_config::kIPConfigs, &kIPConfigListSignature},
-
     { ::onc::network_config::kName, &kStringSignature},
 
     // Not supported, yet.
@@ -306,7 +301,6 @@ const OncFieldSignature network_configuration_fields[] = {
     // Not supported, yet.
     { ::onc::network_config::kSearchDomains, &kStringListSignature},
 
-    { ::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
     { ::onc::network_config::kStaticIPConfig, &kStaticIPConfigSignature},
     { ::onc::network_config::kType, &kStringSignature},
     { ::onc::network_config::kVPN, &kVPNSignature},
@@ -318,8 +312,10 @@ const OncFieldSignature network_with_state_fields[] = {
     { ::onc::network_config::kConnectionState, &kStringSignature},
     { ::onc::network_config::kConnectable, &kBoolSignature},
     { ::onc::network_config::kErrorState, &kStringSignature},
+    { ::onc::network_config::kIPConfigs, &kIPConfigListSignature},
     { ::onc::network_config::kMacAddress, &kStringSignature},
     { ::onc::network_config::kRestrictedConnectivity, &kBoolSignature},
+    { ::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
     { ::onc::network_config::kWiFi, &kWiFiWithStateSignature},
     {NULL}};
 

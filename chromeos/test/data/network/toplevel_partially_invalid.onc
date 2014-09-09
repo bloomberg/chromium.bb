@@ -3,11 +3,11 @@
   [ { "GUID": "123",
       "Type": "VPN",
       "Name": "testopenvpn",
-      "IPConfigs": [
-          { "Type": "IPv4",
-            "IPAddress": "127.0.0.1",
-            "RoutingPrefix": 32 }
-      ],
+      "StaticIPConfig": {
+          "Type": "IPv4",
+          "IPAddress": "127.0.0.1",
+          "RoutingPrefix": 32
+      },
       "VPN": {
           "Host": "policys host",
           "Recommended": ["Host"],

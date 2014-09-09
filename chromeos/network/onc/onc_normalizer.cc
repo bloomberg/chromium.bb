@@ -153,7 +153,7 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
   bool remove = false;
   network->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (remove) {
-    network->RemoveWithoutPathExpansion(::onc::network_config::kIPConfigs,
+    network->RemoveWithoutPathExpansion(::onc::network_config::kStaticIPConfig,
                                         NULL);
     network->RemoveWithoutPathExpansion(::onc::network_config::kName, NULL);
     network->RemoveWithoutPathExpansion(::onc::network_config::kNameServers,

@@ -11,11 +11,9 @@
   "ProxySettings": {
     "Type": "Direct"
   },
-  "IPConfigs": [
-    { "Type": "IPv4",
-      "IPAddress": "127.0.0.1",
-      "SearchDomains": [ "acme.org" ] },
-    { "Type": "IPv4",
-      "IPAddress": "1.2.3.4" }
-  ]
+  "StaticIPConfig": {
+    "Type": "IPv4",
+    "IPAddress": "1.2.3.4",
+    "SearchDomains": [ "acme.org" ]
+  }
 }

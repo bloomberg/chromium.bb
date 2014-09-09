@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
@@ -26,6 +27,17 @@ namespace chromeos {
 namespace onc {
 
 namespace {
+
+bool ConvertListValueToStringVector(const base::ListValue& string_list,
+                                    std::vector<std::string>* result) {
+  for (size_t i = 0; i < string_list.GetSize(); ++i) {
+    std::string str;
+    if (!string_list.GetString(i, &str))
+      return false;
+    result->push_back(str);
+  }
+  return true;
+}
 
 scoped_ptr<base::StringValue> ConvertValueToString(const base::Value& value) {
   std::string str;
@@ -59,6 +71,7 @@ class LocalTranslator {
   void TranslateVPN();
   void TranslateWiFi();
   void TranslateEAP();
+  void TranslateStaticIPConfig();
   void TranslateNetworkConfiguration();
 
   // Copies all entries from |onc_object_| to |shill_dictionary_| for which a
@@ -89,6 +102,8 @@ class LocalTranslator {
 void LocalTranslator::TranslateFields() {
   if (onc_signature_ == &kNetworkConfigurationSignature)
     TranslateNetworkConfiguration();
+  else if (onc_signature_ == &kStaticIPConfigSignature)
+    TranslateStaticIPConfig();
   else if (onc_signature_ == &kEthernetSignature)
     TranslateEthernet();
   else if (onc_signature_ == &kVPNSignature)
@@ -115,6 +130,21 @@ void LocalTranslator::TranslateEthernet() {
     shill_type = shill::kTypeEthernetEap;
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                    shill_type);
+
+  CopyFieldsAccordingToSignature();
+}
+
+
+void LocalTranslator::TranslateStaticIPConfig() {
+  const base::ListValue* onc_nameservers = NULL;
+  if (onc_object_->GetListWithoutPathExpansion(::onc::ipconfig::kNameServers,
+                                               &onc_nameservers)) {
+    std::vector<std::string> onc_nameservers_vector;
+    ConvertListValueToStringVector(*onc_nameservers, &onc_nameservers_vector);
+    std::string shill_nameservers = JoinString(onc_nameservers_vector, ',');
+    shill_dictionary_->SetStringWithoutPathExpansion(
+        shill::kStaticIPNameServersProperty, shill_nameservers);
+  }
 
   CopyFieldsAccordingToSignature();
 }

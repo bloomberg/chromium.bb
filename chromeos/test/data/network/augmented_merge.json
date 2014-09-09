@@ -5,24 +5,58 @@
    },
    "GUID": "123",
    "IPConfigs": {
-      "DevicePolicy": [ {
-         "IPAddress": "127.0.0.1",
-         "Type": "IPv4"
+      "Active": [ {
+         "Gateway": "2001:db8:85a3::7a2e:370:7331",
+         "IPAddress": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+         "NameServers": [  ],
+         "RoutingPrefix": 12,
+         "Type": "IPv6"
       } ],
-      "Effective": "UserPolicy",
-      "UserPolicy": [ {
-         "IPAddress": "127.0.0.1",
-         "RoutingPrefix": 32,
-         "Type": "IPv4"
-      } ],
-      "UserSetting": [ {
-         "IPAddress": "127.0.0.1",
-         "SearchDomains": [ "acme.org" ],
-         "Type": "IPv4"
-      }, {
-         "IPAddress": "1.2.3.4",
-         "Type": "IPv4"
-      } ]
+      "Effective": "Unmanaged"
+   },
+   "SavedIPConfig": {
+      "Gateway": {
+         "Active": "1.1.1.4",
+         "Effective": "Unmanaged"
+      },
+      "IPAddress": {
+         "Active": "124.124.124.124",
+         "Effective": "Unmanaged"
+      },
+      "NameServers": {
+         "Active": [ "1.1.1.5", "1.1.1.6" ],
+         "Effective": "Unmanaged"
+      },
+      "RoutingPrefix": {
+         "Active": 25,
+         "Effective": "Unmanaged"
+      },
+      "Type": {
+         "Active": "IPv4",
+         "Effective": "Unmanaged"
+      }
+   },
+   "StaticIPConfig": {
+      "IPAddress": {
+         "DevicePolicy": "127.0.0.1",
+         "Effective": "UserPolicy",
+         "UserPolicy": "127.0.0.1",
+         "UserSetting": "1.2.3.4"
+      },
+      "RoutingPrefix": {
+         "Effective": "UserPolicy",
+         "UserPolicy": 32
+      },
+      "SearchDomains": {
+         "Effective": "UserPolicy",
+         "UserSetting": [ "acme.org" ]
+      },
+      "Type": {
+         "DevicePolicy": "IPv4",
+         "Effective": "UserPolicy",
+         "UserPolicy": "IPv4",
+         "UserSetting": "IPv4"
+      }
    },
    "Name": {
       "Active": "testopenvpn",

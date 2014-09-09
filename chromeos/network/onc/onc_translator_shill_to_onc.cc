@@ -477,6 +477,12 @@ void ShillToONCTranslator::TranslateSavedOrStaticIPConfig(
     onc_object_->SetWithoutPathExpansion(::onc::ipconfig::kNameServers,
                                          onc_nameservers.release());
   }
+  // Static and Saved IPConfig in Shill are always of type IPv4. Set this type
+  // in ONC, but not if the object would be empty except the type.
+  if (!onc_object_->empty()) {
+    onc_object_->SetStringWithoutPathExpansion(::onc::ipconfig::kType,
+                                               ::onc::ipconfig::kIPv4);
+  }
 }
 
 void ShillToONCTranslator::TranslateSavedIPConfig() {

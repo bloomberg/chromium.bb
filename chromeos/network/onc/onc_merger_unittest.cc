@@ -69,7 +69,7 @@ TEST_F(ONCMergerTest, MandatoryValueOverwritesUserValue) {
   scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToEffective(
       policy_.get(), NULL, user_.get(), NULL));
   EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "Type"));
-  EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "IPConfigs"));
+  EXPECT_TRUE(HaveSameValueAt(*merged, *policy_, "StaticIPConfig"));
 }
 
 TEST_F(ONCMergerTest, MandatoryValueAndNoUserValue) {

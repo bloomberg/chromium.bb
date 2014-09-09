@@ -32,6 +32,7 @@
       "1.1.1.6"
     ],
     "RoutingPrefix":25,
+    "Type":"IPv4"
   },
   "StaticIPConfig":{
     "Gateway":"1.1.1.7",
@@ -40,6 +41,7 @@
       "1.1.1.8"
     ],
     "RoutingPrefix":26,
+    "Type":"IPv4"
   },
   "Type":"Ethernet"
 }

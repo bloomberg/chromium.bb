@@ -1,10 +1,10 @@
 { "GUID": "123",
   "Type": "VPN",
   "Name": "testopenvpn",
-  "IPConfigs": [
-    { "Type": "IPv4",
-      "IPAddress": "127.0.0.1" }
-  ],
+  "StaticIPConfig": {
+    "Type": "IPv4",
+    "IPAddress": "127.0.0.1"
+  },
   "VPN": {
     "Host": "device policys host",
     "Recommended": ["Host"],
