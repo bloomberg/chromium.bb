@@ -243,6 +243,7 @@ WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world)
 
 bool ScriptController::shouldBypassMainWorldCSP()
 {
+    v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> context = m_isolate->GetCurrentContext();
     if (context.IsEmpty() || !toDOMWindow(context))
         return false;
