@@ -505,8 +505,10 @@ class GSContext(object):
               osutils.SafeUnlink(tracker_file_path)
         return True
 
-      # We have seen flaky errors with 5xx return codes.
-      if 'ServiceException: 5' in error:
+      # We have seen flaky errors with 5xx return codes
+      # See b/17376491 for the "JSON decoding" error.
+      if ('ServiceException: 5' in error or
+          'Failure: No JSON object could be decoded' in error):
         return True
 
     return False
