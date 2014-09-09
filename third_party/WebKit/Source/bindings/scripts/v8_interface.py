@@ -911,7 +911,7 @@ def constructor_context(interface, constructor):
             is_constructor_raises_exception or
             any(argument for argument in constructor.arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
-                   argument.idl_type.may_raise_exception_on_conversion),
+                   argument.idl_type.v8_conversion_needs_exception_state),
         'is_call_with_document':
             # [ConstructorCallWith=Document]
             has_extended_attribute_value(interface,

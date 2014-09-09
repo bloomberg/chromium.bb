@@ -197,11 +197,6 @@ class IdlType(IdlTypeBase):
         return self.name in STRING_TYPES
 
     @property
-    def may_raise_exception_on_conversion(self):
-        return (self.is_integer_type or
-                self.name in ('ByteString', 'ScalarValueString'))
-
-    @property
     def is_union_type(self):
         return isinstance(self, IdlUnionType)
 

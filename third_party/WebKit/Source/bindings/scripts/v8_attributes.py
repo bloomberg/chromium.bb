@@ -327,7 +327,7 @@ def setter_context(interface, attribute, context):
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
             context['has_type_checking_unrestricted'] or
-            idl_type.may_raise_exception_on_conversion,
+            idl_type.v8_conversion_needs_exception_state,
         'has_type_checking_interface': has_type_checking_interface,
         'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(
             attribute, 'SetterCallWith', 'ExecutionContext'),

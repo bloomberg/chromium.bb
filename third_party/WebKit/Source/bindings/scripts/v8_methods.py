@@ -164,7 +164,7 @@ def method_context(interface, method):
             is_check_security_for_window or
             any(argument for argument in arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
-                   argument.idl_type.may_raise_exception_on_conversion),
+                   argument.idl_type.v8_conversion_needs_exception_state),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,

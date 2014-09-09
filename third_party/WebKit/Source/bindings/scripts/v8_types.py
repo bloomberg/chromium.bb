@@ -473,6 +473,13 @@ V8_VALUE_TO_CPP_VALUE = {
 }
 
 
+def v8_conversion_needs_exception_state(idl_type):
+    return (idl_type.is_integer_type or
+            idl_type.name in ('ByteString', 'ScalarValueString'))
+
+IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
+
+
 def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate):
     if idl_type.name == 'void':
         return ''
@@ -489,7 +496,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
-    elif idl_type.may_raise_exception_on_conversion:
+    elif idl_type.v8_conversion_needs_exception_state:
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:
         arguments = v8_value
@@ -544,7 +551,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString':
         macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
-    elif idl_type.may_raise_exception_on_conversion:
+    elif idl_type.v8_conversion_needs_exception_state:
         macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
     else:
