@@ -1525,6 +1525,8 @@ class BisectPerformanceMetrics(object):
     """
     if self.opts.debug_ignore_build:
       return True
+
+    build_success = False
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
     # Fetch build archive for the given revision from the cloud storage when
@@ -1535,16 +1537,14 @@ class BisectPerformanceMetrics(object):
         # Create a DEPS patch with new revision for dependency repository.
         revision, deps_patch = self.CreateDEPSPatch(depot, revision)
       if self.DownloadCurrentBuild(revision, patch=deps_patch):
-        os.chdir(cwd)
         if deps_patch:
           # Reverts the changes to DEPS file.
           self.source_control.CheckoutFileAtRevision(
               bisect_utils.FILE_DEPS, revision, cwd=self.src_cwd)
-        return True
-      return False
-
-    # These codes are executed when bisect bots builds binaries locally.
-    build_success = self.builder.Build(depot, self.opts)
+        build_success = True
+    else:
+      # These codes are executed when bisect bots builds binaries locally.
+      build_success = self.builder.Build(depot, self.opts)
     os.chdir(cwd)
     return build_success
 
