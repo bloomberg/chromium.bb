@@ -46,6 +46,10 @@ const int kPowerMeasurementTimeConstantMilliseconds = 10;
 
 // Time in seconds between two successive measurements of audio power levels.
 const int kPowerMonitorLogIntervalSeconds = 15;
+
+// A warning will be logged when the microphone audio volume is below this
+// threshold.
+const int kLowLevelMicrophoneLevelPercent = 10;
 #endif
 }
 
@@ -510,12 +514,16 @@ void AudioInputController::OnData(AudioInputStream* stream,
       // Possible range is given by [-inf, 0] dBFS.
       std::pair<float, bool> result = audio_level_->ReadCurrentPowerAndClip();
 
+      // Add current microphone volume to log and UMA histogram.
+      const int mic_volume_percent = static_cast<int>(100.0 * volume);
+
       // Use event handler on the audio thread to relay a message to the ARIH
       // in content which does the actual logging on the IO thread.
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &AudioInputController::DoLogAudioLevel, this, result.first));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&AudioInputController::DoLogAudioLevels,
+                                        this,
+                                        result.first,
+                                        mic_volume_percent));
 
       last_audio_level_log_time_ = base::TimeTicks::Now();
 
@@ -547,7 +555,8 @@ void AudioInputController::DoOnData(scoped_ptr<AudioBus> data) {
     handler_->OnData(this, data.get());
 }
 
-void AudioInputController::DoLogAudioLevel(float level_dbfs) {
+void AudioInputController::DoLogAudioLevels(float level_dbfs,
+                                            int microphone_volume_percent) {
 #if defined(AUDIO_POWER_MONITORING)
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!handler_)
@@ -561,6 +570,13 @@ void AudioInputController::DoLogAudioLevel(float level_dbfs) {
   handler_->OnLog(this, log_string);
 
   UpdateSilenceState(level_dbfs < kSilenceThresholdDBFS);
+
+  UMA_HISTOGRAM_PERCENTAGE("Media.MicrophoneVolume", microphone_volume_percent);
+  log_string = base::StringPrintf(
+      "AIC::OnData: microphone volume=%d%%", microphone_volume_percent);
+  if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
+    log_string += " <=> low microphone level!";
+  handler_->OnLog(this, log_string);
 #endif
 }
 

@@ -11483,6 +11483,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.MicrophoneVolume" units="%">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Level of the microphone volume measured in percent. This value can be larger
+    than 100% on Linux. Measured approximately four times per minute.
+  </summary>
+</histogram>
+
 <histogram name="Media.MSE.AudioCodec" enum="MSECodec">
   <owner>acolwell@chromium.org</owner>
   <summary>
