@@ -744,8 +744,10 @@ void HTMLDocumentParser::startBackgroundParser()
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
 
     // TODO(oysteine): Disabled due to crbug.com/398076 until a full fix can be implemented.
-    if (RuntimeEnabledFeatures::threadedParserDataReceiverEnabled())
-        document()->loader()->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser)));
+    if (RuntimeEnabledFeatures::threadedParserDataReceiverEnabled()) {
+        if (DocumentLoader* loader = document()->loader())
+            loader->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser)));
+    }
 
     OwnPtr<BackgroundHTMLParser::Configuration> config = adoptPtr(new BackgroundHTMLParser::Configuration);
     config->options = m_options;

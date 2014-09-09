@@ -24,6 +24,7 @@
 
 #include "bindings/core/v8/ScriptString.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DocumentParserClient.h"
 #include "core/events/EventListener.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/streams/ReadableStreamImpl.h"
@@ -58,6 +59,7 @@ class XMLHttpRequest FINAL
     : public RefCountedWillBeGarbageCollectedFinalized<XMLHttpRequest>
     , public XMLHttpRequestEventTarget
     , private ThreadableLoaderClient
+    , public DocumentParserClient
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
@@ -166,6 +168,11 @@ private:
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void didFailRedirectCheck() OVERRIDE;
 
+    // DocumentParserClient
+    virtual void notifyParserStopped() OVERRIDE;
+
+    void endLoading();
+
     // Returns the MIME type part of m_mimeTypeOverride if present and
     // successfully parsed, or returns one of the "Content-Type" header value
     // of the received response.
@@ -244,6 +251,7 @@ private:
     PersistentWillBeMember<UnderlyingSource> m_streamSource;
 
     RefPtr<ThreadableLoader> m_loader;
+    unsigned long m_loaderIdentifier;
     State m_state;
 
     ResourceResponse m_response;

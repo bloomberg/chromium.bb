@@ -40,16 +40,15 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     scriptEnabled = frame && frame->script().canExecuteScripts(NotAboutToExecuteScript);
     pluginsEnabled = frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
 
-    // We force the main-thread parser for two cases:
+    // We force the main-thread parser for three cases:
     // - about:blank and javascript (which uses about:blank) for compatibility
     //   with historical synchronous loading/parsing behavior.
-    // - instances where the Document has no Frame (this happens sometimes for
-    //   HTML imports, and possibly other cases).
-    // FIXME: We want to use the threaded parser for XHRs (where there is no
-    // frame) so the second case should go away eventually.
+    // - HTML imports (FIXME: enable off-thread parser for this case)
+    // - inspector/DOMPatchSupport replacing the whole document.
+    //   (DOMPatchSupport calls in |DocumentParser::pinToMainThread()| for this case)
     // FIXME: Gecko does not load javascript: urls synchronously, why do we?
     // See LayoutTests/loader/iframe-sync-loads.html
-    useThreading = document && document->frame() && !document->url().isAboutBlankURL();
+    useThreading = document && !document->importsController() && !document->url().isAboutBlankURL();
 }
 
 }

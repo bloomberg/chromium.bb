@@ -144,6 +144,7 @@ PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* 
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
     : ActiveDOMObject(context)
     , m_timeoutMilliseconds(0)
+    , m_loaderIdentifier(0)
     , m_state(UNSENT)
     , m_downloadedBlobLength(0)
     , m_receivedLength(0)
@@ -912,6 +913,7 @@ void XMLHttpRequest::clearVariablesForLoading()
     m_decoder.clear();
 
     if (m_responseDocumentParser) {
+        m_responseDocumentParser->removeClient(this);
 #if !ENABLE(OILPAN)
         m_responseDocumentParser->detach();
 #endif
@@ -1280,19 +1282,20 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
+    m_loaderIdentifier = identifier;
+
     if (m_responseDocumentParser) {
+        // |DocumentParser::finish()| tells the parser that we have reached end of the data.
+        // When using |HTMLDocumentParser|, which works asynchronously, we do not have the
+        // complete document just after the |DocumentParser::finish()| call.
+        // Wait for the parser to call us back in |notifyParserStopped| to progress state.
         m_responseDocumentParser->finish();
-        m_responseDocumentParser = nullptr;
-
-        m_responseDocument->implicitClose();
-
-        if (!m_responseDocument->wellFormed())
-            m_responseDocument = nullptr;
-
-        m_parsedResponse = true;
-    } else if (m_decoder) {
-        m_responseText = m_responseText.concatenateWith(m_decoder->flush());
+        ASSERT(m_responseDocument);
+        return;
     }
+
+    if (m_decoder)
+        m_responseText = m_responseText.concatenateWith(m_decoder->flush());
 
     if (m_responseLegacyStream)
         m_responseLegacyStream->finalize();
@@ -1301,11 +1304,40 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
         m_responseStream->close();
 
     clearVariablesForLoading();
+    endLoading();
+}
 
-    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, identifier, m_responseText, m_method, m_url, m_lastSendURL, m_lastSendLineNumber);
+void XMLHttpRequest::notifyParserStopped()
+{
+    // This should only be called when response document is parsed asynchronously.
+    ASSERT(m_responseDocumentParser);
+    ASSERT(!m_responseDocumentParser->isParsing());
+    ASSERT(!m_responseLegacyStream);
+    ASSERT(!m_responseStream);
+
+    // Do nothing if we are called from |internalAbort()|.
+    if (m_error)
+        return;
+
+    clearVariablesForLoading();
+
+    m_responseDocument->implicitClose();
+
+    if (!m_responseDocument->wellFormed())
+        m_responseDocument = nullptr;
+
+    m_parsedResponse = true;
+
+    endLoading();
+}
+
+void XMLHttpRequest::endLoading()
+{
+    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, m_loaderIdentifier, m_responseText, m_method, m_url, m_lastSendURL, m_lastSendLineNumber);
 
     if (m_loader)
         m_loader = nullptr;
+    m_loaderIdentifier = 0;
 
     changeState(DONE);
 }
@@ -1350,6 +1382,7 @@ void XMLHttpRequest::parseDocumentChunk(const char* data, int len)
             return;
 
         m_responseDocumentParser = m_responseDocument->implicitOpen();
+        m_responseDocumentParser->addClient(this);
     }
     ASSERT(m_responseDocumentParser);
 
