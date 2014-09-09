@@ -506,7 +506,7 @@ VolumeItem.prototype.handleClick = function(e) {
  */
 VolumeItem.prototype.updateSubDirectories = function(recursive) {
   // Drive volume has children including fake entries (offline, recent, etc...).
-  if (this.isDrive()) {
+  if (this.isDrive() && !this.hasChildren) {
     var entries = [this.entry];
     if (this.parentTree_.fakeEntriesVisible_) {
       for (var key in this.volumeInfo.fakeEntries)
