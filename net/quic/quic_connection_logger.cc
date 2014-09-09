@@ -106,7 +106,12 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("largest_observed",
                   base::Uint64ToString(frame->largest_observed));
+  dict->SetInteger("delta_time_largest_observed_us",
+                   frame->delta_time_largest_observed.ToMicroseconds());
+  dict->SetInteger("entropy_hash",
+                   frame->entropy_hash);
   dict->SetBoolean("truncated", frame->is_truncated);
+
   base::ListValue* missing = new base::ListValue();
   dict->Set("missing_packets", missing);
   const SequenceNumberSet& missing_packets = frame->missing_packets;
@@ -114,6 +119,26 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
        it != missing_packets.end(); ++it) {
     missing->AppendString(base::Uint64ToString(*it));
   }
+
+  base::ListValue* revived = new base::ListValue();
+  dict->Set("revived_packets", revived);
+  const SequenceNumberSet& revived_packets = frame->revived_packets;
+  for (SequenceNumberSet::const_iterator it = revived_packets.begin();
+       it != revived_packets.end(); ++it) {
+    revived->AppendString(base::Uint64ToString(*it));
+  }
+
+  base::ListValue* received = new base::ListValue();
+  dict->Set("received_packet_times", received);
+  const PacketTimeList& received_times = frame->received_packet_times;
+  for (PacketTimeList::const_iterator it = received_times.begin();
+       it != received_times.end(); ++it) {
+    base::DictionaryValue* info = new base::DictionaryValue();
+    info->SetInteger("sequence_number", it->first);
+    info->SetInteger("received", it->second.ToDebuggingValue());
+    revived->Append(info);
+  }
+
   return dict;
 }
 
