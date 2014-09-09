@@ -400,107 +400,6 @@ bool SdchManager::CanFetchDictionary(const GURL& referring_url,
   return true;
 }
 
-bool SdchManager::AddSdchDictionary(const std::string& dictionary_text,
-    const GURL& dictionary_url) {
-  DCHECK(CalledOnValidThread());
-  std::string client_hash;
-  std::string server_hash;
-  GenerateHash(dictionary_text, &client_hash, &server_hash);
-  if (dictionaries_.find(server_hash) != dictionaries_.end()) {
-    SdchErrorRecovery(DICTIONARY_ALREADY_LOADED);
-    return false;  // Already loaded.
-  }
-
-  std::string domain, path;
-  std::set<int> ports;
-  base::Time expiration(base::Time::Now() + base::TimeDelta::FromDays(30));
-
-  if (dictionary_text.empty()) {
-    SdchErrorRecovery(DICTIONARY_HAS_NO_TEXT);
-    return false;  // Missing header.
-  }
-
-  size_t header_end = dictionary_text.find("\n\n");
-  if (std::string::npos == header_end) {
-    SdchErrorRecovery(DICTIONARY_HAS_NO_HEADER);
-    return false;  // Missing header.
-  }
-  size_t line_start = 0;  // Start of line being parsed.
-  while (1) {
-    size_t line_end = dictionary_text.find('\n', line_start);
-    DCHECK(std::string::npos != line_end);
-    DCHECK_LE(line_end, header_end);
-
-    size_t colon_index = dictionary_text.find(':', line_start);
-    if (std::string::npos == colon_index) {
-      SdchErrorRecovery(DICTIONARY_HEADER_LINE_MISSING_COLON);
-      return false;  // Illegal line missing a colon.
-    }
-
-    if (colon_index > line_end)
-      break;
-
-    size_t value_start = dictionary_text.find_first_not_of(" \t",
-                                                           colon_index + 1);
-    if (std::string::npos != value_start) {
-      if (value_start >= line_end)
-        break;
-      std::string name(dictionary_text, line_start, colon_index - line_start);
-      std::string value(dictionary_text, value_start, line_end - value_start);
-      name = base::StringToLowerASCII(name);
-      if (name == "domain") {
-        domain = value;
-      } else if (name == "path") {
-        path = value;
-      } else if (name == "format-version") {
-        if (value != "1.0")
-          return false;
-      } else if (name == "max-age") {
-        int64 seconds;
-        base::StringToInt64(value, &seconds);
-        expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
-      } else if (name == "port") {
-        int port;
-        base::StringToInt(value, &port);
-        if (port >= 0)
-          ports.insert(port);
-      }
-    }
-
-    if (line_end >= header_end)
-      break;
-    line_start = line_end + 1;
-  }
-
-  if (!IsInSupportedDomain(dictionary_url))
-    return false;
-
-  if (!Dictionary::CanSet(domain, path, ports, dictionary_url))
-    return false;
-
-  // TODO(jar): Remove these hacks to preclude a DOS attack involving piles of
-  // useless dictionaries.  We should probably have a cache eviction plan,
-  // instead of just blocking additions.  For now, with the spec in flux, it
-  // is probably not worth doing eviction handling.
-  if (kMaxDictionarySize < dictionary_text.size()) {
-    SdchErrorRecovery(DICTIONARY_IS_TOO_LARGE);
-    return false;
-  }
-  if (kMaxDictionaryCount <= dictionaries_.size()) {
-    SdchErrorRecovery(DICTIONARY_COUNT_EXCEEDED);
-    return false;
-  }
-
-  UMA_HISTOGRAM_COUNTS("Sdch3.Dictionary size loaded", dictionary_text.size());
-  DVLOG(1) << "Loaded dictionary with client hash " << client_hash
-           << " and server hash " << server_hash;
-  Dictionary* dictionary =
-      new Dictionary(dictionary_text, header_end + 2, client_hash,
-                     dictionary_url, domain, path, expiration, ports);
-  dictionaries_[server_hash] = dictionary;
-  return true;
-}
-
 void SdchManager::GetVcdiffDictionary(
     const std::string& server_hash,
     const GURL& referring_url,
@@ -577,6 +476,107 @@ void SdchManager::SetAllowLatencyExperiment(const GURL& url, bool enable) {
     return;  // It was already erased, or never allowed.
   SdchErrorRecovery(LATENCY_TEST_DISALLOWED);
   allow_latency_experiment_.erase(it);
+}
+
+void SdchManager::AddSdchDictionary(const std::string& dictionary_text,
+    const GURL& dictionary_url) {
+  DCHECK(CalledOnValidThread());
+  std::string client_hash;
+  std::string server_hash;
+  GenerateHash(dictionary_text, &client_hash, &server_hash);
+  if (dictionaries_.find(server_hash) != dictionaries_.end()) {
+    SdchErrorRecovery(DICTIONARY_ALREADY_LOADED);
+    return;                             // Already loaded.
+  }
+
+  std::string domain, path;
+  std::set<int> ports;
+  base::Time expiration(base::Time::Now() + base::TimeDelta::FromDays(30));
+
+  if (dictionary_text.empty()) {
+    SdchErrorRecovery(DICTIONARY_HAS_NO_TEXT);
+    return;                             // Missing header.
+  }
+
+  size_t header_end = dictionary_text.find("\n\n");
+  if (std::string::npos == header_end) {
+    SdchErrorRecovery(DICTIONARY_HAS_NO_HEADER);
+    return;                             // Missing header.
+  }
+  size_t line_start = 0;  // Start of line being parsed.
+  while (1) {
+    size_t line_end = dictionary_text.find('\n', line_start);
+    DCHECK(std::string::npos != line_end);
+    DCHECK_LE(line_end, header_end);
+
+    size_t colon_index = dictionary_text.find(':', line_start);
+    if (std::string::npos == colon_index) {
+      SdchErrorRecovery(DICTIONARY_HEADER_LINE_MISSING_COLON);
+      return;                         // Illegal line missing a colon.
+    }
+
+    if (colon_index > line_end)
+      break;
+
+    size_t value_start = dictionary_text.find_first_not_of(" \t",
+                                                           colon_index + 1);
+    if (std::string::npos != value_start) {
+      if (value_start >= line_end)
+        break;
+      std::string name(dictionary_text, line_start, colon_index - line_start);
+      std::string value(dictionary_text, value_start, line_end - value_start);
+      name = base::StringToLowerASCII(name);
+      if (name == "domain") {
+        domain = value;
+      } else if (name == "path") {
+        path = value;
+      } else if (name == "format-version") {
+        if (value != "1.0")
+          return;
+      } else if (name == "max-age") {
+        int64 seconds;
+        base::StringToInt64(value, &seconds);
+        expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
+      } else if (name == "port") {
+        int port;
+        base::StringToInt(value, &port);
+        if (port >= 0)
+          ports.insert(port);
+      }
+    }
+
+    if (line_end >= header_end)
+      break;
+    line_start = line_end + 1;
+  }
+
+  if (!IsInSupportedDomain(dictionary_url))
+    return;
+
+  if (!Dictionary::CanSet(domain, path, ports, dictionary_url))
+    return;
+
+  // TODO(jar): Remove these hacks to preclude a DOS attack involving piles of
+  // useless dictionaries.  We should probably have a cache eviction plan,
+  // instead of just blocking additions.  For now, with the spec in flux, it
+  // is probably not worth doing eviction handling.
+  if (kMaxDictionarySize < dictionary_text.size()) {
+    SdchErrorRecovery(DICTIONARY_IS_TOO_LARGE);
+    return;
+  }
+  if (kMaxDictionaryCount <= dictionaries_.size()) {
+    SdchErrorRecovery(DICTIONARY_COUNT_EXCEEDED);
+    return;
+  }
+
+  UMA_HISTOGRAM_COUNTS("Sdch3.Dictionary size loaded", dictionary_text.size());
+  DVLOG(1) << "Loaded dictionary with client hash " << client_hash
+           << " and server hash " << server_hash;
+  Dictionary* dictionary =
+      new Dictionary(dictionary_text, header_end + 2, client_hash,
+                     dictionary_url, domain, path, expiration, ports);
+  dictionaries_[server_hash] = dictionary;
+  return;
 }
 
 // static

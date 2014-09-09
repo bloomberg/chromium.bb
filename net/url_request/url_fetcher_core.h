@@ -45,15 +45,15 @@ class URLFetcherCore
                  URLFetcher::RequestType request_type,
                  URLFetcherDelegate* d);
 
-  // Starts the load.  It's important that this not happen in the constructor
+  // Starts the load. It's important that this not happen in the constructor
   // because it causes the IO thread to begin AddRef()ing and Release()ing
-  // us.  If our caller hasn't had time to fully construct us and take a
+  // us. If our caller hasn't had time to fully construct us and take a
   // reference, the IO thread could interrupt things, run a task, Release()
   // us, and destroy us, leaving the caller with an already-destroyed object
   // when construction finishes.
   void Start();
 
-  // Stops any in-progress load and ensures no callback will happen.  It is
+  // Stops any in-progress load and ensures no callback will happen. It is
   // safe to call this multiple times.
   void Stop();
 
@@ -111,9 +111,9 @@ class URLFetcherCore
   int GetResponseCode() const;
   const ResponseCookies& GetCookies() const;
   // Reports that the received content was malformed (i.e. failed parsing
-  // or validation).  This makes the throttling logic that does exponential
+  // or validation). This makes the throttling logic that does exponential
   // back-off when servers are having problems treat the current request as
-  // a failure.  Your call to this method will be ignored if your request is
+  // a failure. Your call to this method will be ignored if your request is
   // already considered a failure based on the HTTP response code or response
   // headers.
   void ReceivedContentWasMalformed();
@@ -251,13 +251,13 @@ class URLFetcherCore
   //
   // Both of them can only be accessed on the IO thread.
   //
-  // We need not only the throttler entry for |original_URL|, but also
-  // the one for |url|. For example, consider the case that URL A
-  // redirects to URL B, for which the server returns a 500
-  // response. In this case, the exponential back-off release time of
-  // URL A won't increase. If we retry without considering the
-  // back-off constraint of URL B, we may send out too many requests
-  // for URL A in a short period of time.
+  // To determine the proper backoff timing, throttler entries for
+  // both |original_URL| and |url| are needed. For example, consider
+  // the case that URL A redirects to URL B, for which the server
+  // returns a 500 response. In this case, the exponential back-off
+  // release time of URL A won't increase. If only the backoff
+  // constraints for URL A are considered, too many requests for URL A
+  // may be sent in a short period of time.
   //
   // Both of these will be NULL if
   // URLRequestContext::throttler_manager() is NULL.
@@ -271,11 +271,11 @@ class URLFetcherCore
   // Writer object to write response to the destination like file and string.
   scoped_ptr<URLFetcherResponseWriter> response_writer_;
 
-  // By default any server-initiated redirects are automatically followed.  If
+  // By default any server-initiated redirects are automatically followed. If
   // this flag is set to true, however, a redirect will halt the fetch and call
   // back to to the delegate immediately.
   bool stop_on_redirect_;
-  // True when we're actually stopped due to a redirect halted by the above.  We
+  // True when we're actually stopped due to a redirect halted by the above. We
   // use this to ensure that |url_| is set to the redirect destination rather
   // than the originally-fetched URL.
   bool stopped_on_redirect_;
@@ -286,7 +286,7 @@ class URLFetcherCore
   // true by default.
   bool automatically_retry_on_5xx_;
   // |num_retries_on_5xx_| indicates how many times we've failed to successfully
-  // fetch this URL due to 5xx responses.  Once this value exceeds the maximum
+  // fetch this URL due to 5xx responses. Once this value exceeds the maximum
   // number of retries specified by the owner URLFetcher instance,
   // we'll give up.
   int num_retries_on_5xx_;

@@ -276,16 +276,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   // Setup the SDCHManager for this profile.
   sdch_manager_.reset(new net::SdchManager);
-
-  scoped_refptr<net::URLRequestContextGetter> getter(
-      new net::TrivialURLRequestContextGetter(
-          main_context,
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO)));
-
   sdch_manager_->set_sdch_fetcher(scoped_ptr<net::SdchFetcher>(
-      new net::SdchDictionaryFetcher(sdch_manager_.get(), getter)).Pass());
-
+      new net::SdchDictionaryFetcher(sdch_manager_.get(),
+                                     main_context)).Pass());
   main_context->set_sdch_manager(sdch_manager_.get());
 
 #if defined(ENABLE_EXTENSIONS)

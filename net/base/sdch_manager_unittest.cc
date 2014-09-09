@@ -35,6 +35,20 @@ class SdchManagerTest : public testing::Test {
     SdchManager::EnableSecureSchemeSupport(false);
   }
 
+  // Attempt to add a dictionary to the manager and probe for success or
+  // failure.
+  bool AddSdchDictionary(const std::string& dictionary_text,
+                         const GURL& gurl) {
+    std::string list;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list);
+    sdch_manager_->AddSdchDictionary(dictionary_text, gurl);
+    std::string list2;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list2);
+
+    // The list of hashes should change iff the addition succeeds.
+    return (list != list2);
+  }
+
  private:
   scoped_ptr<SdchManager> sdch_manager_;
 };
@@ -140,16 +154,16 @@ TEST_F(SdchManagerTest, CanSetExactMatchDictionary) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   // Perfect match should work.
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 }
 
 TEST_F(SdchManagerTest, CanAdvertiseDictionaryOverHTTP) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 
   std::string dictionary_list;
   // HTTP target URL can advertise dictionary.
@@ -163,8 +177,8 @@ TEST_F(SdchManagerTest, CanNotAdvertiseDictionaryOverHTTPS) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 
   std::string dictionary_list;
   // HTTPS target URL should NOT advertise dictionary.
@@ -178,11 +192,11 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(
-      dictionary_text, GURL("https://" + dictionary_domain)));
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("https://" + dictionary_domain)));
   SdchManager::EnableSecureSchemeSupport(true);
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
-      dictionary_text, GURL("https://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("https://" + dictionary_domain)));
 
   GURL target_url("https://" + dictionary_domain + "/test");
   std::string dictionary_list;
@@ -204,8 +218,8 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 
   GURL target_url("https://" + dictionary_domain + "/test");
   std::string dictionary_list;
@@ -228,8 +242,8 @@ TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   SdchManager::EnableSecureSchemeSupport(true);
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("https://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("https://" + dictionary_domain)));
 
   GURL target_url("http://" + dictionary_domain + "/test");
   std::string dictionary_list;
@@ -251,8 +265,8 @@ TEST_F(SdchManagerTest, FailToSetDomainMismatchDictionary) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   // Fail the "domain match" requirement.
-  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(dictionary_text,
-               GURL("http://y.z.google.com")));
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://y.z.google.com")));
 }
 
 TEST_F(SdchManagerTest, FailToSetDotHostPrefixDomainDictionary) {
@@ -260,8 +274,8 @@ TEST_F(SdchManagerTest, FailToSetDotHostPrefixDomainDictionary) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   // Fail the HD with D being the domain and H having a dot requirement.
-  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(dictionary_text,
-               GURL("http://w.x.y.z.google.com")));
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://w.x.y.z.google.com")));
 }
 
 TEST_F(SdchManagerTest, FailToSetRepeatPrefixWithDotDictionary) {
@@ -271,8 +285,8 @@ TEST_F(SdchManagerTest, FailToSetRepeatPrefixWithDotDictionary) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   // Fail the HD with D being the domain and H having a dot requirement.
-  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(dictionary_text,
-               GURL("http://www.google.com.www.google.com")));
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://www.google.com.www.google.com")));
 }
 
 TEST_F(SdchManagerTest, CanSetLeadingDotDomainDictionary) {
@@ -283,8 +297,7 @@ TEST_F(SdchManagerTest, CanSetLeadingDotDomainDictionary) {
 
   // Verify that a leading dot in the domain is acceptable, as long as the host
   // name does not contain any dots preceding the matched domain name.
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-               GURL("http://www.google.com")));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text, GURL("http://www.google.com")));
 }
 
 // Make sure the order of the tests is not helping us or confusing things.
@@ -294,8 +307,8 @@ TEST_F(SdchManagerTest, CanStillSetExactMatchDictionary) {
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
   // Perfect match should *STILL* work.
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 }
 
 // Make sure the DOS protection precludes the addition of too many dictionaries.
@@ -303,16 +316,13 @@ TEST_F(SdchManagerTest, TooManyDictionaries) {
   std::string dictionary_domain(".google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  size_t count = 0;
-  while (count <= SdchManager::kMaxDictionaryCount + 1) {
-    if (!sdch_manager()->AddSdchDictionary(dictionary_text,
-                                          GURL("http://www.google.com")))
-      break;
-
+  for (size_t count = 0; count < SdchManager::kMaxDictionaryCount; ++count) {
+    EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                  GURL("http://www.google.com")));
     dictionary_text += " ";  // Create dictionary with different SHA signature.
-    ++count;
   }
-  EXPECT_EQ(SdchManager::kMaxDictionaryCount, count);
+  EXPECT_FALSE(
+      AddSdchDictionary(dictionary_text, GURL("http://www.google.com")));
 }
 
 TEST_F(SdchManagerTest, DictionaryNotTooLarge) {
@@ -321,8 +331,8 @@ TEST_F(SdchManagerTest, DictionaryNotTooLarge) {
 
   dictionary_text.append(
       SdchManager::kMaxDictionarySize  - dictionary_text.size(), ' ');
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
 }
 
 TEST_F(SdchManagerTest, DictionaryTooLarge) {
@@ -331,8 +341,8 @@ TEST_F(SdchManagerTest, DictionaryTooLarge) {
 
   dictionary_text.append(
       SdchManager::kMaxDictionarySize + 1 - dictionary_text.size(), ' ');
-  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("http://" + dictionary_domain)));
+  EXPECT_FALSE(AddSdchDictionary(dictionary_text,
+                                 GURL("http://" + dictionary_domain)));
 }
 
 TEST_F(SdchManagerTest, PathMatch) {
@@ -422,8 +432,8 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
 
   // Confirm that if you add directories to one manager, you
   // can't get them from the other.
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
-      dictionary_text_1, GURL("http://" + dictionary_domain_1)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text_1,
+                                GURL("http://" + dictionary_domain_1)));
   scoped_refptr<SdchManager::Dictionary> dictionary;
   sdch_manager()->GetVcdiffDictionary(
       server_hash_1,
@@ -431,8 +441,8 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
       &dictionary);
   EXPECT_TRUE(dictionary.get());
 
-  EXPECT_TRUE(second_manager.AddSdchDictionary(
-      dictionary_text_2, GURL("http://" + dictionary_domain_2)));
+  second_manager.AddSdchDictionary(
+      dictionary_text_2, GURL("http://" + dictionary_domain_2));
   second_manager.GetVcdiffDictionary(
       server_hash_2,
       GURL("http://" + dictionary_domain_2 + "/random_url"),
@@ -474,8 +484,8 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
 
   SdchManager::GenerateHash(dictionary_text, &tmp_hash, &server_hash);
 
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
-      dictionary_text, GURL("http://" + dictionary_domain)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text,
+                                GURL("http://" + dictionary_domain)));
   scoped_refptr<SdchManager::Dictionary> dictionary;
   sdch_manager()->GetVcdiffDictionary(
       server_hash,

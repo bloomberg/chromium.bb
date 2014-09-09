@@ -63,9 +63,33 @@ class SdchFilterTest : public testing::Test {
     url_request_context->set_sdch_manager(sdch_manager_.get());
   }
 
+  // Attempt to add a dictionary to the manager; returns whether or not
+  // the attempt succeeded.
+  bool AddSdchDictionary(const std::string& dictionary_text,
+                         const GURL& gurl) {
+    std::string list;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list);
+    sdch_manager_->AddSdchDictionary(dictionary_text, gurl);
+    std::string list2;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list2);
+
+    // The list of hashes should change iff the addition succeeds.
+    return (list != list2);
+  }
+
   MockFilterContext* filter_context() { return filter_context_.get(); }
 
-  std::string NewSdchCompressedData(const std::string dictionary);
+  std::string NewSdchCompressedData(const std::string dictionary) {
+    std::string client_hash;
+    std::string server_hash;
+    SdchManager::GenerateHash(dictionary, &client_hash, &server_hash);
+
+    // Build compressed data that refers to our dictionary.
+    std::string compressed(server_hash);
+    compressed.append("\0", 1);
+    compressed.append(vcdiff_compressed_data_);
+    return compressed;
+  }
 
   const std::string test_vcdiff_dictionary_;
   const std::string vcdiff_compressed_data_;
@@ -74,19 +98,6 @@ class SdchFilterTest : public testing::Test {
   scoped_ptr<SdchManager> sdch_manager_;
   scoped_ptr<MockFilterContext> filter_context_;
 };
-
-std::string SdchFilterTest::NewSdchCompressedData(
-    const std::string dictionary) {
-  std::string client_hash;
-  std::string server_hash;
-  SdchManager::GenerateHash(dictionary, &client_hash, &server_hash);
-
-  // Build compressed data that refers to our dictionary.
-  std::string compressed(server_hash);
-  compressed.append("\0", 1);
-  compressed.append(vcdiff_compressed_data_);
-  return compressed;
-}
 
 //------------------------------------------------------------------------------
 
@@ -413,10 +424,10 @@ TEST_F(SdchFilterTest, DictionaryAddOnce) {
 
   std::string url_string = "http://" + kSampleDomain;
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   // Check we can't add it twice.
-  EXPECT_FALSE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_FALSE(AddSdchDictionary(dictionary, url));
 
   const std::string kSampleDomain2 = "sdchtest2.com";
 
@@ -427,7 +438,7 @@ TEST_F(SdchFilterTest, DictionaryAddOnce) {
 
     std::string url_string2 = "http://" + kSampleDomain2;
     GURL url2(url_string2);
-    EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary2, url2));
+    EXPECT_TRUE(AddSdchDictionary(dictionary2, url2));
   }
 }
 
@@ -439,7 +450,7 @@ TEST_F(SdchFilterTest, BasicDictionary) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -476,7 +487,7 @@ TEST_F(SdchFilterTest, NoDecodeHttps) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -506,7 +517,7 @@ TEST_F(SdchFilterTest, NoDecodeFtp) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -532,7 +543,7 @@ TEST_F(SdchFilterTest, NoDecodeFileColon) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -558,7 +569,7 @@ TEST_F(SdchFilterTest, NoDecodeAboutColon) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -584,7 +595,7 @@ TEST_F(SdchFilterTest, NoDecodeJavaScript) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -610,7 +621,7 @@ TEST_F(SdchFilterTest, CanStillDecodeHttp) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -636,7 +647,7 @@ TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string compressed(NewSdchCompressedData(dictionary));
 
@@ -675,13 +686,14 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   // Create a dictionary with a path restriction, by prefixing dictionary.
   const std::string path("/special_path/bin");
   std::string dictionary_with_path("Path: " + path + "\n");
   dictionary_with_path.append(dictionary);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_with_path, url));
+  GURL url2(url_string + path);
+  EXPECT_TRUE(AddSdchDictionary(dictionary_with_path, url2));
 
   std::string compressed_for_path(NewSdchCompressedData(dictionary_with_path));
 
@@ -729,16 +741,15 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
-
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   // Create a dictionary with a port restriction, by prefixing old dictionary.
   const std::string port("502");
   std::string dictionary_with_port("Port: " + port + "\n");
   dictionary_with_port.append("Port: 80\n");  // Add default port.
   dictionary_with_port.append(dictionary);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_with_port,
-                                            GURL(url_string + ":" + port)));
+  EXPECT_TRUE(AddSdchDictionary(dictionary_with_port,
+                                GURL(url_string + ":" + port)));
 
   std::string compressed_for_port(NewSdchCompressedData(dictionary_with_port));
 
@@ -859,7 +870,7 @@ TEST_F(SdchFilterTest, FilterChaining) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string sdch_compressed(NewSdchCompressedData(dictionary));
 
@@ -941,7 +952,7 @@ TEST_F(SdchFilterTest, DefaultGzipIfSdch) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string sdch_compressed(NewSdchCompressedData(dictionary));
 
@@ -997,7 +1008,7 @@ TEST_F(SdchFilterTest, AcceptGzipSdchIfGzip) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string sdch_compressed(NewSdchCompressedData(dictionary));
 
@@ -1056,7 +1067,7 @@ TEST_F(SdchFilterTest, DefaultSdchGzipIfEmpty) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string sdch_compressed(NewSdchCompressedData(dictionary));
 
@@ -1112,7 +1123,7 @@ TEST_F(SdchFilterTest, AcceptGzipGzipSdchIfGzip) {
   std::string url_string = "http://" + kSampleDomain;
 
   GURL url(url_string);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary, url));
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
 
   std::string sdch_compressed(NewSdchCompressedData(dictionary));
 
