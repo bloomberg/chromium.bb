@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.sync;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.common.base.Joiner;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -17,6 +15,7 @@ import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -533,7 +532,16 @@ public class ProfileSyncService {
         for (ModelType type : filteredTypes) {
             set.add(type.toString());
         }
-        return Joiner.on(", ").join(set);
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> it = set.iterator();
+        if (it.hasNext()) {
+            sb.append(it.next());
+            while (it.hasNext()) {
+                sb.append(", ");
+                sb.append(it.next());
+            }
+        }
+        return sb.toString();
     }
 
     // Native methods

@@ -26,7 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmptyTabObserver;
@@ -264,7 +263,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
     private void updateTabTitle() {
         String title = mTab != null ? mTab.getTitle() : null;
-        if (Strings.isNullOrEmpty(title)) {
+        if (title == null || title.isEmpty()) {
             title = getContext().getResources().getString(R.string.tab_loading_default_title);
         }
 
