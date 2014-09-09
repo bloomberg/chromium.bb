@@ -2020,8 +2020,7 @@ void BrowserView::LoadingAnimationCallback() {
 void BrowserView::OnLoadCompleted() {
 #if defined(OS_WIN)
   DCHECK(!jumplist_);
-  jumplist_ = new JumpList();
-  jumplist_->AddObserver(browser_->profile());
+  jumplist_ = new JumpList(browser_->profile());
 #endif
 }
 

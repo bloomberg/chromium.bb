@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
@@ -82,7 +84,9 @@ bool CreateIconFile(const SkBitmap& bitmap,
 }
 
 // Updates the "Tasks" category of the JumpList.
-bool UpdateTaskCategory(JumpListUpdater* jumplist_updater) {
+bool UpdateTaskCategory(
+    JumpListUpdater* jumplist_updater,
+    IncognitoModePrefs::Availability incognito_availability) {
   base::FilePath chrome_path;
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
@@ -93,24 +97,28 @@ bool UpdateTaskCategory(JumpListUpdater* jumplist_updater) {
   // collection. We use our application icon as the icon for this item.
   // We remove '&' characters from this string so we can share it with our
   // system menu.
-  scoped_refptr<ShellLinkItem> chrome = CreateShellLink();
-  base::string16 chrome_title = l10n_util::GetStringUTF16(IDS_NEW_WINDOW);
-  ReplaceSubstringsAfterOffset(&chrome_title, 0, L"&", L"");
-  chrome->set_title(chrome_title);
-  chrome->set_icon(chrome_path.value(), 0);
-  items.push_back(chrome);
+  if (incognito_availability != IncognitoModePrefs::FORCED) {
+    scoped_refptr<ShellLinkItem> chrome = CreateShellLink();
+    base::string16 chrome_title = l10n_util::GetStringUTF16(IDS_NEW_WINDOW);
+    ReplaceSubstringsAfterOffset(&chrome_title, 0, L"&", L"");
+    chrome->set_title(chrome_title);
+    chrome->set_icon(chrome_path.value(), 0);
+    items.push_back(chrome);
+  }
 
   // Create an IShellLink object which launches Chrome in incognito mode, and
   // add it to the collection. We use our application icon as the icon for
   // this item.
-  scoped_refptr<ShellLinkItem> incognito = CreateShellLink();
-  incognito->GetCommandLine()->AppendSwitch(switches::kIncognito);
-  base::string16 incognito_title =
-      l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW);
-  ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
-  incognito->set_title(incognito_title);
-  incognito->set_icon(chrome_path.value(), 0);
-  items.push_back(incognito);
+  if (incognito_availability != IncognitoModePrefs::DISABLED) {
+    scoped_refptr<ShellLinkItem> incognito = CreateShellLink();
+    incognito->GetCommandLine()->AppendSwitch(switches::kIncognito);
+    base::string16 incognito_title =
+        l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW);
+    ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
+    incognito->set_title(incognito_title);
+    incognito->set_icon(chrome_path.value(), 0);
+    items.push_back(incognito);
+  }
 
   return jumplist_updater->AddTasks(items);
 }
@@ -118,7 +126,8 @@ bool UpdateTaskCategory(JumpListUpdater* jumplist_updater) {
 // Updates the application JumpList.
 bool UpdateJumpList(const wchar_t* app_id,
                     const ShellLinkItemList& most_visited_pages,
-                    const ShellLinkItemList& recently_closed_pages) {
+                    const ShellLinkItemList& recently_closed_pages,
+                    IncognitoModePrefs::Availability incognito_availability) {
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
   // of Windows.
@@ -164,7 +173,7 @@ bool UpdateJumpList(const wchar_t* app_id,
   }
 
   // Update the "Tasks" category of the JumpList.
-  if (!UpdateTaskCategory(&jumplist_updater))
+  if (!UpdateTaskCategory(&jumplist_updater, incognito_availability))
     return false;
 
   // Commit this transaction and send the updated JumpList to Windows.
@@ -176,37 +185,23 @@ bool UpdateJumpList(const wchar_t* app_id,
 
 }  // namespace
 
-JumpList::JumpList()
+JumpList::JumpList(Profile* profile)
     : weak_ptr_factory_(this),
-      profile_(NULL),
-      task_id_(base::CancelableTaskTracker::kBadTaskId) {}
-
-JumpList::~JumpList() {
-  Terminate();
-}
-
-// static
-bool JumpList::Enabled() {
-  return JumpListUpdater::IsEnabled();
-}
-
-bool JumpList::AddObserver(Profile* profile) {
+      profile_(profile),
+      task_id_(base::CancelableTaskTracker::kBadTaskId) {
+  DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
   // the observer list of the TabRestoreService class.
   // When we add this object to the observer list, we save the pointer to this
   // TabRestoreService object. This pointer is used when we remove this object
   // from the observer list.
-  if (!JumpListUpdater::IsEnabled() || !profile)
-    return false;
-
   TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile);
+      TabRestoreServiceFactory::GetForProfile(profile_);
   if (!tab_restore_service)
-    return false;
+    return;
 
-  app_id_ = ShellIntegration::GetChromiumModelIdForProfile(profile->GetPath());
-  icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname);
-  profile_ = profile;
+  app_id_ = ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath());
+  icon_dir_ = profile_->GetPath().Append(chrome::kJumpListIconDirname);
   history::TopSites* top_sites = profile_->GetTopSites();
   if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
@@ -224,7 +219,20 @@ bool JumpList::AddObserver(Profile* profile) {
                     content::Source<Profile>(profile_));
   }
   tab_restore_service->AddObserver(this);
-  return true;
+  pref_change_registrar_.reset(new PrefChangeRegistrar);
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(
+      prefs::kIncognitoModeAvailability,
+      base::Bind(&JumpList::OnIncognitoAvailabilityChanged, this));
+}
+
+JumpList::~JumpList() {
+  Terminate();
+}
+
+// static
+bool JumpList::Enabled() {
+  return JumpListUpdater::IsEnabled();
 }
 
 void JumpList::Observe(int type,
@@ -251,17 +259,6 @@ void JumpList::Observe(int type,
   }
 }
 
-void JumpList::RemoveObserver() {
-  if (profile_) {
-    TabRestoreService* tab_restore_service =
-        TabRestoreServiceFactory::GetForProfile(profile_);
-    if (tab_restore_service)
-      tab_restore_service->RemoveObserver(this);
-    registrar_.reset();
-  }
-  profile_ = NULL;
-}
-
 void JumpList::CancelPendingUpdate() {
   if (task_id_ != base::CancelableTaskTracker::kBadTaskId) {
     cancelable_task_tracker_.TryCancel(task_id_);
@@ -271,7 +268,15 @@ void JumpList::CancelPendingUpdate() {
 
 void JumpList::Terminate() {
   CancelPendingUpdate();
-  RemoveObserver();
+  if (profile_) {
+    TabRestoreService* tab_restore_service =
+        TabRestoreServiceFactory::GetForProfile(profile_);
+    if (tab_restore_service)
+      tab_restore_service->RemoveObserver(this);
+    registrar_.reset();
+    pref_change_registrar_.reset();
+  }
+  profile_ = NULL;
 }
 
 void JumpList::OnMostVisitedURLsAvailable(
@@ -379,20 +384,24 @@ void JumpList::AddWindow(const TabRestoreService::Window* window,
 
 void JumpList::StartLoadingFavicon() {
   GURL url;
+  bool waiting_for_icons = true;
   {
     base::AutoLock auto_lock(list_lock_);
-    if (icon_urls_.empty()) {
-      // No more favicons are needed by the application JumpList. Schedule a
-      // RunUpdate call.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&JumpList::RunUpdate, this));
-      return;
+    waiting_for_icons = !icon_urls_.empty();
+    if (waiting_for_icons) {
+      // Ask FaviconService if it has a favicon of a URL.
+      // When FaviconService has one, it will call OnFaviconDataAvailable().
+      url = GURL(icon_urls_.front().first);
     }
-    // Ask FaviconService if it has a favicon of a URL.
-    // When FaviconService has one, it will call OnFaviconDataAvailable().
-    url = GURL(icon_urls_.front().first);
   }
+
+  if (!waiting_for_icons) {
+    // No more favicons are needed by the application JumpList. Schedule a
+    // RunUpdate call.
+    PostRunUpdate();
+    return;
+  }
+
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   task_id_ = favicon_service->GetFaviconImageForPageURL(
@@ -423,7 +432,31 @@ void JumpList::OnFaviconDataAvailable(
   StartLoadingFavicon();
 }
 
-void JumpList::RunUpdate() {
+void JumpList::OnIncognitoAvailabilityChanged() {
+  bool waiting_for_icons = true;
+  {
+    base::AutoLock auto_lock(list_lock_);
+    waiting_for_icons = !icon_urls_.empty();
+  }
+  if (!waiting_for_icons)
+    PostRunUpdate();
+  // If |icon_urls_| isn't empty then OnFaviconDataAvailable will eventually
+  // call PostRunUpdate().
+}
+
+void JumpList::PostRunUpdate() {
+  // Check if incognito windows (or normal windows) are disabled by policy.
+  IncognitoModePrefs::Availability incognito_availability =
+      profile_ ? IncognitoModePrefs::GetAvailability(profile_->GetPrefs())
+               : IncognitoModePrefs::ENABLED;
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&JumpList::RunUpdate, this, incognito_availability));
+}
+
+void JumpList::RunUpdate(
+    IncognitoModePrefs::Availability incognito_availability) {
   ShellLinkItemList local_most_visited_pages;
   ShellLinkItemList local_recently_closed_pages;
 
@@ -455,11 +488,11 @@ void JumpList::RunUpdate() {
   // category.
   CreateIconFiles(local_recently_closed_pages);
 
-  // We finished collecting all resources needed for updating an appliation
+  // We finished collecting all resources needed for updating an application
   // JumpList. So, create a new JumpList and replace the current JumpList
   // with it.
   UpdateJumpList(app_id_.c_str(), local_most_visited_pages,
-                 local_recently_closed_pages);
+                 local_recently_closed_pages, incognito_availability);
 }
 
 void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
