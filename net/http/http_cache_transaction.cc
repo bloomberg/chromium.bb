@@ -238,6 +238,13 @@ void RecordNoStoreHeaderHistogram(int load_flags,
   }
 }
 
+enum ExternallyConditionalizedType {
+  EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION,
+  EXTERNALLY_CONDITIONALIZED_CACHE_USABLE,
+  EXTERNALLY_CONDITIONALIZED_MISMATCHED_VALIDATORS,
+  EXTERNALLY_CONDITIONALIZED_MAX
+};
+
 }  // namespace
 
 namespace net {
@@ -2225,6 +2232,22 @@ int HttpCache::Transaction::BeginExternallyConditionalizedRequest() {
       DoneWritingToEntry(true);
     }
   }
+
+  // TODO(ricea): This calculation is expensive to perform just to collect
+  // statistics. Either remove it or use the result, depending on the result of
+  // the experiment.
+  ExternallyConditionalizedType type =
+      EXTERNALLY_CONDITIONALIZED_CACHE_USABLE;
+  if (mode_ == NONE)
+    type = EXTERNALLY_CONDITIONALIZED_MISMATCHED_VALIDATORS;
+  else if (RequiresValidation())
+    type = EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION;
+
+  // TODO(ricea): Add CACHE_USABLE_STALE once stale-while-revalidate CL landed.
+  // TODO(ricea): Either remove this histogram or make it permanent by M40.
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.ExternallyConditionalized",
+                            type,
+                            EXTERNALLY_CONDITIONALIZED_MAX);
 
   next_state_ = STATE_SEND_REQUEST;
   return OK;
