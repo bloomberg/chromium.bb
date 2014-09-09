@@ -76,22 +76,37 @@ def _GetPythonPath(paths):
   ] + list(set(os.path.dirname(x) for x in paths))
 
 
-def _CpplintFiles(files, debug):
+# The mapping between the "cros lint" --output-format flag and cpplint.py
+# --output flag.
+CPPLINT_OUTPUT_FORMAT_MAP = {
+    'colorized': 'emacs',
+    'msvs': 'vs7',
+    'parseable': 'emacs',
+}
+
+
+def _CpplintFiles(files, output_format, debug):
   """Returns true if cpplint ran successfully on all files."""
-  cmd = [os.path.join(constants.DEPOT_TOOLS_DIR, 'cpplint.py')] + files
+  cmd = [os.path.join(constants.DEPOT_TOOLS_DIR, 'cpplint.py')]
+  if output_format != 'default':
+    cmd.append('--output=%s' % CPPLINT_OUTPUT_FORMAT_MAP[output_format])
+  cmd += files
   res = cros_build_lib.RunCommand(cmd,
                                   error_code_ok=True,
                                   print_cmd=debug)
   return res.returncode != 0
 
 
-def _PylintFiles(files, debug):
+def _PylintFiles(files, output_format, debug):
   """Returns true if pylint ran successfully on all files."""
   errors = False
   pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint')
   for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
     paths = sorted(list(set([os.path.realpath(x) for x in paths])))
-    cmd = [pylint, '--rcfile=%s' % pylintrc] + paths
+    cmd = [pylint, '--rcfile=%s' % pylintrc]
+    if output_format != 'default':
+      cmd.append('--output-format=%s' % output_format)
+    cmd += paths
     extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
     res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
                                     error_code_ok=True,
@@ -126,10 +141,19 @@ Right now, only supports cpplint and pylint. We may also in the future
 run other checks (e.g. pyflakes, etc.)
 """
 
+  # The output formats supported by cros lint.
+  OUTPUT_FORMATS = ('default', 'colorized', 'msvs', 'parseable')
+
   @classmethod
   def AddParser(cls, parser):
     super(LintCommand, cls).AddParser(parser)
     parser.add_argument('files', help='Files to lint', nargs='*')
+    parser.add_argument('--output', default='default',
+                        choices=LintCommand.OUTPUT_FORMATS,
+                        help='Output format to pass to the linters. Supported '
+                        'formats are: default (no option is passed to the '
+                        'linter), colorized, msvs (Visual Studio) and '
+                        'parseable.')
 
   def Run(self):
     files = self.options.files
@@ -142,7 +166,7 @@ run other checks (e.g. pyflakes, etc.)
     errors = False
     linter_map = _BreakoutFilesByLinter(files)
     for linter, files in linter_map.iteritems():
-      errors = linter(files, self.options.debug)
+      errors = linter(files, self.options.output, self.options.debug)
 
     if errors:
       sys.exit(1)
