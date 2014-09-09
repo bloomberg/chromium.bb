@@ -33,16 +33,6 @@ pkg_config("glib") {
   packages = [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ]
 }
 
-pkg_config("gtk") {
-  # Gtk requires gmodule, but it does not list it as a dependency in some
-  # misconfigured systems.
-  packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
-}
-
-pkg_config("gtkprint") {
-  packages = [ "gtk+-unix-print-2.0" ]
-}
-
 pkg_config("pangocairo") {
   packages = [ "pangocairo" ]
 }
@@ -59,10 +49,6 @@ pkg_config("udev") {
 # config (it will get added automatically if you depend on //dbus).
 pkg_config("dbus") {
   packages = [ "dbus-1" ]
-}
-
-pkg_config("gnome_keyring") {
-  packages = [ "gnome-keyring-1" ]
 }
 
 if (use_evdev_gestures) {
@@ -124,9 +110,26 @@ config("libresolv") {
   libs = [ "resolv" ]
 }
 
-pkg_config("gconf") {
-  packages = [ "gconf-2.0" ]
-  defines = [ "USE_GCONF" ]
+# CrOS doesn't install GTK, gconf or any gnome packages.
+if (!is_chromeos) {
+  pkg_config("gtk") {
+    # Gtk requires gmodule, but it does not list it as a dependency in some
+    # misconfigured systems.
+    packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
+  }
+
+  pkg_config("gtkprint") {
+    packages = [ "gtk+-unix-print-2.0" ]
+  }
+
+  pkg_config("gnome_keyring") {
+    packages = [ "gnome-keyring-1" ]
+  }
+
+  pkg_config("gconf") {
+    packages = [ "gconf-2.0" ]
+    defines = [ "USE_GCONF" ]
+  }
 }
 
 # If brlapi isn't needed, don't require it to be installed.
