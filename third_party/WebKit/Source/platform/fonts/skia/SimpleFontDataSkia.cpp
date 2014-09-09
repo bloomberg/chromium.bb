@@ -131,6 +131,13 @@ void SimpleFontData::platformInit()
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setLineSpacing(lroundf(ascent) + lroundf(descent) + lroundf(lineGap));
 
+    SkScalar underlineThickness, underlinePosition;
+    if (metrics.hasUnderlineThickness(&underlineThickness)
+        && metrics.hasUnderlinePosition(&underlinePosition)) {
+        m_fontMetrics.setUnderlineThickness(SkScalarToFloat(underlineThickness));
+        m_fontMetrics.setUnderlinePosition(SkScalarToFloat(-underlinePosition));
+    }
+
     if (platformData().orientation() == Vertical && !isTextOrientationFallback()) {
         static const uint32_t vheaTag = SkSetFourByteTag('v', 'h', 'e', 'a');
         static const uint32_t vorgTag = SkSetFourByteTag('V', 'O', 'R', 'G');
