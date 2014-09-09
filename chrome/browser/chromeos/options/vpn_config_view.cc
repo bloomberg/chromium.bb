@@ -454,8 +454,8 @@ void VPNConfigView::SetUserCertProperties(
     base::DictionaryValue* properties) const {
   if (!HaveUserCerts()) {
     // No certificate selected or not required.
-    chromeos::client_cert::SetEmptyShillProperties(
-        chromeos::client_cert::CONFIG_TYPE_EAP, properties);
+    chromeos::client_cert::SetEmptyShillProperties(client_cert_type,
+                                                   properties);
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_ ? user_cert_combobox_->selected_index() : 0;
