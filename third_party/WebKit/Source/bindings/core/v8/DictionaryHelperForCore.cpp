@@ -482,6 +482,7 @@ template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<DOMError>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Element>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Element>& value);
 
 template <typename T>
 struct IntegralTypeTraits {

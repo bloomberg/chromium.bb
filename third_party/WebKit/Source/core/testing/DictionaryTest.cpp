@@ -88,8 +88,10 @@ void DictionaryTest::reset()
     m_elementOrNullMember = nullptr;
 }
 
-void DictionaryTest::trace(Visitor*)
+void DictionaryTest::trace(Visitor* visitor)
 {
+    visitor->trace(m_elementMember);
+    visitor->trace(m_elementOrNullMember);
 }
 
 }
