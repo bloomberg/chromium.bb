@@ -23,6 +23,8 @@
       'sources': [
         'enhanced_bookmarks/bookmark_image_service.cc',
         'enhanced_bookmarks/bookmark_image_service.h',
+        'enhanced_bookmarks/enhanced_bookmark_model.cc',
+        'enhanced_bookmarks/enhanced_bookmark_model.h',
         'enhanced_bookmarks/enhanced_bookmark_utils.cc',
         'enhanced_bookmarks/enhanced_bookmark_utils.h',
         'enhanced_bookmarks/image_store.cc',

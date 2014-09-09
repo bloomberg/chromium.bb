@@ -8,8 +8,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
-#include "components/enhanced_bookmarks/metadata_accessor.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
 namespace {
@@ -42,18 +42,20 @@ void RetrieveImageFromStoreRelay(
 namespace enhanced_bookmarks {
 BookmarkImageService::BookmarkImageService(
     scoped_ptr<ImageStore> store,
-    BookmarkModel* bookmark_model,
+    EnhancedBookmarkModel* enhanced_bookmark_model,
     scoped_refptr<base::SequencedWorkerPool> pool)
-    : bookmark_model_(bookmark_model), store_(store.Pass()), pool_(pool) {
+    : enhanced_bookmark_model_(enhanced_bookmark_model),
+      store_(store.Pass()),
+      pool_(pool) {
   DCHECK(CalledOnValidThread());
-  bookmark_model_->AddObserver(this);
+  enhanced_bookmark_model_->bookmark_model()->AddObserver(this);
 }
 
 BookmarkImageService::BookmarkImageService(
     const base::FilePath& path,
-    BookmarkModel* bookmark_model,
+    EnhancedBookmarkModel* enhanced_bookmark_model,
     scoped_refptr<base::SequencedWorkerPool> pool)
-    : bookmark_model_(bookmark_model), pool_(pool) {
+    : enhanced_bookmark_model_(enhanced_bookmark_model), pool_(pool) {
   DCHECK(CalledOnValidThread());
   // PersistentImageStore has to be constructed in the thread it will be used,
   // so we are posting the construction to the thread.  However, we first
@@ -81,7 +83,7 @@ BookmarkImageService::BookmarkImageService(
 
 BookmarkImageService::~BookmarkImageService() {
   DCHECK(CalledOnValidThread());
-  bookmark_model_->RemoveObserver(this);
+  enhanced_bookmark_model_->bookmark_model()->RemoveObserver(this);
   pool_->PostNamedSequencedWorkerTask(
       kSequenceToken,
       FROM_HERE,
@@ -118,12 +120,13 @@ void BookmarkImageService::RetrieveSalientImageForPageUrl(
   in_progress_page_urls_.insert(page_url);
 
   const BookmarkNode* bookmark =
-      bookmark_model_->GetMostRecentlyAddedUserNodeForURL(page_url);
+      enhanced_bookmark_model_->bookmark_model()
+          ->GetMostRecentlyAddedUserNodeForURL(page_url);
   GURL image_url;
   if (bookmark) {
     int width;
     int height;
-    enhanced_bookmarks::ThumbnailImageFromBookmark(
+    enhanced_bookmark_model_->GetThumbnailImage(
         bookmark, &image_url, &width, &height);
   }
 
@@ -188,11 +191,12 @@ void BookmarkImageService::ProcessNewImage(const GURL& page_url,
   ProcessRequests(page_url, image, image_url);
   if (update_bookmarks && image_url.is_valid()) {
     const BookmarkNode* bookmark =
-        bookmark_model_->GetMostRecentlyAddedUserNodeForURL(page_url);
+        enhanced_bookmark_model_->bookmark_model()
+            ->GetMostRecentlyAddedUserNodeForURL(page_url);
     if (bookmark) {
       const gfx::Size& size = image.Size();
-      bool result = enhanced_bookmarks::SetOriginalImageForBookmark(
-          bookmark_model_, bookmark, image_url, size.width(), size.height());
+      bool result = enhanced_bookmark_model_->SetOriginalImage(
+          bookmark, image_url, size.width(), size.height());
       DCHECK(result);
     }
   }

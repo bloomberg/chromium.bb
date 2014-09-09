@@ -13,6 +13,9 @@ class BookmarkModel;
 class BookmarkNode;
 class GURL;
 
+// TODO(rfevang): Remove this file once the remaining caller
+// is converted (enhanced_bookmarks_bridge.cc)
+
 // The functions in this file store and retrieve structured data encoded in the
 // bookmark metadata. This information suplements the data in the bookmark with
 // images and descriptions related to the url.

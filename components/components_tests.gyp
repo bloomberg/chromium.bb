@@ -112,11 +112,11 @@
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
             # Note: GN tests converted to here, need to do the rest.
+            'enhanced_bookmarks/enhanced_bookmark_model_unittest.cc',
             'enhanced_bookmarks/enhanced_bookmark_utils_unittest.cc',
             'enhanced_bookmarks/image_store_ios_unittest.mm',
             'enhanced_bookmarks/image_store_unittest.cc',
             'enhanced_bookmarks/item_position_unittest.cc',
-            'enhanced_bookmarks/metadata_accessor_unittest.cc',
             'feedback/feedback_common_unittest.cc',
             'feedback/feedback_data_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
