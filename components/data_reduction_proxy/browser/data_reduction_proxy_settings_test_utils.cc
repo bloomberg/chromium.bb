@@ -114,7 +114,8 @@ void DataReductionProxySettingsTestBase::SetUp() {
       DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
 }
 
 template <class C>

@@ -75,7 +75,8 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
       DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN);
+      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAlt, drp_params.DefaultAltOrigin());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(

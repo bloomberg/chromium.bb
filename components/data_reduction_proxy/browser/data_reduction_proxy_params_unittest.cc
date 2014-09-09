@@ -54,7 +54,7 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   CheckParams(params, true, true, true, false, true);
   CheckValues(params,
               TestDataReductionProxyParams::DefaultDevOrigin(),
-              TestDataReductionProxyParams::DefaultFallbackOrigin(),
+              TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
               TestDataReductionProxyParams::DefaultSSLOrigin(),
               TestDataReductionProxyParams::DefaultAltOrigin(),
               TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
@@ -67,7 +67,8 @@ TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
       DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN);
+      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
   CheckParams(params, true, true, true, false, true);
   CheckValues(params,
               TestDataReductionProxyParams::DefaultOrigin(),
@@ -135,7 +136,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       true,
       true,
-      TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+      TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       true
     },
     {
@@ -152,14 +154,16 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       true,
       TestDataReductionProxyParams::HAS_ORIGIN |
-          TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+          TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     { true,
       true,
       true,
       true,
-      TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
+      TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     { true,
@@ -204,7 +208,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       true,
       TestDataReductionProxyParams::HAS_ORIGIN |
-          TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+          TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     {
@@ -262,7 +267,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       false,
       true,
       TestDataReductionProxyParams::HAS_ORIGIN |
-          TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+          TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     {
@@ -270,7 +276,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       false,
       true,
-      TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
+      TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     {
@@ -311,7 +318,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       false,
       true,
       TestDataReductionProxyParams::HAS_ORIGIN |
-          TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+          TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     {
@@ -368,7 +376,8 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
       true,
       true,
       TestDataReductionProxyParams::HAS_ORIGIN |
-          TestDataReductionProxyParams::HAS_DEV_ORIGIN,
+          TestDataReductionProxyParams::HAS_DEV_ORIGIN |
+          TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
       false
     },
     {
@@ -427,7 +436,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
         flags,
         TestDataReductionProxyParams::HAS_EVERYTHING &
             ~(tests[i].missing_definitions));
-    EXPECT_EQ(tests[i].expected_result, params.init_result());
+    EXPECT_EQ(tests[i].expected_result, params.init_result()) << i;
   }
 }
 
@@ -559,7 +568,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultDevOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultFallbackOrigin())),
+            TestDataReductionProxyParams::DefaultDevFallbackOrigin())),
         false,
         false,
         false
@@ -572,7 +581,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultFallbackOrigin())),
+            TestDataReductionProxyParams::DefaultDevFallbackOrigin())),
         false,
         false,
         false
@@ -586,19 +595,21 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     if (!tests[i].set_dev_origin) {
       has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
+      has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
     }
     TestDataReductionProxyParams params(flags, has_definitions);
     DataReductionProxyTypeInfo proxy_type_info;
     EXPECT_EQ(tests[i].expected_result,
               params.IsDataReductionProxy(
-                  tests[i].host_port_pair, &proxy_type_info));
+                  tests[i].host_port_pair, &proxy_type_info)) << i;
     EXPECT_TRUE(tests[i].expected_first.Equals(
-        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.first)));
+        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.first))) << i;
     EXPECT_TRUE(tests[i].expected_second.Equals(
-        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.second)));
-    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback);
-    EXPECT_EQ(tests[i].expected_is_alternative, proxy_type_info.is_alternative);
-    EXPECT_EQ(tests[i].expected_is_ssl, proxy_type_info.is_ssl);
+        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.second))) << i;
+    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback) << i;
+    EXPECT_EQ(tests[i].expected_is_alternative, proxy_type_info.is_alternative)
+        << i;
+    EXPECT_EQ(tests[i].expected_is_ssl, proxy_type_info.is_ssl) << i;
   }
 }
 
@@ -965,7 +976,8 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
       flags |= DataReductionProxyParams::kFallbackAllowed;
     unsigned int has_definitions =
         TestDataReductionProxyParams::HAS_EVERYTHING &
-        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
+        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+        ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
     TestDataReductionProxyParams params(flags, has_definitions);
 
     net::ProxyRetryInfoMap retry_map;

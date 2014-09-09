@@ -95,7 +95,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
             DataReductionProxyParams::kFallbackAllowed |
             DataReductionProxyParams::kPromoAllowed,
             TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   }
 
   // Sets up the |TestURLRequestContext| with the provided |ProxyService| and
@@ -793,7 +794,8 @@ TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
             DataReductionProxyParams::kFallbackAllowed |
             DataReductionProxyParams::kPromoAllowed,
             TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN);
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
 
   // Data reduction proxy info
   net::ProxyInfo data_reduction_proxy_info;

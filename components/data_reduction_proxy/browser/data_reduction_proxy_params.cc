@@ -253,6 +253,8 @@ void DataReductionProxyParams::InitWithoutChecks() {
   if (origin.empty())
     origin = GetDefaultOrigin();
   if (fallback_origin.empty())
+    fallback_origin = GetDefaultDevFallbackOrigin();
+  if (fallback_origin.empty())
     fallback_origin = GetDefaultFallbackOrigin();
   if (ssl_origin.empty())
     ssl_origin = GetDefaultSSLOrigin();
@@ -391,6 +393,20 @@ std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
       (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
          kEnabled)) {
     return DATA_REDUCTION_DEV_HOST;
+  }
+#endif
+  return std::string();
+}
+
+std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
+#if defined(DATA_REDUCTION_DEV_FALLBACK_HOST)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
+    return std::string();
+  if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
+      (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
+           kEnabled)) {
+    return DATA_REDUCTION_DEV_FALLBACK_HOST;
   }
 #endif
   return std::string();

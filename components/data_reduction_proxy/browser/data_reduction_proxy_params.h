@@ -250,6 +250,7 @@ class DataReductionProxyParams {
   // Returns the corresponding string from preprocessor constants if defined,
   // and an empty string otherwise.
   virtual std::string GetDefaultDevOrigin() const;
+  virtual std::string GetDefaultDevFallbackOrigin() const;
   virtual std::string GetDefaultOrigin() const;
   virtual std::string GetDefaultFallbackOrigin() const;
   virtual std::string GetDefaultSSLOrigin() const;

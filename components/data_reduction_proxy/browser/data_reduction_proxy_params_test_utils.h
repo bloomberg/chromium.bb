@@ -21,6 +21,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
     HAS_ALT_ORIGIN = 0x10,
     HAS_ALT_FALLBACK_ORIGIN = 0x20,
     HAS_PROBE_URL = 0x40,
+    HAS_DEV_FALLBACK_ORIGIN = 0x80,
     HAS_EVERYTHING = 0xff,
   };
 
@@ -30,6 +31,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultDevOrigin();
+  static std::string DefaultDevFallbackOrigin();
   static std::string DefaultOrigin();
   static std::string DefaultFallbackOrigin();
   static std::string DefaultSSLOrigin();
@@ -46,6 +48,8 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 
  protected:
   virtual std::string GetDefaultDevOrigin() const OVERRIDE;
+
+  virtual std::string GetDefaultDevFallbackOrigin() const OVERRIDE;
 
   virtual std::string GetDefaultOrigin() const OVERRIDE;
 

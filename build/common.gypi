@@ -601,6 +601,7 @@
 
       'data_reduction_fallback_host%' : '',
       'data_reduction_dev_host%' : '',
+      'data_reduction_dev_fallback_host%' : '',
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
@@ -967,13 +968,15 @@
           'data_reduction_proxy_probe_url%': '',
           'data_reduction_proxy_warmup_url%': '',
           'data_reduction_dev_host%': '',
+          'data_reduction_dev_fallback_host%': '',
           'data_reduction_fallback_host%': '',
         }, {
           'icu_use_data_file_flag%' : 0,
           'spdy_proxy_auth_origin%': 'https://proxy.googlezip.net:443/',
           'data_reduction_proxy_probe_url%': 'http://check.googlezip.net/connect',
           'data_reduction_proxy_warmup_url%': 'http://www.gstatic.com/generate_204',
-          'data_reduction_dev_host%': 'http://proxy-dev.googlezip.net:80/',
+          'data_reduction_dev_host%': 'https://proxy-dev.googlezip.net:443/',
+          'data_reduction_dev_fallback_host%': 'http://proxy-dev.googlezip.net:80/',
           'data_reduction_fallback_host%': 'http://compress.googlezip.net:80/',
         }],
         ['OS=="win" or OS=="mac"', {
@@ -1176,6 +1179,7 @@
     'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
     'data_reduction_fallback_host%': '<(data_reduction_fallback_host)',
     'data_reduction_dev_host%': '<(data_reduction_dev_host)',
+    'data_reduction_dev_fallback_host%': '<(data_reduction_dev_fallback_host)',
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
@@ -2893,6 +2897,10 @@
       ['data_reduction_dev_host != ""', {
         'defines': [
           'DATA_REDUCTION_DEV_HOST="<(data_reduction_dev_host)"'],
+      }],
+      ['data_reduction_dev_fallback_host != ""', {
+        'defines': [
+          'DATA_REDUCTION_DEV_FALLBACK_HOST="<(data_reduction_dev_fallback_host)"'],
       }],
       ['spdy_proxy_auth_origin != ""', {
         'defines': ['SPDY_PROXY_AUTH_ORIGIN="<(spdy_proxy_auth_origin)"'],

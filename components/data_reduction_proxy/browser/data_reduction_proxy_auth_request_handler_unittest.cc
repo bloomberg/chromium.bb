@@ -135,7 +135,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
           DataReductionProxyParams::kFallbackAllowed |
           DataReductionProxyParams::kPromoAllowed,
           TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
                                                         kVersion,
                                                         params.get(),
@@ -219,7 +220,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationBogusVersion) {
           DataReductionProxyParams::kFallbackAllowed |
           DataReductionProxyParams::kPromoAllowed,
           TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
                                                         kBogusVersion,
                                                         params.get(),

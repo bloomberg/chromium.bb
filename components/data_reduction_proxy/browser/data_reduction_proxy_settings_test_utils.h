@@ -63,11 +63,13 @@ class MockDataReductionProxySettings : public C {
           DataReductionProxyParams::kFallbackAllowed |
           DataReductionProxyParams::kPromoAllowed,
           TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN)) {}
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)) {}
   MockDataReductionProxySettings<C>(int flags)
       : C(new TestDataReductionProxyParams(flags,
           TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN)) {}
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)) {}
   MOCK_METHOD0(GetURLFetcherForAvailabilityCheck, net::URLFetcher*());
   MOCK_METHOD0(GetURLFetcherForWarmup, net::URLFetcher*());
   MOCK_METHOD0(GetOriginalProfilePrefs, PrefService*());
