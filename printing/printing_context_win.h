@@ -5,17 +5,15 @@
 #ifndef PRINTING_PRINTING_CONTEXT_WIN_H_
 #define PRINTING_PRINTING_CONTEXT_WIN_H_
 
-#include <ocidl.h>
-#include <commdlg.h>
-
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"
 #include "printing/printing_context.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace printing {
+
+class PrintSettings;
 
 class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
  public:
@@ -41,19 +39,25 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   virtual gfx::NativeDrawingContext context() const OVERRIDE;
 
  protected:
-  virtual scoped_ptr<DEVMODE, base::FreeDeleter> ShowPrintDialog(
-      HANDLE printer,
-      gfx::NativeView parent_view,
-      DEVMODE* dev_mode);
-
- private:
-  // Used in response to the user canceling the printing.
-  static BOOL CALLBACK AbortProc(HDC hdc, int nCode);
+  static HWND GetRootWindow(gfx::NativeView view);
 
   // Reads the settings from the selected device context. Updates settings_ and
   // its margins.
   virtual Result InitializeSettings(const base::string16& device_name,
                                     DEVMODE* dev_mode);
+
+  HDC contest() const { return context_; }
+
+  void set_context(HDC context) { context_ = context; }
+
+ private:
+  virtual scoped_ptr<DEVMODE, base::FreeDeleter> ShowPrintDialog(
+      HANDLE printer,
+      gfx::NativeView parent_view,
+      DEVMODE* dev_mode);
+
+  // Used in response to the user canceling the printing.
+  static BOOL CALLBACK AbortProc(HDC hdc, int nCode);
 
   // The selected printer context.
   HDC context_;

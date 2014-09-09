@@ -12,6 +12,7 @@
 #include "printing/backend/win_helper.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
+#include "printing/printing_context_system_dialog_win.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
@@ -21,32 +22,16 @@
 #include "ui/aura/window.h"
 #endif
 
-namespace {
-
-HWND GetRootWindow(gfx::NativeView view) {
-  HWND window = NULL;
-#if defined(USE_AURA)
-  if (view)
-    window = view->GetHost()->GetAcceleratedWidget();
-#else
-  if (view && IsWindow(view)) {
-    window = GetAncestor(view, GA_ROOTOWNER);
-  }
-#endif
-  if (!window) {
-    // TODO(maruel):  bug 1214347 Get the right browser window instead.
-    return GetDesktopWindow();
-  }
-  return window;
-}
-
-}  // anonymous namespace
-
 namespace printing {
 
 // static
 scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+#if defined(DISABLE_BASIC_PRINTING)
   return make_scoped_ptr<PrintingContext>(new PrintingContextWin(delegate));
+#else   // DISABLE_BASIC_PRINTING
+  return make_scoped_ptr<PrintingContext>(
+      new PrintingContextSytemDialogWin(delegate));
+#endif  // DISABLE_BASIC_PRINTING
 }
 
 PrintingContextWin::PrintingContextWin(Delegate* delegate)
@@ -362,6 +347,23 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
       context_, *dev_mode, &settings_);
 
   return OK;
+}
+
+HWND PrintingContextWin::GetRootWindow(gfx::NativeView view) {
+  HWND window = NULL;
+#if defined(USE_AURA)
+  if (view)
+    window = view->GetHost()->GetAcceleratedWidget();
+#else
+  if (view && IsWindow(view)) {
+    window = GetAncestor(view, GA_ROOTOWNER);
+  }
+#endif
+  if (!window) {
+    // TODO(maruel):  crbug.com/1214347 Get the right browser window instead.
+    return GetDesktopWindow();
+  }
+  return window;
 }
 
 scoped_ptr<DEVMODE, base::FreeDeleter> PrintingContextWin::ShowPrintDialog(

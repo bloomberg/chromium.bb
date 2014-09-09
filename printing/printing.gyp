@@ -33,6 +33,7 @@
         'backend/print_backend_consts.cc',
         'backend/print_backend_consts.h',
         'backend/print_backend_dummy.cc',
+        'backend/print_backend_win.cc',
         'backend/printing_info_win.cc',
         'backend/printing_info_win.h',
         'emf_win.cc',
@@ -78,6 +79,10 @@
         'printed_pages_source.h',
         'printing_context.cc',
         'printing_context.h',
+        'printing_context_system_dialog_win.cc',
+        'printing_context_system_dialog_win.h',
+        'printing_context_win.cc',
+        'printing_context_win.h',
         'printing_utils.cc',
         'printing_utils.h',
         'units.cc',
@@ -120,9 +125,6 @@
           'sources': [
             'backend/win_helper.cc',
             'backend/win_helper.h',
-            'backend/print_backend_win.cc',
-            'printing_context_win.cc',
-            'printing_context_win.h',
           ],
         }],
         ['chromeos==1',{
