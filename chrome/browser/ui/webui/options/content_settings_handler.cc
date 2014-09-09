@@ -1236,34 +1236,6 @@ void ContentSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
-                                            ContentSetting default_setting) {
-  HostContentSettingsMap* map = GetContentSettingsMap();
-  if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS)
-    return;
-  const int kDefaultWhitelistVersion = 1;
-  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
-  int version = prefs->GetInteger(
-      prefs::kContentSettingsDefaultWhitelistVersion);
-  if (version >= kDefaultWhitelistVersion)
-    return;
-  ContentSetting old_setting =
-      map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
-  // TODO(bauerb): Remove this once the Google Talk plug-in works nicely with
-  // click-to-play (b/6090625).
-  if (old_setting == CONTENT_SETTING_ALLOW &&
-      default_setting == CONTENT_SETTING_ASK) {
-    map->SetWebsiteSetting(
-        ContentSettingsPattern::Wildcard(),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_PLUGINS,
-        "google-talk",
-        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
-  }
-  prefs->SetInteger(prefs::kContentSettingsDefaultWhitelistVersion,
-                    kDefaultWhitelistVersion);
-}
-
 void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
   std::string group, setting;
@@ -1286,7 +1258,6 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
 
 
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  ApplyWhitelist(content_type, default_setting);
   map->SetDefaultContentSetting(content_type, default_setting);
 
   switch (content_type) {

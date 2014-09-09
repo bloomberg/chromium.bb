@@ -152,10 +152,6 @@ void HostContentSettingsMap::RegisterProfilePrefs(
       prefs::kContentSettingsWindowLastTabIndex,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kContentSettingsDefaultWhitelistVersion,
-      0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kContentSettingsClearOnExitMigrated,
       false,

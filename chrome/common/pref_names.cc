@@ -1004,10 +1004,6 @@ const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 const char kContentSettingsPatternPairs[] =
     "profile.content_settings.pattern_pairs";
 
-// Version of the content settings whitelist.
-const char kContentSettingsDefaultWhitelistVersion[] =
-    "profile.content_settings.whitelist_version";
-
 #if !defined(OS_ANDROID)
 // Which plugins have been whitelisted manually by the user.
 const char kContentSettingsPluginWhitelist[] =

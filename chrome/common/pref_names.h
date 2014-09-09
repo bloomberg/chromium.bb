@@ -325,7 +325,6 @@ extern const char kDefaultContentSettings[];
 extern const char kContentSettingsClearOnExitMigrated[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatternPairs[];
-extern const char kContentSettingsDefaultWhitelistVersion[];
 extern const char kContentSettingsPluginWhitelist[];
 extern const char kBlockThirdPartyCookies[];
 extern const char kClearSiteDataOnExit[];
