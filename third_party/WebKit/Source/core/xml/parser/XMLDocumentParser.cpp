@@ -657,6 +657,8 @@ static void* openFunc(const char* uri)
     if (!shouldAllowExternalLoad(finalURL))
         return &globalDescriptor;
 
+    UseCounter::count(XMLDocumentParserScope::currentFetcher->document(), UseCounter::XMLExternalResourceLoad);
+
     return new SharedBufferReader(data);
 }
 
