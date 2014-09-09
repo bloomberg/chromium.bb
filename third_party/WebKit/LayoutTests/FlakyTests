@@ -1176,7 +1176,7 @@ crbug.com/352856 [ Release Lion ] svg/batik/text/textPosition2.svg [ Failure Ima
 crbug.com/352856 [ Release MountainLion ] svg/batik/text/textPosition2.svg [ Failure ImageOnlyFailure ]
 crbug.com/352856 [ Release Retina ] svg/batik/text/textPosition2.svg [ Failure ImageOnlyFailure ]
 crbug.com/352856 [ Release Mavericks ] svg/batik/text/textPosition2.svg [ Failure ImageOnlyFailure ]
-Bug(gardener) [ Release Win7 ] svg/batik/text/textStyles.svg [ Failure Pass ]
+Bug(gardener) [ Win7 ] svg/batik/text/textStyles.svg [ Failure Pass ]
 crbug.com/352856 [ Release SnowLeopard ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
 crbug.com/352856 [ Release Lion ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
 crbug.com/352856 [ Release MountainLion ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
