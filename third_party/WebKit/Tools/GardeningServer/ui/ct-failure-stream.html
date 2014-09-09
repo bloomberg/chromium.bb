@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-failure-card.html">
 
-<polymer-element name="ct-failure-stream" attributes="groups commitLog tree category" noscript>
+<polymer-element name="ct-failure-stream" attributes="groups commitLog tree category title" noscript>
   <template>
     <style>
       :host {
@@ -16,10 +16,20 @@ found in the LICENSE file.
       ct-failure-card {
         margin-bottom: 5px;
         padding: 5px;
-        border-top: 1px solid lightgrey;
+        border-bottom: 1px solid lightgrey;
+      }
+
+      /* FIXME: Don't use before hax to add labels */
+      ct-failure-card:first-of-type::before {
+        content: "{{ title }}:";
+        display: block;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 5px;
+        background-color: #f5f5f5;
+        margin-bottom: 5px;
       }
     </style>
-    <!-- FIXME: Show a label based on the category when the filtered stream isn't empty -->
     <template repeat="{{ group in groups }}">
       <template if="{{ group.category == category }}">
         <ct-failure-card group="{{ group }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-card>
