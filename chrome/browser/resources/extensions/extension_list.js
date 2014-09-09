@@ -273,7 +273,7 @@ cr.define('options', function() {
       if (extension.enabled && extension.optionsUrl) {
         var options = node.querySelector('.options-link');
         options.addEventListener('click', function(e) {
-          if (this.data_.enableEmbeddedExtensionOptions) {
+          if (!extension.optionsOpenInTab) {
             this.showEmbeddedExtensionOptions_(extension.id, false);
           } else {
             chrome.send('extensionSettingsOptions', [extension.id]);

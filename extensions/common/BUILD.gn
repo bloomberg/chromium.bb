@@ -112,6 +112,8 @@ source_set("common") {
     "manifest_handlers/launcher_page_info.h",
     "manifest_handlers/offline_enabled_info.cc",
     "manifest_handlers/offline_enabled_info.h",
+    "manifest_handlers/options_page_info.cc",
+    "manifest_handlers/options_page_info.h",
     "manifest_handlers/permissions_parser.cc",
     "manifest_handlers/permissions_parser.h",
     "manifest_handlers/requirements_info.cc",

@@ -29,7 +29,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -41,6 +40,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
@@ -456,7 +456,7 @@ GURL UrlForExtension(const Extension* extension, const GURL& override_url) {
 
   // For extensions lacking launch urls, determine a reasonable fallback.
   if (!url.is_valid()) {
-    url = extensions::ManifestURL::GetOptionsPage(extension);
+    url = extensions::OptionsPageInfo::GetOptionsPage(extension);
     if (!url.is_valid())
       url = GURL(chrome::kChromeUIExtensionsURL);
   }

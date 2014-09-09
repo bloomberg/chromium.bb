@@ -32,6 +32,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::OpenURLParams;
@@ -134,7 +135,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
                          action:@selector(onOptions:)
                   keyEquivalent:@""];
   [item setTarget:self];
-  [item setEnabled:extensions::ManifestURL::GetOptionsPage(
+  [item setEnabled:extensions::OptionsPageInfo::GetOptionsPage(
       extension_).spec().length() > 0];
 
 
@@ -198,7 +199,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
 }
 
 - (void)onOptions:(id)sender {
-  DCHECK(!extensions::ManifestURL::GetOptionsPage(extension_).is_empty());
+  DCHECK(!extensions::OptionsPageInfo::GetOptionsPage(extension_).is_empty());
   extensions::ExtensionTabUtil::OpenOptionsPage(extension_, browser_);
 }
 

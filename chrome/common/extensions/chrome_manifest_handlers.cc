@@ -35,6 +35,7 @@
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
 namespace extensions {
@@ -62,7 +63,7 @@ void RegisterChromeManifestHandlers() {
   (new MinimumChromeVersionChecker)->Register();
   (new OAuth2ManifestHandler)->Register();
   (new OmniboxHandler)->Register();
-  (new OptionsPageHandler)->Register();
+  (new OptionsPageManifestHandler)->Register();
   (new PageActionHandler)->Register();
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();  // Depends on plugins.

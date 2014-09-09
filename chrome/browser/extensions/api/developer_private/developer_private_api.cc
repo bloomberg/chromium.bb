@@ -64,6 +64,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -430,9 +431,9 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
 
   info->homepage_url.reset(new std::string(
       ManifestURL::GetHomepageURL(&item).spec()));
-  if (!ManifestURL::GetOptionsPage(&item).is_empty()) {
+  if (!OptionsPageInfo::GetOptionsPage(&item).is_empty()) {
     info->options_url.reset(
-        new std::string(ManifestURL::GetOptionsPage(&item).spec()));
+        new std::string(OptionsPageInfo::GetOptionsPage(&item).spec()));
   }
 
   if (!ManifestURL::GetUpdateURL(&item).is_empty()) {

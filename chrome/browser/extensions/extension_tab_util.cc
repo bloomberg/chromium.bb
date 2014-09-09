@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/tabs.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/favicon_status.h"
@@ -37,6 +36,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
@@ -578,7 +578,7 @@ WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
 
 void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
                                        Browser* browser) {
-  DCHECK(!ManifestURL::GetOptionsPage(extension).is_empty());
+  DCHECK(OptionsPageInfo::HasOptionsPage(extension));
 
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
@@ -590,9 +590,10 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     browser = displayer->browser();
   }
 
-  if (FeatureSwitch::embedded_extension_options()->IsEnabled()) {
-    // If embedded extension options are enabled, open chrome://extensions
-    // in a new tab and show the extension options in an embedded popup.
+  if (!OptionsPageInfo::ShouldOpenInTab(extension)) {
+    // If we should embed the options page for this extension, open
+    // chrome://extensions in a new tab and show the extension options in an
+    // embedded popup.
     chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
         browser, GURL(chrome::kChromeUIExtensionsURL)));
     params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
@@ -606,7 +607,7 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     chrome::ShowSingletonTabOverwritingNTP(browser, params);
   } else {
     // Otherwise open a new tab with the extension's options page
-    content::OpenURLParams params(ManifestURL::GetOptionsPage(extension),
+    content::OpenURLParams params(OptionsPageInfo::GetOptionsPage(extension),
                                   content::Referrer(),
                                   SINGLETON_TAB,
                                   content::PAGE_TRANSITION_LINK,

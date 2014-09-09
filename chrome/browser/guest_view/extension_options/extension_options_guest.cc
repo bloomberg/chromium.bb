@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_options_internal.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "components/crx_file/id_util.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
@@ -90,7 +90,7 @@ void ExtensionOptionsGuest::CreateWebContents(
       extensions::ExtensionRegistry::Get(browser_context());
   const extensions::Extension* extension =
       registry->enabled_extensions().GetByID(extension_id);
-  options_page_ = extensions::ManifestURL::GetOptionsPage(extension);
+  options_page_ = extensions::OptionsPageInfo::GetOptionsPage(extension);
   if (!options_page_.is_valid()) {
     callback.Run(NULL);
     return;

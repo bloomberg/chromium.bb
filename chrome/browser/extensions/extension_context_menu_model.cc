@@ -36,6 +36,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::OpenURLParams;
@@ -141,8 +142,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_items_->IsCommandIdEnabled(command_id);
   } else if (command_id == CONFIGURE) {
-    return
-        extensions::ManifestURL::GetOptionsPage(extension).spec().length() > 0;
+    return extensions::OptionsPageInfo::HasOptionsPage(extension);
   } else if (command_id == NAME) {
     // The NAME links to the Homepage URL. If the extension doesn't have a
     // homepage, we just disable this menu item.
@@ -200,7 +200,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     }
     case CONFIGURE:
-      DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
+      DCHECK(extensions::OptionsPageInfo::HasOptionsPage(extension));
       extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case TOGGLE_VISIBILITY: {

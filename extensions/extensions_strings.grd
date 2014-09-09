@@ -190,6 +190,9 @@
       <message name="IDS_EXTENSION_LOAD_LAUNCHER_PAGE_FAILED" desc="">
         Could not load launcher page '<ph name="PAGE">$1<ex>index.html</ex></ph>'.
       </message>
+      <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
+        Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
+      </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
       </message>

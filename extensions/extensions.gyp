@@ -142,6 +142,8 @@
         'common/manifest_handlers/launcher_page_info.h',
         'common/manifest_handlers/offline_enabled_info.cc',
         'common/manifest_handlers/offline_enabled_info.h',
+        'common/manifest_handlers/options_page_info.cc',
+        'common/manifest_handlers/options_page_info.h',
         'common/manifest_handlers/permissions_parser.cc',
         'common/manifest_handlers/permissions_parser.h',
         'common/manifest_handlers/requirements_info.cc',
@@ -247,6 +249,8 @@
             'common/extension_api.cc',
             'common/manifest_handlers/externally_connectable.cc',
             'common/manifest_handlers/externally_connectable.h',
+            'common/manifest_handlers/options_page_info.cc',
+            'common/manifest_handlers/options_page_info.h',
           ],
         }],
         ['disable_nacl==0', {

@@ -52,6 +52,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -126,7 +127,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info->version = extension.VersionString();
   info->description = extension.description();
-  info->options_url = ManifestURL::GetOptionsPage(&extension).spec();
+  info->options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
   info->homepage_url.reset(new std::string(
       ManifestURL::GetHomepageURL(&extension).spec()));
   info->may_disable = system->management_policy()->

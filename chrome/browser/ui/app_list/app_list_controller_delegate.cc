@@ -22,6 +22,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "net/base/url_util.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
@@ -157,8 +158,7 @@ bool AppListControllerDelegate::HasOptionsPage(
     const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   return extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile) &&
-         extension &&
-         !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
+         extension && extensions::OptionsPageInfo::HasOptionsPage(extension);
 }
 
 void AppListControllerDelegate::ShowOptionsPage(
@@ -170,7 +170,7 @@ void AppListControllerDelegate::ShowOptionsPage(
 
   chrome::NavigateParams params(
       profile,
-      extensions::ManifestURL::GetOptionsPage(extension),
+      extensions::OptionsPageInfo::GetOptionsPage(extension),
       content::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }

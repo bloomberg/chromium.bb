@@ -39,6 +39,27 @@
         }
       },
       {
+        "id": "OptionsUI",
+        "type": "object",
+        "description": "The <code>options_ui</code> manifest property declares how the options page should be displayed.",
+        "properties": {
+          "page": {
+            "description": "The path to your options page.",
+            "type": "string"
+          },
+          "chrome_style": {
+            "description": "If <code>true</code>, a Chrome user agent stylesheet will be applied to your options page. The default value is <code>false</code>.",
+            "optional": true,
+            "type": "boolean"
+          },
+          "open_in_tab": {
+            "description": "If <code>true</code>, the options page will be opened in a new tab instead of in an embedded popup in chrome://extensions. The default value is <code>false</code>.",
+            "optional": true,
+            "type": "boolean"
+          }
+        }
+      },
+      {
         "id": "SocketHostPatterns",
         "description": "<p>A single string or a list of strings representing host:port patterns.</p>",
         "choices": [

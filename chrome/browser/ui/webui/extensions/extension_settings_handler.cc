@@ -93,6 +93,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "grit/components_strings.h"
@@ -270,6 +271,8 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
       ManifestURL::SpecifiedHomepageURL(extension));
+  extension_data->SetBoolean("optionsOpenInTab",
+                             OptionsPageInfo::ShouldOpenInTab(extension));
 
   // Add dependent extensions.
   base::ListValue* dependents_list = new base::ListValue;
@@ -892,10 +895,6 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           ->BlacklistedByDefault();
   results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
 
-  results.SetBoolean(
-      "enableEmbeddedExtensionOptions",
-      extensions::FeatureSwitch::embedded_extension_options()->IsEnabled());
-
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionSettings.returnExtensionsData", results);
 
@@ -1126,7 +1125,7 @@ void ExtensionSettingsHandler::HandleUninstallMessage(
 void ExtensionSettingsHandler::HandleOptionsMessage(
     const base::ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
-  if (!extension || ManifestURL::GetOptionsPage(extension).is_empty())
+  if (!extension || OptionsPageInfo::GetOptionsPage(extension).is_empty())
     return;
   ExtensionTabUtil::OpenOptionsPage(extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));

@@ -95,6 +95,7 @@ const char kOmnibox[] = "omnibox";
 const char kOmniboxKeyword[] = "omnibox.keyword";
 const char kOptionalPermissions[] = "optional_permissions";
 const char kOptionsPage[] = "options_page";
+const char kOptionsUI[] = "options_ui";
 const char kOverrideHomepage[] = "chrome_settings_overrides.homepage";
 const char kOverrideSearchProvider[] =
     "chrome_settings_overrides.search_provider";
@@ -513,13 +514,16 @@ const char kInvalidOfflineEnabled[] =
     "Invalid value for 'offline_enabled'.";
 const char kInvalidOmniboxKeyword[] =
     "Invalid value for 'omnibox.keyword'.";
-const char kInvalidOptionsPage[] =
-    "Invalid value for 'options_page'.";
+const char kInvalidOptionsPage[] = "Invalid value for '*'.";
 const char kInvalidOptionsPageExpectUrlInPackage[] =
     "Invalid value for 'options_page'.  Value must be a relative path.";
 const char kInvalidOptionsPageInHostedApp[] =
     "Invalid value for 'options_page'. Hosted apps must specify an "
     "absolute URL.";
+const char kInvalidOptionsUIChromeStyle[] =
+    "Invalid value for 'options_ui.chrome_style'.";
+const char kInvalidOptionsUIOpenInTab[] =
+    "Invalid value for 'options_ui.open_in_tab'.";
 const char kInvalidPageAction[] =
     "Invalid value for 'page_action'.";
 const char kInvalidPageActionDefaultTitle[] =

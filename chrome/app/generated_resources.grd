@@ -4556,9 +4556,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED" desc="">
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
       </message>
-      <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
-        Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
-      </message>
       <message name="IDS_EXTENSION_LOAD_ABOUT_PAGE_FAILED" desc="">
         Could not load about page '<ph name="ABOUT_PAGE">$1<ex>page.html</ex></ph>'.
       </message>

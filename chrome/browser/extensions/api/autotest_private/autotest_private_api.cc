@@ -12,11 +12,11 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/autotest_private.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -174,8 +174,8 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
     extension_value->SetString("description", extension->description());
     extension_value->SetString(
         "backgroundUrl", BackgroundInfo::GetBackgroundURL(extension).spec());
-    extension_value->SetString("optionsUrl",
-                               ManifestURL::GetOptionsPage(extension).spec());
+    extension_value->SetString(
+        "optionsUrl", OptionsPageInfo::GetOptionsPage(extension).spec());
 
     extension_value->Set("hostPermissions",
                          GetHostPermissions(extension, false));

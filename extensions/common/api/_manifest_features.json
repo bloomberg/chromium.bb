@@ -95,6 +95,10 @@
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "options_ui": {
+    "channel": "trunk",
+    "extension_types": ["extension", "legacy_packaged_app"]
+  },
   "sandbox": {
     "channel": "stable",
     "extension_types": [

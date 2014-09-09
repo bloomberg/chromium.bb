@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -119,9 +119,9 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   // Test with an options page.
   extension = LoadAndExpectSuccess("init_valid_options.json");
   EXPECT_EQ("chrome-extension",
-            ManifestURL::GetOptionsPage(extension.get()).scheme());
+            OptionsPageInfo::GetOptionsPage(extension.get()).scheme());
   EXPECT_EQ("/options.html",
-            ManifestURL::GetOptionsPage(extension.get()).path());
+            OptionsPageInfo::GetOptionsPage(extension.get()).path());
 
   // Test optional short_name field.
   extension = LoadAndExpectSuccess("init_valid_short_name.json");

@@ -9,11 +9,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 
 namespace extensions {
 
@@ -208,7 +208,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
       }
     } else {
       // Fall back to extension's options page for backward compatibility.
-      options_page_url = extensions::ManifestURL::GetOptionsPage(extension);
+      options_page_url = extensions::OptionsPageInfo::GetOptionsPage(extension);
     }
 
     info->input_components.push_back(InputComponentInfo());
