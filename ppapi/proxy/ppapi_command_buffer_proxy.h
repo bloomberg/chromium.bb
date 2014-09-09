@@ -7,8 +7,10 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -20,12 +22,14 @@ namespace ppapi {
 namespace proxy {
 
 class ProxyChannel;
+class SerializedHandle;
 
 class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
                                                    public gpu::GpuControl {
  public:
   PpapiCommandBufferProxy(const HostResource& resource,
-                          ProxyChannel* channel);
+                          ProxyChannel* channel,
+                          const SerializedHandle& shared_state);
   virtual ~PpapiCommandBufferProxy();
 
   // gpu::CommandBuffer implementation:
@@ -63,7 +67,14 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   bool Send(IPC::Message* msg);
   void UpdateState(const gpu::CommandBuffer::State& state, bool success);
 
+  // Try to read an updated copy of the state from shared memory.
+  void TryUpdateState();
+
+  // The shared memory area used to update state.
+  gpu::CommandBufferSharedState* shared_state() const;
+
   State last_state_;
+  scoped_ptr<base::SharedMemory> shared_state_shm_;
 
   HostResource resource_;
   ProxyChannel* channel_;

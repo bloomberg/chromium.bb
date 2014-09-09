@@ -141,6 +141,10 @@ class CommandBufferProxyImpl
 
   GpuChannelHost* channel() const { return channel_; }
 
+  base::SharedMemoryHandle GetSharedStateHandle() const {
+    return shared_state_shm_->handle();
+  }
+
  private:
   typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;

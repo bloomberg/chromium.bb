@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_GRAPHICS_3D_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_GRAPHICS_3D_IMPL_H_
 
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
@@ -19,9 +20,11 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource share_context,
                             const int32_t* attrib_list);
-  static PP_Resource CreateRaw(PP_Instance instance,
-                               PP_Resource share_context,
-                               const int32_t* attrib_list);
+  static PP_Resource CreateRaw(
+      PP_Instance instance,
+      PP_Resource share_context,
+      const int32_t* attrib_list,
+      base::SharedMemoryHandle* shared_state_handle);
 
   // PPB_Graphics3D_API trusted implementation.
   virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) OVERRIDE;
@@ -70,7 +73,9 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
 
   bool Init(PPB_Graphics3D_API* share_context, const int32_t* attrib_list);
-  bool InitRaw(PPB_Graphics3D_API* share_context, const int32_t* attrib_list);
+  bool InitRaw(PPB_Graphics3D_API* share_context,
+               const int32_t* attrib_list,
+               base::SharedMemoryHandle* shared_state_handle);
 
   // Notifications received from the GPU process.
   void OnSwapBuffers();

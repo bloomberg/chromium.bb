@@ -119,7 +119,8 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateGraphics3DRaw(
       PP_Instance instance,
       PP_Resource share_context,
-      const int32_t* attrib_list) OVERRIDE;
+      const int32_t* attrib_list,
+      base::SharedMemoryHandle* shared_state) OVERRIDE;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateImageData(PP_Instance instance,

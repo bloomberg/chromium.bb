@@ -15,9 +15,13 @@ namespace proxy {
 
 PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     const ppapi::HostResource& resource,
-    ProxyChannel* channel)
+    ProxyChannel* channel,
+    const SerializedHandle& shared_state)
     : resource_(resource),
       channel_(channel) {
+  shared_state_shm_.reset(
+      new base::SharedMemory(shared_state.shmem(), false));
+  shared_state_shm_->Map(shared_state.size());
 }
 
 PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
@@ -36,6 +40,7 @@ gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
 
 int32 PpapiCommandBufferProxy::GetLastToken() {
   ppapi::ProxyLock::AssertAcquiredDebugOnly();
+  TryUpdateState();
   return last_state_.token;
 }
 
@@ -54,35 +59,41 @@ void PpapiCommandBufferProxy::Flush(int32 put_offset) {
 }
 
 void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  bool success = false;
-  gpu::CommandBuffer::State state;
-  if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange(
-          ppapi::API_ID_PPB_GRAPHICS_3D,
-          resource_,
-          start,
-          end,
-          &state,
-          &success)))
-    UpdateState(state, success);
+  TryUpdateState();
+  if (!InRange(start, end, last_state_.token) &&
+      last_state_.error == gpu::error::kNoError) {
+    bool success = false;
+    gpu::CommandBuffer::State state;
+    if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange(
+             ppapi::API_ID_PPB_GRAPHICS_3D,
+             resource_,
+             start,
+             end,
+             &state,
+             &success)))
+      UpdateState(state, success);
+  }
+  DCHECK(InRange(start, end, last_state_.token) ||
+         last_state_.error != gpu::error::kNoError);
 }
 
 void PpapiCommandBufferProxy::WaitForGetOffsetInRange(int32 start, int32 end) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  bool success = false;
-  gpu::CommandBuffer::State state;
-  if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
-          ppapi::API_ID_PPB_GRAPHICS_3D,
-          resource_,
-          start,
-          end,
-          &state,
-          &success)))
-    UpdateState(state, success);
+  TryUpdateState();
+  if (!InRange(start, end, last_state_.get_offset) &&
+      last_state_.error == gpu::error::kNoError) {
+    bool success = false;
+    gpu::CommandBuffer::State state;
+    if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
+             ppapi::API_ID_PPB_GRAPHICS_3D,
+             resource_,
+             start,
+             end,
+             &state,
+             &success)))
+      UpdateState(state, success);
+  }
+  DCHECK(InRange(start, end, last_state_.get_offset) ||
+         last_state_.error != gpu::error::kNoError);
 }
 
 void PpapiCommandBufferProxy::SetGetBuffer(int32 transfer_buffer_id) {
@@ -225,6 +236,16 @@ void PpapiCommandBufferProxy::UpdateState(
     last_state_.error = gpu::error::kLostContext;
     ++last_state_.generation;
   }
+}
+
+void PpapiCommandBufferProxy::TryUpdateState() {
+  if (last_state_.error == gpu::error::kNoError)
+    shared_state()->Read(&last_state_);
+}
+
+gpu::CommandBufferSharedState* PpapiCommandBufferProxy::shared_state() const {
+  return reinterpret_cast<gpu::CommandBufferSharedState*>(
+      shared_state_shm_->memory());
 }
 
 }  // namespace proxy

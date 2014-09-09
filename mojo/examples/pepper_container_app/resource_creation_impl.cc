@@ -182,7 +182,8 @@ PP_Resource ResourceCreationImpl::CreateGraphics3D(
 PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Instance instance,
     PP_Resource share_context,
-    const int32_t* attrib_list) {
+    const int32_t* attrib_list,
+    base::SharedMemoryHandle* shared_state) {
   NOTIMPLEMENTED();
   return 0;
 }

@@ -106,8 +106,10 @@ PP_Resource ResourceCreationImpl::CreateGraphics3D(PP_Instance instance,
 PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Instance instance,
     PP_Resource share_context,
-    const int32_t* attrib_list) {
-  return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list);
+    const int32_t* attrib_list,
+    base::SharedMemoryHandle* shared_state) {
+  return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list,
+                                        shared_state);
 }
 
 PP_Resource ResourceCreationImpl::CreateHostResolver(PP_Instance instance) {
