@@ -47,6 +47,11 @@ public:
         BLINK_EXPORT SafePointScope();
         BLINK_EXPORT ~SafePointScope();
     };
+
+    // These APIs are only for testing purposes and should not be used
+    // outside of tests.
+    BLINK_EXPORT static void collectGarbageForTesting();
+    BLINK_EXPORT static void collectAllGarbageForTesting();
 };
 
 } // namespace blink

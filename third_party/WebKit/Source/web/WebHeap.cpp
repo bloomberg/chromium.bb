@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebHeap.h"
 
-#include "platform/heap/ThreadState.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,6 +43,16 @@ WebHeap::SafePointScope::SafePointScope()
 WebHeap::SafePointScope::~SafePointScope()
 {
     ThreadState::current()->leaveSafePoint();
+}
+
+void WebHeap::collectGarbageForTesting()
+{
+    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+}
+
+void WebHeap::collectAllGarbageForTesting()
+{
+    Heap::collectAllGarbage();
 }
 
 } // namespace blink
