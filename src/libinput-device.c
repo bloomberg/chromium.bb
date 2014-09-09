@@ -282,6 +282,90 @@ notify_output_destroy(struct wl_listener *listener, void *data)
 	}
 }
 
+/**
+ * The WL_CALIBRATION property requires a pixel-specific matrix to be
+ * applied after scaling device coordinates to screen coordinates. libinput
+ * can't do that, so we need to convert the calibration to the normalized
+ * format libinput expects.
+ */
+static void
+evdev_device_set_calibration(struct evdev_device *device)
+{
+	struct udev *udev;
+	struct udev_device *udev_device = NULL;
+	const char *sysname = libinput_device_get_sysname(device->device);
+	const char *calibration_values;
+	uint32_t width, height;
+	float calibration[6];
+	enum libinput_config_status status;
+
+	if (!device->output)
+		return;
+
+	width = device->output->width;
+	height = device->output->height;
+	if (width == 0 || height == 0)
+		return;
+
+	/* If libinput has a pre-set calibration matrix, don't override it */
+	if (!libinput_device_config_calibration_has_matrix(device->device) ||
+	    libinput_device_config_calibration_get_default_matrix(
+							  device->device,
+							  calibration) != 0)
+		return;
+
+	udev = udev_new();
+	if (!udev)
+		return;
+
+	udev_device = udev_device_new_from_subsystem_sysname(udev,
+							     "input",
+							     sysname);
+	if (!udev_device)
+		goto out;
+
+	calibration_values =
+		udev_device_get_property_value(udev_device,
+					       "WL_CALIBRATION");
+
+	if (!calibration_values || sscanf(calibration_values,
+					  "%f %f %f %f %f %f",
+					  &calibration[0],
+					  &calibration[1],
+					  &calibration[2],
+					  &calibration[3],
+					  &calibration[4],
+					  &calibration[5]) != 6)
+		goto out;
+
+	weston_log("Applying calibration: %f %f %f %f %f %f "
+		   "(normalized %f %f)\n",
+		    calibration[0],
+		    calibration[1],
+		    calibration[2],
+		    calibration[3],
+		    calibration[4],
+		    calibration[5],
+		    calibration[2] / width,
+		    calibration[5] / height);
+
+	/* normalize to a format libinput can use. There is a chance of
+	   this being wrong if the width/height don't match the device
+	   width/height but I'm not sure how to fix that */
+	calibration[2] /= width;
+	calibration[5] /= height;
+
+	status = libinput_device_config_calibration_set_matrix(device->device,
+							       calibration);
+	if (status != LIBINPUT_CONFIG_STATUS_SUCCESS)
+		weston_log("Failed to apply calibration.\n");
+
+out:
+	if (udev_device)
+		udev_device_unref(udev_device);
+	udev_unref(udev);
+}
+
 void
 evdev_device_set_output(struct evdev_device *device,
 			struct weston_output *output)
@@ -295,6 +379,7 @@ evdev_device_set_output(struct evdev_device *device,
 	device->output_destroy_listener.notify = notify_output_destroy;
 	wl_signal_add(&output->destroy_signal,
 		      &device->output_destroy_listener);
+	evdev_device_set_calibration(device);
 }
 
 static void
@@ -318,6 +403,8 @@ configure_device(struct evdev_device *device)
 		libinput_device_config_tap_set_enabled(device->device,
 						       enable_tap);
 	}
+
+	evdev_device_set_calibration(device);
 }
 
 struct evdev_device *
