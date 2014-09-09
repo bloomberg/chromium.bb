@@ -701,7 +701,15 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   EXPECT_TRUE(accelerator.IsAltDown());
 }
 
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, ContinuePropagation) {
+//
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(dtseng): Test times out on Chrome OS debug. See http://crbug.com/412456.
+#define MAYBE_ContinuePropagation DISABLED_ContinuePropagation
+#else
+#define MAYBE_ContinuePropagation ContinuePropagation
+#endif
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ContinuePropagation) {
   // Setup the environment.
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
