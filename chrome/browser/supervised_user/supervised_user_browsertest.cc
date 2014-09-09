@@ -214,9 +214,12 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
   // On pressing the "back" button, the new tab should be closed, and we should
   // get back to the previous active tab.
   MockTabStripModelObserver observer(tab_strip);
+  base::RunLoop run_loop;
   EXPECT_CALL(observer,
-              TabClosingAt(tab_strip, tab, tab_strip->active_index()));
+              TabClosingAt(tab_strip, tab, tab_strip->active_index()))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   GoBack(tab);
+  run_loop.Run();
   EXPECT_EQ(prev_tab, tab_strip->GetActiveWebContents());
 }
 

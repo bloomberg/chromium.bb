@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,7 +32,13 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
+
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -45,11 +53,48 @@ std::string BuildAvatarImageUrl(const std::string& url, int size) {
   return result;
 }
 
-} // namespace
+class TabCloser : public content::WebContentsUserData<TabCloser> {
+  // To use, call TabCloser::CreateForWebContents.
+ private:
+  friend class content::WebContentsUserData<TabCloser>;
+
+  explicit TabCloser(WebContents* web_contents)
+      : web_contents_(web_contents), weak_ptr_factory_(this) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&TabCloser::CloseTabImpl, weak_ptr_factory_.GetWeakPtr()));
+  }
+  virtual ~TabCloser() {}
+
+  void CloseTabImpl() {
+    // On Android, FindBrowserWithWebContents and TabStripModel don't exist.
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+    DCHECK(browser);
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    DCHECK_NE(TabStripModel::kNoTab,
+              tab_strip->GetIndexOfWebContents(web_contents_));
+    if (tab_strip->count() <= 1) {
+      // Don't close the last tab in the window.
+      web_contents_->RemoveUserData(UserDataKey());
+      return;
+    }
+#endif
+    web_contents_->Close();
+  }
+
+  WebContents* web_contents_;
+  base::WeakPtrFactory<TabCloser> weak_ptr_factory_;
+};
+
+}  // namespace
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabCloser);
 
 // static
 void SupervisedUserInterstitial::Show(
-    content::WebContents* web_contents,
+    WebContents* web_contents,
     const GURL& url,
     const base::Callback<void(bool)>& callback) {
   SupervisedUserInterstitial* interstitial =
@@ -62,7 +107,7 @@ void SupervisedUserInterstitial::Show(
 }
 
 SupervisedUserInterstitial::SupervisedUserInterstitial(
-    content::WebContents* web_contents,
+    WebContents* web_contents,
     const GURL& url,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
@@ -203,6 +248,12 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                               BACK,
                               HISTOGRAM_BOUNDING_VALUE);
+
+    // Close the tab if there is no history entry to go back to.
+    DCHECK(web_contents_->GetController().GetTransientEntry());
+    if (web_contents_->GetController().GetEntryCount() == 1)
+      TabCloser::CreateForWebContents(web_contents_);
+
     interstitial_page_->DontProceed();
     return;
   }
@@ -254,11 +305,6 @@ void SupervisedUserInterstitial::OnFilteringPrefsChanged() {
 
 void SupervisedUserInterstitial::DispatchContinueRequest(
     bool continue_request) {
-  // If there is no history entry to go back to, close the tab instead.
-  int nav_entry_count = web_contents_->GetController().GetEntryCount();
-  if (!continue_request && nav_entry_count == 0)
-    web_contents_->Close();
-
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(callback_, continue_request));
 }
