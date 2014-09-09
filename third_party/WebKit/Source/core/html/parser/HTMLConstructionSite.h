@@ -92,6 +92,14 @@ enum WhitespaceMode {
     AllWhitespace,
 };
 
+enum FlushMode {
+    // Flush pending text. Flush queued tasks.
+    FlushAlways,
+
+    // Flush pending text if node has length limit. Flush queued tasks.
+    FlushIfAtTextLimit,
+};
+
 class AtomicHTMLToken;
 class Document;
 class Element;
@@ -113,16 +121,16 @@ public:
     void executeQueuedTasks();
 
     // flushPendingText turns pending text into queued Text insertions, but does not execute them.
-    void flushPendingText();
+    void flushPendingText(FlushMode);
 
     // Called before every token in HTMLTreeBuilder::processToken, thus inlined:
-    void flush()
+    void flush(FlushMode mode)
     {
         if (!hasPendingTasks())
             return;
-        flushPendingText();
+        flushPendingText(mode);
         executeQueuedTasks(); // NOTE: Possible reentrancy via JavaScript execution.
-        ASSERT(!hasPendingTasks());
+        ASSERT(mode == FlushIfAtTextLimit || !hasPendingTasks());
     }
 
     bool hasPendingTasks()
