@@ -1031,7 +1031,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   const GURL kRedirectURL("http://foo/see");
   main_test_rfh()->OnMessageReceived(
       FrameHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
-                                              1,  // pending page_id
+                                              -1,  // pending page_id
                                               kNewURL,  // old url
                                               kRedirectURL));  // new url
 
