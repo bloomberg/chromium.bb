@@ -84,6 +84,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
@@ -202,6 +203,7 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       NSFont* src_font,
       CGFontRef* container,
       uint32* font_id);
+  virtual CGColorSpaceRef displayColorSpace();
 #elif defined(OS_POSIX)
   virtual void getFallbackFontForCharacter(
       blink::WebUChar32 character,
@@ -571,6 +573,11 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   // activated, don't reactivate it here - crbug.com/72727 .
 
   return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
+}
+
+CGColorSpaceRef
+RendererWebKitPlatformSupportImpl::SandboxSupport::displayColorSpace() {
+  return base::mac::GetSystemColorSpace();
 }
 
 #elif defined(OS_ANDROID)

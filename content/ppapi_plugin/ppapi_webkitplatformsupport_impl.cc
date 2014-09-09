@@ -19,6 +19,7 @@
 #if defined(OS_WIN)
 #include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #elif defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
 #elif defined(OS_ANDROID)
 #include "third_party/WebKit/public/platform/android/WebSandboxSupport.h"
@@ -48,6 +49,7 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
 #elif defined(OS_MACOSX)
   virtual bool loadFont(
       NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
+  virtual CGColorSpaceRef displayColorSpace();
 #elif defined(OS_ANDROID)
   // Empty class.
 #elif defined(OS_POSIX)
@@ -93,6 +95,11 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   // Note: need to unlock the proxy lock like ensureFontLoaded does.
   NOTIMPLEMENTED();
   return false;
+}
+
+CGColorSpaceRef
+PpapiWebKitPlatformSupportImpl::SandboxSupport::displayColorSpace() {
+  return base::mac::GetSystemColorSpace();
 }
 
 #elif defined(OS_ANDROID)
