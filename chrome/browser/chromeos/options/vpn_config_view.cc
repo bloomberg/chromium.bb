@@ -834,12 +834,14 @@ void VPNConfigView::SetConfigProperties(
       break;
     }
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT: {
-      std::string ca_cert_pem = GetServerCACertPEM();
-      base::ListValue* pem_list = new base::ListValue;
-      if (!ca_cert_pem.empty())
-        pem_list->AppendString(ca_cert_pem);
-      properties->SetWithoutPathExpansion(shill::kL2tpIpsecCaCertPemProperty,
-                                          pem_list);
+      if (server_ca_cert_combobox_) {
+        std::string ca_cert_pem = GetServerCACertPEM();
+        base::ListValue* pem_list = new base::ListValue;
+        if (!ca_cert_pem.empty())
+          pem_list->AppendString(ca_cert_pem);
+        properties->SetWithoutPathExpansion(shill::kL2tpIpsecCaCertPemProperty,
+                                            pem_list);
+      }
       SetUserCertProperties(client_cert::CONFIG_TYPE_IPSEC, properties);
       if (!group_name.empty()) {
         properties->SetStringWithoutPathExpansion(
@@ -856,12 +858,14 @@ void VPNConfigView::SetConfigProperties(
       break;
     }
     case PROVIDER_TYPE_INDEX_OPEN_VPN: {
-      std::string ca_cert_pem = GetServerCACertPEM();
-      base::ListValue* pem_list = new base::ListValue;
-      if (!ca_cert_pem.empty())
-        pem_list->AppendString(ca_cert_pem);
-      properties->SetWithoutPathExpansion(shill::kOpenVPNCaCertPemProperty,
-                                          pem_list);
+      if (server_ca_cert_combobox_) {
+        std::string ca_cert_pem = GetServerCACertPEM();
+        base::ListValue* pem_list = new base::ListValue;
+        if (!ca_cert_pem.empty())
+          pem_list->AppendString(ca_cert_pem);
+        properties->SetWithoutPathExpansion(shill::kOpenVPNCaCertPemProperty,
+                                            pem_list);
+      }
       SetUserCertProperties(client_cert::CONFIG_TYPE_OPENVPN, properties);
       properties->SetStringWithoutPathExpansion(
           shill::kOpenVPNUserProperty, GetUsername());
