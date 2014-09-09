@@ -69,6 +69,13 @@ class FuzzyPixelComparator : public PixelComparator {
   int small_error_threshold_;
 };
 
+// All pixels can be off by one, but any more than that is an error.
+class FuzzyPixelOffByOneComparator : public FuzzyPixelComparator {
+ public:
+  explicit FuzzyPixelOffByOneComparator(bool discard_alpha)
+      : FuzzyPixelComparator(discard_alpha, 100.f, 0.f, 1.f, 1, 0) {}
+};
+
 }  // namespace cc
 
 #endif  // CC_TEST_PIXEL_COMPARATOR_H_

@@ -254,9 +254,10 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
     current_paint_.setFilterLevel(SkPaint::kLow_FilterLevel);
   }
 
-  if (quad->ShouldDrawWithBlending()) {
+  if (quad->ShouldDrawWithBlending() ||
+      quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode) {
     current_paint_.setAlpha(quad->opacity() * 255);
-    current_paint_.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    current_paint_.setXfermodeMode(quad->shared_quad_state->blend_mode);
   } else {
     current_paint_.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
@@ -545,7 +546,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     current_paint_.setRasterizer(mask_rasterizer.get());
     current_canvas_->drawRect(dest_visible_rect, current_paint_);
   } else {
-    // TODO(skaslev): Apply background filters and blend with content
+    // TODO(skaslev): Apply background filters
     current_canvas_->drawRect(dest_visible_rect, current_paint_);
   }
 }

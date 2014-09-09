@@ -161,13 +161,6 @@ typedef ::testing::Types<GLRenderer,
                          SoftwareRendererWithExpandedViewport> RendererTypes;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
-// All pixels can be off by one, but any more than that is an error.
-class FuzzyPixelOffByOneComparator : public FuzzyPixelComparator {
- public:
-  explicit FuzzyPixelOffByOneComparator(bool discard_alpha)
-    : FuzzyPixelComparator(discard_alpha, 100.f, 0.f, 1.f, 1, 0) {}
-};
-
 template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
  public:

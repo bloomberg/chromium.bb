@@ -5,6 +5,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/test/layer_tree_pixel_test.h"
+#include "cc/test/pixel_comparator.h"
 
 #if !defined(OS_ANDROID)
 
@@ -24,6 +25,11 @@ SkXfermode::Mode const kBlendModes[] = {
 const int kBlendModesCount = arraysize(kBlendModes);
 
 class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
+ public:
+  LayerTreeHostBlendingPixelTest() {
+    pixel_comparator_.reset(new FuzzyPixelOffByOneComparator(true));
+  }
+
  protected:
   void RunBlendingWithRootPixelTestType(PixelTestType type) {
     const int kLaneWidth = 15;
@@ -82,6 +88,10 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRoot_GL) {
   RunBlendingWithRootPixelTestType(GL_WITH_BITMAP);
 }
 
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRoot_Software) {
+  RunBlendingWithRootPixelTestType(SOFTWARE_WITH_BITMAP);
+}
+
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithBackgroundFilter) {
   const int kLaneWidth = 15;
   const int kLaneHeight = kBlendModesCount * kLaneWidth;
@@ -112,6 +122,10 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithBackgroundFilter) {
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithTransparent_GL) {
   RunBlendingWithTransparentPixelTestType(GL_WITH_BITMAP);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithTransparent_Software) {
+  RunBlendingWithTransparentPixelTestType(SOFTWARE_WITH_BITMAP);
 }
 
 }  // namespace
