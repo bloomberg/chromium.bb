@@ -222,9 +222,14 @@ TEST_F(FuseFsTest, OpenAndRead) {
   int bytes_read = 0;
   HandleAttr attr;
   ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  // FUSE always fills the buffer (padding with \0) unless in direct_io mode.
-  ASSERT_EQ(sizeof(buffer), bytes_read);
+  ASSERT_EQ(strlen(hello_world), bytes_read);
   ASSERT_STREQ(hello_world, buffer);
+
+  // Try to read past the end of the file.
+  attr.offs = strlen(hello_world) - 7;
+  ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(7, bytes_read);
+  ASSERT_STREQ("World!\n", buffer);
 }
 
 TEST_F(FuseFsTest, CreateAndWrite) {
@@ -241,8 +246,7 @@ TEST_F(FuseFsTest, CreateAndWrite) {
   char buffer[40] = {0};
   int bytes_read = 0;
   ASSERT_EQ(0, node->Read(attr, &buffer[0], sizeof(buffer), &bytes_read));
-  // FUSE always fills the buffer (padding with \0) unless in direct_io mode.
-  ASSERT_EQ(sizeof(buffer), bytes_read);
+  ASSERT_EQ(strlen(message), bytes_read);
   ASSERT_STREQ(message, buffer);
 }
 
@@ -349,7 +353,7 @@ TEST_F(KernelProxyFuseTest, Basic) {
 
   char buffer[30];
   memset(buffer, 0, sizeof(buffer));
-  ASSERT_EQ(sizeof(buffer), ki_read(fd, buffer, sizeof(buffer)));
+  ASSERT_EQ(sizeof(hello_world), ki_read(fd, buffer, sizeof(buffer)));
   EXPECT_STREQ(hello_world, buffer);
   EXPECT_EQ(0, ki_close(fd));
 }

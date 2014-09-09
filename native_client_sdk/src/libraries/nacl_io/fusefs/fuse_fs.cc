@@ -341,13 +341,11 @@ Error FileFuseFsNode::Read(const HandleAttr& attr,
   if (result < 0)
     return -result;
 
-  // Fuse docs say that a read() call will always completely fill the buffer
-  // (padding with zeroes) unless the direct_io filesystem flag is set.
   // TODO(binji): support the direct_io flag
   if (static_cast<size_t>(result) < count)
     memset(&cbuf[result], 0, count - result);
 
-  *out_bytes = count;
+  *out_bytes = result;
   return 0;
 }
 
@@ -365,9 +363,6 @@ Error FileFuseFsNode::Write(const HandleAttr& attr,
   if (result < 0)
     return -result;
 
-  // Fuse docs say that a write() call will always write the entire buffer
-  // unless the direct_io filesystem flag is set.
-  // TODO(binji): What should we do if the user breaks this contract? Warn?
   // TODO(binji): support the direct_io flag
   *out_bytes = result;
   return 0;
