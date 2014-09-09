@@ -188,6 +188,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic_time_based_loss_detection;
     Optional<bool> enable_quic_port_selection;
     Optional<bool> quic_always_require_handshake_confirmation;
+    Optional<bool> quic_disable_connection_pooling;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -356,6 +357,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC should always require handshake confirmation during
   // the QUIC handshake.
   static bool ShouldQuicAlwaysRequireHandshakeConfirmation(
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC should disable connection pooling.
+  static bool ShouldQuicDisableConnectionPooling(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

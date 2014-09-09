@@ -1038,6 +1038,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->enable_quic_time_based_loss_detection);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
+  globals.quic_disable_connection_pooling.CopyToIfSet(
+      &params->quic_disable_connection_pooling);
   globals.enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1153,6 +1155,8 @@ void IOThread::ConfigureQuicGlobals(
                                                quic_trial_params));
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
+    globals->quic_disable_connection_pooling.set(
+        ShouldQuicDisableConnectionPooling(quic_trial_params));
     globals->enable_quic_port_selection.set(
         ShouldEnableQuicPortSelection(command_line));
     globals->quic_connection_options =
@@ -1333,6 +1337,14 @@ bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
   return LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params,
                         "always_require_handshake_confirmation"),
+      "true");
+}
+
+// static
+bool IOThread::ShouldQuicDisableConnectionPooling(
+    const VariationParameters& quic_trial_params) {
+  return LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "disable_connection_pooling"),
       "true");
 }
 

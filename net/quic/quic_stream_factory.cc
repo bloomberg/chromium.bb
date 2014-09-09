@@ -486,6 +486,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_port_selection,
     bool enable_time_based_loss_detection,
     bool always_require_handshake_confirmation,
+    bool disable_connection_pooling,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -503,6 +504,7 @@ QuicStreamFactory::QuicStreamFactory(
       enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(
           always_require_handshake_confirmation),
+      disable_connection_pooling_(disable_connection_pooling),
       port_seed_(random_generator_->RandUint64()),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
@@ -584,6 +586,9 @@ bool QuicStreamFactory::OnResolution(
     const QuicServerId& server_id,
     const AddressList& address_list) {
   DCHECK(!HasActiveSession(server_id));
+  if (disable_connection_pooling_) {
+    return false;
+  }
   for (size_t i = 0; i < address_list.size(); ++i) {
     const IPEndPoint& address = address_list[i];
     const IpAliasKey ip_alias_key(address, server_id.is_https());

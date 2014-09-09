@@ -104,6 +104,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_port_selection,
       bool enable_time_based_loss_detection,
       bool always_require_handshake_confirmation,
+      bool disable_connection_pooling,
       const QuicTagVector& connection_options);
   virtual ~QuicStreamFactory();
 
@@ -280,6 +281,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if we always require handshake confirmation. If true, this will
   // introduce at least one RTT for the handshake before the client sends data.
   bool always_require_handshake_confirmation_;
+
+  // Set if we do not want connection pooling.
+  bool disable_connection_pooling_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that
