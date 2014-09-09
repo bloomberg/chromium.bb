@@ -3835,6 +3835,17 @@
                         '-fuse-ld=gold',
                     ],
                     'conditions': [
+                      ['gcc_version==48 and clang==0', {
+                        'cflags': [
+                          # The following 5 options are disabled to save on
+                          # binary size in GCC 4.8.
+                          '-fno-partial-inlining',
+                          '-fno-early-inlining',
+                          '-fno-tree-copy-prop',
+                          '-fno-tree-loop-optimize',
+                          '-fno-move-loop-invariants',
+                        ],
+                      }],
                       ['arm_thumb==1', {
                         'cflags': [ '-mthumb-interwork' ],
                       }],
