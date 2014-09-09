@@ -23,13 +23,13 @@ import itertools
 import json
 import multiprocessing
 import os
-import re
 import stat
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import filetype
 from chromite.lib import parseelf
+from chromite.lib import portage_util
 from chromite.scripts import lddtree
 
 
@@ -142,7 +142,7 @@ class DepTracker(object):
     json.dump(data, open(filename, 'w'))
 
 
-  def ComputeEbuildDeps(self, portage_db):
+  def ComputeEbuildDeps(self, sysroot):
     """Compute the dependencies between ebuilds and files.
 
     Iterates over the list of ebuilds in the database and annotates the files
@@ -150,54 +150,42 @@ class DepTracker(object):
     also compute the direct dependencies. Stores the information internally.
 
     Args:
-      portage_db: The path to the portage db. Usually "/var/db/pkg".
+      sysroot: The path to the sysroot, for example "/build/link".
     """
-    portage_db = portage_db.rstrip('/') + '/'
-    for basepath, _, filenames in sorted(os.walk(portage_db)):
-      if 'CONTENTS' in filenames:
-        full_path = os.path.join(basepath, 'CONTENTS')
-        pkg = basepath[len(portage_db):]
-        pkg_files = []
-        pkg_size = 0
-        for line in open(full_path):
-          line = line.split()
-          # Line format is: "type file_path [more space-separated fields]".
-          # Discard any other line without at least the first two fields. The
-          # remaining fields depend on the type.
-          if len(line) < 2:
-            continue
-          typ, file_path = line[:2]
-          # We ignore other entries like for example "dir".
-          if not typ in ('obj', 'sym'):
-            continue
-          file_path = file_path.lstrip('/')
-          # We ignore files installed in the SYSROOT that weren't copied to the
-          # image.
-          if not file_path in self._files:
-            continue
-          pkg_files.append(file_path)
-          file_data = self._files[file_path]
-          if 'ebuild' in file_data:
-            cros_build_lib.Warning('Duplicated entry for %s: %s and %',
-                                   file_path, file_data['ebuild'], pkg)
-          file_data['ebuild'] = pkg
-          pkg_size += file_data['size']
-        if pkg_files:
-          pkg_atom = pkg
-          pkg_version = None
-          m = re.match(RE_EBUILD_WITHOUT_VERSION, pkg)
-          if m:
-            pkg_atom = m.group(1)
-          m = re.match(RE_EBUILD_WITH_VERSION, pkg)
-          if m:
-            pkg_atom = m.group(1)
-            pkg_version = m.group(2)
-          self._ebuilds[pkg] = {
-              'size': pkg_size,
-              'files': len(pkg_files),
-              'atom': pkg_atom,
-              'version': pkg_version,
-          }
+    portage_db = portage_util.PortageDB(sysroot)
+    if not os.path.exists(portage_db.db_path):
+      cros_build_lib.Warning('PortageDB directory not found: %s',
+                             portage_db.db_path)
+      return
+
+    for pkg in portage_db.InstalledPackages():
+      pkg_files = []
+      pkg_size = 0
+      cpf = '%s/%s' % (pkg.category, pkg.pf)
+      for typ, rel_path in pkg.ListContents():
+        # We ignore other entries like for example "dir".
+        if not typ in (pkg.OBJ, pkg.SYM):
+          continue
+        # We ignore files installed in the SYSROOT that weren't copied to the
+        # image.
+        if not rel_path in self._files:
+          continue
+        pkg_files.append(rel_path)
+        file_data = self._files[rel_path]
+        if 'ebuild' in file_data:
+          cros_build_lib.Warning('Duplicated entry for %s: %s and %',
+                                 rel_path, file_data['ebuild'], cpf)
+        file_data['ebuild'] = cpf
+        pkg_size += file_data['size']
+      # Ignore packages that don't install any file.
+      if not pkg_files:
+        continue
+      self._ebuilds[cpf] = {
+          'size': pkg_size,
+          'files': len(pkg_files),
+          'atom': '%s/%s' % (pkg.category, pkg.package),
+          'version': pkg.version,
+      }
     # TODO(deymo): Parse dependencies between ebuilds.
 
   def ComputeELFFileDeps(self):
@@ -274,11 +262,11 @@ def ParseArgs(argv):
       '-j', '--jobs', type=int, default=multiprocessing.cpu_count(),
       help='number of simultaneous jobs.')
   parser.add_argument(
-      '--portage-db', type='path', metavar='PORTAGE_DB',
-      help='parse portage DB for ebuild information')
+      '--sysroot', type='path', metavar='SYSROOT',
+      help='parse portage DB for ebuild information from the provided sysroot.')
   parser.add_argument(
       '--json', type='path',
-      help='store information in JSON file')
+      help='store information in JSON file.')
 
   parser.add_argument(
       'root', type='path',
@@ -300,8 +288,8 @@ def main(argv):
   dt.ComputeELFFileDeps()
   dt.ComputeFileTypes()
 
-  if opts.portage_db:
-    dt.ComputeEbuildDeps(opts.portage_db)
+  if opts.sysroot:
+    dt.ComputeEbuildDeps(opts.sysroot)
 
   if opts.json:
     dt.SaveJSON(opts.json)

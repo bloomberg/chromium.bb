@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import collections
+import errno
 import filecmp
 import fileinput
 import glob
@@ -38,6 +39,9 @@ _ver = r'(?P<version>' + \
        r'((_(pre|p|beta|alpha|rc)\d*)*))' + \
        r'(-(?P<rev>r(\d+)))?)'
 _pvr_re = re.compile(r'^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
+
+# This regex matches a category name.
+_category_re = re.compile(r'^(?P<category>[\w\+\.][\w\+\.]*)$', re.VERBOSE)
 
 # This regex matches blank lines, commented lines, and the EAPI line.
 _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
@@ -767,6 +771,193 @@ class EBuild(object):
                             'to match remote repository.', overlay=overlay)
 
 
+class PortageDBException(Exception):
+  """Generic PortageDB error."""
+
+
+class PortageDB(object):
+  """Wrapper class to access the portage database located in var/db/pkg."""
+
+  def __init__(self, root='/'):
+    """Initialize the internal structure for the database in the given root.
+
+    Args:
+      root: The path to the root to inspect, for example "/build/foo".
+    """
+    self.root = root
+    self.db_path = os.path.join(root, 'var/db/pkg')
+    self._ebuilds = {}
+
+  def GetInstalledPackage(self, category, pv):
+    """Get the InstalledPackage instance for the passed package.
+
+    Args:
+      category: The category of the package. For example "chromeos-base".
+      pv: The package name with the version (and revision) of the
+          installed package. For example "libchrome-271506-r5".
+
+    Returns:
+      An InstalledPackage instance for the requested package or None if the
+      requested package is not found.
+    """
+    pkg_key = '%s/%s' % (category, pv)
+    if pkg_key in self._ebuilds:
+      return self._ebuilds[pkg_key]
+
+    # Create a new InstalledPackage instance and cache it.
+    pkgdir = os.path.join(self.db_path, category, pv)
+    try:
+      pkg = InstalledPackage(self, pkgdir, category, pv)
+    except PortageDBException:
+      return None
+    self._ebuilds[pkg_key] = pkg
+    return pkg
+
+  def InstalledPackages(self):
+    """Lists all portage packages in the database.
+
+    Returns:
+      A list of InstalledPackage instances for each package in the database.
+    """
+    ebuild_pattern = os.path.join(self.db_path, '*/*/*.ebuild')
+    packages = []
+
+    for path in glob.glob(ebuild_pattern):
+      category, pf, packagecheck = SplitEbuildPath(path)
+      if not _category_re.match(category):
+        continue
+      if pf != packagecheck:
+        continue
+      pkg_key = '%s/%s' % (category, pf)
+      if pkg_key not in self._ebuilds:
+        self._ebuilds[pkg_key] = InstalledPackage(
+            self, os.path.join(self.db_path, category, pf),
+            category, pf)
+      packages.append(self._ebuilds[pkg_key])
+
+    return packages
+
+
+class InstalledPackage(object):
+  """Wrapper class for information about an installed package.
+
+  This class accesses the information provided by var/db/pkg for an installed
+  ebuild, such as the list of files installed by this package.
+  """
+
+  # "type" constants for the ListContents() return value.
+  OBJ = 'obj'
+  SYM = 'sym'
+  DIR = 'dir'
+
+  def __init__(self, portage_db, pkgdir, category=None, pf=None):
+    """Initialize the installed ebuild wrapper.
+
+    Args:
+      portage_db: The PortageDB instance where the ebuild is installed. This
+          is used to query the database about other installed ebuilds, for
+          example, the ones listed in DEPEND, but otherwise it isn't used.
+      pkgdir: The directory where the installed package resides. This could be
+          for example a directory like "var/db/pkg/category/pf" or the
+          "build-info" directory in the portage temporary directory where
+          the package is being built.
+      category: The category of the package. If omitted, it will be loaded from
+          the package contents.
+      pf: The package and version of the package. If omitted, it will be loaded
+          from the package contents. This avoids unncessary lookup when this
+          value is known.
+
+    Raises:
+      PortageDBException if the pkgdir doesn't contain a valid package.
+    """
+    self._portage_db = portage_db
+    self.pkgdir = pkgdir
+    self._fields = {}
+    # Prepopulate the field cache with the category and pf (if provided).
+    if not category is None:
+      self._fields['CATEGORY'] = category
+    if not pf is None:
+      self._fields['PF'] = pf
+
+    if self.pf is None:
+      raise PortageDBException("Package doesn't contain package-version value.")
+
+    # Check that the ebuild is present.
+    ebuild_path = os.path.join(self.pkgdir, '%s.ebuild' % self.pf)
+    if not os.path.exists(ebuild_path):
+      raise PortageDBException("Package doesn't contain an ebuild file.")
+
+    split_pv = SplitPV(self.pf)
+    if split_pv is None:
+      raise PortageDBException('Package and version "%s" doesn\'t have a valid '
+                               'format.' % self.pf)
+    self.package = split_pv.package
+    self.version = split_pv.version
+
+  def _ReadField(self, field_name):
+    """Reads the contents of the file in the installed package directory.
+
+    Args:
+      field_name: The name of the field to read, for example, 'SLOT' or
+          'LICENSE'.
+
+    Returns:
+      A string with the contents of the file. The contents of the file are
+      cached in _fields. If the file doesn't exists returns None.
+    """
+    if field_name not in self._fields:
+      try:
+        value = osutils.ReadFile(os.path.join(self.pkgdir, field_name))
+      except IOError as e:
+        if e.errno != errno.ENOENT:
+          raise
+        value = None
+      self._fields[field_name] = value
+    return self._fields[field_name]
+
+  @property
+  def category(self):
+    return self._ReadField('CATEGORY')
+
+  @property
+  def pf(self):
+    return self._ReadField('PF')
+
+  def ListContents(self):
+    """List of files and directories installed by this package.
+
+    Returns:
+      A list of tuples (file_type, path) where the file_type is a string
+      determining the type of the installed file: InstalledPackage.OBJ (regular
+      files), InstalledPackage.SYM (symlinks) or InstalledPackage.DIR
+      (directory), and path is the relative path of the file to the root like
+      'usr/bin/ls'.
+    """
+    path = os.path.join(self.pkgdir, 'CONTENTS')
+    if not os.path.exists(path):
+      return []
+
+    result = []
+    for line in open(path):
+      line = line.strip()
+      # Line format is: "type file_path [more space-separated fields]".
+      # Discard any other line without at least the first two fields. The
+      # remaining fields depend on the type.
+      typ, data = line.split(' ', 1)
+      if typ == self.OBJ:
+        file_path, _file_hash, _mtime = data.rsplit(' ', 2)
+      elif typ == self.DIR:
+        file_path = data
+      elif typ == self.SYM:
+        file_path, _ = data.split(' -> ', 1)
+      else:
+        # Unknown type.
+        continue
+      result.append((typ, file_path.lstrip('/')))
+
+    return result
+
+
 def BestEBuild(ebuilds):
   """Returns the newest EBuild from a list of EBuild objects."""
   # pylint: disable=F0401
@@ -1019,25 +1210,20 @@ def FindWorkonProjects(packages):
 
 
 def ListInstalledPackages(sysroot):
-  """Lists all portage packages in a given portage-managed root.
+  """[DEPRECATED] Lists all portage packages in a given portage-managed root.
 
   Assumes the existence of a /var/db/pkg package database.
 
+  This function is DEPRECATED, please use PortageDB.InstalledPackages instead.
+
   Args:
-    sysroot: The root being inspected.
+    sysroot: The root directory being inspected.
 
   Returns:
     A list of (cp,v) tuples in the given sysroot.
   """
-  vdb_path = os.path.join(sysroot, 'var/db/pkg')
-  ebuild_pattern = os.path.join(vdb_path, '*/*/*.ebuild')
-  packages = []
-  for path in glob.glob(ebuild_pattern):
-    category, package, packagecheck = SplitEbuildPath(path)
-    pv = SplitPV(package)
-    if package == packagecheck and pv is not None:
-      packages.append(('%s/%s' % (category, pv.package), pv.version))
-  return packages
+  return [('%s/%s' % (pkg.category, pkg.package), pkg.version)
+          for pkg in PortageDB(sysroot).InstalledPackages()]
 
 
 def BestVisible(atom, board=None, pkg_type='ebuild',

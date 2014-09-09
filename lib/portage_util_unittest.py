@@ -747,16 +747,28 @@ class ProjectMappingTest(cros_test_lib.TestCase):
                           portage_util.FindWorkonProjects(packages))
 
 
-class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
-  """Package Database related tests."""
+class PortageDBTest(cros_test_lib.MoxTempDirTestCase):
+  """Portage package Database related tests."""
 
   fake_pkgdb = { 'category1' : [ 'package-1', 'package-2' ],
                  'category2' : [ 'package-3', 'package-4' ],
                  'category3' : [ 'invalid', 'semi-invalid' ],
+                 'with' : [ 'files-1' ],
                  'invalid' : [], }
   fake_packages = []
   build_root = None
   fake_chroot = None
+
+  fake_files = [
+      ('dir', '/lib64'),
+      ('obj', '/lib64/libext2fs.so.2.4', 'a6723f44cf82f1979e9731043f820d8c',
+       '1390848093'),
+      ('dir', '/dir with spaces'),
+      ('obj', '/dir with spaces/file with spaces',
+       'cd4865bbf122da11fca97a04dfcac258', '1390848093'),
+      ('sym', '/lib64/libe2p.so.2', '->', 'libe2p.so.2.3', '1390850489'),
+      ('foo'),
+  ]
 
   def setUp(self):
     self.build_root = self.tempdir
@@ -788,6 +800,10 @@ class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
         pv = portage_util.SplitPV(pkg)
         key = '%s/%s' % (cat, pv.package)
         self.fake_packages.append((key, pv.version))
+    # Add contents to with/files-1.
+    osutils.WriteFile(
+        os.path.join(fake_pkgdb_path, 'with', 'files-1', 'CONTENTS'),
+        ''.join(' '.join(entry) + '\n' for entry in self.fake_files))
 
   def testListInstalledPackages(self):
     """Test if listing packages installed into a root works."""
@@ -805,6 +821,51 @@ class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
     self.assertFalse(portage_util.IsPackageInstalled(
         'category1/foo',
         sysroot=self.fake_chroot))
+
+  def testListContents(self):
+    """Test if the list of installed files is properly parsed."""
+    pdb = portage_util.PortageDB(self.fake_chroot)
+    pkg = pdb.GetInstalledPackage('with', 'files-1')
+    self.assertTrue(pkg)
+    lst = pkg.ListContents()
+
+    # Check ListContents filters out the garbage we added to the list of files.
+    fake_files = [f for f in self.fake_files if f[0] in ('sym', 'obj', 'dir')]
+    self.assertEquals(len(fake_files), len(lst))
+
+    # Check the paths are all relative.
+    self.assertTrue(all(not f[1].startswith('/') for f in lst))
+
+    # Check all the files are present. We only consider file type and path, and
+    # convert the path to a relative path.
+    fake_files = [(f[0], f[1].lstrip('/')) for f in fake_files]
+    self.assertEquals(fake_files, lst)
+
+
+class InstalledPackageTest(cros_test_lib.MoxTempDirTestCase):
+  """InstalledPackage class tests outside a PortageDB."""
+
+  def setUp(self):
+    osutils.WriteFile(os.path.join(self.tempdir, 'package-1.ebuild'), 'EAPI=1')
+    osutils.WriteFile(os.path.join(self.tempdir, 'PF'), 'package-1')
+    osutils.WriteFile(os.path.join(self.tempdir, 'CATEGORY'), 'category-1')
+
+  def testOutOfDBPackage(self):
+    """Tests an InstalledPackage instance can be created without a PortageDB."""
+    pkg = portage_util.InstalledPackage(None, self.tempdir)
+    self.assertEquals('package-1', pkg.pf)
+    self.assertEquals('category-1', pkg.category)
+
+  def testIncompletePackage(self):
+    """Tests an incomplete or otherwise invalid package raises an exception."""
+    # No package name is provided.
+    os.unlink(os.path.join(self.tempdir, 'PF'))
+    self.assertRaises(portage_util.PortageDBException,
+        portage_util.InstalledPackage, None, self.tempdir)
+
+    # Check that doesn't fail when the package name is provided.
+    pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')
+    self.assertEquals('package-1', pkg.pf)
 
 
 if __name__ == '__main__':
