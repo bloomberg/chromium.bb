@@ -39,9 +39,6 @@ specific_include_rules = {
     "+extensions/shell/common",
     "+extensions/shell/renderer",
   ],
-  "athena_app_window_controller\.*": [
-    "+extensions/shell/browser",
-  ],
   "athena_content_client\.h": [
     "+extensions/shell/common",
   ],

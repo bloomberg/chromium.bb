@@ -60,7 +60,6 @@
         'browser/shell_app_delegate.h',
         'browser/shell_app_window.cc',
         'browser/shell_app_window.h',
-        'browser/shell_app_window_controller.h',
         'browser/shell_apps_client.cc',
         'browser/shell_apps_client.h',
         'browser/shell_audio_controller_chromeos.cc',

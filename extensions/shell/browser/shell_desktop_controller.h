@@ -52,7 +52,6 @@ namespace extensions {
 
 class Extension;
 class ShellAppWindow;
-class ShellAppWindowController;
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController : public DesktopController,
