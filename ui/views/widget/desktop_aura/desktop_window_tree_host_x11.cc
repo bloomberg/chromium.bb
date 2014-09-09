@@ -1249,12 +1249,19 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // HWNDMessageHandler::GetClientAreaBounds() returns an empty size when the
   // window is minimized. On Linux, returning empty size in GetBounds() or
   // SetBounds() does not work.
+  // We also propagate the minimization to the compositor, to makes sure that we
+  // don't draw any 'blank' frames that could be noticed in applications such as
+  // window manager previews, which show content even when a window is
+  // minimized.
   bool is_minimized = IsMinimized();
   if (is_minimized != was_minimized) {
-    if (is_minimized)
+    if (is_minimized) {
+      compositor()->SetVisible(false);
       content_window_->Hide();
-    else
+    } else {
       content_window_->Show();
+      compositor()->SetVisible(true);
+    }
   }
 
   if (restored_bounds_.IsEmpty()) {
