@@ -55,33 +55,11 @@ class ListenerThatExpectsOK : public IPC::Listener {
   bool received_ok_;
 };
 
-class ListenerThatShouldBeNeverCalled : public IPC::Listener {
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual void OnChannelError() OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE {
-    NOTREACHED();
-  }
-};
-
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    scoped_ptr<IPC::Channel> bootstrap(IPC::Channel::CreateClient(
-        IPCTestBase::GetChannelName(name),
-        &never_called_));
     channel_ = IPC::ChannelMojo::Create(
-        bootstrap.Pass(), IPC::Channel::MODE_CLIENT, listener,
+        IPCTestBase::GetChannelName(name), IPC::Channel::MODE_CLIENT, listener,
         main_message_loop_.message_loop_proxy());
   }
 
@@ -93,30 +71,19 @@ class ChannelClient {
 
  private:
   scoped_ptr<IPC::ChannelMojo> channel_;
-  ListenerThatShouldBeNeverCalled never_called_;
   base::MessageLoopForIO main_message_loop_;
 };
 
 class IPCChannelMojoTest : public IPCTestBase {
- public:
-  void CreateMojoChannel(IPC::Listener* listener);
-
  protected:
-  virtual void SetUp() OVERRIDE {
-    IPCTestBase::SetUp();
+  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::TaskRunner* runner) OVERRIDE {
+    return IPC::ChannelMojo::CreateFactory(
+        handle, IPC::Channel::MODE_SERVER, runner);
   }
-
-  ListenerThatShouldBeNeverCalled never_called_;
 };
 
-
-void IPCChannelMojoTest::CreateMojoChannel(IPC::Listener* listener) {
-  CreateChannel(&never_called_);
-  scoped_ptr<IPC::Channel> mojo_channel = IPC::ChannelMojo::Create(
-      ReleaseChannel(), IPC::Channel::MODE_SERVER, listener,
-      task_runner()).PassAs<IPC::Channel>();
-  SetChannel(mojo_channel.PassAs<IPC::Channel>());
-}
 
 class TestChannelListenerWithExtraExpectations
     : public IPC::TestChannelListener {
@@ -142,7 +109,7 @@ TEST_F(IPCChannelMojoTest, ConnectedFromClient) {
 
   // Set up IPC channel and start client.
   TestChannelListenerWithExtraExpectations listener;
-  CreateMojoChannel(&listener);
+  CreateChannel(&listener);
   listener.Init(sender());
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
@@ -236,7 +203,7 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
   Init("IPCChannelMojoTestSendPlatformHandleClient");
 
   ListenerThatExpectsOK listener;
-  CreateMojoChannel(&listener);
+  CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
   ASSERT_TRUE(StartClient());
 

@@ -64,5 +64,30 @@
       'conditions': [
       ],
     },
+    {
+      'target_name': 'ipc_mojo_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../ipc.gyp:ipc',
+        '../ipc.gyp:test_support_ipc',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
+        '../../base/base.gyp:test_support_base',
+        '../../base/base.gyp:test_support_perf',
+        '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../../mojo/mojo_base.gyp:mojo_system_impl',
+        '../../testing/gtest.gyp:gtest',
+        'ipc_mojo',
+      ],
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+        'ipc_mojo_perftest.cc',
+      ],
+      'conditions': [
+      ],
+    },
   ],
 }

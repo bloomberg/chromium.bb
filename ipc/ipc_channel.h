@@ -118,7 +118,7 @@ class IPC_EXPORT Channel : public Sender {
   // TODO(morrita): Replace CreateByModeForProxy() with one of above Create*().
   //
   static scoped_ptr<Channel> Create(
-      const IPC::ChannelHandle &channel_handle, Mode mode,Listener* listener);
+      const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener);
 
   static scoped_ptr<Channel> CreateClient(
       const IPC::ChannelHandle &channel_handle, Listener* listener);

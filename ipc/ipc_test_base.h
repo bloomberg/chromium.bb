@@ -12,6 +12,7 @@
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_multiprocess_test.h"
 
@@ -94,6 +95,9 @@ class IPCTestBase : public base::MultiProcessTest {
 
   const base::ProcessHandle& client_process() const { return client_process_; }
   scoped_refptr<base::TaskRunner> task_runner();
+
+  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle, base::TaskRunner* runner);
 
  private:
   std::string test_client_name_;

@@ -16,7 +16,7 @@ namespace IPC {
 // Encapsulates how a Channel is created. A ChannelFactory can be
 // passed to the constructor of ChannelProxy or SyncChannel to tell them
 // how to create underlying channel.
-class ChannelFactory {
+class IPC_EXPORT ChannelFactory {
  public:
   // Creates a factory for "native" channel built through
   // IPC::Channel::Create().

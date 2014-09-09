@@ -456,19 +456,11 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 scoped_ptr<ChannelMojo> ChannelMojo::Create(
-    scoped_ptr<Channel> bootstrap, Mode mode, Listener* listener,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  return make_scoped_ptr(new ChannelMojo(
-      bootstrap.Pass(), mode, listener, io_thread_task_runner));
-}
-
-// static
-scoped_ptr<ChannelMojo> ChannelMojo::Create(
     const ChannelHandle &channel_handle, Mode mode, Listener* listener,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  return Create(
+  return make_scoped_ptr(new ChannelMojo(
       Channel::Create(channel_handle, mode, g_null_listener.Pointer()),
-      mode, listener, io_thread_task_runner);
+      mode, listener, io_thread_task_runner));
 }
 
 // static

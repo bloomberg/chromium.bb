@@ -40,3 +40,22 @@ test("ipc_mojo_unittests") {
     "//url",
   ]
 }
+
+test("ipc_mojo_perftests") {
+  sources = [
+    "ipc_mojo_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//base/third_party/dynamic_annotations",
+    "//ipc",
+    "//ipc:test_support",
+    "//ipc/mojo",
+    "//mojo/environment:chromium",
+    "//mojo/system",
+    "//url",
+  ]
+}

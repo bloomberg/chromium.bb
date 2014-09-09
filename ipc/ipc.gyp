@@ -130,6 +130,8 @@
       'sources': [
         'ipc_multiprocess_test.cc',
         'ipc_multiprocess_test.h',
+        'ipc_perftest_support.cc',
+        'ipc_perftest_support.h',
         'ipc_test_base.cc',
         'ipc_test_base.h',
         'ipc_test_channel_listener.cc',

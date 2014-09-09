@@ -50,11 +50,6 @@ namespace IPC {
 //
 class IPC_MOJO_EXPORT ChannelMojo : public Channel {
  public:
-  // Create ChannelMojo on top of given |bootstrap| channel.
-  static scoped_ptr<ChannelMojo> Create(
-      scoped_ptr<Channel> bootstrap, Mode mode, Listener* listener,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner);
-
   // Create ChannelMojo. A bootstrap channel is created as well.
   static scoped_ptr<ChannelMojo> Create(
       const ChannelHandle &channel_handle, Mode mode, Listener* listener,

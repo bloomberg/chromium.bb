@@ -52,8 +52,8 @@ void IPCTestBase::InitWithCustomMessageLoop(
 }
 
 void IPCTestBase::CreateChannel(IPC::Listener* listener) {
-  return CreateChannelFromChannelHandle(GetChannelName(test_client_name_),
-                                        listener);
+  CreateChannelFromChannelHandle(
+      GetChannelName(test_client_name_), listener);
 }
 
 bool IPCTestBase::ConnectChannel() {
@@ -80,7 +80,8 @@ void IPCTestBase::CreateChannelFromChannelHandle(
     IPC::Listener* listener) {
   CHECK(!channel_.get());
   CHECK(!channel_proxy_.get());
-  channel_ = IPC::Channel::CreateServer(channel_handle, listener);
+  channel_ = CreateChannelFactory(
+      channel_handle, task_runner().get())->BuildChannel(listener);
 }
 
 void IPCTestBase::CreateChannelProxy(
@@ -88,10 +89,11 @@ void IPCTestBase::CreateChannelProxy(
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   CHECK(!channel_.get());
   CHECK(!channel_proxy_.get());
-  channel_proxy_ = IPC::ChannelProxy::Create(GetChannelName(test_client_name_),
-                                             IPC::Channel::MODE_SERVER,
-                                             listener,
-                                             ipc_task_runner);
+  channel_proxy_ = IPC::ChannelProxy::Create(
+      CreateChannelFactory(GetChannelName(test_client_name_),
+                           ipc_task_runner.get()),
+      listener,
+      ipc_task_runner);
 }
 
 void IPCTestBase::DestroyChannelProxy() {
@@ -134,4 +136,10 @@ bool IPCTestBase::WaitForClientShutdown() {
 
 scoped_refptr<base::TaskRunner> IPCTestBase::task_runner() {
   return message_loop_->message_loop_proxy();
+}
+
+scoped_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
+    const IPC::ChannelHandle& handle,
+    base::TaskRunner* runner) {
+  return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER);
 }
