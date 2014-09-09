@@ -56,6 +56,9 @@
 #    code. This allows a test APK to inject a Linker.TestRunner instance at
 #    runtime. Should only be used by the chromium_linker_test_apk target!!
 #  never_lint - Set to 1 to not run lint on this target.
+#  java_in_dir_suffix - To override the /src suffix on java_in_dir.
+#  app_manifest_version_name - set the apps 'human readable' version number.
+#  app_manifest_version_code - set the apps version number.
 {
   'variables': {
     'tested_apk_obfuscated_jar_path%': '/',
@@ -99,6 +102,7 @@
     'lint_result': '<(intermediate_dir)/lint_result.xml',
     'lint_config': '<(intermediate_dir)/lint_config.xml',
     'never_lint%': 0,
+    'java_in_dir_suffix%': '/src',
     'instr_stamp': '<(intermediate_dir)/instr.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
@@ -605,7 +609,7 @@
         # Java files instead of using find. (As is, this will be broken if two
         # targets use the same java_in_dir and both use java_apk.gypi or
         # both use java.gypi.)
-        'java_sources': ['>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java"  # apk)'],
+        'java_sources': ['>!@(find >(java_in_dir)>(java_in_dir_suffix) >(additional_src_dirs) -name "*.java"  # apk)'],
 
       },
       'inputs': [
@@ -657,7 +661,7 @@
     {
       'variables': {
         'src_dirs': [
-          '<(java_in_dir)/src',
+          '<(java_in_dir)<(java_in_dir_suffix)',
           '>@(additional_src_dirs)',
         ],
         'lint_jar_path': '<(jar_path)',

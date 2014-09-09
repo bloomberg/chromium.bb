@@ -218,6 +218,7 @@ v8.log
 /third_party/android_protobuf/src
 /third_party/android_tools/
 /third_party/android_tools_internal/
+/third_party/android_webview_glue/src
 /third_party/angle
 /third_party/angle_dx11
 /third_party/aosp

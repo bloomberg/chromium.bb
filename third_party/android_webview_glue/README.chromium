@@ -1,0 +1,11 @@
+Name: Android WebView Glue Layer
+Short Name: android_webview_glue
+Version: 0
+URL: https://android.googlesource.com/platform/frameworks/webview
+SOURCE CODE: git clone https://android.googlesource.com/platform/frameworks/webview.git
+Security Critical: no
+License: Apache Version 2.0
+License File: NOT_SHIPPED
+
+Description:
+The AOSP Android WebView glue layer from frameworks/webview.
