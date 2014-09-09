@@ -128,6 +128,9 @@ void FakeHostPairingController::OnUpdateStatusChanged(
     UpdateStatus update_status) {
 }
 
+void FakeHostPairingController::SetEnrollmentComplete(bool success) {
+}
+
 void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
   switch (new_stage) {
     case STAGE_WAITING_FOR_CONTROLLER: {

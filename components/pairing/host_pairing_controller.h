@@ -80,6 +80,9 @@ class HostPairingController {
   // Can be called on stage |STAGE_UPDATING|.
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) = 0;
 
+  // Called when enrollment has completed.
+  virtual void SetEnrollmentComplete(bool success) = 0;
+
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

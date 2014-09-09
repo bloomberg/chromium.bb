@@ -42,6 +42,7 @@ class FakeHostPairingController
   virtual std::string GetConfirmationCode() OVERRIDE;
   virtual std::string GetEnrollmentDomain() OVERRIDE;
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) OVERRIDE;
+  virtual void SetEnrollmentComplete(bool success) OVERRIDE;
 
  private:
   void ChangeStage(Stage new_stage);

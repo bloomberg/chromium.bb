@@ -269,9 +269,19 @@ void BluetoothHostPairingController::OnPairDevicesMessage(
   // TODO(zork,achuith): Enroll device, send error on error.
   // (http://crbug.com/374990)
   // For now, test domain is sent in the access token.
-  enrollment_domain_ = message.parameters().admin_access_token();
-  ChangeStage(STAGE_PAIRING_DONE);
-  SendHostStatus();
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    EnrollHost(message.parameters().admin_access_token()));
+}
+
+void BluetoothHostPairingController::SetEnrollmentComplete(bool success) {
+  DCHECK_EQ(current_stage_, STAGE_ENROLLING);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (success) {
+    ChangeStage(STAGE_PAIRING_DONE);
+    SendHostStatus();
+  } else {
+    AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT, kErrorEnrollmentFailed);
+  }
 }
 
 void BluetoothHostPairingController::OnCompleteSetupMessage(

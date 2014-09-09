@@ -67,6 +67,7 @@ class BluetoothHostPairingController
   virtual std::string GetConfirmationCode() OVERRIDE;
   virtual std::string GetEnrollmentDomain() OVERRIDE;
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) OVERRIDE;
+  virtual void SetEnrollmentComplete(bool success) OVERRIDE;
 
   // ProtoDecoder::Observer:
   virtual void OnHostStatusMessage(

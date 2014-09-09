@@ -11,6 +11,7 @@ extern const char* kPairingServiceUUID;
 extern const char* kPairingServiceName;
 extern const char* kDeviceNamePrefix;
 extern const char* kErrorInvalidProtocol;
+extern const char* kErrorEnrollmentFailed;
 extern const int kPairingAPIVersion;
 
 enum {

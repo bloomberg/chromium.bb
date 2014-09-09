@@ -124,6 +124,7 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
 void HostPairingScreen::EnrollHost(const std::string& auth_token) {
   // TODO(zork,achuith): Enroll device, send error on error.
   // (http://crbug.com/374990)
+  controller_->SetEnrollmentComplete(true);
 }
 
 void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {
