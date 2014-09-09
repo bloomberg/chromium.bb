@@ -219,6 +219,11 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
         return;
     }
 
+    // If the new child has been inserted inside an existent anonymous block, we can simply ignore it as the anonymous
+    // block is an already known grid item.
+    if (newChild->parent() != this)
+        return;
+
     // FIXME: Implement properly "stack" value in auto-placement algorithm.
     if (!style()->isGridAutoFlowAlgorithmStack()) {
         // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
