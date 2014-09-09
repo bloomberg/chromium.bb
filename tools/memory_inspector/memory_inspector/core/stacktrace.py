@@ -37,7 +37,7 @@ class Frame(object):
         address: the absolute (virtual) address of the stack frame in the
                  original process virtual address space.
     """
-    assert(isinstance(address, int))
+    assert(isinstance(address, (long, int)))
     self.address = address
     self.symbol = None
     self.exec_file_rel_path = None
@@ -54,7 +54,7 @@ class Frame(object):
             relative to the target device (e.g., /system/lib/libc.so).
         offset: the offset in the executable.
     """
-    assert(isinstance(offset, int))
+    assert(isinstance(offset, (long, int)))
     self.exec_file_rel_path = exec_file_rel_path
     self.offset = offset
 

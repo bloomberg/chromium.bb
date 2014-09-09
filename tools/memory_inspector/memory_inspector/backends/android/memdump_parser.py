@@ -42,7 +42,8 @@ def Parse(lines):
       An instance of |memory_map.Map|.
   """
   RE = (r'^([0-9a-f]+)-([0-9a-f]+)\s+'
-        r'([rwxps-]{4})\s*.*?'
+        r'([rwxps-]{4})\s+'
+        r'([0-9a-f]+)\s+'
         r'private_unevictable=(\d+) private=(\d+) '
         r'shared_app=(.*?) '
         r'shared_other_unevictable=(\d+) shared_other=(\d+) '
@@ -64,20 +65,23 @@ def Parse(lines):
       logging.warning('Skipping unrecognized memdump line "%s"' % line)
       continue
 
-    # TODO(primiano): proper offset handling requires a change in memdump. In
-    # the meanwhile, it should pretty safe assuming zero-offset for libs (for
-    # symbolization). Also, offsets for other mappings don't really matter.
+    start = int(m.group(1), 16)
+    end = int(m.group(2), 16) - 1 # end addr is inclusive in memdump output.
+    if (start > end):
+      # Sadly, this actually happened. Probably a kernel bug, see b/17402069.
+      logging.warning('Skipping unfeasible mmap "%s"' % line)
+      continue
     entry = memory_map.MapEntry(
-        start=int(m.group(1), 16),
-        end=int(m.group(2), 16) - 1, # end addr is inclusive in memdump output.
+        start=start,
+        end=end,
         prot_flags=m.group(3),
-        mapped_file=m.group(9),
-        mapped_offset=0)
-    entry.priv_dirty_bytes = int(m.group(4))
-    entry.priv_clean_bytes = int(m.group(5)) - entry.priv_dirty_bytes
-    entry.shared_dirty_bytes = int(m.group(7))
-    entry.shared_clean_bytes = int(m.group(8)) - entry.shared_dirty_bytes
-    entry.resident_pages = [ord(c) for c in base64.b64decode(m.group(10))]
+        mapped_file=m.group(10),
+        mapped_offset=int(m.group(4), 16))
+    entry.priv_dirty_bytes = int(m.group(5))
+    entry.priv_clean_bytes = int(m.group(6)) - entry.priv_dirty_bytes
+    entry.shared_dirty_bytes = int(m.group(8))
+    entry.shared_clean_bytes = int(m.group(9)) - entry.shared_dirty_bytes
+    entry.resident_pages = [ord(c) for c in base64.b64decode(m.group(11))]
     maps.Add(entry)
 
   return maps

@@ -34,10 +34,11 @@ _MOCK_MEMDUMP_OUT = ("""[ PID=1]
     """shared_other_unevictable=0 shared_other=0 "" [AQ==]
 40127000-40147000 rw-s 0 private_unevictable=4096 private=4096 shared_app=[] """
     """shared_other_unevictable=32768 shared_other=32768 "/X" [/////w==]
-be8b7000-be8d8000 rw-p 0 private_unevictable=8192 private=8192 shared_app=[] """
-    """shared_other_unevictable=4096 shared_other=12288 "[stack]" [AAAA4AE=]
-ffff0000-ffff1000 r-xp 0 private_unevictable=0 private=0 shared_app=[] """
-    """shared_other_unevictable=0 shared_other=0 "[vectors]" [AA==]""")
+be8b7000-be8d8000 rw-p 8 private_unevictable=8192 private=8192 shared_app=[] """
+    """shared_other_unevictable=4096 shared_other=12288 "[stack]" [//8=]
+ffff00ffff0000-ffff00ffff1000 r-xp 0 private_unevictable=0 private=0 """
+    """shared_app=[] shared_other_unevictable=0 shared_other=0 "[vectors]" []"""
+)
 
 _MOCK_DUMPHEAP_OUT = """Android Native Heap Dump v1.0
 
@@ -137,21 +138,23 @@ class AndroidBackendTest(unittest.TestCase):
     self.assertIsNotNone(mmaps.Lookup(0x32FFF))
     self.assertIsNotNone(mmaps.Lookup(0x33000))
     self.assertIsNone(mmaps.Lookup(0x6d000))
-    self.assertIsNotNone(mmaps.Lookup(0xffff0000))
+    self.assertIsNotNone(mmaps.Lookup(0xffff00ffff0000))
+    self.assertIsNone(mmaps.Lookup(0xffff0000))
 
     entry = mmaps.Lookup(0xbe8b7000)
     self.assertIsNotNone(entry)
     self.assertEqual(entry.start, 0xbe8b7000)
     self.assertEqual(entry.end, 0xbe8d7fff)
+    self.assertEqual(entry.mapped_offset, 0x8)
     self.assertEqual(entry.prot_flags, 'rw-p')
     self.assertEqual(entry.priv_dirty_bytes, 8192)
     self.assertEqual(entry.priv_clean_bytes, 0)
     self.assertEqual(entry.shared_dirty_bytes, 4096)
     self.assertEqual(entry.shared_clean_bytes, 8192)
-    for i in xrange(29):
-      self.assertFalse(entry.IsPageResident(i))
-    for i in xrange(29, 33):
+    for i in xrange(16):
       self.assertTrue(entry.IsPageResident(i))
+    for i in xrange(16, 33):
+      self.assertFalse(entry.IsPageResident(i))
 
     # Test dumpheap parsing.
     heap = processes[0].DumpNativeHeap()

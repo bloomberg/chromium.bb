@@ -23,6 +23,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -45,7 +46,16 @@ class BitSet {
   }
 
   std::string AsB64String() const {
-    std::string bits(&data_[0], data_.size());
+    // Simple optimization: strip trailing zero bytes from the bitmap.
+    // For instance, if a region has 32 pages but only the first 9 are resident,
+    // The full bitmap would be 0xff 0x01 0x00 0x00, the stripped one 0xff 0x01.
+    // It can save up to some seconds when printing large mmaps, in particular
+    // in presence of large virtual address space reservations (where none of
+    // the pages are resident).
+    size_t end = data_.size();
+    while (end > 0 && data_[end - 1] == '\0')
+      --end;
+    std::string bits(&data_[0], end);
     std::string b64_string;
     base::Base64Encode(bits, &b64_string);
     return b64_string;
@@ -79,9 +89,9 @@ struct PageCount {
 struct MemoryMap {
   std::string name;
   std::string flags;
-  uint start_address;
-  uint end_address;
-  uint offset;
+  uint64 start_address;
+  uint64 end_address;
+  uint64 offset;
   PageCount private_pages;
   // app_shared_pages[i] contains the number of pages mapped in i+2 processes
   // (only among the processes that are being analyzed).
@@ -127,23 +137,20 @@ bool ParseMemoryMapLine(const std::string& line,
   const std::string& addr_range = tokens->at(0);
   std::vector<std::string> range_tokens;
   base::SplitString(addr_range, '-', &range_tokens);
-  uint64 tmp = 0;
   const std::string& start_address_token = range_tokens.at(0);
-  if (!base::HexStringToUInt64(start_address_token, &tmp)) {
+  if (!base::HexStringToUInt64(start_address_token,
+                               &memory_map->start_address)) {
     return false;
   }
-  memory_map->start_address = static_cast<uint>(tmp);
   const std::string& end_address_token = range_tokens.at(1);
-  if (!base::HexStringToUInt64(end_address_token, &tmp)) {
+  if (!base::HexStringToUInt64(end_address_token, &memory_map->end_address)) {
     return false;
   }
-  memory_map->end_address = static_cast<uint>(tmp);
   if (tokens->at(1).size() != strlen("rwxp"))
     return false;
   memory_map->flags.swap(tokens->at(1));
-  if (!base::HexStringToUInt64(tokens->at(2), &tmp))
+  if (!base::HexStringToUInt64(tokens->at(2), &memory_map->offset))
     return false;
-  memory_map->offset = static_cast<uint>(tmp);
   memory_map->committed_pages_bits.resize(
       (memory_map->end_address - memory_map->start_address) / kPageSize);
   const int map_name_index = 5;
@@ -206,7 +213,7 @@ bool GetPagesForMemoryMap(int pagemap_fd,
     PLOG(ERROR) << "lseek";
     return false;
   }
-  for (uint addr = memory_map.start_address, page_index = 0;
+  for (uint64 addr = memory_map.start_address, page_index = 0;
        addr < memory_map.end_address;
        addr += kPageSize, ++page_index) {
     DCHECK_EQ(0, addr % kPageSize);
@@ -415,8 +422,9 @@ void DumpProcessesMemoryMapsInExtendedFormat(
       AppendAppSharedField(memory_map.app_shared_pages, &app_shared_buf);
       base::SStringPrintf(
           &buf,
-          "%x-%x %s %x private_unevictable=%d private=%d shared_app=%s "
-          "shared_other_unevictable=%d shared_other=%d \"%s\" [%s]\n",
+          "%"PRIx64"-%"PRIx64" %s %"PRIx64" private_unevictable=%d private=%d "
+          "shared_app=%s shared_other_unevictable=%d shared_other=%d "
+          "\"%s\" [%s]\n",
           memory_map.start_address,
           memory_map.end_address,
           memory_map.flags.c_str(),

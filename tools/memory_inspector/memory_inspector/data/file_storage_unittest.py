@@ -114,7 +114,7 @@ class FileStorageTest(unittest.TestCase):
     if a is None:
       return
 
-    _BASICTYPES = (int, basestring, float)
+    _BASICTYPES = (long, int, basestring, float)
     if isinstance(a, _BASICTYPES) and isinstance(b, _BASICTYPES):
       return self.assertEqual(a, b, prefix)
 
