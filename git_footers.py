@@ -81,7 +81,7 @@ def get_position(footers):
     assert match, 'Invalid git-svn-id value: %s' % svn_commit
     # Assume that any trunk svn revision will match the commit-position
     # semantics.
-    if re.match('.*/trunk/.*$', match.group(1)):
+    if re.match('.*/trunk.*$', match.group(1)):
       return ('refs/heads/master', match.group(2))
 
     # But for now only support faking branch-heads for chrome.
