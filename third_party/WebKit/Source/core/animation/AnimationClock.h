@@ -50,7 +50,7 @@ public:
 
     void updateTime(double time);
     double currentTime();
-    void resetTimeForTesting();
+    void resetTimeForTesting(double time = 0);
 
     static void notifyTaskStart() { ++s_currentTask; }
 

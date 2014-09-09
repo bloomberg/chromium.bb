@@ -43,4 +43,15 @@ test(function() {
     rafTest.done();
   });
 })();
+
+(function() {
+  var timeoutTest = async_test('document.timeline.currentTime time should use the same reference as performance.now()');
+
+  setTimeout(function() {
+    timeoutTest.step(function() {
+      assert_less_than(Math.abs(document.timeline.currentTime - performance.now()), 1000);
+    });
+    timeoutTest.done();
+  }, 0);
+})();
 </script>

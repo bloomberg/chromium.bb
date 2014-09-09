@@ -80,7 +80,7 @@ public:
 #endif
 
     bool hasPendingUpdates() const { return !m_playersNeedingUpdate.isEmpty(); }
-    double zeroTime() const { return 0; }
+    double zeroTime();
     double currentTime(bool& isNull);
     double currentTime();
     double currentTimeInternal(bool& isNull);
@@ -104,6 +104,7 @@ protected:
 
 private:
     RawPtrWillBeMember<Document> m_document;
+    double m_zeroTime;
     // AnimationPlayers which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
     WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> > m_playersNeedingUpdate;

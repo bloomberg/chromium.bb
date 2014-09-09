@@ -35,6 +35,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "platform/TraceEvent.h"
 
@@ -61,6 +62,7 @@ PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* do
 
 AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
+    , m_zeroTime(0)
 {
     if (!timing)
         m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
@@ -163,6 +165,14 @@ void AnimationTimeline::AnimationTimelineTiming::trace(Visitor* visitor)
 {
     visitor->trace(m_timeline);
     AnimationTimeline::PlatformTiming::trace(visitor);
+}
+
+double AnimationTimeline::zeroTime()
+{
+    if (!m_zeroTime && m_document && m_document->loader()) {
+        m_zeroTime = m_document->loader()->timing()->referenceMonotonicTime();
+    }
+    return m_zeroTime;
 }
 
 double AnimationTimeline::currentTime(bool& isNull)

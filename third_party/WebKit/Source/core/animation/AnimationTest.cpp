@@ -28,7 +28,7 @@ protected:
         , document(pageHolder->document())
         , element(document.createElement("foo", ASSERT_NO_EXCEPTION))
     {
-        document.animationClock().resetTimeForTesting();
+        document.animationClock().resetTimeForTesting(document.timeline().zeroTime());
         EXPECT_EQ(0, document.timeline().currentTime());
     }
 
