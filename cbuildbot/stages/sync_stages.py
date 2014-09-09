@@ -1005,7 +1005,7 @@ class PreCQLauncherStage(SyncStage):
       cmd.append('--debug')
     for patch in plan:
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number),
-              '--timeout', self.INFLIGHT_DELAY]
+              '--timeout', str(self.INFLIGHT_DELAY)]
       self._PrintPatchStatus(patch, 'testing')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
