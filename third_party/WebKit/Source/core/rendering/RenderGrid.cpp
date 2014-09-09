@@ -748,11 +748,13 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
 
 static bool sortByGridTrackGrowthPotential(const GridTrack* track1, const GridTrack* track2)
 {
-    if (track1->m_maxBreadth == infinity)
-        return track2->m_maxBreadth == infinity;
+    // This check ensures that we respect the irreflexivity property of the strict weak ordering required by std::sort
+    // (forall x: NOT x < x).
+    if (track1->m_maxBreadth == infinity && track2->m_maxBreadth == infinity)
+        return false;
 
-    if (track2->m_maxBreadth == infinity)
-        return true;
+    if (track1->m_maxBreadth == infinity || track2->m_maxBreadth == infinity)
+        return track2->m_maxBreadth == infinity;
 
     return (track1->m_maxBreadth - track1->m_usedBreadth) < (track2->m_maxBreadth - track2->m_usedBreadth);
 }
