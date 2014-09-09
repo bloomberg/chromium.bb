@@ -52,7 +52,7 @@ void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
         s_sideloadedFonts = new HashMap<String, RefPtr<SkTypeface> >;
     SkString name;
     typeface->getFamilyName(&name);
-    s_sideloadedFonts->set(name.c_str(), typeface);
+    s_sideloadedFonts->set(name.c_str(), adoptRef(typeface));
 }
 
 FontCache::FontCache()
