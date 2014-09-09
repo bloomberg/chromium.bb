@@ -369,11 +369,14 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    if revision.startswith('refs/'):
-      rev_type = "branch"
-    elif revision.startswith(self.remote + '/'):
+    remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
+    if remote_ref:
       # Rewrite remote refs to their local equivalents.
-      revision = 'refs/remotes/' + revision
+      revision = ''.join(remote_ref)
+      rev_type = "branch"
+    elif revision.startswith('refs/'):
+      # Local branch? We probably don't want to support, since DEPS should
+      # always specify branches as they are in the upstream repo.
       rev_type = "branch"
     else:
       # hash is also a tag, only make a distinction at checkout
@@ -393,10 +396,6 @@ class GitWrapper(SCMWrapper):
       except subprocess2.CalledProcessError:
         self._DeleteOrMove(options.force)
         self._Clone(revision, url, options)
-      if deps_revision and deps_revision.startswith('branch-heads/'):
-        deps_branch = deps_revision.replace('branch-heads/', '')
-        self._Capture(['branch', deps_branch, deps_revision])
-        self._Checkout(options, deps_branch, quiet=True)
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -451,12 +450,16 @@ class GitWrapper(SCMWrapper):
     # 2) current branch is tracking a remote branch with local committed
     #    changes, but the DEPS file switched to point to a hash
     #   - rebase those changes on top of the hash
-    # 3) current branch is tracking a remote branch w/or w/out changes,
-    #    no switch
+    # 3) current branch is tracking a remote branch w/or w/out changes, and
+    #    no DEPS switch
     #   - see if we can FF, if not, prompt the user for rebase, merge, or stop
-    # 4) current branch is tracking a remote branch, switches to a different
-    #    remote branch
-    #   - exit
+    # 4) current branch is tracking a remote branch, but DEPS switches to a
+    #    different remote branch, and
+    #   a) current branch has no local changes, and --force:
+    #      - checkout new branch
+    #   b) current branch has local changes, and --force and --reset:
+    #      - checkout new branch
+    #   c) otherwise exit
 
     # GetUpstreamBranch returns something like 'refs/remotes/origin/master' for
     # a tracking branch
@@ -534,17 +537,37 @@ class GitWrapper(SCMWrapper):
                           newbase=revision, printed_path=printed_path,
                           merge=options.merge)
       printed_path = True
-    elif revision.replace('heads', 'remotes/' + self.remote) != upstream_branch:
+    elif remote_ref and ''.join(remote_ref) != upstream_branch:
       # case 4
-      new_base = revision.replace('heads', 'remotes/' + self.remote)
+      new_base = ''.join(remote_ref)
       if not printed_path:
         self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
-      switch_error = ("Switching upstream branch from %s to %s\n"
+      switch_error = ("Could not switch upstream branch from %s to %s\n"
                      % (upstream_branch, new_base) +
-                     "Please merge or rebase manually:\n" +
+                     "Please use --force or merge or rebase manually:\n" +
                      "cd %s; git rebase %s\n" % (self.checkout_path, new_base) +
                      "OR git checkout -b <some new branch> %s" % new_base)
-      raise gclient_utils.Error(switch_error)
+      force_switch = False
+      if options.force:
+        try:
+          self._CheckClean(rev_str)
+          # case 4a
+          force_switch = True
+        except gclient_utils.Error as e:
+          if options.reset:
+            # case 4b
+            force_switch = True
+          else:
+            switch_error = '%s\n%s' % (e.message, switch_error)
+      if force_switch:
+        self.Print("Switching upstream branch from %s to %s" %
+                   (upstream_branch, new_base))
+        switch_branch = 'gclient_' + remote_ref[1]
+        self._Capture(['branch', '-f', switch_branch, new_base])
+        self._Checkout(options, switch_branch, force=True, quiet=True)
+      else:
+        # case 4c
+        raise gclient_utils.Error(switch_error)
     else:
       # case 3 - the default case
       if files is not None:
@@ -870,7 +893,8 @@ class GitWrapper(SCMWrapper):
       if template_dir:
         gclient_utils.rmtree(template_dir)
     self._UpdateBranchHeads(options, fetch=True)
-    self._Checkout(options, revision.replace('refs/heads/', ''), quiet=True)
+    remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
+    self._Checkout(options, ''.join(remote_ref or revision), quiet=True)
     if self._GetCurrentBranch() is None:
       # Squelch git's very verbose detached HEAD warning and use our own
       self.Print(

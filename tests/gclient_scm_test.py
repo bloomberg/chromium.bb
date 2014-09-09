@@ -1561,7 +1561,7 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     rmtree(origin_root_dir)
 
-  def testUpdateCloneOnDetachedBranch(self):
+  def testUpdateCloneOnFetchedRemoteBranch(self):
     if not self.enabled:
       return
     options = self.Options()
@@ -1593,7 +1593,7 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     rmtree(origin_root_dir)
 
-  def testUpdateCloneOnBranchHead(self):
+  def testUpdateCloneOnTrueRemoteBranch(self):
     if not self.enabled:
       return
     options = self.Options()
@@ -1618,9 +1618,17 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       '9a51244740b25fa2ded5252ca00a3178d3f665a9')
-    self.assertEquals(self.getCurrentBranch(), 'feature')
-    self.checkNotInStdout(
-      'Checked out refs/heads/feature to a detached HEAD')
+    # @refs/heads/feature is AKA @refs/remotes/origin/feature in the clone, so
+    # should be treated as such by gclient.
+    # TODO(mmoss): Though really, we should only allow DEPS to specify branches
+    # as they are known in the upstream repo, since the mapping into the local
+    # repo can be modified by users (or we might even want to change the gclient
+    # defaults at some point). But that will take more work to stop using
+    # refs/remotes/ everywhere that we do (and to stop assuming a DEPS ref will
+    # always resolve locally, like when passing them to show-ref or rev-list).
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+      'Checked out refs/remotes/origin/feature to a detached HEAD')
 
     rmtree(origin_root_dir)
 

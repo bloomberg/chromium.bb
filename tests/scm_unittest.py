@@ -98,6 +98,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'IsWorkTreeDirty',
         'MatchSvnGlob',
         'ParseGitSvnSha1',
+        'RefToRemoteRef',
         'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
@@ -121,6 +122,50 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'https://v8.googlecode.com/svn',
         'branches/*:refs/remotes/*',
         True), 'refs/remotes/bleeding_edge')
+
+  def testRefToRemoteRefNoRemote(self):
+    refs = {
+        # local ref for upstream branch-head
+        'refs/remotes/branch-heads/1234': ('refs/remotes/branch-heads/',
+                                           '1234'),
+        # upstream ref for branch-head
+        'refs/branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
+        # could be either local or upstream ref, assumed to refer to
+        # upstream, but probably don't want to encourage refs like this.
+        'branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
+        # actively discouraging refs like this, should prepend with 'refs/'
+        'remotes/branch-heads/1234': None,
+        # might be non-"branch-heads" upstream branches, but can't resolve
+        # without knowing the remote.
+        'refs/heads/1234': None,
+        'heads/1234': None,
+        # underspecified, probably intended to refer to a local branch
+        '1234': None,
+        }
+    for k, v in refs.items():
+      r = scm.GIT.RefToRemoteRef(k)
+      self.assertEqual(r, v, msg='%s -> %s, expected %s' % (k, r, v))
+
+  def testRefToRemoteRefWithRemote(self):
+    remote = 'origin'
+    refs = {
+        # This shouldn't be any different from the NoRemote() version.
+        'refs/branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
+        # local refs for upstream branch
+        'refs/remotes/%s/foobar' % remote: ('refs/remotes/%s/' % remote,
+                                            'foobar'),
+        '%s/foobar' % remote: ('refs/remotes/%s/' % remote, 'foobar'),
+        # upstream ref for branch
+        'refs/heads/foobar': ('refs/remotes/%s/' % remote, 'foobar'),
+        # could be either local or upstream ref, assumed to refer to
+        # upstream, but probably don't want to encourage refs like this.
+        'heads/foobar': ('refs/remotes/%s/' % remote, 'foobar'),
+        # underspecified, probably intended to refer to a local branch
+        'foobar': None,
+        }
+    for k, v in refs.items():
+      r = scm.GIT.RefToRemoteRef(k, remote)
+      self.assertEqual(r, v, msg='%s -> %s, expected %s' % (k, r, v))
 
 
 class RealGitTest(fake_repos.FakeReposTestBase):
