@@ -47,6 +47,8 @@ void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
   if (GetLoadedBlacklistedModules(&module_names)) {
     PathSanitizer path_sanitizer;
 
+    const bool blacklist_intialized = blacklist::IsBlacklistInitialized();
+
     std::vector<base::string16>::const_iterator module_iter(
         module_names.begin());
     for (; module_iter != module_names.end(); ++module_iter) {
@@ -60,6 +62,8 @@ void VerifyBlacklistLoadState(const AddIncidentCallback& callback) {
 
       blacklist_load->set_path(base::WideToUTF8(module_path.value()));
       // TODO(robertshield): Add computation of file digest and version here.
+
+      blacklist_load->set_blacklist_initialized(blacklist_intialized);
 
       // Send the report.
       callback.Run(incident_data.Pass());

@@ -359,6 +359,7 @@ message ClientIncidentReport {
       optional string path = 1;
       optional ClientDownloadRequest.Digests digest = 2;
       optional string version = 3;
+      optional bool blacklist_initialized = 4;
     }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
