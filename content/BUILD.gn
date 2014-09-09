@@ -12,7 +12,7 @@ config("content_implementation") {
 content_shared_components = [
   "//content/gpu",
   "//content/plugin",
-  "//content/public/browser:sources",
+  "//content/public/browser:browser_sources",
   "//content/public/child",
   "//content/public/common",
   "//content/public/plugin",

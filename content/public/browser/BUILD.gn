@@ -9,12 +9,12 @@ group("browser") {
   if (is_component_build) {
     deps = [ "//content" ]
   } else {
-    deps = [ ":sources" ]
+    deps = [ ":browser_sources" ]
   }
   forward_dependent_configs_from = deps
 }
 
-source_set("sources") {
+source_set("browser_sources") {
   if (is_ios) {
     # iOS doesn't get the normal file list and only takes these whitelisted
     # files.
@@ -40,7 +40,18 @@ source_set("sources") {
 
   deps = [
     "//content/browser",
+    "//content/public/common",
+    "//net",
     "//skia",
+    "//ui/accessibility",
+    "//ui/base",
+    "//ui/events",
+  ]
+
+  allow_circular_includes_from = [
+    # This target is a pair with content/browser. They always go together and
+    # include headers from each other.
+    "//content/browser",
   ]
 
   # We expose skia headers in the public API.

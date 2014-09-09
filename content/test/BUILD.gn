@@ -16,6 +16,7 @@ content_tests_gypi_values = exec_script(
 static_library("test_support") {
   testonly = true
   deps = [
+    "//cc/blink",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
@@ -32,6 +33,7 @@ static_library("test_support") {
     "//ui/events:test_support",
     "//ui/events:gesture_detection",
     "//ui/gfx:test_support",
+    "//ui/gl",
     "//ui/resources",
     "//url",
   ]
@@ -152,6 +154,9 @@ if (!is_ios) {
 
     deps = [
       ":test_support",
+      "//cc",
+      "//cc/blink",
+      "//content/public/common",
       "//skia",
       "//v8",
       "//ui/accessibility:ax_gen",

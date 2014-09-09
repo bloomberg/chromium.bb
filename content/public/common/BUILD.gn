@@ -15,10 +15,15 @@ source_set("common") {
 
   deps = [
     "//content/common",
+    "//net",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
+    "//ui/base",
+    "//ui/gfx",
   ]
+
+  forward_dependent_configs_from = [ "//content/common" ]
 
   if (!enable_plugins) {
     sources -= [

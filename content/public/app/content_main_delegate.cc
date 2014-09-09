@@ -4,7 +4,9 @@
 
 #include "content/public/app/content_main_delegate.h"
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 #include "content/public/browser/content_browser_client.h"
+#endif
 
 #if !defined(OS_IOS)
 #include "content/public/plugin/content_plugin_client.h"

@@ -8,6 +8,8 @@ source_set("plugin") {
   ]
 
   deps = [
+    "//base",
     "//content/plugin",
+    "//content/public/common",
   ]
 }

@@ -3,12 +3,13 @@
 # found in the LICENSE file.
 
 # Used internally to hold the sources shared between the various targets below.
-source_set("app_sources") {
+source_set("app_shared_sources") {
+  # content_main_delegate.cc has ifdefs that depend on whether the file is
+  # being used in the context of the browser or child process. So that file has
+  # to be included in the per-type targets below rather than in this shared one.
   sources = [
     "android_library_loader_hooks.h",
     "content_main.h",
-    "content_main_delegate.cc",
-    "content_main_delegate.h",
     "content_main_runner.h",
     "startup_helper_win.h",
   ]
@@ -19,6 +20,7 @@ source_set("app_sources") {
     "//base",
     "//base:i18n",
     "//content:export",
+    "//content/common",
     "//content/public/plugin",
     "//content/public/renderer",
     "//content/public/utility",
@@ -28,10 +30,17 @@ source_set("app_sources") {
 # The structure of this is like the private content/app implementation.
 if (is_component_build) {
 
-  group("app") {
+  source_set("app") {
+    sources = [
+      "content_main_delegate.cc",
+      "content_main_delegate.h",
+    ]
+
     deps = [
-      ":app_sources",
+      ":app_shared_sources",
       "//content/app",
+      "//content/common",
+      "//content/public/browser",
     ]
   }
   group("browser") {
@@ -46,22 +55,54 @@ if (is_component_build) {
 
 } else {
 
-  group("browser") {
+  source_set("browser") {
+    # See comment in "child" target.
+    check_includes = false
+    sources = [
+      "content_main_delegate.cc",
+      "content_main_delegate.h",
+    ]
     deps = [
-      ":app_sources",
-      "//content/app:browser"
+      ":app_shared_sources",
+      "//content/app:browser",
+      "//content/public/browser",
+      "//content/public/common",
     ]
   }
-  group("child") {
+  source_set("child") {
+    # content_main_delegate.cc conditionally includes content_browser_client.h
+    # from //content/public/browser when it's not the child build. However,
+    # the header checker doesn't know this doesn't apply and throws an error.
+    #
+    # TODO(brettw) either teach the header checker to understand simple
+    # ifdefs or split the file apart so we can enable header checking here.
+    # Furthermore, since this file exists in more than one target, they all
+    # have to opt-out of header checking (a file is checked once for all
+    # targets using a source file).
+    check_includes = false
+
+    sources = [
+      "content_main_delegate.cc",
+      "content_main_delegate.h",
+    ]
     deps = [
-      ":app_sources",
-      "//content/app:child"
+      ":app_shared_sources",
+      "//content/app:child",
+      "//content/public/common",
     ]
   }
-  group("both") {
+  source_set("both") {
+    # See comment in "child" target.
+    check_includes = false
+    sources = [
+      "content_main_delegate.cc",
+      "content_main_delegate.h",
+    ]
     deps = [
-      ":app_sources",
-      "//content/app:both"
+      ":app_shared_sources",
+      "//content/app:both",
+      "//content/public/browser",
+      "//content/public/common",
     ]
   }
 

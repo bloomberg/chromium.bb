@@ -27,11 +27,13 @@ source_set("browser") {
     "//content:resources",
     "//content/browser/service_worker:proto",
     "//content/browser/speech/proto",
+    "//content/public/common",
     "//crypto",
     "//google_apis",
     "//net",
     "//skia",
     "//sql",
+    "//third_party/npapi",
     "//third_party/re2",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
@@ -43,8 +45,11 @@ source_set("browser") {
     "//ui/events:gesture_detection",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/snapshot",
+    "//ui/wm",
   ]
 
   if (is_ios) {

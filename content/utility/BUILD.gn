@@ -16,6 +16,8 @@ source_set("utility") {
   deps = [
     "//base",
     "//content:export",
+    "//content/public/child",
+    "//content/public/common",
     "//courgette:courgette_lib",
     "//mojo/public/interfaces/application",
     "//third_party/WebKit/public:blink_headers",

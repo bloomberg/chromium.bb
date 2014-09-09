@@ -14,5 +14,6 @@ source_set("child") {
 
   deps = [
     "//content/child",
+    "//content/public/common",
   ]
 }
