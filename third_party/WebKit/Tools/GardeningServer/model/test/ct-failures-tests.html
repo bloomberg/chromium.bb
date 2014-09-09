@@ -14,6 +14,7 @@ found in the LICENSE file.
 
 <script>
 (function () {
+'use strict';
 
 var assert = chai.assert;
 
@@ -64,6 +65,133 @@ describe('ct-failures', function() {
 
       // Failures without a revision go to the end.
       assert(analyzer._failureByTreeListComparator('chromium', group4, group1) > 0);
+    });
+  });
+
+  describe('._mungeAlerts', function() {
+    it('puts alerts into a standard format', function() {
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      var alerts = [
+        {
+          reason: 'reason',
+          master_url: 'https://build.chromium.org/p/chromium.webkit',
+        },
+        {
+          reason: 'reason:type',
+          master_url: 'https://build.chromium.org/p/chromium.chrome',
+        },
+        {
+          master_url: 'https://build.chromium.org/p/chromium.gpu',
+        },
+        {
+          reason: 'reason:type',
+          failureType: 'actual_type',
+        },
+      ];
+      analyzer._mungeAlerts(alerts);
+      assert.lengthOf(alerts, 4);
+      assert.deepEqual(alerts[0], {
+        reason: 'reason',
+        failureType: 'FAIL',
+        master_url: 'https://build.chromium.org/p/chromium.webkit',
+        tree: 'blink',
+      });
+      assert.deepEqual(alerts[1], {
+        reason: 'reason',
+        failureType: 'type',
+        master_url: 'https://build.chromium.org/p/chromium.chrome',
+        tree: 'chromium',
+      });
+      assert.deepEqual(alerts[2], {
+        failureType: 'UNKNOWN',
+        master_url: 'https://build.chromium.org/p/chromium.gpu',
+        tree: 'chromium',
+      });
+      assert.deepEqual(alerts[3], {
+        reason: 'reason:type',
+        failureType: 'actual_type',
+        tree: undefined,
+      });
+    });
+  });
+
+  describe('.groupFailuresByTreeAndReason', function() {
+    it('groups failures', function() {
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      var linuxAnnotation = [1];
+      var winAnnotation = [2];
+      var blinkAnnotation = [3];
+      var annotations = {
+        'https_//build.chromium.org/p/chromium::Linux::1::unit_tests::MyTest': linuxAnnotation,
+        'https_//build.chromium.org/p/chromium::Win::3::unit_tests::MyTest': winAnnotation,
+        'https_//build.chromium.org/p/chromium.webkit::Linux::1::LayoutTests::MyTest': blinkAnnotation,
+      };
+      var failuresByTree = analyzer._groupFailuresByTreeAndReason([{
+        tree: 'chromium',
+        step_name: 'unit_tests',
+        reason: 'MyTest',
+        builder_name: 'Linux',
+        failureType: 'a_type',
+        failing_build: 1,
+        last_failing_build: 2,
+        failing_build_count: 2,
+        master_url: 'https://build.chromium.org/p/chromium',
+      }, {
+        tree: 'chromium',
+        step_name: 'unit_tests',
+        reason: 'MyTest',
+        builder_name: 'Win',
+        failureType: 'another_type',
+        failing_build: 3,
+        last_failing_build: 5,
+        failing_build_count: 42,
+        master_url: 'https://build.chromium.org/p/chromium',
+      }, {
+        tree: 'blink',
+        step_name: 'LayoutTests',
+        reason: 'MyTest',
+        builder_name: 'Linux',
+        failureType: 'a_type',
+        failing_build: 1,
+        last_failing_build: 2,
+        failing_build_count: 2,
+        master_url: 'https://build.chromium.org/p/chromium.webkit',
+      }], annotations);
+      assert.equal(Object.size(failuresByTree), 2);
+      assert.equal(Object.size(failuresByTree.chromium), 1);
+      assert.property(failuresByTree.chromium, '{"step":"unit_tests","reason":"MyTest"}');
+      var chromiumBuilders = failuresByTree.chromium['{"step":"unit_tests","reason":"MyTest"}'];
+      assert.equal(Object.size(chromiumBuilders), 2);
+      assert.equal(Object.size(chromiumBuilders.Linux), 7);
+      assert.propertyVal(chromiumBuilders.Linux, 'key', 'https_//build.chromium.org/p/chromium::Linux::1::unit_tests::MyTest');
+      assert.propertyVal(chromiumBuilders.Linux, 'actual', 'a_type');
+      assert.propertyVal(chromiumBuilders.Linux, 'lastFailingBuild', 2);
+      assert.propertyVal(chromiumBuilders.Linux, 'earliestFailingBuild', 1);
+      assert.propertyVal(chromiumBuilders.Linux, 'masterUrl', 'https://build.chromium.org/p/chromium');
+      assert.propertyVal(chromiumBuilders.Linux, 'failingBuildCount', 2);
+      assert.propertyVal(chromiumBuilders.Linux, 'annotation', linuxAnnotation);
+
+      assert.equal(Object.size(chromiumBuilders.Win), 7);
+      assert.propertyVal(chromiumBuilders.Win, 'key', 'https_//build.chromium.org/p/chromium::Win::3::unit_tests::MyTest');
+      assert.propertyVal(chromiumBuilders.Win, 'actual', 'another_type');
+      assert.propertyVal(chromiumBuilders.Win, 'lastFailingBuild', 5);
+      assert.propertyVal(chromiumBuilders.Win, 'earliestFailingBuild', 3);
+      assert.propertyVal(chromiumBuilders.Win, 'masterUrl', 'https://build.chromium.org/p/chromium');
+      assert.propertyVal(chromiumBuilders.Win, 'failingBuildCount', 42);
+      assert.propertyVal(chromiumBuilders.Win, 'annotation', winAnnotation);
+
+      assert.equal(Object.size(failuresByTree.blink), 1);
+      assert.property(failuresByTree.blink, '{"step":"LayoutTests","reason":"MyTest"}');
+      var blinkBuilders = failuresByTree.blink['{"step":"LayoutTests","reason":"MyTest"}'];
+      assert.equal(Object.size(blinkBuilders), 1);
+      assert.equal(Object.size(blinkBuilders.Linux), 7);
+      assert.propertyVal(blinkBuilders.Linux, 'key', 'https_//build.chromium.org/p/chromium.webkit::Linux::1::LayoutTests::MyTest');
+      assert.propertyVal(blinkBuilders.Linux, 'actual', 'a_type');
+      assert.propertyVal(blinkBuilders.Linux, 'lastFailingBuild', 2);
+      assert.propertyVal(blinkBuilders.Linux, 'earliestFailingBuild', 1);
+      assert.propertyVal(blinkBuilders.Linux, 'masterUrl', 'https://build.chromium.org/p/chromium.webkit');
+      assert.propertyVal(blinkBuilders.Linux, 'failingBuildCount', 2);
+      assert.propertyVal(blinkBuilders.Linux, 'annotation', blinkAnnotation);
     });
   });
 
@@ -203,8 +331,6 @@ describe('ct-failures', function() {
           netData.alerts.alerts[0].last_failing_build = 2490;
 
           return analyzer.update().then(function() {
-            console.log(analyzer.failures.chromium[0].data.failures[0].resultNodesByBuilder["Linux Tests (dbg)(1)"].lastFailingBuild);
-            console.log(group.data.failures[0].resultNodesByBuilder["Linux Tests (dbg)(1)"].lastFailingBuild);
             assert.strictEqual(analyzer.failures.chromium[0], group)
             assert.strictEqual(group.data.failures[0], failure)
             assert.strictEqual(failure.resultNodesByBuilder, resultNodesByBuilder);

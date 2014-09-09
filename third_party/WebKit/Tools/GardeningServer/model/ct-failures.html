@@ -40,6 +40,9 @@ function CTFailures(commitLog) {
   };
 }
 
+(function() {
+'use strict';
+
 // FIXME: This could potentially move onto CTSheriffFailureGroupData as it isn't relevant to
 // trooper failures.
 // Reverse sorting order, if a > b, return a negative number.
@@ -81,6 +84,36 @@ CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
   return 0;
 };
 
+// Updates the format of the alerts array to be easier to parse.
+CTFailures.prototype._mungeAlerts = function(alerts) {
+  var masterToTree = {};
+  Object.keys(this._trees, function(tree, masters) {
+    masters.forEach(function(master) {
+      masterToTree[master] = tree;
+    });
+  });
+
+  alerts.forEach(function(failure) {
+    // FIXME: Have the server store the actual failure type in a different
+    // field instead of smashing it into the reason.
+    if (failure.failureType) {
+      // The server has been fixed.
+    } else {
+      if (failure.reason) {
+        var parts = failure.reason.split(':');
+        failure.reason = parts[0];
+        failure.failureType = parts[1] || 'FAIL';
+      } else {
+        failure.failureType = 'UNKNOWN';
+      }
+    }
+
+    // FIXME: Figure out what tree masters that aren't in masterToTree
+    // we should have.
+    failure.tree = masterToTree[failure.master_url];
+  });
+};
+
 CTFailures.prototype.update = function() {
   var annotationPromise = CTFailureGroup.fetchAnnotations();
   return Promise.all([annotationPromise, net.json('http://sheriff-o-matic.appspot.com/alerts'),
@@ -93,10 +126,16 @@ CTFailures.prototype.update = function() {
     this.builderLatestRevisions = new CTBuilderRevisions(sheriff_data.latest_builder_info['chromium.webkit']);
     var newFailures = {};
     this.lastUpdateDate = new Date(sheriff_data.date * 1000);
+    this._mungeAlerts(sheriff_data.alerts);
+    // FIXME: Change builder_alerts to expose the alerts as a map instead of an array.
+    var alertsByKey = {}
+    sheriff_data.alerts.forEach(function(alert) {
+      alertsByKey[alert.key] = alert;
+    });
     // Update |failures| with the appropriate CTFailureGroup's for each
     // tree.
     sheriff_data.range_groups.forEach(function(rangeGroup) {
-      this._processFailuresForRangeGroup(newFailures, rangeGroup, sheriff_data.alerts, annotations);
+      this._processFailuresForRangeGroup(newFailures, rangeGroup, alertsByKey, annotations);
     }.bind(this));
     // Sort failure groups so that newer failures are shown at the top
     // of the UI.
@@ -133,83 +172,63 @@ CTFailures.prototype._processTrooperFailures = function(data) {
   this.failures['trooper'] = trooper_failures;
 };
 
-CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, rangeGroup, alerts, annotations) {
-  var masterToTree = {};
-  Object.keys(this._trees, function(tree, masters) {
-    masters.forEach(function(master) {
-      masterToTree[master] = tree;
-    });
-  });
-
-  // A rangeGroup may be related to multiple alerts (via |failure_keys|). Categorize
-  // these failures by reason (cause of failure), so that they can be grouped in the UI
-  // (via a CTFailureGroup). Failures will be grouped in |failuresByReason|.
-  var failuresByReason = {};
-  rangeGroup.failure_keys.forEach(function(failure_key) {
-    var failure = alerts.find(function(item) { return item.key == failure_key; });
+CTFailures.prototype._groupFailuresByTreeAndReason = function(failures, annotations) {
+  var failuresByTree = {};
+  failures.forEach(function(failure) {
     // Establish the key to uniquely identify a failure by reason.
-    var reason, failureType;
-    if (failure.reason) {
-      // FIXME: Store the actual failure type in a different field instead of smashing it into the reason.
-      var parts = failure.reason.split(':');
-      reason = parts[0];
-      failureType = parts[1] || 'FAIL';
-    } else {
-      reason = null;
-      failureType = 'UNKNOWN';
-    }
-
     var failureKey = CTFailure.createKey(failure);
 
     var reasonKey = JSON.stringify({
       step: failure.step_name,
-      reason: reason,
+      reason: failure.reason,
     });
 
-    // FIXME: Figure out what tree masters that aren't in masterToTree
-    // we should have.
-    var tree = masterToTree[failure.master_url];
-
     // FIXME: Use a model class instead of a dumb object.
-    if (!failuresByReason[reasonKey])
-      failuresByReason[reasonKey] = {};
-    if (!failuresByReason[reasonKey][tree])
-      failuresByReason[reasonKey][tree] = {};
-    failuresByReason[reasonKey][tree][failure.builder_name] = {
+    if (!failuresByTree[failure.tree])
+      failuresByTree[failure.tree] = {};
+    if (!failuresByTree[failure.tree][reasonKey])
+      failuresByTree[failure.tree][reasonKey] = {};
+    failuresByTree[failure.tree][reasonKey][failure.builder_name] = {
       key: failureKey,
       // FIXME: Rename to failureType.
-      actual: failureType,
+      actual: failure.failureType,
       lastFailingBuild: failure.last_failing_build,
       earliestFailingBuild: failure.failing_build,
       masterUrl: failure.master_url,
       failingBuildCount: failure.failing_build_count,
       annotation: annotations[failureKey],
     };
-  }.bind(this));
+  });
+  return failuresByTree
+};
 
-  if (!Object.keys(failuresByReason).length)
+CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, rangeGroup, alerts, annotations) {
+  // A rangeGroup may be related to multiple alerts (via |failure_keys|). Categorize
+  // these failures by reason (cause of failure), so that they can be grouped in the UI
+  // (via a CTFailureGroup).
+  var failures = rangeGroup.failure_keys.map(function(failure_key) {
+    return alerts[failure_key];
+  });
+  var failuresByTree = this._groupFailuresByTreeAndReason(failures, annotations);
+
+  if (Object.isEmpty(failuresByTree))
     return;
 
-  // Maps a tree id to a list of CTFailures in that tree.
-  var groupedFailures = {};
-  Object.keys(failuresByReason, function(reasonKey, resultsByTree) {
-    var failure = JSON.parse(reasonKey);
-    Object.keys(resultsByTree, function(tree, resultsByBuilder) {
-      if (!groupedFailures[tree])
-        groupedFailures[tree] = [];
-      groupedFailures[tree].push(
+  Object.keys(failuresByTree, function(tree, resultsByReason) {
+    var treeFailures = [];
+    Object.keys(resultsByReason, function(reasonKey, resultsByBuilder) {
+      var failure = JSON.parse(reasonKey);
+      treeFailures.push(
           new CTFailure(failure.step, failure.reason, resultsByBuilder));
     })
-  });
-
-  Object.keys(groupedFailures, function(tree, failures) {
-    failures.sort(this._failureComparator);
+    treeFailures.sort(this._failureComparator);
 
     if (!newFailures[tree])
       newFailures[tree] = [];
     var commitList = new CTCommitList(this.commitLog, rangeGroup.likely_revisions);
-    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, new CTSheriffFailureGroupData(failures, commitList)));
+    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, new CTSheriffFailureGroupData(treeFailures, commitList)));
   }.bind(this));
 };
 
+})();
 </script>
