@@ -114,6 +114,7 @@ class TabsAddedNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
 
+#if defined(ENABLE_FULL_PRINTING)
 class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
  public:
   explicit ScopedPreviewTestingDelegate(bool auto_cancel)
@@ -168,6 +169,8 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
   scoped_refptr<content::MessageLoopRunner> waiting_runner_;
   gfx::Size dialog_size_;
 };
+
+#endif  // ENABLE_FULL_PRINTING
 
 #if !defined(OS_CHROMEOS) && !defined(OS_WIN)
 bool CopyTestDataAndSetCommandLineArg(
@@ -1110,6 +1113,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
                   ->HasFocus());
 }
 
+
+#if defined(ENABLE_FULL_PRINTING)
+
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
     DISABLED_WindowDotPrintShouldBringUpPrintPreview
@@ -1159,6 +1165,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
             minimum_dialog_size.height());
   GetFirstAppWindow()->GetBaseWindow()->Close();
 }
+#endif  // ENABLE_FULL_PRINTING
 
 
 #if defined(OS_CHROMEOS)

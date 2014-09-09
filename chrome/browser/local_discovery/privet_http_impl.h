@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -193,6 +194,7 @@ class PrivetDataReadOperationImpl : public PrivetDataReadOperation,
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
 };
 
+#if defined(ENABLE_FULL_PRINTING)
 class PrivetLocalPrintOperationImpl
     : public PrivetLocalPrintOperation,
       public PrivetURLFetcher::Delegate {
@@ -282,6 +284,7 @@ class PrivetLocalPrintOperationImpl
 
   base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
 };
+#endif  // ENABLE_FULL_PRINTING
 
 class PrivetHTTPClientImpl : public PrivetHTTPClient {
  public:

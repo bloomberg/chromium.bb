@@ -21,6 +21,10 @@
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/local_discovery/pwg_raster_converter.h"
+#endif  // ENABLE_FULL_PRINTING
+
 using namespace cloud_devices::printer;
 
 namespace cloud_print {
@@ -34,6 +38,9 @@ const char kUrlPlaceHolder[] = "http://host/";
 const char kPrivetRegisterActionArgName[] = "action";
 const char kPrivetRegisterUserArgName[] = "user";
 
+const int kPrivetCancelationTimeoutSeconds = 3;
+
+#if defined(ENABLE_FULL_PRINTING)
 const char kPrivetURLKeyUserName[] = "user_name";
 const char kPrivetURLKeyClientName[] = "client_name";
 const char kPrivetURLKeyJobname[] = "job_name";
@@ -47,13 +54,11 @@ const char kPrivetContentTypeAny[] = "*/*";
 
 const char kPrivetKeyJobID[] = "job_id";
 
-const int kPrivetCancelationTimeoutSeconds = 3;
-
 const int kPrivetLocalPrintMaxRetries = 2;
-
 const int kPrivetLocalPrintDefaultTimeout = 5;
 
 const size_t kPrivetLocalPrintMaxJobNameLength = 64;
+#endif  // ENABLE_FULL_PRINTING
 
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
@@ -460,6 +465,7 @@ bool PrivetDataReadOperationImpl::OnRawData(PrivetURLFetcher* fetcher,
   return true;
 }
 
+#if defined(ENABLE_FULL_PRINTING)
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClient* privet_client,
     PrivetLocalPrintOperation::Delegate* delegate)
@@ -819,6 +825,7 @@ void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
     scoped_ptr<PWGRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = pwg_raster_converter.Pass();
 }
+#endif  // ENABLE_FULL_PRINTING
 
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(
     const std::string& name,
@@ -921,8 +928,12 @@ PrivetV1HTTPClientImpl::CreateCapabilitiesOperation(
 scoped_ptr<PrivetLocalPrintOperation>
 PrivetV1HTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
+#if defined(ENABLE_FULL_PRINTING)
   return scoped_ptr<PrivetLocalPrintOperation>(
       new PrivetLocalPrintOperationImpl(info_client(), delegate));
+#else
+  return scoped_ptr<PrivetLocalPrintOperation>();
+#endif  // ENABLE_FULL_PRINTING
 }
 
 }  // namespace local_discovery

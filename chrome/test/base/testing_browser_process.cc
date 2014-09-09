@@ -266,7 +266,7 @@ bool TestingBrowserProcess::IsShuttingDown() {
 }
 
 printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINTING)
   if (!print_job_manager_.get())
     print_job_manager_.reset(new printing::PrintJobManager());
   return print_job_manager_.get();

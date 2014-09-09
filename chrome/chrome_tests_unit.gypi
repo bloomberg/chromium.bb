@@ -2268,9 +2268,6 @@
             ['exclude', '^common/service_'],
             ['exclude', '^service/'],
           ],
-          'sources!': [
-            'browser/local_discovery/privet_http_unittest.cc',
-          ],
         }],
         ['enable_captive_portal_detection!=1', {
           'sources/': [

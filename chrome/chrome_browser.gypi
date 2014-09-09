@@ -1854,8 +1854,6 @@
     ],
     # Used on top of the "basic" sources when enable_printing == 1 (full).
     'chrome_browser_full_printing_sources': [
-      'browser/local_discovery/privet_http_impl.cc',
-      'browser/local_discovery/privet_http_impl.h',
       'browser/local_discovery/pwg_raster_converter.cc',
       'browser/local_discovery/pwg_raster_converter.h',
       'browser/printing/background_printing_manager.cc',
@@ -2388,6 +2386,8 @@
       'browser/local_discovery/privet_http_asynchronous_factory.h',
       'browser/local_discovery/privet_http_asynchronous_factory_mac.cc',
       'browser/local_discovery/privet_http_asynchronous_factory_mac.h',
+      'browser/local_discovery/privet_http_impl.cc',
+      'browser/local_discovery/privet_http_impl.h',
       'browser/local_discovery/privet_local_printer_lister.cc',
       'browser/local_discovery/privet_local_printer_lister.h',
       'browser/local_discovery/privet_notifications.cc',

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
-#include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "net/base/host_port_pair.h"
 
 namespace base {
@@ -26,6 +25,7 @@ class PdfRenderSettings;
 
 namespace local_discovery {
 
+class PWGRasterConverter;
 class PrivetHTTPClient;
 
 // Represents a simple request that returns pure JSON.
@@ -208,7 +208,6 @@ class PrivetV1HTTPClient {
   // Creates operation to submit print job to local printer.
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
-
 };
 
 }  // namespace local_discovery

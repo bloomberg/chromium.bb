@@ -253,10 +253,12 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::TabContentsInformation())));
+#if defined(ENABLE_FULL_PRINTING)
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::PrintingInformation())));
+#endif  // ENABLE_FULL_PRINTING
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(

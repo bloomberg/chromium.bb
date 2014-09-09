@@ -24,11 +24,11 @@
 #endif
 
 #if defined(ENABLE_FULL_PRINTING)
-#include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/common/service_messages.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
+#include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/common/print_messages.h"
 #endif
 

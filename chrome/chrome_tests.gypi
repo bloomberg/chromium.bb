@@ -2078,6 +2078,7 @@
             ['exclude', '^browser/printing/cloud_print/test/.*'],
             ['exclude', '^browser/printing/print_preview_dialog_controller_browsertest.cc'],
             ['exclude', '^browser/printing/print_preview_pdf_generated_browsertest.cc'],
+            ['exclude', '^browser/service_process/service_process_control_browsertest.cc'],
             ['exclude', '^browser/ui/webui/print_preview/print_preview_ui_browsertest.cc'],
             ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
             ['exclude', '^test/data/webui/print_preview.cc'],

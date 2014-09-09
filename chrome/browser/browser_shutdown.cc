@@ -24,7 +24,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -45,6 +44,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/service_process/service_process_control.h"
 #endif
 
 using base::Time;
@@ -140,9 +143,10 @@ bool ShutdownPreThreadsStop() {
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
       "BrowserShutdownStarted", false);
 #endif
-
+#if defined(ENABLE_FULL_PRINTING)
   // Shutdown the IPC channel to the service processes.
   ServiceProcessControl::GetInstance()->Disconnect();
+#endif  // ENABLE_FULL_PRINTING
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,

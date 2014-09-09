@@ -208,7 +208,6 @@ extern const char kChromeUIProfileSigninConfirmationHost[];
 extern const char kChromeUIProvidedFileSystemsHost[];
 extern const char kChromeUIUserManagerHost[];
 extern const char kChromeUIPredictorsHost[];
-extern const char kChromeUIPrintHost[];
 extern const char kChromeUIProfilerHost[];
 extern const char kChromeUIQuotaInternalsHost[];
 extern const char kChromeUIQuitHost[];
@@ -245,6 +244,10 @@ extern const char kChromeUIWorkersHost[];
 
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
+
+#if defined(ENABLE_FULL_PRINTING)
+extern const char kChromeUIPrintHost[];
+#endif  // ENABLE_FULL_PRINTING
 
 #if defined(OS_ANDROID)
 extern const char kChromeUIWelcomeHost[];
