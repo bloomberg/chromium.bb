@@ -35,6 +35,25 @@ PendingScript::~PendingScript()
 {
 }
 
+void PendingScript::watchForLoad(ResourceClient* client)
+{
+    ASSERT(!m_watchingForLoad);
+    ASSERT(!resource()->isLoaded());
+    // addClient() will call notifyFinished() if the load is complete. Callers
+    // do not expect to be re-entered from this call, so they should not become
+    // a client of an already-loaded Resource.
+    resource()->addClient(client);
+    m_watchingForLoad = true;
+}
+
+void PendingScript::stopWatchingForLoad(ResourceClient* client)
+{
+    if (resource() && m_watchingForLoad) {
+        resource()->removeClient(client);
+        m_watchingForLoad = false;
+    }
+}
+
 PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
 {
     setScriptResource(0);
@@ -55,6 +74,17 @@ void PendingScript::notifyFinished(Resource*)
 void PendingScript::trace(Visitor* visitor)
 {
     visitor->trace(m_element);
+}
+
+ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOccurred) const
+{
+    if (resource()) {
+        errorOccurred = resource()->errorOccurred();
+        ASSERT(resource()->isLoaded());
+        return ScriptSourceCode(resource());
+    }
+    errorOccurred = false;
+    return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
 }
 
 }

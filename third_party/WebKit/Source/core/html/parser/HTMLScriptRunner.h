@@ -88,11 +88,7 @@ private:
 
     void runScript(Element*, const TextPosition& scriptStartPosition);
 
-    // Helpers for dealing with HTMLScriptRunnerHost
-    void watchForLoad(PendingScript&);
-    void stopWatchingForLoad(PendingScript&);
     bool isPendingScriptReady(const PendingScript&);
-    ScriptSourceCode sourceFromPendingScript(const PendingScript&, bool& errorOccurred) const;
 
     RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;

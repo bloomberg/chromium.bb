@@ -26,6 +26,7 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
@@ -87,8 +88,8 @@ public:
     TextPosition startingPosition() const { return m_startingPosition; }
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
 
-    bool watchingForLoad() const { return m_watchingForLoad; }
-    void setWatchingForLoad(bool b) { m_watchingForLoad = b; }
+    void watchForLoad(ResourceClient*);
+    void stopWatchingForLoad(ResourceClient*);
 
     Element* element() const { return m_element.get(); }
     void setElement(Element* element) { m_element = element; }
@@ -99,6 +100,8 @@ public:
     virtual void notifyFinished(Resource*);
 
     void trace(Visitor*);
+
+    ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
 private:
     bool m_watchingForLoad;
