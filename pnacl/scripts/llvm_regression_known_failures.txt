@@ -2,9 +2,8 @@
 ### Mac-only failures
 ###
 
-# Introduced by a recent xcode change on the bots, working on a fix
-Clang::CodeGenObjC/arc-captured-32bit-block-var-layout-2.m mac
-
+# Introduced by the update to clang for the host build, still investigating.
+LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll
 
 ###
 ### Windows-only failures

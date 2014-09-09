@@ -81,6 +81,10 @@ CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
 MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
+CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
+                            'llvm-build', 'Release+Asserts', 'bin', 'clang')
+CHROME_CLANGXX = CHROME_CLANG + '++'
+
 ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
               'x86-32-nonsfi', 'arm-nonsfi')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
@@ -94,16 +98,25 @@ def TripleIsWindows(t):
 def TripleIsCygWin(t):
   return fnmatch.fnmatch(t, '*-cygwin*')
 
+def TripleIsLinux(t):
+  return fnmatch.fnmatch(t, '*-linux*')
+
+def TripleIsMac(t):
+  return fnmatch.fnmatch(t, '*-darwin*')
+
+def TripleIsX8664(t):
+  return fnmatch.fnmatch(t, 'x86_64*')
+
 
 # Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
 # toolchains
 def CompilersForHost(host):
   compiler = {
       # For now we only do native builds for linux and mac
-      'i686-linux': ('gcc', 'g++'), # treat 32-bit linux like a native build
-      'x86_64-linux': ('gcc', 'g++'),
-      # TODO(dschuff): switch to clang on mac
-      'x86_64-apple-darwin': ('gcc', 'g++'),
+      # treat 32-bit linux like a native build
+      'i686-linux': (CHROME_CLANG, CHROME_CLANGXX),
+      'x86_64-linux': (CHROME_CLANG, CHROME_CLANGXX),
+      'x86_64-apple-darwin': (CHROME_CLANG, CHROME_CLANGXX),
       # Windows build should work for native and cross
       'i686-w64-mingw32': ('i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++'),
       # TODO: add arm-hosted support
@@ -111,6 +124,8 @@ def CompilersForHost(host):
   }
   return compiler[host]
 
+def GSDJoin(*args):
+  return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
 # Return the host of the default toolchain to build target libraries with.
 def DefaultHostForTargetLibs():
@@ -120,7 +135,9 @@ def DefaultHostForTargetLibs():
   return tools[pynacl.platform.GetOS()]
 
 
-def ConfigureHostArchFlags(host):
+def ConfigureHostArchFlags(host, extra_cflags=[]):
+  """ Return flags passed to LLVM and binutils configure for compilers and
+  compile flags. """
   configure_args = []
   extra_cc_args = []
 
@@ -133,17 +150,15 @@ def ConfigureHostArchFlags(host):
       # build for our purposes. But it's not what config.guess will yield, so
       # use --build to force it and make sure things build correctly.
       configure_args.append('--build=' + host)
-      extra_cc_args = ['-m32']
     else:
       configure_args.append('--host=' + host)
+  if TripleIsLinux(host) and not TripleIsX8664(host):
+    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
+    extra_cc_args = ['-m32']
 
   extra_cxx_args = list(extra_cc_args)
 
   cc, cxx = CompilersForHost(host)
-
-  if is_cross:
-    # LLVM's linux->mingw cross build needs this
-    configure_args.append('CC_FOR_BUILD=gcc')
 
   configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
   configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
@@ -156,17 +171,41 @@ def ConfigureHostArchFlags(host):
     configure_args.extend(['LDFLAGS=-L%(abs_libdl)s -ldl',
                            'CFLAGS=-isystem %(abs_libdl)s',
                            'CXXFLAGS=-isystem %(abs_libdl)s'])
+    if is_cross:
+      # LLVM's linux->mingw cross build needs this
+      configure_args.append('CC_FOR_BUILD=gcc')
+  else:
+    configure_args.extend(
+      ['CFLAGS=' + ' '.join(extra_cflags),
+       'LDFLAGS=-L%(' + GSDJoin('abs_libcxx', host) + ')s/lib',
+       'CXXFLAGS=-stdlib=libc++ -I%(' + GSDJoin('abs_libcxx', host) +
+         ')s/include/c++/v1 ' + ' '.join(extra_cflags)])
+
   return configure_args
 
 
-def CmakeHostArchFlags(host, options):
+def LibCxxHostArchFlags(host):
+  cc, cxx = CompilersForHost(host)
   cmake_flags = []
-  if options.clang:
-    cc ='%(abs_top_srcdir)s/../third_party/llvm-build/Release+Asserts/bin/clang'
-    cxx = cc + '++'
-  else:
-    cc, cxx = CompilersForHost(host)
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
+  if TripleIsLinux(host) and not TripleIsX8664(host):
+    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
+    cmake_flags.extend(['-DCMAKE_C_FLAGS=-m32',
+                        '-DCMAKE_CXX_FLAGS=-m32'])
+  return cmake_flags
+
+def CmakeHostArchFlags(host, options):
+  """ Set flags passed to LLVM cmake for compilers and compile flags. """
+  cmake_flags = []
+  cc, cxx = CompilersForHost(host)
+
+  cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
+
+  # There seems to be a bug in chrome clang where it exposes the msan interface
+  # (even when compiling without msan) but then does not link with an
+  # msan-enabled compiler_rt, leaving references to __msan_allocated_memory
+  # undefined.
+  cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
 
   if pynacl.platform.IsLinux64() and pynacl.platform.PlatformTriple() != host:
     # Currently the only supported "cross" build is 64-bit Linux to 32-bit
@@ -182,6 +221,7 @@ def CmakeHostArchFlags(host, options):
                         for c in ('C', 'CXX')])
     cmake_flags.append('-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=%s' %
                        options.sanitize)
+
   return cmake_flags
 
 
@@ -210,7 +250,6 @@ def MakeCommand(host):
 
 
 def CopyWindowsHostLibs(host):
-
   if not TripleIsWindows(host) and not TripleIsCygWin(host):
     return []
 
@@ -261,6 +300,16 @@ def GetGitSyncCmdsCallback(revisions):
 
 def HostToolsSources(GetGitSyncCmds):
   sources = {
+      'libcxx_src': {
+          'type': 'source',
+          'output_dirname': 'libcxx',
+          'commands': GetGitSyncCmds('libcxx'),
+      },
+      'libcxxabi_src': {
+          'type': 'source',
+          'output_dirname': 'libcxxabi',
+          'commands': GetGitSyncCmds('libcxxabi'),
+      },
       'binutils_pnacl_src': {
           'type': 'source',
           'output_dirname': 'binutils',
@@ -287,6 +336,8 @@ def HostToolsSources(GetGitSyncCmds):
   }
   return sources
 
+def HostSubdir(host):
+  return 'host_x86_64' if TripleIsX8664(host) else 'host_x86_32'
 
 def TestsuiteSources(GetGitSyncCmds):
   sources = {
@@ -299,7 +350,22 @@ def TestsuiteSources(GetGitSyncCmds):
   return sources
 
 
+def CopyHostLibcxxForLLVMBuild(host, dest):
+  """Copy libc++ to the working directory for build tools."""
+  if TripleIsLinux(host):
+    libname = 'libc++.so.1'
+  elif TripleIsMac(host):
+    libname = 'libc++.1.dylib'
+  else:
+    return []
+  return [command.Mkdir(dest, parents=True),
+          command.Copy('%(' + GSDJoin('abs_libcxx', host) +')s/lib/' + libname,
+                       os.path.join(dest, libname))]
+
 def HostLibs(host):
+  def H(component_name):
+    # Return a package name for a component name with a host triple.
+    return GSDJoin(component_name, host)
   libs = {}
   if TripleIsWindows(host):
     if pynacl.platform.IsWindows():
@@ -327,19 +393,38 @@ def HostLibs(host):
           ],
       },
     })
+  else:
+    libs.update({
+        H('libcxx'): {
+            'dependencies': ['libcxx_src', 'libcxxabi_src'],
+            'type': 'build',
+            'output_subdir': HostSubdir(host),
+            'commands': [
+                command.SkipForIncrementalCommand([
+                    'cmake', '-G', 'Unix Makefiles'] +
+                     LibCxxHostArchFlags(host) +
+                     ['-DLIBCXX_CXX_ABI=libcxxabi',
+                      '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
+                          '%(abs_libcxxabi_src)s', 'include'),
+                      '-DLIBCXX_ENABLE_SHARED=ON',
+                      '-DCMAKE_INSTALL_PREFIX=',
+                      '-DCMAKE_INSTALL_NAME_DIR=@executable_path/../lib',
+                      '%(libcxx_src)s']),
+                command.Command(MakeCommand(host) + ['VERBOSE=1']),
+                command.Command(MAKE_DESTDIR_CMD + ['VERBOSE=1', 'install']),
+            ],
+        },
+    })
   return libs
 
 
-def IsHost64(host):
-  return fnmatch.fnmatch(host, 'x86_64*')
-
 def HostSubdir(host):
-  return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
+  return 'host_x86_64' if TripleIsX8664(host) else 'host_x86_32'
 
 def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
-    return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
+    return GSDJoin(component_name, host)
   def BinSubdir(host):
     return 'bin64' if host == 'x86_64-linux' else 'bin'
   # Return the file name with the appropriate suffix for an executable file.
@@ -348,6 +433,11 @@ def HostTools(host, options):
       return file + '.exe'
     else:
       return file
+  # Binutils still has some warnings when building with clang
+  warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
+                   '-Wno-unused-function', '-Wno-unused-const-variable',
+                   '-Wno-unneeded-internal-declaration',
+                   '-Wno-unused-private-field', '-Wno-format-security']
   tools = {
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
@@ -357,7 +447,7 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(binutils_pnacl_src)s/configure'] +
-                  ConfigureHostArchFlags(host) +
+                  ConfigureHostArchFlags(host, warning_flags) +
                   ['--prefix=',
                   '--disable-silent-rules',
                   '--target=arm-pc-nacl',
@@ -387,10 +477,11 @@ def HostTools(host, options):
                 pnacl_commands.InstallDriverScripts,
                 '%(src)s', '%(output)s',
                 host_windows=TripleIsWindows(host) or TripleIsCygWin(host),
-                host_64bit=IsHost64(host))
+                host_64bit=TripleIsX8664(host))
         ],
       },
   }
+
   llvm_cmake = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
@@ -403,7 +494,9 @@ def HostTools(host, options):
                   ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
+                  '-DLLVM_ENABLE_LIBCXX=ON',
                   '-DBUILD_SHARED_LIBS=ON',
+                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '-DLLVM_ENABLE_ASSERTIONS=ON',
                   '-DLLVM_ENABLE_ZLIB=OFF',
                   '-DLLVM_BUILD_TESTS=ON',
@@ -438,8 +531,11 @@ def HostTools(host, options):
                    '--enable-targets=x86,arm,mips',
                    '--program-prefix=',
                    '--enable-optimized',
-                   '--with-clang-srcdir=%(abs_clang_src)s']),
-              command.Command(MakeCommand(host) + [
+                   '--with-clang-srcdir=%(abs_clang_src)s'])] +
+              CopyHostLibcxxForLLVMBuild(
+                  host,
+                  os.path.join('Release+Asserts', 'lib')) +
+              [command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
@@ -461,12 +557,16 @@ def HostTools(host, options):
   if TripleIsWindows(host):
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
+  else:
+    tools[H('binutils_pnacl')]['dependencies'].append(H('libcxx'))
+    tools[H('llvm')]['dependencies'].append(H('libcxx'))
   return tools
 
 
 def TargetLibCompiler(host):
   def H(component_name):
-    return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
+    return GSDJoin(component_name, host)
+  host_lib = 'libdl' if TripleIsWindows(host) else H('libcxx')
   compiler = {
       # Because target_lib_compiler is not a memoized target, its name doesn't
       # need to have the host appended to it (it can be different on different
@@ -475,20 +575,18 @@ def TargetLibCompiler(host):
       'target_lib_compiler': {
           'type': 'work',
           'output_subdir': 'target_lib_compiler',
-          'dependencies': [ H('binutils_pnacl'), H('llvm') ],
+          'dependencies': [ H('binutils_pnacl'), H('llvm'), host_lib ],
           'inputs': { 'driver': PNACL_DRIVER_DIR },
           'commands': [
               command.CopyRecursive(
-                  '%(' + H('llvm') + ')s',
-                  os.path.join('%(output)s', HostSubdir(host))),
-              command.CopyRecursive(
-                  '%(' + H('binutils_pnacl') + ')s',
-                  os.path.join('%(output)s', HostSubdir(host))),
+                  '%(' + t + ')s',
+                  os.path.join('%(output)s', HostSubdir(host)))
+              for t in [H('llvm'), H('binutils_pnacl'), host_lib]] + [
               command.Runnable(
                   None, pnacl_commands.InstallDriverScripts,
                   '%(driver)s', os.path.join('%(output)s', 'bin'),
                   host_windows=TripleIsWindows(host) or TripleIsCygWin(host),
-                  host_64bit=IsHost64(host))
+                  host_64bit=TripleIsX8664(host))
           ]
       },
   }
@@ -621,6 +719,8 @@ def GetUploadPackageTargets():
         ['binutils_pnacl_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
+    if os_name != 'win':
+      host_packages[os_name].append('libcxx_%s' % legal_triple)
 
   # Unsandboxed target IRT libraries
   for os_name in ('linux', 'mac'):
@@ -651,9 +751,8 @@ if __name__ == '__main__':
                       dest='enable_llvm_assertions', default=True)
   parser.add_argument('--cmake', action='store_true', default=False,
                       help="Use LLVM's cmake ninja build instead of autoconf")
-  parser.add_argument('--clang', action='store_true', default=False,
-                      help="Use clang instead of gcc with LLVM's cmake build")
-  parser.add_argument('--sanitize', choices=['address', 'thread', 'undefined'],
+  parser.add_argument('--sanitize', choices=['address', 'thread', 'memory',
+                                             'undefined'],
                       help="Use a sanitizer with LLVM's clang cmake build")
   parser.add_argument('--testsuite-sync', action='store_true', default=False,
                       help=('Sync the sources for the LLVM testsuite. '
@@ -666,9 +765,6 @@ if __name__ == '__main__':
 
   if args.sanitize and not args.cmake:
     print 'Use of sanitizers requires a cmake build'
-    sys.exit(1)
-  if args.clang and not args.cmake:
-    print 'Use of clang is currently only supported with cmake/ninja'
     sys.exit(1)
 
 

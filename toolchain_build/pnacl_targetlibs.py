@@ -218,16 +218,6 @@ def TargetLibsSrc(GitSyncCmds):
               for header in ('pthread.h', 'semaphore.h')
        ]
       },
-      'libcxx_src': {
-          'type': 'source',
-          'output_dirname': 'libcxx',
-          'commands': GitSyncCmds('libcxx'),
-      },
-      'libcxxabi_src': {
-          'type': 'source',
-          'output_dirname': 'libcxxabi',
-          'commands': GitSyncCmds('libcxxabi'),
-      },
       'compiler_rt_src': {
           'type': 'source',
           'output_dirname': 'compiler-rt',

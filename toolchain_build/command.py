@@ -237,6 +237,8 @@ def Mkdir(path, parents=False, run_cond=None):
   """Convenience method for generating mkdir commands."""
   def mkdir(logger, subst, path):
     path = subst.SubstituteAbsPaths(path)
+    if os.path.isdir(path):
+      return
     logger.debug('Making Directory: %s', path)
     if parents:
       os.makedirs(path)

@@ -98,6 +98,14 @@ with buildbot_lib.Step('checkdeps', status):
        os.path.join(NACL_DIR, 'tools', 'checkdeps', 'checkdeps.py')])
 
 
+if host_os != 'win':
+  with buildbot_lib.Step('update clang', status):
+    buildbot_lib.Command(
+        context,
+        [sys.executable,
+         os.path.join(
+             NACL_DIR, '..', 'tools', 'clang', 'scripts', 'update.py')])
+
 if host_os == 'win':
   # On windows, sync with Windows git/svn rather than cygwin git/svn
   with buildbot_lib.Step('Sync toolchain_build sources', status):
