@@ -272,7 +272,7 @@ void QuicSession::OnWindowUpdateFrames(
       continue;
     }
 
-    if (connection_->version() <= QUIC_VERSION_21 &&
+    if (connection_->version() < QUIC_VERSION_21 &&
         (stream_id == kCryptoStreamId || stream_id == kHeadersStreamId)) {
       DLOG(DFATAL) << "WindowUpdate for stream " << stream_id << " in version "
                    << QuicVersionToString(connection_->version());

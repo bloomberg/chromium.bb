@@ -905,6 +905,29 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
   EXPECT_FALSE(stream->flow_controller()->IsEnabled());
 }
 
+TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
+  // Test that a flow control blocked headers stream gets unblocked on recipt of
+  // a WINDOW_UPDATE frame. Regression test for b/17413860.
+  if (version() < QUIC_VERSION_21) {
+    return;
+  }
+
+  // Set the headers stream to be flow control blocked.
+  QuicHeadersStream* headers_stream =
+      QuicSessionPeer::GetHeadersStream(&session_);
+  QuicFlowControllerPeer::SetSendWindowOffset(headers_stream->flow_controller(),
+                                              0);
+  EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
+
+  // Unblock the headers stream by supplying a WINDOW_UPDATE.
+  QuicWindowUpdateFrame window_update_frame(headers_stream->id(),
+                                            2 * kDefaultFlowControlSendWindow);
+  vector<QuicWindowUpdateFrame> frames;
+  frames.push_back(window_update_frame);
+  session_.OnWindowUpdateFrames(frames);
+  EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+}
+
 TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
   if (version() < QUIC_VERSION_18) {
     return;
