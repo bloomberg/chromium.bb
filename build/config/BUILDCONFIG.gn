@@ -385,7 +385,7 @@ if (is_win) {
   ]
 }
 
-# Executable defaults (applies to executables and tests).
+# Executable defaults.
 _executable_configs = _native_compiler_configs + [
   "//build/config:default_libs",
 ]
@@ -399,9 +399,6 @@ if (is_win) {
   _executable_configs += [ "//build/config/gcc:executable_ldconfig" ]
 }
 set_defaults("executable") {
-  configs = _executable_configs
-}
-set_defaults("test") {
   configs = _executable_configs
 }
 
@@ -437,6 +434,16 @@ if (!is_component_build) {
     configs = _native_compiler_configs
   }
 }
+
+# Test defaults.
+set_defaults("test") {
+  if (is_android) {
+    configs = _shared_library_configs
+  } else {
+    configs = _executable_configs
+  }
+}
+
 
 # ==============================================================================
 # TOOLCHAIN SETUP
@@ -576,43 +583,80 @@ template("component") {
 # TEST SETUP
 # ==============================================================================
 
-# Define a test as an executable with the "testonly" flag set. In the future,
-# this will need to be enhanced for Android.
+# Define a test as an executable (or shared_library on Android) with the
+# "testonly" flag set.
 template("test") {
-  executable(target_name) {
-    # Configs will always be defined since we set_defaults for a component
-    # above. We want to use those rather than whatever came with the nested
-    # shared/static library inside the component.
-    configs = []  # Prevent list overwriting warning.
-    configs = invoker.configs
+  if (is_android) {
+    shared_library(target_name) {
+      # Configs will always be defined since we set_defaults for a component
+      # above. We want to use those rather than whatever came with the nested
+      # shared/static library inside the component.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
 
-    testonly = true
+      # See above call.
+      set_sources_assignment_filter([])
 
-    # See above call.
-    set_sources_assignment_filter([])
+      testonly = true
 
-    if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-    if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
-    if (defined(invoker.cflags)) { cflags = invoker.cflags }
-    if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
-    if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
-    if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
-    if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-    if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
-    if (defined(invoker.data)) { data = invoker.data }
-    if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
-    if (defined(invoker.defines)) { defines = invoker.defines }
-    if (defined(invoker.deps)) { deps = invoker.deps }
-    if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
-    if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
-    if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
-    if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
-    if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
-    if (defined(invoker.libs)) { libs = invoker.libs }
-    if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
-    if (defined(invoker.output_name)) { output_name = invoker.output_name }
-    if (defined(invoker.public)) { public = invoker.public }
-    if (defined(invoker.sources)) { sources = invoker.sources }
-    if (defined(invoker.visibility)) { visibility = invoker.visibility }
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  } else {
+    executable(target_name) {
+      # See above.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      # See above call.
+      set_sources_assignment_filter([])
+
+      testonly = true
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
   }
 }

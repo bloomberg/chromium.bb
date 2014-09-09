@@ -823,6 +823,7 @@
       ],
     },
     {
+      # GN: //base/test:test_support
       'target_name': 'test_support_base',
       'type': 'static_library',
       'dependencies': [

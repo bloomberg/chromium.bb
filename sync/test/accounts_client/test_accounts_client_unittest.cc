@@ -6,7 +6,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "sync/test/accounts_client/test_accounts_client.cc"
 #include "sync/test/accounts_client/test_accounts_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

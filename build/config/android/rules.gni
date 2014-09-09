@@ -856,7 +856,7 @@ template("unittest_apk") {
   if (defined(invoker.unittests_binary)) {
     unittests_binary = root_out_dir + "/" + invoker.unittests_binary
   } else {
-    unittests_binary = root_out_dir + "/" + test_suite_name
+    unittests_binary = root_out_dir + "/lib.stripped/lib" + test_suite_name + ".so"
   }
 
   android_apk(target_name) {
@@ -871,6 +871,9 @@ template("unittest_apk") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+    datadeps = [
+      "//tools/android/md5sum",
+    ]
     testonly = true
   }
 }
@@ -942,5 +945,82 @@ template("android_aidl") {
       inputs += _java_files
     }
     args += rebase_path(sources, root_build_dir)
+  }
+}
+
+# Creates a dist directory for a native executable.
+#
+# Running a native executable on a device requires all the shared library
+# dependencies of that executable. To make it easier to install and run such an
+# executable, this will create a directory containing the native exe and all
+# it's library dependencies.
+#
+# Note: It's usually better to package things as an APK than as a native
+# executable.
+#
+# Variables
+#   dist_dir: Directory for the exe and libraries. Everything in this directory
+#     will be deleted before copying in the exe and libraries.
+#   binary: Path to (stripped) executable.
+#
+# Example
+#   create_native_executable_dist("foo_dist") {
+#     dist_dir = "$root_build_dir/foo_dist"
+#     binary = "$root_build_dir/exe.stripped/foo"
+#   }
+template("create_native_executable_dist") {
+  dist_dir = invoker.dist_dir
+  binary = invoker.binary
+  final_deps = []
+  template_name = target_name
+
+  libraries_list = "${target_gen_dir}/${template_name}_library_dependencies.list"
+
+  # TODO(gyp)
+  #'dependencies': [
+  #'<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
+  #],
+
+  stripped_libraries_dir = "$root_build_dir/lib.stripped"
+  final_deps += [ ":${template_name}__find_library_dependencies" ]
+  action("${template_name}__find_library_dependencies") {
+    script = "//build/android/gyp/write_ordered_libraries.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    inputs = [
+      binary,
+      android_readelf,
+    ]
+    outputs = [
+      depfile,
+      libraries_list,
+    ]
+    rebased_binaries = rebase_path([ binary ], root_build_dir)
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--input-libraries=$rebased_binaries",
+      "--libraries-dir", rebase_path(stripped_libraries_dir, root_build_dir),
+      "--output", rebase_path(libraries_list, root_build_dir),
+      "--readelf", rebase_path(android_readelf, root_build_dir),
+    ]
+  }
+
+  final_deps += [ ":${template_name}__copy_libraries_and_exe" ]
+  copy_ex("${template_name}__copy_libraries_and_exe") {
+    clear_dir = true
+    inputs = [
+      binary,
+      libraries_list
+    ]
+    dest = dist_dir
+    rebased_binaries_list = rebase_path([ binary ], root_build_dir)
+    rebased_libraries_list = rebase_path(libraries_list, root_build_dir)
+    args = [
+      "--files=$rebased_binaries_list",
+      "--files=@FileArg($rebased_libraries_list:libraries)",
+    ]
+  }
+
+  group(target_name) {
+    deps = final_deps
   }
 }

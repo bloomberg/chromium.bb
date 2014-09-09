@@ -8,6 +8,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# GYP: //base/base.gyp:test_support_base
 source_set("test_support") {
   # TODO http://crbug.com/412064 enable this flag all the time.
   testonly = !is_component_build

@@ -294,12 +294,16 @@ def Setup(test_options, devices):
   """
   test_package = test_package_apk.TestPackageApk(test_options.suite_name)
   if not os.path.exists(test_package.suite_path):
-    test_package = test_package_exe.TestPackageExecutable(
+    exe_test_package = test_package_exe.TestPackageExecutable(
         test_options.suite_name)
-    if not os.path.exists(test_package.suite_path):
+    if not os.path.exists(exe_test_package.suite_path):
       raise Exception(
-          'Did not find %s target. Ensure it has been built.'
-          % test_options.suite_name)
+          'Did not find %s target. Ensure it has been built.\n'
+          '(not found at %s or %s)'
+          % (test_options.suite_name,
+             test_package.suite_path,
+             exe_test_package.suite_path))
+    test_package = exe_test_package
   logging.warning('Found target %s', test_package.suite_path)
 
   _GenerateDepsDirUsingIsolate(test_options.suite_name,

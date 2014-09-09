@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //tools/android/md5sum:md5sum
       'target_name': 'md5sum',
       'type': 'none',
       'dependencies': [
@@ -20,6 +21,7 @@
       'includes': ['../../../build/android/native_app_dependencies.gypi'],
     },
     {
+      # GN: //tools/android/md5sum:md5sum_bin($default_toolchain)
       'target_name': 'md5sum_device_bin',
       'type': 'executable',
       'dependencies': [
@@ -38,6 +40,7 @@
       ],
     },
     {
+      # GN: //tools/android/md5sum:md5sum_prepare_dist
       'target_name': 'md5sum_stripped_device_bin',
       'type': 'none',
       'dependencies': [
@@ -60,6 +63,7 @@
     },
     # Same binary but for the host rather than the device.
     {
+      # GN: //tools/android/md5sum:md5sum_copy_host($default_toolchain)
       'target_name': 'md5sum_bin_host',
       'toolsets': ['host'],
       'type': 'executable',

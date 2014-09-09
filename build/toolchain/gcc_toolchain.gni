@@ -166,6 +166,9 @@ template("gcc_toolchain") {
         sofile,
         tocfile,
       ]
+      if (defined(invoker.solink_outputs)) {
+        outputs += invoker.solink_outputs
+      }
       link_output = sofile
       depend_output = tocfile
     }
@@ -174,9 +177,15 @@ template("gcc_toolchain") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
+      if (defined(invoker.postlink)) {
+        command += " && " + invoker.postlink
+      }
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
       outputs = [ outfile ]
+      if (defined(invoker.link_outputs)) {
+        outputs += invoker.link_outputs
+      }
     }
 
     tool("stamp") {

@@ -7,6 +7,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //testing/android:native_test_native_code
           'target_name': 'native_test_native_code',
           'message': 'building native pieces of native test package',
           'type': 'static_library',
@@ -30,6 +31,7 @@
           ],
         },
         {
+          # GN: //testing/android:native_test_jni_headers
           'target_name': 'native_test_jni_headers',
           'type': 'none',
           'sources': [
@@ -41,6 +43,7 @@
           'includes': [ '../../build/jni_generator.gypi' ],
         },
         {
+          # GN: //testing/android:native_test_util
           'target_name': 'native_test_util',
           'type': 'static_library',
           'sources': [

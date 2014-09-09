@@ -1331,6 +1331,9 @@ test("base_unittests") {
   }
 
   if (is_android) {
+    deps += [
+      "//testing/android:native_test_native_code",
+    ]
     set_sources_assignment_filter([])
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)

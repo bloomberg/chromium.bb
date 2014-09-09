@@ -96,6 +96,7 @@ def GetSortedTransitiveDependenciesForBinaries(binaries):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
 
   parser.add_option('--input-libraries',
       help='A list of top-level input libraries.')
@@ -125,6 +126,12 @@ def main():
 
   if options.stamp:
     build_utils.Touch(options.stamp)
+
+  if options.depfile:
+    print libraries
+    build_utils.WriteDepfile(
+        options.depfile,
+        libraries + build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':
