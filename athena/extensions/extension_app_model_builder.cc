@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/content/public/content_app_model_builder.h"
+#include "athena/extensions/public/extension_app_model_builder.h"
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
@@ -91,15 +91,15 @@ class AppItem : public app_list::AppListItem {
 
 }  // namespace
 
-ContentAppModelBuilder::ContentAppModelBuilder(
+ExtensionAppModelBuilder::ExtensionAppModelBuilder(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
 }
 
-ContentAppModelBuilder::~ContentAppModelBuilder() {
+ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
 }
 
-void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
+void ExtensionAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
   ExtensionsDelegate* bridge = ExtensionsDelegate::Get(browser_context_);
   const extensions::ExtensionSet& extensions = bridge->GetInstalledExtensions();
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();

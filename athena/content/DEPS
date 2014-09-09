@@ -7,12 +7,7 @@ include_rules = [
   "+components/renderer_context_menu",
   "+components/web_modal",
   "+content/public",
-  "+extensions/browser",
-  "+extensions/common",
-  "+extensions/grit",
-  "+ui/app_list",
   "+ui/aura",
-  "+ui/base/resource",
   "+ui/compositor",
   "+ui/gfx",
   "+ui/views",
@@ -21,3 +16,9 @@ include_rules = [
   # strictly enum/POD, header-only types, and some selected common code.
   "+third_party/WebKit/public/web/WebContextMenuData.h",
 ]
+
+specific_include_rules = {
+  "app_activity_unittest.cc": [
+    "+extensions/common",
+  ],
+}
