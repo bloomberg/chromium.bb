@@ -26,6 +26,7 @@ import org.chromium.media.VideoCapture;
  * takes into account the mentioned special devices.
  **/
 @JNINamespace("media")
+@SuppressWarnings("deprecation")
 class VideoCaptureFactory {
 
     static class CamParams {

@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Video Capture Device base class to interface to native Chromium.
  **/
 @JNINamespace("media")
+@SuppressWarnings("deprecation")
 public abstract class VideoCapture implements PreviewCallback {
 
     protected static class CaptureFormat {

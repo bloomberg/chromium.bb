@@ -20,6 +20,7 @@ import java.util.Arrays;
  * |id| passed on constructor, according to the index correspondence in
  * |s_CAM_PARAMS|; all devices |id| are index 0 towards the parent VideoCapture.
  **/
+@SuppressWarnings("deprecation")
 public class VideoCaptureTango extends VideoCapture {
     private ByteBuffer mFrameBuffer = null;
     private final int mTangoCameraId;

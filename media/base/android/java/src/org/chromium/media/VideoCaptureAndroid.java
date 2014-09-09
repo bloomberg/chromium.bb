@@ -19,6 +19,7 @@ import java.util.List;
  * Java-allocated buffers. It also includes class BuggyDeviceHack to deal with
  * troublesome devices.
  **/
+@SuppressWarnings("deprecation")
 public class VideoCaptureAndroid extends VideoCapture {
 
     // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
