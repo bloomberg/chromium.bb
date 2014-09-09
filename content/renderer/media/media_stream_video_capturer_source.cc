@@ -231,9 +231,10 @@ void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
-    const media::VideoCaptureParams& params,
+    const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  media::VideoCaptureParams new_params(params);
+  media::VideoCaptureParams new_params;
+  new_params.requested_format = format;
   if (device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
     new_params.allow_resolution_change = true;

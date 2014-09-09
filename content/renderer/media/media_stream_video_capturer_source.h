@@ -107,7 +107,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
 
   virtual void StartSourceImpl(
-      const media::VideoCaptureParams& params,
+      const media::VideoCaptureFormat& format,
       const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
 
   virtual void StopSourceImpl() OVERRIDE;

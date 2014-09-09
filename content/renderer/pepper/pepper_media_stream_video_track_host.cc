@@ -442,7 +442,7 @@ void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
 }
 
 void PepperMediaStreamVideoTrackHost::StartSourceImpl(
-    const media::VideoCaptureParams& params,
+    const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   output_started_ = true;
   frame_deliverer_ = new FrameDeliverer(io_message_loop(), frame_callback);

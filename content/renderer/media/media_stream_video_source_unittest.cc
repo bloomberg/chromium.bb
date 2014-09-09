@@ -77,10 +77,10 @@ class MediaStreamVideoSourceTest
     blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
 
     mock_source_->CompleteGetSupportedFormats();
-    const media::VideoCaptureParams& format = mock_source()->start_params();
-    EXPECT_EQ(expected_width, format.requested_format.frame_size.width());
-    EXPECT_EQ(expected_height, format.requested_format.frame_size.height());
-    EXPECT_EQ(expected_frame_rate, format.requested_format.frame_rate);
+    const media::VideoCaptureFormat& format = mock_source()->start_format();
+    EXPECT_EQ(expected_width, format.frame_size.width());
+    EXPECT_EQ(expected_height, format.frame_size.height());
+    EXPECT_EQ(expected_frame_rate, format.frame_rate);
 
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
     mock_source_->StartMockedSource();
@@ -424,10 +424,10 @@ TEST_F(MediaStreamVideoSourceTest, OptionalAspectRatioTooHigh) {
       "123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
 
-  const media::VideoCaptureParams& params = mock_source()->start_params();
+  const media::VideoCaptureFormat& format = mock_source()->start_format();
   double aspect_ratio =
-      static_cast<double>(params.requested_format.frame_size.width()) /
-      params.requested_format.frame_size.height();
+      static_cast<double>(format.frame_size.width()) /
+      format.frame_size.height();
   EXPECT_LT(aspect_ratio, 2);
 }
 

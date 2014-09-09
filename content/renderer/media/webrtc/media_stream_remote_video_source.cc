@@ -148,7 +148,7 @@ void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const media::VideoCaptureParams& params,
+    const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!delegate_.get());

@@ -62,10 +62,10 @@ void MockMediaStreamVideoSource::GetCurrentSupportedFormats(
 }
 
 void MockMediaStreamVideoSource::StartSourceImpl(
-    const media::VideoCaptureParams& params,
+    const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());
-  params_ = params;
+  format_ = format;
   attempted_to_start_ = true;
   frame_callback_ = frame_callback;
 }
@@ -79,7 +79,7 @@ void MockMediaStreamVideoSource::DeliverVideoFrame(
   io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&MockMediaStreamVideoSource::DeliverVideoFrameOnIO,
-                 base::Unretained(this), frame, params_.requested_format,
+                 base::Unretained(this), frame, format_,
                  base::TimeTicks(), frame_callback_));
 }
 

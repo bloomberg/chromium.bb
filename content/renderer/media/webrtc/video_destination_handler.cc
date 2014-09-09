@@ -94,7 +94,7 @@ void PpFrameWriter::GetCurrentSupportedFormats(
 }
 
 void PpFrameWriter::StartSourceImpl(
-    const media::VideoCaptureParams& params,
+    const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!delegate_.get());

@@ -482,10 +482,8 @@ void MediaStreamVideoSource::OnSupportedFormats(
   state_ = STARTING;
   DVLOG(3) << "Starting the capturer with " << current_format_.ToString();
 
-  media::VideoCaptureParams params;
-  params.requested_format = current_format_;
   StartSourceImpl(
-      params,
+      current_format_,
       base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
 }
 
