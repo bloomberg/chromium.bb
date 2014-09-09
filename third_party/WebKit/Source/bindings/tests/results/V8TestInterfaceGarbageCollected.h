@@ -11,7 +11,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "bindings/tests/idls/TestInterfaceGarbageCollected.h"
+#include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/v8/V8EventTarget.h"
 #include "platform/heap/Handle.h"
 

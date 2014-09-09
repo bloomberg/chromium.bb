@@ -8,9 +8,9 @@
 #define TestDictionary_h
 
 #include "bindings/core/v8/Nullable.h"
-#include "bindings/tests/idls/TestInterfaceGarbageCollected.h"
-#include "bindings/tests/idls/TestInterfaceImplementation.h"
-#include "bindings/tests/idls/TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
+#include "bindings/tests/idls/core/TestInterfaceImplementation.h"
+#include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

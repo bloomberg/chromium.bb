@@ -88,6 +88,9 @@
     [Exposed=Window] attribute long windowExposedAttribute;
 
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
+
+    void voidMethodPartailOverload();
+    static void voidMethodPartailOverload();
 };
 
 TestInterface implements TestImplements;

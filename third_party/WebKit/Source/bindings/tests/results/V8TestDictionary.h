@@ -8,7 +8,7 @@
 #define V8TestDictionary_h
 
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/tests/idls/TestDictionary.h"
+#include "bindings/tests/idls/core/TestDictionary.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

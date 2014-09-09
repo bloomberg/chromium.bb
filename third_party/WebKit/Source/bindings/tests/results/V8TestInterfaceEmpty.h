@@ -11,7 +11,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "bindings/tests/idls/TestInterfaceEmpty.h"
+#include "bindings/tests/idls/core/TestInterfaceEmpty.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -64,8 +64,10 @@ DEPENDENCY_IDL_FILES = frozenset([
     'TestImplements3.idl',
     'TestPartialInterface.idl',
     'TestPartialInterface2.idl',
+    'TestPartialInterface3.idl',
 ])
 
+COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 
 test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
@@ -196,22 +198,26 @@ def bindings_tests(output_directory, verbose):
             output_directory, interfaces_info=interfaces_info,
             only_if_changed=True)
 
-        idl_basenames = [filename
-                         for filename in os.listdir(test_input_directory)
-                         if (filename.endswith('.idl') and
-                             # Dependencies aren't built
-                             # (they are used by the dependent)
-                             filename not in DEPENDENCY_IDL_FILES)]
-        for idl_basename in idl_basenames:
-            idl_path = os.path.realpath(
-                os.path.join(test_input_directory, idl_basename))
+        idl_filenames = []
+        for component in COMPONENT_DIRECTORY:
+            input_directory = os.path.join(test_input_directory, component)
+            for filename in os.listdir(input_directory):
+                if (filename.endswith('.idl') and
+                    # Dependencies aren't built
+                    # (they are used by the dependent)
+                    filename not in DEPENDENCY_IDL_FILES):
+                    idl_filenames.append(
+                        os.path.realpath(
+                            os.path.join(input_directory, filename)))
+        for idl_path in idl_filenames:
+            idl_basename = os.path.basename(idl_path)
             idl_compiler.compile_file(idl_path)
             definition_name, _ = os.path.splitext(idl_basename)
             if (definition_name in interfaces_info and
                 interfaces_info[definition_name]['is_dictionary']):
                 dictionary_impl_compiler.compile_file(idl_path)
             if verbose:
-                print 'Compiled: %s' % filename
+                print 'Compiled: %s' % idl_path
     finally:
         delete_cache_files()
 
