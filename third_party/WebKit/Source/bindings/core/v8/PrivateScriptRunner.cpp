@@ -254,6 +254,16 @@ void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, 
         return;
     }
 
+    // Standard JS errors thrown by a private script are treated as real errors
+    // of the private script and crash the renderer, except for a stack overflow
+    // error. A stack overflow error can happen in a valid private script
+    // if user's script can create a recursion that involves the private script.
+    if (exceptionName == "RangeError" && messageString.contains("Maximum call stack size exceeded")) {
+        exceptionState.throwDOMException(V8RangeError, messageString);
+        exceptionState.throwIfNeeded();
+        return;
+    }
+
     fprintf(stderr, "Private script error: %s was thrown.\n", exceptionName.utf8().data());
     dumpV8Message(tryCatchMessage);
     RELEASE_ASSERT_NOT_REACHED();

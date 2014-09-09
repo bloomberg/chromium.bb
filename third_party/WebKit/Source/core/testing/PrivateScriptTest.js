@@ -143,6 +143,11 @@ installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
         throwException(PrivateScriptJSError.ReferenceError, "method threw ReferenceError");
     }
 
+    PrivateScriptTestPrototype.voidMethodThrowsStackOverflowError = function() {
+        function f() { f(); }
+        f();
+    }
+
     PrivateScriptTestPrototype.addIntegerForPrivateScriptOnly = function(value1, value2) {
         return value1 + value2;
     }

@@ -70,6 +70,7 @@ shouldThrow('privateScriptTest.voidMethodThrowsTypeError()');
 shouldThrow('privateScriptTest.voidMethodThrowsRangeError()');
 shouldThrow('privateScriptTest.voidMethodThrowsSyntaxError()');
 shouldThrow('privateScriptTest.voidMethodThrowsReferenceError()');
+shouldThrow('privateScriptTest.voidMethodThrowsStackOverflowError()');
 
 shouldBe('privateScriptTest.addIntegerImplementedInCPP(111, 222)', '333');
 shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'undefined');

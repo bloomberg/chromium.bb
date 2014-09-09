@@ -36,6 +36,7 @@ PASS privateScriptTest.voidMethodThrowsTypeError() threw exception TypeError: Fa
 PASS privateScriptTest.voidMethodThrowsRangeError() threw exception RangeError: Failed to execute 'voidMethodThrowsRangeError' on 'PrivateScriptTest': method threw RangeError.
 PASS privateScriptTest.voidMethodThrowsSyntaxError() threw exception SyntaxError: Failed to execute 'voidMethodThrowsSyntaxError' on 'PrivateScriptTest': method threw SyntaxError.
 PASS privateScriptTest.voidMethodThrowsReferenceError() threw exception ReferenceError: Failed to execute 'voidMethodThrowsReferenceError' on 'PrivateScriptTest': method threw ReferenceError.
+PASS privateScriptTest.voidMethodThrowsStackOverflowError() threw exception RangeError: Failed to execute 'voidMethodThrowsStackOverflowError' on 'PrivateScriptTest': Maximum call stack size exceeded.
 PASS privateScriptTest.addIntegerImplementedInCPP(111, 222) is 333
 PASS privateScriptTest.stringAttributeImplementedInCPP is "undefined"
 PASS privateScriptTest.stringAttributeImplementedInCPP is "foo"
