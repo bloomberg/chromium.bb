@@ -169,9 +169,14 @@ Emf::Emf() : emf_(NULL), hdc_(NULL), page_count_(0) {
 }
 
 Emf::~Emf() {
+  Close();
+}
+
+void Emf::Close() {
   DCHECK(!hdc_);
   if (emf_)
     DeleteEnhMetaFile(emf_);
+  emf_ = NULL;
 }
 
 bool Emf::InitToFile(const base::FilePath& metafile_path) {

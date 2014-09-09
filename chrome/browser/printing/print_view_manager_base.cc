@@ -130,7 +130,7 @@ void PrintViewManagerBase::OnDidGetDocumentCookie(int cookie) {
 void PrintViewManagerBase::OnPdfToEmfConverted(
     const PrintHostMsg_DidPrintPage_Params& params,
     double scale_factor,
-    const std::vector<base::FilePath>& emf_files) {
+    ScopedVector<Metafile>* emf_files) {
   if (!print_job_.get())
     return;
 
@@ -138,20 +138,23 @@ void PrintViewManagerBase::OnPdfToEmfConverted(
   if (!document)
     return;
 
-  for (size_t i = 0; i < emf_files.size(); ++i) {
-    scoped_ptr<printing::Emf> metafile(new printing::Emf);
-    if (!metafile->InitFromFile(emf_files[i])) {
-      NOTREACHED() << "Invalid metafile";
+  for (size_t i = 0; i < emf_files->size(); ++i) {
+    if (!(*emf_files)[i]) {
       web_contents()->Stop();
       return;
     }
+  }
+
+  for (size_t i = 0; i < emf_files->size(); ++i) {
     // Update the rendered document. It will send notifications to the listener.
     document->SetPage(i,
-                      metafile.release(),
+                      (*emf_files)[i],
                       scale_factor,
                       params.page_size,
                       params.content_area);
   }
+  // document->SetPage took ownership of all EMFs.
+  emf_files->weak_clear();
 
   ShouldQuitFromInnerMessageLoop();
 }

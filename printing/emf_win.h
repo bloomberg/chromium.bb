@@ -42,6 +42,9 @@ class PRINTING_EXPORT Emf : public Metafile {
   Emf();
   virtual ~Emf();
 
+  // Closes metafile.
+  void Close();
+
   // Generates a new metafile that will record every GDI command, and will
   // be saved to |metafile_path|.
   virtual bool InitToFile(const base::FilePath& metafile_path);
