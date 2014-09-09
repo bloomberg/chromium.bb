@@ -142,11 +142,6 @@ bool InputType::isTextField() const
     return false;
 }
 
-bool InputType::isTextType() const
-{
-    return false;
-}
-
 bool InputType::shouldSaveAndRestoreFormControlState() const
 {
     return true;
@@ -235,6 +230,11 @@ bool InputType::valueMissing(const String&) const
 }
 
 bool InputType::hasBadInput() const
+{
+    return false;
+}
+
+bool InputType::tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const
 {
     return false;
 }
@@ -643,6 +643,11 @@ bool InputType::isSteppable() const
 bool InputType::shouldRespectHeightAndWidthAttributes()
 {
     return false;
+}
+
+int InputType::maxLength() const
+{
+    return HTMLInputElement::maximumLength;
 }
 
 bool InputType::supportsPlaceholder() const

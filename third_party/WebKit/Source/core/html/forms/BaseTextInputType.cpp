@@ -32,9 +32,23 @@ namespace blink {
 
 using namespace HTMLNames;
 
-bool BaseTextInputType::isTextType() const
+int BaseTextInputType::maxLength() const
 {
-    return true;
+    return element().maxLength();
+}
+
+bool BaseTextInputType::tooLong(const String& value, HTMLTextFormControlElement::NeedsToCheckDirtyFlag check) const
+{
+    int max = element().maxLength();
+    if (max < 0)
+        return false;
+    if (check == HTMLTextFormControlElement::CheckDirtyFlag) {
+        // Return false for the default value or a value set by a script even if
+        // it is longer than maxLength.
+        if (!element().hasDirtyValue() || !element().lastChangeWasUserEdit())
+            return false;
+    }
+    return value.length() > static_cast<unsigned>(max);
 }
 
 bool BaseTextInputType::patternMismatch(const String& value) const

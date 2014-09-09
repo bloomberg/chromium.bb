@@ -905,8 +905,7 @@ void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
     Element* shadowHost = root->shadowHost();
     if (shadowHost
         && (isHTMLTextAreaElement(*shadowHost)
-            || (isHTMLInputElement(*shadowHost)
-                && toHTMLInputElement(*shadowHost).isText())))
+            || (isHTMLInputElement(*shadowHost) && toHTMLInputElement(*shadowHost).isTextField())))
         root = shadowHost;
 
     IntRect boundingBox = isHTMLHtmlElement(root)

@@ -42,7 +42,8 @@ protected:
     BaseTextInputType(HTMLInputElement& element) : TextFieldInputType(element) { }
 
 private:
-    virtual bool isTextType() const OVERRIDE FINAL;
+    virtual bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const OVERRIDE FINAL;
+    virtual int maxLength() const OVERRIDE FINAL;
     virtual bool patternMismatch(const String&) const OVERRIDE FINAL;
     virtual bool supportsPlaceholder() const OVERRIDE FINAL;
     virtual bool supportsSelectionAPI() const OVERRIDE;

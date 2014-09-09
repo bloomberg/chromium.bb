@@ -54,7 +54,7 @@ bool WebInputElement::isTextField() const
 
 bool WebInputElement::isText() const
 {
-    return constUnwrap<HTMLInputElement>()->isText();
+    return constUnwrap<HTMLInputElement>()->isTextField() && constUnwrap<HTMLInputElement>()->type() != InputTypeNames::number;
 }
 
 bool WebInputElement::isEmailField() const

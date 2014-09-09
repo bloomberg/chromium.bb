@@ -419,7 +419,7 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
 
     // Selected characters will be removed by the next text event.
     unsigned baseLength = oldLength - selectionLength;
-    unsigned maxLength = static_cast<unsigned>(isTextType() ? element().maxLength() : HTMLInputElement::maximumLength); // maxLength can never be negative.
+    unsigned maxLength = static_cast<unsigned>(this->maxLength()); // maxLength can never be negative.
     unsigned appendableLength = maxLength > baseLength ? maxLength - baseLength : 0;
 
     // Truncate the inserted text to avoid violating the maxLength and other constraints.

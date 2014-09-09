@@ -580,10 +580,8 @@ bool AXNodeObject::isNativeTextControl() const
     if (isHTMLTextAreaElement(*node))
         return true;
 
-    if (isHTMLInputElement(*node)) {
-        HTMLInputElement* input = toHTMLInputElement(node);
-        return input->isText() || input->type() == InputTypeNames::number;
-    }
+    if (isHTMLInputElement(*node))
+        return toHTMLInputElement(node)->isTextField();
 
     return false;
 }

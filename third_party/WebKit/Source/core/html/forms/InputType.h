@@ -77,7 +77,6 @@ public:
     virtual bool isInteractiveContent() const;
     virtual bool isTextButton() const;
     virtual bool isTextField() const;
-    virtual bool isTextType() const;
 
     // Form value functions
 
@@ -111,6 +110,7 @@ public:
     virtual bool valueMissing(const String&) const;
     virtual bool hasBadInput() const;
     virtual bool patternMismatch(const String&) const;
+    virtual bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
     bool rangeUnderflow(const String&) const;
     bool rangeOverflow(const String&) const;
     bool isInRange(const String&) const;
@@ -167,6 +167,7 @@ public:
     virtual bool isCheckable();
     virtual bool isSteppable() const;
     virtual bool shouldRespectHeightAndWidthAttributes();
+    virtual int maxLength() const;
     virtual bool supportsPlaceholder() const;
     virtual bool supportsReadOnly() const;
     virtual String defaultToolTip() const;

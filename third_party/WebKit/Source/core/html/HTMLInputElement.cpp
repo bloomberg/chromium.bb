@@ -241,20 +241,7 @@ bool HTMLInputElement::patternMismatch() const
 
 bool HTMLInputElement::tooLong(const String& value, NeedsToCheckDirtyFlag check) const
 {
-    // We use isTextType() instead of supportsMaxLength() because of the
-    // 'virtual' overhead.
-    if (!isTextType())
-        return false;
-    int max = maxLength();
-    if (max < 0)
-        return false;
-    if (check == CheckDirtyFlag) {
-        // Return false for the default value or a value set by a script even if
-        // it is longer than maxLength.
-        if (!hasDirtyValue() || !lastChangeWasUserEdit())
-            return false;
-    }
-    return value.length() > static_cast<unsigned>(max);
+    return m_inputType->tooLong(value, check);
 }
 
 bool HTMLInputElement::rangeUnderflow() const
@@ -842,11 +829,6 @@ void HTMLInputElement::resetImpl()
 bool HTMLInputElement::isTextField() const
 {
     return m_inputType->isTextField();
-}
-
-bool HTMLInputElement::isTextType() const
-{
-    return m_inputType->isTextType();
 }
 
 void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
@@ -1563,11 +1545,6 @@ bool HTMLInputElement::isSteppable() const
 bool HTMLInputElement::isTextButton() const
 {
     return m_inputType->isTextButton();
-}
-
-bool HTMLInputElement::isText() const
-{
-    return m_inputType->isTextType();
 }
 
 bool HTMLInputElement::isEnumeratable() const
