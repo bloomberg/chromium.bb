@@ -4,18 +4,18 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-party-time" attributes="partytime" noscript>
+<polymer-element name="ct-party-time" noscript>
   <template>
-    <template if="{{ partytime }}">
-      <style>
-        :host {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-      </style>
-      <img src="../images/partytime.gif">
-    </template>
+    <style>
+      :host {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+    </style>
+    <div>No failures!</div>
+    <img src="../images/partytime.gif">
   </template>
 </polymer-element>

@@ -349,6 +349,7 @@ describe('ct-failures', function() {
   describe('processTrooperFailures', function() {
     it('should filter out updates that are not alerts', function() {
       var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      analyzer.failures = {};
       analyzer._processTrooperFailures(
           {'key_1': {'tree_1': {should_alert: true, should_appear: true},
                      'tree_2': {should_alert: false, should_appear: false}},

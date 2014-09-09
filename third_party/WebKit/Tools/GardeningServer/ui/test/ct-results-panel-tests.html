@@ -97,6 +97,10 @@ describe('ct-results-panel', function() {
 
   beforeEach(function(done) {
     panel = document.createElement('ct-results-panel');
+    // FIXME: The results-panel needs to be appended to the DOM so that the flakiness
+    // dashboard's iframe has a window when we grab location off of it, but that
+    // also means that we actually do fetches for the iframes of the foo_step stdio.
+    // This results in some console spam from the 404'ed request.
     panel.hidden = true;
     document.body.appendChild(panel);
 

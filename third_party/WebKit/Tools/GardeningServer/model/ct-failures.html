@@ -18,7 +18,7 @@ function CTFailures(commitLog) {
   this.commitLog = commitLog;
   this.builderLatestRevisions = null;
   // Maps a tree id to an array of CTFailureGroups within that tree.
-  this.failures = {};
+  this.failures = null;
   this.lastUpdateDate = null;
 
   // FIXME: Get this from

@@ -45,10 +45,12 @@ found in the LICENSE file.
     </div>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
-    <ct-party-time failures="{{ failures.failures[tree].length == 0 }}"></ct-party-time>
-    <ct-failure-stream title="Reliable failures" category="default" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
-    <ct-failure-stream title="Failures that have only happened once (on one bot)" category="failedOnce" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
-    <ct-failure-stream title="Snoozed failures" category="snoozed" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <template if="{{ failures && failures.failures && (!failures.failures[tree] || !failures.failures[tree].length) }}">
+      <ct-party-time></ct-party-time>
+    </template>
+    <ct-failure-stream title="Reliable failures" category="default" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream title="Failures that have only happened once (on one bot)" category="failedOnce" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream title="Snoozed failures" category="snoozed" groups="{{ failures && failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>
   (function() {

@@ -16,25 +16,11 @@ describe('ct-party-time', function() {
     var partyTime;
     before(function(done) {
       partyTime = document.createElement('ct-party-time');
-      partyTime.partytime = true;
       setTimeout(done);
     });
 
     it('should have a party', function() {
       assert(partyTime.shadowRoot.querySelector('img'));
-    });
-  });
-
-  describe('party time: no party', function() {
-    var partyTime;
-    before(function(done) {
-      partyTime = document.createElement('ct-party-time');
-      partyTime.partytime = false;
-      setTimeout(done);
-    });
-
-    it('should not have a party', function() {
-      assert(!partyTime.shadowRoot.querySelector('img'));
     });
   });
 });

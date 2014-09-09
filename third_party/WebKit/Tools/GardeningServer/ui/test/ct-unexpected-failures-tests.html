@@ -1,0 +1,71 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='../ct-unexpected-failures.html'>
+
+<link rel="import" href="../../model/ct-commit-list.html">
+<link rel="import" href="../../model/ct-failures.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-unexpected-failures', function() {
+  it('test showing partytime with no CTFailures', function(done) {
+    var noFailures = document.createElement('ct-unexpected-failures');
+    setTimeout(function() {
+      assert.notOk(noFailures.shadowRoot.querySelector('ct-party-time'));
+      done();
+    });
+  });
+
+  it('test showing partytime with no failures for the selected tree', function(done) {
+    var noFailuresForTree = document.createElement('ct-unexpected-failures');
+    noFailuresForTree.failures = new CTFailures(new CTCommitList(undefined, []));
+    noFailuresForTree.failures.failures = {
+      othertree: [new CTFailure('step', 'reason', [])]
+    };
+    noFailuresForTree.tree = 'mocktree';
+
+    setTimeout(function() {
+      assert.ok(noFailuresForTree.shadowRoot.querySelector('ct-party-time'));
+      done();
+    });
+  });
+
+  it('test showing partytime with no failures in this tree\'s list', function(done) {
+    var noFailuresByLength = document.createElement('ct-unexpected-failures');
+    noFailuresByLength.failures = new CTFailures(new CTCommitList(undefined, []));
+    noFailuresByLength.failures.failures = {
+      mocktree: []
+    };
+    noFailuresByLength.tree = 'mocktree';
+
+    setTimeout(function() {
+      assert.ok(noFailuresByLength.shadowRoot.querySelector('ct-party-time'));
+      done();
+    });
+  });
+
+  it('test showing partytime with failures for this tree', function(done) {
+    var hasFailures = document.createElement('ct-unexpected-failures');
+    hasFailures.failures = new CTFailures(new CTCommitList(undefined, []));
+    hasFailures.failures.failures = {
+      mocktree: [new CTFailure('step', 'reason', [])]
+    };
+    hasFailures.tree = 'mocktree';
+
+    setTimeout(function() {
+      assert.notOk(hasFailures.shadowRoot.querySelector('ct-party-time'));
+
+      done();
+    });
+  });
+});
+
+})();
+</script>
