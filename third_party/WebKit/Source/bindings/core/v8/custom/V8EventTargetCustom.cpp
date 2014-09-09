@@ -31,29 +31,23 @@
 #include "config.h"
 #include "bindings/core/v8/V8EventTarget.h"
 
-#include "bindings/core/v8/ModuleProxy.h"
-#include "core/EventTargetHeaders.h"
-#include "core/EventTargetInterfaces.h"
+#include "bindings/core/v8/V8Window.h"
+#include "core/EventTargetNames.h"
 
 namespace blink {
 
-#define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
-    if (EventTargetNames::interfaceName == desiredInterface) \
-        return toV8(static_cast<interfaceName*>(impl), creationContext, isolate);
-
 v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (!impl)
+    if (UNLIKELY(!impl))
         return v8::Null(isolate);
 
-    AtomicString desiredInterface = impl->interfaceName();
-    EVENT_TARGET_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
+    if (impl->interfaceName() == EventTargetNames::LocalDOMWindow)
+        return toV8(static_cast<LocalDOMWindow*>(impl), creationContext, isolate);
 
-    v8::Handle<v8::Value> wrapper = ModuleProxy::moduleProxy().toV8ForEventTarget(impl, creationContext, isolate);
-    ASSERT(!wrapper.IsEmpty());
-    return wrapper;
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+    return impl->wrap(creationContext, isolate);
 }
-
-#undef TRY_TO_WRAP_WITH_INTERFACE
 
 } // namespace blink

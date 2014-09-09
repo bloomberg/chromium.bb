@@ -29,12 +29,22 @@
 
 import os.path
 import sys
-import shutil
 
-from in_file import InFile
-import name_macros
+import in_generator
+import license
 import name_utilities
 import template_expander
+
+
+HEADER_TEMPLATE = """%(license)s
+
+#ifndef %(namespace)s%(suffix)sHeaders_h
+#define %(namespace)s%(suffix)sHeaders_h
+%(base_header_for_suffix)s
+%(includes)s
+
+#endif // %(namespace)s%(suffix)sHeaders_h
+"""
 
 
 def case_insensitive_matching(name):
@@ -45,7 +55,8 @@ def case_insensitive_matching(name):
             or name.startswith('CustomEvent')
             or name.startswith('MouseEvent'))
 
-class EventFactoryWriter(name_macros.Writer):
+
+class EventFactoryWriter(in_generator.Writer):
     defaults = {
         'ImplementedAs': None,
         'Conditional': None,
@@ -65,9 +76,71 @@ class EventFactoryWriter(name_macros.Writer):
 
     def __init__(self, in_file_path):
         super(EventFactoryWriter, self).__init__(in_file_path)
-        if self.namespace == 'EventTarget':
-            return
-        self._outputs[(self.namespace + self.suffix + ".cpp")] = self.generate_implementation
+        self.namespace = self.in_file.parameters['namespace'].strip('"')
+        self.suffix = self.in_file.parameters['suffix'].strip('"')
+        self._validate_entries()
+        self._outputs = {(self.namespace + self.suffix + "Headers.h"): self.generate_headers_header,
+                         (self.namespace + self.suffix + ".cpp"): self.generate_implementation,
+                        }
+
+    def _validate_entries(self):
+        # If there is more than one entry with the same script name, only the first one will ever
+        # be hit in practice, and so we'll silently ignore any properties requested for the second
+        # (like RuntimeEnabled - see crbug.com/332588).
+        entries_by_script_name = dict()
+        for entry in self.in_file.name_dictionaries:
+            script_name = name_utilities.script_name(entry)
+            if script_name in entries_by_script_name:
+                self._fatal('Multiple entries with script_name=%(script_name)s: %(name1)s %(name2)s' % {
+                    'script_name': script_name,
+                    'name1': entry['name'],
+                    'name2': entries_by_script_name[script_name]['name']})
+            entries_by_script_name[script_name] = entry
+
+    def _fatal(self, message):
+        print 'FATAL ERROR: ' + message
+        exit(1)
+
+    def _headers_header_include_path(self, entry):
+        if entry['ImplementedAs']:
+            path = os.path.dirname(entry['name'])
+            if len(path):
+                path += '/'
+            path += entry['ImplementedAs']
+        else:
+            path = entry['name']
+        return path + '.h'
+
+    def _headers_header_includes(self, entries):
+        includes = dict()
+        for entry in entries:
+            cpp_name = name_utilities.cpp_name(entry)
+            # Avoid duplicate includes.
+            if cpp_name in includes:
+                continue
+            if self.suffix == 'Modules':
+                subdir_name = 'modules'
+            else:
+                subdir_name = 'core'
+            include = '#include "%(path)s"\n#include "bindings/%(subdir_name)s/v8/V8%(script_name)s.h"' % {
+                'path': self._headers_header_include_path(entry),
+                'script_name': name_utilities.script_name(entry),
+                'subdir_name': subdir_name,
+            }
+            includes[cpp_name] = self.wrap_with_condition(include, entry['Conditional'])
+        return includes.values()
+
+    def generate_headers_header(self):
+        base_header_for_suffix = ''
+        if self.suffix:
+            base_header_for_suffix = '\n#include "core/%(namespace)sHeaders.h"\n' % {'namespace': self.namespace}
+        return HEADER_TEMPLATE % {
+            'license': license.license_for_generated_cpp(),
+            'namespace': self.namespace,
+            'suffix': self.suffix,
+            'base_header_for_suffix': base_header_for_suffix,
+            'includes': '\n'.join(self._headers_header_includes(self.in_file.name_dictionaries)),
+        }
 
     @template_expander.use_jinja('EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
@@ -79,4 +152,4 @@ class EventFactoryWriter(name_macros.Writer):
 
 
 if __name__ == "__main__":
-    name_macros.Maker(EventFactoryWriter).main(sys.argv)
+    in_generator.Maker(EventFactoryWriter).main(sys.argv)

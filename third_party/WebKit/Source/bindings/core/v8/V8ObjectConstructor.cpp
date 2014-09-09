@@ -31,7 +31,6 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/TraceEvent.h"
 
-
 namespace blink {
 
 v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Handle<v8::Function> function)

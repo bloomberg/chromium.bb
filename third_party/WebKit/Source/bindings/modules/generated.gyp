@@ -68,7 +68,6 @@
         'outputs': [
           '<(blink_modules_output_dir)/EventModules.cpp',
           '<(blink_modules_output_dir)/EventModulesHeaders.h',
-          '<(blink_modules_output_dir)/EventModulesInterfaces.h',
         ],
         'action': [
           'python',
@@ -93,25 +92,6 @@
           'python',
           '../../build/scripts/make_names.py',
           '<(blink_modules_output_dir)/EventModulesInterfaces.in',
-          '--output_dir',
-          '<(blink_modules_output_dir)',
-        ],
-      },
-      {
-        # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated_event_target_modules_factory
-        'action_name': 'EventTargetModulesFactory',
-        'inputs': [
-          '<@(make_event_factory_files)',
-          '../../modules/EventTargetModulesFactory.in',
-        ],
-        'outputs': [
-          '<(blink_modules_output_dir)/EventTargetModulesHeaders.h',
-          '<(blink_modules_output_dir)/EventTargetModulesInterfaces.h',
-        ],
-        'action': [
-          'python',
-          '../../build/scripts/make_event_factory.py',
-          '../../modules/EventTargetModulesFactory.in',
           '--output_dir',
           '<(blink_modules_output_dir)',
         ],

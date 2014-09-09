@@ -735,7 +735,7 @@ v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world)
     v8::Local<v8::Context> context = frame->script().windowProxy(world)->context();
     if (context.IsEmpty())
         return v8::Local<v8::Context>();
-    LocalFrame* attachedFrame= toFrameIfNotDetached(context);
+    LocalFrame* attachedFrame = toFrameIfNotDetached(context);
     return frame == attachedFrame ? context : v8::Local<v8::Context>();
 }
 

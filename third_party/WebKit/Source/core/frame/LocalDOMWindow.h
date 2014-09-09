@@ -331,6 +331,8 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
+
 protected:
     DOMWindowLifecycleNotifier& lifecycleNotifier();
 

@@ -50,7 +50,6 @@
             'V8MessagePortCustom.cpp',
             'V8MutationObserverCustom.cpp',
             'V8PopStateEventCustom.cpp',
-            'V8TextTrackCueCustom.cpp',
             'V8TrackEventCustom.cpp',
             'V8TypedArrayCustom.h',
             'V8Uint16ArrayCustom.h',

@@ -7,7 +7,6 @@
 
 #include "core/events/EventTarget.h"
 #include "modules/EventModulesNames.h"
-#include "modules/EventTargetModulesInterfaces.h"
 #include "modules/EventTargetModulesNames.h"
 
 namespace blink {

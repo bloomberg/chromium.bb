@@ -16,7 +16,6 @@ group("bindings_modules_generated") {
     ":modules_bindings_generated_event_interfaces",
     ":bindings_modules_generated_event_modules_factory",
     ":bindings_modules_generated_event_modules_names",
-    ":bindings_modules_generated_event_target_modules_factory",
     ":bindings_modules_generated_event_target_modules_names",
   ]
 }
@@ -36,7 +35,6 @@ make_event_factory("bindings_modules_generated_event_modules_factory") {
   outputs = [
     "$blink_modules_output_dir/EventModules.cpp",
     "$blink_modules_output_dir/EventModulesHeaders.h",
-    "$blink_modules_output_dir/EventModulesInterfaces.h",
   ]
 }
 
@@ -48,17 +46,6 @@ make_names("bindings_modules_generated_event_modules_names") {
   outputs = [
     "$blink_modules_output_dir/EventModulesNames.cpp",
     "$blink_modules_output_dir/EventModulesNames.h",
-  ]
-}
-
-# GYP version: EventTargetModulesFactory action in bindings_modules_generated
-make_event_factory("bindings_modules_generated_event_target_modules_factory") {
-  in_files = [
-    "../../modules/EventTargetModulesFactory.in",
-  ]
-  outputs = [
-    "$blink_modules_output_dir/EventTargetModulesHeaders.h",
-    "$blink_modules_output_dir/EventTargetModulesInterfaces.h",
   ]
 }
 
@@ -116,5 +103,3 @@ action("interfaces_info") {
     "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
   ]
 }
-
-

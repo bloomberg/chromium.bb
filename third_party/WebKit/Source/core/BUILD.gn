@@ -353,11 +353,8 @@ source_set("core_generated") {
     # Additional .cpp files from make_core_generated actions.
     "$blink_core_output_dir/Event.cpp",
     "$blink_core_output_dir/EventHeaders.h",
-    "$blink_core_output_dir/EventInterfaces.h",
     "$blink_core_output_dir/EventNames.cpp",
     "$blink_core_output_dir/EventNames.h",
-    "$blink_core_output_dir/EventTargetHeaders.h",
-    "$blink_core_output_dir/EventTargetInterfaces.h",
     "$blink_core_output_dir/EventTargetNames.cpp",
     "$blink_core_output_dir/EventTargetNames.h",
     "$blink_core_output_dir/EventTypeNames.cpp",
@@ -579,7 +576,6 @@ group("make_core_generated") {
     ":make_core_generated_svg_element_type_helpers",
     ":make_core_generated_event_factory",
     ":make_core_generated_event_names",
-    ":make_core_generated_event_target_factory",
     ":make_core_generated_event_target_names",
     ":make_core_generated_math_ml_names",
     ":make_core_generated_user_agent_style_sheets",
@@ -738,6 +734,8 @@ process_in_files("make_core_generated_svg_element_type_helpers") {
   ]
 }
 
+# make_event_factory -----------------------------------------------------------
+
 # "EventFactory" in make_core_generated from GYP.
 process_in_files("make_core_generated_event_factory") {
   script = "../build/scripts/make_event_factory.py"
@@ -750,22 +748,10 @@ process_in_files("make_core_generated_event_factory") {
   outputs = [
     "$blink_core_output_dir/Event.cpp",
     "$blink_core_output_dir/EventHeaders.h",
-    "$blink_core_output_dir/EventInterfaces.h",
   ]
 }
 
-# make_event_factory -----------------------------------------------------------
-
-# "EventTargetFactory" in make_core_generated from GYP.
-make_event_factory("make_core_generated_event_target_factory") {
-  in_files = [
-    "events/EventTargetFactory.in",
-  ]
-  outputs = [
-    "$blink_core_output_dir/EventTargetHeaders.h",
-    "$blink_core_output_dir/EventTargetInterfaces.h",
-  ]
-}
+# make_names -------------------------------------------------------------------
 
 # "MediaFeatureNames" in make_core_generated from GYP.
 process_in_files("make_core_generated_media_feature_names") {
@@ -779,8 +765,6 @@ process_in_files("make_core_generated_media_feature_names") {
     "$blink_core_output_dir/MediaFeatureNames.h",
   ]
 }
-
-# make_names -------------------------------------------------------------------
 
 # "MediaTypeNames" in make_core_generated from GYP.
 make_names("make_core_generated_media_type_names") {

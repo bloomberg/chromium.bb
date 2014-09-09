@@ -208,11 +208,8 @@
         # Additional .cpp files from make_core_generated actions.
         '<(blink_core_output_dir)/Event.cpp',
         '<(blink_core_output_dir)/EventHeaders.h',
-        '<(blink_core_output_dir)/EventInterfaces.h',
         '<(blink_core_output_dir)/EventNames.cpp',
         '<(blink_core_output_dir)/EventNames.h',
-        '<(blink_core_output_dir)/EventTargetHeaders.h',
-        '<(blink_core_output_dir)/EventTargetInterfaces.h',
         '<(blink_core_output_dir)/EventTargetNames.cpp',
         '<(blink_core_output_dir)/EventTargetNames.h',
         '<(blink_core_output_dir)/EventTypeNames.cpp',

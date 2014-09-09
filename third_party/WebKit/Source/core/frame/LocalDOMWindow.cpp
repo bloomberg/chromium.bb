@@ -1921,4 +1921,10 @@ void LocalDOMWindow::trace(Visitor* visitor)
     LifecycleContext<LocalDOMWindow>::trace(visitor);
 }
 
+v8::Handle<v8::Object> LocalDOMWindow::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT_NOT_REACHED(); // LocalDOMWindow has [Custom=ToV8].
+    return v8::Handle<v8::Object>();
+}
+
 } // namespace blink

@@ -10,7 +10,6 @@
             'in_file.py',
             'in_generator.py',
             'license.py',
-            'name_macros.py',
             'name_utilities.py',
             'template_expander.py',
             'templates/macros.tmpl',

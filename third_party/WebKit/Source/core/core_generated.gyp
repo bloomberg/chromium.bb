@@ -483,7 +483,6 @@
           'outputs': [
             '<(blink_core_output_dir)/Event.cpp',
             '<(blink_core_output_dir)/EventHeaders.h',
-            '<(blink_core_output_dir)/EventInterfaces.h',
           ],
           'action': [
             'python',
@@ -508,24 +507,6 @@
             'python',
             '../build/scripts/make_names.py',
             '<(blink_core_output_dir)/EventInterfaces.in',
-            '--output_dir',
-            '<(blink_core_output_dir)',
-          ],
-        },
-        {
-          'action_name': 'EventTargetFactory',
-          'inputs': [
-            '<@(make_event_factory_files)',
-            'events/EventTargetFactory.in',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/EventTargetHeaders.h',
-            '<(blink_core_output_dir)/EventTargetInterfaces.h',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/make_event_factory.py',
-            'events/EventTargetFactory.in',
             '--output_dir',
             '<(blink_core_output_dir)',
           ],

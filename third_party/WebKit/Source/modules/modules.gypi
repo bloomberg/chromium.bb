@@ -282,11 +282,8 @@
       # .cpp files from make_modules_generated actions.
       '<(blink_modules_output_dir)/EventModules.cpp',
       '<(blink_modules_output_dir)/EventModulesHeaders.h',
-      '<(blink_modules_output_dir)/EventModulesInterfaces.h',
       '<(blink_modules_output_dir)/EventModulesNames.cpp',
       '<(blink_modules_output_dir)/EventModulesNames.h',
-      '<(blink_modules_output_dir)/EventTargetModulesHeaders.h',
-      '<(blink_modules_output_dir)/EventTargetModulesInterfaces.h',
       '<(blink_modules_output_dir)/EventTargetModulesNames.cpp',
       '<(blink_modules_output_dir)/EventTargetModulesNames.h',
       '<(blink_modules_output_dir)/IndexedDBNames.cpp',
