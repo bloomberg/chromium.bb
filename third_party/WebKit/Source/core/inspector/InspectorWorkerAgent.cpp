@@ -59,6 +59,7 @@ public:
         , m_id(s_nextId++)
         , m_connected(false)
     {
+        ASSERT(!proxy->pageInspector());
     }
     virtual ~WorkerFrontendChannel()
     {
