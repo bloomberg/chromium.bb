@@ -572,7 +572,7 @@ class DiskCache(isolateserver.LocalCache):
         previous.remove(filename)
         continue
       # An untracked file.
-      if not isolateserver.is_valid_hash(filename, self.hash_algo):
+      if not isolated_format.is_valid_hash(filename, self.hash_algo):
         logging.warning('Removing unknown file %s from cache', filename)
         try_remove(self._path(filename))
         continue
