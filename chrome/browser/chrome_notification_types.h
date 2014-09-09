@@ -263,11 +263,6 @@ enum NotificationType {
   // the details is history::KeywordSearchDeletedDetails.
   NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED,
 
-  // Sent by history when the favicon of a URL changes.  The source is the
-  // profile, and the details is FaviconChangedDetails (see
-  // chrome/browser/favicon/favicon_changed_details.h).
-  NOTIFICATION_FAVICON_CHANGED,
-
   // Sent by FaviconTabHelper when a tab's favicon has been successfully
   // updated. The details are a bool indicating whether the
   // NavigationEntry's favicon URL has changed since the previous

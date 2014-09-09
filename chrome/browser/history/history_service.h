@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -442,6 +443,16 @@ class HistoryService : public content::NotificationObserver,
 
   void NotifyVisitDBObserversOnAddVisit(const history::BriefVisitInfo& info);
 
+  // This callback is invoked when favicon change for urls.
+  typedef base::Callback<void(const std::set<GURL>&)> OnFaviconChangedCallback;
+
+  // Add a callback to the list. The callback will remain registered until the
+  // returned Subscription is destroyed. This must occurs before HistoryService
+  // is destroyed.
+  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
+      AddFaviconChangedCallback(const OnFaviconChangedCallback& callback)
+      WARN_UNUSED_RESULT;
+
   // Testing -------------------------------------------------------------------
 
   // Runs |flushed| after bouncing off the history thread.
@@ -734,6 +745,9 @@ class HistoryService : public content::NotificationObserver,
   // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, const base::Closure& task);
 
+  // Invokes all callback registered by AddFaviconChangedCallback.
+  void NotifyFaviconChanged(const std::set<GURL>& changed_favicons);
+
   // ScheduleAndForget ---------------------------------------------------------
   //
   // Functions for scheduling operations on the history thread that do not need
@@ -863,6 +877,9 @@ class HistoryService : public content::NotificationObserver,
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   ObserverList<history::VisitDatabaseObserver> visit_database_observers_;
+
+  base::CallbackList<void(const std::set<GURL>&)>
+      favicon_changed_callback_list_;
 
   history::DeleteDirectiveHandler delete_directive_handler_;
 

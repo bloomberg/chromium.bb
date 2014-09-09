@@ -8,12 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,14 +26,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
-void NotifyHistoryOfRemovedURLs(Profile* profile,
-                                const std::set<GURL>& removed_urls) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->URLsNoLongerBookmarked(removed_urls);
-}
 
 void RunCallbackWithImage(
     const favicon_base::FaviconImageCallback& callback,
@@ -55,7 +44,10 @@ void RunCallbackWithImage(
 }  // namespace
 
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
-    : profile_(profile), model_(NULL), managed_node_(NULL) {
+    : profile_(profile),
+      history_service_(NULL),
+      model_(NULL),
+      managed_node_(NULL) {
 }
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
@@ -72,18 +64,11 @@ void ChromeBookmarkClient::Init(BookmarkModel* model) {
       profile_->GetPrefs(),
       base::Bind(&ChromeBookmarkClient::GetManagedBookmarksDomain,
                  base::Unretained(this))));
-
-  // Listen for changes to favicons so that we can update the favicon of the
-  // node appropriately.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_FAVICON_CHANGED,
-                 content::Source<Profile>(profile_));
 }
 
 void ChromeBookmarkClient::Shutdown() {
+  favicon_changed_subscription_.reset();
   if (model_) {
-    registrar_.RemoveAll();
-
     model_->RemoveObserver(this);
     model_ = NULL;
   }
@@ -141,10 +126,8 @@ bool ChromeBookmarkClient::SupportsTypedCountForNodes() {
 void ChromeBookmarkClient::GetTypedCountForNodes(
     const NodeSet& nodes,
     NodeTypedCountPairs* node_typed_count_pairs) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   history::URLDatabase* url_db =
-      history_service ? history_service->InMemoryDatabase() : NULL;
+      history_service_ ? history_service_->InMemoryDatabase() : NULL;
   for (NodeSet::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
     int typed_count = 0;
 
@@ -209,21 +192,11 @@ bool ChromeBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
   return !IsDescendantOfManagedNode(node);
 }
 
-void ChromeBookmarkClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_FAVICON_CHANGED: {
-      content::Details<FaviconChangedDetails> favicon_details(details);
-      model_->OnFaviconChanged(favicon_details->urls);
-      break;
-    }
-
-    default:
-      NOTREACHED();
-      break;
-  }
+void ChromeBookmarkClient::SetHistoryService(HistoryService* history_service) {
+  DCHECK(history_service);
+  history_service_ = history_service;
+  favicon_changed_subscription_ = history_service_->AddFaviconChangedCallback(
+      base::Bind(&BookmarkModel::OnFaviconChanged, base::Unretained(model_)));
 }
 
 void ChromeBookmarkClient::BookmarkModelChanged() {
@@ -235,13 +208,15 @@ void ChromeBookmarkClient::BookmarkNodeRemoved(
     int old_index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
-  NotifyHistoryOfRemovedURLs(profile_, removed_urls);
+  if (history_service_)
+    history_service_->URLsNoLongerBookmarked(removed_urls);
 }
 
 void ChromeBookmarkClient::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  NotifyHistoryOfRemovedURLs(profile_, removed_urls);
+  if (history_service_)
+    history_service_->URLsNoLongerBookmarked(removed_urls);
 }
 
 void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,

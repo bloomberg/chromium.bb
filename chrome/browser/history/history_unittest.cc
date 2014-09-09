@@ -96,6 +96,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
+  virtual void NotifyFaviconChanged(const std::set<GURL>& url) OVERRIDE {}
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) OVERRIDE;

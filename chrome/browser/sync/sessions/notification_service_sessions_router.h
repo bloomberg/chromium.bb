@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
 
+#include <set>
+
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class GURL;
+class HistoryService;
 class Profile;
 
 namespace content {
@@ -47,11 +52,17 @@ class NotificationServiceSessionsRouter
   // from WebContents.
   void OnNavigationBlocked(content::WebContents* web_contents);
 
+  // Called when the urls of favicon changed.
+  void OnFaviconChanged(const std::set<GURL>& changed_favicons);
+
   LocalSessionEventHandler* handler_;
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
   syncer::SyncableService::StartSyncFlare flare_;
   base::WeakPtrFactory<NotificationServiceSessionsRouter> weak_ptr_factory_;
+
+  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
+      favicon_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationServiceSessionsRouter);
 };

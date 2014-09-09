@@ -400,8 +400,6 @@
       'browser/favicon/chrome_favicon_client.h',
       'browser/favicon/chrome_favicon_client_factory.cc',
       'browser/favicon/chrome_favicon_client_factory.h',
-      'browser/favicon/favicon_changed_details.cc',
-      'browser/favicon/favicon_changed_details.h',
       'browser/favicon/favicon_handler.cc',
       'browser/favicon/favicon_handler.h',
       'browser/favicon/favicon_service.cc',

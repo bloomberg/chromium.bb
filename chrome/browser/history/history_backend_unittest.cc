@@ -92,6 +92,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
+  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) OVERRIDE;
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) OVERRIDE;
@@ -112,6 +113,7 @@ class HistoryBackendTestBase : public testing::Test {
 
   HistoryBackendTestBase()
       : loaded_(false),
+        favicon_changed_notifications_(0),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual ~HistoryBackendTestBase() {
@@ -119,6 +121,14 @@ class HistoryBackendTestBase : public testing::Test {
   }
 
  protected:
+  int favicon_changed_notifications() const {
+    return favicon_changed_notifications_;
+  }
+
+  void ClearFaviconChangedNotificationCounter() {
+    favicon_changed_notifications_ = 0;
+  }
+
   int num_broadcasted_notifications() const {
     return broadcasted_notifications_.size();
   }
@@ -133,6 +143,10 @@ class HistoryBackendTestBase : public testing::Test {
 
   base::FilePath test_dir() {
     return test_dir_;
+  }
+
+  void NotifyFaviconChanged(const std::set<GURL>& changed_favicons) {
+    ++favicon_changed_notifications_;
   }
 
   void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
@@ -156,6 +170,7 @@ class HistoryBackendTestBase : public testing::Test {
 
   // testing::Test
   virtual void SetUp() {
+    ClearFaviconChangedNotificationCounter();
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
       return;
@@ -180,6 +195,7 @@ class HistoryBackendTestBase : public testing::Test {
 
   // The types and details of notifications which were broadcasted.
   NotificationList broadcasted_notifications_;
+  int favicon_changed_notifications_;
 
   base::MessageLoop message_loop_;
   base::FilePath test_dir_;
@@ -191,6 +207,11 @@ class HistoryBackendTestBase : public testing::Test {
 void HistoryBackendTestDelegate::SetInMemoryBackend(
     scoped_ptr<InMemoryHistoryBackend> backend) {
   test_->SetInMemoryBackend(backend.Pass());
+}
+
+void HistoryBackendTestDelegate::NotifyFaviconChanged(
+    const std::set<GURL>& changed_favicons) {
+  test_->NotifyFaviconChanged(changed_favicons);
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
@@ -1648,7 +1669,7 @@ TEST_F(HistoryBackendTest, SetFaviconsDeleteBitmaps) {
   EXPECT_EQ(favicon_id, icon_mappings[0].icon_id);
 
   // Notifications should have been broadcast for each call to SetFavicons().
-  EXPECT_EQ(2, num_broadcasted_notifications());
+  EXPECT_EQ(2, favicon_changed_notifications());
 }
 
 // Test updating a single favicon bitmap's data via SetFavicons.
@@ -1671,7 +1692,7 @@ TEST_F(HistoryBackendTest, SetFaviconsReplaceBitmapData) {
   EXPECT_TRUE(
       BitmapColorEqual(SK_ColorBLUE, original_favicon_bitmap.bitmap_data));
 
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 
   // Call SetFavicons() with completely identical data.
   bitmaps[0] = CreateBitmap(SK_ColorBLUE, kSmallEdgeSize);
@@ -1689,7 +1710,7 @@ TEST_F(HistoryBackendTest, SetFaviconsReplaceBitmapData) {
 
   // Because the bitmap data is byte equivalent, no notifications should have
   // been broadcasted.
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 
   // Call SetFavicons() with a different bitmap of the same size.
   bitmaps[0] = CreateBitmap(SK_ColorWHITE, kSmallEdgeSize);
@@ -1711,7 +1732,7 @@ TEST_F(HistoryBackendTest, SetFaviconsReplaceBitmapData) {
 
   // A notification should have been broadcasted as the favicon bitmap data has
   // changed.
-  EXPECT_EQ(2, num_broadcasted_notifications());
+  EXPECT_EQ(2, favicon_changed_notifications());
 }
 
 // Test that if two pages share the same FaviconID, changing the favicon for
@@ -1785,7 +1806,7 @@ TEST_F(HistoryBackendTest, SetFaviconsSameFaviconURLForTwoPages) {
 
   // A notification should have been broadcast for each call to SetFavicons()
   // and each call to UpdateFaviconMappingsAndFetch().
-  EXPECT_EQ(3, num_broadcasted_notifications());
+  EXPECT_EQ(3, favicon_changed_notifications());
 }
 
 // Test that no notifications are broadcast as a result of calling
@@ -1803,7 +1824,7 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoChange) {
       backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
           icon_url, favicon_base::FAVICON, NULL);
   EXPECT_NE(0, icon_id);
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
@@ -1821,7 +1842,7 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoChange) {
 
   // No notification should have been broadcast as no icon mapping, favicon,
   // or favicon bitmap was updated, added or removed.
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 }
 
 // Test repeatedly calling MergeFavicon(). |page_url| is initially not known
@@ -1894,7 +1915,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_TRUE(BitmapColorEqual(SK_ColorBLUE, favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 
   // 1) Merge identical favicon bitmap.
   std::vector<unsigned char> data;
@@ -1917,7 +1938,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_TRUE(BitmapColorEqual(SK_ColorBLUE, favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
-  EXPECT_EQ(1, num_broadcasted_notifications());
+  EXPECT_EQ(1, favicon_changed_notifications());
 
   // 2) Merge favicon bitmap of the same size.
   data.clear();
@@ -1992,7 +2013,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
 
   // A notification should have been broadcast for each call to SetFavicons()
   // and MergeFavicon().
-  EXPECT_EQ(4, num_broadcasted_notifications());
+  EXPECT_EQ(4, favicon_changed_notifications());
 }
 
 // Test calling MergeFavicon() when |icon_url| is known to the database but not
@@ -2077,7 +2098,7 @@ TEST_F(HistoryBackendTest, MergeFaviconIconURLMappedToDifferentPageURL) {
 
   // A notification should have been broadcast for each call to SetFavicons()
   // and MergeFavicon().
-  EXPECT_EQ(3, num_broadcasted_notifications());
+  EXPECT_EQ(3, favicon_changed_notifications());
 }
 
 // Test that MergeFavicon() does not add more than

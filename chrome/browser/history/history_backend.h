@@ -120,6 +120,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void SetInMemoryBackend(
         scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
+    // Notify HistoryService that some URLs favicon changed that will forward
+    // the events to the FaviconChangedObservers in the correct thread.
+    virtual void NotifyFaviconChanged(const std::set<GURL>& urls) = 0;
+
     // Broadcasts the specified notification to the notification service.
     // This is implemented here because notifications must only be sent from
     // the main thread. This is the only method that doesn't identify the

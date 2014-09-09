@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_PROVIDER_BACKEND_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_PROVIDER_BACKEND_H_
 
+#include <list>
 #include <set>
 
 #include "base/containers/hash_tables.h"
@@ -146,23 +147,7 @@ class AndroidProviderBackend {
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateTables);
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateSearchTermTable);
 
-  class HistoryNotifications {
-   public:
-    HistoryNotifications();
-    ~HistoryNotifications();
-
-    void PushBack(int type, scoped_ptr<HistoryDetails> detail);
-    int PopBackType();
-    scoped_ptr<HistoryDetails> PopBackDetails();
-
-    bool empty() const { return types_.empty(); }
-
-   private:
-    std::vector<int> types_;
-    ScopedVector<HistoryDetails> details_;
-
-    DISALLOW_COPY_AND_ASSIGN(HistoryNotifications);
-  };
+  typedef std::list<base::Closure> HistoryNotifications;
 
   // The scoped transaction for AndroidProviderBackend.
   //

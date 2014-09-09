@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_changed_details.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
@@ -53,8 +54,13 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
   registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
-      content::Source<Profile>(profile_));
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  if (history_service) {
+    favicon_changed_subscription_ = history_service->AddFaviconChangedCallback(
+        base::Bind(&NotificationServiceSessionsRouter::OnFaviconChanged,
+                   base::Unretained(this)));
+  }
 #if defined(ENABLE_MANAGED_USERS)
   if (profile_->IsSupervised()) {
     SupervisedUserService* supervised_user_service =
@@ -73,12 +79,6 @@ void NotificationServiceSessionsRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_FAVICON_CHANGED: {
-      content::Details<FaviconChangedDetails> favicon_details(details);
-      if (handler_)
-        handler_->OnFaviconPageUrlsUpdated(favicon_details->urls);
-      return;
-    }
     // Source<WebContents>.
     case chrome::NOTIFICATION_TAB_PARENTED:
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
@@ -147,6 +147,12 @@ void NotificationServiceSessionsRouter::OnNavigationBlocked(
 
   DCHECK(tab->profile() == profile_);
   handler_->OnLocalTabModified(tab);
+}
+
+void NotificationServiceSessionsRouter::OnFaviconChanged(
+    const std::set<GURL>& changed_favicons) {
+  if (handler_)
+    handler_->OnFaviconPageUrlsUpdated(changed_favicons);
 }
 
 void NotificationServiceSessionsRouter::StartRoutingTo(

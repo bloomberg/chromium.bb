@@ -158,6 +158,14 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                    base::Passed(&backend)));
   }
 
+  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) OVERRIDE {
+    // Send the notification to the history service on the main thread.
+    service_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &HistoryService::NotifyFaviconChanged, history_service_, urls));
+  }
+
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<history::HistoryDetails> details) OVERRIDE {
@@ -1230,4 +1238,17 @@ void HistoryService::NotifyVisitDBObserversOnAddVisit(
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(history::VisitDatabaseObserver, visit_database_observers_,
                     OnAddVisit(info));
+}
+
+scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
+HistoryService::AddFaviconChangedCallback(
+    const HistoryService::OnFaviconChangedCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return favicon_changed_callback_list_.Add(callback);
+}
+
+void HistoryService::NotifyFaviconChanged(
+    const std::set<GURL>& changed_favicons) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  favicon_changed_callback_list_.Notify(changed_favicons);
 }

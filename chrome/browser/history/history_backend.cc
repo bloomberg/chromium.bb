@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_db_task.h"
@@ -1897,13 +1896,9 @@ void HistoryBackend::SetImportedFavicons(
     }
   }
 
-  if (!favicons_changed.empty()) {
+  if (!favicons_changed.empty() && delegate_) {
     // Send the notification about the changed favicon URLs.
-    scoped_ptr<FaviconChangedDetails> changed_details(
-        new FaviconChangedDetails);
-    changed_details->urls.swap(favicons_changed);
-    BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
-                           changed_details.PassAs<HistoryDetails>());
+    delegate_->NotifyFaviconChanged(favicons_changed);
   }
 }
 
@@ -2242,13 +2237,10 @@ void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
     const GURL& page_url) {
   history::RedirectList redirect_list;
   GetCachedRecentRedirects(page_url, &redirect_list);
-
-  scoped_ptr<FaviconChangedDetails> changed_details(new FaviconChangedDetails);
-  for (size_t i = 0; i < redirect_list.size(); ++i)
-    changed_details->urls.insert(redirect_list[i]);
-
-  BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
-                         changed_details.PassAs<HistoryDetails>());
+  if (!redirect_list.empty() && delegate_) {
+    std::set<GURL> favicons_changed(redirect_list.begin(), redirect_list.end());
+    delegate_->NotifyFaviconChanged(favicons_changed);
+  }
 }
 
 void HistoryBackend::Commit() {

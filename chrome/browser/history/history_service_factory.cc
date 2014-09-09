@@ -6,6 +6,8 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_service.h"
@@ -61,6 +63,7 @@ HistoryServiceFactory::HistoryServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "HistoryService", BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeHistoryClientFactory::GetInstance());
+  DependsOn(ChromeBookmarkClientFactory::GetInstance());
 }
 
 HistoryServiceFactory::~HistoryServiceFactory() {
@@ -73,6 +76,8 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
       ChromeHistoryClientFactory::GetForProfile(profile), profile));
   if (!history_service->Init(profile->GetPath()))
     return NULL;
+  ChromeBookmarkClientFactory::GetForProfile(profile)
+      ->SetHistoryService(history_service.get());
   return history_service.release();
 }
 
