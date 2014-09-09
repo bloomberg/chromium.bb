@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
@@ -383,14 +384,13 @@ bool WebTestProxyBase::RunFileChooser(
 }
 
 void WebTestProxyBase::ShowValidationMessage(
-    const blink::WebRect& anchor_in_root_view,
-    const blink::WebString& message,
-    const blink::WebString& sub_message,
-    blink::WebTextDirection hint) {
+    const base::string16& message,
+    const base::string16& sub_message) {
   delegate_->printMessage(
-      std::string("ValidationMessageClient: main-message=") +
-      std::string(message.utf8()) + " sub-message=" +
-      std::string(sub_message.utf8()) + "\n");
+      "ValidationMessageClient: main-message=" +
+      base::UTF16ToUTF8(message) +
+      " sub-message=" +
+      base::UTF16ToUTF8(sub_message) + "\n");
 }
 
 std::string WebTestProxyBase::CaptureTree(bool debug_render_tree) {

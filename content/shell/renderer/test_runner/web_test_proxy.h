@@ -107,10 +107,8 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
       const blink::WebVector<blink::WebColorSuggestion>& suggestions);
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion);
-  void ShowValidationMessage(const blink::WebRect& anchor_in_root_view,
-                             const blink::WebString& message,
-                             const blink::WebString& sub_message,
-                             blink::WebTextDirection hint);
+  void ShowValidationMessage(const base::string16& message,
+                             const base::string16& sub_message);
   void HideValidationMessage();
   void MoveValidationMessage(const blink::WebRect& anchor_in_root_view);
 
@@ -377,11 +375,18 @@ class WebTestProxy : public Base, public WebTestProxyBase {
     return WebTestProxyBase::RunFileChooser(params, completion);
   }
   virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
-                                     const blink::WebString& message,
+                                     const blink::WebString& main_message,
+                                     blink::WebTextDirection main_message_hint,
                                      const blink::WebString& sub_message,
-                                     blink::WebTextDirection hint) {
+                                     blink::WebTextDirection sub_message_hint) {
+    base::string16 wrapped_main_text = main_message;
+    base::string16 wrapped_sub_text = sub_message;
+
+    Base::SetValidationMessageDirection(
+        &wrapped_main_text, main_message_hint, &wrapped_sub_text, sub_message_hint);
+
     WebTestProxyBase::ShowValidationMessage(
-        anchor_in_root_view, message, sub_message, hint);
+        wrapped_main_text, wrapped_sub_text);
   }
   virtual void postSpellCheckEvent(const blink::WebString& event_name) {
     WebTestProxyBase::PostSpellCheckEvent(event_name);

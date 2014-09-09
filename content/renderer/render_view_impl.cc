@@ -1809,27 +1809,41 @@ bool RenderViewImpl::runFileChooser(
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }
 
+void RenderViewImpl::SetValidationMessageDirection(
+    base::string16* wrapped_main_text,
+    blink::WebTextDirection main_text_hint,
+    base::string16* wrapped_sub_text,
+    blink::WebTextDirection sub_text_hint) {
+  if (main_text_hint == blink::WebTextDirectionLeftToRight) {
+    *wrapped_main_text =
+        base::i18n::GetDisplayStringInLTRDirectionality(*wrapped_main_text);
+  } else if (main_text_hint == blink::WebTextDirectionRightToLeft &&
+             !base::i18n::IsRTL()) {
+    base::i18n::WrapStringWithRTLFormatting(wrapped_main_text);
+  }
+
+  if (!wrapped_sub_text->empty()) {
+    if (sub_text_hint == blink::WebTextDirectionLeftToRight) {
+      *wrapped_sub_text =
+          base::i18n::GetDisplayStringInLTRDirectionality(*wrapped_sub_text);
+    } else if (sub_text_hint == blink::WebTextDirectionRightToLeft) {
+      base::i18n::WrapStringWithRTLFormatting(wrapped_sub_text);
+    }
+  }
+}
+
 void RenderViewImpl::showValidationMessage(
     const blink::WebRect& anchor_in_root_view,
     const blink::WebString& main_text,
+    blink::WebTextDirection main_text_hint,
     const blink::WebString& sub_text,
-    blink::WebTextDirection hint) {
+    blink::WebTextDirection sub_text_hint) {
   base::string16 wrapped_main_text = main_text;
   base::string16 wrapped_sub_text = sub_text;
-  if (hint == blink::WebTextDirectionLeftToRight) {
-    wrapped_main_text =
-        base::i18n::GetDisplayStringInLTRDirectionality(wrapped_main_text);
-    if (!wrapped_sub_text.empty()) {
-      wrapped_sub_text =
-          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_sub_text);
-    }
-  } else if (hint == blink::WebTextDirectionRightToLeft
-             && !base::i18n::IsRTL()) {
-    base::i18n::WrapStringWithRTLFormatting(&wrapped_main_text);
-    if (!wrapped_sub_text.empty()) {
-      base::i18n::WrapStringWithRTLFormatting(&wrapped_sub_text);
-    }
-  }
+
+  SetValidationMessageDirection(
+      &wrapped_main_text, main_text_hint, &wrapped_sub_text, sub_text_hint);
+
   Send(new ViewHostMsg_ShowValidationMessage(
       routing_id(), AdjustValidationMessageAnchor(anchor_in_root_view),
       wrapped_main_text, wrapped_sub_text));

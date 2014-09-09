@@ -383,8 +383,13 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool runFileChooser(
       const blink::WebFileChooserParams& params,
       blink::WebFileChooserCompletion* chooser_completion);
+  void SetValidationMessageDirection(base::string16* main_text,
+                                     blink::WebTextDirection main_text_hint,
+                                     base::string16* sub_text,
+                                     blink::WebTextDirection sub_text_hint);
   virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
                                      const blink::WebString& main_text,
+                                     blink::WebTextDirection main_text_hint,
                                      const blink::WebString& sub_text,
                                      blink::WebTextDirection hint) OVERRIDE;
   virtual void hideValidationMessage() OVERRIDE;
