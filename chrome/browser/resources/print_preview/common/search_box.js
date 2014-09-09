@@ -99,9 +99,13 @@ cr.define('print_preview', function() {
       var searchEvent = new Event(SearchBox.EventType.SEARCH);
       var query = this.getQuery_();
       searchEvent.query = query;
-      // Generate regexp-safe query by escaping metacharacters.
-      var safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-      searchEvent.queryRegExp = new RegExp('(' + safeQuery + ')', 'ig');
+      if (query) {
+        // Generate regexp-safe query by escaping metacharacters.
+        var safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        searchEvent.queryRegExp = new RegExp('(' + safeQuery + ')', 'ig');
+      } else {
+        searchEvent.queryRegExp = null;
+      }
       this.dispatchEvent(searchEvent);
     },
 

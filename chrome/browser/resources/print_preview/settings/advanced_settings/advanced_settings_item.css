@@ -15,7 +15,6 @@
 .advanced-settings-item-label {
   -webkit-padding-end: 20px;
   display: table-cell;
-  line-height: 24px;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
@@ -35,7 +34,6 @@
 
 .advanced-settings-item-value {
   display: table-cell;
-  line-height: 24px;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
@@ -43,7 +41,12 @@
   width: 175px;
 }
 
+.advanced-settings-item-value-select-control {
+  line-height: 24px;
+}
+
 .advanced-settings-item-value-text-control {
   height: 28px;
+  line-height: 24px;
   width: 175px;
 }

@@ -126,9 +126,15 @@ cr.define('print_preview', function() {
      * @private
      */
     filterLists_: function(query) {
+      var lastVisibleItemWithBubble = null;
       this.items_.forEach(function(item) {
         item.updateSearchQuery(query);
+        if (item.searchBubbleShown)
+          lastVisibleItemWithBubble = item;
       });
+      setIsVisible(
+          this.getChildElement('.advanced-settings-item-extra-padding'),
+          !!lastVisibleItemWithBubble);
     },
 
     /**
@@ -158,14 +164,20 @@ cr.define('print_preview', function() {
       var availableHeight = this.getAvailableContentHeight_();
       var containerEl = this.getChildElement('.settings-area');
       containerEl.style.maxHeight = availableHeight + 'px';
+      var settingsEl = this.getChildElement('.settings');
 
       vendorCapabilities.forEach(function(capability) {
         var item = new print_preview.AdvancedSettingsItem(
             this.eventTarget_, this.printTicketStore_, capability);
         this.addChild(item);
-        item.render(this.getChildElement('.settings'));
+        item.render(settingsEl);
         this.items_.push(item);
       }.bind(this));
+
+      var extraPadding = document.createElement('div');
+      extraPadding.classList.add('advanced-settings-item-extra-padding');
+      extraPadding.hidden = true;
+      settingsEl.appendChild(extraPadding);
     },
 
     /**

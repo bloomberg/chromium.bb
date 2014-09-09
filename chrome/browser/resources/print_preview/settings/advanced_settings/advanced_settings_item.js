@@ -109,6 +109,10 @@ cr.define('print_preview', function() {
       this.renderCapability_();
     },
 
+    get searchBubbleShown() {
+      return getIsVisible(this.getElement()) && !!this.searchBubble_;
+    },
+
     /**
      * @return {HTMLSelectElement} Select element.
      * @private
@@ -155,7 +159,7 @@ cr.define('print_preview', function() {
       var textContent = this.capability_.display_name;
       var nameMatches = this.query_ ? !!textContent.match(this.query_) : true;
       var optionMatches = null;
-      if (false && this.query_) {
+      if (this.query_) {
         if (this.capability_.type == 'SELECT') {
           this.capability_.select_cap.option.some(function(option) {
             optionMatches = (option.display_name || '').match(this.query_);
@@ -186,7 +190,6 @@ cr.define('print_preview', function() {
       nameEl.title = textContent;
 
       if (optionMatches) {
-        window.console.log(optionMatches[0]);
         var element =
             this.capability_.type == 'SELECT' ? this.select_ : this.text_;
         if (!this.searchBubble_) {

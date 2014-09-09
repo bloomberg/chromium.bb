@@ -36,5 +36,11 @@
 #advanced-settings .settings {
   border-spacing: 0;
   display: table;
+  position: relative;
   width: 100%;
+}
+
+.advanced-settings-item-extra-padding {
+  display: table-row;
+  height: 15px;
 }
