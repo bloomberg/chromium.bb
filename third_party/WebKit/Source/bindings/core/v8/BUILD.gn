@@ -21,7 +21,7 @@ group("bindings_core_v8_generated") {
 
 # bindings_core_generated_aggregate in Source/bindings/core/v8/generated.gyp
 aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
-  sources = core_idl_files
+  sources = core_definition_idl_files
   component_dir = "core"
   outputs = bindings_core_generated_aggregate_files
 }
@@ -34,10 +34,7 @@ idl_compiler("bindings_core_v8_generated_individual") {
 
 # bindings_core_dictionary_impl_generated in Source/bindings/core/v8/generated.gyp
 idl_dictionary("bindings_core_dictionary_impl_generated") {
-  # FIXME: Add 'core_dictionary_idl_files' to sources
-  # See comment on core/core.gypi
-  sources = core_testing_dictionary_idl_files
-  # FIXME: Add 'generated_core_dictionary_files' to outputs
-  # See comment on core/core.gypi
-  outputs = generated_core_testing_dictionary_files
+  sources = core_dictionary_idl_files + core_testing_dictionary_idl_files
+  outputs = generated_core_dictionary_files +
+    generated_core_testing_dictionary_files
 }
