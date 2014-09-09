@@ -23,36 +23,43 @@ namespace {
 
 const char kDisplayDispositionMetric[] = "PasswordBubble.DisplayDisposition";
 
-// Listens to WebContents and invokes a callback on the mouse down event.
-class WebContentMouseClickHandler : public ui::EventHandler {
+// Listens to WebContents and invokes a callback on the mouse/key down event.
+class WebContentEventHandler : public ui::EventHandler {
  public:
-  explicit WebContentMouseClickHandler(content::WebContents* web_contents,
-                                       const base::Closure& callback)
+  explicit WebContentEventHandler(content::WebContents* web_contents,
+                                  const base::Closure& callback)
       : web_contents_(web_contents),
         callback_(callback),
         was_called_(false) {
     web_contents_->GetNativeView()->AddPreTargetHandler(this);
   }
 
-  virtual ~WebContentMouseClickHandler() {
+  virtual ~WebContentEventHandler() {
     web_contents_->GetNativeView()->RemovePreTargetHandler(this);
   }
 
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_KEY_PRESSED)
+      HandleEvent(event);
+  }
+
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_MOUSE_PRESSED) {
-      callback_.Run();
-      was_called_ = true;
-    }
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      HandleEvent(event);
   }
 
   bool was_called() const { return was_called_; }
 
  private:
+  void HandleEvent(ui::Event* event) {
+    callback_.Run();
+    was_called_ = true;
+  }
   content::WebContents* web_contents_;
   base::Closure callback_;
   bool was_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentMouseClickHandler);
+  DISALLOW_COPY_AND_ASSIGN(WebContentEventHandler);
 };
 
 void CheckBubbleAnimation() {
@@ -230,9 +237,30 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnClick) {
       GetFocusManager()->GetFocusedView());
   // We have to check the animation in the process of handling the mouse down
   // event. Otherwise, animation may finish too quickly.
-  WebContentMouseClickHandler observer(
+  WebContentEventHandler observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::Bind(&CheckBubbleAnimation));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  EXPECT_TRUE(observer.was_called());
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnKey) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,<input type=\"text\" autofocus>"));
+  ManagePasswordsBubbleView::ShowBubble(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      ManagePasswordsBubble::AUTOMATIC);
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
+      GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  // We have to check the animation in the process of handling the key down
+  // event. Otherwise, animation may finish too quickly.
+  WebContentEventHandler observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::Bind(&CheckBubbleAnimation));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K,
+      false, false, false, false));
   EXPECT_TRUE(observer.was_called());
 }
