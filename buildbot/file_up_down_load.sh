@@ -44,10 +44,6 @@ readonly GS_UTIL=${GS_UTIL:-buildbot/gsutil.sh}
 readonly DIR_ARCHIVE=nativeclient-archive2
 readonly DIR_TRYBOT=nativeclient-trybot
 
-readonly URL_PREFIX_RAW=https://storage.googleapis.com
-readonly URL_PREFIX_ARCHIVE="${URL_PREFIX_RAW}/${DIR_ARCHIVE}"
-readonly URL_PREFIX_TRYBOT="${URL_PREFIX_RAW}/${DIR_TRYBOT}"
-
 readonly GS_PREFIX_ARCHIVE="gs://${DIR_ARCHIVE}"
 readonly GS_PREFIX_TRYBOT="gs://${DIR_TRYBOT}"
 
@@ -90,8 +86,8 @@ DownloadArchive() {
   local path=$1
   local tarball=$2
 
-  CheckPath ${path}
-  curl -L ${URL_PREFIX_ARCHIVE}/${path} -o ${tarball}
+  echo "@@@STEP_LINK@download@${URL_PREFIX_UI}/${path}@@@"
+  ${GS_UTIL} cp ${GS_PREFIX_ARCHIVE}/${path} ${tarball}
 }
 
 UploadTrybot() {
@@ -106,8 +102,8 @@ DownloadTrybot() {
   local path=$1
   local tarball=$2
 
-  CheckPath ${path}
-  curl -L ${URL_PREFIX_TRYBOT}/${path} -o ${tarball}
+  echo "@@@STEP_LINK@download@${URL_PREFIX_UI}/${path}@@@"
+  ${GS_UTIL} cp ${GS_PREFIX_TRYBOT}/${path} ${tarball}
 }
 
 ComputeSha1() {
