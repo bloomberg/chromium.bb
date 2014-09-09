@@ -10,8 +10,12 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "extensions/common/features/feature.h"
@@ -129,6 +133,14 @@ void UpdateBookmarksExperimentState(
     }
   }
 
+#if defined(OS_ANDROID)
+  bool opt_in = !opt_out
+      && CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnhancedBookmarksExperiment) == "1";
+  if (opt_in && bookmarks_experiment_new_state == BOOKMARKS_EXPERIMENT_NONE)
+    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
+#endif
+
   UMA_HISTOGRAM_ENUMERATION("EnhancedBookmarks.SyncExperimentState",
                             bookmarks_experiment_new_state,
                             BOOKMARKS_EXPERIMENT_ENUM_SIZE);
@@ -137,6 +149,16 @@ void UpdateBookmarksExperimentState(
       bookmarks_experiment_new_state);
   ForceFinchBookmarkExperimentIfNeeded(flags_storage,
                                        bookmarks_experiment_new_state);
+}
+
+void InitBookmarksExperimentState(Profile* profile) {
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  bool is_signed_in = signin && !signin->IsAuthenticated();
+  UpdateBookmarksExperimentState(
+      profile->GetPrefs(),
+      g_browser_process->local_state(),
+      is_signed_in,
+      BOOKMARKS_EXPERIMENT_ENABLED_FROM_SYNC_UNKNOWN);
 }
 
 void ForceFinchBookmarkExperimentIfNeeded(

@@ -10,6 +10,7 @@
 #include "extensions/common/extension.h"
 
 class PrefService;
+class Profile;
 
 // States for bookmark experiment. They are set by Chrome sync into
 // sync_driver::prefs::kEnhancedBookmarksExperimentEnabled user preference and
@@ -30,13 +31,19 @@ enum BookmarksExperimentState {
 bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
                                        std::string* extension_id);
 
-// Updates bookmark experiment state based on information from Chrome sync
-// and Finch experiments.
+// Updates bookmark experiment state based on information from Chrome sync,
+// Finch experiments, and command line flag.
 void UpdateBookmarksExperimentState(
     PrefService* user_prefs,
     PrefService* local_state,
     bool user_signed_in,
     BookmarksExperimentState experiment_enabled_from_sync);
+
+// Same as UpdateBookmarksExperimentState, but the last argument with
+// BOOKMARKS_EXPERIMENT_ENABLED_FROM_SYNC_UNKNOWN.
+// Intended for performing initial configuration of bookmarks experiments
+// when the browser is first initialized.
+void InitBookmarksExperimentState(Profile* profile);
 
 // Sets flag to opt-in user into Finch experiment.
 void ForceFinchBookmarkExperimentIfNeeded(

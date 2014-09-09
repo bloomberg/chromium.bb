@@ -15,15 +15,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 
-namespace {
-
-bool IsUserSignedin(Profile* profile) {
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  return signin && signin->IsAuthenticated();
-}
-
-}  // namespace
-
 namespace extensions {
 
 ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
@@ -66,11 +57,8 @@ void ExternalComponentLoader::StartLoading() {
     }
   }
 
-  UpdateBookmarksExperimentState(
-      profile_->GetPrefs(),
-      g_browser_process->local_state(),
-      IsUserSignedin(profile_),
-      BOOKMARKS_EXPERIMENT_ENABLED_FROM_SYNC_UNKNOWN);
+  InitBookmarksExperimentState(profile_);
+
   std::string ext_id;
   if (GetBookmarksExperimentExtensionID(profile_->GetPrefs(), &ext_id) &&
       !ext_id.empty()) {

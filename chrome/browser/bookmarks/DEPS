@@ -5,6 +5,7 @@ include_rules = [
   # exceptions!
   "-chrome/browser",
   "+chrome/browser/bookmarks",
+  "+chrome/browser/browser_process.h",
   "+chrome/browser/favicon",
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/policy/profile_policy_connector.h",
@@ -13,6 +14,7 @@ include_rules = [
   "+chrome/browser/profiles/profile.h",
   "+chrome/browser/profiles/startup_task_runner_service.h",
   "+chrome/browser/profiles/startup_task_runner_service_factory.h",
+  "+chrome/browser/signin/signin_manager_factory.h",
   "+chrome/browser/undo/bookmark_undo_service.h",
   "+chrome/browser/undo/bookmark_undo_service_factory.h",
 

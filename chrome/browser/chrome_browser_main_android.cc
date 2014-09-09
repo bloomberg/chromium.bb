@@ -7,11 +7,14 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/path_service.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/google/google_search_counter_android.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
@@ -52,7 +55,10 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
 }
 
 void ChromeBrowserMainPartsAndroid::PostProfileInit() {
-  search_counter_.reset(new GoogleSearchCounterAndroid(profile()));
+  Profile* main_profile = profile();
+  search_counter_.reset(new GoogleSearchCounterAndroid(main_profile));
+  InitBookmarksExperimentState(main_profile);
+
   ChromeBrowserMainParts::PostProfileInit();
 }
 
