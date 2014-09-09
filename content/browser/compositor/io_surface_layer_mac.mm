@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/io_surface_layer_mac.h"
 
+#include <sstream>
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
@@ -11,6 +13,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -23,6 +26,16 @@
     GLenum gl_error = glGetError();                                     \
     LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
   } while (0)
+
+// Helper function for logging error codes.
+namespace {
+template<typename T>
+std::string to_string(T value) {
+  std::ostringstream stream;
+  stream << value;
+  return stream.str();
+}
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // IOSurfaceLayer(Private)
@@ -159,7 +172,10 @@ void IOSurfaceLayerHelper::TimerFired() {
     io_surface_.reset(IOSurfaceLookup(io_surface_id));
     io_surface_texture_dirty_ = true;
     if (!io_surface_) {
-      LOG(ERROR) << "Failed to open IOSurface for frame";
+      content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+          logging::LOG_ERROR,
+          "IOSurfaceLayer",
+          "Failed to open IOSurface in gotFrameWithIOSurface");
       if (client_)
         client_->IOSurfaceLayerHitError();
     }
@@ -274,10 +290,14 @@ void IOSurfaceLayerHelper::TimerFired() {
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
   GLint number_virtual_screens = 0;
   base::ScopedTypeRef<CGLPixelFormatObj> pixel_format;
-  CGLError error = CGLChoosePixelFormat(
+  CGLError cgl_error = CGLChoosePixelFormat(
       &attribs.front(), pixel_format.InitializeInto(), &number_virtual_screens);
-  if (error != kCGLNoError) {
-    LOG(ERROR) << "Failed to create pixel format object.";
+  if (cgl_error != kCGLNoError) {
+    content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+        logging::LOG_ERROR,
+        "IOSurfaceLayer",
+        std::string("Failed to create pixel format object with CGL error ") +
+            to_string(static_cast<int>(cgl_error)));
     return NULL;
   }
   return CGLRetainPixelFormat(pixel_format);
@@ -331,7 +351,11 @@ void IOSurfaceLayerHelper::TimerFired() {
         0 /* plane */);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
     if (cgl_error != kCGLNoError) {
-      LOG(ERROR) << "CGLTexImageIOSurface2D failed with " << cgl_error;
+      content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+          logging::LOG_ERROR,
+          "IOSurfaceLayer",
+          std::string("CGLTexImageIOSurface2D failed with CGL error ") +
+              to_string(cgl_error));
       glDeleteTextures(1, &io_surface_texture_);
       io_surface_texture_ = 0;
       if (client_)
@@ -384,6 +408,10 @@ void IOSurfaceLayerHelper::TimerFired() {
     glBegin(GL_TRIANGLES);
     glEnd();
   } else {
+    content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+        logging::LOG_ERROR,
+        "IOSurfaceLayer",
+        std::string("No texture to draw, clearing to white"));
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
   }
@@ -395,15 +423,22 @@ void IOSurfaceLayerHelper::TimerFired() {
     if (cgl_error == kCGLNoError) {
       cgl_renderer_id_ &= kCGLRendererIDMatchingMask;
     } else {
-      LOG(ERROR) << "CGLGetParameter for kCGLCPCurrentRendererID failed with "
-                 << cgl_error;
+      content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+          logging::LOG_ERROR,
+          "IOSurfaceLayer",
+          std::string("CGLGetParameter for kCGLCPCurrentRendererID failed ") +
+              std::string("with CGL error ") + to_string(cgl_error));
       cgl_renderer_id_ = 0;
     }
   }
 
   // If we hit any errors, tell the client.
   while (GLenum gl_error = glGetError()) {
-    LOG(ERROR) << "Hit GL error " << gl_error;
+    content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
+        logging::LOG_ERROR,
+        "IOSurfaceLayer",
+        std::string("Hit GL error ") + to_string(gl_error) +
+            std::string(" in drawInCGLContext"));
     if (client_)
       client_->IOSurfaceLayerHitError();
   }
