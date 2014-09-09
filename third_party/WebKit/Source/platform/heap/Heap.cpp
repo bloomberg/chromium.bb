@@ -484,7 +484,9 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
         object[i] = finalizedZapValue;
 
     // Zap the primary vTable entry (secondary vTable entries are not zapped).
-    *(reinterpret_cast<uintptr_t*>(object)) = zappedVTable;
+    if (gcInfo->hasVTable()) {
+        *(reinterpret_cast<uintptr_t*>(object)) = zappedVTable;
+    }
 #endif
     // In Release builds, the entire object is zeroed out when it is added to the free list.
     // This happens right after sweeping the page and before the thread commences execution.
