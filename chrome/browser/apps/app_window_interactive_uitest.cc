@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // http://crbug.com/404081
 #define MAYBE_TestInnerBounds DISABLED_TestInnerBounds
 #else
