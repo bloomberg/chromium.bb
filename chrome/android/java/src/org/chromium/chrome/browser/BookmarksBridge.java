@@ -215,6 +215,30 @@ public class BookmarksBridge {
     }
 
     /**
+     * Populates folderList with BookmarkIds of folders users can move bookmarks
+     * to and all folders have corresponding depth value in depthList. Folders
+     * having depths of 0 will be shown as top-layered folders. These include
+     * "Desktop Folder" itself as well as all children of "mobile" and "other".
+     * Children of 0-depth folders have depth of 1, and so on.
+     *
+     * The result list will be sorted alphabetically by title. "mobile", "other",
+     * root node, managed folder, partner folder are NOT included as results.
+     */
+    public void getAllFoldersWithDepths(List<BookmarkId> folderList,
+            List<Integer> depthList) {
+        assert mIsNativeBookmarkModelLoaded;
+        nativeGetAllFoldersWithDepths(mNativeBookmarksBridge, folderList, depthList);
+    }
+
+    /**
+     * @return The BookmarkId for Mobile folder node
+     */
+    public BookmarkId getMobileFolderId() {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeGetMobileFolderId(mNativeBookmarksBridge);
+    }
+
+    /**
      * Reads sub-folder IDs, sub-bookmark IDs, or both of the given folder.
      *
      * @param getFolders   Whether sub-folders should be returned.
@@ -445,6 +469,13 @@ public class BookmarksBridge {
     }
 
     @CalledByNative
+    private static void addToBookmarkIdListWithDepth(List<BookmarkId> folderList, long id,
+            int type, List<Integer> depthList, int depth) {
+        folderList.add(new BookmarkId(id, type));
+        depthList.add(depth);
+    }
+
+    @CalledByNative
     private static BookmarkId createBookmarkId(long id, int type) {
         return new BookmarkId(id, type);
     }
@@ -459,6 +490,9 @@ public class BookmarksBridge {
             boolean getNormal, List<BookmarkId> bookmarksList);
     private native void nativeGetUncategorizedBookmarkIDs(long nativeBookmarksBridge,
             List<BookmarkId> bookmarksList);
+    private native void nativeGetAllFoldersWithDepths(long nativeBookmarksBridge,
+            List<BookmarkId> folderList, List<Integer> depthList);
+    private native BookmarkId nativeGetMobileFolderId(long nativeBookmarksBridge);
     private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
     private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,

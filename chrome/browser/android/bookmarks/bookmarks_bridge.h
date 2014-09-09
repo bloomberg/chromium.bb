@@ -52,6 +52,13 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   void GetUncategorizedBookmarkIDs(JNIEnv* env,
                                    jobject obj,
                                    jobject j_result_obj);
+  void GetAllFoldersWithDepths(JNIEnv* env,
+                               jobject obj,
+                               jobject j_folders_obj,
+                               jobject j_depths_obj);
+
+  base::android::ScopedJavaLocalRef<jobject> GetMobileFolderId(JNIEnv* env,
+                                                               jobject obj);
 
   void GetChildIDs(JNIEnv* env,
                    jobject obj,

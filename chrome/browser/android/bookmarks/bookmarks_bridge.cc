@@ -279,6 +279,86 @@ void BookmarksBridge::GetUncategorizedBookmarkIDs(JNIEnv* env,
   }
 }
 
+void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
+                                              jobject obj,
+                                              jobject j_folders_obj,
+                                              jobject j_depths_obj) {
+  DCHECK(IsLoaded());
+
+  const BookmarkNode* desktop = bookmark_model_->bookmark_bar_node();
+  const BookmarkNode* mobile = bookmark_model_->mobile_node();
+  const BookmarkNode* other = bookmark_model_->other_node();
+
+  scoped_ptr<icu::Collator> collator = GetICUCollator();
+
+  // Vector to temporarily contain all child bookmarks at same level for sorting
+  std::vector<const BookmarkNode*> bookmarkList;
+  // Stack for Depth-First Search of bookmark model. It stores nodes and their
+  // heights.
+  std::stack<std::pair<const BookmarkNode*, int> > stk;
+
+  for (int i = 0; i < mobile->child_count(); ++i) {
+    const BookmarkNode* child = mobile->GetChild(i);
+    if (child->is_folder() && client_->CanBeEditedByUser(child))
+      bookmarkList.push_back(child);
+  }
+  for (int i = 0; i < other->child_count(); ++i) {
+    const BookmarkNode* child = other->GetChild(i);
+    if (child->is_folder() && client_->CanBeEditedByUser(child))
+      bookmarkList.push_back(child);
+  }
+  bookmarkList.push_back(desktop);
+  std::stable_sort(bookmarkList.begin(),
+                   bookmarkList.end(),
+                   BookmarkTitleComparer(collator.get()));
+
+  // Push all sorted top folders in stack and give them depth of 0.
+  // Note the order to push folders to stack should be opposite to the order in
+  // output.
+  for (std::vector<const BookmarkNode*>::reverse_iterator it =
+           bookmarkList.rbegin();
+       it != bookmarkList.rend();
+       ++it) {
+    stk.push(std::make_pair(*it, 0));
+  }
+
+  while (!stk.empty()) {
+    const BookmarkNode* node = stk.top().first;
+    int depth = stk.top().second;
+    stk.pop();
+    Java_BookmarksBridge_addToBookmarkIdListWithDepth(env,
+                                                      j_folders_obj,
+                                                      node->id(),
+                                                      GetBookmarkType(node),
+                                                      j_depths_obj,
+                                                      depth);
+    bookmarkList.clear();
+    for (int i = 0; i < node->child_count(); ++i) {
+      const BookmarkNode* child = node->GetChild(i);
+      if (child->is_folder() && client_->CanBeEditedByUser(child))
+        bookmarkList.push_back(node->GetChild(i));
+    }
+    std::stable_sort(bookmarkList.begin(),
+                     bookmarkList.end(),
+                     BookmarkTitleComparer(collator.get()));
+    for (std::vector<const BookmarkNode*>::reverse_iterator it =
+             bookmarkList.rbegin();
+         it != bookmarkList.rend();
+         ++it) {
+      stk.push(std::make_pair(*it, depth + 1));
+    }
+  }
+}
+
+ScopedJavaLocalRef<jobject> BookmarksBridge::GetMobileFolderId(JNIEnv* env,
+                                                               jobject obj) {
+  const BookmarkNode* mobileNode = bookmark_model_->mobile_node();
+  ScopedJavaLocalRef<jobject> folder_id_obj =
+      Java_BookmarksBridge_createBookmarkId(
+          env, mobileNode->id(), GetBookmarkType(mobileNode));
+  return folder_id_obj;
+}
+
 void BookmarksBridge::GetChildIDs(JNIEnv* env,
                                   jobject obj,
                                   jlong id,
