@@ -51,7 +51,7 @@
       },
       {
         "id": "RequestContentScript",
-        "description": "Declarative event action that injects a content script.",
+        "description": "Declarative event action that injects a content script. <p><b>WARNING:</b> This action is still experimental and is not supported on stable builds of Chrome.</p>",
         "type": "object",
         "properties": {
           "css": {
