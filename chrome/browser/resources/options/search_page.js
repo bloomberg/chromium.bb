@@ -17,6 +17,13 @@ cr.define('options', function() {
     return el;
   }
 
+  /**
+   * Prohibit search for guests on desktop.
+   */
+  function ShouldEnableSearch() {
+    return !loadTimeData.getBoolean('profileIsGuest') || cr.isChromeOS;
+  }
+
   SearchBubble.decorate = function(el) {
     el.__proto__ = SearchBubble.prototype;
     el.decorate();
@@ -187,8 +194,7 @@ cr.define('options', function() {
       if (!this.searchActive_ && !active)
         return;
 
-      // Guest users should never have active search.
-      if (loadTimeData.getBoolean('profileIsGuest'))
+      if (!ShouldEnableSearch())
         return;
 
       this.searchActive_ = active;
@@ -264,8 +270,7 @@ cr.define('options', function() {
      * @private
      */
     setSearchText_: function(text) {
-      // Guest users should never have search text.
-      if (loadTimeData.getBoolean('profileIsGuest'))
+      if (!ShouldEnableSearch())
         return;
 
       // Prevent recursive execution of this method.
