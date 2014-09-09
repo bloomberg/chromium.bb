@@ -39,7 +39,7 @@
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_FULL_PRINTING) || defined(OS_WIN)
 #include "chrome/utility/printing_handler.h"
 #endif
 
@@ -81,7 +81,7 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   handlers_.push_back(new image_writer::ImageWriterHandler());
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_FULL_PRINTING) || defined(OS_WIN)
   handlers_.push_back(new PrintingHandler());
 #endif
 
@@ -160,7 +160,7 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_FULL_PRINTING) || defined(OS_WIN)
   PrintingHandler::PreSandboxStartup();
 #endif
 

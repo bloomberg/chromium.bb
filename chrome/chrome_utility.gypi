@@ -172,7 +172,7 @@
             }],
           ],
         }],
-        ['enable_printing!=1', {
+        ['enable_printing!=1 and OS!="win"', {
           'sources!': [
             'utility/printing_handler.cc',
             'utility/printing_handler.h',

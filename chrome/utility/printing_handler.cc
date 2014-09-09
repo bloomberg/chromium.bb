@@ -263,12 +263,14 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                         OnRenderPDFPagesToMetafile)
 #endif  // OS_WIN
+#if defined(ENABLE_FULL_PRINTING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                         OnRenderPDFPagesToPWGRaster)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                         OnGetPrinterSemanticCapsAndDefaults)
+#endif  // ENABLE_FULL_PRINTING
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -304,6 +306,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafile(
 }
 #endif  // OS_WIN
 
+#if defined(ENABLE_FULL_PRINTING)
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
     const printing::PdfRenderSettings& settings,
@@ -319,6 +322,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
   }
   ReleaseProcessIfNeeded();
 }
+#endif  // ENABLE_FULL_PRINTING
 
 #if defined(OS_WIN)
 bool PrintingHandler::RenderPDFToWinMetafile(
@@ -405,6 +409,7 @@ bool PrintingHandler::RenderPDFToWinMetafile(
 }
 #endif  // OS_WIN
 
+#if defined(ENABLE_FULL_PRINTING)
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
     base::File pdf_file,
     const printing::PdfRenderSettings& settings,
@@ -534,3 +539,4 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   }
   ReleaseProcessIfNeeded();
 }
+#endif  // ENABLE_FULL_PRINTING

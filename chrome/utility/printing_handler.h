@@ -10,8 +10,8 @@
 #include "chrome/utility/utility_message_handler.h"
 #include "ipc/ipc_platform_file.h"
 
-#if !defined(ENABLE_FULL_PRINTING)
-#error "Full printing must be enabled"
+#if !defined(ENABLE_FULL_PRINTING) && !defined(OS_WIN)
+#error "Windows or full printing must be enabled"
 #endif
 
 namespace printing {
@@ -40,11 +40,13 @@ class PrintingHandler : public UtilityMessageHandler {
       const printing::PdfRenderSettings& settings,
       const std::vector<printing::PageRange>& page_ranges);
 #endif  // OS_WIN
+#if defined(ENABLE_FULL_PRINTING)
   void OnRenderPDFPagesToPWGRaster(
       IPC::PlatformFileForTransit pdf_transit,
       const printing::PdfRenderSettings& settings,
       const printing::PwgRasterSettings& bitmap_settings,
       IPC::PlatformFileForTransit bitmap_transit);
+#endif  // ENABLE_FULL_PRINTING
 
 #if defined(OS_WIN)
   // Helper method for Windows.
@@ -60,7 +62,7 @@ class PrintingHandler : public UtilityMessageHandler {
       int* highest_rendered_page_number,
       double* scale_factor);
 #endif  // OS_WIN
-
+#if defined(ENABLE_FULL_PRINTING)
   bool RenderPDFPagesToPWGRaster(
       base::File pdf_file,
       const printing::PdfRenderSettings& settings,
@@ -69,6 +71,7 @@ class PrintingHandler : public UtilityMessageHandler {
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
+#endif  // ENABLE_FULL_PRINTING
 
   DISALLOW_COPY_AND_ASSIGN(PrintingHandler);
 };
