@@ -74,7 +74,6 @@ void GLImageImpl::ReleaseTexImage(unsigned target) {
 }
 
 bool GLImageImpl::CopyTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 

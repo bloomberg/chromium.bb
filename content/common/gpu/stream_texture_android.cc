@@ -203,7 +203,6 @@ void StreamTexture::ReleaseTexImage(unsigned target) {
 }
 
 bool StreamTexture::CopyTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 

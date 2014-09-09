@@ -85,7 +85,6 @@ void GLImageSync::ReleaseTexImage(unsigned target) {
 }
 
 bool GLImageSync::CopyTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 
