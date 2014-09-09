@@ -238,7 +238,7 @@ class StartupHelper : public test::TestShellDelegate,
     displays_initialized_ = true;
   }
 
-  const bool displays_initialized() const {
+  bool displays_initialized() const {
     return displays_initialized_;
   }
 

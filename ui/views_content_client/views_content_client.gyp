@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/views_content_client
       'target_name': 'views_content_client',
       'type': '<(component)',
       'dependencies': [
@@ -29,6 +30,7 @@
         'VIEWS_CONTENT_CLIENT_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'views_content_browser_client.cc',
         'views_content_browser_client.h',
         'views_content_client.cc',

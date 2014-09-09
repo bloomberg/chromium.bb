@@ -5,7 +5,9 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_WORKSPACE_BACKDROP_DELEGATE_H_
 #define ASH_WM_MAXIMIZE_MODE_WORKSPACE_BACKDROP_DELEGATE_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace_layout_manager_delegate.h"
+#include "base/compiler_specific.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -25,8 +27,9 @@ namespace ash {
 // A background which gets created for a container |window| and which gets
 // stacked behind the topmost window (within that container) covering the
 // entire container.
-class WorkspaceBackdropDelegate : public aura::WindowObserver,
-                                  public WorkspaceLayoutManagerDelegate {
+class ASH_EXPORT WorkspaceBackdropDelegate
+    : public aura::WindowObserver,
+      public NON_EXPORTED_BASE(WorkspaceLayoutManagerDelegate) {
  public:
   explicit WorkspaceBackdropDelegate(aura::Window* container);
   virtual ~WorkspaceBackdropDelegate();

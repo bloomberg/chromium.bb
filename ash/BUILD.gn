@@ -229,12 +229,10 @@ static_library("ash_shell_lib") {
     "//ui/resources",
     "//ui/views",
     "//ui/views:test_support",
-    #'../ui/views/examples/examples.gyp:views_examples_lib',  TODO(GYP)
-    #'../ui/views/examples/examples.gyp:views_examples_with_content_lib',  TODO(GYP)
+    "//ui/views/examples:views_examples_lib",
+    "//ui/views/examples:views_examples_with_content_lib",
   ]
 }
-
-if (false) {  # TODO(GYP) enable ash shell and unit tests when they link.
 
 test("ash_unittests") {
   sources = gypi_values.ash_unittests_sources
@@ -274,7 +272,7 @@ test("ash_unittests") {
     "//ui/views",
     "//ui/views:test_support",
     "//ui/views/controls/webview:test_support",
-    "//ui/web_dialogs",
+    "//ui/web_dialogs:test_support",
     "//ui/wm",
     "//url",
   ]
@@ -284,10 +282,8 @@ test("ash_unittests") {
       # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
       "focus_cycler_unittest.cc",
       # All tests for multiple displays: not supported on Windows Ash.
-      "accelerators/nested_dispatcher_controller_unittest.cc",
       "wm/drag_window_resizer_unittest.cc",
       # Can't resize on Windows Ash. http://crbug.com/165962
-      "ash_root_window_transformer_unittest.cc",
       "magnifier/magnification_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
@@ -372,17 +368,17 @@ test("ash_shell_unittests") {
   ]
 
   deps = [
+    ":ash_shell_lib",
+    ":test_support",
     "//base/test:test_support",
     "//components/user_manager",
     "//content/test:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/aaccessibility",
+    "//ui/accessibility",
   ]
 
   if (is_chromeos) {
     deps += [ "//ui/display" ]
   }
 }
-
-}  # if false

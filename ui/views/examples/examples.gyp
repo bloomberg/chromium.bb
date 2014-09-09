@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/views/examples
       'target_name': 'views_examples_lib',
       'type': '<(component)',
       'dependencies': [
@@ -29,6 +30,7 @@
         'VIEWS_EXAMPLES_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'bubble_example.cc',
         'bubble_example.h',
         'button_example.cc',
@@ -97,6 +99,7 @@
       ],
     },  # target_name: views_examples_lib
     {
+      # GN version: //ui/views/examples:views_examples_exe
       'target_name': 'views_examples_exe',
       'type': 'executable',
       'dependencies': [
@@ -112,6 +115,7 @@
         'views_examples_lib',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'examples_main.cc',
       ],
       'conditions': [
@@ -123,6 +127,7 @@
       ],
     },  # target_name: views_examples_exe
     {
+      # GN version: //ui/views/examples:views_examples_with_content_lib
       'target_name': 'views_examples_with_content_lib',
       'type': '<(component)',
       'dependencies': [
@@ -139,6 +144,7 @@
         'VIEWS_EXAMPLES_WITH_CONTENT_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'examples_window_with_content.cc',
         'examples_window_with_content.h',
         'views_examples_with_content_export.h',
@@ -147,6 +153,7 @@
       ],
     },  # target_name: views_examples_with_content_lib
     {
+      # GN version: //ui/views/examples/views_examples_with_content_exe
       'target_name': 'views_examples_with_content_exe',
       'type': 'executable',
       'dependencies': [
@@ -156,6 +163,7 @@
         'views_examples_with_content_lib',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'examples_with_content_main_exe.cc',
       ],
       'conditions': [

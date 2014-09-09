@@ -40,6 +40,7 @@
       'autoclick/autoclick_controller.h',
       'ash_constants.cc',
       'ash_constants.h',
+      'ash_export.h',
       'ash_switches.cc',
       'ash_switches.h',
       'ash_touch_exploration_manager_chromeos.cc',
@@ -862,8 +863,6 @@
       'wm/window_positioner_unittest.cc',
       'wm/window_state_unittest.cc',
       'wm/window_util_unittest.cc',
-      'wm/maximize_mode/workspace_backdrop_delegate.cc',
-      'wm/maximize_mode/workspace_backdrop_delegate.h',
       'wm/overlay_event_filter_unittest.cc',
       'wm/workspace/magnetism_matcher_unittest.cc',
       'wm/workspace/multi_window_resize_controller_unittest.cc',
@@ -1105,10 +1104,8 @@
             # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
             'focus_cycler_unittest.cc',
             # All tests for multiple displays: not supported on Windows Ash.
-            'accelerators/nested_dispatcher_controller_unittest.cc',
             'wm/drag_window_resizer_unittest.cc',
             # Can't resize on Windows Ash. http://crbug.com/165962
-            'ash_root_window_transformer_unittest.cc',
             'magnifier/magnification_controller_unittest.cc',
             'wm/workspace/workspace_window_resizer_unittest.cc',
             'sticky_keys/sticky_keys_overlay_unittest.cc',

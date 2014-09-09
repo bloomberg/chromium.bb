@@ -203,7 +203,7 @@ class WindowSelectorTest : public test::AshTestBase {
         SelectedWindow()->SelectionWindow();
   }
 
-  const bool selection_widget_active() {
+  bool selection_widget_active() {
     WindowSelector* ws = ash::Shell::GetInstance()->
         window_selector_controller()->window_selector_.get();
     return ws->grid_list_[ws->selected_grid_index_]->is_selecting();
