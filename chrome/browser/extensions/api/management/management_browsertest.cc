@@ -23,19 +23,21 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::Manifest;
@@ -283,8 +285,12 @@ class NotificationListener : public content::NotificationObserver {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   NotificationListener notification_listener;
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+
   // Note: This interceptor gets requests on the IO thread.
-  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::LocalHostTestURLRequestInterceptor interceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -368,8 +374,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_AutoUpdateDisabledExtensions) {
   NotificationListener notification_listener;
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+
   // Note: This interceptor gets requests on the IO thread.
-  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::LocalHostTestURLRequestInterceptor interceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -435,7 +445,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::LocalHostTestURLRequestInterceptor interceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -528,7 +541,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::LocalHostTestURLRequestInterceptor interceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -609,7 +625,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_TRUE(registry->disabled_extensions().is_empty());
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::LocalHostTestURLRequestInterceptor interceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(

@@ -66,7 +66,10 @@ ComponentUpdaterTest::~ComponentUpdaterTest() {
 }
 
 void ComponentUpdaterTest::SetUp() {
-  get_interceptor_.reset(new GetInterceptor);
+  get_interceptor_.reset(new GetInterceptor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
   interceptor_factory_.reset(new InterceptorFactory(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   post_interceptor_ = interceptor_factory_->CreateInterceptor();

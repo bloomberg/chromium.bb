@@ -7,18 +7,15 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/component_updater/crx_downloader.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using base::ContentsEqual;
 
 namespace component_updater {
@@ -26,7 +23,7 @@ namespace component_updater {
 namespace {
 
 // Intercepts HTTP GET requests sent to "localhost".
-typedef content::URLLocalHostRequestPrepackagedInterceptor GetInterceptor;
+typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
 
 const char kTestFileName[] = "jebgalgnebhfojomionfpkfelancnnkf.crx";
 
@@ -59,6 +56,8 @@ class CrxDownloaderTest : public testing::Test {
  protected:
   scoped_ptr<CrxDownloader> crx_downloader_;
 
+  scoped_ptr<GetInterceptor> get_interceptor_;
+
   CrxDownloader::DownloadCallback callback_;
   CrxDownloader::ProgressCallback progress_callback_;
 
@@ -75,9 +74,8 @@ class CrxDownloaderTest : public testing::Test {
   static const int kExpectedContext = 0xaabb;
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  base::MessageLoopForIO loop_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
-  content::TestBrowserThreadBundle thread_bundle_;
   base::Closure quit_closure_;
 };
 
@@ -93,17 +91,16 @@ CrxDownloaderTest::CrxDownloaderTest()
       crx_context_(0),
       num_download_complete_calls_(0),
       num_progress_calls_(0),
-      blocking_task_runner_(BrowserThread::GetBlockingPool()->
-          GetSequencedTaskRunnerWithShutdownBehavior(
-              BrowserThread::GetBlockingPool()->GetSequenceToken(),
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       context_(new net::TestURLRequestContextGetter(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
-      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+          base::MessageLoopProxy::current())) {
 }
 
 CrxDownloaderTest::~CrxDownloaderTest() {
   context_ = NULL;
+
+  // The GetInterceptor requires the message loop to run to destruct correctly.
+  get_interceptor_.reset();
+  RunThreadsUntilIdle();
 }
 
 void CrxDownloaderTest::SetUp() {
@@ -111,12 +108,16 @@ void CrxDownloaderTest::SetUp() {
   download_complete_result_ = CrxDownloader::Result();
   num_progress_calls_ = 0;
   download_progress_result_ = CrxDownloader::Result();
+
   crx_downloader_.reset(CrxDownloader::Create(
       false,  // Do not use the background downloader in these tests.
       context_.get(),
-      blocking_task_runner_,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      base::MessageLoopProxy::current(),
+      NULL));  // No |background_task_runner| because no background downloader.
   crx_downloader_->set_progress_callback(progress_callback_);
+
+  get_interceptor_.reset(new GetInterceptor(base::MessageLoopProxy::current(),
+                                            base::MessageLoopProxy::current()));
 }
 
 void CrxDownloaderTest::TearDown() {
@@ -179,13 +180,12 @@ TEST_F(CrxDownloaderTest, OneUrl) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   crx_downloader_->StartDownloadFromUrl(expected_crx_url, callback_);
   RunThreads();
 
-  EXPECT_EQ(1, interceptor.GetHitCount());
+  EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -214,8 +214,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   std::vector<GURL> urls;
   urls.push_back(expected_crx_url);
@@ -224,7 +223,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
   crx_downloader_->StartDownload(urls, callback_);
   RunThreads();
 
-  EXPECT_EQ(1, interceptor.GetHitCount());
+  EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -246,8 +245,7 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidHost) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   crx_downloader_->StartDownloadFromUrl(
       GURL("http://no.such.host"
@@ -255,7 +253,7 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidHost) {
       callback_);
   RunThreads();
 
-  EXPECT_EQ(0, interceptor.GetHitCount());
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -269,14 +267,13 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidPath) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   crx_downloader_->StartDownloadFromUrl(GURL("http://localhost/no/such/file"),
                                         callback_);
   RunThreads();
 
-  EXPECT_EQ(0, interceptor.GetHitCount());
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -296,8 +293,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   std::vector<GURL> urls;
   urls.push_back(GURL("http://localhost/no/such/file"));
@@ -306,7 +302,7 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
   crx_downloader_->StartDownload(urls, callback_);
   RunThreads();
 
-  EXPECT_EQ(1, interceptor.GetHitCount());
+  EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -329,8 +325,7 @@ TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   std::vector<GURL> urls;
   urls.push_back(expected_crx_url);
@@ -339,7 +334,7 @@ TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
   crx_downloader_->StartDownload(urls, callback_);
   RunThreads();
 
-  EXPECT_EQ(1, interceptor.GetHitCount());
+  EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
@@ -361,8 +356,7 @@ TEST_F(CrxDownloaderTest, TwoUrls_BothInvalid) {
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
   const base::FilePath test_file(MakeTestFilePath(kTestFileName));
-  GetInterceptor interceptor;
-  interceptor.SetResponse(expected_crx_url, test_file);
+  get_interceptor_->SetResponse(expected_crx_url, test_file);
 
   std::vector<GURL> urls;
   urls.push_back(GURL("http://localhost/no/such/file"));
@@ -372,7 +366,7 @@ TEST_F(CrxDownloaderTest, TwoUrls_BothInvalid) {
   crx_downloader_->StartDownload(urls, callback_);
   RunThreads();
 
-  EXPECT_EQ(0, interceptor.GetHitCount());
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);

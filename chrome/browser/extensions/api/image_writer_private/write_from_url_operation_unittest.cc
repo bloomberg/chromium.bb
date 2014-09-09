@@ -6,7 +6,8 @@
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace extensions {
@@ -14,6 +15,7 @@ namespace image_writer {
 
 namespace {
 
+using content::BrowserThread;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -22,7 +24,7 @@ using testing::Lt;
 
 const char kTestImageUrl[] = "http://localhost/test/image.zip";
 
-typedef content::URLLocalHostRequestPrepackagedInterceptor GetInterceptor;
+typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
 
 // This class gives us a generic Operation with the ability to set or inspect
 // the current path to the image file.
@@ -76,7 +78,10 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
 
     // Turn on interception and set up our dummy file.
     net::URLFetcher::SetEnableInterceptionForTests(true);
-    get_interceptor_.reset(new GetInterceptor());
+    get_interceptor_.reset(new GetInterceptor(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     get_interceptor_->SetResponse(GURL(kTestImageUrl),
                                   test_utils_.GetImagePath());
   }

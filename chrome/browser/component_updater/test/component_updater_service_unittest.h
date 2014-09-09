@@ -15,7 +15,7 @@
 #include "components/component_updater/test/test_configurator.h"
 #include "components/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ namespace component_updater {
 class TestInstaller;
 
 // Intercepts HTTP GET requests sent to "localhost".
-typedef content::URLLocalHostRequestPrepackagedInterceptor GetInterceptor;
+typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
 
 class ComponentUpdaterTest : public testing::Test {
  public:
