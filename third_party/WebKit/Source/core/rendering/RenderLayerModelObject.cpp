@@ -104,6 +104,8 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
 void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     bool hadTransform = hasTransform();
+    bool hadLayer = hasLayer();
+    bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
 
     RenderObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
@@ -133,7 +135,10 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
         // FIXME: Ideally we shouldn't need this setter but we can't easily infer an overflow-only layer
         // from the style.
         layer()->setLayerType(type);
+
         layer()->styleChanged(diff, oldStyle);
+        if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)
+            setChildNeedsLayout();
     }
 
     if (FrameView *frameView = view()->frameView()) {
