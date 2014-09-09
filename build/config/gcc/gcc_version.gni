@@ -5,7 +5,12 @@
 if (is_clang) {
   gcc_version = 0
 } else if (is_android) {
-  gcc_version = 48
+  import("//build/config/android/config.gni")
+  if (is_android_webview_build) {
+    gcc_version = 48
+  } else {
+    gcc_version = 49
+  }
 } else {
   gcc_version = exec_script("../../compiler_version.py", [ "host",  "compiler" ], "value")
 }

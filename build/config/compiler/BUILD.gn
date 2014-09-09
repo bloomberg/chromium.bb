@@ -160,6 +160,20 @@ config("compiler") {
             cflags += [ "-mthumb-interwork" ]
           }
         }
+        if (!is_clang) {
+          # Clang doesn't support these flags.
+          cflags += [
+            # The tree-sra optimization (scalar replacement for
+            # aggregates enabling subsequent optimizations) leads to
+            # invalid code generation when using the Android NDK's
+            # compiler (r5-r7). This can be verified using
+            # webkit_unit_tests' WTF.Checked_int8_t test.
+            "-fno-tree-sra",
+            # The following option is disabled to improve binary
+            # size and performance in gcc 4.9.
+            "-fno-caller-saves",
+          ]
+        }
       }
     }
 
@@ -256,15 +270,6 @@ config("compiler") {
       # Clang doesn't support these flags.
       cflags += [
         "-finline-limit=64",
-        # The following 6 options are disabled to save on
-        # binary size in gcc 4.8.
-        # TODO(fdegans) Reevaluate when we upgrade GCC.
-        "-fno-partial-inlining",
-        "-fno-early-inlining",
-        "-fno-tree-copy-prop",
-        "-fno-tree-loop-optimize",
-        "-fno-move-loop-invariants",
-        "-fno-caller-saves",
       ]
     }
     if (is_android_webview_build) {

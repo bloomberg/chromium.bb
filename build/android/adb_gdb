@@ -473,14 +473,11 @@ get_ndk_toolchain_prebuilt () {
   local SUBPATH="$3"
   local NAME="$(get_arch_toolchain_prefix $ARCH)"
   local FILE TARGET
-  FILE=$NDK_DIR/toolchains/$NAME-4.8/prebuilt/$SUBPATH
+  FILE=$NDK_DIR/toolchains/$NAME-4.9/prebuilt/$SUBPATH
   if [ ! -f "$FILE" ]; then
-    FILE=$NDK_DIR/toolchains/$NAME-4.9/prebuilt/$SUBPATH
+    FILE=$NDK_DIR/toolchains/$NAME-4.8/prebuilt/$SUBPATH
     if [ ! -f "$FILE" ]; then
-      FILE=$NDK_DIR/toolchains/$NAME-4.6/prebuilt/$SUBPATH
-      if [ ! -f "$FILE" ]; then
-        FILE=
-      fi
+      FILE=
     fi
   fi
   echo "$FILE"
