@@ -202,11 +202,14 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
     }
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), LimitsTrait::minValue, LimitsTrait::maxValue, typeName, exceptionState);
@@ -239,11 +242,14 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     }
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue, typeName, exceptionState);
@@ -311,11 +317,14 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type 'long'.)");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, "long", exceptionState);
@@ -328,8 +337,7 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (configuration == Clamp)
         return clampTo<int32_t>(numberObject->Value());
 
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int32_t, result, numberObject->Int32Value(), exceptionState, 0);
-    return result;
+    return numberObject->Int32Value();
 }
 
 int32_t toInt32(v8::Handle<v8::Value> value)
@@ -357,11 +365,14 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     }
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long'.)");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), 0, kMaxUInt32, "unsigned long", exceptionState);
@@ -374,8 +385,7 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     if (configuration == Clamp)
         return clampTo<uint32_t>(numberObject->Value());
 
-    TONATIVE_DEFAULT(uint32_t, result, numberObject->Uint32Value(), 0);
-    return result;
+    return numberObject->Uint32Value();
 }
 
 uint32_t toUInt32(v8::Handle<v8::Value> value)
@@ -391,11 +401,14 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type 'long long'.)");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     double x = numberObject->Value();
 
@@ -437,11 +450,14 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     }
 
     // Can the value be converted to a number?
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
-    if (numberObject.IsEmpty()) {
-        exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long long'.)");
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
+    ASSERT(!numberObject.IsEmpty());
 
     double x = numberObject->Value();
 
@@ -466,7 +482,12 @@ uint64_t toUInt64(v8::Handle<v8::Value> value)
 
 float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    v8::TryCatch block;
+    v8::Local<v8::Number> numberObject(value->ToNumber());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
+    }
     return numberObject->NumberValue();
 }
 
@@ -481,7 +502,13 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         return String();
 
     // 1. Let x be ToString(v)
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::String>, stringObject, value->ToString(), exceptionState, String());
+    v8::TryCatch block;
+    v8::Local<v8::String> stringObject(value->ToString());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return String();
+    }
+
     String x = toCoreString(stringObject);
 
     // 2. If the value of any element of x is greater than 255, then throw a TypeError.
@@ -605,7 +632,13 @@ String toScalarValueString(v8::Handle<v8::Value> value, ExceptionState& exceptio
     // http://encoding.spec.whatwg.org/#type-scalarvaluestring
     if (value.IsEmpty())
         return String();
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::String>, stringObject, value->ToString(), exceptionState, String());
+
+    v8::TryCatch block;
+    v8::Local<v8::String> stringObject(value->ToString());
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return String();
+    }
 
     // ScalarValueString is identical to DOMString except that "convert a
     // DOMString to a sequence of Unicode characters" is used subsequently
