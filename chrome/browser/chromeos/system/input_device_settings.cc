@@ -353,7 +353,10 @@ bool TouchpadSettings::Update(const TouchpadSettings& settings,
     if (argv)
       AddTPControlArguments("tapdrag", tap_dragging_.value(), argv);
   }
-  if (natural_scroll_.Update(settings.natural_scroll_)) {
+  natural_scroll_.Update(settings.natural_scroll_);
+  // Always send natural scrolling to the shell command, as a workaround.
+  // See crbug.com/406480
+  if (natural_scroll_.is_set()) {
     updated = true;
     if (argv)
       AddTPControlArguments("australian_scrolling", natural_scroll_.value(),
