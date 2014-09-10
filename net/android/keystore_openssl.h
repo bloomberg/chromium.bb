@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <openssl/evp.h>
 
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/net_export.h"
 
 // OpenSSL-specific functions to use the Android platform keystore.
@@ -40,7 +41,8 @@ namespace android {
 //   *sign* the digest that is part of the "Verify Certificate" message
 //   during the OpenSSL handshake. Anything else will result in undefined
 //   behaviour.
-NET_EXPORT EVP_PKEY* GetOpenSSLPrivateKeyWrapper(jobject private_key);
+NET_EXPORT crypto::ScopedEVP_PKEY GetOpenSSLPrivateKeyWrapper(
+    jobject private_key);
 
 }  // namespace android
 }  // namespace net
