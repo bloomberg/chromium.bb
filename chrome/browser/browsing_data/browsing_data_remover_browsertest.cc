@@ -22,14 +22,15 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
 namespace {
 void SetUrlRequestMock(const base::FilePath& path) {
-  content::URLRequestMockHTTPJob::AddUrlHandler(path);
+  net::URLRequestMockHTTPJob::AddUrlHandler(path,
+                                            BrowserThread::GetBlockingPool());
 }
 }
 
@@ -116,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
-  GURL url(content::URLRequestMockHTTPJob::GetMockUrl(
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath().AppendASCII("simple_database.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 

@@ -31,9 +31,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_test_util.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
@@ -48,7 +48,7 @@ using base::Unretained;
 using chrome_common_net::DnsProbeStatus;
 using content::BrowserThread;
 using content::URLRequestFailedJob;
-using content::URLRequestMockHTTPJob;
+using net::URLRequestMockHTTPJob;
 using content::WebContents;
 using google_util::LinkDoctorBaseURL;
 using net::MockDnsClientRule;
@@ -181,7 +181,12 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
       const base::FilePath& file_path,
       bool should_delay,
       const DestructionCallback& destruction_callback)
-      : URLRequestMockHTTPJob(request, network_delegate, file_path),
+      : URLRequestMockHTTPJob(
+            request,
+            network_delegate,
+            file_path,
+            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         should_delay_(should_delay),
         start_delayed_(false),
         destruction_callback_(destruction_callback) {}

@@ -86,12 +86,12 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -100,11 +100,11 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
-using content::URLRequestMockHTTPJob;
 using content::URLRequestSlowDownloadJob;
 using content::WebContents;
 using extensions::Extension;
 using extensions::FeatureSwitch;
+using net::URLRequestMockHTTPJob;
 
 namespace {
 
@@ -3346,7 +3346,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_GZipWithNoContent) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
   // Make a dangerous file.
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
-  GURL download_url(content::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL download_url(net::URLRequestMockHTTPJob::GetMockUrl(file));
   scoped_ptr<content::DownloadTestObserverInterrupted> observer(
       new content::DownloadTestObserverInterrupted(
           DownloadManagerForBrowser(browser()), 1,

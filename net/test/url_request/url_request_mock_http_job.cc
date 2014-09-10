@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 
-#include "base/files/file_util.h"
+#include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"
@@ -21,7 +20,7 @@ const char kMockHostname[] = "mock.http";
 const base::FilePath::CharType kMockHeaderFileSuffix[] =
     FILE_PATH_LITERAL(".mock-http-headers");
 
-namespace content {
+namespace net {
 
 namespace {
 
@@ -31,18 +30,25 @@ class MockJobInterceptor : public net::URLRequestInterceptor {
   // contents of the file at |base_path|. When |map_all_requests_to_base_path|
   // is false, |base_path| is the file path leading to the root of the directory
   // to use as the root of the HTTP server.
-  MockJobInterceptor(const base::FilePath& base_path,
-                     bool map_all_requests_to_base_path)
+  MockJobInterceptor(
+      const base::FilePath& base_path,
+      bool map_all_requests_to_base_path,
+      const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
       : base_path_(base_path),
-        map_all_requests_to_base_path_(map_all_requests_to_base_path) {}
+        map_all_requests_to_base_path_(map_all_requests_to_base_path),
+        worker_pool_(worker_pool) {}
   virtual ~MockJobInterceptor() {}
 
   // net::URLRequestJobFactory::ProtocolHandler implementation
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new URLRequestMockHTTPJob(request, network_delegate,
-        map_all_requests_to_base_path_ ? base_path_ : GetOnDiskPath(request));
+    return new URLRequestMockHTTPJob(
+        request,
+        network_delegate,
+        map_all_requests_to_base_path_ ? base_path_ : GetOnDiskPath(request),
+        worker_pool_->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   }
 
  private:
@@ -60,27 +66,45 @@ class MockJobInterceptor : public net::URLRequestInterceptor {
 
   const base::FilePath base_path_;
   const bool map_all_requests_to_base_path_;
+  const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(MockJobInterceptor);
 };
 
+std::string DoFileIO(const base::FilePath& file_path) {
+  base::FilePath header_file =
+      base::FilePath(file_path.value() + kMockHeaderFileSuffix);
+
+  if (!base::PathExists(header_file)) {
+    // If there is no mock-http-headers file, fake a 200 OK.
+    return "HTTP/1.0 200 OK\n";
+  }
+
+  std::string raw_headers;
+  base::ReadFileToString(header_file, &raw_headers);
+  return raw_headers;
+}
+
 }  // namespace
 
 // static
-void URLRequestMockHTTPJob::AddUrlHandler(const base::FilePath& base_path) {
+void URLRequestMockHTTPJob::AddUrlHandler(
+    const base::FilePath& base_path,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
   // Add kMockHostname to net::URLRequestFilter.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor(
-      "http", kMockHostname, CreateInterceptor(base_path));
+      "http", kMockHostname, CreateInterceptor(base_path, worker_pool));
 }
 
 // static
 void URLRequestMockHTTPJob::AddHostnameToFileHandler(
     const std::string& hostname,
-    const base::FilePath& file) {
+    const base::FilePath& file,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor(
-      "http", hostname, CreateInterceptorForSingleFile(file));
+      "http", hostname, CreateInterceptorForSingleFile(file, worker_pool));
 }
 
 // static
@@ -95,38 +119,34 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const base::FilePath& path) {
-  std::string url = kViewSourceScheme;
-  url.append(":");
-  url.append(GetMockUrl(path).spec());
-  return GURL(url);
-}
-
-// static
-scoped_ptr<net::URLRequestInterceptor>
-URLRequestMockHTTPJob::CreateInterceptor(const base::FilePath& base_path) {
+scoped_ptr<net::URLRequestInterceptor> URLRequestMockHTTPJob::CreateInterceptor(
+    const base::FilePath& base_path,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
   return scoped_ptr<net::URLRequestInterceptor>(
-      new MockJobInterceptor(base_path, false));
+      new MockJobInterceptor(base_path, false, worker_pool));
 }
 
 // static
 scoped_ptr<net::URLRequestInterceptor>
 URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-    const base::FilePath& file) {
+    const base::FilePath& file,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
   return scoped_ptr<net::URLRequestInterceptor>(
-      new MockJobInterceptor(file, true));
+      new MockJobInterceptor(file, true, worker_pool));
 }
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate,
-    const base::FilePath& file_path)
-    : net::URLRequestFileJob(
-          request, network_delegate, file_path,
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const base::FilePath& file_path,
+    const scoped_refptr<base::TaskRunner>& task_runner)
+    : net::URLRequestFileJob(request, network_delegate, file_path, task_runner),
+      task_runner_(task_runner),
+      weak_ptr_factory_(this) {
+}
 
-URLRequestMockHTTPJob::~URLRequestMockHTTPJob() { }
+URLRequestMockHTTPJob::~URLRequestMockHTTPJob() {
+}
 
 // Public virtual version.
 void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {
@@ -141,29 +161,29 @@ bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
   return net::URLRequestJob::IsRedirectResponse(location, http_status_code);
 }
 
-// Private const version.
-void URLRequestMockHTTPJob::GetResponseInfoConst(
-    net::HttpResponseInfo* info) const {
-  // We have to load our headers from disk, but we only use this class
-  // from tests, so allow these IO operations to happen on any thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+// Public virtual version.
+void URLRequestMockHTTPJob::Start() {
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&DoFileIO, file_path_),
+      base::Bind(&URLRequestMockHTTPJob::GetRawHeaders,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
-  base::FilePath header_file =
-      base::FilePath(file_path_.value() + kMockHeaderFileSuffix);
-  std::string raw_headers;
-  if (!base::PathExists(header_file)) {
-    // If there is no mock-http-headers file, fake a 200 OK.
-    raw_headers = "HTTP/1.0 200 OK\n";
-  } else {
-    if (!base::ReadFileToString(header_file, &raw_headers))
-      return;
-  }
-
+void URLRequestMockHTTPJob::GetRawHeaders(std::string raw_headers) {
   // Handle CRLF line-endings.
   ReplaceSubstringsAfterOffset(&raw_headers, 0, "\r\n", "\n");
   // ParseRawHeaders expects \0 to end each header line.
   ReplaceSubstringsAfterOffset(&raw_headers, 0, "\n", std::string("\0", 1));
-  info->headers = new net::HttpResponseHeaders(raw_headers);
+  raw_headers_ = raw_headers;
+  URLRequestFileJob::Start();
+}
+
+// Private const version.
+void URLRequestMockHTTPJob::GetResponseInfoConst(
+    net::HttpResponseInfo* info) const {
+  info->headers = new net::HttpResponseHeaders(raw_headers_);
 }
 
 bool URLRequestMockHTTPJob::GetMimeType(std::string* mime_type) const {
@@ -187,4 +207,4 @@ bool URLRequestMockHTTPJob::GetCharset(std::string* charset) {
   return info.headers.get() && info.headers->GetCharset(charset);
 }
 
-}  // namespace content
+}  // namespace net

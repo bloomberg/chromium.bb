@@ -32,8 +32,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -42,7 +42,7 @@
 #endif
 
 using content::BrowserThread;
-using content::URLRequestMockHTTPJob;
+using net::URLRequestMockHTTPJob;
 
 class ContentSettingsTest : public InProcessBrowserTest {
  public:

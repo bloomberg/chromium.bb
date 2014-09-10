@@ -37,16 +37,17 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
-using content::URLRequestMockHTTPJob;
 using content::WebContents;
+using net::URLRequestMockHTTPJob;
 
 namespace {
 
@@ -499,8 +500,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
 #endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   base::FilePath file_name(FILE_PATH_LITERAL("a.htm"));
-  GURL view_source_url = URLRequestMockHTTPJob::GetMockViewSourceUrl(
+  GURL mock_url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(kTestDir).Append(file_name));
+  GURL view_source_url =
+      GURL(content::kViewSourceScheme + std::string(":") + mock_url.spec());
   GURL actual_page_url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), view_source_url);

@@ -12,11 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "content/test/net/url_request_mock_http_job.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_element_reader.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -52,10 +53,13 @@ net::URLRequestJob* BadRequestJobCallback(
 net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
                                     net::URLRequest* request,
                                     net::NetworkDelegate* network_delegate) {
-  return new content::URLRequestMockHTTPJob(
+  return new net::URLRequestMockHTTPJob(
       request,
       network_delegate,
-      file_path);
+      file_path,
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 }
 
 // Parses the upload data in |request| into |request_msg|, and validates the

@@ -19,12 +19,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -253,7 +253,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     base::FilePath update_manifest_path =
         base::FilePath(kTestExtensionDir).Append(kUpdateManifestFileName);
     GURL update_manifest_url(
-        content::URLRequestMockHTTPJob::GetMockUrl(update_manifest_path));
+        net::URLRequestMockHTTPJob::GetMockUrl(update_manifest_path));
 
     scoped_ptr<base::ListValue> forcelist(new base::ListValue);
     forcelist->AppendString(base::StringPrintf(

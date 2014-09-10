@@ -17,8 +17,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/rect.h"
 
@@ -39,7 +39,8 @@ namespace content {
 namespace {
 
 void SetUrlRequestMock(const base::FilePath& path) {
-  URLRequestMockHTTPJob::AddUrlHandler(path);
+  net::URLRequestMockHTTPJob::AddUrlHandler(
+      path, content::BrowserThread::GetBlockingPool());
 }
 
 }
@@ -186,9 +187,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_GetURLRequest404Response) {
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath().AppendASCII("npapi").
-                       AppendASCII("plugin_url_request_404.html")));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath().AppendASCII("npapi").AppendASCII(
+          "plugin_url_request_404.html")));
   LoadAndWait(url);
 }
 
@@ -377,9 +378,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(MultipleInstancesSyncCalls)) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequestFailWrite)) {
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath().AppendASCII("npapi").
-                       AppendASCII("plugin_url_request_fail_write.html")));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath().AppendASCII("npapi").AppendASCII(
+          "plugin_url_request_fail_write.html")));
   LoadAndWait(url);
 }
 #endif
@@ -402,9 +403,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NoHangIfInitCrashes)) {
 
 // If this flakes on Mac, use http://crbug.com/111508
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PluginReferrerTest)) {
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(
-      base::FilePath().AppendASCII("npapi").
-                       AppendASCII("plugin_url_request_referrer_test.html")));
+  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath().AppendASCII("npapi").AppendASCII(
+          "plugin_url_request_referrer_test.html")));
   LoadAndWait(url);
 }
 

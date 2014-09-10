@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 
 namespace {
 
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(BrowserEncodingTest, TestEncodingAliasMapping) {
   test_file_path = test_file_path.AppendASCII(
       GetParam().file_name);
 
-  GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+  GURL url = net::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(GetParam().encoding_name,
             browser()->tab_strip_model()->GetActiveWebContents()->
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   base::FilePath test_dir_path =
       base::FilePath(kTestDir).AppendASCII(kOverrideTestDir);
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
-  GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
+  GURL url = net::URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
 
     base::FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
-    GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Get the encoding used for the page, it must be the default charset we

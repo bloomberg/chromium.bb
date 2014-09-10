@@ -19,9 +19,9 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -225,7 +225,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      content::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
       &delegate,
       NULL));
@@ -268,7 +268,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      content::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
       &delegate,
       NULL));
@@ -310,7 +310,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
   net::TestURLRequestContext url_request_context;
   DeferredRedirectDelegate delegate;
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
-      content::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
+      net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
       &delegate,
       NULL));

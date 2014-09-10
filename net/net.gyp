@@ -964,6 +964,8 @@
         'test/spawned_test_server/spawned_test_server.h',
         'test/spawned_test_server/spawner_communicator.cc',
         'test/spawned_test_server/spawner_communicator.h',
+        'test/url_request/url_request_mock_http_job.cc',
+        'test/url_request/url_request_mock_http_job.h',
         'url_request/test_url_fetcher_factory.cc',
         'url_request/test_url_fetcher_factory.h',
         'url_request/test_url_request_interceptor.cc',

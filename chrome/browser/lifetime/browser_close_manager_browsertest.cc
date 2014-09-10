@@ -39,9 +39,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -747,7 +747,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   // This .swf normally would be categorized as DANGEROUS_FILE, but
   // TestDownloadManagerDelegate turns it into DANGEROUS_URL.
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
-  GURL download_url(content::URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL download_url(net::URLRequestMockHTTPJob::GetMockUrl(file));
   content::DownloadTestObserverInterrupted observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
       1,

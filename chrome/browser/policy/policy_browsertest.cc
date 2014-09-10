@@ -123,7 +123,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_failed_job.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
@@ -135,6 +134,7 @@
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_stream_factory.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "policy/policy_constants.h"
@@ -169,7 +169,7 @@
 #endif
 
 using content::BrowserThread;
-using content::URLRequestMockHTTPJob;
+using net::URLRequestMockHTTPJob;
 using testing::Mock;
 using testing::Return;
 using testing::_;
@@ -224,8 +224,9 @@ void RedirectHostsToTestData(const char* const urls[], size_t size) {
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
-    filter->AddUrlInterceptor(
-        url, URLRequestMockHTTPJob::CreateInterceptor(base_path));
+    filter->AddUrlInterceptor(url,
+                              URLRequestMockHTTPJob::CreateInterceptor(
+                                  base_path, BrowserThread::GetBlockingPool()));
   }
 }
 
@@ -618,8 +619,11 @@ class PolicyTest : public InProcessBrowserTest {
     base::FilePath root_http;
     PathService::Get(content::DIR_TEST_DATA, &root_http);
     BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(URLRequestMockHTTPJob::AddUrlHandler, root_http),
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(URLRequestMockHTTPJob::AddUrlHandler,
+                   root_http,
+                   make_scoped_refptr(BrowserThread::GetBlockingPool())),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     content::RunMessageLoop();
   }
@@ -2686,9 +2690,14 @@ class RestoreOnStartupPolicyTest
     command_line->InitFromArgv(argv);
     ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
                            command_line->argv().begin()));
+  }
 
-    // Redirect the test URLs to the test data directory.
-    RedirectHostsToTestData(kRestoredURLs, arraysize(kRestoredURLs));
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            RedirectHostsToTestData, kRestoredURLs, arraysize(kRestoredURLs)));
   }
 
   void HomepageIsNotNTP() {

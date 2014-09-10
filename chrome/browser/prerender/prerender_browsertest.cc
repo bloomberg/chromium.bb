@@ -81,7 +81,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/net/url_request_mock_http_job.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
@@ -89,6 +88,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
@@ -798,7 +798,12 @@ class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
       }
       return new HangingURLRequestJob(request, network_delegate);
     }
-    return new content::URLRequestMockHTTPJob(request, network_delegate, file_);
+    return new net::URLRequestMockHTTPJob(
+        request,
+        network_delegate,
+        file_,
+        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   }
 
  private:
@@ -820,13 +825,17 @@ void CreateHangingFirstRequestInterceptorOnIO(
 }
 
 // Wrapper over URLRequestMockHTTPJob that exposes extra callbacks.
-class MockHTTPJob : public content::URLRequestMockHTTPJob {
+class MockHTTPJob : public net::URLRequestMockHTTPJob {
  public:
   MockHTTPJob(net::URLRequest* request,
               net::NetworkDelegate* delegate,
               const base::FilePath& file)
-      : content::URLRequestMockHTTPJob(request, delegate, file) {
-  }
+      : net::URLRequestMockHTTPJob(
+            request,
+            delegate,
+            file,
+            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
 
   void set_start_callback(const base::Closure& start_callback) {
     start_callback_ = start_callback;
@@ -835,7 +844,7 @@ class MockHTTPJob : public content::URLRequestMockHTTPJob {
   virtual void Start() OVERRIDE {
     if (!start_callback_.is_null())
       start_callback_.Run();
-    content::URLRequestMockHTTPJob::Start();
+    net::URLRequestMockHTTPJob::Start();
   }
 
  private:
@@ -925,7 +934,8 @@ void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url,
-      content::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(file));
+      net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
+          file, BrowserThread::GetBlockingPool()));
 }
 
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.

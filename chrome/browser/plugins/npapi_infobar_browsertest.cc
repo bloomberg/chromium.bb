@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -20,12 +21,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using content::URLRequestMockHTTPJob;
-
+using net::URLRequestMockHTTPJob;
 
 namespace {
 
@@ -45,8 +45,11 @@ class UnauthorizedPluginInfoBarBrowserTest : public InProcessBrowserTest {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(URLRequestMockHTTPJob::AddUrlHandler, root_http),
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(URLRequestMockHTTPJob::AddUrlHandler,
+                   root_http,
+                   make_scoped_refptr(BrowserThread::GetBlockingPool())),
         runner->QuitClosure());
     runner->Run();
   }
