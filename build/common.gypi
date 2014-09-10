@@ -98,6 +98,11 @@
         # non-Official builds).
         'buildtype%': 'Dev',
 
+        # Set to 1 to enable fast builds. Set to 2 for even faster builds
+        # (it disables debug info for fastest compilation - only for use
+        # on compile-only bots).
+        'fastbuild%': 0,
+
         'conditions': [
           # Compute the architecture that we're building on.
           ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="android"', {
@@ -124,6 +129,7 @@
       'host_arch%': '<(host_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
+      'fastbuild%': '<(fastbuild)',
 
       # By default, build for the architecture that we're building on.
       'target_arch%': '<(host_arch)',
@@ -158,6 +164,7 @@
     'nacl_standalone%': '<(nacl_standalone)',
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
+    'fastbuild%': '<(fastbuild)',
     'component%': '<(component)',
 
     'nacl_strict_warnings%': 1,

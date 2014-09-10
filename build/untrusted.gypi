@@ -25,6 +25,8 @@
       # would just make things uglier.
       '--product-dir', '<(PRODUCT_DIR)/xyz',
       '--config-name', '<(CONFIGURATION_NAME)',
+      '--build-type', '<(buildtype)',
+      '--fast-build', '<(fastbuild)',
     ],
     # Default C compiler defines.
     'nacl_default_defines': [
@@ -40,8 +42,6 @@
     ],
     'nacl_default_compile_flags': [
       #'-std=gnu99',  Added by build_nexe
-      '-O2',
-      '-g',
       '-Wall',
       '-fdiagnostics-show-option',
       '<(werror)',
@@ -1262,9 +1262,6 @@
            'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
            'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
            'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-           'link_flags': [
-             '-O3',
-           ],
            'translate_flags': [],
          },
          'actions': [
