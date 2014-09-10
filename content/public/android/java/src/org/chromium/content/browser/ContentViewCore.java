@@ -275,6 +275,7 @@ public class ContentViewCore
     private boolean mFocusedNodeEditable;
     private ActionMode mActionMode;
     private boolean mUnselectAllOnActionModeDismiss;
+    private boolean mPreserveSelectionOnNextLossOfFocus;
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
@@ -631,14 +632,14 @@ public class ContentViewCore
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
                 if (!isNavigationToDifferentPage) return;
-                hidePopups();
+                hidePopupsAndClearSelection();
                 resetScrollInProgress();
                 resetGestureDetection();
             }
 
             @Override
             public void renderProcessGone(boolean wasOomProtected) {
-                hidePopups();
+                hidePopupsAndClearSelection();
                 resetScrollInProgress();
                 // No need to reset gesture detection as the detector will have
                 // been destroyed in the RenderWidgetHostView.
@@ -669,7 +670,7 @@ public class ContentViewCore
         if (mContainerView != null) {
             mPastePopupMenu = null;
             mInputConnection = null;
-            hidePopups();
+            hidePopupsAndClearSelection();
         }
 
         mContainerView = containerView;
@@ -1417,6 +1418,7 @@ public class ContentViewCore
         assert mWebContents != null;
         mWebContents.onShow();
         setAccessibilityState(mAccessibilityManager.isEnabled());
+        restoreSelectionPopupsIfNecessary();
     }
 
     /**
@@ -1433,7 +1435,7 @@ public class ContentViewCore
      */
     public void onHide() {
         assert mWebContents != null;
-        hidePopups();
+        hidePopupsAndPreserveSelection();
         setInjectedAccessibility(false);
         mWebContents.onHide();
     }
@@ -1448,13 +1450,26 @@ public class ContentViewCore
         return mContentSettings;
     }
 
-    private void hidePopups() {
+    private void hidePopupsAndClearSelection() {
         mUnselectAllOnActionModeDismiss = true;
+        hidePopups();
+    }
+
+    private void hidePopupsAndPreserveSelection() {
+        mUnselectAllOnActionModeDismiss = false;
+        hidePopups();
+    }
+
+    private void hidePopups() {
         hideSelectActionBar();
         hidePastePopup();
         hideSelectPopup();
-        hideTextHandles();
         mPopupZoomer.hide(false);
+        if (mUnselectAllOnActionModeDismiss) hideTextHandles();
+    }
+
+    private void restoreSelectionPopupsIfNecessary() {
+        if (mHasSelection && mActionMode == null) showSelectActionBar();
     }
 
     public void hideSelectActionBar() {
@@ -1479,7 +1494,7 @@ public class ContentViewCore
     @SuppressWarnings("javadoc")
     public void onAttachedToWindow() {
         setAccessibilityState(mAccessibilityManager.isEnabled());
-
+        restoreSelectionPopupsIfNecessary();
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
         GamepadList.onAttachedToWindow(mContext);
     }
@@ -1491,7 +1506,7 @@ public class ContentViewCore
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         setInjectedAccessibility(false);
-        hidePopups();
+        hidePopupsAndPreserveSelection();
         mZoomControlsDelegate.dismissZoomPicker();
         unregisterAccessibilityContentObserver();
 
@@ -1643,12 +1658,17 @@ public class ContentViewCore
     }
 
     public void onFocusChanged(boolean gainFocus) {
-        if (!gainFocus) {
+        if (gainFocus) {
+            restoreSelectionPopupsIfNecessary();
+        } else {
             hideImeIfNeeded();
             cancelRequestToScrollFocusedEditableNodeIntoView();
-            hidePastePopup();
-            hideTextHandles();
-            mPopupZoomer.hide(false);
+            if (mPreserveSelectionOnNextLossOfFocus) {
+                mPreserveSelectionOnNextLossOfFocus = false;
+                hidePopupsAndPreserveSelection();
+            } else {
+                hidePopupsAndClearSelection();
+            }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
@@ -2100,6 +2120,21 @@ public class ContentViewCore
         mImeAdapter.unselect();
     }
 
+    /**
+     * Ensure the selection is preserved the next time the view loses focus.
+     */
+    public void preserveSelectionOnNextLossOfFocus() {
+        mPreserveSelectionOnNextLossOfFocus = true;
+    }
+
+    /**
+     * @return Whether the page has an active, touch-controlled selection region.
+     */
+    @VisibleForTesting
+    public boolean hasSelection() {
+        return mHasSelection;
+    }
+
     private void hidePastePopup() {
         if (mPastePopupMenu == null) return;
         mPastePopupMenu.hide();
@@ -2110,6 +2145,7 @@ public class ContentViewCore
         switch (eventType) {
             case SelectionEventType.SELECTION_SHOWN:
                 mHasSelection = true;
+                mUnselectAllOnActionModeDismiss = true;
                 // TODO(cjhopman): Remove this when there is a better signal that long press caused
                 // a selection. See http://crbug.com/150151.
                 mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
@@ -2344,7 +2380,7 @@ public class ContentViewCore
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
-        hidePopups();
+        hidePopupsAndClearSelection();
         if (DeviceFormFactor.isTablet(mContext) && !multiple) {
             mSelectPopup = new SelectPopupDropdown(this, popupItems, bounds, selectedIndices);
         } else {

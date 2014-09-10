@@ -460,7 +460,6 @@ void RenderWidgetHostViewAndroid::Focus() {
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
-  host_->ExecuteEditCommand("Unselect", "");
   host_->SetInputMethodActive(false);
   host_->Blur();
   if (overscroll_effect_)
