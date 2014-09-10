@@ -174,7 +174,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     BufferFormat format) {
   scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
       drm_, device_, format, size, true);
-  if (!buffer)
+  if (!buffer.get())
     return NULL;
 
   return scoped_refptr<GbmPixmap>(new GbmPixmap(buffer));
@@ -196,7 +196,7 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
     const gfx::Rect& display_bounds,
     const gfx::RectF& crop_rect) {
   scoped_refptr<GbmPixmap> pixmap = static_cast<GbmPixmap*>(buffer.get());
-  if (!pixmap) {
+  if (!pixmap.get()) {
     LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer.";
     return false;
   }

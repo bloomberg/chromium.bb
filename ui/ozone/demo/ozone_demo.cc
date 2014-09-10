@@ -86,14 +86,14 @@ class DemoWindow : public ui::PlatformWindowDelegate {
  private:
   bool InitializeGLSurface() {
     surface_ = gfx::GLSurface::CreateViewGLSurface(GetAcceleratedWidget());
-    if (!surface_) {
+    if (!surface_.get()) {
       LOG(ERROR) << "Failed to create GL surface";
       return false;
     }
 
     context_ = gfx::GLContext::CreateGLContext(
         NULL, surface_.get(), gfx::PreferIntegratedGpu);
-    if (!context_) {
+    if (!context_.get()) {
       LOG(ERROR) << "Failed to create GL context";
       surface_ = NULL;
       return false;

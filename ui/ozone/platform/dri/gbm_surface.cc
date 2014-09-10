@@ -135,9 +135,9 @@ bool GbmSurface::OnSwapBuffers() {
   gbm_bo* pending_buffer = gbm_surface_lock_front_buffer(native_surface_);
   scoped_refptr<GbmSurfaceBuffer> primary =
       GbmSurfaceBuffer::GetBuffer(pending_buffer);
-  if (!primary) {
+  if (!primary.get()) {
     primary = GbmSurfaceBuffer::CreateBuffer(dri_, pending_buffer);
-    if (!primary) {
+    if (!primary.get()) {
       LOG(ERROR) << "Failed to associate the buffer with the controller";
       return false;
     }
