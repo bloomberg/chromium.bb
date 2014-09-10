@@ -657,6 +657,21 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'final' : True})
 
   @minimum_schema(2)
+  def GetBuildStatus(self, build_id):
+    """Gets the status of the build.
+
+    Args:
+      build_id: build id to fetch.
+
+    Returns:
+      A dictionary with keys (id, build_config, start_time, finish_time,
+      status), or None if no build with this id was found.
+    """
+    return self._Select('buildTable', build_id,
+                        ['id', 'build_config', 'start_time',
+                         'finish_time', 'status'])
+
+  @minimum_schema(2)
   def GetSlaveStatuses(self, master_build_id):
     """Gets the statuses of slave builders to given build.
 

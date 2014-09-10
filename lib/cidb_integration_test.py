@@ -212,6 +212,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(readonly_db.GetSlaveStatuses(1)), 29)
     self.assertEqual(len(readonly_db.GetSlaveStatuses(2)), 0)
 
+    # Make sure we can get build status by build id.
+    self.assertEqual(readonly_db.GetBuildStatus(2).get('id'), 2)
+
     self._start_and_finish_time_checks(readonly_db)
     self._cl_action_checks(readonly_db)
     self._last_updated_time_checks(readonly_db)
