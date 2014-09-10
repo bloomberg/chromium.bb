@@ -694,6 +694,12 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
         break;
     }
 
+    // for dir=auto, use inlineBoxBidiLevel() to test the correct direction for the cursor.
+    if (rightAligned && (node() && node()->selfOrAncestorHasDirAutoAttribute())) {
+        if (inlineBox->bidiLevel()%2 != 1)
+            rightAligned = false;
+    }
+
     if (rightAligned) {
         left = std::max(left, leftEdge);
         left = std::min(left, rootRight - caretWidth);
