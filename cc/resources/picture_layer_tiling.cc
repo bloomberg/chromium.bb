@@ -823,9 +823,11 @@ int ComputeExpansionDelta(int num_x_edges, int num_y_edges,
   int64 c = static_cast<int64>(width) * height - target_area;
 
   // Compute the delta for our edges using the quadratic equation.
-  return a == 0 ? -c / b :
-     (-b + static_cast<int>(
-         std::sqrt(static_cast<int64>(b) * b - 4.0 * a * c))) / (2 * a);
+  int delta =
+      (a == 0) ? -c / b : (-b + static_cast<int>(std::sqrt(
+                                    static_cast<int64>(b) * b - 4.0 * a * c))) /
+                              (2 * a);
+  return std::max(0, delta);
 }
 
 }  // namespace

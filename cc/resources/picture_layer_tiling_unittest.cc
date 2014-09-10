@@ -869,7 +869,11 @@ TEST(PictureLayerTilingTest, ExpandRectSmaller) {
   EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
   EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
   EXPECT_EQ(out.width() - in.width(), out.height() - in.height());
-  EXPECT_NEAR(100 * 100, out.width() * out.height(), 50);
+
+  // |in| represents the visible rect, and |out| represents the eventually rect.
+  // If the eventually rect doesn't contain the visible rect, we will start
+  // losing tiles.
+  EXPECT_TRUE(out.Contains(in));
   EXPECT_TRUE(bounds.Contains(out));
 }
 
@@ -1447,41 +1451,6 @@ TEST_F(PictureLayerTilingIteratorTest,
   VerifyTiles(1.f,
               gfx::Rect(layer_bounds),
               base::Bind(&TilesIntersectingRectExist, visible_rect, true));
-}
-
-static void CountExistingTiles(int *count,
-                               Tile* tile,
-                               const gfx::Rect& geometry_rect) {
-  if (tile != NULL)
-    ++(*count);
-}
-
-TEST_F(PictureLayerTilingIteratorTest,
-       TilesExistLargeViewportAndLayerWithLargeVisibleArea) {
-  gfx::Size layer_bounds(10000, 10000);
-  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
-  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
-
-  client_.set_tree(ACTIVE_TREE);
-  set_max_tiles_for_interest_area(1);
-  tiling_->UpdateTilePriorities(
-      ACTIVE_TREE,
-      gfx::Rect(layer_bounds),  // visible content rect
-      1.f,                      // current contents scale
-      1.0,                      // current frame time
-      NULL,                     // occlusion tracker
-      NULL,                     // render target
-      gfx::Transform());        // draw transform
-
-  int num_tiles = 0;
-  VerifyTiles(1.f,
-              gfx::Rect(layer_bounds),
-              base::Bind(&CountExistingTiles, &num_tiles));
-  // If we're making a rect the size of one tile, it can only overlap up to 4
-  // tiles depending on its position.
-  EXPECT_LE(num_tiles, 4);
-  VerifyTiles(1.f, gfx::Rect(), base::Bind(&TileExists, false));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
