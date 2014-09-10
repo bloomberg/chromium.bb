@@ -323,7 +323,9 @@ bool PicturePile::UpdateAndExpandInvalidation(
       int bottom_until = std::max(interest_rect_over_tiles.bottom(), top);
 
       int exposed_left = old_tiling_size.width();
-      int exposed_left_until = right;
+      int exposed_left_until = tiling_size().width();
+      int exposed_top = top;
+      int exposed_bottom = tiling_size().height();
       DCHECK_GE(exposed_left, left);
 
       gfx::Rect left_rect(left, top, left_until - left, bottom - top);
@@ -331,8 +333,10 @@ bool PicturePile::UpdateAndExpandInvalidation(
       gfx::Rect top_rect(left, top, right - left, top_until - top);
       gfx::Rect bottom_rect(
           left, bottom_until, right - left, bottom - bottom_until);
-      gfx::Rect exposed_rect(
-          exposed_left, top, exposed_left_until - exposed_left, bottom - top);
+      gfx::Rect exposed_rect(exposed_left,
+                             exposed_top,
+                             exposed_left_until - exposed_left,
+                             exposed_bottom - exposed_top);
       resize_invalidation.Union(left_rect);
       resize_invalidation.Union(right_rect);
       resize_invalidation.Union(top_rect);
@@ -355,7 +359,9 @@ bool PicturePile::UpdateAndExpandInvalidation(
       int right_until = std::max(interest_rect_over_tiles.right(), left);
 
       int exposed_top = old_tiling_size.height();
-      int exposed_top_until = bottom;
+      int exposed_top_until = tiling_size().height();
+      int exposed_left = left;
+      int exposed_right = tiling_size().width();
       DCHECK_GE(exposed_top, top);
 
       gfx::Rect left_rect(left, top, left_until - left, bottom - top);
@@ -363,8 +369,10 @@ bool PicturePile::UpdateAndExpandInvalidation(
       gfx::Rect top_rect(left, top, right - left, top_until - top);
       gfx::Rect bottom_rect(
           left, bottom_until, right - left, bottom - bottom_until);
-      gfx::Rect exposed_rect(
-          left, exposed_top, right - left, exposed_top_until - exposed_top);
+      gfx::Rect exposed_rect(exposed_left,
+                             exposed_top,
+                             exposed_right - exposed_left,
+                             exposed_top_until - exposed_top);
       resize_invalidation.Union(left_rect);
       resize_invalidation.Union(right_rect);
       resize_invalidation.Union(top_rect);
