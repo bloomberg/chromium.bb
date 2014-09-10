@@ -768,6 +768,7 @@ const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
+const char kCreateConnectivityReportFunction[] = "CreateConnectivityReport";
 const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
 const char kRemoveWakeOnPacketConnectionFunction[] =
     "RemoveWakeOnPacketConnection";
