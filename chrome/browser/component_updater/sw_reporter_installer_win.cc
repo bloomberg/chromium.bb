@@ -23,8 +23,11 @@
 #include "base/process/launch.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
+#include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_utils.h"
@@ -41,18 +44,21 @@ namespace {
 // These values are used to send UMA information and are replicated in the
 // histograms.xml file, so the order MUST NOT CHANGE.
 enum SwReporterUmaValue {
-  SW_REPORTER_EXPLICIT_REQUEST = 0,
-  SW_REPORTER_STARTUP_RETRY = 1,
-  SW_REPORTER_RETRIED_TOO_MANY_TIMES = 2,
+  SW_REPORTER_EXPLICIT_REQUEST = 0,        // Deprecated.
+  SW_REPORTER_STARTUP_RETRY = 1,           // Deprecated.
+  SW_REPORTER_RETRIED_TOO_MANY_TIMES = 2,  // Deprecated.
   SW_REPORTER_START_EXECUTION = 3,
   SW_REPORTER_FAILED_TO_START = 4,
   SW_REPORTER_REGISTRY_EXIT_CODE = 5,
-  SW_REPORTER_RESET_RETRIES = 6,
+  SW_REPORTER_RESET_RETRIES = 6,  // Deprecated.
   SW_REPORTER_MAX,
 };
 
 // The maximum number of times to retry a download on startup.
 const int kMaxRetry = 20;
+
+// The number of days to wait before triggering another sw reporter run.
+const int kDaysBetweenSwReporterRuns = 7;
 
 // CRX hash. The extension id is: gkmgaooipdjhmangpemjhigmamcehddo. The hash was
 // generated in Python with something like this:
@@ -84,10 +90,6 @@ void ReportAndClearExitCode(int exit_code) {
   base::win::RegKey srt_key(
       HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_WRITE);
   srt_key.DeleteValue(kExitCodeRegistryValueName);
-
-  // Now that we are done we can reset the try count.
-  g_browser_process->local_state()->SetInteger(
-      prefs::kSwReporterExecuteTryCount, 0);
 }
 
 // This function is called from a worker thread to launch the SwReporter and
@@ -143,13 +145,43 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   virtual void ComponentReady(const base::Version& version,
                               const base::FilePath& install_dir,
                               scoped_ptr<base::DictionaryValue> manifest) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     wcsncpy_s(version_dir_,
               _MAX_PATH,
               install_dir.value().c_str(),
               install_dir.value().size());
-    // Only execute the reporter if there is still a pending request for it.
-    if (prefs_->GetInteger(prefs::kSwReporterExecuteTryCount) > 0)
+
+    // A previous run may have results in the registry, so check and report
+    // them if present.
+    base::win::RegKey srt_key(
+        HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_READ);
+    DWORD exit_code;
+    if (srt_key.Valid() &&
+        srt_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code) ==
+            ERROR_SUCCESS) {
+      ReportUmaStep(SW_REPORTER_REGISTRY_EXIT_CODE);
+      ReportAndClearExitCode(exit_code);
+    }
+
+    // If we can't access local state, we can't see when we last ran, so
+    // just exit without running.
+    if (!g_browser_process || !g_browser_process->local_state())
+      return;
+
+    // Run the reporter if it hasn't been triggered in the
+    // kDaysBetweenSwReporterRuns days.
+    const base::Time last_time_triggered = base::Time::FromInternalValue(
+        g_browser_process->local_state()->GetInt64(
+            prefs::kSwReporterLastTimeTriggered));
+    if ((base::Time::Now() - last_time_triggered).InDays() >=
+        kDaysBetweenSwReporterRuns) {
+      g_browser_process->local_state()->SetInt64(
+          prefs::kSwReporterLastTimeTriggered,
+          base::Time::Now().ToInternalValue());
+
       ExecuteReporter(install_dir);
+    }
   }
 
   virtual base::FilePath GetBaseDirectory() const { return install_dir(); }
@@ -187,8 +219,15 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
 wchar_t SwReporterInstallerTraits::version_dir_[] = {};
 
-void RegisterComponent(ComponentUpdateService* cus, PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}  // namespace
+
+void RegisterSwReporterComponent(ComponentUpdateService* cus,
+                                 PrefService* prefs) {
+  // The Sw reporter shouldn't run if the user isn't reporting metrics.
+  if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() && false)
+    return;
+
+  // Install the component.
   scoped_ptr<ComponentInstallerTraits> traits(
       new SwReporterInstallerTraits(prefs));
   // |cus| will take ownership of |installer| during installer->Register(cus).
@@ -197,85 +236,8 @@ void RegisterComponent(ComponentUpdateService* cus, PrefService* prefs) {
   installer->Register(cus);
 }
 
-// We need a conditional version of register component so that it can be called
-// back on the UI thread after validating on the File thread that the component
-// path exists and we must re-register on startup for example.
-void MaybeRegisterComponent(ComponentUpdateService* cus,
-                            PrefService* prefs,
-                            bool register_component) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (register_component)
-    RegisterComponent(cus, prefs);
-}
-
-}  // namespace
-
-void ExecuteSwReporter(ComponentUpdateService* cus, PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If we have a pending execution, send metrics about it so we can account for
-  // missing executions.
-  if (prefs->GetInteger(prefs::kSwReporterExecuteTryCount) > 0)
-    ReportUmaStep(SW_REPORTER_RESET_RETRIES);
-  // This is an explicit call, so let's forget about previous incomplete
-  // execution attempts and start from scratch.
-  prefs->SetInteger(prefs::kSwReporterExecuteTryCount, kMaxRetry);
-  ReportUmaStep(SW_REPORTER_EXPLICIT_REQUEST);
-  const std::vector<std::string> registered_components(cus->GetComponentIDs());
-  if (std::find(registered_components.begin(),
-                registered_components.end(),
-                SwReporterInstallerTraits::ID()) ==
-      registered_components.end()) {
-    RegisterComponent(cus, prefs);
-  } else if (!SwReporterInstallerTraits::VersionPath().empty()) {
-    // Here, we already have a fully registered and installed component
-    // available for immediate use. This doesn't handle cases where the version
-    // folder is there but the executable is not within in. This is a corruption
-    // we don't want to handle here.
-    ExecuteReporter(SwReporterInstallerTraits::VersionPath());
-  }
-  // If the component is registered but the version path is not available, it
-  // means the component was not fully installed yet, and it should run the
-  // reporter when ComponentReady is called.
-}
-
-void ExecutePendingSwReporter(ComponentUpdateService* cus, PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Register the existing component for updates.
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      FROM_HERE,
-      base::Bind(&base::PathExists, SwReporterInstallerTraits::install_dir()),
-      base::Bind(&MaybeRegisterComponent, cus, prefs));
-
-  // Run the reporter if there is a pending execution request.
-  int execute_try_count = prefs->GetInteger(prefs::kSwReporterExecuteTryCount);
-  if (execute_try_count > 0) {
-    // Retrieve the results if the pending request has completed.
-    base::win::RegKey srt_key(
-        HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_READ);
-    DWORD exit_code;
-    if (srt_key.Valid() &&
-        srt_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code) ==
-            ERROR_SUCCESS) {
-      ReportUmaStep(SW_REPORTER_REGISTRY_EXIT_CODE);
-      ReportAndClearExitCode(exit_code);
-      return;
-    }
-
-    // The previous request has not completed. The reporter will run again
-    // when ComponentReady is called or the request is abandoned if it has
-    // been tried too many times.
-    prefs->SetInteger(prefs::kSwReporterExecuteTryCount, --execute_try_count);
-    if (execute_try_count > 0)
-      ReportUmaStep(SW_REPORTER_STARTUP_RETRY);
-    else
-      ReportUmaStep(SW_REPORTER_RETRIED_TOO_MANY_TIMES);
-  }
-}
-
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kSwReporterExecuteTryCount, 0);
+  registry->RegisterInt64Pref(prefs::kSwReporterLastTimeTriggered, 0);
 }
 
 }  // namespace component_updater

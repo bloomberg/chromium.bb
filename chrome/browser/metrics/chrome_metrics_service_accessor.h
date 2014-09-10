@@ -12,11 +12,18 @@
 #include "base/macros.h"
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
+class PrefService;
 class Profile;
 
 namespace {
 class CrashesDOMHandler;
 class FlashDOMHandler;
+}
+
+namespace component_updater {
+class ComponentUpdateService;
+void RegisterSwReporterComponent(ComponentUpdateService* cus,
+                                 PrefService* prefs);
 }
 
 namespace extensions {
@@ -38,6 +45,9 @@ class ChromeInternalLogSource;
 // as a 'friend' below.
 class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
  private:
+  friend void component_updater::RegisterSwReporterComponent(
+      component_updater::ComponentUpdateService* cus,
+      PrefService* prefs);
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;

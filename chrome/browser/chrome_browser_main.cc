@@ -433,7 +433,7 @@ void RegisterComponentsForUpdate() {
 #endif
 
 #if defined(OS_WIN)
-  ExecutePendingSwReporter(cus, g_browser_process->local_state());
+  RegisterSwReporterComponent(cus, g_browser_process->local_state());
 #endif
 
   cus->Start();

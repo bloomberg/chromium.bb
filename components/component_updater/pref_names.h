@@ -12,7 +12,7 @@ namespace prefs {
 extern const char kRecoveryComponentVersion[];
 
 #if defined(OS_WIN)
-extern const char kSwReporterExecuteTryCount[];
+extern const char kSwReporterLastTimeTriggered[];
 #endif
 
 }  // namespace prefs

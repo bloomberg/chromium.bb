@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -34,7 +33,6 @@
 #if defined(OS_WIN)
 #include "base/base_paths.h"
 #include "base/path_service.h"
-#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/installer/util/shell_util.h"
 
 namespace {
@@ -125,20 +123,6 @@ void ProfileResetter::Reset(
       (this->*flagToMethod[i].method)();
     }
   }
-
-// When the user resets any of their settings on Windows and agreed to sending
-// feedback, run the software reporter tool to see if it could find the reason
-// why the user wanted a reset.
-#if defined(OS_WIN)
-  // The browser process and / or local_state can be NULL when running tests.
-  if (accepted_send_feedback && g_browser_process &&
-      g_browser_process->local_state() &&
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kMetricsReportingEnabled)) {
-    ExecuteSwReporter(g_browser_process->component_updater(),
-                      g_browser_process->local_state());
-  }
-#endif
 
   DCHECK_EQ(resettable_flags, reset_triggered_for_flags);
 }
