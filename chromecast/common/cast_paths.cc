@@ -5,8 +5,8 @@
 #include "chromecast/common/cast_paths.h"
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 

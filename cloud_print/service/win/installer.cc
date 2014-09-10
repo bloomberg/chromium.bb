@@ -8,7 +8,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/shortcut.h"

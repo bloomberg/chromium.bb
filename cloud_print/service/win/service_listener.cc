@@ -5,8 +5,8 @@
 #include "cloud_print/service/win/service_listener.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
