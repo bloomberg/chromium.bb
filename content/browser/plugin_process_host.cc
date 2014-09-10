@@ -16,12 +16,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -55,6 +57,24 @@
 #endif
 
 namespace content {
+
+namespace {
+
+base::LazyInstance<std::map<base::ProcessId, WebPluginInfo> >
+    g_process_webplugin_info = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky
+    g_process_webplugin_info_lock = LAZY_INSTANCE_INITIALIZER;
+}
+
+bool PluginProcessHost::GetWebPluginInfoFromPluginPid(base::ProcessId pid,
+                                                      WebPluginInfo* info) {
+  base::AutoLock lock(g_process_webplugin_info_lock.Get());
+  if (!g_process_webplugin_info.Get().count(pid))
+    return false;
+
+  *info = g_process_webplugin_info.Get()[pid];
+  return true;
+}
 
 #if defined(OS_WIN)
 void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
@@ -106,8 +126,9 @@ class PluginSandboxedProcessLauncherDelegate
 };
 
 PluginProcessHost::PluginProcessHost()
+    : pid_(base::kNullProcessId)
 #if defined(OS_MACOSX)
-    : plugin_cursor_visible_(true)
+    , plugin_cursor_visible_(true)
 #endif
 {
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_PLUGIN, this));
@@ -144,6 +165,11 @@ PluginProcessHost::~PluginProcessHost() {
 #endif
   // Cancel all pending and sent requests.
   CancelRequests();
+
+  {
+    base::AutoLock lock(g_process_webplugin_info_lock.Get());
+    g_process_webplugin_info.Get()[pid_] = info_;
+  }
 }
 
 bool PluginProcessHost::Send(IPC::Message* message) {
@@ -284,6 +310,12 @@ void PluginProcessHost::OnChannelConnected(int32 peer_pid) {
   }
 
   pending_requests_.clear();
+
+  pid_ = peer_pid;
+  {
+    base::AutoLock lock(g_process_webplugin_info_lock.Get());
+    g_process_webplugin_info.Get()[pid_] = info_;
+  }
 }
 
 void PluginProcessHost::OnChannelError() {

@@ -841,10 +841,15 @@ bool PluginServiceImpl::GetPluginInfoFromWindow(
   if (!IsPluginWindow(window))
     return false;
 
-  GetPluginPropertyFromWindow(
-          window, kPluginNameAtomProperty, plugin_name);
-  GetPluginPropertyFromWindow(
-          window, kPluginVersionAtomProperty, plugin_version);
+
+  DWORD process_id = 0;
+  GetWindowThreadProcessId(window, &process_id);
+  WebPluginInfo info;
+  if (!PluginProcessHost::GetWebPluginInfoFromPluginPid(process_id, &info))
+    return false;
+
+  *plugin_name = info.name;
+  *plugin_version = info.version;
   return true;
 }
 

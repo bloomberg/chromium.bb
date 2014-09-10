@@ -9,8 +9,6 @@ namespace content {
 const base::char16 kNativeWindowClassName[] = L"NativeWindowClass";
 const base::char16 kWrapperNativeWindowClassName[] =
     L"WrapperNativeWindowClass";
-const base::char16 kPluginNameAtomProperty[] = L"PluginNameAtom";
-const base::char16 kPluginVersionAtomProperty[] = L"PluginVersionAtom";
 const base::char16 kDummyActivationWindowName[] = L"DummyWindowForActivation";
 const base::char16 kPaintMessageName[] = L"Chrome_CustomPaintil";
 const base::char16 kRegistryMozillaPlugins[] = L"SOFTWARE\\MozillaPlugins";

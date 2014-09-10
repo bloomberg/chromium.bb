@@ -21,8 +21,6 @@ extern const base::char16 kNativeWindowClassName[];
 // is created on the browser UI thread.
 extern const base::char16 kWrapperNativeWindowClassName[];
 
-extern const base::char16 kPluginNameAtomProperty[];
-extern const base::char16 kPluginVersionAtomProperty[];
 extern const base::char16 kDummyActivationWindowName[];
 
 // The name of the custom window message that the browser uses to tell the

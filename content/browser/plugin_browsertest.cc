@@ -242,11 +242,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetJavaScriptURL2)) {
 }
 
 // Test is flaky on linux/cros/win builders.  http://crbug.com/71904
-#if !defined(OS_WIN)  // http://crbug.com/412042
 IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRedirectNotification) {
   LoadAndWait(GetURL("geturl_redirect_notify.html"));
 }
-#endif
 
 // Tests that identity is preserved for NPObjects passed from a plugin
 // into JavaScript.
@@ -356,11 +354,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PluginThreadAsyncCall)) {
   LoadAndWait(GetURL("plugin_thread_async_call.html"));
 }
 
-#if !defined(OS_WIN)  // http://crbug.com/412042
 IN_PROC_BROWSER_TEST_F(PluginTest, PluginSingleRangeRequest) {
   LoadAndWait(GetURL("plugin_single_range_request.html"));
 }
-#endif
 
 #if !defined(OS_WIN) // http://crbug.com/396373
 // Test checking the privacy mode is on.
