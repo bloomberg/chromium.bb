@@ -69,7 +69,8 @@ def QuitChrome(chrome_path):
   """
   if not CloseWindows(chrome_path):
     # TODO(robertshield): Investigate why Chrome occasionally doesn't shut down.
-    print 'Warning: Chrome not responding to window closure. Killing process...'
+    sys.stderr.write('Warning: Chrome not responding to window closure. '
+                     'Killing all processes belonging to %s\n' % chrome_path)
     KillNamedProcess(chrome_path)
 
 

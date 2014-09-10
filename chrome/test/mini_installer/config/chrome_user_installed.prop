@@ -24,7 +24,7 @@
       "values": {
         "UninstallString": {
           "type": "SZ",
-          "data": "\"$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome"
+          "data": "\"$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome --verbose-logging"
         },
         "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }

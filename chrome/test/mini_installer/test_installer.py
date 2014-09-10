@@ -10,6 +10,8 @@ the design documentation at http://goo.gl/Q0rGM6
 """
 
 import argparse
+import datetime
+import inspect
 import json
 import os
 import subprocess
@@ -20,6 +22,20 @@ import _winreg
 
 from variable_expander import VariableExpander
 import verifier_runner
+
+
+def LogMessage(message):
+  """Logs a message to stderr.
+
+  Args:
+    message: The message string to be logged.
+  """
+  now = datetime.datetime.now()
+  frameinfo = inspect.getframeinfo(inspect.currentframe().f_back)
+  filename = os.path.basename(frameinfo.filename)
+  line = frameinfo.lineno
+  sys.stderr.write('[%s:%s(%s)] %s\n' % (now.strftime('%m%d/%H%M%S'),
+                                         filename, line, message))
 
 
 class Config:
@@ -90,10 +106,10 @@ class InstallerTest(unittest.TestCase):
     for i in range(1, len(self._test), 2):
       action = self._test[i]
       if not self._quiet:
-        sys.stderr.write('Beginning action %s\n' % action)
+        LogMessage('Beginning action %s' % action)
       RunCommand(self._config.actions[action], self._variable_expander)
       if not self._quiet:
-        sys.stderr.write('Finished action %s\n' % action)
+        LogMessage('Finished action %s' % action)
 
       state = self._test[i + 1]
       self._VerifyState(state)
@@ -124,7 +140,7 @@ class InstallerTest(unittest.TestCase):
       state: A state name.
     """
     if not self._quiet:
-      sys.stderr.write('Verifying state %s\n' % state)
+      LogMessage('Verifying state %s' % state)
     try:
       self._verifier_runner.VerifyAll(self._config.states[state],
                                       self._variable_expander)
@@ -322,12 +338,12 @@ def main():
   verbosity = 2 if not args.quiet else 1
   result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
   if is_component_build:
-    print ('Component build is currently unsupported by the mini_installer: '
-           'http://crbug.com/377839')
+    sys.stderr.write('Component build is currently unsupported by the '
+                     'mini_installer: http://crbug.com/377839\n')
   if args.write_full_results_to:
     with open(args.write_full_results_to, 'w') as fp:
       json.dump(_FullResults(suite, result, {}), fp, indent=2)
-      fp.write("\n")
+      fp.write('\n')
   return 0 if result.wasSuccessful() else 1
 
 
