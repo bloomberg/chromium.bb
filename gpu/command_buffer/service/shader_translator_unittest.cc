@@ -7,15 +7,6 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// The ANGLE shader translator now uses native GLenums
-// TODO(jmadill): delete these defines when the ANGLE
-//   roll reliably passes translator version 126
-#if (ANGLE_SH_VERSION >= 126)
-#define SH_VERTEX_SHADER GL_VERTEX_SHADER
-#define SH_FRAGMENT_SHADER GL_FRAGMENT_SHADER
-#define SH_FLOAT_VEC4 GL_FLOAT_VEC4
-#endif
-
 namespace gpu {
 namespace gles2 {
 
@@ -38,11 +29,11 @@ class ShaderTranslatorTest : public testing::Test {
     fragment_translator_ = new ShaderTranslator();
 
     ASSERT_TRUE(vertex_translator_->Init(
-        SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
+        GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
         ShaderTranslatorInterface::kGlsl,
         SH_EMULATE_BUILT_IN_FUNCTIONS));
     ASSERT_TRUE(fragment_translator_->Init(
-        SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
+        GL_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
         ShaderTranslatorInterface::kGlsl,
         static_cast<ShCompileOptions>(0)));
     // Post-init the results must be empty.
@@ -158,14 +149,14 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   // There should be no uniforms.
   EXPECT_TRUE(vertex_translator_->uniform_map().empty());
   // There should be one attribute with following characteristics:
-  // name:vPosition type:SH_FLOAT_VEC4 size:1.
+  // name:vPosition type:GL_FLOAT_VEC4 size:1.
   const ShaderTranslator::VariableMap& attrib_map =
       vertex_translator_->attrib_map();
   EXPECT_EQ(1u, attrib_map.size());
   ShaderTranslator::VariableMap::const_iterator iter =
       attrib_map.find("vPosition");
   EXPECT_TRUE(iter != attrib_map.end());
-  EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
+  EXPECT_EQ(GL_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
   EXPECT_EQ("vPosition", iter->second.name);
 }
@@ -193,8 +184,8 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   // There should be no attributes.
   EXPECT_TRUE(fragment_translator_->attrib_map().empty());
   // There should be two uniforms with following characteristics:
-  // 1. name:bar[0].foo.color[0] type:SH_FLOAT_VEC4 size:1
-  // 2. name:bar[1].foo.color[0] type:SH_FLOAT_VEC4 size:1
+  // 1. name:bar[0].foo.color[0] type:GL_FLOAT_VEC4 size:1
+  // 2. name:bar[1].foo.color[0] type:GL_FLOAT_VEC4 size:1
   const ShaderTranslator::VariableMap& uniform_map =
       fragment_translator_->uniform_map();
   EXPECT_EQ(2u, uniform_map.size());
@@ -202,13 +193,13 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   ShaderTranslator::VariableMap::const_iterator iter =
       uniform_map.find("bar[0].foo.color[0]");
   EXPECT_TRUE(iter != uniform_map.end());
-  EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
+  EXPECT_EQ(GL_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
   EXPECT_EQ("bar[0].foo.color[0]", iter->second.name);
   // Second uniform.
   iter = uniform_map.find("bar[1].foo.color[0]");
   EXPECT_TRUE(iter != uniform_map.end());
-  EXPECT_EQ(SH_FLOAT_VEC4, iter->second.type);
+  EXPECT_EQ(GL_FLOAT_VEC4, iter->second.type);
   EXPECT_EQ(1, iter->second.size);
   EXPECT_EQ("bar[1].foo.color[0]", iter->second.name);
 }
@@ -242,16 +233,16 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
   ShInitBuiltInResources(&resources);
 
   ASSERT_TRUE(translator_1->Init(
-      SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
+      GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
       SH_EMULATE_BUILT_IN_FUNCTIONS));
   ASSERT_TRUE(translator_2->Init(
-      SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
+      GL_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
       static_cast<ShCompileOptions>(0)));
   resources.EXT_draw_buffers = 1;
   ASSERT_TRUE(translator_3->Init(
-      SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
+      GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
       SH_EMULATE_BUILT_IN_FUNCTIONS));
 

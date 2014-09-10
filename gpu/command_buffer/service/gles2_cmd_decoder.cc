@@ -84,13 +84,6 @@ static const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
 static const char kEXTDrawBuffersExtension[] = "GL_EXT_draw_buffers";
 static const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
 
-#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
-khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
-  return static_cast<khronos_uint64_t>(
-      CityHash64(name, static_cast<size_t>(len)));
-}
-#endif
-
 static bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
                                             GLint rangeMax,
                                             GLint precision) {
@@ -2780,14 +2773,12 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxExpressionComplexity = 256;
   resources.MaxCallStackDepth = 256;
 
-#if (ANGLE_SH_VERSION >= 110)
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
   GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
                                range, &precision);
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
-#endif
 
   if (force_webgl_glsl_validation_) {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
@@ -2795,9 +2786,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
     if (!draw_buffers_explicitly_enabled_)
       resources.MaxDrawBuffers = 1;
-#if (ANGLE_SH_VERSION >= 123)
     resources.EXT_shader_texture_lod = shader_texture_lod_explicitly_enabled_;
-#endif
   } else {
     resources.OES_standard_derivatives =
         features().oes_standard_derivatives ? 1 : 0;
@@ -2809,20 +2798,14 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().ext_draw_buffers ? 1 : 0;
     resources.EXT_frag_depth =
         features().ext_frag_depth ? 1 : 0;
-#if (ANGLE_SH_VERSION >= 123)
     resources.EXT_shader_texture_lod =
         features().ext_shader_texture_lod ? 1 : 0;
-#endif
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ? SH_WEBGL_SPEC
                                                           : SH_GLES2_SPEC;
   if (shader_spec == SH_WEBGL_SPEC && features().enable_shader_name_hashing)
-#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
-    resources.HashFunction = &CityHashForAngle;
-#else
     resources.HashFunction = &CityHash64;
-#endif
   else
     resources.HashFunction = NULL;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
@@ -2845,11 +2828,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(
-#if (ANGLE_SH_VERSION >= 126)
       GL_VERTEX_SHADER,
-#else
-      SH_VERTEX_SHADER,
-#endif
       shader_spec,
       &resources,
       implementation_type,
@@ -2861,11 +2840,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   fragment_translator_ = shader_translator_cache()->GetTranslator(
-#if (ANGLE_SH_VERSION >= 126)
       GL_FRAGMENT_SHADER,
-#else
-      SH_FRAGMENT_SHADER,
-#endif
       shader_spec,
       &resources,
       implementation_type,

@@ -31,16 +31,6 @@ using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 
-// ANGLE now uses GLenum values directory for types
-// TODO(jmadill): Delete these defines when the ANGLE
-//   roll reliably passes translator version 126
-#if (ANGLE_SH_VERSION >= 126)
-#define SH_FLOAT GL_FLOAT
-#define SH_FLOAT_VEC2 GL_FLOAT_VEC2
-#define SH_FLOAT_VEC3 GL_FLOAT_VEC3
-#define SH_FLOAT_VEC4 GL_FLOAT_VEC4
-#endif
-
 namespace gpu {
 namespace gles2 {
 
@@ -1261,9 +1251,9 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
 // shader, linking should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
   const VarInfo kVertexVarying =
-      { SH_FLOAT_VEC3, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT_VEC3, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { SH_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1278,9 +1268,9 @@ TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
 // shader, linking should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
   const VarInfo kVertexVarying =
-      { SH_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1295,9 +1285,9 @@ TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
 // shader, linking should succeed.
 TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
   const VarInfo kVertexVarying =
-      { SH_FLOAT, 2, SH_PRECISION_HIGHP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, SH_PRECISION_HIGHP, 1, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { SH_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1312,7 +1302,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
 // declared in vertex shader, link should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
   const VarInfo kFragmentVarying =
-      { SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
@@ -1328,7 +1318,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
 // succeed.
 TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
   const VarInfo kFragmentVarying =
-      { SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying };
+      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
@@ -1344,9 +1334,9 @@ TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
 // failure.
 TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
   const VarInfo kVertexAttribute =
-      { SH_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarAttribute };
+      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarAttribute };
   const VarInfo kFragmentUniform =
-      { SH_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarUniform };
+      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarUniform };
   Program* program = SetupShaderVariableTest(
       &kVertexAttribute, 1, &kFragmentUniform, 1);
 
@@ -1360,12 +1350,12 @@ TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
 // Varyings go over 8 rows.
 TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
   const VarInfo kVertexVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
@@ -1378,12 +1368,12 @@ TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
 // Varyings go over 8 rows but some are inactive
 TEST_F(ProgramManagerWithShaderTest, TooManyInactiveVaryings) {
   const VarInfo kVertexVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
@@ -1397,12 +1387,12 @@ TEST_F(ProgramManagerWithShaderTest, TooManyInactiveVaryings) {
 // However, we still fail the check if kCountAll option is used.
 TEST_F(ProgramManagerWithShaderTest, CountAllVaryingsInPacking) {
   const VarInfo kVertexVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { SH_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
-      { SH_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
