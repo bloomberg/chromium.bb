@@ -15,6 +15,8 @@ namespace content {
 // Provides common implementation of a GPU memory buffer.
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
+  typedef base::Callback<void(scoped_ptr<GpuMemoryBufferImpl> buffer)>
+      CreationCallback;
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
 
@@ -22,9 +24,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   // Creates a GPU memory buffer instance with |size| and |internalformat| for
   // |usage|.
-  static scoped_ptr<GpuMemoryBufferImpl> Create(const gfx::Size& size,
-                                                unsigned internalformat,
-                                                unsigned usage);
+  static void Create(const gfx::Size& size,
+                     unsigned internalformat,
+                     unsigned usage,
+                     const CreationCallback& callback);
 
   // Allocates a GPU memory buffer with |size| and |internalformat| for |usage|
   // by |child_process| identified by |child_id|. The |handle| returned can be

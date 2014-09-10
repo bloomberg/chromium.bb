@@ -14,6 +14,15 @@ namespace {
 
 base::StaticAtomicSequenceNumber g_next_buffer_id;
 
+void AllocatedOzoneNativeBuffer(
+    const gfx::Size& size,
+    unsigned internalformat,
+    const GpuMemoryBufferImpl::CreationCallback& callback,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  callback.Run(
+      GpuMemoryBufferImpl::CreateFromHandle(handle, size, internalformat));
+}
+
 }  // namespace
 
 GpuMemoryBufferImplOzoneNativeBuffer::GpuMemoryBufferImplOzoneNativeBuffer(
@@ -26,6 +35,26 @@ GpuMemoryBufferImplOzoneNativeBuffer::~GpuMemoryBufferImplOzoneNativeBuffer() {
 }
 
 // static
+void GpuMemoryBufferImplOzoneNativeBuffer::Create(
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage,
+    const CreationCallback& callback) {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.global_id.primary_id = g_next_buffer_id.GetNext();
+  // This code makes an assumption that client_id for GPU channel using this
+  // buffer is zero.
+  handle.global_id.secondary_id = 0;
+  handle.type = gfx::OZONE_NATIVE_BUFFER;
+  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
+      handle,
+      size,
+      internalformat,
+      usage,
+      base::Bind(&AllocatedOzoneNativeBuffer, size, internalformat, callback));
+}
+
+// static
 void GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
     const gfx::Size& size,
     unsigned internalformat,
@@ -33,8 +62,7 @@ void GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
     int child_id,
     const AllocationCallback& callback) {
   gfx::GpuMemoryBufferHandle handle;
-  // +1 ensures we always get non-zero IDs.
-  handle.global_id.primary_id = g_next_buffer_id.GetNext() + 1;
+  handle.global_id.primary_id = g_next_buffer_id.GetNext();
   handle.global_id.secondary_id = child_id;
   handle.type = gfx::OZONE_NATIVE_BUFFER;
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(

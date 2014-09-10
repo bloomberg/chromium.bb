@@ -19,6 +19,24 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 }
 
 // static
+void GpuMemoryBufferImplSharedMemory::Create(const gfx::Size& size,
+                                             unsigned internalformat,
+                                             unsigned usage,
+                                             const CreationCallback& callback) {
+  DCHECK(GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
+      size, internalformat, usage));
+
+  scoped_ptr<GpuMemoryBufferImplSharedMemory> buffer(
+      new GpuMemoryBufferImplSharedMemory(size, internalformat));
+  if (buffer->Initialize()) {
+    callback.Run(buffer.PassAs<GpuMemoryBufferImpl>());
+    return;
+  }
+
+  callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
+}
+
+// static
 void GpuMemoryBufferImplSharedMemory::AllocateSharedMemoryForChildProcess(
     const gfx::Size& size,
     unsigned internalformat,

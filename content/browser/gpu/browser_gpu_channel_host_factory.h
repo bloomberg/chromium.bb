@@ -10,14 +10,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "ipc/message_filter.h"
 
 namespace content {
+class GpuMemoryBufferImpl;
+class GpuMemoryBufferFactoryHostImpl;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
-    : public GpuChannelHostFactory,
-      public GpuMemoryBufferFactoryHost {
+    : public GpuChannelHostFactory {
  public:
   static void Initialize(bool establish_gpu_channel);
   static void Terminate();
@@ -40,16 +40,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       unsigned usage) OVERRIDE;
   virtual void DeleteGpuMemoryBuffer(
       scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE;
-
-  // GpuMemoryBufferFactoryHost implementation.
-  virtual void CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
-      const gfx::Size& size,
-      unsigned internalformat,
-      unsigned usage,
-      const CreateGpuMemoryBufferCallback& callback) OVERRIDE;
-  virtual void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
-                                      int32 sync_point) OVERRIDE;
 
   // Specify a task runner and callback to be used for a set of messages. The
   // callback will be set up on the current GpuProcessHost, identified by
@@ -91,19 +81,16 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       AllocateGpuMemoryBufferRequest* request);
   static void DeleteGpuMemoryBufferOnIO(
       scoped_ptr<gfx::GpuMemoryBuffer> buffer);
-  void OnGpuMemoryBufferCreated(uint32 request_id,
-                                const gfx::GpuMemoryBufferHandle& handle);
+  static void OnGpuMemoryBufferCreated(AllocateGpuMemoryBufferRequest* request,
+                                       scoped_ptr<GpuMemoryBufferImpl> buffer);
 
   const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<GpuChannelHost> gpu_channel_;
+  scoped_ptr<GpuMemoryBufferFactoryHostImpl> gpu_memory_buffer_factory_host_;
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<base::Closure> established_callbacks_;
-  uint32 next_create_gpu_memory_buffer_request_id_;
-  typedef std::map<uint32, CreateGpuMemoryBufferCallback>
-      CreateGpuMemoryBufferCallbackMap;
-  CreateGpuMemoryBufferCallbackMap create_gpu_memory_buffer_requests_;
 
   static BrowserGpuChannelHostFactory* instance_;
 

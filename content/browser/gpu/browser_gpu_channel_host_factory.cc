@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_memory_buffer_factory_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
@@ -231,8 +232,8 @@ void BrowserGpuChannelHostFactory::Terminate() {
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
-      gpu_host_id_(0),
-      next_create_gpu_memory_buffer_request_id_(0) {
+      gpu_memory_buffer_factory_host_(new GpuMemoryBufferFactoryHostImpl),
+      gpu_host_id_(0) {
 }
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
@@ -370,6 +371,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
                                           shutdown_event_.get());
   }
   gpu_host_id_ = pending_request_->gpu_host_id();
+  gpu_memory_buffer_factory_host_->set_gpu_host_id(gpu_host_id_);
   pending_request_ = NULL;
 
   for (size_t n = 0; n < established_callbacks_.size(); n++)
@@ -407,45 +409,6 @@ void BrowserGpuChannelHostFactory::DeleteGpuMemoryBuffer(
       FROM_HERE,
       base::Bind(&BrowserGpuChannelHostFactory::DeleteGpuMemoryBufferOnIO,
                  base::Passed(&buffer)));
-}
-
-void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
-    const CreateGpuMemoryBufferCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
-  uint32 request_id = next_create_gpu_memory_buffer_request_id_++;
-  create_gpu_memory_buffer_requests_[request_id] = callback;
-
-  host->CreateGpuMemoryBuffer(
-      handle,
-      size,
-      internalformat,
-      usage,
-      base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
-                 base::Unretained(this),
-                 request_id));
-}
-
-void BrowserGpuChannelHostFactory::DestroyGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
-    int32 sync_point) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host)
-    return;
-
-  host->DestroyGpuMemoryBuffer(handle, sync_point);
 }
 
 // static
@@ -492,11 +455,12 @@ void BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO(
     return;
   }
 
-  request->result = GpuMemoryBufferImpl::Create(
-                        gfx::Size(request->width, request->height),
-                        request->internalformat,
-                        request->usage).PassAs<gfx::GpuMemoryBuffer>();
-  request->event.Signal();
+  GpuMemoryBufferImpl::Create(
+      gfx::Size(request->width, request->height),
+      request->internalformat,
+      request->usage,
+      base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
+                 base::Unretained(request)));
 }
 
 // static
@@ -504,16 +468,14 @@ void BrowserGpuChannelHostFactory::DeleteGpuMemoryBufferOnIO(
     scoped_ptr<gfx::GpuMemoryBuffer> buffer) {
 }
 
+// static
 void BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated(
-    uint32 request_id,
-    const gfx::GpuMemoryBufferHandle& handle) {
+    AllocateGpuMemoryBufferRequest* request,
+    scoped_ptr<GpuMemoryBufferImpl> buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  CreateGpuMemoryBufferCallbackMap::iterator iter =
-      create_gpu_memory_buffer_requests_.find(request_id);
-  DCHECK(iter != create_gpu_memory_buffer_requests_.end());
-  iter->second.Run(handle);
-  create_gpu_memory_buffer_requests_.erase(iter);
+  request->result = buffer.PassAs<gfx::GpuMemoryBuffer>();
+  request->event.Signal();
 }
 
 }  // namespace content

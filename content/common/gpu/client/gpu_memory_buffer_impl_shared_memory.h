@@ -16,6 +16,11 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
                                   unsigned internalformat);
   virtual ~GpuMemoryBufferImplSharedMemory();
 
+  static void Create(const gfx::Size& size,
+                     unsigned internalformat,
+                     unsigned usage,
+                     const CreationCallback& callback);
+
   // Allocates a shared memory backed GPU memory buffer with |size| and
   // |internalformat| for use by |child_process|.
   static void AllocateSharedMemoryForChildProcess(

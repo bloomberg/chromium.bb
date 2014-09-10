@@ -10,21 +10,18 @@
 namespace content {
 
 // static
-scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::Create(
-    const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage) {
+void GpuMemoryBufferImpl::Create(const gfx::Size& size,
+                                 unsigned internalformat,
+                                 unsigned usage,
+                                 const CreationCallback& callback) {
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
-    scoped_ptr<GpuMemoryBufferImplSharedMemory> buffer(
-        new GpuMemoryBufferImplSharedMemory(size, internalformat));
-    if (!buffer->Initialize())
-      return scoped_ptr<GpuMemoryBufferImpl>();
-
-    return buffer.PassAs<GpuMemoryBufferImpl>();
+    GpuMemoryBufferImplSharedMemory::Create(
+        size, internalformat, usage, callback);
+    return;
   }
 
-  return scoped_ptr<GpuMemoryBufferImpl>();
+  callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
 }
 
 // static

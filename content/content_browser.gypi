@@ -700,6 +700,8 @@
       'browser/gpu/gpu_data_manager_impl_private.h',
       'browser/gpu/gpu_internals_ui.cc',
       'browser/gpu/gpu_internals_ui.h',
+      'browser/gpu/gpu_memory_buffer_factory_host_impl.cc',
+      'browser/gpu/gpu_memory_buffer_factory_host_impl.h',
       'browser/gpu/gpu_process_host.cc',
       'browser/gpu/gpu_process_host.h',
       'browser/gpu/gpu_process_host_ui_shim.cc',

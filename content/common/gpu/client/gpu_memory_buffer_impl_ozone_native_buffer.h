@@ -16,6 +16,11 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
                                        unsigned internalformat);
   virtual ~GpuMemoryBufferImplOzoneNativeBuffer();
 
+  static void Create(const gfx::Size& size,
+                     unsigned internalformat,
+                     unsigned usage,
+                     const CreationCallback& callback);
+
   // Allocates an Ozone native buffer backed GPU memory buffer with |size| and
   // |internalformat| with usage |usage| for use by |child_id|.
   static void AllocateOzoneNativeBufferForChildId(

@@ -163,7 +163,8 @@ void GpuChildThread::OnInitialize() {
       new GpuChannelManager(GetRouter(),
                             watchdog_thread_.get(),
                             ChildProcess::current()->io_message_loop_proxy(),
-                            ChildProcess::current()->GetShutDownEvent()));
+                            ChildProcess::current()->GetShutDownEvent(),
+                            channel()));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
