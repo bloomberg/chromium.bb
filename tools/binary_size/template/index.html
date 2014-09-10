@@ -133,19 +133,19 @@ function bigSymbolsReport() {
                 cell.append('span').text(treemap.pathFor(record));
                 cell.append('br');
                 cell.append('span').text('Symbol: ');
-                cell.append('span').text(escape(record.n));
+                cell.append('span').text(record.n);
             } else {
                 var href = 'https://code.google.com/p/chromium/codesearch#chromium/src'
                     + treemap.pathFor(record)
                     + '&q='
-                    + escape(record.n);
+                    + record.n;
                 cell.append('a')
                     .attr('href', href)
                     .attr('target', '_blank')
-                    .text(escape(treemap.pathFor(record)));
+                    .text(treemap.pathFor(record));
                 cell.append('br');
                 cell.append('span').text('Symbol: ');
-                cell.append('span').text(escape(record.n));
+                cell.append('span').text(record.n);
             }
         }
     };
@@ -174,7 +174,7 @@ function bigPathsReport() {
                 cell.append('a')
                     .attr('href', href)
                     .attr('target', '_blank')
-                    .text(escape(treemap.pathFor(record)));
+                    .text(treemap.pathFor(record));
             }
 
         }
