@@ -2621,13 +2621,13 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 	if (!weston_surface_is_mapped(surface)) {
 		struct weston_output *output;
 
-		/* Cannot call weston_surface_update_transform(),
+		/* Cannot call weston_view_update_transform(),
 		 * because that would call it also for the parent surface,
 		 * which might not be mapped yet. That would lead to
 		 * inconsistent state, where the window could never be
 		 * mapped.
 		 *
-		 * Instead just assing any output, to make
+		 * Instead just assign any output, to make
 		 * weston_surface_is_mapped() return true, so that when the
 		 * parent surface does get mapped, this one will get
 		 * included, too. See view_list_add().

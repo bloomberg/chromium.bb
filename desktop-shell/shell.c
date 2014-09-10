@@ -4706,7 +4706,7 @@ rotate_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 					 shsurf->view->geometry.y + dposy);
 	}
 
-	/* Repaint implies weston_surface_update_transform(), which
+	/* Repaint implies weston_view_update_transform(), which
 	 * lazily applies the damage due to rotation update.
 	 */
 	weston_compositor_schedule_repaint(shsurf->surface->compositor);
