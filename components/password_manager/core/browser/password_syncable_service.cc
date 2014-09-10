@@ -128,8 +128,6 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   DCHECK_EQ(syncer::PASSWORDS, type);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   syncer::SyncMergeResult merge_result(type);
-  sync_error_factory_ = sync_error_factory.Pass();
-  sync_processor_ = sync_processor.Pass();
 
   // We add all the db entries as |new_local_entries| initially. During model
   // association entries that match a sync entry will be removed and this list
@@ -137,19 +135,23 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   ScopedVector<autofill::PasswordForm> password_entries;
   PasswordEntryMap new_local_entries;
   if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
-    DCHECK(sync_error_factory_);
-    merge_result.set_error(sync_error_factory_->CreateAndUploadError(
+    merge_result.set_error(sync_error_factory->CreateAndUploadError(
         FROM_HERE,
         "Failed to get passwords from store."));
     return merge_result;
   }
 
   if (password_entries.size() != new_local_entries.size()) {
-    merge_result.set_error(sync_error_factory_->CreateAndUploadError(
+    merge_result.set_error(sync_error_factory->CreateAndUploadError(
         FROM_HERE,
         "There are passwords with identical sync tags in the database."));
     return merge_result;
   }
+
+  // Save |sync_processor_| only if reading the PasswordStore succeeded. In case
+  // of failure Sync shouldn't receive any updates from the PasswordStore.
+  sync_error_factory_ = sync_error_factory.Pass();
+  sync_processor_ = sync_processor.Pass();
 
   merge_result.set_num_items_before_association(new_local_entries.size());
 
@@ -301,14 +303,14 @@ bool PasswordSyncableService::ReadFromPasswordStore(
 void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   PasswordStoreChangeList changes;
   WriteEntriesToDatabase(&PasswordStoreSync::AddLoginImpl,
-                entries.new_entries.get(),
-                &changes);
+                         entries.new_entries.get(),
+                         &changes);
   WriteEntriesToDatabase(&PasswordStoreSync::UpdateLoginImpl,
-                entries.updated_entries.get(),
-                &changes);
+                         entries.updated_entries.get(),
+                         &changes);
   WriteEntriesToDatabase(&PasswordStoreSync::RemoveLoginImpl,
-                entries.deleted_entries.get(),
-                &changes);
+                         entries.deleted_entries.get(),
+                         &changes);
 
   // We have to notify password store observers of the change by hand since
   // we use internal password store interfaces to make changes synchronously.

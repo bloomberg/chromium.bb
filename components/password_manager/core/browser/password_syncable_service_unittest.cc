@@ -16,7 +16,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
+#include "sync/api/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -477,6 +477,31 @@ TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
       base::Bind(&MockPasswordSyncableService::StartSyncFlare,
                  base::Unretained(service())));
   EXPECT_CALL(*service(), StartSyncFlare(syncer::PASSWORDS));
+  service()->ActOnPasswordStoreChanges(list);
+}
+
+// Start syncing with an error. Subsequent password store updates shouldn't be
+// propagated to Sync.
+TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
+  scoped_ptr<syncer::SyncErrorFactoryMock> error_factory(
+      new syncer::SyncErrorFactoryMock);
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
+      .WillOnce(Return(SyncError()));
+  // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
+  // |processor_| will be destroyed in MergeDataAndStartSyncing().
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, _)).Times(0);
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      syncer::SyncDataList(),
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      error_factory.PassAs<syncer::SyncErrorFactory>());
+
+  autofill::PasswordForm form;
+  form.signon_realm = "abc";
+  PasswordStoreChangeList list;
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   service()->ActOnPasswordStoreChanges(list);
 }
 
