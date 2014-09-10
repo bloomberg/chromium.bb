@@ -183,6 +183,7 @@ class ChromeProxyHTTPFallbackProbeURL(ChromeProxyValidation):
     self._metrics.AddResultsForHTTPFallback(tab, results)
 
 
+# Depends on the fix of http://crbug.com/330342.
 class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
   """Correctness measurement for proxy fallback.
 
@@ -209,7 +210,7 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
         _TEST_SERVER + ":80",
         self._metrics.effective_proxies['fallback'],
         self._metrics.effective_proxies['direct']]
-    bad_proxies = [_TEST_SERVER + ":80", metrics.PROXY_SETTING_HTTP]
+    bad_proxies = [_TEST_SERVER + ":80"]
     self._metrics.AddResultsForHTTPFallback(tab, results, proxies, bad_proxies)
 
 
