@@ -75,8 +75,7 @@ CDM_EXPORT const char* GetCdmVersion();
 
 namespace cdm {
 
-class AudioFrames_2;
-typedef AudioFrames_2 AudioFrames;
+class AudioFrames;
 
 class Host_4;
 class Host_6;
@@ -1073,7 +1072,7 @@ class VideoFrame {
 //
 // |<----------------- AudioFrames ------------------>|
 // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
-class AudioFrames_2 {
+class AudioFrames {
  public:
   virtual void SetFrameBuffer(Buffer* buffer) = 0;
   virtual Buffer* FrameBuffer() = 0;
@@ -1085,8 +1084,8 @@ class AudioFrames_2 {
   virtual AudioFormat Format() const = 0;
 
  protected:
-  AudioFrames_2() {}
-  virtual ~AudioFrames_2() {}
+  AudioFrames() {}
+  virtual ~AudioFrames() {}
 };
 
 }  // namespace cdm
