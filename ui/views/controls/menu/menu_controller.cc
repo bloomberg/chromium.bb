@@ -1034,11 +1034,15 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     case ui::VKEY_F4:
       if (!is_combobox_)
         break;
-      // Fallthrough to accept on F4, so combobox menus match Windows behavior.
+    // Fallthrough to accept or dismiss combobox menus on F4, like windows.
     case ui::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
-          OpenSubmenuChangeSelectionIfCan();
+          if (key_code == ui::VKEY_F4 &&
+              pending_state_.item->GetSubmenu()->IsShowing())
+            return false;
+          else
+            OpenSubmenuChangeSelectionIfCan();
         } else {
           SendAcceleratorResultType result = SendAcceleratorToHotTrackedView();
           if (result == ACCELERATOR_NOT_PROCESSED &&
