@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""The meta classes used by the mojo python bindings."""
+"""The metaclasses used by the mojo python bindings."""
 
 class MojoEnumType(type):
   """Meta class for enumerations.
@@ -16,22 +16,21 @@ class MojoEnumType(type):
         ('C', 5),
       ]
 
-      This will define a enum with 3 values, A = 0, B = 1 and C = 5.
+      This will define a enum with 3 values, 'A' = 0, 'B' = 1 and 'C' = 5.
   """
 
   def __new__(mcs, name, bases, dictionary):
-    class_members = {
-      '__new__': None,
-    }
+    dictionary['__slots__'] = ()
+    dictionary['__new__'] = None
     for value in dictionary.pop('VALUES', []):
       if not isinstance(value, tuple):
         raise ValueError('incorrect value: %r' % value)
       key, enum_value = value
       if isinstance(key, str) and isinstance(enum_value, int):
-        class_members[key] = enum_value
+        dictionary[key] = enum_value
       else:
         raise ValueError('incorrect value: %r' % value)
-    return type.__new__(mcs, name, bases, class_members)
+    return type.__new__(mcs, name, bases, dictionary)
 
   def __setattr__(mcs, key, value):
     raise AttributeError, 'can\'t set attribute'
@@ -61,32 +60,65 @@ class MojoStructType(type):
             'V2',
           ],
         },
+        'fields': [
+           FieldDescriptor('x', _descriptor.TYPE_INT32, 0),
+        ],
       }
 
-      This will define an struct, with 2 constants C1 and C2, and 2 enums ENUM1
-      and ENUM2, each of those having 2 values, V1 and V2.
+      This will define an struct, with:
+      - 2 constants 'C1' and 'C2';
+      - 2 enums 'ENUM1' and 'ENUM2', each of those having 2 values, 'V1' and
+        'V2';
+      - 1 int32 field named 'x'.
   """
 
   def __new__(mcs, name, bases, dictionary):
-    class_members = {
-      '__slots__': [],
-    }
+    dictionary['__slots__'] = ('_fields')
     descriptor = dictionary.pop('DESCRIPTOR', {})
 
     # Add constants
-    class_members.update(descriptor.get('constants', {}))
+    dictionary.update(descriptor.get('constants', {}))
 
     # Add enums
     enums = descriptor.get('enums', {})
     for key in enums:
-      class_members[key] = MojoEnumType(key,
-                                        (object,),
-                                        { 'VALUES': enums[key] })
+      dictionary[key] = MojoEnumType(key, (object,), { 'VALUES': enums[key] })
 
-    return type.__new__(mcs, name, bases, class_members)
+    # Add fields
+    for field in descriptor.get('fields', []):
+      dictionary[field.name] = _BuildProperty(field)
 
+    # Add init
+    dictionary['__init__'] = _StructInit
+
+    return type.__new__(mcs, name, bases, dictionary)
+
+  # Prevent adding new attributes, or mutating constants.
   def __setattr__(mcs, key, value):
     raise AttributeError, 'can\'t set attribute'
 
+  # Prevent deleting constants.
   def __delattr__(mcs, key):
     raise AttributeError, 'can\'t delete attribute'
+
+
+def _StructInit(self, **kwargs):
+  self._fields = {}
+  for name in kwargs:
+    self.__setattr__(name, kwargs[name])
+
+
+def _BuildProperty(field):
+  """Build the property for the given field."""
+
+  # pylint: disable=W0212
+  def Get(self):
+    if field.name not in self._fields:
+      self._fields[field.name] = field.GetDefaultValue()
+    return self._fields[field.name]
+
+  # pylint: disable=W0212
+  def Set(self, value):
+    self._fields[field.name] = field.field_type.Convert(value)
+
+  return property(Get, Set)

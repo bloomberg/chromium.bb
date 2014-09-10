@@ -11,6 +11,32 @@ import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
 
+_kind_to_type = {
+  mojom.BOOL:                  "_descriptor.TYPE_BOOL",
+  mojom.INT8:                  "_descriptor.TYPE_INT8",
+  mojom.UINT8:                 "_descriptor.TYPE_UINT8",
+  mojom.INT16:                 "_descriptor.TYPE_INT16",
+  mojom.UINT16:                "_descriptor.TYPE_UINT16",
+  mojom.INT32:                 "_descriptor.TYPE_INT32",
+  mojom.UINT32:                "_descriptor.TYPE_UINT32",
+  mojom.INT64:                 "_descriptor.TYPE_INT64",
+  mojom.UINT64:                "_descriptor.TYPE_UINT64",
+  mojom.FLOAT:                 "_descriptor.TYPE_FLOAT",
+  mojom.DOUBLE:                "_descriptor.TYPE_DOUBLE",
+  mojom.STRING:                "_descriptor.TYPE_STRING",
+  mojom.NULLABLE_STRING:       "_descriptor.TYPE_NULLABLE_STRING",
+  mojom.HANDLE:                "_descriptor.TYPE_HANDLE",
+  mojom.DCPIPE:                "_descriptor.TYPE_HANDLE",
+  mojom.DPPIPE:                "_descriptor.TYPE_HANDLE",
+  mojom.MSGPIPE:               "_descriptor.TYPE_HANDLE",
+  mojom.SHAREDBUFFER:          "_descriptor.TYPE_HANDLE",
+  mojom.NULLABLE_HANDLE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_DCPIPE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_DPPIPE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_MSGPIPE:      "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_SHAREDBUFFER: "_descriptor.TYPE_NULLABLE_HANDLE",
+}
+
 
 def NameToComponent(name):
   # insert '_' between anything and a Title name (e.g, HTTPEntry2FooBar ->
@@ -48,15 +74,7 @@ def GetNameForElement(element):
 
 def ExpressionToText(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
-    # Both variable and enum constants are constructed like:
-    # PythonModule[.Struct][.Enum].CONSTANT_NAME
-    name = []
-    if token.imported_from:
-      name.append(token.imported_from['python_module'])
-    if token.parent_kind:
-      name.append(GetNameForElement(token.parent_kind))
-    name.append(GetNameForElement(token))
-    return '.'.join(name)
+    return str(token.computed_value)
 
   if isinstance(token, mojom.BuiltinValue):
     if token.value == 'double.INFINITY' or token.value == 'float.INFINITY':
@@ -67,25 +85,89 @@ def ExpressionToText(token):
     if token.value == 'double.NAN' or token.value == 'float.NAN':
       return 'float(\'nan\')';
 
+  if token in ["true", "false"]:
+    return str(token == "true")
+
   return token
 
+def GetStructClass(kind):
+  name = []
+  if kind.imported_from:
+    name.append(kind.imported_from['python_module'])
+  name.append(GetNameForElement(kind))
+  return '.'.join(name)
 
-def ComputeConstantValues(module):
+def GetFieldType(kind, field=None):
+  if mojom.IsAnyArrayKind(kind):
+    arguments = [ GetFieldType(kind.kind) ]
+    if mojom.IsNullableKind(kind):
+      arguments.append("nullable=True")
+    if mojom.IsFixedArrayKind(kind):
+      arguments.append("length=%d" % kind.length)
+    return "_descriptor.ArrayType(%s)" % ", ".join(arguments)
+
+  if mojom.IsStructKind(kind):
+    arguments = [ GetStructClass(kind) ]
+    if mojom.IsNullableKind(kind):
+      arguments.append("nullable=True")
+    return "_descriptor.StructType(%s)" % ", ".join(arguments)
+
+  if mojom.IsEnumKind(kind):
+    return GetFieldType(mojom.INT32)
+
+  return _kind_to_type.get(kind, "_descriptor.TYPE_NONE")
+
+def GetFieldDescriptor(packed_field):
+  field = packed_field.field
+  arguments = [ '\'%s\'' % field.name ]
+  arguments.append(GetFieldType(field.kind, field))
+  arguments.append(str(packed_field.offset))
+  if field.kind == mojom.BOOL:
+    arguments.append('bit_offset=%d' % packed_field.bit)
+  if field.default:
+    if mojom.IsStructKind(field.kind):
+      arguments.append('default_value=True')
+    else:
+      arguments.append('default_value=%s' % ExpressionToText(field.default))
+  return '_descriptor.FieldDescriptor(%s)' % ', '.join(arguments)
+
+def ComputeStaticValues(module):
   in_progress = set()
   computed = set()
 
-  def ResolveEnum(enum):
-    def GetComputedValue(enum_value):
-      field = next(ifilter(lambda field: field.name == enum_value.name,
-                           enum_value.enum.fields), None)
+  def GetComputedValue(named_value):
+    if isinstance(named_value, mojom.EnumValue):
+      field = next(ifilter(lambda field: field.name == named_value.name,
+                           named_value.enum.fields), None)
       if not field:
         raise RuntimeError(
             'Unable to get computed value for field %s of enum %s' %
-            (enum_value.name, enum_value.enum.name))
+            (named_value.name, named_value.enum.name))
       if field not in computed:
-        ResolveEnum(enum_value.enum)
+        ResolveEnum(named_value.enum)
       return field.computed_value
+    elif isinstance(named_value, mojom.ConstantValue):
+      ResolveConstant(named_value.constant)
+      named_value.computed_value = named_value.constant.computed_value
+      return named_value.computed_value
+    else:
+      print named_value
 
+  def ResolveConstant(constant):
+    if constant in computed:
+      return
+    if constant in in_progress:
+      raise RuntimeError('Circular dependency for constant: %s' % constant.name)
+    in_progress.add(constant)
+    if isinstance(constant.value, (mojom.EnumValue, mojom.ConstantValue)):
+      computed_value = GetComputedValue(constant.value)
+    else:
+      computed_value = ExpressionToText(constant.value)
+    constant.computed_value = computed_value
+    in_progress.remove(constant)
+    computed.add(constant)
+
+  def ResolveEnum(enum):
     def ResolveEnumField(enum, field, default_value):
       if field in computed:
         return
@@ -98,7 +180,7 @@ def ComputeConstantValues(module):
         elif isinstance(field.value, str):
           computed_value = int(field.value, 0)
         else:
-          raise RuntimeError('Unexpected value: %r' % field.value)
+          raise RuntimeError('Unexpected value: %s' % field.value)
       else:
         computed_value = default_value
       field.computed_value = computed_value
@@ -110,12 +192,20 @@ def ComputeConstantValues(module):
       ResolveEnumField(enum, field, current_value)
       current_value = field.computed_value + 1
 
+  for constant in module.constants:
+    ResolveConstant(constant)
+
   for enum in module.enums:
     ResolveEnum(enum)
 
   for struct in module.structs:
+    for constant in struct.constants:
+      ResolveConstant(constant)
     for enum in struct.enums:
       ResolveEnum(enum)
+    for field in struct.fields:
+      if isinstance(field.default, (mojom.ConstantValue, mojom.EnumValue)):
+        field.default.computed_value = GetComputedValue(field.default)
 
   return module
 
@@ -123,6 +213,7 @@ class Generator(generator.Generator):
 
   python_filters = {
     'expression_to_text': ExpressionToText,
+    'field_descriptor': GetFieldDescriptor,
     'name': GetNameForElement,
   }
 
@@ -131,7 +222,7 @@ class Generator(generator.Generator):
     return {
       'imports': self.GetImports(),
       'enums': self.module.enums,
-      'module': ComputeConstantValues(self.module),
+      'module': ComputeStaticValues(self.module),
       'structs': self.GetStructs(),
     }
 

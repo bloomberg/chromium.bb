@@ -149,6 +149,12 @@ class BuiltinValue(object):
     self.value = value
 
 
+class ConstantValue(NamedValue):
+  def __init__(self, module, parent_kind, constant):
+    NamedValue.__init__(self, module, parent_kind, constant.name)
+    self.constant = constant
+
+
 class EnumValue(NamedValue):
   def __init__(self, module, enum, field):
     NamedValue.__init__(self, module, enum.parent_kind, field.name)

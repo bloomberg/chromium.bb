@@ -12,6 +12,11 @@ import sample_service_mojom
 
 class EnumBindingsTest(unittest.TestCase):
 
+  # Testing enum classes are in the right module.
+  def testModule(self):
+    self.assertEquals(sample_import_mojom.Shape.__module__,
+                      'sample_import_mojom')
+
   # Testing that enum class have expected constant values.
   def testTopLevelEnumGeneration(self):
     self.assertEquals(sample_import_mojom.Shape.RECTANGLE, 1)

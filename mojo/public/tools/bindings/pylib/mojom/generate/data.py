@@ -318,7 +318,7 @@ def ConstantFromData(module, data, parent_kind):
   constant.kind = KindFromData(module.kinds, data['kind'], scope)
   constant.value = FixupExpression(module, data.get('value'), scope, None)
 
-  value = mojom.NamedValue(module, parent_kind, constant.name)
+  value = mojom.ConstantValue(module, parent_kind, constant)
   module.values[value.GetSpec()] = value
   return constant
 

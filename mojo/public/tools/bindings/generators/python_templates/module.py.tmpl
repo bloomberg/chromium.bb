@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import mojo.bindings.descriptor as _descriptor
 import mojo.bindings.reflection as _reflection
 {% if imports %}
 
@@ -41,6 +42,15 @@ class {{struct|name}}(object):
       '{{enum|name}}': {{enum_values(enum)|indent(6)}},
 {%     endfor %}
     },
+{%   endif %}
+{%   if struct.fields %}
+    'fields': [
+{%    for byte in struct.bytes %}
+{%     for packed_field in byte.packed_fields %}
+      {{packed_field|field_descriptor}},
+{%     endfor %}
+{%   endfor %}
+    ],
 {%   endif %}
   }
 {% endfor %}
