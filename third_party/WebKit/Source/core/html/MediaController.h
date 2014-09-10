@@ -56,7 +56,7 @@ public:
 
     double duration() const;
     double currentTime() const;
-    void setCurrentTime(double, ExceptionState&);
+    void setCurrentTime(double);
 
     bool paused() const { return m_paused; }
     void play();

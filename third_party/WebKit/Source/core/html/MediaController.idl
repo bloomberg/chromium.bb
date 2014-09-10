@@ -35,7 +35,7 @@
     readonly attribute TimeRanges seekable;
 
     readonly attribute unrestricted double duration;
-    [RaisesException=Setter] attribute double currentTime;
+    attribute double currentTime;
 
     readonly attribute boolean paused;
     readonly attribute TimeRanges played;

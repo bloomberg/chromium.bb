@@ -376,7 +376,7 @@ private:
     void startProgressEventTimer();
     void stopPeriodicTimers();
 
-    void seek(double time, ExceptionState&);
+    void seek(double time);
     void finishSeek();
     void checkIfSeekNeeded();
     void addPlayedRange(double start, double end);
@@ -508,6 +508,9 @@ private:
 
     // The last time a timeupdate event was sent in movie time.
     double m_lastTimeUpdateEventMovieTime;
+
+    // The default playback start position.
+    double m_defaultPlaybackStartPosition;
 
     // Loading state.
     enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement };

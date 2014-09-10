@@ -407,7 +407,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
         // FIXME: This will need to take the timeline offset into consideration
         // once that concept is supported, see https://crbug.com/312699
         if (mediaElement().controller())
-            mediaElement().controller()->setCurrentTime(time, IGNORE_EXCEPTION);
+            mediaElement().controller()->setCurrentTime(time);
         else
             mediaElement().setCurrentTime(time, IGNORE_EXCEPTION);
     }

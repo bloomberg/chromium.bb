@@ -324,6 +324,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_duration(std::numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
     , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
+    , m_defaultPlaybackStartPosition(0)
     , m_loadState(WaitingForSource)
     , m_deferredLoadState(NotDeferred)
     , m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired)
@@ -1817,6 +1818,11 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         if (isHTMLVideoElement())
             scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
+
+        if (m_defaultPlaybackStartPosition > 0)
+            seek(m_defaultPlaybackStartPosition);
+
+        m_defaultPlaybackStartPosition = 0;
         if (hasMediaControls())
             mediaControls()->reset();
         if (renderer())
@@ -1917,17 +1923,13 @@ void HTMLMediaElement::prepareToPlay()
         startDeferredLoad();
 }
 
-void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
+void HTMLMediaElement::seek(double time)
 {
     WTF_LOG(Media, "HTMLMediaElement::seek(%p, %f)", this, time);
 
-    // 4.8.10.9 Seeking
-
-    // 1 - If the media element's readyState is HAVE_NOTHING, then raise an InvalidStateError exception.
-    if (m_readyState == HAVE_NOTHING) {
-        exceptionState.throwDOMException(InvalidStateError, "The element's readyState is HAVE_NOTHING.");
+    // 2 - If the media element's readyState is HAVE_NOTHING, abort these steps.
+    if (m_readyState == HAVE_NOTHING)
         return;
-    }
 
     // If the media engine has been told to postpone loading data, let it go ahead now.
     if (m_preload < MediaPlayer::Auto && m_readyState < HAVE_FUTURE_DATA)
@@ -1935,23 +1937,24 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
     // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
     refreshCachedTime();
-    double now = currentTime();
+    // This is needed to avoid getting default playback start position from currentTime().
+    double now = m_cachedTime;
 
-    // 2 - If the element's seeking IDL attribute is true, then another instance of this algorithm is
+    // 3 - If the element's seeking IDL attribute is true, then another instance of this algorithm is
     // already running. Abort that other instance of the algorithm without waiting for the step that
     // it is running to complete.
     // Nothing specific to be done here.
 
-    // 3 - Set the seeking IDL attribute to true.
+    // 4 - Set the seeking IDL attribute to true.
     // The flag will be cleared when the engine tells us the time has actually changed.
     bool previousSeekStillPending = m_seeking;
     m_seeking = true;
 
-    // 5 - If the new playback position is later than the end of the media resource, then let it be the end
+    // 6 - If the new playback position is later than the end of the media resource, then let it be the end
     // of the media resource instead.
     time = std::min(time, duration());
 
-    // 6 - If the new playback position is less than the earliest possible position, let it be that position instead.
+    // 7 - If the new playback position is less than the earliest possible position, let it be that position instead.
     time = std::max(time, 0.0);
 
     // Ask the media engine for the time value in the movie's time scale before comparing with current time. This
@@ -1965,7 +1968,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
         time = mediaTime;
     }
 
-    // 7 - If the (possibly now changed) new playback position is not in one of the ranges given in the
+    // 8 - If the (possibly now changed) new playback position is not in one of the ranges given in the
     // seekable attribute, then let it be the position in one of the ranges given in the seekable attribute
     // that is the nearest to the new playback position. ... If there are no ranges given in the seekable
     // attribute then set the seeking IDL attribute to false and abort these steps.
@@ -1998,13 +2001,13 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     m_lastSeekTime = time;
     m_sentEndEvent = false;
 
-    // 8 - Queue a task to fire a simple event named seeking at the element.
+    // 10 - Queue a task to fire a simple event named seeking at the element.
     scheduleEvent(EventTypeNames::seeking);
 
-    // 9 - Set the current playback position to the given new playback position
+    // 11 - Set the current playback position to the given new playback position.
     webMediaPlayer()->seek(time);
 
-    // 10-14 are handled, if necessary, when the engine signals a readystate change or otherwise
+    // 14-17 are handled, if necessary, when the engine signals a readystate change or otherwise
     // satisfies seek completion and signals a time change.
 }
 
@@ -2012,14 +2015,13 @@ void HTMLMediaElement::finishSeek()
 {
     WTF_LOG(Media, "HTMLMediaElement::finishSeek(%p)", this);
 
-    // 4.8.10.9 Seeking completion
-    // 12 - Set the seeking IDL attribute to false.
+    // 14 - Set the seeking IDL attribute to false.
     m_seeking = false;
 
-    // 13 - Queue a task to fire a simple event named timeupdate at the element.
+    // 16 - Queue a task to fire a simple event named timeupdate at the element.
     scheduleTimeupdateEvent(false);
 
-    // 14 - Queue a task to fire a simple event named seeked at the element.
+    // 17 - Queue a task to fire a simple event named seeked at the element.
     scheduleEvent(EventTypeNames::seeked);
 
     setDisplayMode(Video);
@@ -2057,6 +2059,9 @@ void HTMLMediaElement::invalidateCachedTime()
 // playback state
 double HTMLMediaElement::currentTime() const
 {
+    if (m_defaultPlaybackStartPosition)
+        return m_defaultPlaybackStartPosition;
+
     if (m_readyState == HAVE_NOTHING)
         return 0;
 
@@ -2086,7 +2091,15 @@ void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionStat
         exceptionState.throwDOMException(InvalidStateError, "The element is slaved to a MediaController.");
         return;
     }
-    seek(time, exceptionState);
+
+    // If the media element's readyState is HAVE_NOTHING, then set the default
+    // playback start position to that time.
+    if (m_readyState == HAVE_NOTHING) {
+        m_defaultPlaybackStartPosition = time;
+        return;
+    }
+
+    seek(time);
 }
 
 double HTMLMediaElement::duration() const
@@ -2225,7 +2238,7 @@ void HTMLMediaElement::playInternal()
         scheduleDelayedAction(LoadMediaResource);
 
     if (endedPlayback())
-        seek(0, IGNORE_EXCEPTION);
+        seek(0);
 
     if (m_mediaController)
         m_mediaController->bringElementUpToSpeed(this);
@@ -3083,7 +3096,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
         if (loop() && !m_mediaController) {
             m_sentEndEvent = false;
             //  then seek to the earliest possible position of the media resource and abort these steps.
-            seek(0, IGNORE_EXCEPTION);
+            seek(0);
         } else {
             // If the media element does not have a current media controller, and the media element
             // has still ended playback, and the direction of playback is still forwards, and paused
@@ -3137,7 +3150,7 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
         renderer()->updateFromElement();
 
     if (requestSeek)
-        seek(duration, IGNORE_EXCEPTION);
+        seek(duration);
 }
 
 void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
@@ -3168,10 +3181,10 @@ void HTMLMediaElement::mediaPlayerRequestSeek(double time)
 {
     // The player is the source of this seek request.
     if (m_mediaController) {
-        m_mediaController->setCurrentTime(time, IGNORE_EXCEPTION);
+        m_mediaController->setCurrentTime(time);
         return;
     }
-    setCurrentTime(time, IGNORE_EXCEPTION);
+    setCurrentTime(time, ASSERT_NO_EXCEPTION);
 }
 
 // MediaPlayerPresentation methods
@@ -3870,7 +3883,7 @@ void HTMLMediaElement::applyMediaFragmentURI()
     if (m_fragmentStartTime != MediaPlayer::invalidTime()) {
         m_sentEndEvent = false;
         UseCounter::count(document(), UseCounter::HTMLMediaElementSeekToFragmentStart);
-        seek(m_fragmentStartTime, IGNORE_EXCEPTION);
+        seek(m_fragmentStartTime);
     }
 }
 
