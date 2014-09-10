@@ -28,6 +28,7 @@
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
@@ -480,12 +481,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   void CloseDragWindow(const ui::GestureEvent& gesture) {
     // Animate |dragged_window_| offscreen first, then destroy it.
     {
-      ui::ScopedLayerAnimationSettings settings(
-          dragged_window_->layer()->GetAnimator());
-      settings.SetPreemptionStrategy(
+      wm::ScopedHidingAnimationSettings settings(dragged_window_);
+      settings.layer_animation_settings()->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      settings.AddObserver(new ui::ClosureAnimationObserver(
-          base::Bind(&base::DeletePointer<aura::Window>, dragged_window_)));
 
       WindowOverviewState* dragged_state =
           dragged_window_->GetProperty(kWindowOverviewState);
@@ -547,6 +545,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       }
     }
 
+    delete dragged_window_;
     dragged_window_ = NULL;
   }
 
