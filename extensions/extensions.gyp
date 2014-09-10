@@ -1062,6 +1062,7 @@
         'common/manifest_handler_unittest.cc',
         'common/message_bundle_unittest.cc',
         'common/one_shot_event_unittest.cc',
+        'common/permissions/api_permission_set_unittest.cc',
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/url_pattern_set_unittest.cc',
         'common/url_pattern_unittest.cc',

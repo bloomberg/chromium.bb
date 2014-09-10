@@ -541,7 +541,6 @@
         '../extensions/common/manifest_handlers/externally_connectable_unittest.cc',
         '../extensions/common/manifest_handlers/file_handler_manifest_unittest.cc',
         '../extensions/common/manifest_handlers/shared_module_manifest_unittest.cc',
-        '../extensions/common/permissions/api_permission_set_unittest.cc',
         '../extensions/common/permissions/permissions_data_unittest.cc',
         # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
         # dependency is needed to make commit bots run unit_tests on

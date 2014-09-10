@@ -14,21 +14,21 @@ namespace extensions {
 
 TEST(APIPermissionSetTest, General) {
   APIPermissionSet apis;
-  apis.insert(APIPermission::kTab);
-  apis.insert(APIPermission::kBackground);
-  apis.insert(APIPermission::kProxy);
-  apis.insert(APIPermission::kClipboardWrite);
-  apis.insert(APIPermission::kPlugin);
+  apis.insert(APIPermission::kAudioCapture);
+  apis.insert(APIPermission::kDns);
+  apis.insert(APIPermission::kHid);
+  apis.insert(APIPermission::kPower);
+  apis.insert(APIPermission::kSerial);
 
-  EXPECT_EQ(apis.find(APIPermission::kProxy)->id(), APIPermission::kProxy);
+  EXPECT_EQ(apis.find(APIPermission::kPower)->id(), APIPermission::kPower);
   EXPECT_TRUE(apis.find(APIPermission::kSocket) == apis.end());
 
   EXPECT_EQ(apis.size(), 5u);
 
-  EXPECT_EQ(apis.erase(APIPermission::kTab), 1u);
+  EXPECT_EQ(apis.erase(APIPermission::kAudioCapture), 1u);
   EXPECT_EQ(apis.size(), 4u);
 
-  EXPECT_EQ(apis.erase(APIPermission::kTab), 0u);
+  EXPECT_EQ(apis.erase(APIPermission::kAudioCapture), 0u);
   EXPECT_EQ(apis.size(), 4u);
 }
 
@@ -52,13 +52,14 @@ TEST(APIPermissionSetTest, CreateUnion) {
   }
 
   // Union with an empty set.
-  apis1.insert(APIPermission::kTab);
-  apis1.insert(APIPermission::kBackground);
+  apis1.insert(APIPermission::kAudioCapture);
+  apis1.insert(APIPermission::kDns);
   apis1.insert(permission->Clone());
-  expected_apis.insert(APIPermission::kTab);
-  expected_apis.insert(APIPermission::kBackground);
+  expected_apis.insert(APIPermission::kAudioCapture);
+  expected_apis.insert(APIPermission::kDns);
   expected_apis.insert(permission);
 
+  ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Union(apis1, apis2, &result);
 
   EXPECT_TRUE(apis1.Contains(apis2));
@@ -71,10 +72,10 @@ TEST(APIPermissionSetTest, CreateUnion) {
   EXPECT_EQ(expected_apis, result);
 
   // Now use a real second set.
-  apis2.insert(APIPermission::kTab);
-  apis2.insert(APIPermission::kProxy);
-  apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
+  apis2.insert(APIPermission::kAudioCapture);
+  apis2.insert(APIPermission::kHid);
+  apis2.insert(APIPermission::kPower);
+  apis2.insert(APIPermission::kSerial);
 
   permission = permission_info->CreateAPIPermission();
   {
@@ -85,10 +86,10 @@ TEST(APIPermissionSetTest, CreateUnion) {
   }
   apis2.insert(permission);
 
-  expected_apis.insert(APIPermission::kTab);
-  expected_apis.insert(APIPermission::kProxy);
-  expected_apis.insert(APIPermission::kClipboardWrite);
-  expected_apis.insert(APIPermission::kPlugin);
+  expected_apis.insert(APIPermission::kAudioCapture);
+  expected_apis.insert(APIPermission::kHid);
+  expected_apis.insert(APIPermission::kPower);
+  expected_apis.insert(APIPermission::kSerial);
 
   permission = permission_info->CreateAPIPermission();
   {
@@ -126,8 +127,8 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Intersection with an empty set.
-  apis1.insert(APIPermission::kTab);
-  apis1.insert(APIPermission::kBackground);
+  apis1.insert(APIPermission::kAudioCapture);
+  apis1.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -138,7 +139,9 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   }
   apis1.insert(permission);
 
+  ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Intersection(apis1, apis2, &result);
+
   EXPECT_TRUE(apis1.Contains(result));
   EXPECT_TRUE(apis2.Contains(result));
   EXPECT_TRUE(apis1.Contains(apis2));
@@ -150,10 +153,10 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   EXPECT_EQ(expected_apis, result);
 
   // Now use a real second set.
-  apis2.insert(APIPermission::kTab);
-  apis2.insert(APIPermission::kProxy);
-  apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
+  apis2.insert(APIPermission::kAudioCapture);
+  apis2.insert(APIPermission::kHid);
+  apis2.insert(APIPermission::kPower);
+  apis2.insert(APIPermission::kSerial);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -164,7 +167,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   }
   apis2.insert(permission);
 
-  expected_apis.insert(APIPermission::kTab);
+  expected_apis.insert(APIPermission::kAudioCapture);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -198,8 +201,8 @@ TEST(APIPermissionSetTest, CreateDifference) {
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Difference with an empty set.
-  apis1.insert(APIPermission::kTab);
-  apis1.insert(APIPermission::kBackground);
+  apis1.insert(APIPermission::kAudioCapture);
+  apis1.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -210,15 +213,16 @@ TEST(APIPermissionSetTest, CreateDifference) {
   }
   apis1.insert(permission);
 
+  ASSERT_TRUE(apis2.empty());
   APIPermissionSet::Difference(apis1, apis2, &result);
 
   EXPECT_EQ(apis1, result);
 
   // Now use a real second set.
-  apis2.insert(APIPermission::kTab);
-  apis2.insert(APIPermission::kProxy);
-  apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
+  apis2.insert(APIPermission::kAudioCapture);
+  apis2.insert(APIPermission::kHid);
+  apis2.insert(APIPermission::kPower);
+  apis2.insert(APIPermission::kSerial);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -228,7 +232,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
   }
   apis2.insert(permission);
 
-  expected_apis.insert(APIPermission::kBackground);
+  expected_apis.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -260,8 +264,8 @@ TEST(APIPermissionSetTest, IPC) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
-  apis.insert(APIPermission::kTab);
-  apis.insert(APIPermission::kBackground);
+  apis.insert(APIPermission::kAudioCapture);
+  apis.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -279,35 +283,6 @@ TEST(APIPermissionSetTest, IPC) {
   PickleIterator iter(m);
   CHECK(ReadParam(&m, &iter, &expected_apis));
   EXPECT_EQ(apis, expected_apis);
-}
-
-TEST(APIPermissionSetTest, ImplicitPermissions) {
-  APIPermissionSet apis;
-  apis.insert(APIPermission::kFileSystemWrite);
-  apis.AddImpliedPermissions();
-
-  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
-            APIPermission::kFileSystemWrite);
-  EXPECT_EQ(apis.size(), 1u);
-
-  apis.erase(APIPermission::kFileSystemWrite);
-  apis.insert(APIPermission::kFileSystemDirectory);
-  apis.AddImpliedPermissions();
-
-  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
-            APIPermission::kFileSystemDirectory);
-  EXPECT_EQ(apis.size(), 1u);
-
-  apis.insert(APIPermission::kFileSystemWrite);
-  apis.AddImpliedPermissions();
-
-  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
-            APIPermission::kFileSystemWrite);
-  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
-            APIPermission::kFileSystemDirectory);
-  EXPECT_EQ(apis.find(APIPermission::kFileSystemWriteDirectory)->id(),
-            APIPermission::kFileSystemWriteDirectory);
-  EXPECT_EQ(apis.size(), 3u);
 }
 
 }  // namespace extensions

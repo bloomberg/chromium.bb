@@ -806,6 +806,38 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemDirectory));
 }
 
+// The file system permissions have a special-case hack to show a warning for
+// write and directory at the same time.
+// TODO(sammc): Remove this. See http://crbug.com/284849.
+TEST(PermissionsTest, FileSystemImplicitPermissions) {
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kFileSystemWrite);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
+            APIPermission::kFileSystemWrite);
+  EXPECT_EQ(apis.size(), 1u);
+
+  apis.erase(APIPermission::kFileSystemWrite);
+  apis.insert(APIPermission::kFileSystemDirectory);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
+            APIPermission::kFileSystemDirectory);
+  EXPECT_EQ(apis.size(), 1u);
+
+  apis.insert(APIPermission::kFileSystemWrite);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
+            APIPermission::kFileSystemWrite);
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
+            APIPermission::kFileSystemDirectory);
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWriteDirectory)->id(),
+            APIPermission::kFileSystemWriteDirectory);
+  EXPECT_EQ(apis.size(), 3u);
+}
+
 TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
