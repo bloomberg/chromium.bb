@@ -25,11 +25,16 @@ class EventProcessorTest : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     processor_.SetRoot(scoped_ptr<EventTarget>(new TestEventTarget()));
+    processor_.ResetCounts();
     root()->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
   }
 
   TestEventTarget* root() {
     return static_cast<TestEventTarget*>(processor_.GetRootTarget());
+  }
+
+  TestEventProcessor* processor() {
+    return &processor_;
   }
 
   void DispatchEvent(Event* event) {
@@ -255,6 +260,24 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_TRUE(second_root->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_TRUE(mouse2.handled());
+}
+
+// Verifies that OnEventProcessingFinished() is called when an event
+// has been handled.
+TEST_F(EventProcessorTest, OnEventProcessingFinished) {
+  scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  child->set_mark_events_as_handled(true);
+  root()->AddChild(child.Pass());
+
+  // Dispatch a mouse event. We expect the event to be seen by the target,
+  // handled, and we expect OnEventProcessingFinished() to be invoked once.
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                   EF_NONE, EF_NONE);
+  DispatchEvent(&mouse);
+  EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_TRUE(mouse.handled());
+  EXPECT_EQ(1, processor()->num_times_processing_finished());
 }
 
 class IgnoreEventTargeter : public EventTargeter {

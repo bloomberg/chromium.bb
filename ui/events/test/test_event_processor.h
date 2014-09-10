@@ -16,15 +16,24 @@ class TestEventProcessor : public EventProcessor {
   TestEventProcessor();
   virtual ~TestEventProcessor();
 
+  int num_times_processing_finished() const {
+    return num_times_processing_finished_;
+  }
+
   void SetRoot(scoped_ptr<EventTarget> root);
+  void ResetCounts();
 
   // EventProcessor:
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
   virtual EventTarget* GetRootTarget() OVERRIDE;
   virtual EventDispatchDetails OnEventFromSource(Event* event) OVERRIDE;
+  virtual void OnEventProcessingFinished(Event* event) OVERRIDE;
 
  private:
   scoped_ptr<EventTarget> root_;
+
+  // Counts the number of times OnEventProcessingFinished() has been called.
+  int num_times_processing_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventProcessor);
 };

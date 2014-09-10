@@ -33,6 +33,12 @@ class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate {
   // it can be used to updated the location of the event when disptaching from
   // an EventSource in high-DPI).
   virtual void PrepareEventForDispatch(Event* event);
+
+  // Invoked when the processing of |event| has finished (i.e., when no further
+  // dispatching of |event| will be performed by this EventProcessor). Note
+  // that the last target to which |event| was dispatched may have been
+  // destroyed.
+  virtual void OnEventProcessingFinished(Event* event);
 };
 
 }  // namespace ui

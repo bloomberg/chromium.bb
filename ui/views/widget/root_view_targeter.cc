@@ -27,7 +27,7 @@ View* RootViewTargeter::FindTargetForGestureEvent(
 
   // Return the default gesture handler if one is already set.
   if (root_view_->gesture_handler_) {
-    CHECK(!root_view_->allow_gesture_event_retargeting_);
+    CHECK(root_view_->gesture_handler_set_before_processing_);
     return root_view_->gesture_handler_;
   }
 
@@ -60,9 +60,10 @@ ui::EventTarget* RootViewTargeter::FindNextBestTargetForGestureEvent(
   if (gesture.type() == ui::ET_GESTURE_END)
     return NULL;
 
-  // GESTURE_SCROLL_BEGIN events are always permitted to be re-targeted, even
-  // if |allow_gesture_event_retargeting_| is false.
-  if (!root_view_->allow_gesture_event_retargeting_ &&
+  // Prohibit re-targeting of gesture events (except for GESTURE_SCROLL_BEGIN
+  // events) if the default gesture handler was set by the dispatch of a
+  // previous gesture event.
+  if (root_view_->gesture_handler_set_before_processing_ &&
       gesture.type() != ui::ET_GESTURE_SCROLL_BEGIN) {
     return NULL;
   }

@@ -27,8 +27,9 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   }
 
   EventTarget* target = targeter->FindTargetForEvent(root, event_to_dispatch);
+  EventDispatchDetails details;
   while (target) {
-    EventDispatchDetails details = DispatchEvent(target, event_to_dispatch);
+    details = DispatchEvent(target, event_to_dispatch);
 
     if (!dispatch_original_event) {
       if (event_to_dispatch->stopped_propagation())
@@ -37,19 +38,23 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
         event->SetHandled();
     }
 
-    if (details.dispatcher_destroyed ||
-        details.target_destroyed ||
-        event->handled()) {
+    if (details.dispatcher_destroyed)
       return details;
-    }
+
+    if (details.target_destroyed || event->handled())
+      break;
 
     target = targeter->FindNextBestTarget(target, event_to_dispatch);
   }
 
-  return EventDispatchDetails();
+  OnEventProcessingFinished(event);
+  return details;
 }
 
 void EventProcessor::PrepareEventForDispatch(Event* event) {
+}
+
+void EventProcessor::OnEventProcessingFinished(Event* event) {
 }
 
 }  // namespace ui

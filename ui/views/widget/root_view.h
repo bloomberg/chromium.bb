@@ -94,6 +94,7 @@ class VIEWS_EXPORT RootView : public View,
   // Overridden from ui::EventProcessor:
   virtual ui::EventTarget* GetRootTarget() OVERRIDE;
   virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+  virtual void OnEventProcessingFinished(ui::Event* event) OVERRIDE;
 
   // Overridden from View:
   virtual const Widget* GetWidget() const OVERRIDE;
@@ -131,11 +132,6 @@ class VIEWS_EXPORT RootView : public View,
   friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
-
-  // TODO(tdanderson): Remove RootView::DispatchGestureEvent() once
-  //                   its targeting and dispatch logic has been moved
-  //                   elsewhere. See crbug.com/348083.
-  void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Update the cursor given a mouse event. This is called by non mouse_move
   // event handlers to honor the cursor desired by views located under the
@@ -197,9 +193,13 @@ class VIEWS_EXPORT RootView : public View,
   // The View currently handling gesture events.
   View* gesture_handler_;
 
-  // If true, then gesture events received from Widget are permitted to be
-  // re-targeted and re-dispatched while they remain unhandled.
-  bool allow_gesture_event_retargeting_;
+  // Used to indicate if the |gesture_handler_| member was set prior to the
+  // processing of the current event (i.e., if |gesture_handler_| was set
+  // by the dispatch of a previous gesture event).
+  // TODO(tdanderson): It may be possible to eliminate the need for this
+  //                   member if |event_dispatch_target_| can be used in
+  //                   its place.
+  bool gesture_handler_set_before_processing_;
 
   scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
   scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;

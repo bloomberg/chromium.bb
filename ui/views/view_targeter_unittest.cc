@@ -88,9 +88,9 @@ class ViewTargeterTest : public ViewsTestBase {
     root_view->gesture_handler_ = handler;
   }
 
-  void SetAllowGestureEventRetargeting(internal::RootView* root_view,
-                                       bool allow) {
-    root_view->allow_gesture_event_retargeting_ = allow;
+  void SetGestureHandlerSetBeforeProcessing(internal::RootView* root_view,
+                                            bool set) {
+    root_view->gesture_handler_set_before_processing_ = set;
   }
 
  private:
@@ -282,7 +282,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // re-targeting should be prohibited for TAP but permitted for
   // GESTURE_SCROLL_BEGIN (which should be re-targeted to the parent of
   // |grandchild|).
-  SetAllowGestureEventRetargeting(root_view, false);
+  SetGestureHandlerSetBeforeProcessing(root_view, true);
   SetGestureHandler(root_view, grandchild);
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &tap));
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(grandchild, &tap));
@@ -299,7 +299,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // in the process of finding the View to which subsequent gestures will be
   // dispatched, so TAP and SCROLL_BEGIN events should be re-targeted up
   // the ancestor chain.
-  SetAllowGestureEventRetargeting(root_view, true);
+  SetGestureHandlerSetBeforeProcessing(root_view, false);
   EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &tap));
   EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &scroll_begin));
 
@@ -313,7 +313,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // re-targeted in this case (regardless of the view that is passed in to
   // FindNextBestTarget() as the previous target).
   SetGestureHandler(root_view, NULL);
-  SetAllowGestureEventRetargeting(root_view, false);
+  SetGestureHandlerSetBeforeProcessing(root_view, true);
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &tap));
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &tap));
   EXPECT_EQ(NULL, targeter->FindNextBestTarget(content, &scroll_begin));
@@ -338,7 +338,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // If no default gesture handler is currently set, targeting should be
   // performed using the location of the gesture event for a TAP and a
   // SCROLL_BEGIN.
-  SetAllowGestureEventRetargeting(root_view, true);
+  SetGestureHandlerSetBeforeProcessing(root_view, false);
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &tap));
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &scroll_begin));
 

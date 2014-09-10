@@ -159,7 +159,7 @@ RootView::RootView(Widget* widget)
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
       gesture_handler_(NULL),
-      allow_gesture_event_retargeting_(true),
+      gesture_handler_set_before_processing_(false),
       pre_dispatch_handler_(new internal::PreEventDispatchHandler(this)),
       post_dispatch_handler_(new internal::PostEventDispatchHandler),
       focus_search_(this, false, false),
@@ -287,13 +287,8 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
       return DispatchDetails();
     }
 
-    // If |gesture_handler_| is non-null (as a result of dispatching a previous
-    // gesture event), then |gesture_event| should be dispatched only to
-    // |gesture_handler_|.
-    allow_gesture_event_retargeting_ = gesture_handler_ ? false : true;
-
-    DispatchGestureEvent(gesture_event);
-    return DispatchDetails();
+    gesture_handler_set_before_processing_ = !!gesture_handler_;
+    return EventProcessor::OnEventFromSource(event);
   }
 
   if (event->IsTouchEvent())
@@ -303,6 +298,17 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
     NOTREACHED() << "Should not be called with a MouseEvent.";
 
   return DispatchDetails();
+}
+
+void RootView::OnEventProcessingFinished(ui::Event* event) {
+  // If |event| was not handled and |gesture_handler_| was not set by the
+  // dispatch of a previous gesture event, then no default gesture handler
+  // should be set prior to the next gesture event being received.
+  if (event->IsGestureEvent() &&
+      !event->handled() &&
+      !gesture_handler_set_before_processing_) {
+    gesture_handler_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -645,44 +651,6 @@ View::DragInfo* RootView::GetDragInfo() {
 
 // Input -----------------------------------------------------------------------
 
-void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
-  bool gesture_handler_set_before_dispatch = !!gesture_handler_;
-  scoped_ptr<ui::Event> event_copy = ui::Event::Clone(*event);
-  View* target = static_cast<View*>(
-      targeter()->FindTargetForEvent(this, event_copy.get()));
-  while (target && target != this) {
-    // Create and dispatch a copy of |event|.
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEvent(target, event_copy.get());
-    if (dispatch_details.dispatcher_destroyed)
-      return;
-
-    if (event_copy->stopped_propagation())
-      event->StopPropagation();
-    else if (event_copy->handled())
-      event->SetHandled();
-
-    // If the event was handled by the previous dispatch or if the target
-    // was destroyed, do not allow any further processing of |event|.
-    if (event->handled() || dispatch_details.target_destroyed)
-      return;
-
-    // The event was not handled by |target|, so continue processing by
-    // re-targeting the event.
-    target = static_cast<View*>(
-        targeter()->FindNextBestTarget(target, event_copy.get()));
-  }
-
-  // |event| was not handled, so if |gesture_handler_| was not set by the
-  // dispatch of a previous gesture event, then no default gesture handler
-  // should be set prior to the next gesture event being received.
-  // TODO(tdanderson): Move this into a new virtual function
-  //                   EventProcessor::OnEventProcessingFinished(), to be called
-  //                   at the end of EventProcessor::OnEventFromSource().
-  if (!gesture_handler_set_before_dispatch)
-    gesture_handler_ = NULL;
-}
-
 void RootView::UpdateCursor(const ui::MouseEvent& event) {
   if (!(event.flags() & ui::EF_IS_NON_CLIENT)) {
     View* v = GetEventHandlerForPoint(event.location());
@@ -728,6 +696,10 @@ ui::EventDispatchDetails RootView::PreDispatchEvent(ui::EventTarget* target,
   if (event->IsGestureEvent()) {
     // Update |gesture_handler_| to indicate which View is currently handling
     // gesture events.
+    // TODO(tdanderson): Look into moving this to PostDispatchEvent() and
+    //                   using |event_dispatch_target_| instead of
+    //                   |gesture_handler_| to detect if the view has been
+    //                   removed from the tree.
     gesture_handler_ = view;
 
     // Disabled views are permitted to be targets of gesture events, but
