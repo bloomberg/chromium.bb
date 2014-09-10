@@ -186,25 +186,27 @@ component("seccomp_bpf_helpers") {
   ]
 }
 
+if (is_linux) {
 # The setuid sandbox for Linux.
-executable("chrome_sandbox") {
-  sources = [
-    "suid/common/sandbox.h",
-    "suid/common/suid_unsafe_environment_variables.h",
-    "suid/linux_util.c",
-    "suid/linux_util.h",
-    "suid/process_util.h",
-    "suid/process_util_linux.c",
-    "suid/sandbox.c",
-  ]
+  executable("chrome_sandbox") {
+    sources = [
+      "suid/common/sandbox.h",
+      "suid/common/suid_unsafe_environment_variables.h",
+      "suid/linux_util.c",
+      "suid/linux_util.h",
+      "suid/process_util.h",
+      "suid/process_util_linux.c",
+      "suid/sandbox.c",
+    ]
 
-  cflags = [
-    # For ULLONG_MAX
-    "-std=gnu99",
-    # These files have a suspicious comparison.
-    # TODO fix this and re-enable this warning.
-    "-Wno-sign-compare",
-  ]
+    cflags = [
+      # For ULLONG_MAX
+      "-std=gnu99",
+      # These files have a suspicious comparison.
+      # TODO fix this and re-enable this warning.
+      "-Wno-sign-compare",
+    ]
+  }
 }
 
 component("sandbox_services") {
@@ -263,19 +265,21 @@ source_set("libc_urandom_override") {
   ]
 }
 
-component("suid_sandbox_client") {
-  sources = [
-    "suid/common/sandbox.h",
-    "suid/common/suid_unsafe_environment_variables.h",
-    "suid/client/setuid_sandbox_client.cc",
-    "suid/client/setuid_sandbox_client.h",
-  ]
-  defines = [ "SANDBOX_IMPLEMENTATION" ]
+if (compile_suid_client) {
+  component("suid_sandbox_client") {
+    sources = [
+      "suid/common/sandbox.h",
+      "suid/common/suid_unsafe_environment_variables.h",
+      "suid/client/setuid_sandbox_client.cc",
+      "suid/client/setuid_sandbox_client.h",
+    ]
+    defines = [ "SANDBOX_IMPLEMENTATION" ]
 
-  deps = [
-    ":sandbox_services",
-    "//base",
-  ]
+    deps = [
+      ":sandbox_services",
+      "//base",
+    ]
+  }
 }
 
 if (is_android) {

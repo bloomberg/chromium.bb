@@ -50,6 +50,10 @@ source_set("app") {
     ":lib",
   ]
 
+  if (is_android) {
+    defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
+  }
+
   if (is_mac) {
     deps += [ "//breakpad" ]
   } else if (is_win) {
@@ -58,8 +62,7 @@ source_set("app") {
       "//breakpad:breakpad_handler",
       #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
     ]
-  } else if (is_posix && !is_ios &&
-             (!is_android || !is_android_webview_build)) {
+  } else if (is_posix && !is_ios && (!is_android || !is_android_webview_build)) {
     deps += [ "//breakpad:client" ]
   }
 }

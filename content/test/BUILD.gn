@@ -163,10 +163,18 @@ if (!is_ios) {
     ]
 
     if (is_android) {
-      #deps += [ "test_support_content_jni_headers" ]  TODO(GYP)
+      deps += [ ":jni" ]
     }
   }
 
+  if (is_android) {
+    import("//build/config/android/rules.gni")
+
+    generate_jni("jni") {
+      sources = [ "../public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java" ]
+      jni_package = "content/public/test"
+    }
+  }
 }  # !is_ios
 
 # TODO(GYP): Unit test targets

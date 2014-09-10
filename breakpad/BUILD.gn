@@ -309,7 +309,7 @@ if (is_mac) {
   }
 }
 
-if (is_linux || is_android) {
+if (is_linux) {
   executable("symupload") {
     sources = [
       "src/tools/linux/symupload/sym_upload.cc",
@@ -328,7 +328,7 @@ if (is_linux || is_android) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_android) {
   if (current_toolchain == host_toolchain) {
     # dump_syms is a host tool, so only compile it for the host system.
     executable("dump_syms") {
@@ -487,7 +487,9 @@ if (is_linux) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
   }
+}
 
+if (is_linux) {
   test("breakpad_unittests") {
     sources = [
       "linux/breakpad_googletest_includes.h",
@@ -545,7 +547,7 @@ if (is_linux) {
     if (is_android) {
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
-      include_dirs = [ "src/common/android/include" ]
+      include_dirs += [ "src/common/android/include" ]
     }
   }
 

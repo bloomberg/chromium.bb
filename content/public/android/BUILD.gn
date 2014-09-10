@@ -5,6 +5,11 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
+content_jni_gypi_values = exec_script("//build/gypi_to_gn.py",
+    [ rebase_path("../../content_jni.gypi") ],
+    "scope",
+    [ "../../content_jni.gypi" ])
+
 android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
   import_include = "java/src"
@@ -200,11 +205,23 @@ java_cpp_template("content_gamepad_mapping_java") {
   ]
 }
 
-generate_jar_jni("content_jni_headers") {
+generate_jar_jni("jar_jni") {
   jni_package = "content"
   classes = [
-    "android/view/MotionEvent.class",
     "java/util/HashSet.class",
+    "android/view/MotionEvent.class",
+  ]
+}
+
+generate_jni("content_jni_headers") {
+  sources = rebase_path(content_jni_gypi_values.sources, "", "../..")
+  jni_package = "content"
+}
+
+group("jni") {
+  deps = [
+    ":content_jni_headers",
+    ":jar_jni",
   ]
 }
 

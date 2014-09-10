@@ -264,7 +264,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_android) {
-    deps += [ ":content_shell_jni_headers" ]
+    deps += [ "//content/shell/android:content_shell_jni_headers" ]
     #deps -= [ "copy_test_netscape_plugin" ]  TODO(GYP)
   }
 
@@ -292,6 +292,11 @@ static_library("content_shell_lib") {
     } else {
       sources += [ "browser/shell_aura.cc" ]
     }
+  } else {
+    sources -= [
+      "browser/shell_platform_data_aura.cc",
+      "browser/shell_platform_data_aura.h",
+    ]
   }
 
   # The test plugin relies on X11.
@@ -430,6 +435,9 @@ repack("pak") {
   }
 }
 
+# TODO(GYP): Figure out what this should be on android
+if (!is_android) {
+
 executable("content_shell") {
   testonly = true
   # TODO(GYP) mac resource bundle stuff for this target.
@@ -446,7 +454,6 @@ executable("content_shell") {
     ":content_shell_lib",
     ":pak",
     "//base/allocator",
-    "//third_party/mesa:osmesa",
   ]
 
   if (is_win) {
@@ -461,11 +468,13 @@ executable("content_shell") {
     # TODO(GYP) lots of stuff from GYP file here.
   }
 
-  if (!is_android || !is_android_webview_build) {
+  if (is_android && !is_android_webview_build) {
     # Some tests rely on this tool. It might be nicer if these tests relied on
     # image diff rather than having content shell depend on it.
     datadeps = [
       "//tools/imagediff($host_toolchain)",
     ]
   }
+}
+
 }

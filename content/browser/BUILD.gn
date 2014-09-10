@@ -49,7 +49,6 @@ source_set("browser") {
     "//ui/native_theme",
     "//ui/resources",
     "//ui/snapshot",
-    "//ui/wm",
   ]
 
   if (is_ios) {
@@ -137,7 +136,7 @@ source_set("browser") {
     sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
 
-  if (!is_win && !is_mac && (!is_linux || !use_udev)) {
+  if (!is_win && !is_mac && !is_android && (!is_linux || !use_udev)) {
     sources += [ "gamepad/gamepad_platform_data_fetcher.cc" ]
   }
 
@@ -261,6 +260,7 @@ source_set("browser") {
   } else {
     sources -= [
       "power_save_blocker_x11.cc",
+      "renderer_host/web_input_event_aurax11.cc",
     ]
   }
 
@@ -308,7 +308,7 @@ source_set("browser") {
       "speech/speech_recognizer_impl.h",
     ]
     deps += [
-      #"//content:jni_headers",  TODO(GYP)
+      "//content/public/android:jni",
       "//media",
     ]
     libs += [ "jnigraphics" ]
@@ -342,6 +342,7 @@ source_set("browser") {
     deps += [
       "//ui/aura",
       "//ui/strings",
+      "//ui/wm",
     ]
   } else {  # Not aura.
     sources -= [

@@ -37,7 +37,7 @@ if (is_win) {
 } else if (is_android) {
   content_app_sources -= [ "content_main.cc" ]
   content_app_deps += [
-    "//content:content_jni_headers",
+    "//content/public/android:jni",
     "//skia",
     "//third_party/android_tools:cpu_features"
   ]

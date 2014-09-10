@@ -106,11 +106,10 @@ source_set("common") {
       "gpu/client/gpu_memory_buffer_impl_surface_texture.h",
     ]
 
-    # TODO(GYP) enable when these targets are converted.
-    #deps += [
-    #  "//content:content_jni_headers",
-    #  "//content:common_aidl",
-    #]
+    deps += [
+      "//content/public/android:jni",
+      "//content/public/android:common_aidl",
+    ]
 
     libs += [ "android" ]
   }

@@ -124,7 +124,6 @@ group("root") {
     "//ui/views",
     "//ui/views/controls/webview",
     "//ui/web_dialogs",
-    "//ui/wm",
     "//url",
     "//v8:v8",
   ]
@@ -143,6 +142,10 @@ group("root") {
 
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
+  }
+
+  if (use_aura) {
+    deps += [ "//ui/wm" ]
   }
 
   if (is_win) {
@@ -178,7 +181,6 @@ group("root") {
 
     deps -= [
       "//apps",  # Needs testing.
-      "//cc/blink", # Blocked on blink
       "//chrome/browser",  # Blocked on content.
       "//chrome/browser/devtools",  # Blocked on content.
       "//chrome/browser/ui",  # Blocked on content.
@@ -188,22 +190,15 @@ group("root") {
       "//chrome/renderer",  # Blocked on content.
       "//chrome/service",  # Blocked on content.
       "//chrome/utility",  # Blocked on content.
-      "//content",
-      "//content/shell:content_shell",  # Blocked on content.
-      "//content/test:test_support",  # Blocked on content.
+      "//content/shell:content_shell",
       "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",
       "//extensions/renderer",
-      "//media/blink",  # Blocked on blink
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
-      "//sandbox",
       "//third_party/libusb",
       "//ui/keyboard",  # Blocked on content.
-
-      # Blocked on neon stuff in vp8
-      "//third_party/WebKit/public:all_blink",
 
       # Seems to not be compiled on Android. Otherwise it will need a config.h.
       "//third_party/libxslt",
@@ -229,7 +224,6 @@ group("root") {
       "//third_party/ffmpeg",
       "//ui/app_list",
       "//ui/web_dialogs",
-      "//ui/wm",
     ]
   }
 

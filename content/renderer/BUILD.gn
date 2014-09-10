@@ -80,6 +80,7 @@ source_set("renderer") {
     sources -= [
       "accessibility/renderer_accessibility_focus_only.cc",
       "media/audio_decoder.cc",
+      "media/crypto/encrypted_media_player_support_impl.cc",
     ]
     sources += [
       "external_popup_menu.cc",

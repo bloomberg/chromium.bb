@@ -724,9 +724,7 @@
       'sources!': [
         'renderer/accessibility/renderer_accessibility_focus_only.cc',
         'renderer/media/audio_decoder.cc',
-        'renderer/media/filter_helpers.cc',
         'renderer/media/crypto/encrypted_media_player_support_impl.cc',
-        'renderer/media/webmediaplayer_impl.cc',
       ],
       'sources': [
         'renderer/external_popup_menu.cc',

@@ -58,6 +58,8 @@ enable_spellcheck = !is_android
 
 enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 
+enable_browser_cdms = is_android
+
 # Enable printing support and UI. This variable is used to configure which
 # parts of printing will be built. 0 disables printing completely, 1 enables it
 # fully, and 2 enables only the codepath to generate a Metafile (e.g.  usually
