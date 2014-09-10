@@ -23,20 +23,21 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   virtual ~GpuMemoryBufferImpl();
 
   // Creates a GPU memory buffer instance with |size| and |internalformat| for
-  // |usage|.
+  // |usage| by the current process and |client_id|.
   static void Create(const gfx::Size& size,
                      unsigned internalformat,
                      unsigned usage,
+                     int client_id,
                      const CreationCallback& callback);
 
   // Allocates a GPU memory buffer with |size| and |internalformat| for |usage|
-  // by |child_process| identified by |child_id|. The |handle| returned can be
+  // by |child_process| and |child_client_id|. The |handle| returned can be
   // used by the |child_process| to create an instance of this class.
   static void AllocateForChildProcess(const gfx::Size& size,
                                       unsigned internalformat,
                                       unsigned usage,
                                       base::ProcessHandle child_process,
-                                      int child_id,
+                                      int child_client_id,
                                       const AllocationCallback& callback);
 
   // Notify that GPU memory buffer has been deleted by |child_process|.

@@ -19,6 +19,7 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
   static void Create(const gfx::Size& size,
                      unsigned internalformat,
                      unsigned usage,
+                     int client_id,
                      const CreationCallback& callback);
 
   // Allocates an Ozone native buffer backed GPU memory buffer with |size| and
@@ -27,7 +28,7 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage,
-      int child_id,
+      int child_client_id,
       const AllocationCallback& callback);
 
   static bool IsFormatSupported(unsigned internalformat);

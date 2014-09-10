@@ -43,18 +43,21 @@ struct BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferRequest {
   AllocateGpuMemoryBufferRequest(size_t width,
                                  size_t height,
                                  unsigned internalformat,
-                                 unsigned usage)
+                                 unsigned usage,
+                                 int client_id)
       : event(true, false),
         width(width),
         height(height),
         internalformat(internalformat),
-        usage(usage) {}
+        usage(usage),
+        client_id(client_id) {}
   ~AllocateGpuMemoryBufferRequest() {}
   base::WaitableEvent event;
   size_t width;
   size_t height;
   unsigned internalformat;
   unsigned usage;
+  int client_id;
   scoped_ptr<gfx::GpuMemoryBuffer> result;
 };
 
@@ -387,7 +390,8 @@ BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(size_t width,
                                                       unsigned usage) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AllocateGpuMemoryBufferRequest request(width, height, internalformat, usage);
+  AllocateGpuMemoryBufferRequest request(
+      width, height, internalformat, usage, gpu_client_id_);
   GetIOLoopProxy()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO,
@@ -459,6 +463,7 @@ void BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO(
       gfx::Size(request->width, request->height),
       request->internalformat,
       request->usage,
+      request->client_id,
       base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
                  base::Unretained(request)));
 }

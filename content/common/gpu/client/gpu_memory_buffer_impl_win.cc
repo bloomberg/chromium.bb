@@ -12,6 +12,7 @@ namespace content {
 void GpuMemoryBufferImpl::Create(const gfx::Size& size,
                                  unsigned internalformat,
                                  unsigned usage,
+                                 int client_id,
                                  const CreationCallback& callback) {
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
@@ -29,7 +30,7 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     unsigned internalformat,
     unsigned usage,
     base::ProcessHandle child_process,
-    int child_id,
+    int child_client_id,
     const AllocationCallback& callback) {
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {

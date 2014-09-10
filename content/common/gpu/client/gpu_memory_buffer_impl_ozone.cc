@@ -13,11 +13,12 @@ namespace content {
 void GpuMemoryBufferImpl::Create(const gfx::Size& size,
                                  unsigned internalformat,
                                  unsigned usage,
+                                 int client_id,
                                  const CreationCallback& callback) {
   if (GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
           internalformat, usage)) {
     GpuMemoryBufferImplOzoneNativeBuffer::Create(
-        size, internalformat, usage, callback);
+        size, internalformat, usage, client_id, callback);
     return;
   }
 
@@ -37,12 +38,12 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     unsigned internalformat,
     unsigned usage,
     base::ProcessHandle child_process,
-    int child_id,
+    int child_client_id,
     const AllocationCallback& callback) {
   if (GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
           internalformat, usage)) {
     GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
-        size, internalformat, usage, child_id, callback);
+        size, internalformat, usage, child_client_id, callback);
     return;
   }
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
