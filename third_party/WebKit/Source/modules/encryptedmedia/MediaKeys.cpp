@@ -67,19 +67,6 @@ static bool isKeySystemSupportedWithContentType(const String& keySystem, const S
     return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
 }
 
-static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const String& initDataType)
-{
-    // FIXME: initDataType != contentType. Implement this properly.
-    // http://crbug.com/385874.
-    String contentType = initDataType;
-    if (initDataType == "webm") {
-        contentType = "video/webm";
-    } else if (initDataType == "cenc") {
-        contentType = "video/mp4";
-    }
-    return isKeySystemSupportedWithContentType(keySystem, contentType);
-}
-
 static ScriptPromise createRejectedPromise(ScriptState* scriptState, ExceptionCode error, const String& errorMessage)
 {
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(error, errorMessage));
@@ -203,59 +190,24 @@ MediaKeys::~MediaKeys()
     WTF_LOG(Media, "MediaKeys(%p)::~MediaKeys", this);
 }
 
-ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, ArrayBuffer* initData, const String& sessionType)
+MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionType)
 {
-    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->data(), initData->byteLength());
-    return createSessionInternal(scriptState, initDataType, initDataCopy.release(), sessionType);
-}
-
-ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, ArrayBufferView* initData, const String& sessionType)
-{
-    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->baseAddress(), initData->byteLength());
-    return createSessionInternal(scriptState, initDataType, initDataCopy.release(), sessionType);
-}
-
-ScriptPromise MediaKeys::createSessionInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType)
-{
-    WTF_LOG(Media, "MediaKeys(%p)::createSession(%s, %d)", this, initDataType.ascii().data(), initData->byteLength());
+    WTF_LOG(Media, "MediaKeys(%p)::createSession", this);
 
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
-    // The createSession(initDataType, initData, sessionType) method creates a
-    // new MediaKeySession object for the initData. It must run the following steps:
-
-    // 1. If initDataType is an empty string, return a promise rejected with a
-    //    new DOMException whose name is "InvalidAccessError".
-    if (initDataType.isEmpty()) {
-        return createRejectedPromise(scriptState, InvalidAccessError, "The initDataType parameter is empty.");
-    }
-
-    // 2. If initData is an empty array, return a promise rejected with a new
-    //    DOMException whose name is"InvalidAccessError".
-    if (!initData->byteLength()) {
-        return createRejectedPromise(scriptState, InvalidAccessError, "The initData parameter is empty.");
-    }
-
-    // 3. If initDataType is not an initialization data type supported by the
-    //    content decryption module corresponding to the keySystem, return a
-    //    promise rejected with a new DOMException whose name is
-    //    "NotSupportedError". String comparison is case-sensitive.
-    if (!isKeySystemSupportedWithInitDataType(m_keySystem, initDataType)) {
-        return createRejectedPromise(scriptState, NotSupportedError, "The initialization data type '" + initDataType + "' is not supported by the key system.");
-    }
-
-    // 4. If sessionType is not supported by the content decryption module
-    //    corresponding to the keySystem, return a promise rejected with a new
-    //    DOMException whose name is "NotSupportedError".
-    //    Since this is typed by the IDL, we should not see any invalid values.
+    // The createSession(sessionType) method returns a new MediaKeySession
+    // object. It must run the following steps:
+    // 1. If sessionType is not supported by the content decryption module
+    //    corresponding to the keySystem, throw a DOMException whose name is
+    //    "NotSupportedError".
     // FIXME: Check whether sessionType is actually supported by the CDM.
     ASSERT(sessionType == kTemporary || sessionType == kPersistent);
 
-    // 5. Let init data be a copy of the contents of the initData parameter.
-    //    (Copied in the caller.)
-    // 6. Let promise be a new promise.
-    // 7. Asynchronously create and initialize the session.
-    // 8. Return promise.
-    return MediaKeySession::create(scriptState, this, initDataType, initData, sessionType);
+    // 2. Let session be a new MediaKeySession object, and initialize it as
+    //    follows:
+    //    (Initialization is performed in the constructor.)
+    // 3. Return session.
+    return MediaKeySession::create(scriptState, this, sessionType);
 }
 
 bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentType)

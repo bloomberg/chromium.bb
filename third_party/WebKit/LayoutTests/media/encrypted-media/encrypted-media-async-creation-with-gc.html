@@ -14,10 +14,12 @@
                 // Run garbage collection often.
                 setInterval(asyncGC, 0);
 
+                var mediaKeySession;
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
                     var initDataType = getInitDataType();
-                    return mediaKeys.createSession(initDataType, getInitData(initDataType));
-                }).then(function(mediaKeySession) {
+                    mediaKeySession = mediaKeys.createSession();
+                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                }).then(function() {
                     return mediaKeySession.release();
                 }).then(function(result) {
                     test.done();

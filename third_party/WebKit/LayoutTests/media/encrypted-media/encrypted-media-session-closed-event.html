@@ -11,10 +11,12 @@
         <script>
             async_test(function(test)
             {
+                var mediaKeySession;
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
                     var initDataType = getInitDataType();
-                    return mediaKeys.createSession(initDataType, getInitData(initDataType));
-                }).then(function(mediaKeySession) {
+                    mediaKeySession = mediaKeys.createSession();
+                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                }).then(function() {
                     // Wait for the session to be closed.
                     mediaKeySession.closed.then(function(result) {
                         assert_equals(result, undefined);

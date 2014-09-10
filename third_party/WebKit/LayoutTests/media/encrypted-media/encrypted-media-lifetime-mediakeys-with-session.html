@@ -42,8 +42,9 @@
                     assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
 
                     var initDataType = getInitDataType();
-                    return mediaKeys.createSession(initDataType, getInitData(initDataType));
-                }).then(function(mediaKeySession) {
+                    var mediaKeySession = mediaKeys.createSession();
+                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                }).then(function() {
                     // 1 MediaKeySession.
                     assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.createSession()');
 

@@ -32,9 +32,9 @@
                         return;
                     isSessionCreated = true;
 
-                    video.mediaKeys.createSession(event.contentType, event.initData).then(function(mediaKeySession) {
-                        waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
-                    }).catch(function(error) {
+                    var mediaKeySession = video.mediaKeys.createSession();
+                    waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
+                    mediaKeySession.generateRequest(event.contentType, event.initData).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });
                 }

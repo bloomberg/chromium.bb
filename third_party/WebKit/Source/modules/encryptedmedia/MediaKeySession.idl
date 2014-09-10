@@ -37,6 +37,10 @@
     readonly attribute DOMString sessionId;
     [CallWith=ScriptState] readonly attribute Promise closed;
 
+    // session initialization
+    [CallWith=ScriptState] Promise generateRequest(DOMString initDataType, ArrayBuffer initData);
+    [CallWith=ScriptState] Promise generateRequest(DOMString initDataType, ArrayBufferView initData);
+
     // session operations
     [CallWith=ScriptState] Promise update(ArrayBuffer response);
     [CallWith=ScriptState] Promise update(ArrayBufferView response);

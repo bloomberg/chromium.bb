@@ -36,15 +36,15 @@
                     // Verify MediaKeys are not an ActiveDOMObject.
                     assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
 
-                    return mediaKeys.createSession(initDataType, initData);
-                }).then(function(result) {
-                    mediaKeySession1 = result;
+                    mediaKeySession1 = mediaKeys.createSession();
+                    return mediaKeySession1.generateRequest(initDataType, initData);
+                }).then(function() {
                     assert_true(mediaKeySession1.sessionId && mediaKeySession1.sessionId.length > 0);
                     // Should be 1 MediaKeySession.
                     assert_equals(numActiveDOMObjectsCreated(), 1, 'mediaKeys.createSession(1)');
-                    return mediaKeys.createSession(initDataType, initData);
-                }).then(function(result) {
-                    mediaKeySession2 = result;
+                    mediaKeySession2 = mediaKeys.createSession();
+                    return mediaKeySession2.generateRequest(initDataType, initData);
+                }).then(function() {
                     assert_true(mediaKeySession2.sessionId && mediaKeySession2.sessionId.length > 0);
                     // Should be 2 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(2)');

@@ -124,11 +124,9 @@
                 // Tests in this set use a shortened parameter name due to
                 // format_value() only returning the first 60 characters as the
                 // result. With a longer name the first 60 characters is not
-                // enough to determine which test failed. Even with the
-                // shortened name, the error message for the last couple of
-                // tests is the same.
+                // enough to determine which test failed.
 
-                // Too few parameters.
+                // Invalid parameters.
                 {
                     exception: 'TypeError',
                     func: function(mk) { return mk.createSession(); }
@@ -155,138 +153,16 @@
                 },
                 {
                     exception: 'TypeError',
-                    func: function(mk, _, initData) { return mk.createSession(initData); }
-                },
-                // Invalid parameters.
-                {
-                    exception: 'InvalidAccessError',
-                    func: function(mk, _, initData) { return mk.createSession('', initData); }
-                },
-                // Not supported contentTypes.
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession(null, initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession(undefined, initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession(1, initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession(new Uint8Array(0), initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession('unsupported', initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession('video/foo', initData); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk, _, initData) { return mk.createSession('text/webm', initData); }
-                }
-                // FIXME: Enable when switching to initDataType from MIME type.
-                // http://crbug.com/385874.
-                // {
-                //     exception: 'NotSupportedError',
-                //     func: function(mk, _, initData) { return mk.createSession('video/webm', initData); }
-                // }
-            ];
-
-            var kTypeSpecificCreateSessionExceptionsTestCases = [
-                // Tests in this set use a shortened parameter name due to
-                // format_value() only returning the first 60 characters as the
-                // result. With a longer name the first 60 characters is not
-                // enough to determine which test failed. Even with the
-                // shortened name, the error message for the last couple of
-                // tests is the same.
-
-                // Too few parameters.
-                {
-                    exception: 'TypeError',
-                    func: function(mk, type) { return mk.createSession(type); }
-                },
-                // Invalid parameters.
-                {
-                    exception: 'TypeError',
-                    func: function(mk, type) { return mk.createSession(type, ''); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk, type) { return mk.createSession(type, null); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk, type) { return mk.createSession(type, undefined); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk, type) { return mk.createSession(type, 1); }
-                },
-                {
-                    exception: 'InvalidAccessError',
-                    func: function(mk, type) { return mk.createSession(type, new Uint8Array(0)); }
-                },
-                // Invalid sessionTypes. Added index to each variable name as
-                // otherwise the first 60 characters of func: is the same.
-                {
-                    exception: 'TypeError',
-                    func: function(mk1, type, initData) { return mk1.createSession(type, initData, ''); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk2, type, initData) { return mk2.createSession(type, initData, null); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk3, type, initData) { return mk3.createSession(type, initData, 1); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk4, type, initData) { return mk4.createSession(type, initData, new Uint8Array(0)); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk5, type, initData) { return mk5.createSession(type, initData, 'unsupported'); }
-                },
-                {
-                    exception: 'TypeError',
-                    func: function(mk6, type, initData) { return mk6.createSession(type, initData, 'TEMPORARY'); }
+                    func: function(mk) { return mk.createSession('TEMPORARY'); }
                 }
             ];
 
             async_test(function(test)
             {
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
-                    // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
-                    // http://crbug.com/405731.
-                    var initData = stringToUint8Array('init data');
                     var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
-                        return test_exception(testCase, mediaKeys, '', initData);
+                        return test_exception(testCase, mediaKeys);
                     });
-
-                    // Test that WebM sessions generate the expected error, if
-                    // supported.
-                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                        var WebmSessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
-                            return test_exception(testCase, mediaKeys, 'webm', getInitData('webm'));
-                        });
-                        sessionPromises = sessionPromises.concat(WebmSessionPromises);
-                    }
-
-                    // Repeat for MP4, if supported.
-                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                        var mp4SessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
-                            return test_exception(testCase, mediaKeys, 'cenc', getInitData('cenc'));
-                        });
-                        sessionPromises = sessionPromises.concat(mp4SessionPromises);
-                    }
 
                     assert_not_equals(sessionPromises.length, 0);
                     return Promise.all(sessionPromises);
@@ -297,6 +173,156 @@
                 });
             }, 'Test MediaKeys createSession() exceptions.');
 
+            var kGenerateRequestExceptionsTestCases = [
+                // Tests in this set use a shortened parameter name due to
+                // format_value() only returning the first 60 characters as the
+                // result. With a longer name the first 60 characters is not
+                // enough to determine which test failed. Even with the
+                // shortened name, the error message for the last couple of
+                // tests is the same.
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk1) { return mk1.createSession().generateRequest(); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk2) { return mk2.createSession().generateRequest(''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk3) { return mk3.createSession().generateRequest(null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk4) { return mk4.createSession().generateRequest(undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk5) { return mk5.createSession().generateRequest(1); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk6) { return mk6.createSession().generateRequest(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk7, _, initData) { return mk7.createSession().generateRequest(initData); }
+                },
+                // Invalid parameters.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk8, _, initData) { return mk8.createSession().generateRequest('', initData); }
+                },
+                // Not supported initDataTypes.
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk9, _, initData) { return mk9.createSession().generateRequest(null, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk10, _, initData) { return mk10.createSession().generateRequest(undefined, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk11, _, initData) { return mk11.createSession().generateRequest(1, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk12, _, initData) { return mk12.createSession().generateRequest(new Uint8Array(0), initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk13, _, initData) { return mk13.createSession().generateRequest('unsupported', initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk14, _, initData) { return mk14.createSession().generateRequest('video/foo', initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk15, _, initData) { return mk15.createSession().generateRequest('text/webm', initData); }
+                }
+                // FIXME: Enable when switching to initDataType from MIME type.
+                // http://crbug.com/385874.
+                // {
+                //     exception: 'NotSupportedError',
+                //     func: function(mk16, _, initData) { return mk16.createSession('video/webm', initData); }
+                // }
+            ];
+
+            var kTypeSpecificGenerateRequestExceptionsTestCases = [
+                // Tests in this set use a shortened parameter name due to
+                // format_value() only returning the first 60 characters as the
+                // result. With a longer name the first 60 characters is not
+                // enough to determine which test failed. Even with the
+                // shortened name, the error message for the last couple of
+                // tests is the same.
+
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk1, type) { return mk1.createSession().generateRequest(type); }
+                },
+                // Invalid parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk2, type) { return mk2.createSession().generateRequest(type, ''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk3, type) { return mk3.createSession().generateRequest(type, null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk4, type) { return mk4.createSession().generateRequest(type, undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk5, type) { return mk5.createSession().generateRequest(type, 1); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk6, type) { return mk6.createSession().generateRequest(type, new Uint8Array(0)); }
+                }
+            ];
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
+                    // http://crbug.com/405731.
+                    var initData = stringToUint8Array('init data');
+                    var sessionPromises = kGenerateRequestExceptionsTestCases.map(function(testCase) {
+                        return test_exception(testCase, mediaKeys, '', initData);
+                    });
+
+                    // Test that WebM sessions generate the expected error, if
+                    // supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        var WebmSessionPromises = kTypeSpecificGenerateRequestExceptionsTestCases.map(function(testCase) {
+                            return test_exception(testCase, mediaKeys, 'webm', getInitData('webm'));
+                        });
+                        sessionPromises = sessionPromises.concat(WebmSessionPromises);
+                    }
+
+                    // Repeat for MP4, if supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        var mp4SessionPromises = kTypeSpecificGenerateRequestExceptionsTestCases.map(function(testCase) {
+                            return test_exception(testCase, mediaKeys, 'cenc', getInitData('cenc'));
+                        });
+                        sessionPromises = sessionPromises.concat(mp4SessionPromises);
+                    }
+
+                    assert_not_equals(sessionPromises.length, 0);
+                    return Promise.all(sessionPromises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'generateRequest() tests failed');
+                });
+            }, 'Test MediaKeys generateRequest() exceptions.');
+
             // All calls to |func| in this group are supposed to succeed.
             // However, the spec notes that some things are optional for
             // Clear Key. In particular, support for persistent sessions
@@ -304,33 +330,30 @@
             // features, a NotSupportedError is treated as a success
             // if |isNotSupportedAllowed| is true.
             var kCreateSessionTestCases = [
-                // Added index to each variable name as otherwise the first 60
-                // characters of |func| is the same.
-
                 // Use the default sessionType.
                 {
-                    func: function(mk1, type, initData) { return mk1.createSession(type, initData); },
+                    func: function(mk) { return mk.createSession(); },
                     isNotSupportedAllowed: false
                 },
                 // Try variations of sessionType.
                 {
-                    func: function(mk2, type, initData) { return mk2.createSession(type, initData, 'temporary'); },
+                    func: function(mk) { return mk.createSession('temporary'); },
                     isNotSupportedAllowed: false
                 },
                 {
-                    func: function(mk3, type, initData) { return mk3.createSession(type, initData, undefined); },
+                    func: function(mk) { return mk.createSession(undefined); },
                     isNotSupportedAllowed: false
                 },
                 {
                     // Since this is optional, some Clear Key implementations
                     // will succeed, others will return a "NotSupportedError".
                     // Both are allowed results.
-                    func: function(mk4, type, initData) { return mk4.createSession(type, initData, 'persistent'); },
+                    func: function(mk) { return mk.createSession('persistent'); },
                     isNotSupportedAllowed: true
                 },
                 // Try additional parameter, which should be ignored.
                 {
-                    func: function(mk5, type, initData) { return mk5.createSession(type, initData, 'temporary', 'extra'); },
+                    func: function(mk) { return mk.createSession('temporary', 'extra'); },
                     isNotSupportedAllowed: false
                 }
             ];
@@ -339,36 +362,59 @@
             // MediaKeySession object with some default values. It also
             // allows for an NotSupportedError to be generated and treated as a
             // success, if allowed. See comment above kCreateSessionTestCases.
-            function test_createSession(testCase /*...*/)
+            function test_createSession(testCase, mediaKeys)
             {
-                var func = testCase.func;
-                var isNotSupportedAllowed = testCase.isNotSupportedAllowed;
-                var args = Array.prototype.slice.call(arguments, 1);
+                var mediaKeySession;
+                try {
+                    mediaKeySession = testCase.func.call(null, mediaKeys);
+                } catch (e) {
+                    assert_true(testCase.isNotSupportedAllowed);
+                    return;
+                }
 
-                return func.apply(null, args).then(
-                    function(mediaKeySession)
-                    {
-                        // FIXME: Update this set of tests when done
-                        // implementing the latest spec.
-                        assert_not_equals(mediaKeySession, null);
-                        assert_equals(typeof mediaKeySession, 'object');
-                        assert_equals(typeof mediaKeySession.addEventListener, 'function');
-                        assert_equals(typeof mediaKeySession.update, 'function');
-                        assert_equals(mediaKeySession.error, null);
-                        assert_true(mediaKeySession.sessionId && mediaKeySession.sessionId.length > 0);
-                        assert_equals(typeof mediaKeySession.sessionId, 'string');
-                        assert_equals(typeof mediaKeySession.onopen, 'undefined');
-                        assert_equals(typeof mediaKeySession.onmessage, 'undefined');
-                        assert_equals(typeof mediaKeySession.onclose, 'undefined');
-                        assert_equals(typeof mediaKeySession.onerror, 'undefined');
-                    },
-                    function(error)
-                    {
-                        assert_true(isNotSupportedAllowed, format_value(func));
-                        assert_equals(error.name, 'NotSupportedError', format_value(func));
-                        assert_not_equals(error.message, "", format_value(func));
-                    }
-                );
+                // FIXME: Update this set of tests when done
+                // implementing the latest spec.
+                assert_equals(typeof mediaKeySession, 'object');
+                assert_equals(typeof mediaKeySession.addEventListener, 'function');
+                assert_equals(typeof mediaKeySession.generateRequest, 'function');
+                assert_equals(typeof mediaKeySession.update, 'function');
+                assert_equals(typeof mediaKeySession.release, 'function');
+                assert_equals(mediaKeySession.error, null);
+                assert_equals(mediaKeySession.sessionId, '');
+                assert_equals(typeof mediaKeySession.sessionId, 'string');
+                assert_equals(typeof mediaKeySession.onopen, 'undefined');
+                assert_equals(typeof mediaKeySession.onmessage, 'undefined');
+                assert_equals(typeof mediaKeySession.onclose, 'undefined');
+                assert_equals(typeof mediaKeySession.onerror, 'undefined');
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    kCreateSessionTestCases.map(function(testCase) {
+                        test_createSession(testCase, mediaKeys);
+                    });
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'createSession() tests failed');
+                });
+            }, 'Test MediaKeys createSession().');
+
+            // This function checks that calling generateRequest() works for
+            // various sessions. |testCase.func| creates a MediaKeySession
+            // object, and then generateRequest() is called on that object. It
+            // allows for an NotSupportedError to be generated and treated as a
+            // success, if allowed. See comment above kCreateSessionTestCases.
+            function test_generateRequest(testCase, mediaKeys, type, initData)
+            {
+                var mediaKeySession;
+                try {
+                    mediaKeySession = testCase.func.call(null, mediaKeys);
+                } catch (e) {
+                    assert_true(testCase.isNotSupportedAllowed);
+                    return new Promise(new Promise(function() {}));
+                }
+                return mediaKeySession.generateRequest(type, initData);
             }
 
             async_test(function(test)
@@ -380,7 +426,7 @@
                     // supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
                         var WebmSessionPromises = kCreateSessionTestCases.map(function(testCase) {
-                            return test_createSession(testCase, mediaKeys, 'webm', getInitData('webm'));
+                            return test_generateRequest(testCase, mediaKeys, 'webm', getInitData('webm'));
                         });
                         sessionPromises = sessionPromises.concat(WebmSessionPromises);
                     }
@@ -388,7 +434,7 @@
                     // Repeat for MP4, if supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
                         var mp4SessionPromises = kCreateSessionTestCases.map(function(testCase) {
-                            return test_createSession(testCase, mediaKeys, 'cenc', getInitData('cenc'));
+                            return test_generateRequest(testCase, mediaKeys, 'cenc', getInitData('cenc'));
                         });
                         sessionPromises = sessionPromises.concat(mp4SessionPromises);
                     }
@@ -398,9 +444,9 @@
                 }).then(function(result) {
                     test.done();
                 }).catch(function(error) {
-                    forceTestFailureFromPromise(test, error, 'createSession() tests failed');
+                    forceTestFailureFromPromise(test, error, 'generateRequest() tests failed');
                 });
-            }, 'Test MediaKeys createSession().');
+            }, 'Test MediaKeys generateRequest().');
 
             var kUpdateSessionExceptionsTestCases = [
                 // Tests in this set use a shortened parameter name due to
@@ -436,29 +482,29 @@
                 }
             ];
 
-            function create_update_exception_test(mediaKeys, type, initData)
-            {
-                var mediaKeySession;
-                var promise = mediaKeys.createSession(type, initData).then(function(mediaKeySession) {
-                    var updatePromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
-                        return test_exception(testCase, mediaKeySession);
-                    });
-                    return Promise.all(updatePromises);
-                });
-                return promise;
-            }
-
             async_test(function(test)
             {
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                        promises.push(create_update_exception_test(mediaKeys, 'webm', getInitData('webm')));
+                        var WebmSessionPromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
+                            var mediaKeySession = mediaKeys.createSession();
+                            return mediaKeySession.generateRequest('webm', getInitData('webm')).then(function(result) {
+                                return test_exception(testCase, mediaKeySession);
+                            });
+                        });
+                        promises = promises.concat(WebmSessionPromises);
                     }
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                        promises.push(create_update_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
+                        var mp4SessionPromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
+                          var mediaKeySession = mediaKeys.createSession();
+                          return mediaKeySession.generateRequest('cenc', getInitData('cenc')).then(function(result) {
+                              return test_exception(testCase, mediaKeySession);
+                          });
+                      });
+                      promises = promises.concat(mp4SessionPromises);
                     }
 
                     assert_not_equals(promises.length, 0);
@@ -472,9 +518,8 @@
 
             function create_update_test(mediaKeys, type, initData)
             {
-                var mediaKeySession;
-                var promise = mediaKeys.createSession(type, initData).then(function(result) {
-                    mediaKeySession = result;
+                var mediaKeySession = mediaKeys.createSession();
+                var promise = mediaKeySession.generateRequest(type, initData).then(function(result) {
                     var validLicense = stringToUint8Array(createJWKSet(createJWK(stringToUint8Array('123'), stringToUint8Array('1234567890abcdef'))));
                     return mediaKeySession.update(validLicense);
                 }).then(function(result) {
@@ -510,9 +555,8 @@
 
             function create_release_test(mediaKeys, type, initData)
             {
-                var mediaKeySession;
-                var promise = mediaKeys.createSession(type, initData).then(function(result) {
-                    mediaKeySession = result;
+                var mediaKeySession = mediaKeys.createSession();
+                var promise = mediaKeySession.generateRequest(type, initData).then(function(result) {
                     return mediaKeySession.release();
                 // FIXME: Uncomment once the code supports multiple release() calls.
 //              }).then(function(result) {

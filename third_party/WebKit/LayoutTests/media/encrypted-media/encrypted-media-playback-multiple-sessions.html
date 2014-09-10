@@ -30,16 +30,18 @@
                 function onNeedKey(event)
                 {
                     var keyId = String.fromCharCode.apply(null, event.initData);
-                    video.mediaKeys.createSession(event.contentType, event.initData).then(function(newSession) {
+
+                    var mediaKeySession = video.mediaKeys.createSession();
+                    waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
+                    mediaKeySession.generateRequest(event.contentType, event.initData).then(function() {
                         if (keyId == videoKeyId) {
                             assert_equals(videoMediaKeySession, null);
-                            videoMediaKeySession = newSession;
+                            videoMediaKeySession = mediaKeySession;
                         } else {
                             assert_equals(keyId, audioKeyId);
                             assert_equals(audioMediaKeySession, null);
-                            audioMediaKeySession = newSession;
+                            audioMediaKeySession = mediaKeySession;
                         }
-                        waitForEventAndRunStep('message', newSession, onMessage, test);
                     }).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });

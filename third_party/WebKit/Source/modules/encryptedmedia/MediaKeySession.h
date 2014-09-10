@@ -65,12 +65,15 @@ class MediaKeySession FINAL
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
-    static ScriptPromise create(ScriptState*, MediaKeys*, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType);
+    static MediaKeySession* create(ScriptState*, MediaKeys*, const String& sessionType);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
     String sessionId() const;
     ScriptPromise closed(ScriptState*);
+
+    ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBuffer* initData);
+    ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBufferView* initData);
 
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
@@ -93,9 +96,10 @@ public:
 
 private:
     class PendingAction;
-    friend class MediaKeySessionInitializer;
+    friend class NewSessionResult;
 
-    MediaKeySession(ExecutionContext*, MediaKeys*, PassOwnPtr<WebContentDecryptionModuleSession>);
+    MediaKeySession(ScriptState*, MediaKeys*, const String& sessionType);
+
     void actionTimerFired(Timer<MediaKeySession>*);
 
     // WebContentDecryptionModuleSession::Client
@@ -105,7 +109,11 @@ private:
     virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
     virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) OVERRIDE;
 
+    ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData);
     ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);
+
+    // Called by NewSessionResult when the new sesison has been created.
+    void finishGenerateRequest();
 
     String m_keySystem;
     RefPtrWillBeMember<MediaKeyError> m_error;
@@ -113,10 +121,15 @@ private:
     OwnPtr<WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.
-    WeakMember<MediaKeys> m_keys;
+    WeakMember<MediaKeys> m_mediaKeys;
 
-    // Is the CDM finished with this session?
-    bool m_isClosed;
+    // Session properties.
+    String m_sessionType;
+
+    // Session states.
+    bool m_isUninitialized;
+    bool m_isCallable;
+    bool m_isClosed; // Is the CDM finished with this session?
 
     // Keep track of the closed promise.
     typedef ScriptPromiseProperty<Member<MediaKeySession>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;

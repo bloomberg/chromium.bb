@@ -24,10 +24,9 @@
 
                 MediaKeys.create('org.w3.clearkey').then(test.step_func(function(mediaKeys) {
                     var initDataType = getInitDataType();
-                    return mediaKeys.createSession(initDataType, getInitData(initDataType));
-                })).then(test.step_func(function(result) {
-                    mediaKeySession = result;
+                    var mediaKeySession = mediaKeys.createSession();
                     waitForEventAndRunStep('message', mediaKeySession, test.step_func(processMessage), test);
+                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
                 })).catch(test.step_func(function(error) {
                     forceTestFailureFromPromise(test, error);
                 }));

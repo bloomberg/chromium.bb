@@ -46,7 +46,10 @@
                 {
                     return MediaKeys.create('org.w3.clearkey').then(function(result) {
                         mediaKeys = result;
-                        return mediaKeys.createSession(initDataType, initData);
+                        var mediaKeySession = mediaKeys.createSession();
+                        return mediaKeySession.generateRequest(initDataType, initData).then(function() {
+                            return mediaKeySession;
+                        });
                     });
                 }
 
