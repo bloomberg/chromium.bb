@@ -406,14 +406,8 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
 String RenderTheme::extraDefaultStyleSheet()
 {
     StringBuilder runtimeCSS;
-    runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
-    runtimeCSS.appendLiteral("dialog { position: absolute; left: 0; right: 0; width: -webkit-fit-content; height: -webkit-fit-content; margin: auto; border: solid; padding: 1em; background: white; color: black;}");
-    runtimeCSS.appendLiteral("dialog::backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.1); }");
-
-    if (RuntimeEnabledFeatures::contextMenuEnabled()) {
+    if (RuntimeEnabledFeatures::contextMenuEnabled())
         runtimeCSS.appendLiteral("menu[type=\"popup\" i] { display: none; }");
-    }
-
     return runtimeCSS.toString();
 }
 
