@@ -69,7 +69,7 @@ class MEDIA_EXPORT DemuxerStream {
   // Returns the type of stream.
   virtual Type type() = 0;
 
-  virtual void EnableBitstreamConverter() = 0;
+  virtual void EnableBitstreamConverter();
 
   // Whether or not this DemuxerStream allows midstream configuration changes.
   //

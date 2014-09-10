@@ -933,8 +933,6 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
 
 DemuxerStream::Type ChunkDemuxerStream::type() { return type_; }
 
-void ChunkDemuxerStream::EnableBitstreamConverter() {}
-
 AudioDecoderConfig ChunkDemuxerStream::audio_decoder_config() {
   CHECK_EQ(type_, AUDIO);
   base::AutoLock auto_lock(lock_);

@@ -89,10 +89,6 @@ DemuxerStream::Type FakeDemuxerStream::type() {
   return VIDEO;
 }
 
-void FakeDemuxerStream::EnableBitstreamConverter() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-}
-
 bool FakeDemuxerStream::SupportsConfigChanges() {
   return config_changes_;
 }

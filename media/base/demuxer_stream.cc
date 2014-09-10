@@ -8,4 +8,8 @@ namespace media {
 
 DemuxerStream::~DemuxerStream() {}
 
+// Most DemuxerStream implementations don't need to convert bit stream.
+// Do nothing by default.
+void DemuxerStream::EnableBitstreamConverter() {}
+
 }  // namespace media

@@ -48,7 +48,6 @@ class DummyDemuxerStream : public ::media::DemuxerStream {
   virtual ::media::AudioDecoderConfig audio_decoder_config() OVERRIDE;
   virtual ::media::VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
-  virtual void EnableBitstreamConverter() OVERRIDE;
   virtual bool SupportsConfigChanges() OVERRIDE;
   virtual ::media::VideoRotation video_rotation() OVERRIDE;
 
@@ -121,9 +120,6 @@ void DummyDemuxerStream::Read(const ReadCB& read_cb) {
 
 ::media::DemuxerStream::Type DummyDemuxerStream::type() {
   return VIDEO;
-}
-
-void DummyDemuxerStream::EnableBitstreamConverter() {
 }
 
 bool DummyDemuxerStream::SupportsConfigChanges() {

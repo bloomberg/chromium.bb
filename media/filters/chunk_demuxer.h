@@ -82,7 +82,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // DemuxerStream methods.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual Type type() OVERRIDE;
-  virtual void EnableBitstreamConverter() OVERRIDE;
   virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
   virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual bool SupportsConfigChanges() OVERRIDE;
