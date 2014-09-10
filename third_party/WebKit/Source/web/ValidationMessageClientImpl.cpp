@@ -83,7 +83,6 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
 
     m_webView.client()->showValidationMessage(anchorInRootView, m_message, toWebTextDirection(messageDir),
         subMessage, toWebTextDirection(subMessageDir));
-    m_webView.client()->showValidationMessage(anchorInRootView, m_message, subMessage, toWebTextDirection(messageDir));
 
     m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + subMessage.length()) * secondPerCharacter);
     // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
