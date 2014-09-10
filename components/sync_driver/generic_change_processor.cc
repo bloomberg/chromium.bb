@@ -97,20 +97,28 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
-    SyncApiComponentFactory* sync_factory)
+    SyncApiComponentFactory* sync_factory,
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store)
     : ChangeProcessor(error_handler),
       local_service_(local_service),
       merge_result_(merge_result),
       share_handle_(user_share),
-      attachment_service_(
-          sync_factory->CreateAttachmentService(*user_share, this)),
-      attachment_service_weak_ptr_factory_(attachment_service_.get()),
-      attachment_service_proxy_(
-          base::MessageLoopProxy::current(),
-          attachment_service_weak_ptr_factory_.GetWeakPtr()),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
-  DCHECK(attachment_service_);
+  if (attachment_store.get()) {
+    attachment_service_ = sync_factory->CreateAttachmentService(
+        attachment_store, *user_share, this);
+    attachment_service_weak_ptr_factory_.reset(
+        new base::WeakPtrFactory<syncer::AttachmentService>(
+            attachment_service_.get()));
+    attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
+        base::MessageLoopProxy::current(),
+        attachment_service_weak_ptr_factory_->GetWeakPtr()));
+  } else {
+    attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
+        base::MessageLoopProxy::current(),
+        base::WeakPtr<syncer::AttachmentService>()));
+  }
 }
 
 GenericChangeProcessor::~GenericChangeProcessor() {
@@ -142,7 +150,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
                                  specifics ? *specifics : it->specifics,
                                  base::Time(),
                                  empty_list_of_attachment_ids,
-                                 attachment_service_proxy_)));
+                                 *attachment_service_proxy_)));
     } else {
       syncer::SyncChange::SyncChangeType action =
           (it->action == syncer::ChangeRecord::ACTION_ADD) ?
@@ -162,7 +170,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
       syncer_changes_.push_back(syncer::SyncChange(
           FROM_HERE,
           action,
-          BuildRemoteSyncData(it->id, read_node, attachment_service_proxy_)));
+          BuildRemoteSyncData(it->id, read_node, *attachment_service_proxy_)));
     }
   }
 }
@@ -259,7 +267,7 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
       return error;
     }
     current_sync_data->push_back(BuildRemoteSyncData(
-        sync_child_node.GetId(), sync_child_node, attachment_service_proxy_));
+        sync_child_node.GetId(), sync_child_node, *attachment_service_proxy_));
   }
   return syncer::SyncError();
 }
@@ -406,12 +414,14 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
 
   syncer::WriteTransaction trans(from_here, share_handle());
 
+  syncer::ModelType type = syncer::UNSPECIFIED;
+
   for (syncer::SyncChangeList::const_iterator iter = list_of_changes.begin();
        iter != list_of_changes.end();
        ++iter) {
     const syncer::SyncChange& change = *iter;
     DCHECK_NE(change.sync_data().GetDataType(), syncer::UNSPECIFIED);
-    syncer::ModelType type = change.sync_data().GetDataType();
+    type = change.sync_data().GetDataType();
     std::string type_str = syncer::ModelTypeToString(type);
     syncer::WriteNode sync_node(&trans);
     if (change.change_type() == syncer::SyncChange::ACTION_DELETE) {
@@ -452,6 +462,20 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
   }
 
   if (!new_attachments.empty()) {
+    // If datatype uses attachments it should have supplied attachment store
+    // which would initialize attachment_service_. Fail if it isn't so.
+    if (!attachment_service_.get()) {
+      DCHECK_NE(type, syncer::UNSPECIFIED);
+      syncer::SyncError error(
+          FROM_HERE,
+          syncer::SyncError::DATATYPE_ERROR,
+          "Datatype performs attachment operation without initializing "
+          "attachment store",
+          type);
+      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      NOTREACHED();
+      return error;
+    }
     StoreAndUploadAttachments(new_attachments);
   }
 
@@ -701,6 +725,7 @@ syncer::UserShare* GenericChangeProcessor::share_handle() const {
 void GenericChangeProcessor::StoreAndUploadAttachments(
     const syncer::AttachmentList& attachments) {
   DCHECK(CalledOnValidThread());
+  DCHECK(attachment_service_.get() != NULL);
   attachment_service_->GetStore()->Write(
       attachments,
       base::Bind(&GenericChangeProcessor::WriteAttachmentsDone,
@@ -712,6 +737,7 @@ void GenericChangeProcessor::WriteAttachmentsDone(
     const syncer::AttachmentList& attachments,
     const syncer::AttachmentStore::Result& result) {
   DCHECK(CalledOnValidThread());
+  DCHECK(attachment_service_.get() != NULL);
   if (result != syncer::AttachmentStore::SUCCESS) {
     // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
     return;

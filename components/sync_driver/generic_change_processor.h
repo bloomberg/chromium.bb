@@ -45,12 +45,15 @@ class GenericChangeProcessor : public ChangeProcessor,
                                public base::NonThreadSafe {
  public:
   // Create a change processor and connect it to the syncer.
+  // |attachment_store| can be NULL which means that datatype will not use sync
+  // attachments.
   GenericChangeProcessor(
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,
-      SyncApiComponentFactory* sync_factory);
+      SyncApiComponentFactory* sync_factory,
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store);
   virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
@@ -161,12 +164,16 @@ class GenericChangeProcessor : public ChangeProcessor,
   // and have to keep a local pointer to the user_share.
   syncer::UserShare* const share_handle_;
 
+  // AttachmentService for datatype. Can be NULL if datatype doesn't use
+  // attachments.
   scoped_ptr<syncer::AttachmentService> attachment_service_;
+
   // Must be destroyed before attachment_service_ to ensure WeakPtrs are
   // invalidated before attachment_service_ is destroyed.
-  base::WeakPtrFactory<syncer::AttachmentService>
+  // Can be NULL if attachment_service_ is NULL;
+  scoped_ptr<base::WeakPtrFactory<syncer::AttachmentService> >
       attachment_service_weak_ptr_factory_;
-  syncer::AttachmentServiceProxy attachment_service_proxy_;
+  scoped_ptr<syncer::AttachmentServiceProxy> attachment_service_proxy_;
 
   base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;
 

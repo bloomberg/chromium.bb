@@ -84,6 +84,9 @@ class MockAttachmentStore : public AttachmentStore,
   std::vector<AttachmentList> write_attachments;
   std::vector<WriteCallback> write_callbacks;
 
+ private:
+  virtual ~MockAttachmentStore() {}
+
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentStore);
 };
 
@@ -174,7 +177,8 @@ class AttachmentServiceImplTest : public testing::Test,
       scoped_ptr<MockAttachmentUploader> uploader,
       scoped_ptr<MockAttachmentDownloader> downloader,
       AttachmentService::Delegate* delegate) {
-    scoped_ptr<MockAttachmentStore> attachment_store(new MockAttachmentStore());
+    scoped_refptr<MockAttachmentStore> attachment_store(
+        new MockAttachmentStore());
     attachment_store_ = attachment_store->AsWeakPtr();
 
     if (uploader.get()) {
@@ -184,7 +188,7 @@ class AttachmentServiceImplTest : public testing::Test,
       attachment_downloader_ = downloader->AsWeakPtr();
     }
     attachment_service_.reset(
-        new AttachmentServiceImpl(attachment_store.PassAs<AttachmentStore>(),
+        new AttachmentServiceImpl(attachment_store,
                                   uploader.PassAs<AttachmentUploader>(),
                                   downloader.PassAs<AttachmentDownloader>(),
                                   delegate));

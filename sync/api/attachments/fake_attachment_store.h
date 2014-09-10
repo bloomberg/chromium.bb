@@ -36,8 +36,6 @@ class SYNC_EXPORT FakeAttachmentStore : public AttachmentStore {
   explicit FakeAttachmentStore(
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
 
-  virtual ~FakeAttachmentStore();
-
   // AttachmentStore implementation.
   virtual void Read(const AttachmentIdList& id,
                     const ReadCallback& callback) OVERRIDE;
@@ -48,6 +46,8 @@ class SYNC_EXPORT FakeAttachmentStore : public AttachmentStore {
 
  private:
   class Backend;
+
+  virtual ~FakeAttachmentStore();
 
   scoped_refptr<Backend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

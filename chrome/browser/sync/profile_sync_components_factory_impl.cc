@@ -593,13 +593,9 @@ OAuth2TokenService* TokenServiceProvider::GetTokenService() {
 
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store,
     const syncer::UserShare& user_share,
     syncer::AttachmentService::Delegate* delegate) {
-
-  scoped_ptr<syncer::AttachmentStore> attachment_store(
-      new syncer::FakeAttachmentStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader;
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader;
   // Only construct an AttachmentUploader and AttachmentDownload if we have sync
@@ -635,7 +631,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   }
 
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
+      new syncer::AttachmentServiceImpl(attachment_store,
                                         attachment_uploader.Pass(),
                                         attachment_downloader.Pass(),
                                         delegate));

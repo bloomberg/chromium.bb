@@ -56,6 +56,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
   }
 
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) OVERRIDE {
     return syncer::AttachmentServiceImpl::CreateForTest();

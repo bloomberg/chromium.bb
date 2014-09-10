@@ -25,10 +25,9 @@ class AttachmentId;
 //
 // Destroying this object does not necessarily cancel outstanding async
 // operations. If you need cancel like semantics, use WeakPtr in the callbacks.
-class SYNC_EXPORT AttachmentStore {
+class SYNC_EXPORT AttachmentStore : public base::RefCounted<AttachmentStore> {
  public:
   AttachmentStore();
-  virtual ~AttachmentStore();
 
   // TODO(maniscalco): Consider udpating Read and Write methods to support
   // resumable transfers (bug 353292).
@@ -82,6 +81,10 @@ class SYNC_EXPORT AttachmentStore {
   // successfully.
   virtual void Drop(const AttachmentIdList& ids,
                     const DropCallback& callback) = 0;
+
+ protected:
+  friend class base::RefCounted<AttachmentStore>;
+  virtual ~AttachmentStore();
 };
 
 }  // namespace syncer

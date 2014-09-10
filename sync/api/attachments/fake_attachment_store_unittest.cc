@@ -21,7 +21,7 @@ const char kTestData2[] = "test data 2";
 class FakeAttachmentStoreTest : public testing::Test {
  protected:
   base::MessageLoop message_loop;
-  FakeAttachmentStore store;
+  scoped_refptr<FakeAttachmentStore> store;
   AttachmentStore::Result result;
   scoped_ptr<AttachmentMap> attachments;
   scoped_ptr<AttachmentIdList> failed_attachment_ids;
@@ -33,7 +33,8 @@ class FakeAttachmentStoreTest : public testing::Test {
   scoped_refptr<base::RefCountedString> some_data1;
   scoped_refptr<base::RefCountedString> some_data2;
 
-  FakeAttachmentStoreTest() : store(base::ThreadTaskRunnerHandle::Get()) {}
+  FakeAttachmentStoreTest()
+      : store(new FakeAttachmentStore(base::ThreadTaskRunnerHandle::Get())) {}
 
   virtual void SetUp() {
     Clear();
@@ -94,21 +95,21 @@ TEST_F(FakeAttachmentStoreTest, Write_NoOverwriteNoError) {
   // Write the first one.
   AttachmentList some_attachments;
   some_attachments.push_back(attachment1);
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // Write the second one.
   some_attachments.clear();
   some_attachments.push_back(attachment2);
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // Read it back and see that it was not overwritten.
   AttachmentIdList some_attachment_ids;
   some_attachment_ids.push_back(attachment1.GetId());
-  store.Read(some_attachment_ids, read_callback);
+  store->Read(some_attachment_ids, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
   EXPECT_EQ(attachments->size(), 1U);
@@ -126,14 +127,14 @@ TEST_F(FakeAttachmentStoreTest, Write_RoundTrip) {
   some_attachments.push_back(attachment1);
   some_attachments.push_back(attachment2);
 
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   AttachmentIdList some_attachment_ids;
   some_attachment_ids.push_back(attachment1.GetId());
   some_attachment_ids.push_back(attachment2.GetId());
-  store.Read(some_attachment_ids, read_callback);
+  store->Read(some_attachment_ids, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
   EXPECT_EQ(attachments->size(), 2U);
@@ -156,7 +157,7 @@ TEST_F(FakeAttachmentStoreTest, Read_OneNotFound) {
   AttachmentList some_attachments;
   // Write attachment1 only.
   some_attachments.push_back(attachment1);
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
@@ -164,7 +165,7 @@ TEST_F(FakeAttachmentStoreTest, Read_OneNotFound) {
   AttachmentIdList ids;
   ids.push_back(attachment1.GetId());
   ids.push_back(attachment2.GetId());
-  store.Read(ids, read_callback);
+  store->Read(ids, read_callback);
   ClearAndPumpLoop();
 
   // See that only attachment1 was read.
@@ -182,19 +183,19 @@ TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
   AttachmentList some_attachments;
   some_attachments.push_back(attachment1);
   some_attachments.push_back(attachment2);
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // Drop attachment1 only.
   AttachmentIdList ids;
   ids.push_back(attachment1.GetId());
-  store.Drop(ids, drop_callback);
+  store->Drop(ids, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // See that attachment1 is gone.
-  store.Read(ids, read_callback);
+  store->Read(ids, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
@@ -205,14 +206,14 @@ TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
   ids.clear();
   ids.push_back(attachment1.GetId());
   ids.push_back(attachment2.GetId());
-  store.Drop(ids, drop_callback);
+  store->Drop(ids, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // See that attachment2 is now gone.
   ids.clear();
   ids.push_back(attachment2.GetId());
-  store.Read(ids, read_callback);
+  store->Read(ids, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
@@ -226,19 +227,19 @@ TEST_F(FakeAttachmentStoreTest, Drop_DoesNotExist) {
   Attachment attachment1 = Attachment::Create(some_data1);
   AttachmentList some_attachments;
   some_attachments.push_back(attachment1);
-  store.Write(some_attachments, write_callback);
+  store->Write(some_attachments, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // Drop the attachment.
   AttachmentIdList ids;
   ids.push_back(attachment1.GetId());
-  store.Drop(ids, drop_callback);
+  store->Drop(ids, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
   // See that it's gone.
-  store.Read(ids, read_callback);
+  store->Read(ids, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
@@ -248,7 +249,7 @@ TEST_F(FakeAttachmentStoreTest, Drop_DoesNotExist) {
   // Drop again, see that no error occurs.
   ids.clear();
   ids.push_back(attachment1.GetId());
-  store.Drop(ids, drop_callback);
+  store->Drop(ids, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 }

@@ -8,4 +8,8 @@ namespace syncer {
 
 SyncableService::~SyncableService() {}
 
+scoped_refptr<AttachmentStore> SyncableService::GetAttachmentStore() {
+  return scoped_refptr<AttachmentStore>();
+}
+
 }  // namespace syncer

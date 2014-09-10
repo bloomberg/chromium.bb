@@ -110,17 +110,17 @@ AttachmentServiceImpl::GetOrDownloadState::PostResultIfAllRequestsCompleted() {
 }
 
 AttachmentServiceImpl::AttachmentServiceImpl(
-    scoped_ptr<AttachmentStore> attachment_store,
+    scoped_refptr<AttachmentStore> attachment_store,
     scoped_ptr<AttachmentUploader> attachment_uploader,
     scoped_ptr<AttachmentDownloader> attachment_downloader,
     Delegate* delegate)
-    : attachment_store_(attachment_store.Pass()),
+    : attachment_store_(attachment_store),
       attachment_uploader_(attachment_uploader.Pass()),
       attachment_downloader_(attachment_downloader.Pass()),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
-  DCHECK(attachment_store_);
+  DCHECK(attachment_store_.get());
 }
 
 AttachmentServiceImpl::~AttachmentServiceImpl() {
@@ -129,14 +129,14 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 
 // Static.
 scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
-  scoped_ptr<syncer::AttachmentStore> attachment_store(
+  scoped_refptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(base::ThreadTaskRunnerHandle::Get()));
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   scoped_ptr<AttachmentDownloader> attachment_downloader(
       new FakeAttachmentDownloader());
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
+      new syncer::AttachmentServiceImpl(attachment_store,
                                         attachment_uploader.Pass(),
                                         attachment_downloader.Pass(),
                                         NULL));

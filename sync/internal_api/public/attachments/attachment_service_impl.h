@@ -35,7 +35,7 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   // downloaded. Only attachments in |attachment_store| will be returned from
   // GetOrDownloadAttachments.
 
-  AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
+  AttachmentServiceImpl(scoped_refptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
                         scoped_ptr<AttachmentDownloader> attachment_downloader,
                         Delegate* delegate);
@@ -75,7 +75,7 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
       scoped_ptr<AttachmentMap> attachments,
       scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
 
-  const scoped_ptr<AttachmentStore> attachment_store_;
+  scoped_refptr<AttachmentStore> attachment_store_;
 
   // May be null.
   const scoped_ptr<AttachmentUploader> attachment_uploader_;

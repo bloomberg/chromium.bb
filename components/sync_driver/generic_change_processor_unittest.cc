@@ -38,7 +38,8 @@ const char kTestData[] = "some data";
 // A mock that keeps track of attachments passed to UploadAttachments.
 class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
-  MockAttachmentService();
+  MockAttachmentService(
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store);
   virtual ~MockAttachmentService();
   virtual void UploadAttachments(
       const syncer::AttachmentIdSet& attachment_ids) OVERRIDE;
@@ -48,15 +49,14 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
   std::vector<syncer::AttachmentIdSet> attachment_id_sets_;
 };
 
-MockAttachmentService::MockAttachmentService()
-    : AttachmentServiceImpl(
-          scoped_ptr<syncer::AttachmentStore>(new syncer::FakeAttachmentStore(
-              base::MessageLoopProxy::current())),
-          scoped_ptr<syncer::AttachmentUploader>(
-              new syncer::FakeAttachmentUploader),
-          scoped_ptr<syncer::AttachmentDownloader>(
-              new syncer::FakeAttachmentDownloader),
-          NULL) {
+MockAttachmentService::MockAttachmentService(
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store)
+    : AttachmentServiceImpl(attachment_store,
+                            scoped_ptr<syncer::AttachmentUploader>(
+                                new syncer::FakeAttachmentUploader),
+                            scoped_ptr<syncer::AttachmentDownloader>(
+                                new syncer::FakeAttachmentDownloader),
+                            NULL) {
 }
 
 MockAttachmentService::~MockAttachmentService() {
@@ -89,6 +89,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
 
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) OVERRIDE {
     EXPECT_TRUE(attachment_service_ != NULL);
@@ -119,8 +120,11 @@ class SyncGenericChangeProcessorTest : public testing::Test {
                                         test_user_share_.user_share());
     }
     test_user_share_.encryption_handler()->Init();
+    scoped_refptr<syncer::AttachmentStore> attachment_store(
+        new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
+
     scoped_ptr<MockAttachmentService> mock_attachment_service(
-        new MockAttachmentService);
+        new MockAttachmentService(attachment_store));
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
     // need to have a pointer to it so we can see that it was used properly.
     // Take a pointer and trust that GenericChangeProcessor does not prematurely
@@ -133,7 +137,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
                                    syncable_service_ptr_factory_.GetWeakPtr(),
                                    merge_result_ptr_factory_.GetWeakPtr(),
                                    test_user_share_.user_share(),
-                                   sync_factory_.get()));
+                                   sync_factory_.get(),
+                                   attachment_store));
   }
 
   virtual void TearDown() OVERRIDE {
