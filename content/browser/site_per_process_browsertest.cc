@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/site_per_process_browsertest.h"
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -16,13 +18,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -149,46 +149,44 @@ void RedirectNotificationObserver::Observe(
   running_ = false;
 }
 
-class SitePerProcessBrowserTest : public ContentBrowserTest {
- public:
-  SitePerProcessBrowserTest() {}
+//
+// SitePerProcessBrowserTest
+//
 
- protected:
-  // Start at a data URL so each extra navigation creates a navigation entry.
-  // (The first navigation will silently be classified as AUTO_SUBFRAME.)
-  // TODO(creis): This won't be necessary when we can wait for LOAD_STOP.
-  void StartFrameAtDataURL() {
-    std::string data_url_script =
+SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
+};
+
+void SitePerProcessBrowserTest::StartFrameAtDataURL() {
+  std::string data_url_script =
       "var iframes = document.getElementById('test');iframes.src="
       "'data:text/html,dataurl';";
-    ASSERT_TRUE(ExecuteScript(shell()->web_contents(), data_url_script));
-  }
+  ASSERT_TRUE(ExecuteScript(shell()->web_contents(), data_url_script));
+}
 
-  bool NavigateIframeToURL(Shell* window,
-                           const GURL& url,
-                           std::string iframe_id) {
-    // TODO(creis): This should wait for LOAD_STOP, but cross-site subframe
-    // navigations generate extra DidStartLoading and DidStopLoading messages.
-    // Until we replace swappedout:// with frame proxies, we need to listen for
-    // something else.  For now, we trigger NEW_SUBFRAME navigations and listen
-    // for commit.
-    std::string script = base::StringPrintf(
-        "setTimeout(\""
-        "var iframes = document.getElementById('%s');iframes.src='%s';"
-        "\",0)",
-        iframe_id.c_str(), url.spec().c_str());
-    WindowedNotificationObserver load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(
-            &window->web_contents()->GetController()));
-    bool result = ExecuteScript(window->web_contents(), script);
-    load_observer.Wait();
-    return result;
-  }
+bool SitePerProcessBrowserTest::NavigateIframeToURL(Shell* window,
+                                                    const GURL& url,
+                                                    std::string iframe_id) {
+  // TODO(creis): This should wait for LOAD_STOP, but cross-site subframe
+  // navigations generate extra DidStartLoading and DidStopLoading messages.
+  // Until we replace swappedout:// with frame proxies, we need to listen for
+  // something else.  For now, we trigger NEW_SUBFRAME navigations and listen
+  // for commit.
+  std::string script = base::StringPrintf(
+      "setTimeout(\""
+      "var iframes = document.getElementById('%s');iframes.src='%s';"
+      "\",0)",
+      iframe_id.c_str(), url.spec().c_str());
+  WindowedNotificationObserver load_observer(
+      NOTIFICATION_NAV_ENTRY_COMMITTED,
+      Source<NavigationController>(
+          &window->web_contents()->GetController()));
+  bool result = ExecuteScript(window->web_contents(), script);
+  load_observer.Wait();
+  return result;
+}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kSitePerProcess);
-  }
+void SitePerProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kSitePerProcess);
 };
 
 // Ensure that we can complete a cross-process subframe navigation.

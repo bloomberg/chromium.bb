@@ -7,11 +7,10 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebDocument;
-using blink::WebFrame;
 using blink::WebView;
 
 namespace content {
@@ -26,12 +25,8 @@ RendererAccessibility::~RendererAccessibility() {
 }
 
 WebDocument RendererAccessibility::GetMainDocument() {
-  WebView* view = render_frame_->render_view()->GetWebView();
-  WebFrame* main_frame = view ? view->mainFrame() : NULL;
-
-  if (main_frame)
-    return main_frame->document();
-
+  if (render_frame_ && render_frame_->GetWebFrame())
+    return render_frame_->GetWebFrame()->document();
   return WebDocument();
 }
 

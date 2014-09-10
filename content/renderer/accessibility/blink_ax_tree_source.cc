@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -22,6 +23,8 @@
 #include "third_party/WebKit/public/web/WebDocumentType.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -32,7 +35,7 @@ using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebVector;
 using blink::WebView;
@@ -108,6 +111,11 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
     node = GetParent(node);
   }
   return false;
+}
+
+void BlinkAXTreeSource::CollectChildFrameIdMapping(
+    std::map<int32, int>* node_to_frame_routing_id_map) {
+  node_to_frame_routing_id_map_ = node_to_frame_routing_id_map;
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
@@ -448,6 +456,22 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     const gfx::Size& max_offset = document.maximumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, max_offset.width());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX, max_offset.height());
+
+    if (node_to_frame_routing_id_map_ && !src.equals(GetRoot())) {
+      WebLocalFrame* frame = document.frame();
+      RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+      if (render_frame) {
+        node_to_frame_routing_id_map_->insert(std::pair<int32, int>(
+            dst->id, render_frame->GetRoutingID()));
+      } else {
+        RenderFrameProxy* render_frame_proxy =
+            RenderFrameProxy::FromWebFrame(frame);
+        if (render_frame_proxy) {
+          node_to_frame_routing_id_map_->insert(std::pair<int32, int>(
+              dst->id, render_frame_proxy->routing_id()));
+        }
+      }
+    }
   }
 
   if (dst->role == ui::AX_ROLE_TABLE) {
@@ -550,11 +574,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
-  WebView* view = render_frame_->render_view()->GetWebView();
-  WebFrame* main_frame = view ? view->mainFrame() : NULL;
-
-  if (main_frame)
-    return main_frame->document();
+  if (render_frame_ && render_frame_->GetWebFrame())
+    return render_frame_->GetWebFrame()->document();
   return WebDocument();
 }
 

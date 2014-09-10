@@ -110,6 +110,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() OVERRIDE;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
       OVERRIDE;
+  virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
+      int64 frame_tree_node_id) OVERRIDE;
+  virtual BrowserAccessibilityManager* AccessibilityGetParentFrame() OVERRIDE;
 
   bool CreateRenderFrame(int parent_routing_id);
   bool IsRenderFrameLive();

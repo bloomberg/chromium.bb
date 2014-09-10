@@ -3206,6 +3206,11 @@ bool RenderFrameImpl::isControlledByServiceWorker() {
       kInvalidServiceWorkerHandleId;
 }
 
+void RenderFrameImpl::postAccessibilityEvent(const blink::WebAXObject& obj,
+                                             blink::WebAXEvent event) {
+  HandleWebAccessibilityEvent(obj, event);
+}
+
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPlayingNotification(
       routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),

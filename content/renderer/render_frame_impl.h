@@ -438,6 +438,8 @@ class CONTENT_EXPORT RenderFrameImpl
                                     float scale_factor);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
   virtual bool isControlledByServiceWorker();
+  virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
+                                      blink::WebAXEvent event);
 
   // WebMediaPlayerDelegate implementation:
   virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
