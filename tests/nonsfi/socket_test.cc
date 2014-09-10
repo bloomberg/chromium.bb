@@ -132,6 +132,62 @@ void TestPoll() {
   ASSERT_EQ(pfd[1].revents, POLLOUT | POLLHUP);
 }
 
+void TestCmsg() {
+  printf("TestCmsg");
+  // We assume here sizeof(int) (= the CMSG's alignment) is 4 bytes.
+  ASSERT_EQ(CMSG_ALIGN(1), 4);
+  ASSERT_EQ(CMSG_ALIGN(2), 4);
+  ASSERT_EQ(CMSG_ALIGN(3), 4);
+  ASSERT_EQ(CMSG_ALIGN(4), 4);
+  ASSERT_EQ(CMSG_ALIGN(5), 8);
+
+  ASSERT_EQ(sizeof(cmsghdr), 12);
+
+  // CMSG_SPACE considers the alignment for the data size.
+  ASSERT_EQ(CMSG_SPACE(1), 16);
+  ASSERT_EQ(CMSG_SPACE(2), 16);
+  ASSERT_EQ(CMSG_SPACE(3), 16);
+  ASSERT_EQ(CMSG_SPACE(4), 16);
+  ASSERT_EQ(CMSG_SPACE(5), 20);
+
+  // CMSG_LEN does not include the alignment of the data.
+  ASSERT_EQ(CMSG_LEN(1), 13);
+  ASSERT_EQ(CMSG_LEN(2), 14);
+  ASSERT_EQ(CMSG_LEN(3), 15);
+  ASSERT_EQ(CMSG_LEN(4), 16);
+  ASSERT_EQ(CMSG_LEN(5), 17);
+
+  // The data should follow the header.
+  {
+    struct cmsghdr cmsg[2];
+    ASSERT_EQ(CMSG_DATA(cmsg), (unsigned char *) (&cmsg[1]));
+  }
+
+  // Test for CMSG_FIRSTHDR and CMSG_NXTHDR.
+  // Set up msghdr with two CMSG, whose data size are 1 and 2.
+  struct msghdr mhdr;
+  char msg_control[CMSG_SPACE(1) + CMSG_SPACE(2)];
+  {
+    struct cmsghdr *cmsg_ptr = (struct cmsghdr *) msg_control;
+    cmsg_ptr->cmsg_len = CMSG_LEN(1);
+  }
+  {
+    struct cmsghdr *cmsg_ptr = (struct cmsghdr *) (msg_control + CMSG_SPACE(1));
+    cmsg_ptr->cmsg_len = CMSG_LEN(2);
+  }
+  mhdr.msg_control = msg_control;
+  mhdr.msg_controllen = sizeof(msg_control);
+
+  struct cmsghdr *cmsg_ptr = CMSG_FIRSTHDR(&mhdr);
+  ASSERT_EQ((uintptr_t) msg_control, (uintptr_t) cmsg_ptr);
+  ASSERT_EQ(cmsg_ptr->cmsg_len, CMSG_LEN(1));
+  cmsg_ptr = CMSG_NXTHDR(&mhdr, cmsg_ptr);
+  ASSERT_EQ((uintptr_t) msg_control + CMSG_SPACE(1), (uintptr_t) cmsg_ptr);
+  ASSERT_EQ(cmsg_ptr->cmsg_len, CMSG_LEN(2));
+  cmsg_ptr = CMSG_NXTHDR(&mhdr, cmsg_ptr);
+  ASSERT_EQ(cmsg_ptr, NULL);
+}
+
 }  // namespace
 
 int main(int argc, char *argv[]) {
@@ -139,5 +195,6 @@ int main(int argc, char *argv[]) {
   TestDgramSocketpair("SEQPACKET", SOCK_SEQPACKET);
   TestStreamSocketpair();
   TestPoll();
+  TestCmsg();
   return 0;
 }
