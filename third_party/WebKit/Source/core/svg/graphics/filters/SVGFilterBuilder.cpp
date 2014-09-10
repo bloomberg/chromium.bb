@@ -48,17 +48,18 @@ void SVGFilterBuilder::add(const AtomicString& id, PassRefPtr<FilterEffect> effe
 
 FilterEffect* SVGFilterBuilder::getEffectById(const AtomicString& id) const
 {
-    if (id.isEmpty()) {
-        if (m_lastEffect)
-            return m_lastEffect.get();
+    if (!id.isEmpty()) {
+        if (FilterEffect* builtinEffect = m_builtinEffects.get(id))
+            return builtinEffect;
 
-        return m_builtinEffects.get(SourceGraphic::effectName());
+        if (FilterEffect* namedEffect = m_namedEffects.get(id))
+            return namedEffect;
     }
 
-    if (m_builtinEffects.contains(id))
-        return m_builtinEffects.get(id);
+    if (m_lastEffect)
+        return m_lastEffect.get();
 
-    return m_namedEffects.get(id);
+    return m_builtinEffects.get(SourceGraphic::effectName());
 }
 
 void SVGFilterBuilder::appendEffectToEffectReferences(PassRefPtr<FilterEffect> prpEffect, RenderObject* object)

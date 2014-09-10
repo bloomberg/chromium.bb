@@ -1247,6 +1247,8 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 
 crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
+crbug.com/411833 svg/filters/feMerge-wrong-input.svg [ NeedsRebaseline ]
+
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
