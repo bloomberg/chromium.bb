@@ -13397,7 +13397,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <owner>davidben@chromium.org</owner>
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
