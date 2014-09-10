@@ -927,7 +927,7 @@ bool WebTestProxyBase::DidFailProvisionalLoad(blink::WebLocalFrame* frame,
     PrintFrameDescription(delegate_, frame);
     delegate_->printMessage(" - didFailProvisionalLoadWithError\n");
   }
-  LocationChangeDone(frame);
+  CheckDone(frame, MainResourceLoadFailed);
   return !frame->provisionalDataSource();
 }
 
@@ -992,7 +992,7 @@ void WebTestProxyBase::DidFailLoad(blink::WebLocalFrame* frame,
     PrintFrameDescription(delegate_, frame);
     delegate_->printMessage(" - didFailLoadWithError\n");
   }
-  LocationChangeDone(frame);
+  CheckDone(frame, MainResourceLoadFailed);
 }
 
 void WebTestProxyBase::DidFinishLoad(blink::WebLocalFrame* frame) {
@@ -1000,7 +1000,7 @@ void WebTestProxyBase::DidFinishLoad(blink::WebLocalFrame* frame) {
     PrintFrameDescription(delegate_, frame);
     delegate_->printMessage(" - didFinishLoadForFrame\n");
   }
-  LocationChangeDone(frame);
+  CheckDone(frame, LoadFinished);
 }
 
 void WebTestProxyBase::DidDetectXSS(blink::WebLocalFrame* frame,
@@ -1160,6 +1160,9 @@ void WebTestProxyBase::DidFinishResourceLoad(blink::WebLocalFrame* frame,
     delegate_->printMessage(" - didFinishLoading\n");
   }
   resource_identifier_map_.erase(identifier);
+#if !defined(ENABLE_LOAD_COMPLETION_HACKS)
+  CheckDone(frame, ResourceLoadCompleted);
+#endif
 }
 
 void WebTestProxyBase::DidAddMessageToConsole(
@@ -1204,9 +1207,21 @@ void WebTestProxyBase::DidAddMessageToConsole(
   delegate_->printMessage(std::string("\n"));
 }
 
-void WebTestProxyBase::LocationChangeDone(blink::WebFrame* frame) {
+void WebTestProxyBase::CheckDone(blink::WebLocalFrame* frame,
+                                 CheckDoneReason reason) {
   if (frame != test_interfaces_->GetTestRunner()->topLoadingFrame())
     return;
+
+#if !defined(ENABLE_LOAD_COMPLETION_HACKS)
+  // Quirk for MHTML prematurely completing on resource load completion.
+  std::string mime_type = frame->dataSource()->response().mimeType().utf8();
+  if (reason == ResourceLoadCompleted && mime_type == "multipart/related")
+    return;
+
+  if (reason != MainResourceLoadFailed &&
+      (frame->isResourceLoadInProgress() || frame->isLoading()))
+    return;
+#endif
   test_interfaces_->GetTestRunner()->setTopLoadingFrame(frame, true);
 }
 

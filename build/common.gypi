@@ -621,6 +621,13 @@
       # Enable hole punching for the protected video.
       'video_hole%': 0,
 
+      # Temporary hack to allow us to unify blink's definitions of load
+      # completion. blink uses a crazy set of constraints to determine load
+      # completion, but only actually requires them for layout tests. However,
+      # we need to maintain all the old behaviors while the plumbing is put in
+      # place on both sides of the repo boundary.
+      'enable_load_completion_hacks%': 1,
+
       # Automatically select platforms under ozone. Turn this off to
       # build only explicitly selected platforms.
       'ozone_auto_platforms%': 1,
@@ -1197,6 +1204,7 @@
     'use_goma%': '<(use_goma)',
     'gomadir%': '<(gomadir)',
     'video_hole%': '<(video_hole)',
+    'enable_load_completion_hacks%': '<(enable_load_completion_hacks)',
 
     # Whether or not we are building the Athena shell.
     'use_athena%': '0',
@@ -2948,6 +2956,9 @@
       }],
       ['video_hole==1', {
         'defines': ['VIDEO_HOLE=1'],
+      }],
+      ['enable_load_completion_hacks==1', {
+        'defines': ['ENABLE_LOAD_COMPLETION_HACKS=1'],
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [

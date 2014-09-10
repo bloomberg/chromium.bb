@@ -242,7 +242,13 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
  private:
   template <class, typename, typename>
   friend class WebFrameTestProxy;
-  void LocationChangeDone(blink::WebFrame* frame);
+
+  enum CheckDoneReason {
+    LoadFinished,
+    MainResourceLoadFailed,
+    ResourceLoadCompleted
+  };
+  void CheckDone(blink::WebLocalFrame* frame, CheckDoneReason reason);
   void AnimateNow();
   void DrawSelectionRect(SkCanvas* canvas);
   void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
