@@ -184,10 +184,6 @@ class DataReductionProxySettings
   // Virtual for testing.
   virtual net::URLFetcher* GetURLFetcherForAvailabilityCheck();
 
-  // Returns a fetcher to warm up the connection to the data reduction proxy.
-  // Virtual for testing.
-  virtual net::URLFetcher* GetURLFetcherForWarmup();
-
   // Virtualized for unit test support.
   virtual PrefService* GetOriginalProfilePrefs();
   virtual PrefService* GetLocalStatePrefs();
@@ -284,9 +280,6 @@ class DataReductionProxySettings
   // failure.
   void ProbeWhetherDataReductionProxyIsAvailable();
 
-  // Warms the connection to the data reduction proxy.
-  void WarmProxyConnection();
-
   // Disables use of the data reduction proxy on VPNs. Returns true if the
   // data reduction proxy has been disabled.
   bool DisableIfVPN();
@@ -301,7 +294,6 @@ class DataReductionProxySettings
   bool unreachable_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
-  scoped_ptr<net::URLFetcher> warmup_fetcher_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;

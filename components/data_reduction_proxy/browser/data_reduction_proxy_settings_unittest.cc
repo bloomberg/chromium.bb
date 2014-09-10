@@ -23,7 +23,6 @@ namespace {
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
 const char kProbeURLWithBadResponse[] = "http://bad.org/";
 const char kProbeURLWithNoResponse[] = "http://no.org/";
-const char kWarmupURLWithNoContentResponse[] = "http://warm.org/";
 
 }  // namespace
 
@@ -240,7 +239,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Request succeeded but with bad response, expect proxy to be restricted.
   CheckProbe(true,
              kProbeURLWithBadResponse,
-             kWarmupURLWithNoContentResponse,
              "Bad",
              true,
              true,
@@ -249,7 +247,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Request succeeded with valid response, expect proxy to be unrestricted.
   CheckProbe(true,
              kProbeURLWithOKResponse,
-             kWarmupURLWithNoContentResponse,
              "OK",
              true,
              true,
@@ -258,7 +255,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Request failed, expect proxy to be enabled but restricted.
   CheckProbe(true,
              kProbeURLWithNoResponse,
-             kWarmupURLWithNoContentResponse,
              "",
              false,
              true,
@@ -268,7 +264,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // state.
   CheckProbe(false,
              kProbeURLWithOKResponse,
-             kWarmupURLWithNoContentResponse,
              "OK",
              true,
              false,
@@ -292,28 +287,24 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   // IP address change triggers a probe that succeeds. Proxy remains
   // unrestricted.
   CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       kWarmupURLWithNoContentResponse,
                        "OK",
                        true,
                        false,
                        false);
   // IP address change triggers a probe that fails. Proxy is restricted.
   CheckProbeOnIPChange(kProbeURLWithBadResponse,
-                       kWarmupURLWithNoContentResponse,
                        "Bad",
                        true,
                        true,
                        false);
   // IP address change triggers a probe that fails. Proxy remains restricted.
   CheckProbeOnIPChange(kProbeURLWithBadResponse,
-                       kWarmupURLWithNoContentResponse,
                        "Bad",
                        true,
                        true,
                        false);
   // IP address change triggers a probe that succeeds. Proxy is unrestricted.
   CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       kWarmupURLWithNoContentResponse,
                        "OK",
                        true,
                        false,
@@ -344,7 +335,6 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
                             0  /* network prefix */
                             ));
   CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       kWarmupURLWithNoContentResponse,
                        "OK",
                        true,
                        false,

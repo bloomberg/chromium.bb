@@ -240,11 +240,6 @@ void DataReductionProxySettings::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // The purpose of sending a request for the warmup URL is to warm the
-  // connection to the data_reduction_proxy. The result is ignored.
-  if (source == warmup_fetcher_.get())
-    return;
-
   DCHECK(source == fetcher_.get());
   net::URLRequestStatus status = source->GetStatus();
   if (status.status() == net::URLRequestStatus::FAILED) {
@@ -351,7 +346,6 @@ void DataReductionProxySettings::OnIPAddressChanged() {
     if (DisableIfVPN())
       return;
     ProbeWhetherDataReductionProxyIsAvailable();
-    WarmProxyConnection();
   }
 }
 
@@ -407,7 +401,6 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled_by_user_ && !disabled_on_vpn_) {
     ProbeWhetherDataReductionProxyIsAvailable();
-    WarmProxyConnection();
   }
 }
 
@@ -564,18 +557,6 @@ void DataReductionProxySettings::ProbeWhetherDataReductionProxyIsAvailable() {
     return;
   fetcher_.reset(fetcher);
   fetcher_->Start();
-}
-
-net::URLFetcher* DataReductionProxySettings::GetURLFetcherForWarmup() {
-  return GetBaseURLFetcher(params_->warmup_url(), net::LOAD_DISABLE_CACHE);
-}
-
-void DataReductionProxySettings::WarmProxyConnection() {
-  net::URLFetcher* fetcher = GetURLFetcherForWarmup();
-  if (!fetcher)
-    return;
-  warmup_fetcher_.reset(fetcher);
-  warmup_fetcher_->Start();
 }
 
 bool DataReductionProxySettings::DisableIfVPN() {

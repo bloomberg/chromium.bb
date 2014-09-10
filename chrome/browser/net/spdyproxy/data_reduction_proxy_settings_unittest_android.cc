@@ -81,7 +81,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult(
     const std::string& test_url,
-    const std::string& warmup_test_url,
     const std::string& response,
     ProbeURLFetchResult result,
     bool success,
@@ -116,7 +115,6 @@ data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult<
     DataReductionProxyChromeSettings>(const std::string& test_url,
-                                       const std::string& warmup_test_url,
                                        const std::string& response,
                                        ProbeURLFetchResult result,
                                        bool success,
