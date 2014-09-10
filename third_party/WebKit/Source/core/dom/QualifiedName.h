@@ -74,22 +74,22 @@ public:
             RefCounted<QualifiedNameImpl>::deref();
         }
 
-        const AtomicString m_prefix;
-        const AtomicString m_localName;
-        const AtomicString m_namespace;
-        mutable AtomicString m_localNameUpper;
         // We rely on StringHasher's hashMemory clearing out the top 8 bits when
         // doing hashing and use one of the bits for the m_isStatic value.
         mutable unsigned m_existingHash : 24;
         unsigned m_isStatic : 1;
+        const AtomicString m_prefix;
+        const AtomicString m_localName;
+        const AtomicString m_namespace;
+        mutable AtomicString m_localNameUpper;
 
     private:
         QualifiedNameImpl(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI, bool isStatic)
-            : m_prefix(prefix)
+            : m_existingHash(0)
+            , m_isStatic(isStatic)
+            , m_prefix(prefix)
             , m_localName(localName)
             , m_namespace(namespaceURI)
-            , m_existingHash(0)
-            , m_isStatic(isStatic)
 
         {
             ASSERT(!namespaceURI.isEmpty() || namespaceURI.isNull());
