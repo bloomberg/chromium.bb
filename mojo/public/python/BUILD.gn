@@ -7,6 +7,7 @@ import("//third_party/cython/rules.gni")
 group("python") {
   deps = [
     ":base",
+    ":bindings",
     ":system",
   ]
 }
@@ -28,6 +29,20 @@ copy("base") {
     "mojo/__init__.py",
   ]
   outputs = [
-    "$root_out_dir/python/mojo/__init__.py",
+    "$root_out_dir/python/mojo/{{source_file_part}}",
+  ]
+}
+
+copy("bindings") {
+  sources = [
+    "mojo/bindings/__init__.py",
+    "mojo/bindings/reflection.py",
+  ]
+  outputs = [
+    "$root_out_dir/python/mojo/bindings/{{source_file_part}}",
+  ]
+  deps = [
+    ":base",
+    ":system",
   ]
 }

@@ -152,12 +152,12 @@ class BuiltinValue(object):
 class EnumValue(NamedValue):
   def __init__(self, module, enum, field):
     NamedValue.__init__(self, module, enum.parent_kind, field.name)
-    self.enum_name = enum.name
+    self.enum = enum
 
   def GetSpec(self):
     return (self.namespace + '.' +
         (self.parent_kind and (self.parent_kind.name + '.') or "") +
-        self.enum_name + '.' + self.name)
+        self.enum.name + '.' + self.name)
 
 
 class Constant(object):

@@ -12,6 +12,7 @@ enum Shape {
   RECTANGLE = 1,
   CIRCLE,
   TRIANGLE,
+  LAST = TRIANGLE,
 };
 
 // These enum values should not interfere with those of Shape above.

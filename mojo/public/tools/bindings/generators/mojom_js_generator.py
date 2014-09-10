@@ -195,7 +195,7 @@ def TranslateConstants(token):
     if token.parent_kind:
       name.append(token.parent_kind.name)
     if isinstance(token, mojom.EnumValue):
-      name.append(token.enum_name)
+      name.append(token.enum.name)
     name.append(token.name)
     return ".".join(name)
 

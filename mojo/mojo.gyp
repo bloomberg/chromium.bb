@@ -89,6 +89,7 @@
         }],
         ['component != "shared_library" and OS == "linux"', {
           'dependencies': [
+            'mojo_python_bindings',
             'mojo_python_embedder',
             'mojo_python_system',
             'mojo_python',
@@ -582,6 +583,21 @@
           'includes': [ '../third_party/cython/cython_compiler.gypi' ],
         },
         {
+          'target_name': 'mojo_python_bindings',
+          'type': 'none',
+          'variables': {
+            'python_base_module': 'mojo/bindings',
+          },
+          'sources': [
+            'public/python/mojo/bindings/__init__.py',
+            'public/python/mojo/bindings/reflection.py',
+          ],
+          'dependencies': [
+            'mojo_python_system',
+          ],
+          'includes': [ '../third_party/cython/python_module.gypi' ],
+        },
+        {
           'target_name': 'mojo_python',
           'type': 'none',
           'variables': {
@@ -591,6 +607,7 @@
             'public/python/mojo/__init__.py',
           ],
           'dependencies': [
+            'mojo_python_bindings',
             'mojo_python_embedder',
             'mojo_python_system',
           ],

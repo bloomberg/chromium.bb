@@ -102,6 +102,8 @@ def FixupExpression(module, value, scope, kind):
     # Allow user defined values to shadow builtins.
     result = LookupValue(module.values, value[1], scope, kind)
     if result:
+      if isinstance(result, tuple):
+        raise Exception('Unable to resolve expression: %r' % value[1])
       return result
     if IsBuiltinValue(value[1]):
       return mojom.BuiltinValue(value[1])

@@ -119,7 +119,7 @@ def GetNameForElement(element):
                           mojom.Field)):
     return CamelCase(element.name)
   if isinstance(element,  mojom.EnumValue):
-    return (UpperCamelCase(element.enum_name) + '.' +
+    return (GetNameForElement(element.enum) + '.' +
             ConstantStyle(element.name))
   if isinstance(element, (mojom.NamedValue,
                           mojom.Constant)):

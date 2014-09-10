@@ -5,6 +5,7 @@
 """Generates Python source files from a mojom.Module."""
 
 import re
+from itertools import ifilter
 
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
@@ -34,24 +35,24 @@ def ConstantStyle(name):
   return '_'.join([x.upper() for x in components])
 
 def GetNameForElement(element):
+  if isinstance(element, mojom.EnumValue):
+    return (GetNameForElement(element.enum) + '.' +
+            ConstantStyle(element.name))
   if isinstance(element, (mojom.NamedValue,
                           mojom.Constant)):
     return ConstantStyle(element.name)
   raise Exception('Unexpected element: ' % element)
 
-def TranslateConstants(token):
+def ExpressionToText(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
     # Both variable and enum constants are constructed like:
-    # NamespaceUid.Struct[.Enum].CONSTANT_NAME
+    # PythonModule[.Struct][.Enum].CONSTANT_NAME
     name = []
     if token.imported_from:
       name.append(token.imported_from['python_module'])
     if token.parent_kind:
       name.append(GetNameForElement(token.parent_kind))
-    if isinstance(token, mojom.EnumValue):
-      name.append(GetNameForElement(token))
-    else:
-      name.append(token.name)
+    name.append(GetNameForElement(token))
     return '.'.join(name)
 
   if isinstance(token, mojom.BuiltinValue):
@@ -66,9 +67,54 @@ def TranslateConstants(token):
   return token
 
 
-def ExpressionToText(value):
-  return TranslateConstants(value)
+def ComputeConstantValues(module):
+  in_progress = set()
+  computed = set()
 
+  def ResolveEnum(enum):
+    def GetComputedValue(enum_value):
+      field = next(ifilter(lambda field: field.name == enum_value.name,
+                           enum_value.enum.fields), None)
+      if not field:
+        raise RuntimeError(
+            'Unable to get computed value for field %s of enum %s' %
+            (enum_value.name, enum_value.enum.name))
+      if field not in computed:
+        ResolveEnum(enum_value.enum)
+      return field.computed_value
+
+    def ResolveEnumField(enum, field, default_value):
+      if field in computed:
+        return
+      if field in in_progress:
+        raise RuntimeError('Circular dependency for enum: %s' % enum.name)
+      in_progress.add(field)
+      if field.value:
+        if isinstance(field.value, mojom.EnumValue):
+          computed_value = GetComputedValue(field.value)
+        elif isinstance(field.value, str):
+          computed_value = int(field.value, 0)
+        else:
+          raise RuntimeError('Unexpected value: %r' % field.value)
+      else:
+        computed_value = default_value
+      field.computed_value = computed_value
+      in_progress.remove(field)
+      computed.add(field)
+
+    current_value = 0
+    for field in enum.fields:
+      ResolveEnumField(enum, field, current_value)
+      current_value = field.computed_value + 1
+
+  for enum in module.enums:
+    ResolveEnum(enum)
+
+  for struct in module.structs:
+    for enum in struct.enums:
+      ResolveEnum(enum)
+
+  return module
 
 class Generator(generator.Generator):
 
@@ -81,7 +127,8 @@ class Generator(generator.Generator):
   def GeneratePythonModule(self):
     return {
       'imports': self.GetImports(),
-      'module': self.module,
+      'enums': self.module.enums,
+      'module': ComputeConstantValues(self.module),
     }
 
   def GenerateFiles(self, args):
