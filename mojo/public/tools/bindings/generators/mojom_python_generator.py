@@ -35,6 +35,9 @@ def ConstantStyle(name):
   return '_'.join([x.upper() for x in components])
 
 def GetNameForElement(element):
+  if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
+      mojom.IsStructKind(element)):
+    return UpperCamelCase(element.name)
   if isinstance(element, mojom.EnumValue):
     return (GetNameForElement(element.enum) + '.' +
             ConstantStyle(element.name))
@@ -129,6 +132,7 @@ class Generator(generator.Generator):
       'imports': self.GetImports(),
       'enums': self.module.enums,
       'module': ComputeConstantValues(self.module),
+      'structs': self.GetStructs(),
     }
 
   def GenerateFiles(self, args):

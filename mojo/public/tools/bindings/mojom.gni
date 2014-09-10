@@ -47,6 +47,7 @@ template("mojom") {
     "$generator_root/generators/js_templates/interface_definition.tmpl",
     "$generator_root/generators/js_templates/module.js.tmpl",
     "$generator_root/generators/js_templates/struct_definition.tmpl",
+    "$generator_root/generators/python_templates/module_macros.tmpl",
     "$generator_root/generators/python_templates/module.py.tmpl",
     "$generator_root/generators/mojom_cpp_generator.py",
     "$generator_root/generators/mojom_js_generator.py",

@@ -7,6 +7,7 @@ import unittest
 # Generated files
 # pylint: disable=F0401
 import sample_import_mojom
+import sample_service_mojom
 
 
 class EnumBindingsTest(unittest.TestCase):
@@ -26,6 +27,13 @@ class EnumBindingsTest(unittest.TestCase):
     self.assertEquals(sample_import_mojom.YetAnotherShape.RECTANGLE, 20)
     self.assertEquals(sample_import_mojom.YetAnotherShape.CIRCLE, 21)
     self.assertEquals(sample_import_mojom.YetAnotherShape.TRIANGLE, 22)
+
+  # Testing that internal enum class have expected constant values.
+  def testInternalEnumGeneration(self):
+    self.assertEquals(sample_service_mojom.Bar.Type.VERTICAL, 1)
+    self.assertEquals(sample_service_mojom.Bar.Type.HORIZONTAL, 2)
+    self.assertEquals(sample_service_mojom.Bar.Type.BOTH, 3)
+    self.assertEquals(sample_service_mojom.Bar.Type.INVALID, 4)
 
   # Testing an enum class cannot be instantiated.
   def testNonInstantiableEnum(self):

@@ -26,3 +26,14 @@ class ConstantBindingsTest(unittest.TestCase):
     self.assertEquals(sample_service_mojom.FLOAT_NEGATIVE_INFINITY,
                       float('-inf'))
     self.assertTrue(math.isnan(sample_service_mojom.FLOAT_NA_N))
+
+  def testConstantOnStructGeneration(self):
+    self.assertEquals(sample_service_mojom.Foo.FOOBY, "Fooby")
+
+  def testStructImmutability(self):
+    with self.assertRaises(AttributeError):
+      sample_service_mojom.Foo.FOOBY = 0
+    with self.assertRaises(AttributeError):
+      del sample_service_mojom.Foo.FOOBY
+    with self.assertRaises(AttributeError):
+      sample_service_mojom.Foo.BAR = 1

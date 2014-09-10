@@ -52,6 +52,7 @@
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/module.js.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/struct_definition.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/python_templates/module_macros.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/python_templates/module.py.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/mojom_cpp_generator.py',
         '<(DEPTH)/mojo/public/tools/bindings/generators/mojom_java_generator.py',
