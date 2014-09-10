@@ -56,7 +56,8 @@ void ContentsView::InitNamedPages(AppListModel* model,
     }
 
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
-    AddLauncherPage(start_page_view_, 0, NAMED_PAGE_START);
+    AddLauncherPage(
+        start_page_view_, IDR_APP_LIST_SEARCH_ICON, NAMED_PAGE_START);
   } else {
     search_results_view_ =
         new SearchResultListView(app_list_main_view_, view_delegate);
