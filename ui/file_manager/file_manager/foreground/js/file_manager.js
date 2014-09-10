@@ -14,7 +14,93 @@
  * @constructor
  */
 function FileManager() {
-  this.initializeQueue_ = new AsyncUtil.Group();
+  // --------------------------------------------------------------------------
+  // Services FileManager depends on.
+
+  /**
+   * Volume manager.
+   * @type {VolumeManager}
+   * @private
+   */
+  this.volumeManager_ = null;
+
+  /**
+   * Metadata cache.
+   * @type {MetadataCache}
+   * @private
+   */
+  this.metadataCache_ = null;
+
+  /**
+   * File operation manager.
+   * @type {FileOperationManager}
+   * @private
+   */
+  this.fileOperationManager_ = null;
+
+  /**
+   * File transfer controller.
+   * @type {FileTransferController}
+   * @private
+   */
+  this.fileTransferController_ = null;
+
+  /**
+   * File filter.
+   * @type {FileFilter}
+   * @private
+   */
+  this.fileFilter_ = null;
+
+  /**
+   * File watcher.
+   * @type {FileWatcher}
+   * @private
+   */
+  this.fileWatcher_ = null;
+
+  /**
+   * Model of current directory.
+   * @type {DirectoryModel}
+   * @private
+   */
+  this.directoryModel_ = null;
+
+  /**
+   * Model of folder shortcuts.
+   * @type {FolderShortcutsDataModel}
+   * @private
+   */
+  this.folderShortcutsModel_ = null;
+
+  /**
+   * VolumeInfo of the current volume.
+   * @type {VolumeInfo}
+   * @private
+   */
+  this.currentVolumeInfo_ = null;
+
+  /**
+   * Handler for command events.
+   * @type {CommandHandler}
+   */
+  this.commandHandler = null;
+
+  /**
+   * Handler for the change of file selection.
+   * @type {SelectionHandler}
+   * @private
+   */
+  this.selectionHandler_ = null;
+
+  // --------------------------------------------------------------------------
+  // Parameters determining the type of file manager.
+
+  /**
+   * Dialog type of this window.
+   * @type {DialogType}
+   */
+  this.dialogType = DialogType.FULL_PAGE;
 
   /**
    * Current list type.
@@ -22,6 +108,407 @@ function FileManager() {
    * @private
    */
   this.listType_ = null;
+
+  /**
+   * List of acceptable file types for open dialog.
+   * @type {Array.<Object>}
+   * @private
+   */
+  this.fileTypes_ = [];
+
+  /**
+   * Startup parameters for this application.
+   * @type {Object}
+   * @private
+   */
+  this.params_ = null;
+
+  /**
+   * Startup preference about the view.
+   * @type {Object}
+   * @private
+   */
+  this.viewOptions_ = {};
+
+  /**
+   * The user preference.
+   * @type {Object}
+   * @private
+   */
+  this.preferences_ = null;
+
+  // --------------------------------------------------------------------------
+  // UI components.
+
+  /**
+   * UI management class of file manager.
+   * @type {FileManagerUI}
+   * @private
+   */
+  this.ui_ = null;
+
+  /**
+   * Preview panel.
+   * @type {PreviewPanel}
+   * @private
+   */
+  this.previewPanel_ = null;
+
+  /**
+   * Progress center panel.
+   * @type {ProgressCenterPanel}
+   * @private
+   */
+  this.progressCenterPanel_ = null;
+
+  /**
+   * Directory tree.
+   * @type {DirectoryTree}
+   * @private
+   */
+  this.directoryTree_ = null;
+
+  /**
+   * Auto-complete list.
+   * @type {AutocompleteList}
+   * @private
+   */
+  this.autocompleteList_ = null;
+
+  /**
+   * Banners in the file list.
+   * @type {FileListBannerController}
+   * @private
+   */
+  this.bannersController_ = null;
+
+  // --------------------------------------------------------------------------
+  // Dialogs.
+
+  /**
+   * Error dialog.
+   * @type {ErrorDialog}
+   */
+  this.error = null;
+
+  /**
+   * Alert dialog.
+   * @type {cr.ui.dialogs.AlertDialog}
+   */
+  this.alert = null;
+
+  /**
+   * Confirm dialog.
+   * @type {cr.ui.dialogs.ConfirmDialog}
+   */
+  this.confirm = null;
+
+  /**
+   * Prompt dialog.
+   * @type {cr.ui.dialogs.PromptDialog}
+   */
+  this.prompt = null;
+
+  /**
+   * Share dialog.
+   * @type {ShareDialog}
+   * @private
+   */
+  this.shareDialog_ = null;
+
+  /**
+   * Default task picker.
+   * @type {DefaultActionDialog}
+   */
+  this.defaultTaskPicker = null;
+
+  /**
+   * Suggest apps dialog.
+   * @type {SuggestAppsDialog}
+   */
+  this.suggestAppsDialog = null;
+
+  // --------------------------------------------------------------------------
+  // Menus.
+
+  /**
+   * Context menu for files.
+   * @type {HTMLMenuElement}
+   * @private
+   */
+  this.fileContextMenu_ = null;
+
+  /**
+   * Context menu for volumes or shortcuts displayed on left pane.
+   * @type {HTMLMenuElement}
+   * @private
+   */
+  this.rootsContextMenu_ = null;
+
+  /**
+   * Context menu for directory tree items.
+   * @type {HTMLMenuElement}
+   * @private
+   */
+  this.directoryTreeContextMenu_ = null;
+
+  /**
+   * Context menu for texts.
+   * @type {HTMLMenuElement}
+   * @private
+   */
+  this.textContextMenu_ = null;
+
+  // --------------------------------------------------------------------------
+  // DOM elements.
+
+  /**
+   * Background page.
+   * @type {Window}
+   * @private
+   */
+  this.backgroundPage_ = null;
+
+  /**
+   * The root DOM element of this app.
+   * @type {HTMLBodyElement}
+   * @private
+   */
+  this.dialogDom_ = null;
+
+  /**
+   * The document object of this app.
+   * @type {HTMLDocument}
+   * @private
+   */
+  this.document_ = null;
+
+  /**
+   * The menu item to toggle "Do not use mobile data for sync".
+   * @type {HTMLMenuItemElement}
+   */
+  this.syncButton = null;
+
+  /**
+   * The menu item to toggle "Show Google Docs files".
+   * @type {HTMLMenuItemElement}
+   */
+  this.hostedButton = null;
+
+  /**
+   * The menu item for doing default action.
+   * @type {HTMLMenuItemElement}
+   * @private
+   */
+  this.defaultActionMenuItem_ = null;
+
+  /**
+   * The button to open gear menu.
+   * @type {HTMLButtonElement}
+   * @private
+   */
+  this.gearButton_ = null;
+
+  /**
+   * The OK button.
+   * @type {HTMLButtonElement}
+   * @private
+   */
+  this.okButton_ = null;
+
+  /**
+   * The cancel button.
+   * @type {HTMLButtonElement}
+   * @private
+   */
+  this.cancelButton_ = null;
+
+  /**
+   * The combo button to specify the task.
+   * @type {HTMLButtonElement}
+   * @private
+   */
+  this.taskItems_ = null;
+
+  /**
+   * The input element to rename entry.
+   * @type {HTMLInputElement}
+   * @private
+   */
+  this.renameInput_ = null;
+
+  /**
+   * The input element to specify file name.
+   * @type {HTMLInputElement}
+   * @private
+   */
+  this.filenameInput_ = null;
+
+  /**
+   * The file table.
+   * @type {FileTable}
+   * @private
+   */
+  this.table_ = null;
+
+  /**
+   * The file grid.
+   * @type {FileGrid}
+   * @private
+   */
+  this.grid_ = null;
+
+  /**
+   * Current file list.
+   * @type {cr.ui.List}
+   * @private
+   */
+  this.currentList_ = null;
+
+  /**
+   * Spinner on file list which is shown while loading.
+   * @type {HTMLDivElement}
+   * @private
+   */
+  this.spinner_ = null;
+
+  /**
+   * The container element of the dialog.
+   * @type {HTMLDivElement}
+   * @private
+   */
+  this.dialogContainer_ = null;
+
+  /**
+   * The container element of the file list.
+   * @type {HTMLDivElement}
+   * @private
+   */
+  this.listContainer_ = null;
+
+  /**
+   * The input element in the search box.
+   * @type {HTMLInputElement}
+   * @private
+   */
+  this.searchBox_ = null;
+
+  /**
+   * The file type selector.
+   * @type {HTMLSelectElement}
+   * @private
+   */
+  this.fileTypeSelector_ = null;
+
+  /**
+   * Open-with command in the context menu.
+   * @type {cr.ui.Command}
+   * @private
+   */
+  this.openWithCommand_ = null;
+
+  // --------------------------------------------------------------------------
+  // Bound functions.
+
+  /**
+   * Bound function for onCopyProgress_.
+   * @type {this:FileManager, function(Event)}
+   * @private
+   */
+  this.onCopyProgressBound_ = null;
+
+  /**
+   * Bound function for onEntriesChanged_.
+   * @type {this:FileManager, function(Event)}
+   * @private
+   */
+  this.onEntriesChangedBound_ = null;
+
+  /**
+   * Bound function for onCancel_.
+   * @type {this:FileManager, function(Event)}
+   * @private
+   */
+  this.onCancelBound_ = null;
+
+  // --------------------------------------------------------------------------
+  // Scan state.
+
+  /**
+   * Whether a scan is in progress.
+   * @type {boolean}
+   * @private
+   */
+  this.scanInProgress_ = false;
+
+  /**
+   * Whether a scan is updated at least once. If true, spinner should disappear.
+   * @type {boolean}
+   * @private
+   */
+  this.scanUpdatedAtLeastOnceOrCompleted_ = false;
+
+  /**
+   * Timer ID to delay UI refresh after a scan is completed.
+   * @type {number}
+   * @private
+   */
+  this.scanCompletedTimer_ = 0;
+
+  /**
+   * Timer ID to delay UI refresh after a scan is updated.
+   * @type {number}
+   * @private
+   */
+  this.scanUpdatedTimer_ = 0;
+
+  /**
+   * Timer ID to delay showing spinner after a scan starts.
+   * @type {number}
+   * @private
+   */
+  this.showSpinnerTimeout_ = 0;
+
+  // --------------------------------------------------------------------------
+  // Search states.
+
+  /**
+   * The last search query.
+   * @type {string}
+   * @private
+   */
+  this.lastSearchQuery_ = '';
+
+  /**
+   * The last auto-complete query.
+   * @type {string}
+   * @private
+   */
+  this.lastAutocompleteQuery_ = '';
+
+  /**
+   * Whether auto-complete suggestion is busy to respond previous request.
+   * @type {boolean}
+   * @private
+   */
+  this.autocompleteSuggestionsBusy_ = false;
+
+  /**
+   * State of text-search, which is triggerd by keyboard input on file list.
+   * @type {Object}
+   * @private
+   */
+  this.textSearchState_ = {text: '', date: new Date()};
+
+  // --------------------------------------------------------------------------
+  // Miscellaneous FileManager's states.
+
+  /**
+   * Queue for ordering FileManager's initialization process.
+   * @type {AsyncUtil.Group}
+   * @private
+   */
+  this.initializeQueue_ = new AsyncUtil.Group();
 
   /**
    * True while a user is pressing <Tab>.
@@ -55,18 +542,71 @@ function FileManager() {
   this.isSecretGearMenuShown_ = false;
 
   /**
-   * SelectionHandler.
-   * @type {SelectionHandler}
+   * The last clicked item in the file list.
+   * @type {HTMLLIElement}
    * @private
    */
-  this.selectionHandler_ = null;
+  this.lastClickedItem_ = null;
 
   /**
-   * VolumeInfo of the current volume.
-   * @type {VolumeInfo}
+   * Count of the SourceNotFound error.
+   * @type {number}
    * @private
    */
-  this.currentVolumeInfo_ = null;
+  this.sourceNotFoundErrorCount_ = 0;
+
+  /**
+   * Whether the app should be closed on unmount.
+   * @type {boolean}
+   * @private
+   */
+  this.closeOnUnmount_ = false;
+
+  /**
+   * The key for storing startup preference.
+   * @type {string}
+   * @private
+   */
+  this.startupPrefName_ = '';
+
+  /**
+   * URL of directory which should be initial current directory.
+   * @type {string}
+   * @private
+   */
+  this.initCurrentDirectoryURL_ = '';
+
+  /**
+   * URL of entry which should be initially selected.
+   * @type {string}
+   * @private
+   */
+  this.initSelectionURL_ = '';
+
+  /**
+   * The name of target entry (not URL).
+   * @type {string}
+   * @private
+   */
+  this.initTargetName_ = '';
+
+  /**
+   * Data model which is used as a placefolder in inactive file list.
+   * @type {cr.ui.ArrayDataModel}
+   * @private
+   */
+  this.emptyDataModel_ = null;
+
+  /**
+   * Selection model which is used as a placefolder in inactive file list.
+   * @type {cr.ui.ListSelectionModel}
+   * @private
+   */
+  this.emptySelectionModel_ = null;
+
+  // Object.seal() has big performance/memory overhead for now, so we use
+  // Object.preventExtensions() here. crbug.com/412239.
+  Object.preventExtensions(this);
 }
 
 FileManager.prototype = {
@@ -226,7 +766,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     group.add(this.getPreferences_.bind(this));
 
     // Get startup preferences.
-    this.viewOptions_ = {};
     group.add(function(done) {
       util.platform.getPreference(this.startupPrefName_, function(value) {
         // Load the global default options.
@@ -433,8 +972,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onSourceNotFound_ = function(event) {
-    // Ensure this.sourceNotFoundErrorCount_ is integer.
-    this.sourceNotFoundErrorCount_ = ~~this.sourceNotFoundErrorCount_;
     var item = new ProgressCenterItem();
     item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
     if (event.progressType === ProgressItemType.COPY)
@@ -853,14 +1390,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.searchBoxWrapper_ = this.ui_.searchBox.element;
     this.searchBox_ = this.ui_.searchBox.inputElement;
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
     this.ui_.searchBox.clearButton.addEventListener(
         'click', this.onSearchClearButtonClick_.bind(this));
-
-    this.lastSearchQuery_ = '';
 
     this.autocompleteList_ = this.ui_.searchBox.autocompleteList;
     this.autocompleteList_.requestSuggestions =
@@ -884,9 +1418,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.openWithCommand_ =
         this.dialogDom_.querySelector('#open-with');
-
-    this.driveBuyMoreStorageCommand_ =
-        this.dialogDom_.querySelector('#drive-buy-more-space');
 
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
@@ -1004,7 +1535,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
     this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
 
-    this.textSearchState_ = {text: '', date: new Date()};
     this.closeOnUnmount_ = (this.params_.action == 'auto-open');
 
     if (this.closeOnUnmount_) {
@@ -2536,12 +3066,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.scanUpdatedAtLeastOnceOrCompleted_ = false;
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
-      this.scanCompletedTimer_ = null;
+      this.scanCompletedTimer_ = 0;
     }
 
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = null;
+      this.scanUpdatedTimer_ = 0;
     }
 
     if (this.spinner_.hidden) {
@@ -2566,7 +3096,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = null;
+      this.scanUpdatedTimer_ = 0;
     }
 
     // To avoid flickering postpone updating the ui by a small amount of time.
@@ -2580,7 +3110,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      this.scanCompletedTimer_ = null;
+      this.scanCompletedTimer_ = 0;
     }.bind(this), 50);
   };
 
@@ -2612,7 +3142,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.table_.list.startBatchUpdates();
         this.grid_.startBatchUpdates();
       }
-      this.scanUpdatedTimer_ = null;
+      this.scanUpdatedTimer_ = 0;
     }.bind(this), 200);
   };
 
@@ -2630,11 +3160,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hideSpinnerLater_();
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
-      this.scanCompletedTimer_ = null;
+      this.scanCompletedTimer_ = 0;
     }
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = null;
+      this.scanUpdatedTimer_ = 0;
     }
     // Finish unfinished batch updates.
     if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
@@ -2660,7 +3190,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.cancelSpinnerTimeout_ = function() {
     if (this.showSpinnerTimeout_) {
       clearTimeout(this.showSpinnerTimeout_);
-      this.showSpinnerTimeout_ = null;
+      this.showSpinnerTimeout_ = 0;
     }
   };
 
@@ -3610,7 +4140,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.getPreferences_ = function(callback, opt_update) {
-    if (!opt_update && this.preferences_ !== undefined) {
+    if (!opt_update && this.preferences_ !== null) {
       callback(this.preferences_);
       return;
     }
