@@ -2480,6 +2480,14 @@ should be able to be added at any place in this file.
   <description>User opens distilled page preferences.</description>
 </action>
 
+<action name="DomDistiller_ViewOriginal">
+  <owner>yfriedman@chromium.org</owner>
+  <description>
+    Records clicks on the &quot;View Original&quot; link in the distilled page
+    viewer.
+  </description>
+</action>
+
 <action name="Duplicate">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

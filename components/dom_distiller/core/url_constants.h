@@ -12,6 +12,8 @@ extern const char kEntryIdKey[];
 extern const char kUrlKey[];
 extern const char kViewerCssPath[];
 extern const char kViewerJsPath[];
+extern const char kViewerViewOriginalPath[];
+
 
 }  // namespace dom_distiller
 

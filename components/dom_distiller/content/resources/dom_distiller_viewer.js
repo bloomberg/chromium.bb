@@ -65,3 +65,12 @@ var updateLoadingIndicator = function() {
     }
   };
 }();
+
+// Add a listener to the "View Original" link to report opt-outs.
+document.getElementById('showOriginal').addEventListener('click', function(e) {
+  var img = document.createElement('img');
+  img.src = "/vieworiginal";
+  img.style.display = "none";
+  document.body.appendChild(img);
+}, true);
+
