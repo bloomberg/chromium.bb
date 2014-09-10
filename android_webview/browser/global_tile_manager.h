@@ -31,7 +31,7 @@ class GlobalTileManager {
 
   void SetTileLimit(size_t num_tiles_limit);
 
-  // Requests the |num_of_tiles| from the available global pool. Calls
+  // Requests the |new_num_of_tiles| from the available global pool. Calls
   // GlobalTileManagerClient.SetNumTiles after the manager determines how many
   // tiles are available for the client. If the number of tiles left is not
   // enough to satisfy the request, the manager will evict tiles allocated to

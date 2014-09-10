@@ -90,6 +90,8 @@ TEST_F(GlobalTileManagerTest, RandomizedStressRequests) {
     index[i] = i;
   }
 
+  // Fix the seed so that tests are reproducible.
+  std::srand(1);
   // Simulate a random request order of clients.
   std::random_shuffle(&index[0], &index[99]);
 
