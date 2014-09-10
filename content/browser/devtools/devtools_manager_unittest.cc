@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"

@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 
-#include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"

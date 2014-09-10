@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

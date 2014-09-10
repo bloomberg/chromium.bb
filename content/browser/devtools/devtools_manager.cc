@@ -2,33 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_manager.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
 
 // static
-DevToolsManagerImpl* DevToolsManagerImpl::GetInstance() {
-  return Singleton<DevToolsManagerImpl>::get();
+DevToolsManager* DevToolsManager::GetInstance() {
+  return Singleton<DevToolsManager>::get();
 }
 
-DevToolsManagerImpl::DevToolsManagerImpl()
+DevToolsManager::DevToolsManager()
     : delegate_(GetContentClient()->browser()->GetDevToolsManagerDelegate()),
       client_count_(0) {
 }
 
-DevToolsManagerImpl::~DevToolsManagerImpl() {
+DevToolsManager::~DevToolsManager() {
   DCHECK(!client_count_);
 }
 
-void DevToolsManagerImpl::OnClientAttached() {
+void DevToolsManager::OnClientAttached() {
   if (!client_count_) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -38,7 +37,7 @@ void DevToolsManagerImpl::OnClientAttached() {
   client_count_++;
 }
 
-void DevToolsManagerImpl::OnClientDetached() {
+void DevToolsManager::OnClientDetached() {
   client_count_--;
   if (!client_count_) {
     BrowserThread::PostTask(

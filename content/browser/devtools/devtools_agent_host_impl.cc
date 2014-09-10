@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +76,7 @@ void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
     client_->AgentHostClosed(this, true);
     Detach();
   } else {
-    DevToolsManagerImpl::GetInstance()->OnClientAttached();
+    DevToolsManager::GetInstance()->OnClientAttached();
   }
   client_ = client;
   Attach();
@@ -88,7 +88,7 @@ void DevToolsAgentHostImpl::DetachClient() {
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   client_ = NULL;
-  DevToolsManagerImpl::GetInstance()->OnClientDetached();
+  DevToolsManager::GetInstance()->OnClientDetached();
   Detach();
 }
 
@@ -125,7 +125,7 @@ void DevToolsAgentHostImpl::HostClosed() {
   // Clear |client_| before notifying it.
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
-  DevToolsManagerImpl::GetInstance()->OnClientDetached();
+  DevToolsManager::GetInstance()->OnClientDetached();
   client->AgentHostClosed(this, false);
 }
 
@@ -150,7 +150,7 @@ void DevToolsAgentHost::DetachAllClients() {
       // Clear |client_| before notifying it.
       DevToolsAgentHostClient* client = agent_host->client_;
       agent_host->client_ = NULL;
-      DevToolsManagerImpl::GetInstance()->OnClientDetached();
+      DevToolsManager::GetInstance()->OnClientDetached();
       client->AgentHostClosed(agent_host, true);
       agent_host->Detach();
     }
@@ -180,7 +180,7 @@ void DevToolsAgentHost::RemoveAgentStateCallback(
 void DevToolsAgentHostImpl::NotifyCallbacks(
     DevToolsAgentHostImpl* agent_host, bool attached) {
   AgentStateCallbacks copy(g_callbacks.Get());
-  DevToolsManagerImpl* manager = DevToolsManagerImpl::GetInstance();
+  DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     manager->delegate()->DevToolsAgentStateChanged(agent_host, attached);
   for (AgentStateCallbacks::iterator it = copy.begin(); it != copy.end(); ++it)
@@ -188,7 +188,7 @@ void DevToolsAgentHostImpl::NotifyCallbacks(
 }
 
 void DevToolsAgentHostImpl::Inspect(BrowserContext* browser_context) {
-  DevToolsManagerImpl* manager = DevToolsManagerImpl::GetInstance();
+  DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     manager->delegate()->Inspect(browser_context, this);
 }

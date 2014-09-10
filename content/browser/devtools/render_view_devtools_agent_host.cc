@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_power_handler.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -142,7 +142,7 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
     scoped_refptr<DevToolsProtocol::Response> overridden_response;
 
     DevToolsManagerDelegate* delegate =
-        DevToolsManagerImpl::GetInstance()->delegate();
+        DevToolsManager::GetInstance()->delegate();
     if (delegate) {
       scoped_ptr<base::DictionaryValue> overridden_response_value(
           delegate->HandleCommand(this, message_dict.get()));
@@ -179,7 +179,7 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
 
   InnerOnClientAttached();
 
-  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // TODO(kaznacheev): Move this call back to DevToolsManager when
   // extensions::ProcessManager no longer relies on this notification.
   if (!reattaching_)
     DevToolsAgentHostImpl::NotifyCallbacks(this, true);
@@ -211,7 +211,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
   power_handler_->OnClientDetached();
   ClientDetachedFromRenderer();
 
-  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // TODO(kaznacheev): Move this call back to DevToolsManager when
   // extensions::ProcessManager no longer relies on this notification.
   if (!reattaching_)
     DevToolsAgentHostImpl::NotifyCallbacks(this, false);

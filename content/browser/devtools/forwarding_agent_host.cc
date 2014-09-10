@@ -4,8 +4,6 @@
 
 #include "content/browser/devtools/forwarding_agent_host.h"
 
-#include "content/browser/devtools/devtools_manager_impl.h"
-
 namespace content {
 
 ForwardingAgentHost::ForwardingAgentHost(
