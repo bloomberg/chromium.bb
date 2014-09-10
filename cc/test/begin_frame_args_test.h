@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/test/test_now_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -20,6 +21,13 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
                                               int64 deadline,
                                               int64 interval);
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting();
+
+// Creates a BeginFrameArgs using the fake Now value stored on the
+// OrderSimpleTaskRunner.
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    scoped_refptr<TestNowSource> now_src);
+BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    scoped_refptr<TestNowSource> now_src);
 
 // gtest helpers -- these *must* be in the same namespace as the types they
 // operate on.

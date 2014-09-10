@@ -36,6 +36,22 @@ BeginFrameArgs CreateExpiredBeginFrameArgsForTesting() {
                                 BeginFrameArgs::DefaultInterval());
 }
 
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    scoped_refptr<TestNowSource> now_src) {
+  base::TimeTicks now = now_src->Now();
+  return BeginFrameArgs::Create(now,
+                                now + (BeginFrameArgs::DefaultInterval() / 2),
+                                BeginFrameArgs::DefaultInterval());
+}
+
+BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    scoped_refptr<TestNowSource> now_src) {
+  base::TimeTicks now = now_src->Now();
+  return BeginFrameArgs::Create(now,
+                                now - BeginFrameArgs::DefaultInterval(),
+                                BeginFrameArgs::DefaultInterval());
+}
+
 bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs) {
   return (lhs.frame_time == rhs.frame_time) && (lhs.deadline == rhs.deadline) &&
          (lhs.interval == rhs.interval);

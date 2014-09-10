@@ -137,7 +137,7 @@ class CC_EXPORT Scheduler {
   class CC_EXPORT SyntheticBeginFrameSource : public TimeSourceClient {
    public:
     SyntheticBeginFrameSource(Scheduler* scheduler,
-                              base::SingleThreadTaskRunner* task_runner);
+                              scoped_refptr<DelayBasedTimeSource> time_source);
     virtual ~SyntheticBeginFrameSource();
 
     // Updates the phase and frequency of the timer.
@@ -167,6 +167,8 @@ class CC_EXPORT Scheduler {
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id,
             const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+  virtual base::TimeTicks Now() const;
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;
@@ -198,6 +200,8 @@ class CC_EXPORT Scheduler {
   bool inside_process_scheduled_actions_;
   SchedulerStateMachine::Action inside_action_;
 
+  base::TimeDelta VSyncInterval() { return vsync_interval_; }
+
  private:
   base::TimeTicks AdjustedBeginImplFrameDeadline(
       const BeginFrameArgs& args,
@@ -220,8 +224,6 @@ class CC_EXPORT Scheduler {
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
   void PollToAdvanceCommitState();
-
-  base::TimeDelta VSyncInterval() { return vsync_interval_; }
 
   base::TimeDelta EstimatedParentDrawTime() {
     return estimated_parent_draw_time_;

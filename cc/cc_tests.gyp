@@ -234,6 +234,8 @@
       'test/test_context_support.h',
       'test/test_gles2_interface.cc',
       'test/test_gles2_interface.h',
+      'test/test_now_source.cc',
+      'test/test_now_source.h',
       'test/test_occlusion_tracker.h',
       'test/test_shared_bitmap_manager.cc',
       'test/test_shared_bitmap_manager.h',
