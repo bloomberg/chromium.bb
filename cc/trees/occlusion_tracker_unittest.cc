@@ -85,11 +85,6 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
   bool OccludedLayer(const LayerType* layer,
                      const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
-    EXPECT_EQ(
-        this->Occluded(
-            layer->render_target(), content_rect, layer->draw_transform()),
-        this->GetCurrentOcclusionForLayer(layer->draw_transform())
-            .IsOccluded(content_rect));
     return this->Occluded(
         layer->render_target(), content_rect, layer->draw_transform());
   }

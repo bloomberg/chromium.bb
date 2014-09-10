@@ -15,6 +15,7 @@
 #include "cc/base/math_util.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/safe_integer_conversions.h"
@@ -539,7 +540,9 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::Rect& visible_layer_rect,
     float ideal_contents_scale,
     double current_frame_time_in_seconds,
-    const Occlusion& occlusion_in_layer_space) {
+    const OcclusionTracker<LayerImpl>* occlusion_tracker,
+    const LayerImpl* render_target,
+    const gfx::Transform& draw_transform) {
   if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds)) {
     // This should never be zero for the purposes of has_ever_been_updated().
     DCHECK_NE(current_frame_time_in_seconds, 0.0);
@@ -602,10 +605,16 @@ void PictureLayerTiling::UpdateTilePriorities(
     tile->SetPriority(tree, now_priority);
 
     // Set whether tile is occluded or not.
-    gfx::Rect tile_query_rect = ScaleToEnclosingRect(
-        IntersectRects(tile->content_rect(), visible_rect_in_content_space),
-        1.0f / contents_scale_);
-    bool is_occluded = occlusion_in_layer_space.IsOccluded(tile_query_rect);
+    bool is_occluded = false;
+    if (occlusion_tracker) {
+      gfx::Rect tile_query_rect = ScaleToEnclosingRect(
+          IntersectRects(tile->content_rect(), visible_rect_in_content_space),
+          1.0f / contents_scale_);
+      // TODO(vmpstr): Remove render_target and draw_transform from the
+      // parameters so they can be hidden from the tiling.
+      is_occluded = occlusion_tracker->Occluded(
+          render_target, tile_query_rect, draw_transform);
+    }
     tile->set_is_occluded(tree, is_occluded);
   }
 

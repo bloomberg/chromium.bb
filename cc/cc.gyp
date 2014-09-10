@@ -481,8 +481,6 @@
         'trees/layer_tree_impl.h',
         'trees/layer_tree_settings.cc',
         'trees/layer_tree_settings.h',
-        'trees/occlusion.cc',
-        'trees/occlusion.h',
         'trees/occlusion_tracker.cc',
         'trees/occlusion_tracker.h',
         'trees/proxy.cc',

@@ -110,7 +110,7 @@ class CC_EXPORT PictureLayerImpl
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void UpdateTiles(
-      const Occlusion& occlusion_in_content_space) OVERRIDE;
+      const OcclusionTracker<LayerImpl>* occlusion_tracker) OVERRIDE;
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;
@@ -160,7 +160,8 @@ class CC_EXPORT PictureLayerImpl
   void RemoveAllTilings();
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   void AddTilingsForRasterScale();
-  void UpdateTilePriorities(const Occlusion& occlusion_in_content_space);
+  void UpdateTilePriorities(
+      const OcclusionTracker<LayerImpl>* occlusion_tracker);
   virtual bool ShouldAdjustRasterScale() const;
   virtual void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(

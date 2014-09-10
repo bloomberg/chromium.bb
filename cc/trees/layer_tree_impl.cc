@@ -520,13 +520,8 @@ bool LayerTreeImpl::UpdateDrawProperties() {
         occlusion_tracker->EnterLayer(it);
 
       LayerImpl* layer = *it;
-      const Occlusion& occlusion_in_content_space =
-          occlusion_tracker ? occlusion_tracker->GetCurrentOcclusionForLayer(
-                                  layer->draw_transform())
-                            : Occlusion();
-
       if (it.represents_itself())
-        layer->UpdateTiles(occlusion_in_content_space);
+        layer->UpdateTiles(occlusion_tracker.get());
 
       if (!it.represents_contributing_render_surface()) {
         if (occlusion_tracker)
@@ -535,10 +530,10 @@ bool LayerTreeImpl::UpdateDrawProperties() {
       }
 
       if (layer->mask_layer())
-        layer->mask_layer()->UpdateTiles(occlusion_in_content_space);
+        layer->mask_layer()->UpdateTiles(occlusion_tracker.get());
       if (layer->replica_layer() && layer->replica_layer()->mask_layer())
         layer->replica_layer()->mask_layer()->UpdateTiles(
-            occlusion_in_content_space);
+            occlusion_tracker.get());
 
       if (occlusion_tracker)
         occlusion_tracker->LeaveLayer(it);

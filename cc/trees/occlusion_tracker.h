@@ -11,7 +11,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_iterator.h"
-#include "cc/trees/occlusion.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -35,11 +34,6 @@ class CC_EXPORT OcclusionTracker {
  public:
   explicit OcclusionTracker(const gfx::Rect& screen_space_clip_rect);
   ~OcclusionTracker();
-
-  // Return an occlusion that retains the current state of the tracker
-  // and can be used outside of a layer walk to check occlusion.
-  Occlusion GetCurrentOcclusionForLayer(
-      const gfx::Transform& draw_transform) const;
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.

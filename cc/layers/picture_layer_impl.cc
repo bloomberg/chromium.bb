@@ -420,10 +420,16 @@ void PictureLayerImpl::AppendQuads(
 }
 
 void PictureLayerImpl::UpdateTiles(
-    const Occlusion& occlusion_in_content_space) {
+    const OcclusionTracker<LayerImpl>* occlusion_tracker) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTiles");
 
   DoPostCommitInitializationIfNeeded();
+
+  // TODO(danakj): We should always get an occlusion tracker when we are using
+  // occlusion, so update this check when we don't use a pending tree in the
+  // browser compositor.
+  DCHECK(!occlusion_tracker ||
+         layer_tree_impl()->settings().use_occlusion_for_tile_prioritization);
 
   visible_rect_for_tile_priority_ = visible_content_rect();
   viewport_rect_for_tile_priority_ =
@@ -459,14 +465,14 @@ void PictureLayerImpl::UpdateTiles(
 
   should_update_tile_priorities_ = true;
 
-  UpdateTilePriorities(occlusion_in_content_space);
+  UpdateTilePriorities(occlusion_tracker);
 
   if (layer_tree_impl()->IsPendingTree())
     MarkVisibleResourcesAsRequired();
 }
 
 void PictureLayerImpl::UpdateTilePriorities(
-    const Occlusion& occlusion_in_content_space) {
+    const OcclusionTracker<LayerImpl>* occlusion_tracker) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   double current_frame_time_in_seconds =
@@ -496,7 +502,9 @@ void PictureLayerImpl::UpdateTilePriorities(
                                                  visible_layer_rect,
                                                  ideal_contents_scale_,
                                                  current_frame_time_in_seconds,
-                                                 occlusion_in_content_space);
+                                                 occlusion_tracker,
+                                                 render_target(),
+                                                 draw_transform());
   }
 
   // Tile priorities were modified.
@@ -748,7 +756,7 @@ void PictureLayerImpl::SyncTiling(
     // when we stop using the pending tree in the browser compositor. If we want
     // to support occlusion tracking here, we need to dirty the draw properties
     // or save occlusion as a draw property.
-    UpdateTilePriorities(Occlusion());
+    UpdateTilePriorities(NULL);
   }
 }
 

@@ -28,16 +28,6 @@ template <typename LayerType>
 OcclusionTracker<LayerType>::~OcclusionTracker() {}
 
 template <typename LayerType>
-Occlusion OcclusionTracker<LayerType>::GetCurrentOcclusionForLayer(
-    const gfx::Transform& draw_transform) const {
-  DCHECK(!stack_.empty());
-  const StackObject& back = stack_.back();
-  return Occlusion(draw_transform,
-                   back.occlusion_from_outside_target,
-                   back.occlusion_from_inside_target);
-}
-
-template <typename LayerType>
 void OcclusionTracker<LayerType>::EnterLayer(
     const LayerIteratorPosition<LayerType>& layer_iterator) {
   LayerType* render_target = layer_iterator.target_render_surface_layer;
