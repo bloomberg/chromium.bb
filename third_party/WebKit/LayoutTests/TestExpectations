@@ -55,7 +55,7 @@ crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
-#crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
+crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
@@ -1056,9 +1056,6 @@ crbug.com/350853 fast/multicol/widows2.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height-with-break.html [ Skip ]
 
-crbug.com/408075 svg/custom/foreign-object-skew.svg [ NeedsManualRebaseline ]
-crbug.com/408075 svg/custom/svg-fonts-without-missing-glyph.xhtml [ NeedsManualRebaseline ]
-
 crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass Failure Timeout ]
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
@@ -1123,7 +1120,7 @@ crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
-#crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
 

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x286
-  RenderBlock {html} at (0,0) size 800x285.88
-    RenderBody {body} at (8,21.44) size 784x248.44
+layer at (0,0) size 800x294
+  RenderBlock {html} at (0,0) size 800x293.88
+    RenderBody {body} at (8,21.44) size 784x256.44
       RenderBlock {h1} at (0,0) size 784x37
         RenderText {#text} at (0,0) size 116x36
           text run at (0,0) width 116: "Test for "
@@ -12,18 +12,18 @@ layer at (0,0) size 800x286
       RenderBlock {p} at (0,58.44) size 784x20
         RenderText {#text} at (0,0) size 474x19
           text run at (0,0) width 474: "Following text should be rendered as usual. Only \"A\" has a glyph in SVG Font."
-      RenderBlock {p} at (0,94.44) size 784x18
-        RenderText {#text} at (0,1) size 35x16
-          text run at (0,1) width 35: "XXA"
-      RenderBlock {p} at (0,128.44) size 784x18
-        RenderText {#text} at (0,1) size 35x16
-          text run at (0,1) width 35: "XAX"
-      RenderBlock {p} at (0,162.44) size 784x18
-        RenderText {#text} at (0,1) size 35x16
-          text run at (0,1) width 35: "AXX"
-      RenderBlock {p} at (0,196.44) size 784x18
-        RenderText {#text} at (0,1) size 33x16
-          text run at (0,1) width 33: "XXX"
-      RenderBlock {p} at (0,230.44) size 784x18
+      RenderBlock {p} at (0,94.44) size 784x20
+        RenderText {#text} at (0,2) size 35x16
+          text run at (0,2) width 35: "XXA"
+      RenderBlock {p} at (0,130.44) size 784x20
+        RenderText {#text} at (0,2) size 35x16
+          text run at (0,2) width 35: "XAX"
+      RenderBlock {p} at (0,166.44) size 784x20
+        RenderText {#text} at (0,2) size 35x16
+          text run at (0,2) width 35: "AXX"
+      RenderBlock {p} at (0,202.44) size 784x20
+        RenderText {#text} at (0,2) size 33x16
+          text run at (0,2) width 33: "XXX"
+      RenderBlock {p} at (0,238.44) size 784x18
         RenderText {#text} at (0,1) size 39x16
           text run at (0,1) width 39: "AAA"
