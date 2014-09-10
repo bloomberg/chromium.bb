@@ -48,9 +48,9 @@ function DriveSyncHandler(progressCenter) {
   this.queue_ = new AsyncUtil.Queue();
 
   // Register events.
-  chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
+  chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
       this.onFileTransfersUpdated_.bind(this));
-  chrome.fileBrowserPrivate.onDriveSyncError.addListener(
+  chrome.fileManagerPrivate.onDriveSyncError.addListener(
       this.onDriveSyncError_.bind(this));
 }
 
@@ -152,7 +152,7 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  * @private
  */
 DriveSyncHandler.prototype.requestCancel_ = function(entry) {
-  chrome.fileBrowserPrivate.cancelFileTransfers([entry.toURL()], function() {});
+  chrome.fileManagerPrivate.cancelFileTransfers([entry.toURL()], function() {});
 };
 
 /**

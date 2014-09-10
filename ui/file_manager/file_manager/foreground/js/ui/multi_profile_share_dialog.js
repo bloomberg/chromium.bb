@@ -44,7 +44,7 @@ function MultiProfileShareDialog(parentNode) {
   this.frame_.id = 'multi-profile-share-dialog';
 
   this.currentProfileId_ = new Promise(function(callback) {
-    chrome.fileBrowserPrivate.getProfiles(
+    chrome.fileManagerPrivate.getProfiles(
         function(profiles, currentId, displayedId) {
       callback(currentId);
     });

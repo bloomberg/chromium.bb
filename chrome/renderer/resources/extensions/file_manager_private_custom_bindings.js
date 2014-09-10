@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the fileBrowserPrivate API.
+// Custom binding for the fileManagerPrivate API.
 
 // Bindings
-var binding = require('binding').Binding.create('fileBrowserPrivate');
+var binding = require('binding').Binding.create('fileManagerPrivate');
 var eventBindings = require('event_bindings');
 
 // Natives
-var fileBrowserPrivateNatives = requireNative('file_browser_private');
+var fileManagerPrivateNatives = requireNative('file_manager_private');
 var fileBrowserHandlerNatives = requireNative('file_browser_handler');
 
 // Internals
-var fileBrowserPrivateInternal =
-    require('binding').Binding.create('fileBrowserPrivateInternal').generate();
+var fileManagerPrivateInternal =
+    require('binding').Binding.create('fileManagerPrivateInternal').generate();
 
 // Shorthands
-var GetFileSystem = fileBrowserPrivateNatives.GetFileSystem;
+var GetFileSystem = fileManagerPrivateNatives.GetFileSystem;
 var GetExternalFileEntry = fileBrowserHandlerNatives.GetExternalFileEntry;
 
 binding.registerCustomHook(function(bindingsAPI) {
@@ -73,7 +73,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     var urls = entries.map(function(entry) {
       return fileBrowserHandlerNatives.GetEntryURL(entry);
     });
-    fileBrowserPrivateInternal.resolveIsolatedEntries(urls, function(
+    fileManagerPrivateInternal.resolveIsolatedEntries(urls, function(
         entryDescriptions) {
       callback(entryDescriptions.map(function(description) {
         return GetExternalFileEntry(description);
@@ -83,7 +83,7 @@ binding.registerCustomHook(function(bindingsAPI) {
 });
 
 eventBindings.registerArgumentMassager(
-    'fileBrowserPrivate.onDirectoryChanged', function(args, dispatch) {
+    'fileManagerPrivate.onDirectoryChanged', function(args, dispatch) {
   // Convert the entry arguments into a real Entry object.
   args[0].entry = GetExternalFileEntry(args[0].entry);
   dispatch(args);

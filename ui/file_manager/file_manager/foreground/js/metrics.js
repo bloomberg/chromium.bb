@@ -40,7 +40,7 @@ metrics.convertName_ = function(name) {
 };
 
 /**
- * Wrapper method for calling chrome.fileBrowserPrivate safely.
+ * Wrapper method for calling chrome.fileManagerPrivate safely.
  * @param {string} name Method name.
  * @param {Array.<Object>} args Arguments.
  * @private

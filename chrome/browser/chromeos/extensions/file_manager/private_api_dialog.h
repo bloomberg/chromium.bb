@@ -19,27 +19,27 @@ struct SelectedFileInfo;
 namespace extensions {
 
 // Cancel file selection Dialog.  Closes the dialog window.
-class FileBrowserPrivateCancelDialogFunction
+class FileManagerPrivateCancelDialogFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
-                             FILEBROWSERPRIVATE_CANCELDIALOG)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelDialog",
+                             FILEMANAGERPRIVATE_CANCELDIALOG)
 
  protected:
-  virtual ~FileBrowserPrivateCancelDialogFunction() {}
+  virtual ~FileManagerPrivateCancelDialogFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
 };
 
-class FileBrowserPrivateSelectFileFunction
+class FileManagerPrivateSelectFileFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
-                             FILEBROWSERPRIVATE_SELECTFILE)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFile",
+                             FILEMANAGERPRIVATE_SELECTFILE)
 
  protected:
-  virtual ~FileBrowserPrivateSelectFileFunction() {}
+  virtual ~FileManagerPrivateSelectFileFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
@@ -52,14 +52,14 @@ class FileBrowserPrivateSelectFileFunction
 };
 
 // Select multiple files.  Closes the dialog window.
-class FileBrowserPrivateSelectFilesFunction
+class FileManagerPrivateSelectFilesFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFiles",
-                             FILEBROWSERPRIVATE_SELECTFILES)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFiles",
+                             FILEMANAGERPRIVATE_SELECTFILES)
 
  protected:
-  virtual ~FileBrowserPrivateSelectFilesFunction() {}
+  virtual ~FileManagerPrivateSelectFilesFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;

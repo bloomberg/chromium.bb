@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These have to be sync'd with file_browser_private_apitest.cc
+// These have to be sync'd with file_manager_private_apitest.cc
 var expectedVolume1 = {
   volumeId: 'removable:mount_path1',
   volumeLabel: 'mount_path1',
@@ -66,7 +66,7 @@ var expectedArchiveVolume = {
 };
 
 // List of expected mount points.
-// NOTE: this has to be synced with values in file_browser_private_apitest.cc
+// NOTE: this has to be synced with values in file_manager_private_apitest.cc
 //       and values sorted by volumeId.
 var expectedVolumeList = [
   expectedArchiveVolume,
@@ -113,7 +113,7 @@ function validateObject(received, expected, name) {
 
 chrome.test.runTests([
   function removeMount() {
-    chrome.fileBrowserPrivate.removeMount('archive:archive_mount_path');
+    chrome.fileManagerPrivate.removeMount('archive:archive_mount_path');
 
     // We actually check this one on C++ side. If MountLibrary.RemoveMount
     // doesn't get called, test will fail.
@@ -121,7 +121,7 @@ chrome.test.runTests([
   },
 
   function getVolumeMetadataList() {
-    chrome.fileBrowserPrivate.getVolumeMetadataList(
+    chrome.fileManagerPrivate.getVolumeMetadataList(
         chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(expectedVolumeList.length, result.length,
               'getMountPoints returned wrong number of mount points.');

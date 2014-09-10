@@ -44,7 +44,7 @@ function setUp() {
 
   // Make dummy APIs.
   chrome = {
-    fileBrowserPrivate: {
+    fileManagerPrivate: {
       onDeviceChanged: {
         addListener: function(listener) {
           this.dispatch = listener;
@@ -82,7 +82,7 @@ function setUp() {
 }
 
 function testGoodDevice() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
@@ -100,7 +100,7 @@ function testGoodDevice() {
 }
 
 function testGoodDeviceNotNavigated() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
@@ -115,7 +115,7 @@ function testGoodDeviceNotNavigated() {
 }
 
 function testGoodDeviceWithBadParent() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -131,7 +131,7 @@ function testGoodDeviceWithBadParent() {
       'DEVICE_UNKNOWN: label',
       chrome.notifications.items['deviceFail:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
@@ -147,7 +147,7 @@ function testGoodDeviceWithBadParent() {
       'DEVICE_NAVIGATION',
       chrome.notifications.items['deviceNavigation:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
@@ -166,7 +166,7 @@ function testGoodDeviceWithBadParent() {
 }
 
 function testUnsupportedDevice() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unsupported_filesystem',
     volumeMetadata: {
@@ -184,7 +184,7 @@ function testUnsupportedDevice() {
 }
 
 function testUnsupportedWithUnknownParent() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -199,7 +199,7 @@ function testUnsupportedWithUnknownParent() {
       'DEVICE_UNKNOWN: label',
       chrome.notifications.items['deviceFail:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unsupported_filesystem',
     volumeMetadata: {
@@ -217,7 +217,7 @@ function testUnsupportedWithUnknownParent() {
 }
 
 function testMountPartialSuccess() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
@@ -233,7 +233,7 @@ function testMountPartialSuccess() {
       'DEVICE_NAVIGATION',
       chrome.notifications.items['deviceNavigation:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unsupported_filesystem',
     volumeMetadata: {
@@ -251,7 +251,7 @@ function testMountPartialSuccess() {
 }
 
 function testUnknown() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unknown',
     volumeMetadata: {
@@ -269,7 +269,7 @@ function testUnknown() {
 }
 
 function testNonASCIILabel() {
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -289,7 +289,7 @@ function testNonASCIILabel() {
 
 function testMulitpleFail() {
   // The first parent error.
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -306,7 +306,7 @@ function testMulitpleFail() {
       chrome.notifications.items['deviceFail:/device/path'].message);
 
   // The first child error that replaces the parent error.
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -323,7 +323,7 @@ function testMulitpleFail() {
       chrome.notifications.items['deviceFail:/device/path'].message);
 
   // The second child error that turns to a multi-partition error.
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -341,7 +341,7 @@ function testMulitpleFail() {
 
   // The third child error that should be ignored because the error message does
   // not changed.
-  chrome.fileBrowserPrivate.onMountCompleted.dispatch({
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
     volumeMetadata: {
@@ -359,7 +359,7 @@ function testMulitpleFail() {
 }
 
 function testScanCanceled() {
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'scan_started',
     devicePath: '/device/path'
   });
@@ -367,14 +367,14 @@ function testScanCanceled() {
   assertEquals('Scanning...',
                chrome.notifications.items['device:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'scan_cancelled',
     devicePath: '/device/path'
   });
   assertEquals(0, Object.keys(chrome.notifications.items).length);
 
   // Nothing happened.
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'removed',
     devicePath: '/device/path'
   });
@@ -382,7 +382,7 @@ function testScanCanceled() {
 }
 
 function testDisabledDevice() {
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'disabled',
     devicePath: '/device/path'
   });
@@ -390,7 +390,7 @@ function testDisabledDevice() {
   assertEquals('EXTERNAL_STORAGE_DISABLED',
                chrome.notifications.items['deviceFail:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'removed',
     devicePath: '/device/path'
   });
@@ -398,7 +398,7 @@ function testDisabledDevice() {
 }
 
 function testFormatSucceeded() {
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
   });
@@ -406,7 +406,7 @@ function testFormatSucceeded() {
   assertEquals('FORMATTING_OF_DEVICE_PENDING',
                chrome.notifications.items['formatStart:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_success',
     devicePath: '/device/path'
   });
@@ -417,7 +417,7 @@ function testFormatSucceeded() {
 }
 
 function testFormatFailed() {
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
   });
@@ -425,7 +425,7 @@ function testFormatFailed() {
   assertEquals('FORMATTING_OF_DEVICE_PENDING',
                chrome.notifications.items['formatStart:/device/path'].message);
 
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_fail',
     devicePath: '/device/path'
   });
@@ -435,7 +435,7 @@ function testFormatFailed() {
 }
 
 function testDeviceHardUnplugged() {
-  chrome.fileBrowserPrivate.onDeviceChanged.dispatch({
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'hard_unplugged',
     devicePath: '/device/path'
   });

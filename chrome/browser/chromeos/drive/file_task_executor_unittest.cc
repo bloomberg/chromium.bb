@@ -109,13 +109,13 @@ TEST(FileTaskExecutorTest, DriveAppOpenSuccess) {
       storage::kFileSystemTypeDrive,
       base::FilePath::FromUTF8Unsafe("/special/drive/root/file2.txt")));
 
-  extensions::api::file_browser_private::TaskResult result =
-      extensions::api::file_browser_private::TASK_RESULT_NONE;
+  extensions::api::file_manager_private::TaskResult result =
+      extensions::api::file_manager_private::TASK_RESULT_NONE;
   executor->Execute(urls,
                     google_apis::test_util::CreateCopyResultCallback(&result));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(extensions::api::file_browser_private::TASK_RESULT_OPENED, result);
+  EXPECT_EQ(extensions::api::file_manager_private::TASK_RESULT_OPENED, result);
   ASSERT_EQ(2u, opend_urls.size());
   EXPECT_TRUE(opend_urls.count("http://openlink/id1/test-app-id"));
   EXPECT_TRUE(opend_urls.count("http://openlink/id2/test-app-id"));
@@ -139,13 +139,13 @@ TEST(FileTaskExecutorTest, DriveAppOpenFailForNonExistingFile) {
       storage::kFileSystemTypeDrive,
       base::FilePath::FromUTF8Unsafe("/special/drive/root/not-exist.txt")));
 
-  extensions::api::file_browser_private::TaskResult result =
-      extensions::api::file_browser_private::TASK_RESULT_NONE;
+  extensions::api::file_manager_private::TaskResult result =
+      extensions::api::file_manager_private::TASK_RESULT_NONE;
   executor->Execute(urls,
                     google_apis::test_util::CreateCopyResultCallback(&result));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(extensions::api::file_browser_private::TASK_RESULT_FAILED, result);
+  EXPECT_EQ(extensions::api::file_manager_private::TASK_RESULT_FAILED, result);
   ASSERT_TRUE(opend_urls.empty());
 }
 

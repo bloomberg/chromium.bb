@@ -6,9 +6,9 @@
  * Extension apitests for drive search methods.
  * There are three tests functions run:
  * - loadFileSystem() which requests the Drive file system.
- * - driveSearch() which tests chrome.fileBrowserPrivate.searchDrive function.
+ * - driveSearch() which tests chrome.fileManagerPrivate.searchDrive function.
  * - driveMetadataSearch() which tests
- *   chrome.fileBrowserPrivate.searchDriveMetadata function.
+ *   chrome.fileManagerPrivate.searchDriveMetadata function.
  *
  * For both search test functions, the test verifies that the file system
  * operations can be performed on the returned result entries. For file entries
@@ -72,7 +72,7 @@ function getEntryVerifier(type) {
 chrome.test.runTests([
   // Loads filesystem that contains drive mount point.
   function loadFileSystem() {
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
       'drive:drive-user',
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
@@ -94,7 +94,7 @@ chrome.test.runTests([
       });
   },
 
-  // Tests chrome.fileBrowserPrivate.searchDrive method.
+  // Tests chrome.fileManagerPrivate.searchDrive method.
   function driveSearch() {
     var query = 'empty';
     var expectedEntries = [
@@ -127,16 +127,16 @@ chrome.test.runTests([
           return;
         }
 
-        chrome.fileBrowserPrivate.searchDrive(
+        chrome.fileManagerPrivate.searchDrive(
             {query: query, nextFeed: nextFeed}, runNextQuery);
       });
     }
 
-    chrome.fileBrowserPrivate.searchDrive(
+    chrome.fileManagerPrivate.searchDrive(
         {query: query, nextFeed: ''}, runNextQuery);
   },
 
-  // Tests chrome.fileBrowserPrivate.searchDriveMetadata method.
+  // Tests chrome.fileManagerPrivate.searchDriveMetadata method.
   function driveMetadataSearch() {
     // The results should be sorted by (lastAccessed, lastModified) pair. The
     // sort should be decending. The comments above each expected result
@@ -160,7 +160,7 @@ chrome.test.runTests([
       'maxResults': 4
     };
 
-    chrome.fileBrowserPrivate.searchDriveMetadata(
+    chrome.fileManagerPrivate.searchDriveMetadata(
         query,
         function(entries) {
           chrome.test.assertFalse(!entries);

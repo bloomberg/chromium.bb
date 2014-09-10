@@ -56,13 +56,13 @@ const int kNoActionForFileHelpNumber = 1700055;
 
 namespace extensions {
 
-FileBrowserPrivateGetStringsFunction::FileBrowserPrivateGetStringsFunction() {
+FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() {
 }
 
-FileBrowserPrivateGetStringsFunction::~FileBrowserPrivateGetStringsFunction() {
+FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() {
 }
 
-bool FileBrowserPrivateGetStringsFunction::RunSync() {
+bool FileManagerPrivateGetStringsFunction::RunSync() {
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 

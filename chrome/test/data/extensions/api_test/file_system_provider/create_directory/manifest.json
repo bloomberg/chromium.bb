@@ -7,7 +7,7 @@
       "Test for chrome.fileSystemProvider.onCreateDirectoryRequested().",
   "permissions": [
     "fileSystemProvider",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler"
   ],
   "app": {

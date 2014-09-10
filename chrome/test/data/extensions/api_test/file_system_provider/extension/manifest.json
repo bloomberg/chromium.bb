@@ -4,7 +4,7 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Test for chrome.fileSystemProvider.mount() in an extension.",
-  "permissions": ["fileSystemProvider", "fileBrowserPrivate"],
+  "permissions": ["fileSystemProvider", "fileManagerPrivate"],
   "background": {
     "persistent": false,
     "scripts": [

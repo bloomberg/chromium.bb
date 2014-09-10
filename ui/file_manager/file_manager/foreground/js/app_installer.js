@@ -50,7 +50,7 @@ AppInstaller.USER_CANCELLED_ERROR_STR_ = 'User cancelled install';
  */
 AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;
-  chrome.fileBrowserPrivate.installWebstoreItem(
+  chrome.fileManagerPrivate.installWebstoreItem(
       this.itemId_,
       false,  // Shows installation prompt.
       function() {

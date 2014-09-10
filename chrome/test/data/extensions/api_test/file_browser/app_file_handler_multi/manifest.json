@@ -15,7 +15,7 @@
     }
   },
   "permissions": [
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler",
     "unlimitedStorage"
   ]

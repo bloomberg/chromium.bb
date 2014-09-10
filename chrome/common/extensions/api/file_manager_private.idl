@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// fileBrowserPrivate API.
+// fileManagerPrivate API.
 // This is a private API used by the file browser of ChromeOS.
 [platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_functions.h"]
-namespace fileBrowserPrivate {
+ implemented_in="chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h"]
+namespace fileManagerPrivate {
 // Type of the mounted volume.
 enum VolumeType { drive, downloads, removable, archive, cloud_device, provided,
                   mtp, testing };

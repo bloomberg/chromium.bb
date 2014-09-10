@@ -55,7 +55,7 @@ test_util.openedFiles = {};
  *     volume information object in case of success, or null if not found.
  */
 test_util.getVolumeInfo = function(fileSystemId, callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
     for (var i = 0; i < volumeList.length; i++) {
       if (volumeList[i].extensionId == chrome.runtime.id &&
           volumeList[i].fileSystemId == fileSystemId) {
@@ -87,7 +87,7 @@ test_util.mountFileSystem = function(callback) {
 
         test_util.getVolumeInfo(test_util.FILE_SYSTEM_ID, function(volumeInfo) {
           chrome.test.assertTrue(!!volumeInfo);
-          chrome.fileBrowserPrivate.requestFileSystem(
+          chrome.fileManagerPrivate.requestFileSystem(
               volumeInfo.volumeId,
               function(inFileSystem) {
                 chrome.test.assertTrue(!!inFileSystem);

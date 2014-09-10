@@ -221,7 +221,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
       break;
   }
 
-  chrome.fileBrowserPrivate.requestFileSystem(
+  chrome.fileManagerPrivate.requestFileSystem(
       volumeMetadata.volumeId,
       function(fileSystem) {
         // TODO(mtomasz): chrome.runtime.lastError should have error reason.
@@ -448,7 +448,7 @@ function VolumeManager() {
     reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE
   };
 
-  chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
+  chrome.fileManagerPrivate.onDriveConnectionStatusChanged.addListener(
       this.onDriveConnectionStatusChanged_.bind(this));
   this.onDriveConnectionStatusChanged_();
 }
@@ -458,7 +458,7 @@ function VolumeManager() {
  * @private_
  */
 VolumeManager.prototype.onDriveConnectionStatusChanged_ = function() {
-  chrome.fileBrowserPrivate.getDriveConnectionState(function(state) {
+  chrome.fileManagerPrivate.getDriveConnectionState(function(state) {
     this.driveConnectionState_ = state;
     cr.dispatchSimpleEvent(this, 'drive-connection-changed');
   }.bind(this));
@@ -531,7 +531,7 @@ VolumeManager.getInstance = function(callback) {
  * @private
  */
 VolumeManager.prototype.initialize_ = function(callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList. crbug.com/330061.
     // But volumes reported by onMountCompleted events must be added after the
@@ -561,7 +561,7 @@ VolumeManager.prototype.initialize_ = function(callback) {
       });
     }.bind(this));
 
-    chrome.fileBrowserPrivate.onMountCompleted.addListener(
+    chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
   }.bind(this));
 };
@@ -657,7 +657,7 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType, argument) {
  */
 VolumeManager.prototype.mountArchive = function(
     fileUrl, successCallback, errorCallback) {
-  chrome.fileBrowserPrivate.addMount(fileUrl, function(sourcePath) {
+  chrome.fileManagerPrivate.addMount(fileUrl, function(sourcePath) {
     console.info(
         'Mount request: url=' + fileUrl + '; sourcePath=' + sourcePath);
     var requestKey = this.makeRequestKey_('mount', sourcePath);
@@ -675,7 +675,7 @@ VolumeManager.prototype.mountArchive = function(
 VolumeManager.prototype.unmount = function(volumeInfo,
                                            successCallback,
                                            errorCallback) {
-  chrome.fileBrowserPrivate.removeMount(volumeInfo.volumeId);
+  chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
   var requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
   this.startRequest_(requestKey, successCallback, errorCallback);
 };

@@ -21,13 +21,13 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace file_browser_private = extensions::api::file_browser_private;
+namespace file_manager_private = extensions::api::file_manager_private;
 
 namespace file_manager {
 namespace util {
@@ -159,7 +159,7 @@ void ContinueGetSelectedFileInfo(Profile* profile,
 void VolumeInfoToVolumeMetadata(
     Profile* profile,
     const VolumeInfo& volume_info,
-    file_browser_private::VolumeMetadata* volume_metadata) {
+    file_manager_private::VolumeMetadata* volume_metadata) {
   DCHECK(volume_metadata);
 
   volume_metadata->volume_id = volume_info.volume_id;
@@ -188,32 +188,32 @@ void VolumeInfoToVolumeMetadata(
   switch (volume_info.type) {
     case VOLUME_TYPE_GOOGLE_DRIVE:
       volume_metadata->volume_type =
-          file_browser_private::VOLUME_TYPE_DRIVE;
+          file_manager_private::VOLUME_TYPE_DRIVE;
       break;
     case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
       volume_metadata->volume_type =
-          file_browser_private::VOLUME_TYPE_DOWNLOADS;
+          file_manager_private::VOLUME_TYPE_DOWNLOADS;
       break;
     case VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
       volume_metadata->volume_type =
-          file_browser_private::VOLUME_TYPE_REMOVABLE;
+          file_manager_private::VOLUME_TYPE_REMOVABLE;
       break;
     case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
-      volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_ARCHIVE;
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_ARCHIVE;
       break;
     case VOLUME_TYPE_CLOUD_DEVICE:
       volume_metadata->volume_type =
-          file_browser_private::VOLUME_TYPE_CLOUD_DEVICE;
+          file_manager_private::VOLUME_TYPE_CLOUD_DEVICE;
       break;
     case VOLUME_TYPE_PROVIDED:
-      volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_PROVIDED;
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_PROVIDED;
       break;
     case VOLUME_TYPE_MTP:
-      volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_MTP;
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_MTP;
       break;
     case VOLUME_TYPE_TESTING:
       volume_metadata->volume_type =
-          file_browser_private::VOLUME_TYPE_TESTING;
+          file_manager_private::VOLUME_TYPE_TESTING;
       break;
     case NUM_VOLUME_TYPE:
       NOTREACHED();
@@ -225,21 +225,21 @@ void VolumeInfoToVolumeMetadata(
     switch (volume_info.device_type) {
       case chromeos::DEVICE_TYPE_UNKNOWN:
         volume_metadata->device_type =
-            file_browser_private::DEVICE_TYPE_UNKNOWN;
+            file_manager_private::DEVICE_TYPE_UNKNOWN;
         break;
       case chromeos::DEVICE_TYPE_USB:
-        volume_metadata->device_type = file_browser_private::DEVICE_TYPE_USB;
+        volume_metadata->device_type = file_manager_private::DEVICE_TYPE_USB;
         break;
       case chromeos::DEVICE_TYPE_SD:
-        volume_metadata->device_type = file_browser_private::DEVICE_TYPE_SD;
+        volume_metadata->device_type = file_manager_private::DEVICE_TYPE_SD;
         break;
       case chromeos::DEVICE_TYPE_OPTICAL_DISC:
       case chromeos::DEVICE_TYPE_DVD:
         volume_metadata->device_type =
-            file_browser_private::DEVICE_TYPE_OPTICAL;
+            file_manager_private::DEVICE_TYPE_OPTICAL;
         break;
       case chromeos::DEVICE_TYPE_MOBILE:
-        volume_metadata->device_type = file_browser_private::DEVICE_TYPE_MOBILE;
+        volume_metadata->device_type = file_manager_private::DEVICE_TYPE_MOBILE;
         break;
     }
     volume_metadata->device_path.reset(
@@ -248,7 +248,7 @@ void VolumeInfoToVolumeMetadata(
         new bool(volume_info.is_parent));
   } else {
     volume_metadata->device_type =
-        file_browser_private::DEVICE_TYPE_NONE;
+        file_manager_private::DEVICE_TYPE_NONE;
   }
 
   volume_metadata->is_read_only = volume_info.is_read_only;
@@ -256,15 +256,15 @@ void VolumeInfoToVolumeMetadata(
   switch (volume_info.mount_condition) {
     case chromeos::disks::MOUNT_CONDITION_NONE:
       volume_metadata->mount_condition =
-          file_browser_private::MOUNT_CONDITION_NONE;
+          file_manager_private::MOUNT_CONDITION_NONE;
       break;
     case chromeos::disks::MOUNT_CONDITION_UNKNOWN_FILESYSTEM:
       volume_metadata->mount_condition =
-          file_browser_private::MOUNT_CONDITION_UNKNOWN;
+          file_manager_private::MOUNT_CONDITION_UNKNOWN;
       break;
     case chromeos::disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM:
       volume_metadata->mount_condition =
-          file_browser_private::MOUNT_CONDITION_UNSUPPORTED;
+          file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
       break;
   }
 }

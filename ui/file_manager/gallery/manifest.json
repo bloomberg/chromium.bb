@@ -22,7 +22,7 @@
     "chrome://resources/",
     "chrome://theme/",
     "fileBrowserHandler",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileSystem",
     "fullscreen",
     "metricsPrivate",

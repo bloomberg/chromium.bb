@@ -253,7 +253,7 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
   // Fetches the access token and makes an authorized call. If refresh is true,
   // then forces refreshing the access token.
   var requestTokenAndCall = function(refresh, onInnerSuccess, onInnerFailure) {
-    chrome.fileBrowserPrivate.requestAccessToken(refresh, function(token) {
+    chrome.fileManagerPrivate.requestAccessToken(refresh, function(token) {
       if (this.aborted_)
         return;
       if (!token) {

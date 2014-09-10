@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FUNCTIONS_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FUNCTIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_PRIVATE_API_FUNCTIONS_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_PRIVATE_API_FUNCTIONS_H_
 
 // This header file is included from the auto generated code by the extension
 // API scheme compiler.
-// See also chrome/common/extensions/api/file_browser_private.idl.
+// See also chrome/common/extensions/api/file_manager_private.idl.
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
@@ -17,4 +17,4 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FUNCTIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_PRIVATE_API_FUNCTIONS_H_

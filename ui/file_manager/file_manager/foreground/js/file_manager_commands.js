@@ -394,7 +394,7 @@ CommandHandler.COMMANDS_['format'] = {
     if (volumeInfo) {
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
-          chrome.fileBrowserPrivate.formatVolume.bind(null,
+          chrome.fileManagerPrivate.formatVolume.bind(null,
                                                       volumeInfo.volumeId));
     }
   },
@@ -442,7 +442,7 @@ CommandHandler.COMMANDS_['new-folder'] = {
  */
 CommandHandler.COMMANDS_['new-window'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+    chrome.fileManagerPrivate.getProfiles(function(profiles,
                                                    currentId,
                                                    displayedId) {
       fileManager.backgroundPage.launchFileManager({
@@ -700,7 +700,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
         if (entries.length == 0)
           return;
         currentEntry = entries.shift();
-        chrome.fileBrowserPrivate.pinDriveFile(
+        chrome.fileManagerPrivate.pinDriveFile(
             currentEntry.toURL(),
             pin,
             steps.entryPinned);
@@ -871,7 +871,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
  */
 CommandHandler.COMMANDS_['zoom-in'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.zoom('in');
+    chrome.fileManagerPrivate.zoom('in');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -882,7 +882,7 @@ CommandHandler.COMMANDS_['zoom-in'] = {
  */
 CommandHandler.COMMANDS_['zoom-out'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.zoom('out');
+    chrome.fileManagerPrivate.zoom('out');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -893,7 +893,7 @@ CommandHandler.COMMANDS_['zoom-out'] = {
  */
 CommandHandler.COMMANDS_['zoom-reset'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.zoom('reset');
+    chrome.fileManagerPrivate.zoom('reset');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -904,7 +904,7 @@ CommandHandler.COMMANDS_['zoom-reset'] = {
  */
 CommandHandler.COMMANDS_['inspect-normal'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.openInspector('normal');
+    chrome.fileManagerPrivate.openInspector('normal');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -915,7 +915,7 @@ CommandHandler.COMMANDS_['inspect-normal'] = {
  */
 CommandHandler.COMMANDS_['inspect-console'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.openInspector('console');
+    chrome.fileManagerPrivate.openInspector('console');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -926,7 +926,7 @@ CommandHandler.COMMANDS_['inspect-console'] = {
  */
 CommandHandler.COMMANDS_['inspect-element'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.openInspector('element');
+    chrome.fileManagerPrivate.openInspector('element');
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -937,7 +937,7 @@ CommandHandler.COMMANDS_['inspect-element'] = {
  */
 CommandHandler.COMMANDS_['inspect-background'] = {
   execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.openInspector('background');
+    chrome.fileManagerPrivate.openInspector('background');
   },
   canExecute: CommandUtil.canExecuteAlways
 };

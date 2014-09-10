@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Internal, used by fileBrowserPrivate's custom bindings.
+// Internal, used by fileManagerPrivate's custom bindings.
 [platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_functions.h"]
-namespace fileBrowserPrivateInternal {
+ implemented_in="chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h"]
+namespace fileManagerPrivateInternal {
   // Entry information that renderers need to create an Entry instance.
   dictionary EntryDescription {
     DOMString fileSystemName;

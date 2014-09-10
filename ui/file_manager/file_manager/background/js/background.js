@@ -83,7 +83,7 @@ function Background() {
    * @type {Promise}
    */
   this.stringDataPromise = new Promise(function(fulfill) {
-    chrome.fileBrowserPrivate.getStrings(fulfill);
+    chrome.fileManagerPrivate.getStrings(fulfill);
   });
 
   /**
@@ -291,14 +291,14 @@ AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
     if (opt_profileId) {
       onFulfilled(opt_profileId);
     } else {
-      chrome.fileBrowserPrivate.getProfiles(function(profiles,
+      chrome.fileManagerPrivate.getProfiles(function(profiles,
                                                      currentId,
                                                      displayedId) {
         onFulfilled(currentId);
       });
     }
   }).then(function(profileId) {
-    appWindow.contentWindow.chrome.fileBrowserPrivate.visitDesktop(
+    appWindow.contentWindow.chrome.fileManagerPrivate.visitDesktop(
         profileId, function() {
       appWindow.focus();
     });

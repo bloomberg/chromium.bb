@@ -912,7 +912,7 @@
   [
     404,
     "apps/private_apis.html",
-    "apps/fileBrowserPrivate.html",
+    "apps/fileManagerPrivate.html",
     "target page not found"
   ],
   [
@@ -1763,7 +1763,7 @@
   [
     404,
     "extensions/private_apis.html",
-    "extensions/fileBrowserPrivate.html",
+    "extensions/fileManagerPrivate.html",
     "target page not found"
   ],
   [

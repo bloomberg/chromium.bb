@@ -32,7 +32,7 @@
      "downloads",
      "experimental",
      "fileBrowserHandler",
-     "fileBrowserPrivate",
+     "fileManagerPrivate",
      "fileSystem",
      "fileSystem.write",
      "fontSettings",

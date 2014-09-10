@@ -16,15 +16,15 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
-#include "chrome/common/extensions/api/file_browser_private_internal.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -83,7 +83,7 @@ file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return NULL;
 
-  return file_manager::FileBrowserPrivateAPI::Get(profile)->event_router();
+  return file_manager::FileManagerPrivateAPI::Get(profile)->event_router();
 }
 
 // Notifies the copy progress to extensions via event router.
@@ -203,7 +203,7 @@ void CancelCopyOnIOThread(
 
 }  // namespace
 
-void FileBrowserPrivateRequestFileSystemFunction::DidFail(
+void FileManagerPrivateRequestFileSystemFunction::DidFail(
     base::File::Error error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -212,7 +212,7 @@ void FileBrowserPrivateRequestFileSystemFunction::DidFail(
 }
 
 bool
-FileBrowserPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
+FileManagerPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     int child_id,
     Profile* profile,
@@ -262,9 +262,9 @@ FileBrowserPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
   return true;
 }
 
-bool FileBrowserPrivateRequestFileSystemFunction::RunAsync() {
+bool FileManagerPrivateRequestFileSystemFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  using extensions::api::file_browser_private::RequestFileSystem::Params;
+  using extensions::api::file_manager_private::RequestFileSystem::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -313,12 +313,12 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunAsync() {
       extension_id(),
       file_definition,
       base::Bind(
-          &FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition,
+          &FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition,
           this));
   return true;
 }
 
-void FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition(
+void FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition(
     const EntryDefinition& entry_definition) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -374,35 +374,35 @@ bool FileWatchFunctionBase::RunAsync() {
   return true;
 }
 
-void FileBrowserPrivateAddFileWatchFunction::PerformFileWatchOperation(
+void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
+      file_manager::FileManagerPrivateAPI::Get(GetProfile())->event_router();
   event_router->AddFileWatch(
       local_path,
       virtual_path,
       extension_id,
-      base::Bind(&FileBrowserPrivateAddFileWatchFunction::Respond, this));
+      base::Bind(&FileManagerPrivateAddFileWatchFunction::Respond, this));
 }
 
-void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
+void FileManagerPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& unused,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
+      file_manager::FileManagerPrivateAPI::Get(GetProfile())->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
 }
 
-bool FileBrowserPrivateGetSizeStatsFunction::RunAsync() {
-  using extensions::api::file_browser_private::GetSizeStats::Params;
+bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetSizeStats::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -428,7 +428,7 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunAsync() {
     }
 
     file_system->GetAvailableSpace(
-        base::Bind(&FileBrowserPrivateGetSizeStatsFunction::
+        base::Bind(&FileManagerPrivateGetSizeStatsFunction::
                        GetDriveAvailableSpaceCallback,
                    this));
   } else {
@@ -440,7 +440,7 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunAsync() {
                    volume_info.mount_path.value(),
                    total_size,
                    remaining_size),
-        base::Bind(&FileBrowserPrivateGetSizeStatsFunction::
+        base::Bind(&FileManagerPrivateGetSizeStatsFunction::
                        GetSizeStatsCallback,
                    this,
                    base::Owned(total_size),
@@ -449,7 +449,7 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunAsync() {
   return true;
 }
 
-void FileBrowserPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
+void FileManagerPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     drive::FileError error,
     int64 bytes_total,
     int64 bytes_used) {
@@ -464,7 +464,7 @@ void FileBrowserPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
   }
 }
 
-void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
+void FileManagerPrivateGetSizeStatsFunction::GetSizeStatsCallback(
     const uint64* total_size,
     const uint64* remaining_size) {
   base::DictionaryValue* sizes = new base::DictionaryValue();
@@ -476,8 +476,8 @@ void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateValidatePathNameLengthFunction::RunAsync() {
-  using extensions::api::file_browser_private::ValidatePathNameLength::Params;
+bool FileManagerPrivateValidatePathNameLengthFunction::RunAsync() {
+  using extensions::api::file_manager_private::ValidatePathNameLength::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -502,21 +502,21 @@ bool FileBrowserPrivateValidatePathNameLengthFunction::RunAsync() {
       FROM_HERE,
       base::Bind(&GetFileNameMaxLengthOnBlockingPool,
                  filesystem_url.path().AsUTF8Unsafe()),
-      base::Bind(&FileBrowserPrivateValidatePathNameLengthFunction::
+      base::Bind(&FileManagerPrivateValidatePathNameLengthFunction::
                      OnFilePathLimitRetrieved,
                  this, params->name.size()));
   return true;
 }
 
-void FileBrowserPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
+void FileManagerPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
     size_t current_length,
     size_t max_length) {
   SetResult(new base::FundamentalValue(current_length <= max_length));
   SendResponse(true);
 }
 
-bool FileBrowserPrivateFormatVolumeFunction::RunAsync() {
-  using extensions::api::file_browser_private::FormatVolume::Params;
+bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
+  using extensions::api::file_manager_private::FormatVolume::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -536,10 +536,10 @@ bool FileBrowserPrivateFormatVolumeFunction::RunAsync() {
   return true;
 }
 
-bool FileBrowserPrivateStartCopyFunction::RunAsync() {
+bool FileManagerPrivateStartCopyFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using  extensions::api::file_browser_private::StartCopy::Params;
+  using  extensions::api::file_manager_private::StartCopy::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -579,11 +579,11 @@ bool FileBrowserPrivateStartCopyFunction::RunAsync() {
                  file_system_context,
                  source_url,
                  destination_url),
-      base::Bind(&FileBrowserPrivateStartCopyFunction::RunAfterStartCopy,
+      base::Bind(&FileManagerPrivateStartCopyFunction::RunAfterStartCopy,
                  this));
 }
 
-void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
+void FileManagerPrivateStartCopyFunction::RunAfterStartCopy(
     int operation_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -591,10 +591,10 @@ void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateCancelCopyFunction::RunAsync() {
+bool FileManagerPrivateCancelCopyFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using extensions::api::file_browser_private::CancelCopy::Params;
+  using extensions::api::file_manager_private::CancelCopy::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -611,8 +611,8 @@ bool FileBrowserPrivateCancelCopyFunction::RunAsync() {
   return true;
 }
 
-bool FileBrowserPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
-  using extensions::api::file_browser_private_internal::ResolveIsolatedEntries::
+bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::ResolveIsolatedEntries::
       Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -651,16 +651,16 @@ bool FileBrowserPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
       extension_->id(),
       file_definition_list,  // Safe, since copied internally.
       base::Bind(
-          &FileBrowserPrivateInternalResolveIsolatedEntriesFunction::
+          &FileManagerPrivateInternalResolveIsolatedEntriesFunction::
               RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList,
           this));
   return true;
 }
 
-void FileBrowserPrivateInternalResolveIsolatedEntriesFunction::
+void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
     RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(scoped_ptr<
         file_manager::util::EntryDefinitionList> entry_definition_list) {
-  using extensions::api::file_browser_private_internal::EntryDescription;
+  using extensions::api::file_manager_private_internal::EntryDescription;
   std::vector<linked_ptr<EntryDescription> > entries;
 
   for (size_t i = 0; i < entry_definition_list->size(); ++i) {
@@ -675,7 +675,7 @@ void FileBrowserPrivateInternalResolveIsolatedEntriesFunction::
     entries.push_back(entry);
   }
 
-  results_ = extensions::api::file_browser_private_internal::
+  results_ = extensions::api::file_manager_private_internal::
       ResolveIsolatedEntries::Results::Create(entries);
   SendResponse(true);
 }

@@ -166,7 +166,7 @@ function runTests() {
           TESTING_WITH_VALID_THUMBNAIL_FILE.name,
           {create: false},
           function(fileEntry) {
-            chrome.fileBrowserPrivate.getEntryProperties(
+            chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
                 function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);
@@ -195,7 +195,7 @@ function runTests() {
           TESTING_WITH_INVALID_THUMBNAIL_FILE.name,
           {create: false},
           function(fileEntry) {
-            chrome.fileBrowserPrivate.getEntryProperties(
+            chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
                 function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);

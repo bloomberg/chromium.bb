@@ -25,7 +25,7 @@ class ProvidedFileSystemInfo;
 
 namespace operations {
 
-// Bridge between fileBrowserPrivate's unmount operation and providing
+// Bridge between fileManagerPrivate's unmount operation and providing
 // extension's unmount request. Created per request.
 class Unmount : public Operation {
  public:

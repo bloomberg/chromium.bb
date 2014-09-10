@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_host.h"
@@ -285,7 +285,7 @@ bool ExecuteFileTask(Profile* profile,
     apps::LaunchPlatformAppWithFileHandler(
         profile, extension, task.action_id, paths);
     if (!done.is_null())
-      done.Run(extensions::api::file_browser_private::TASK_RESULT_MESSAGE_SENT);
+      done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
     return true;
   }
   NOTREACHED();

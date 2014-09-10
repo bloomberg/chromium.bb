@@ -7,7 +7,7 @@
       "Test for chrome.fileSystemProvider.onCopyEntryRequested().",
   "permissions": [
     "fileSystemProvider",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler"
   ],
   "app": {

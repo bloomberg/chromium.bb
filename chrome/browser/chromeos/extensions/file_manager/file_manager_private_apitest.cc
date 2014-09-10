@@ -108,14 +108,14 @@ TestDiskInfo kTestDisks[] = {
 
 }  // namespace
 
-class FileBrowserPrivateApiTest : public ExtensionApiTest {
+class FileManagerPrivateApiTest : public ExtensionApiTest {
  public:
-  FileBrowserPrivateApiTest()
+  FileManagerPrivateApiTest()
       : disk_mount_manager_mock_(NULL) {
     InitMountPoints();
   }
 
-  virtual ~FileBrowserPrivateApiTest() {
+  virtual ~FileManagerPrivateApiTest() {
     DCHECK(!disk_mount_manager_mock_);
     STLDeleteValues(&volumes_);
   }
@@ -131,7 +131,7 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
 
     // OVERRIDE mock functions.
     ON_CALL(*disk_mount_manager_mock_, FindDiskBySourcePath(_)).WillByDefault(
-        Invoke(this, &FileBrowserPrivateApiTest::FindVolumeBySourcePath));
+        Invoke(this, &FileManagerPrivateApiTest::FindVolumeBySourcePath));
     EXPECT_CALL(*disk_mount_manager_mock_, disks())
         .WillRepeatedly(ReturnRef(volumes_));
     EXPECT_CALL(*disk_mount_manager_mock_, mount_points())
@@ -241,11 +241,11 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
   DiskMountManager::MountPointMap mount_points_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserPrivateApiTest, Mount) {
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   file_manager::test_util::WaitUntilDriveMountPointIsAdded(
       browser()->profile());
 
-  // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
+  // We will call fileManagerPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
   EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
       .Times(0);

@@ -93,7 +93,7 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   // crbug.com/345527.
   var urls = util.entriesToURLs(entries);
   if (urls.length > 0)
-    chrome.fileBrowserPrivate.getFileTasks(urls, this.onTasks_.bind(this));
+    chrome.fileManagerPrivate.getFileTasks(urls, this.onTasks_.bind(this));
 };
 
 /**
@@ -402,7 +402,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     // crbug.com/345527.
     var urls = util.entriesToURLs(entries);
     var taskId = chrome.runtime.id + '|file|view-in-browser';
-    chrome.fileBrowserPrivate.executeTask(taskId, urls, onViewFiles);
+    chrome.fileManagerPrivate.executeTask(taskId, urls, onViewFiles);
   }.bind(this));
 };
 
@@ -436,7 +436,7 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
       // TODO(mtomasz): Move conversion from entry to url to custom bindings.
       // crbug.com/345527.
       var urls = util.entriesToURLs(entries);
-      chrome.fileBrowserPrivate.executeTask(taskId, urls, function(result) {
+      chrome.fileManagerPrivate.executeTask(taskId, urls, function(result) {
         if (result !== 'message_sent')
           return;
         util.isTeleported(window).then(function(teleported) {
@@ -546,7 +546,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
     // crbug.com/345527.
     var urls = util.entriesToURLs(entries);
     var position = urls.indexOf(selectedEntry.toURL());
-    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+    chrome.fileManagerPrivate.getProfiles(function(profiles,
                                                    currentId,
                                                    displayedId) {
       fm.backgroundPage.launchAudioPlayer({items: urls, position: position},

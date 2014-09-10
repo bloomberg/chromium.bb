@@ -27,9 +27,9 @@ function DeviceHandler() {
    */
   this.navigationVolumes_ = {};
 
-  chrome.fileBrowserPrivate.onDeviceChanged.addListener(
+  chrome.fileManagerPrivate.onDeviceChanged.addListener(
       this.onDeviceChanged_.bind(this));
-  chrome.fileBrowserPrivate.onMountCompleted.addListener(
+  chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
       this.onNotificationButtonClicked_.bind(this));

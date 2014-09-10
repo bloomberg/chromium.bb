@@ -842,7 +842,7 @@ ExternalProvider.prototype.callApi_ = function() {
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
   // crbug.com/345527.
   var entryURLs = util.entriesToURLs(entries);
-  chrome.fileBrowserPrivate.getEntryProperties(
+  chrome.fileManagerPrivate.getEntryProperties(
       entryURLs,
       function(propertiesList) {
         console.assert(propertiesList.length === callbacks.length);

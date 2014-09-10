@@ -7,7 +7,7 @@
       "Test for chrome.fileSystemProvider.onReadFileRequested(). Testing support for very large files.",
   "permissions": [
     "fileSystemProvider",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler"
   ],
   "app": {

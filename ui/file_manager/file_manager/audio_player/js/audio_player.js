@@ -44,7 +44,7 @@ function AudioPlayer(container) {
 
   this.errorString_ = '';
   this.offlineString_ = '';
-  chrome.fileBrowserPrivate.getStrings(function(strings) {
+  chrome.fileManagerPrivate.getStrings(function(strings) {
     container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
     this.errorString_ = strings['AUDIO_ERROR'];
     this.offlineString_ = strings['AUDIO_OFFLINE'];

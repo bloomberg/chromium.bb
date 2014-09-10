@@ -199,7 +199,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kExperienceSamplingPrivate},
       {APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",
+      {APIPermission::kFileManagerPrivate, "fileManagerPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kHotwordPrivate, "hotwordPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},

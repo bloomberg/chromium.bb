@@ -10,7 +10,7 @@
 
 namespace file_manager {
 namespace {
-namespace file_browser_private = extensions::api::file_browser_private;
+namespace file_manager_private = extensions::api::file_manager_private;
 using content::BrowserThread;
 }  // namespace
 
@@ -58,7 +58,7 @@ void DeviceEventRouter::OnDeviceAdded(const std::string& device_path) {
   }
 
   if (IsExternalStorageDisabled()) {
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_DISABLED,
+    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_DISABLED,
                   device_path);
     SetDeviceState(device_path, DEVICE_STATE_USUAL);
     return;
@@ -77,7 +77,7 @@ void DeviceEventRouter::OnDeviceAddedDelayed(const std::string& device_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (GetDeviceState(device_path) == DEVICE_SCANNED) {
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
+    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
                   device_path);
     SetDeviceState(device_path, DEVICE_SCANNED_AND_REPORTED);
   }
@@ -86,7 +86,7 @@ void DeviceEventRouter::OnDeviceAddedDelayed(const std::string& device_path) {
 void DeviceEventRouter::OnDeviceRemoved(const std::string& device_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SetDeviceState(device_path, DEVICE_STATE_USUAL);
-  OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_REMOVED, device_path);
+  OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_REMOVED, device_path);
 }
 
 void DeviceEventRouter::OnDiskAdded(
@@ -98,7 +98,7 @@ void DeviceEventRouter::OnDiskAdded(
     // If the disk is not being mounted, mark the device scan cancelled.
     const std::string& device_path = disk.system_path_prefix();
     if (GetDeviceState(device_path) == DEVICE_SCANNED_AND_REPORTED) {
-      OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
+      OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
                     device_path);
     }
     SetDeviceState(device_path, DEVICE_STATE_USUAL);
@@ -115,7 +115,7 @@ void DeviceEventRouter::OnDiskRemoved(
   const std::string& device_path = disk.system_path_prefix();
   if (!disk.mount_path().empty() &&
       GetDeviceState(device_path) != DEVICE_HARD_UNPLUGGED_AND_REPORTED) {
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
+    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
                   device_path);
     SetDeviceState(device_path, DEVICE_HARD_UNPLUGGED_AND_REPORTED);
   }
@@ -140,10 +140,10 @@ void DeviceEventRouter::OnFormatStarted(const std::string& device_path,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (success) {
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_START,
+    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_FORMAT_START,
                   device_path);
   } else {
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
+    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
                   device_path);
   }
 }
@@ -152,8 +152,8 @@ void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
                                           bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  OnDeviceEvent(success ? file_browser_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS
-                        : file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
+  OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS
+                        : file_manager_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
                 device_path);
 }
 

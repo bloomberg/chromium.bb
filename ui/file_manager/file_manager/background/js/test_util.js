@@ -579,7 +579,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
   };
 
   test.util.executedTasks_ = [];
-  contentWindow.chrome.fileBrowserPrivate.installWebstoreItem =
+  contentWindow.chrome.fileManagerPrivate.installWebstoreItem =
       installWebstoreItem;
   return true;
 };
@@ -589,7 +589,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Object>} taskList List of tasks to be returned in
- *     fileBrowserPrivate.getFileTasks().
+ *     fileManagerPrivate.getFileTasks().
  * @return {boolean} Always return true.
  */
 test.util.sync.overrideTasks = function(contentWindow, taskList) {
@@ -611,9 +611,9 @@ test.util.sync.overrideTasks = function(contentWindow, taskList) {
   };
 
   test.util.executedTasks_ = [];
-  contentWindow.chrome.fileBrowserPrivate.getFileTasks = getFileTasks;
-  contentWindow.chrome.fileBrowserPrivate.executeTask = executeTask;
-  contentWindow.chrome.fileBrowserPrivate.setDefaultTask = setDefaultTask;
+  contentWindow.chrome.fileManagerPrivate.getFileTasks = getFileTasks;
+  contentWindow.chrome.fileManagerPrivate.executeTask = executeTask;
+  contentWindow.chrome.fileManagerPrivate.setDefaultTask = setDefaultTask;
   return true;
 };
 
@@ -631,7 +631,7 @@ test.util.sync.getExecutedTasks = function(contentWindow) {
 };
 
 /**
- * Invoke chrome.fileBrowserPrivate.visitDesktop(profileId) to cause window
+ * Invoke chrome.fileManagerPrivate.visitDesktop(profileId) to cause window
  * teleportation.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -639,7 +639,7 @@ test.util.sync.getExecutedTasks = function(contentWindow) {
  * @return {boolean} Always return true.
  */
 test.util.sync.visitDesktop = function(contentWindow, profileId) {
-  contentWindow.chrome.fileBrowserPrivate.visitDesktop(profileId);
+  contentWindow.chrome.fileManagerPrivate.visitDesktop(profileId);
   return true;
 };
 

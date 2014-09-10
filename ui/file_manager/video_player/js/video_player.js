@@ -659,7 +659,7 @@ var player = new VideoPlayer();
  * @param {function()} callback Called when the sting data is ready.
  */
 function initStrings(callback) {
-  chrome.fileBrowserPrivate.getStrings(function(strings) {
+  chrome.fileManagerPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
     callback();
   }.wrap(null));

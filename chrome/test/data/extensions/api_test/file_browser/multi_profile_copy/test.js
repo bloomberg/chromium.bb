@@ -19,7 +19,7 @@ function fileErrorCallback(callback, message) {
 }
 
 /**
- * Copies an entry using chrome.fileBrowserPrivate.startCopy().
+ * Copies an entry using chrome.fileManagerPrivate.startCopy().
  *
  * @param {Entry} fromRoot Root entry of the copy source file system.
  * @param {string} fromPath Relative path from fromRoot of the source entry.
@@ -40,17 +40,17 @@ function fileCopy(fromRoot, fromPath, toRoot, toPath, newName,
           return;
         }
         if (status.type == 'error') {
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(onProgress);
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(onProgress);
           errorCallback('Copy failed.');
           return;
         }
         if (status.type == 'success') {
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(onProgress);
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(onProgress);
           successCallback();
         }
       };
-      chrome.fileBrowserPrivate.onCopyProgress.addListener(onProgress);
-      chrome.fileBrowserPrivate.startCopy(
+      chrome.fileManagerPrivate.onCopyProgress.addListener(onProgress);
+      chrome.fileManagerPrivate.startCopy(
         from.toURL(), to.toURL(), newName, function(startCopyId) {
           if (chrome.runtime.lastError) {
             errorCallback('Error starting to copy.');
@@ -116,7 +116,7 @@ function collectTests(firstRoot, secondRoot) {
  *     to run will be null.
  */
 function initTests(callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     var driveVolumes = volumeMetadataList.filter(function(volume) {
       return volume.volumeType == 'drive';
     });
@@ -126,7 +126,7 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
         driveVolumes[0].volumeId,
         function(primaryFileSystem) {
           if (!primaryFileSystem) {

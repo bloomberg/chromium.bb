@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Test component extension that tests fileBrowserPrivate file watch api.
+ * Test component extension that tests fileManagerPrivate file watch api.
  * The extension adds file watch on set of entries and performs set of file
  * system operations that should trigger onDirectoryChanged events for the
  * watched entries. On file system operations is performed per a test function.
@@ -34,7 +34,7 @@ function TestEventListener() {
   this.expectedEvents_ = {};
 
   /**
-   * List of fileBrowserPrivate.onDirectoryChanged events received before file
+   * List of fileManagerPrivate.onDirectoryChanged events received before file
    * system operation was done.
    *
    * @type {Array.<Object>}
@@ -60,7 +60,7 @@ function TestEventListener() {
   this.receivedEntry_ = null;
 
   /**
-   * The listener to the fileBrowserPrivate.onDirectoryChanged.
+   * The listener to the fileManagerPrivate.onDirectoryChanged.
    *
    * @type {function(Object)}
    * @private
@@ -73,7 +73,7 @@ TestEventListener.prototype = {
    * Starts listening for the onDirectoryChanged events.
    */
   start: function() {
-    chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
+    chrome.fileManagerPrivate.onDirectoryChanged.addListener(
         this.eventListener_);
   },
 
@@ -116,7 +116,7 @@ TestEventListener.prototype = {
       return;
     this.done_ = true;
 
-    chrome.fileBrowserPrivate.onDirectoryChanged.removeListener(
+    chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
         this.eventListener_);
     chrome.test.fail(message);
   },
@@ -132,7 +132,7 @@ TestEventListener.prototype = {
       return;
     this.done_ = true;
 
-    chrome.fileBrowserPrivate.onDirectoryChanged.removeListener(
+    chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
         this.eventListener_);
     chrome.test.succeed();
   },
@@ -143,7 +143,7 @@ TestEventListener.prototype = {
    * it adds the event to |eventQueue_|. The events from |eventQueue_| will be
    * verified once the file system operation is done.
    *
-   * @param {Object} event chrome.fileBrowserPrivate.onDirectoryChanged event.
+   * @param {Object} event chrome.fileManagerPrivate.onDirectoryChanged event.
    * @private
    */
   onDirectoryChanged_: function(event) {
@@ -161,7 +161,7 @@ TestEventListener.prototype = {
    * It verifies that the recived event matches the expected event parameters.
    * If the received event was the last expected event, onSuccess_ is called.
    *
-   * @param {Object} event chrome.fileBrowserPrivate.onDirectoryChanged event.
+   * @param {Object} event chrome.fileManagerPrivate.onDirectoryChanged event.
    * @private
    */
   verifyReceivedEvent_: function(event) {
@@ -229,7 +229,7 @@ function initTests(callback) {
     fileSystem: null
   };
 
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     var possibleVolumeTypes = ['testing', 'drive'];
 
     var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
@@ -245,7 +245,7 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
         sortedVolumeMetadataList[0].volumeId,
         function(fileSystem) {
           if (!fileSystem) {
@@ -311,7 +311,7 @@ initTests(function(testParams, errorMessage) {
 
   chrome.test.runTests([
     function addFileWatch() {
-      chrome.fileBrowserPrivate.addFileWatch(
+      chrome.fileManagerPrivate.addFileWatch(
           testParams.entries.file.toURL(),
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
@@ -319,7 +319,7 @@ initTests(function(testParams, errorMessage) {
     },
 
     function addSubdirWatch() {
-      chrome.fileBrowserPrivate.addFileWatch(
+      chrome.fileManagerPrivate.addFileWatch(
           testParams.entries.subdir.toURL(),
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
@@ -327,7 +327,7 @@ initTests(function(testParams, errorMessage) {
     },
 
     function addDirWatch() {
-      chrome.fileBrowserPrivate.addFileWatch(
+      chrome.fileManagerPrivate.addFileWatch(
           testParams.entries.dir.toURL(),
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
@@ -485,7 +485,7 @@ initTests(function(testParams, errorMessage) {
     },
 
     function removeFileWatch() {
-      chrome.fileBrowserPrivate.removeFileWatch(
+      chrome.fileManagerPrivate.removeFileWatch(
           testParams.entries.file.toURL(),
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
@@ -493,7 +493,7 @@ initTests(function(testParams, errorMessage) {
     },
 
     function removeDirWatch() {
-      chrome.fileBrowserPrivate.removeFileWatch(
+      chrome.fileManagerPrivate.removeFileWatch(
           testParams.entries.dir.toURL(),
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);

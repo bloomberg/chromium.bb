@@ -20,7 +20,7 @@
     "commandLinePrivate",
     "fileSystem",
     "fileBrowserHandler",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fullscreen",
     "mediaPlayerPrivate",
     "power",

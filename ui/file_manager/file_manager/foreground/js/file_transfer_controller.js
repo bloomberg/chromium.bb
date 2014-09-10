@@ -265,7 +265,7 @@ FileTransferController.prototype = {
         // TODO(mtomasz): Move conversion from entry to url to custom bindings.
         // crbug.com/345527.
         var urls = util.entriesToURLs(entries);
-        chrome.fileBrowserPrivate.getEntryProperties(urls, callback);
+        chrome.fileManagerPrivate.getEntryProperties(urls, callback);
       }).
       then(function(metadatas) {
         return entries.filter(function(entry, i) {
@@ -354,7 +354,7 @@ FileTransferController.prototype = {
               if (index >= shareEntries.length)
                 return;
               return new Promise(function(fulfill) {
-                chrome.fileBrowserPrivate.requestDriveShare(
+                chrome.fileManagerPrivate.requestDriveShare(
                     shareEntries[index].toURL(),
                     dialogResult,
                     function() {

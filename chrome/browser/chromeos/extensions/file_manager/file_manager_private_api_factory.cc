@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_factory.h"
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,21 +16,21 @@
 namespace file_manager {
 
 // static
-FileBrowserPrivateAPI*
-FileBrowserPrivateAPIFactory::GetForProfile(Profile* profile) {
-  return static_cast<FileBrowserPrivateAPI*>(
+FileManagerPrivateAPI*
+FileManagerPrivateAPIFactory::GetForProfile(Profile* profile) {
+  return static_cast<FileManagerPrivateAPI*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-FileBrowserPrivateAPIFactory*
-FileBrowserPrivateAPIFactory::GetInstance() {
-  return Singleton<FileBrowserPrivateAPIFactory>::get();
+FileManagerPrivateAPIFactory*
+FileManagerPrivateAPIFactory::GetInstance() {
+  return Singleton<FileManagerPrivateAPIFactory>::get();
 }
 
-FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
+FileManagerPrivateAPIFactory::FileManagerPrivateAPIFactory()
     : BrowserContextKeyedServiceFactory(
-          "FileBrowserPrivateAPI",
+          "FileManagerPrivateAPI",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
   DependsOn(
@@ -38,25 +38,25 @@ FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
   DependsOn(VolumeManagerFactory::GetInstance());
 }
 
-FileBrowserPrivateAPIFactory::~FileBrowserPrivateAPIFactory() {
+FileManagerPrivateAPIFactory::~FileManagerPrivateAPIFactory() {
 }
 
-KeyedService* FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
+KeyedService* FileManagerPrivateAPIFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FileBrowserPrivateAPI(Profile::FromBrowserContext(context));
+  return new FileManagerPrivateAPI(Profile::FromBrowserContext(context));
 }
 
-content::BrowserContext* FileBrowserPrivateAPIFactory::GetBrowserContextToUse(
+content::BrowserContext* FileManagerPrivateAPIFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Explicitly and always allow this router in guest login mode.
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-bool FileBrowserPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
+bool FileManagerPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-bool FileBrowserPrivateAPIFactory::ServiceIsNULLWhileTesting() const {
+bool FileManagerPrivateAPIFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 

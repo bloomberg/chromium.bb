@@ -413,13 +413,13 @@
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension", "unblessed_extension"]
   },
-  "fileBrowserPrivate": {
-    "dependencies": ["permission:fileBrowserPrivate"],
+  "fileManagerPrivate": {
+    "dependencies": ["permission:fileManagerPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "fileBrowserPrivateInternal": {
+  "fileManagerPrivateInternal": {
     "internal": true,
-    "dependencies": ["permission:fileBrowserPrivate"],
+    "dependencies": ["permission:fileManagerPrivate"],
     "contexts": ["blessed_extension"]
   },
   "fileSystem": {

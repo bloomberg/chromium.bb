@@ -59,9 +59,9 @@ std::set<std::string> GetUniqueMimeTypes(
 
 }  // namespace
 
-bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
-  using extensions::api::file_browser_private::ExecuteTask::Params;
-  using extensions::api::file_browser_private::ExecuteTask::Results::Create;
+bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
+  using extensions::api::file_manager_private::ExecuteTask::Params;
+  using extensions::api::file_manager_private::ExecuteTask::Results::Create;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -69,12 +69,12 @@ bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
   if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
     SetError(kInvalidTask + params->task_id);
     results_ =
-        Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
+        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
     return false;
   }
 
   if (params->file_urls.empty()) {
-    results_ = Create(extensions::api::file_browser_private::TASK_RESULT_EMPTY);
+    results_ = Create(extensions::api::file_manager_private::TASK_RESULT_EMPTY);
     SendResponse(true);
     return true;
   }
@@ -90,7 +90,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       SetError(kInvalidFileUrl);
       results_ =
-          Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
+          Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
       return false;
     }
     file_urls.push_back(url);
@@ -101,33 +101,33 @@ bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
       source_url(),
       task,
       file_urls,
-      base::Bind(&FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted, this));
+      base::Bind(&FileManagerPrivateExecuteTaskFunction::OnTaskExecuted, this));
   if (!result) {
     results_ =
-        Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
+        Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
   }
   return result;
 }
 
-void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(
-    extensions::api::file_browser_private::TaskResult result) {
+void FileManagerPrivateExecuteTaskFunction::OnTaskExecuted(
+    extensions::api::file_manager_private::TaskResult result) {
   results_ =
-      extensions::api::file_browser_private::ExecuteTask::Results::Create(
+      extensions::api::file_manager_private::ExecuteTask::Results::Create(
           result);
   SendResponse(result !=
-               extensions::api::file_browser_private::TASK_RESULT_FAILED);
+               extensions::api::file_manager_private::TASK_RESULT_FAILED);
 }
 
-FileBrowserPrivateGetFileTasksFunction::
-    FileBrowserPrivateGetFileTasksFunction() {
+FileManagerPrivateGetFileTasksFunction::
+    FileManagerPrivateGetFileTasksFunction() {
 }
 
-FileBrowserPrivateGetFileTasksFunction::
-    ~FileBrowserPrivateGetFileTasksFunction() {
+FileManagerPrivateGetFileTasksFunction::
+    ~FileManagerPrivateGetFileTasksFunction() {
 }
 
-bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
-  using extensions::api::file_browser_private::GetFileTasks::Params;
+bool FileManagerPrivateGetFileTasksFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetFileTasks::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -153,13 +153,13 @@ bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
   collector_.reset(new app_file_handler_util::MimeTypeCollector(GetProfile()));
   collector_->CollectForLocalPaths(
       local_paths_,
-      base::Bind(&FileBrowserPrivateGetFileTasksFunction::OnMimeTypesCollected,
+      base::Bind(&FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected,
                  this));
 
   return true;
 }
 
-void FileBrowserPrivateGetFileTasksFunction::OnMimeTypesCollected(
+void FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected(
     scoped_ptr<std::vector<std::string> > mime_types) {
   app_file_handler_util::PathAndMimeTypeSet path_mime_set;
   for (size_t i = 0; i < local_paths_.size(); ++i) {
@@ -175,7 +175,7 @@ void FileBrowserPrivateGetFileTasksFunction::OnMimeTypesCollected(
       &tasks);
 
   // Convert the tasks into JSON compatible objects.
-  using api::file_browser_private::FileTask;
+  using api::file_manager_private::FileTask;
   std::vector<linked_ptr<FileTask> > results;
   for (size_t i = 0; i < tasks.size(); ++i) {
     const file_manager::file_tasks::FullTaskDescriptor& task = tasks[i];
@@ -189,13 +189,13 @@ void FileBrowserPrivateGetFileTasksFunction::OnMimeTypesCollected(
     results.push_back(converted);
   }
 
-  results_ = extensions::api::file_browser_private::GetFileTasks::Results::
+  results_ = extensions::api::file_manager_private::GetFileTasks::Results::
       Create(results);
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSetDefaultTaskFunction::RunSync() {
-  using extensions::api::file_browser_private::SetDefaultTask::Params;
+bool FileManagerPrivateSetDefaultTaskFunction::RunSync() {
+  using extensions::api::file_manager_private::SetDefaultTask::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

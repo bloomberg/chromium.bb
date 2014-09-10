@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -25,15 +25,15 @@ SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
 
 }  // namespace
 
-bool FileBrowserPrivateCancelDialogFunction::RunAsync() {
+bool FileManagerPrivateCancelDialogFunction::RunAsync() {
   SelectFileDialogExtension::OnFileSelectionCanceled(
       GetFileDialogRoutingID(this));
   SendResponse(true);
   return true;
 }
 
-bool FileBrowserPrivateSelectFileFunction::RunAsync() {
-  using extensions::api::file_browser_private::SelectFile::Params;
+bool FileManagerPrivateSelectFileFunction::RunAsync() {
+  using extensions::api::file_manager_private::SelectFile::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -54,13 +54,13 @@ bool FileBrowserPrivateSelectFileFunction::RunAsync() {
       file_paths,
       option,
       base::Bind(
-          &FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse,
+          &FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse,
           this,
           params->index));
   return true;
 }
 
-void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
+void FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse(
     int index,
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -73,8 +73,8 @@ void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSelectFilesFunction::RunAsync() {
-  using extensions::api::file_browser_private::SelectFiles::Params;
+bool FileManagerPrivateSelectFilesFunction::RunAsync() {
+  using extensions::api::file_manager_private::SelectFiles::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -90,12 +90,12 @@ bool FileBrowserPrivateSelectFilesFunction::RunAsync() {
           file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
           file_manager::util::NO_LOCAL_PATH_RESOLUTION,
       base::Bind(
-          &FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse,
+          &FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse,
           this));
   return true;
 }
 
-void FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
+void FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SelectFileDialogExtension::OnMultiFilesSelected(GetFileDialogRoutingID(this),

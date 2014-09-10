@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
+#include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 
 #include <string>
 
@@ -16,16 +16,16 @@
 
 namespace extensions {
 
-FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings(
+FileManagerPrivateCustomBindings::FileManagerPrivateCustomBindings(
     ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "GetFileSystem",
-       base::Bind(&FileBrowserPrivateCustomBindings::GetFileSystem,
+       base::Bind(&FileManagerPrivateCustomBindings::GetFileSystem,
                   base::Unretained(this)));
 }
 
-void FileBrowserPrivateCustomBindings::GetFileSystem(
+void FileManagerPrivateCustomBindings::GetFileSystem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 2);
   DCHECK(args[0]->IsString());

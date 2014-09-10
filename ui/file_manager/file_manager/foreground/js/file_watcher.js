@@ -18,7 +18,7 @@ function FileWatcher(metadataCache) {
   this.watchedDirectoryEntry_ = null;
 
   this.onDirectoryChangedBound_ = this.onDirectoryChanged_.bind(this);
-  chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
+  chrome.fileManagerPrivate.onDirectoryChanged.addListener(
       this.onDirectoryChangedBound_);
 
   this.filesystemMetadataObserverId_ = null;
@@ -35,7 +35,7 @@ FileWatcher.prototype.__proto__ = cr.EventTarget.prototype;
  * Stops watching (must be called before page unload).
  */
 FileWatcher.prototype.dispose = function() {
-  chrome.fileBrowserPrivate.onDirectoryChanged.removeListener(
+  chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
       this.onDirectoryChangedBound_);
   if (this.watchedDirectoryEntry_)
     this.resetWatchedEntry_(function() {}, function() {});
@@ -153,7 +153,7 @@ FileWatcher.prototype.resetWatchedEntry_ = function(onSuccess, onError) {
   this.queue_.run(function(callback) {
     // Release the watched directory.
     if (this.watchedDirectoryEntry_) {
-      chrome.fileBrowserPrivate.removeFileWatch(
+      chrome.fileManagerPrivate.removeFileWatch(
           this.watchedDirectoryEntry_.toURL(),
           function(result) {
             this.watchedDirectoryEntry_ = null;
@@ -186,7 +186,7 @@ FileWatcher.prototype.changeWatchedEntry_ = function(
   var setEntryClosure = function() {
     // Run the tasks in the queue to avoid races.
     this.queue_.run(function(callback) {
-      chrome.fileBrowserPrivate.addFileWatch(
+      chrome.fileManagerPrivate.addFileWatch(
           entry.toURL(),
           function(result) {
             if (!result) {

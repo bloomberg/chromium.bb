@@ -34,7 +34,7 @@ using content::BrowserThread;
 using chromeos::file_system_provider::EntryMetadata;
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
 using chromeos::file_system_provider::util::FileSystemURLParser;
-using extensions::api::file_browser_private::EntryProperties;
+using extensions::api::file_manager_private::EntryProperties;
 using file_manager::util::EntryDefinition;
 using file_manager::util::EntryDefinitionCallback;
 using file_manager::util::EntryDefinitionList;
@@ -445,19 +445,19 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
 }  // namespace
 
-FileBrowserPrivateGetEntryPropertiesFunction::
-    FileBrowserPrivateGetEntryPropertiesFunction()
+FileManagerPrivateGetEntryPropertiesFunction::
+    FileManagerPrivateGetEntryPropertiesFunction()
     : processed_count_(0) {
 }
 
-FileBrowserPrivateGetEntryPropertiesFunction::
-    ~FileBrowserPrivateGetEntryPropertiesFunction() {
+FileManagerPrivateGetEntryPropertiesFunction::
+    ~FileManagerPrivateGetEntryPropertiesFunction() {
 }
 
-bool FileBrowserPrivateGetEntryPropertiesFunction::RunAsync() {
+bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using api::file_browser_private::GetEntryProperties::Params;
+  using api::file_manager_private::GetEntryProperties::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -475,7 +475,7 @@ bool FileBrowserPrivateGetEntryPropertiesFunction::RunAsync() {
         SingleEntryPropertiesGetterForDrive::Start(
             file_system_url.path(),
             GetProfile(),
-            base::Bind(&FileBrowserPrivateGetEntryPropertiesFunction::
+            base::Bind(&FileManagerPrivateGetEntryPropertiesFunction::
                            CompleteGetEntryProperties,
                        this,
                        i));
@@ -483,7 +483,7 @@ bool FileBrowserPrivateGetEntryPropertiesFunction::RunAsync() {
       case storage::kFileSystemTypeProvided:
         SingleEntryPropertiesGetterForFileSystemProvider::Start(
             file_system_url,
-            base::Bind(&FileBrowserPrivateGetEntryPropertiesFunction::
+            base::Bind(&FileManagerPrivateGetEntryPropertiesFunction::
                            CompleteGetEntryProperties,
                        this,
                        i));
@@ -499,7 +499,7 @@ bool FileBrowserPrivateGetEntryPropertiesFunction::RunAsync() {
   return true;
 }
 
-void FileBrowserPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
+void FileManagerPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
     size_t index,
     scoped_ptr<EntryProperties> properties,
     base::File::Error error) {
@@ -512,15 +512,15 @@ void FileBrowserPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
   if (processed_count_ < properties_list_.size())
     return;
 
-  results_ = extensions::api::file_browser_private::GetEntryProperties::
+  results_ = extensions::api::file_manager_private::GetEntryProperties::
       Results::Create(properties_list_);
   SendResponse(true);
 }
 
-bool FileBrowserPrivatePinDriveFileFunction::RunAsync() {
+bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using extensions::api::file_browser_private::PinDriveFile::Params;
+  using extensions::api::file_manager_private::PinDriveFile::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -534,17 +534,17 @@ bool FileBrowserPrivatePinDriveFileFunction::RunAsync() {
           render_view_host(), GetProfile(), GURL(params->file_url)));
   if (params->pin) {
     file_system->Pin(drive_path,
-                     base::Bind(&FileBrowserPrivatePinDriveFileFunction::
+                     base::Bind(&FileManagerPrivatePinDriveFileFunction::
                                     OnPinStateSet, this));
   } else {
     file_system->Unpin(drive_path,
-                       base::Bind(&FileBrowserPrivatePinDriveFileFunction::
+                       base::Bind(&FileManagerPrivatePinDriveFileFunction::
                                       OnPinStateSet, this));
   }
   return true;
 }
 
-void FileBrowserPrivatePinDriveFileFunction::
+void FileManagerPrivatePinDriveFileFunction::
     OnPinStateSet(drive::FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -556,16 +556,16 @@ void FileBrowserPrivatePinDriveFileFunction::
   }
 }
 
-FileBrowserPrivateGetDriveFilesFunction::
-    FileBrowserPrivateGetDriveFilesFunction() {
+FileManagerPrivateGetDriveFilesFunction::
+    FileManagerPrivateGetDriveFilesFunction() {
 }
 
-FileBrowserPrivateGetDriveFilesFunction::
-    ~FileBrowserPrivateGetDriveFilesFunction() {
+FileManagerPrivateGetDriveFilesFunction::
+    ~FileManagerPrivateGetDriveFilesFunction() {
 }
 
-bool FileBrowserPrivateGetDriveFilesFunction::RunAsync() {
-  using extensions::api::file_browser_private::GetDriveFiles::Params;
+bool FileManagerPrivateGetDriveFilesFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetDriveFiles::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -582,10 +582,10 @@ bool FileBrowserPrivateGetDriveFilesFunction::RunAsync() {
   return true;
 }
 
-void FileBrowserPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
+void FileManagerPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
   // Send the response if all files are obtained.
   if (remaining_drive_paths_.empty()) {
-    results_ = extensions::api::file_browser_private::
+    results_ = extensions::api::file_manager_private::
         GetDriveFiles::Results::Create(local_paths_);
     SendResponse(true);
     return;
@@ -605,11 +605,11 @@ void FileBrowserPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
 
   file_system->GetFile(
       drive_path,
-      base::Bind(&FileBrowserPrivateGetDriveFilesFunction::OnFileReady, this));
+      base::Bind(&FileManagerPrivateGetDriveFilesFunction::OnFileReady, this));
 }
 
 
-void FileBrowserPrivateGetDriveFilesFunction::OnFileReady(
+void FileManagerPrivateGetDriveFilesFunction::OnFileReady(
     drive::FileError error,
     const base::FilePath& local_path,
     scoped_ptr<drive::ResourceEntry> entry) {
@@ -630,8 +630,8 @@ void FileBrowserPrivateGetDriveFilesFunction::OnFileReady(
   GetFileOrSendResponse();
 }
 
-bool FileBrowserPrivateCancelFileTransfersFunction::RunAsync() {
-  using extensions::api::file_browser_private::CancelFileTransfers::Params;
+bool FileManagerPrivateCancelFileTransfersFunction::RunAsync() {
+  using extensions::api::file_manager_private::CancelFileTransfers::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -653,7 +653,7 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunAsync() {
   }
 
   // Cancel by Job ID.
-  std::vector<linked_ptr<api::file_browser_private::
+  std::vector<linked_ptr<api::file_manager_private::
                          FileTransferCancelStatus> > responses;
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
@@ -670,22 +670,22 @@ bool FileBrowserPrivateCancelFileTransfersFunction::RunAsync() {
       for (size_t i = 0; i < it->second.size(); ++i)
         job_list->CancelJob(it->second[i]);
     }
-    linked_ptr<api::file_browser_private::FileTransferCancelStatus> result(
-        new api::file_browser_private::FileTransferCancelStatus);
+    linked_ptr<api::file_manager_private::FileTransferCancelStatus> result(
+        new api::file_manager_private::FileTransferCancelStatus);
     result->canceled = it != path_to_id_map.end();
     // TODO(kinaba): simplify cancelFileTransfer() to take single URL each time,
     // and eliminate this field; it is just returning a copy of the argument.
     result->file_url = params->file_urls[i];
     responses.push_back(result);
   }
-  results_ = api::file_browser_private::CancelFileTransfers::Results::Create(
+  results_ = api::file_manager_private::CancelFileTransfers::Results::Create(
       responses);
   SendResponse(true);
   return true;
 }
 
-bool FileBrowserPrivateSearchDriveFunction::RunAsync() {
-  using extensions::api::file_browser_private::SearchDrive::Params;
+bool FileManagerPrivateSearchDriveFunction::RunAsync() {
+  using extensions::api::file_manager_private::SearchDrive::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -698,11 +698,11 @@ bool FileBrowserPrivateSearchDriveFunction::RunAsync() {
 
   file_system->Search(
       params->search_params.query, GURL(params->search_params.next_feed),
-      base::Bind(&FileBrowserPrivateSearchDriveFunction::OnSearch, this));
+      base::Bind(&FileManagerPrivateSearchDriveFunction::OnSearch, this));
   return true;
 }
 
-void FileBrowserPrivateSearchDriveFunction::OnSearch(
+void FileManagerPrivateSearchDriveFunction::OnSearch(
     drive::FileError error,
     const GURL& next_link,
     scoped_ptr<SearchResultInfoList> results) {
@@ -720,13 +720,13 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
       GetProfile(),
       extension_->id(),
       results_ref,
-      base::Bind(&FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList,
+      base::Bind(&FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList,
                  this,
                  next_link,
                  base::Passed(&results)));
 }
 
-void FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList(
+void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
     const GURL& next_link,
     scoped_ptr<SearchResultInfoList> search_result_info_list,
     scoped_ptr<EntryDefinitionList> entry_definition_list) {
@@ -753,8 +753,8 @@ void FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSearchDriveMetadataFunction::RunAsync() {
-  using api::file_browser_private::SearchDriveMetadata::Params;
+bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
+  using api::file_manager_private::SearchDriveMetadata::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -764,7 +764,7 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunAsync() {
                 "%s[%d] called. (types: '%s', maxResults: '%d')",
                 name().c_str(),
                 request_id(),
-                api::file_browser_private::ToString(
+                api::file_manager_private::ToString(
                     params->search_params.types).c_str(),
                 params->search_params.max_results);
   }
@@ -779,19 +779,19 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunAsync() {
 
   int options = -1;
   switch (params->search_params.types) {
-    case api::file_browser_private::SEARCH_TYPE_EXCLUDE_DIRECTORIES:
+    case api::file_manager_private::SEARCH_TYPE_EXCLUDE_DIRECTORIES:
       options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
       break;
-    case api::file_browser_private::SEARCH_TYPE_SHARED_WITH_ME:
+    case api::file_manager_private::SEARCH_TYPE_SHARED_WITH_ME:
       options = drive::SEARCH_METADATA_SHARED_WITH_ME;
       break;
-    case api::file_browser_private::SEARCH_TYPE_OFFLINE:
+    case api::file_manager_private::SEARCH_TYPE_OFFLINE:
       options = drive::SEARCH_METADATA_OFFLINE;
       break;
-    case api::file_browser_private::SEARCH_TYPE_ALL:
+    case api::file_manager_private::SEARCH_TYPE_ALL:
       options = drive::SEARCH_METADATA_ALL;
       break;
-    case api::file_browser_private::SEARCH_TYPE_NONE:
+    case api::file_manager_private::SEARCH_TYPE_NONE:
       break;
   }
   DCHECK_NE(options, -1);
@@ -800,12 +800,12 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunAsync() {
       params->search_params.query,
       options,
       params->search_params.max_results,
-      base::Bind(&FileBrowserPrivateSearchDriveMetadataFunction::
+      base::Bind(&FileManagerPrivateSearchDriveMetadataFunction::
                      OnSearchMetadata, this));
   return true;
 }
 
-void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
+void FileManagerPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     drive::FileError error,
     scoped_ptr<drive::MetadataSearchResultVector> results) {
   if (error != drive::FILE_ERROR_OK) {
@@ -823,12 +823,12 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
       extension_->id(),
       results_ref,
       base::Bind(
-          &FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList,
+          &FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList,
           this,
           base::Passed(&results)));
 }
 
-void FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
+void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
     scoped_ptr<drive::MetadataSearchResultVector> search_result_info_list,
     scoped_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_EQ(search_result_info_list->size(), entry_definition_list->size());
@@ -836,7 +836,7 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
 
   // Convert Drive files to something File API stack can understand.  See
   // file_browser_handler_custom_bindings.cc and
-  // file_browser_private_custom_bindings.js for how this is magically
+  // file_manager_private_custom_bindings.js for how this is magically
   // converted to a FileEntry.
   for (size_t i = 0; i < entry_definition_list->size(); ++i) {
     base::DictionaryValue* result_dict = new base::DictionaryValue();
@@ -864,8 +864,8 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetDriveConnectionStateFunction::RunSync() {
-  api::file_browser_private::DriveConnectionState result;
+bool FileManagerPrivateGetDriveConnectionStateFunction::RunSync() {
+  api::file_manager_private::DriveConnectionState result;
 
   switch (drive::util::GetDriveConnectionStatus(GetProfile())) {
     case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
@@ -888,7 +888,7 @@ bool FileBrowserPrivateGetDriveConnectionStateFunction::RunSync() {
       break;
   }
 
-  results_ = api::file_browser_private::GetDriveConnectionState::Results::
+  results_ = api::file_manager_private::GetDriveConnectionState::Results::
       Create(result);
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
@@ -897,8 +897,8 @@ bool FileBrowserPrivateGetDriveConnectionStateFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateRequestAccessTokenFunction::RunAsync() {
-  using extensions::api::file_browser_private::RequestAccessToken::Params;
+bool FileManagerPrivateRequestAccessTokenFunction::RunAsync() {
+  using extensions::api::file_manager_private::RequestAccessToken::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -919,20 +919,20 @@ bool FileBrowserPrivateRequestAccessTokenFunction::RunAsync() {
   // Retrieve the cached auth token (if available), otherwise the AuthService
   // instance will try to refetch it.
   drive_service->RequestAccessToken(
-      base::Bind(&FileBrowserPrivateRequestAccessTokenFunction::
+      base::Bind(&FileManagerPrivateRequestAccessTokenFunction::
                       OnAccessTokenFetched, this));
   return true;
 }
 
-void FileBrowserPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
+void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
     google_apis::GDataErrorCode code,
     const std::string& access_token) {
   SetResult(new base::StringValue(access_token));
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetShareUrlFunction::RunAsync() {
-  using extensions::api::file_browser_private::GetShareUrl::Params;
+bool FileManagerPrivateGetShareUrlFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetShareUrl::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -952,11 +952,11 @@ bool FileBrowserPrivateGetShareUrlFunction::RunAsync() {
   file_system->GetShareUrl(
       drive_path,
       GURL("chrome-extension://" + extension_id()),  // embed origin
-      base::Bind(&FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl, this));
+      base::Bind(&FileManagerPrivateGetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }
 
-void FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl(
+void FileManagerPrivateGetShareUrlFunction::OnGetShareUrl(
     drive::FileError error,
     const GURL& share_url) {
   if (error != drive::FILE_ERROR_OK) {
@@ -969,8 +969,8 @@ void FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
-  using extensions::api::file_browser_private::RequestDriveShare::Params;
+bool FileManagerPrivateRequestDriveShareFunction::RunAsync() {
+  using extensions::api::file_manager_private::RequestDriveShare::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -995,16 +995,16 @@ bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
   google_apis::drive::PermissionRole role =
       google_apis::drive::PERMISSION_ROLE_READER;
   switch (params->share_type) {
-    case api::file_browser_private::DRIVE_SHARE_TYPE_NONE:
+    case api::file_manager_private::DRIVE_SHARE_TYPE_NONE:
       NOTREACHED();
       return false;
-    case api::file_browser_private::DRIVE_SHARE_TYPE_CAN_EDIT:
+    case api::file_manager_private::DRIVE_SHARE_TYPE_CAN_EDIT:
       role = google_apis::drive::PERMISSION_ROLE_WRITER;
       break;
-    case api::file_browser_private::DRIVE_SHARE_TYPE_CAN_COMMENT:
+    case api::file_manager_private::DRIVE_SHARE_TYPE_CAN_COMMENT:
       role = google_apis::drive::PERMISSION_ROLE_COMMENTER;
       break;
-    case api::file_browser_private::DRIVE_SHARE_TYPE_CAN_VIEW:
+    case api::file_manager_private::DRIVE_SHARE_TYPE_CAN_VIEW:
       role = google_apis::drive::PERMISSION_ROLE_READER;
       break;
   }
@@ -1014,26 +1014,26 @@ bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
       drive_path,
       user->email(),
       role,
-      base::Bind(&FileBrowserPrivateRequestDriveShareFunction::OnAddPermission,
+      base::Bind(&FileManagerPrivateRequestDriveShareFunction::OnAddPermission,
                  this));
   return true;
 }
 
-void FileBrowserPrivateRequestDriveShareFunction::OnAddPermission(
+void FileManagerPrivateRequestDriveShareFunction::OnAddPermission(
     drive::FileError error) {
   SendResponse(error == drive::FILE_ERROR_OK);
 }
 
-FileBrowserPrivateGetDownloadUrlFunction::
-    FileBrowserPrivateGetDownloadUrlFunction() {
+FileManagerPrivateGetDownloadUrlFunction::
+    FileManagerPrivateGetDownloadUrlFunction() {
 }
 
-FileBrowserPrivateGetDownloadUrlFunction::
-    ~FileBrowserPrivateGetDownloadUrlFunction() {
+FileManagerPrivateGetDownloadUrlFunction::
+    ~FileManagerPrivateGetDownloadUrlFunction() {
 }
 
-bool FileBrowserPrivateGetDownloadUrlFunction::RunAsync() {
-  using extensions::api::file_browser_private::GetShareUrl::Params;
+bool FileManagerPrivateGetDownloadUrlFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetShareUrl::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1058,12 +1058,12 @@ bool FileBrowserPrivateGetDownloadUrlFunction::RunAsync() {
 
   file_system->GetResourceEntry(
       file_path,
-      base::Bind(&FileBrowserPrivateGetDownloadUrlFunction::OnGetResourceEntry,
+      base::Bind(&FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry,
                  this));
   return true;
 }
 
-void FileBrowserPrivateGetDownloadUrlFunction::OnGetResourceEntry(
+void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1093,10 +1093,10 @@ void FileBrowserPrivateGetDownloadUrlFunction::OnGetResourceEntry(
                                    GetProfile()->GetRequestContext(),
                                    scopes));
   auth_service_->StartAuthentication(base::Bind(
-      &FileBrowserPrivateGetDownloadUrlFunction::OnTokenFetched, this));
+      &FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched, this));
 }
 
-void FileBrowserPrivateGetDownloadUrlFunction::OnTokenFetched(
+void FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched(
     google_apis::GDataErrorCode code,
     const std::string& access_token) {
   if (code != google_apis::HTTP_SUCCESS) {

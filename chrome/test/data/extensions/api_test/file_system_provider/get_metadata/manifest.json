@@ -7,7 +7,7 @@
       "Test for chrome.fileSystemProvider.onGetMetadataRequested().",
   "permissions": [
     "fileSystemProvider",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler"
   ],
   "app": {

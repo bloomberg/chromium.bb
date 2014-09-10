@@ -485,7 +485,7 @@ function collectTestsForVolumeId(volumeId, fileSystem) {
  *     to run will be null.
  */
 function initTests(callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     var possibleVolumeTypes = ['testing', 'drive'];
 
     var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
@@ -500,7 +500,7 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
         sortedVolumeMetadataList[0].volumeId,
         function(fileSystem) {
           if (!fileSystem) {

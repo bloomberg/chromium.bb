@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace file_manager {
@@ -66,7 +66,7 @@ class DeviceEventRouter : public VolumeManagerObserver,
  protected:
   // Handles a device event containing |type| and |device_path|.
   virtual void OnDeviceEvent(
-      extensions::api::file_browser_private::DeviceEventType type,
+      extensions::api::file_manager_private::DeviceEventType type,
       const std::string& device_path) = 0;
   // Returns external storage is disabled or not.
   virtual bool IsExternalStorageDisabled() = 0;

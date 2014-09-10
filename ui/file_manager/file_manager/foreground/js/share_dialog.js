@@ -87,7 +87,7 @@ ShareDialog.WebViewAuthorizer.prototype.initialize = function(callback) {
  */
 ShareDialog.WebViewAuthorizer.prototype.authorize = function(callback) {
   // Fetch or update the access token.
-  chrome.fileBrowserPrivate.requestAccessToken(false,  // force_refresh
+  chrome.fileManagerPrivate.requestAccessToken(false,  // force_refresh
       function(inAccessToken) {
         this.accessToken_ = inAccessToken;
         callback();
@@ -265,7 +265,7 @@ ShareDialog.prototype.show = function(entry, callback) {
   // Fetches an url to the sharing dialog.
   var shareUrl;
   group.add(function(inCallback) {
-    chrome.fileBrowserPrivate.getShareUrl(
+    chrome.fileManagerPrivate.getShareUrl(
         entry.toURL(),
         function(inShareUrl) {
           if (!chrome.runtime.lastError)

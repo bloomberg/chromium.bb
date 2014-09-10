@@ -25,10 +25,10 @@ function ImageLoader() {
 
   // Grant permissions to all volumes, initialize the cache and then start the
   // worker.
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     var initPromises = volumeMetadataList.map(function(volumeMetadata) {
       var requestPromise = new Promise(function(callback) {
-        chrome.fileBrowserPrivate.requestFileSystem(
+        chrome.fileManagerPrivate.requestFileSystem(
             volumeMetadata.volumeId,
             callback);
       });
@@ -40,10 +40,10 @@ function ImageLoader() {
     Promise.all(initPromises).then(this.worker_.start.bind(this.worker_));
 
     // Listen for mount events, and grant permissions to volumes being mounted.
-    chrome.fileBrowserPrivate.onMountCompleted.addListener(
+    chrome.fileManagerPrivate.onMountCompleted.addListener(
         function(event) {
           if (event.eventType == 'mount' && event.status == 'success') {
-            chrome.fileBrowserPrivate.requestFileSystem(
+            chrome.fileManagerPrivate.requestFileSystem(
                 event.volumeMetadata.volumeId, function() {});
           }
         });

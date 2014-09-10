@@ -9,7 +9,7 @@
  * @type {Promise}
  */
 var volumeListPromise = new Promise(function(fulfill, reject) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(fulfill);
+  chrome.fileManagerPrivate.getVolumeMetadataList(fulfill);
 });
 
 /**
@@ -22,7 +22,7 @@ function getFileSystem(volumeType) {
     for (var i = 0; i < list.length; i++) {
       if (list[i].volumeType == volumeType) {
         return new Promise(function(fulfill) {
-          chrome.fileBrowserPrivate.requestFileSystem(
+          chrome.fileManagerPrivate.requestFileSystem(
               list[i].volumeId, fulfill);
         });
       }
@@ -109,7 +109,7 @@ function testPromise(promise) {
 function launchWithEntries(entries) {
   var urls = entries.map(function(entry) { return entry.toURL(); });
   var tasksPromise = new Promise(function(fulfill) {
-    chrome.fileBrowserPrivate.getFileTasks(urls, fulfill);
+    chrome.fileManagerPrivate.getFileTasks(urls, fulfill);
   }).then(function(tasks) {
     chrome.test.assertEq(1, tasks.length);
     chrome.test.assertEq('kidcpjlbjdmcnmccjhjdckhbngnhnepk|app|textAction',
@@ -124,7 +124,7 @@ function launchWithEntries(entries) {
   });
   var taskExecutedPromise = tasksPromise.then(function(task) {
     return new Promise(function(fulfill, reject) {
-      chrome.fileBrowserPrivate.executeTask(
+      chrome.fileManagerPrivate.executeTask(
           task.taskId,
           urls,
           function(result) {
@@ -138,7 +138,7 @@ function launchWithEntries(entries) {
   var resolvedEntriesPromise = launchDataPromise.then(function(launchData) {
     var entries = launchData.items.map(function(item) { return item.entry; });
     return new Promise(function(fulfill) {
-      chrome.fileBrowserPrivate.resolveIsolatedEntries(entries, fulfill);
+      chrome.fileManagerPrivate.resolveIsolatedEntries(entries, fulfill);
     });
   });
   return Promise.all([

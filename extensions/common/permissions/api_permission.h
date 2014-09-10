@@ -91,7 +91,7 @@ class APIPermission {
     kFeedbackPrivate,
     kFileBrowserHandler,
     kFileBrowserHandlerInternal,
-    kFileBrowserPrivate,
+    kFileManagerPrivate,
     kFileSystem,
     kFileSystemDirectory,
     kFileSystemProvider,

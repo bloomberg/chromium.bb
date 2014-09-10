@@ -32,27 +32,27 @@
 
 // Tests for access to external file systems (as defined in
 // storage/common/fileapi/file_system_types.h) from extensions with
-// fileBrowserPrivate and fileBrowserHandler extension permissions.
+// fileManagerPrivate and fileBrowserHandler extension permissions.
 // The tests cover following external file system types:
 // - local (kFileSystemTypeLocalNative): a local file system on which files are
 //   accessed using native local path.
 // - restricted (kFileSystemTypeRestrictedLocalNative): a *read-only* local file
 //   system which can only be accessed by extensions that have full access to
-//   external file systems (i.e. extensions with fileBrowserPrivate permission).
+//   external file systems (i.e. extensions with fileManagerPrivate permission).
 // - drive (kFileSystemTypeDrive): a file system that provides access to Google
 //   Drive.
 //
 // The tests cover following scenarios:
 // - Performing file system operations on external file systems from an
-//   extension with fileBrowserPrivate permission (i.e. a file browser
+//   extension with fileManagerPrivate permission (i.e. a file browser
 //   extension).
 // - Performing read/write operations from file handler extensions. These
 //   extensions need a file browser extension to give them permissions to access
 //   files. This also includes file handler extensions in filesystem API.
 // - Observing directory changes from a file browser extension (using
-//   fileBrowserPrivate API).
+//   fileManagerPrivate API).
 // - Doing searches on drive file system from file browser extension (using
-//   fileBrowserPrivate API).
+//   fileManagerPrivate API).
 
 using drive::DriveIntegrationServiceFactory;
 using extensions::Extension;

@@ -70,7 +70,7 @@ function run() {
   }
 
   /**
-   * Callback to chrome.fileBrowserPrivate.executeTask. Verifies the function
+   * Callback to chrome.fileManagerPrivate.executeTask. Verifies the function
    * succeeded.
    *
    * @param {string} url The url of file for which the handler was executed.
@@ -82,7 +82,7 @@ function run() {
   }
 
   /**
-   * Callback to chrome.fileBrowserPrivate.getFileTasks.
+   * Callback to chrome.fileManagerPrivate.getFileTasks.
    * It checks that the returned task is not the default, sets it as the default
    * and calls getFileTasks again.
    *
@@ -103,14 +103,14 @@ function run() {
       onError('Task "' + tasks[0].taskId + '" is default for "' + fileUrl +
           '"');
     }
-    chrome.fileBrowserPrivate.setDefaultTask(
+    chrome.fileManagerPrivate.setDefaultTask(
         tasks[0].taskId, [fileUrl],
-        chrome.fileBrowserPrivate.getFileTasks.bind(null, [fileUrl],
+        chrome.fileManagerPrivate.getFileTasks.bind(null, [fileUrl],
             onGotTasks.bind(null, fileUrl)));
   }
 
   /**
-   * Callback to chrome.fileBrowserPrivate.getFileTasks.
+   * Callback to chrome.fileManagerPrivate.getFileTasks.
    * It remembers the returned task id and url. When tasks for all test cases
    * are found, they are executed.
    *
@@ -135,7 +135,7 @@ function run() {
 
     if (foundTasks.length == kTestPaths.length) {
       foundTasks.forEach(function(task) {
-        chrome.fileBrowserPrivate.executeTask(task.id, [task.url],
+        chrome.fileManagerPrivate.executeTask(task.id, [task.url],
             onExecuteTask.bind(null, task.url));
       });
     }
@@ -153,7 +153,7 @@ function run() {
 
     if (resolvedEntries.length == kTestPaths.length) {
       resolvedEntries.forEach(function(entry) {
-        chrome.fileBrowserPrivate.getFileTasks(
+        chrome.fileManagerPrivate.getFileTasks(
             [entry.toURL()],
             onGotNonDefaultTasks.bind(null, entry.toURL()));
       });
@@ -177,7 +177,7 @@ function run() {
     });
   }
 
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     // Try to acquire the first volume which is either TESTING or DRIVE type.
     var possibleVolumeTypes = ['testing', 'drive'];
     var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
@@ -190,7 +190,7 @@ function run() {
       onError('No volumes available, which could be used for testing.');
       return;
     }
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
         sortedVolumeMetadataList[0].volumeId,
         function(fileSystem) {
           if (!fileSystem) {

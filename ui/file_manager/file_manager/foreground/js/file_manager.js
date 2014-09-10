@@ -305,7 +305,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var stateChangeHandler =
         this.onPreferencesChanged_.bind(this);
-    chrome.fileBrowserPrivate.onPreferencesChanged.addListener(
+    chrome.fileManagerPrivate.onPreferencesChanged.addListener(
         stateChangeHandler);
     stateChangeHandler();
 
@@ -1774,7 +1774,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var selection = this.getSelection();
     // TODO(mtomasz): Move conversion from entry to url to custom bindings.
     // crbug.com/345527.
-    chrome.fileBrowserPrivate.setDefaultTask(
+    chrome.fileManagerPrivate.setDefaultTask(
         task.taskId,
         util.entriesToURLs(selection.entries),
         selection.mimeTypes);
@@ -2188,7 +2188,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       volumeSpaceInnerBar.style.width = '100%';
     }
 
-    chrome.fileBrowserPrivate.getSizeStats(
+    chrome.fileManagerPrivate.getSizeStats(
         currentVolumeInfo.volumeId, function(result) {
           var volumeInfo = this.volumeManager_.getVolumeInfo(
               this.directoryModel_.getCurrentDirEntry());
@@ -2948,7 +2948,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onCancel_ = function(event) {
-    chrome.fileBrowserPrivate.cancelDialog();
+    chrome.fileManagerPrivate.cancelDialog();
     window.close();
   };
 
@@ -2964,7 +2964,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
     if (this.isOnDrive()) {
-      chrome.fileBrowserPrivate.getDriveFiles(
+      chrome.fileManagerPrivate.getDriveFiles(
         fileUrls,
         function(localPaths) {
           callback(fileUrls);
@@ -2986,11 +2986,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       window.close();
     }
     if (selection.multiple) {
-      chrome.fileBrowserPrivate.selectFiles(
+      chrome.fileManagerPrivate.selectFiles(
           selection.urls, this.params_.shouldReturnLocalPath, callback);
     } else {
       var forOpening = (this.dialogType != DialogType.SELECT_SAVEAS_FILE);
-      chrome.fileBrowserPrivate.selectFile(
+      chrome.fileManagerPrivate.selectFile(
           selection.urls[0], selection.filterIndex, forOpening,
           this.params_.shouldReturnLocalPath, callback);
     }
@@ -3053,7 +3053,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       footer.setAttribute('progress', 'progress');
       this.cancelButton_.removeEventListener('click', this.onCancelBound_);
       this.cancelButton_.addEventListener('click', onCancel);
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
+      chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
           onFileTransfersUpdated);
     }.bind(this);
 
@@ -3062,7 +3062,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       footer.removeAttribute('progress');
       this.cancelButton_.removeEventListener('click', onCancel);
       this.cancelButton_.addEventListener('click', this.onCancelBound_);
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+      chrome.fileManagerPrivate.onFileTransfersUpdated.removeListener(
           onFileTransfersUpdated);
     }.bind(this);
 
@@ -3070,7 +3070,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       cancelled = true;
       // According to API cancel may fail, but there is no proper UI to reflect
       // this. So, we just silently assume that everything is cancelled.
-      chrome.fileBrowserPrivate.cancelFileTransfers(
+      chrome.fileManagerPrivate.cancelFileTransfers(
           selection.urls, function(response) {});
       cleanup();
     }.bind(this);
@@ -3268,7 +3268,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // If checked, the sync is disabled.
     var nowCellularDisabled = this.syncButton.hasAttribute('checked');
     var changeInfo = {cellularDisabled: !nowCellularDisabled};
-    chrome.fileBrowserPrivate.setPreferences(changeInfo);
+    chrome.fileManagerPrivate.setPreferences(changeInfo);
   };
 
   /**
@@ -3283,7 +3283,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     */
     var changeInfo = {};
     changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
-    chrome.fileBrowserPrivate.setPreferences(changeInfo);
+    chrome.fileManagerPrivate.setPreferences(changeInfo);
   };
 
   /**
@@ -3428,7 +3428,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       'types': 'ALL',
       'maxResults': 4
     };
-    chrome.fileBrowserPrivate.searchDriveMetadata(
+    chrome.fileManagerPrivate.searchDriveMetadata(
       searchParams,
       function(suggestions) {
         this.autocompleteSuggestionsBusy_ = false;
@@ -3615,7 +3615,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    chrome.fileBrowserPrivate.getPreferences(function(prefs) {
+    chrome.fileManagerPrivate.getPreferences(function(prefs) {
       this.preferences_ = prefs;
       callback(prefs);
     }.bind(this));

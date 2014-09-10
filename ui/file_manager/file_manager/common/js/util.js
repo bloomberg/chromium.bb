@@ -1152,7 +1152,7 @@ util.URLsToEntries = function(urls, opt_callback) {
  */
 util.isTeleported = function(window) {
   return new Promise(function(onFulfilled) {
-    window.chrome.fileBrowserPrivate.getProfiles(function(profiles,
+    window.chrome.fileManagerPrivate.getProfiles(function(profiles,
                                                           currentId,
                                                           displayedId) {
       onFulfilled(currentId !== displayedId);
@@ -1171,7 +1171,7 @@ util.isTeleported = function(window) {
 util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
   if (!entries.length)
     return;
-  chrome.fileBrowserPrivate.getProfiles(function(profiles,
+  chrome.fileManagerPrivate.getProfiles(function(profiles,
                                                  currentId,
                                                  displayedId) {
     // Find strings.
@@ -1347,7 +1347,7 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
     return Promise.reject(str('ERROR_HIDDEN_NAME'));
 
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.validatePathNameLength(
+    chrome.fileManagerPrivate.validatePathNameLength(
         parentEntry.toURL(),
         name,
         function(valid) {

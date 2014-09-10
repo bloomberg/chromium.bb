@@ -7,7 +7,7 @@
       "Test for chrome.fileSystemProvider.onCreateFileRequested().",
   "permissions": [
     "fileSystemProvider",
-    "fileBrowserPrivate",
+    "fileManagerPrivate",
     "fileBrowserHandler"
   ],
   "app": {

@@ -30,7 +30,7 @@ function BackgroundComponents(stringData, volumeManager) {
  */
 BackgroundComponents.load = function() {
   var stringDataPromise = new Promise(function(fulfill) {
-    chrome.fileBrowserPrivate.getStrings(function(stringData) {
+    chrome.fileManagerPrivate.getStrings(function(stringData) {
       loadTimeData.data = stringData;
       fulfill(stringData);
     });
@@ -62,7 +62,7 @@ var backgroundComponentsPromise = BackgroundComponents.load();
  */
 function resolveEntries(entries) {
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.resolveIsolatedEntries(entries,
+    chrome.fileManagerPrivate.resolveIsolatedEntries(entries,
                                                      function(externalEntries) {
       if (!chrome.runtime.lastError)
         fulfill(externalEntries);

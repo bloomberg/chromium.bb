@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file provides utility functions for fileBrowserPrivate API.
+// This file provides utility functions for fileManagerPrivate API.
 
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
@@ -28,7 +28,7 @@ class EventLogger;
 
 namespace extensions {
 namespace api {
-namespace file_browser_private {
+namespace file_manager_private {
 struct VolumeMetadata;
 }
 }
@@ -49,7 +49,7 @@ namespace util {
 void VolumeInfoToVolumeMetadata(
     Profile* profile,
     const VolumeInfo& volume_info,
-    extensions::api::file_browser_private::VolumeMetadata* volume_metadata);
+    extensions::api::file_manager_private::VolumeMetadata* volume_metadata);
 
 // Returns the local FilePath associated with |url|. If the file isn't of the
 // type FileSystemBackend handles, returns an empty

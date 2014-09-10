@@ -5,11 +5,11 @@
 'use strict';
 
 /**
- * Overrides fileBrowserPrivate.getDownloadUrl
+ * Overrides fileManagerPrivate.getDownloadUrl
  * @param {string} url
  * @param {function(string)} callback
  */
-chrome.fileBrowserPrivate.getDownloadUrl = function(url, callback) {
+chrome.fileManagerPrivate.getDownloadUrl = function(url, callback) {
   var dummyUrl = 'http://example.com/test.mp4?access_token=ACCESSTOKEN;
   setTimeout(callback.bind(null, dummyUrl));
 };

@@ -18,7 +18,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/enterprise_platform_keys_natives.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
-#include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
+#include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
@@ -116,9 +116,9 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       scoped_ptr<NativeHandler>(
           new extensions::FileBrowserHandlerCustomBindings(context)));
   module_system->RegisterNativeHandler(
-      "file_browser_private",
+      "file_manager_private",
       scoped_ptr<NativeHandler>(
-          new extensions::FileBrowserPrivateCustomBindings(context)));
+          new extensions::FileManagerPrivateCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "notifications_private",
       scoped_ptr<NativeHandler>(
@@ -185,8 +185,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileBrowserPrivate",
-                             IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileManagerPrivate",
+                             IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileSystemProvider",
                              IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);

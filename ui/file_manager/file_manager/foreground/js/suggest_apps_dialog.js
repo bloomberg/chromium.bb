@@ -167,7 +167,7 @@ SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
   }
 
   // Fetch or update the access token.
-  chrome.fileBrowserPrivate.requestWebStoreAccessToken(
+  chrome.fileManagerPrivate.requestWebStoreAccessToken(
       function(accessToken) {
         // In case of error, this.accessToken_ will be set to null.
         this.accessToken_ = accessToken;

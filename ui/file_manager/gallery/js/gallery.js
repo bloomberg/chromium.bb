@@ -597,10 +597,10 @@ Gallery.prototype.executeWhenReady = function(callback) {
 };
 
 /**
- * @return {Object} File browser private API.
+ * @return {Object} File manager private API.
  */
-Gallery.getFileBrowserPrivate = function() {
-  return chrome.fileBrowserPrivate || window.top.chrome.fileBrowserPrivate;
+Gallery.getFileManagerPrivate = function() {
+  return chrome.fileManagerPrivate || window.top.chrome.fileManagerPrivate;
 };
 
 /**

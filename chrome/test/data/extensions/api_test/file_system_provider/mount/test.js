@@ -52,14 +52,14 @@ chrome.test.runTests([
 
   // End to end test. Mounts a volume using fileSystemProvider.mount(), then
   // checks if the mounted volume is added to VolumeManager, by querying
-  // fileBrowserPrivate.getVolumeMetadataList().
+  // fileManagerPrivate.getVolumeMetadataList().
   function successfulMount() {
     var onTestSuccess = chrome.test.callbackPass();
     var fileSystemId = 'caramel-candy';
     chrome.fileSystemProvider.mount(
         {fileSystemId: fileSystemId, displayName: 'caramel-candy.zip'},
         function() {
-          chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+          chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
             var volumeInfo;
             volumeList.forEach(function(inVolumeInfo) {
               if (inVolumeInfo.extensionId == chrome.runtime.id &&
@@ -89,7 +89,7 @@ chrome.test.runTests([
           writable: true
         },
         function() {
-          chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+          chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
             var volumeInfo;
             volumeList.forEach(function(inVolumeInfo) {
               if (inVolumeInfo.extensionId == chrome.runtime.id &&

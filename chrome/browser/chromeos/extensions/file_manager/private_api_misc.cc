@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
@@ -28,7 +28,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -60,13 +60,13 @@ AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
                           : NULL;
 }
 
-std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
+std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >
 GetLoggedInProfileInfoList() {
   DCHECK(user_manager::UserManager::IsInitialized());
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::set<Profile*> original_profiles;
-  std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
+  std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >
       result_profiles;
 
   for (size_t i = 0; i < profiles.size(); ++i) {
@@ -81,8 +81,8 @@ GetLoggedInProfileInfoList() {
       continue;
 
     // Make a ProfileInfo.
-    linked_ptr<api::file_browser_private::ProfileInfo> profile_info(
-        new api::file_browser_private::ProfileInfo());
+    linked_ptr<api::file_manager_private::ProfileInfo> profile_info(
+        new api::file_manager_private::ProfileInfo());
     profile_info->profile_id = multi_user_util::GetUserIDFromProfile(profile);
     profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
     // TODO(hirono): Remove the property from the profile_info.
@@ -95,7 +95,7 @@ GetLoggedInProfileInfoList() {
 }
 } // namespace
 
-bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunSync() {
+bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (user) {
@@ -107,8 +107,8 @@ bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateGetPreferencesFunction::RunSync() {
-  api::file_browser_private::Preferences result;
+bool FileManagerPrivateGetPreferencesFunction::RunSync() {
+  api::file_manager_private::Preferences result;
   const PrefService* const service = GetProfile()->GetPrefs();
 
   result.drive_enabled = drive::util::IsDriveEnabledForProfile(GetProfile());
@@ -132,8 +132,8 @@ bool FileBrowserPrivateGetPreferencesFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateSetPreferencesFunction::RunSync() {
-  using extensions::api::file_browser_private::SetPreferences::Params;
+bool FileManagerPrivateSetPreferencesFunction::RunSync() {
+  using extensions::api::file_manager_private::SetPreferences::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -153,14 +153,14 @@ bool FileBrowserPrivateSetPreferencesFunction::RunSync() {
   return true;
 }
 
-FileBrowserPrivateZipSelectionFunction::
-    FileBrowserPrivateZipSelectionFunction() {}
+FileManagerPrivateZipSelectionFunction::
+    FileManagerPrivateZipSelectionFunction() {}
 
-FileBrowserPrivateZipSelectionFunction::
-    ~FileBrowserPrivateZipSelectionFunction() {}
+FileManagerPrivateZipSelectionFunction::
+    ~FileManagerPrivateZipSelectionFunction() {}
 
-bool FileBrowserPrivateZipSelectionFunction::RunAsync() {
-  using extensions::api::file_browser_private::ZipSelection::Params;
+bool FileManagerPrivateZipSelectionFunction::RunAsync() {
+  using extensions::api::file_manager_private::ZipSelection::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -208,32 +208,32 @@ bool FileBrowserPrivateZipSelectionFunction::RunAsync() {
   }
 
   (new file_manager::ZipFileCreator(
-       base::Bind(&FileBrowserPrivateZipSelectionFunction::OnZipDone, this),
+       base::Bind(&FileManagerPrivateZipSelectionFunction::OnZipDone, this),
        src_dir,
        src_relative_paths,
        dest_file))->Start();
   return true;
 }
 
-void FileBrowserPrivateZipSelectionFunction::OnZipDone(bool success) {
+void FileManagerPrivateZipSelectionFunction::OnZipDone(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
-bool FileBrowserPrivateZoomFunction::RunSync() {
-  using extensions::api::file_browser_private::Zoom::Params;
+bool FileManagerPrivateZoomFunction::RunSync() {
+  using extensions::api::file_manager_private::Zoom::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::PageZoom zoom_type;
   switch (params->operation) {
-    case api::file_browser_private::ZOOM_OPERATION_TYPE_IN:
+    case api::file_manager_private::ZOOM_OPERATION_TYPE_IN:
       zoom_type = content::PAGE_ZOOM_IN;
       break;
-    case api::file_browser_private::ZOOM_OPERATION_TYPE_OUT:
+    case api::file_manager_private::ZOOM_OPERATION_TYPE_OUT:
       zoom_type = content::PAGE_ZOOM_OUT;
       break;
-    case api::file_browser_private::ZOOM_OPERATION_TYPE_RESET:
+    case api::file_manager_private::ZOOM_OPERATION_TYPE_RESET:
       zoom_type = content::PAGE_ZOOM_RESET;
       break;
     default:
@@ -244,8 +244,8 @@ bool FileBrowserPrivateZoomFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
-  using extensions::api::file_browser_private::InstallWebstoreItem::Params;
+bool FileManagerPrivateInstallWebstoreItemFunction::RunAsync() {
+  using extensions::api::file_manager_private::InstallWebstoreItem::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -254,7 +254,7 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
 
   const extensions::WebstoreStandaloneInstaller::Callback callback =
       base::Bind(
-          &FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete,
+          &FileManagerPrivateInstallWebstoreItemFunction::OnInstallComplete,
           this);
 
   // Only GoogleCastAPI extension can use silent installation.
@@ -275,7 +275,7 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
   return true;
 }
 
-void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
+void FileManagerPrivateInstallWebstoreItemFunction::OnInstallComplete(
     bool success,
     const std::string& error,
     extensions::webstore_install::Result result) {
@@ -299,15 +299,15 @@ void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
   SendResponse(success);
 }
 
-FileBrowserPrivateRequestWebStoreAccessTokenFunction::
-    FileBrowserPrivateRequestWebStoreAccessTokenFunction() {
+FileManagerPrivateRequestWebStoreAccessTokenFunction::
+    FileManagerPrivateRequestWebStoreAccessTokenFunction() {
 }
 
-FileBrowserPrivateRequestWebStoreAccessTokenFunction::
-    ~FileBrowserPrivateRequestWebStoreAccessTokenFunction() {
+FileManagerPrivateRequestWebStoreAccessTokenFunction::
+    ~FileManagerPrivateRequestWebStoreAccessTokenFunction() {
 }
 
-bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
+bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
   std::vector<std::string> scopes;
   scopes.push_back(kCWSScope);
 
@@ -335,14 +335,14 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
       url_request_context_getter,
       scopes));
   auth_service_->StartAuthentication(base::Bind(
-      &FileBrowserPrivateRequestWebStoreAccessTokenFunction::
+      &FileManagerPrivateRequestWebStoreAccessTokenFunction::
           OnAccessTokenFetched,
       this));
 
   return true;
 }
 
-void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
+void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     google_apis::GDataErrorCode code,
     const std::string& access_token) {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
@@ -365,13 +365,13 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
   }
 }
 
-bool FileBrowserPrivateGetProfilesFunction::RunSync() {
+bool FileManagerPrivateGetProfilesFunction::RunSync() {
 #if defined(USE_ATHENA)
   // TODO(oshima): Figure out what to do.
   return false;
 #endif
 
-  const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
+  const std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList();
 
   // Obtains the display profile ID.
@@ -385,17 +385,17 @@ bool FileBrowserPrivateGetProfilesFunction::RunSync() {
                                          app_window->GetNativeWindow())
                                    : "";
 
-  results_ = api::file_browser_private::GetProfiles::Results::Create(
+  results_ = api::file_manager_private::GetProfiles::Results::Create(
       profiles,
       current_profile_id,
       display_profile_id.empty() ? current_profile_id : display_profile_id);
   return true;
 }
 
-bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
-  using api::file_browser_private::VisitDesktop::Params;
+bool FileManagerPrivateVisitDesktopFunction::RunSync() {
+  using api::file_manager_private::VisitDesktop::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
-  const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
+  const std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList();
 
   chrome::MultiUserWindowManager* const window_manager =
@@ -436,30 +436,30 @@ bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
   return true;
 }
 
-bool FileBrowserPrivateOpenInspectorFunction::RunSync() {
-  using extensions::api::file_browser_private::OpenInspector::Params;
+bool FileManagerPrivateOpenInspectorFunction::RunSync() {
+  using extensions::api::file_manager_private::OpenInspector::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   switch (params->type) {
-    case extensions::api::file_browser_private::INSPECTION_TYPE_NORMAL:
+    case extensions::api::file_manager_private::INSPECTION_TYPE_NORMAL:
       // Open inspector for foreground page.
       DevToolsWindow::OpenDevToolsWindow(
           content::WebContents::FromRenderViewHost(render_view_host()));
       break;
-    case extensions::api::file_browser_private::INSPECTION_TYPE_CONSOLE:
+    case extensions::api::file_manager_private::INSPECTION_TYPE_CONSOLE:
       // Open inspector for foreground page and bring focus to the console.
       DevToolsWindow::OpenDevToolsWindow(
           content::WebContents::FromRenderViewHost(render_view_host()),
           DevToolsToggleAction::ShowConsole());
       break;
-    case extensions::api::file_browser_private::INSPECTION_TYPE_ELEMENT:
+    case extensions::api::file_manager_private::INSPECTION_TYPE_ELEMENT:
       // Open inspector for foreground page in inspect element mode.
       DevToolsWindow::OpenDevToolsWindow(
           content::WebContents::FromRenderViewHost(render_view_host()),
           DevToolsToggleAction::Inspect());
       break;
-    case extensions::api::file_browser_private::INSPECTION_TYPE_BACKGROUND:
+    case extensions::api::file_manager_private::INSPECTION_TYPE_BACKGROUND:
       // Open inspector for background page.
       extensions::devtools_util::InspectBackgroundPage(extension(),
                                                        GetProfile());

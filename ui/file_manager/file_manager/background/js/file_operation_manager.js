@@ -261,7 +261,7 @@ fileOperationUtil.copyTo = function(
           break;
 
         case 'success':
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
           // TODO(mtomasz): Convert URL to Entry in custom bindings.
           util.URLsToEntries(
@@ -272,7 +272,7 @@ fileOperationUtil.copyTo = function(
           break;
 
         case 'error':
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
           errorCallback(util.createDOMError(status.error));
           callback();
@@ -281,9 +281,9 @@ fileOperationUtil.copyTo = function(
         default:
           // Found unknown state. Cancel the task, and return an error.
           console.error('Unknown progress type: ' + status.type);
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          chrome.fileBrowserPrivate.cancelCopy(copyId);
+          chrome.fileManagerPrivate.cancelCopy(copyId);
           errorCallback(util.createDOMError(
               util.FileError.INVALID_STATE_ERR));
           callback();
@@ -293,16 +293,16 @@ fileOperationUtil.copyTo = function(
 
   // Register the listener before calling startCopy. Otherwise some events
   // would be lost.
-  chrome.fileBrowserPrivate.onCopyProgress.addListener(onCopyProgress);
+  chrome.fileManagerPrivate.onCopyProgress.addListener(onCopyProgress);
 
   // Then starts the copy.
   // TODO(mtomasz): Convert URL to Entry in custom bindings.
-  chrome.fileBrowserPrivate.startCopy(
+  chrome.fileManagerPrivate.startCopy(
       source.toURL(), parent.toURL(), newName, function(startCopyId) {
         // last error contains the FileError code on error.
         if (chrome.runtime.lastError) {
           // Unsubscribe the progress listener.
-          chrome.fileBrowserPrivate.onCopyProgress.removeListener(
+          chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
           errorCallback(util.createDOMError(chrome.runtime.lastError));
           return;
@@ -318,17 +318,17 @@ fileOperationUtil.copyTo = function(
     // If copyId is not yet available, wait for it.
     if (copyId == null) {
       pendingCallbacks.push(function() {
-        chrome.fileBrowserPrivate.cancelCopy(copyId);
+        chrome.fileManagerPrivate.cancelCopy(copyId);
       });
       return;
     }
 
-    chrome.fileBrowserPrivate.cancelCopy(copyId);
+    chrome.fileManagerPrivate.cancelCopy(copyId);
   };
 };
 
 /**
- * Thin wrapper of chrome.fileBrowserPrivate.zipSelection to adapt its
+ * Thin wrapper of chrome.fileManagerPrivate.zipSelection to adapt its
  * interface similar to copyTo().
  *
  * @param {Array.<Entry>} sources The array of entries to be archived.
@@ -343,7 +343,7 @@ fileOperationUtil.zipSelection = function(
     sources, parent, newName, successCallback, errorCallback) {
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
   // crbug.com/345527.
-  chrome.fileBrowserPrivate.zipSelection(
+  chrome.fileManagerPrivate.zipSelection(
       parent.toURL(),
       util.entriesToURLs(sources),
       newName, function(success) {

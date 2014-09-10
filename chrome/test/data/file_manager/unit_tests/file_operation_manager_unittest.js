@@ -28,17 +28,17 @@ chrome.power = {
 };
 
 /**
- * Mock of chrome.fileBrowserPrivate.
+ * Mock of chrome.fileManagerPrivate.
  * @type {Object}
  * @const
  */
-chrome.fileBrowserPrivate = {
+chrome.fileManagerPrivate = {
   onCopyProgress: {
     addListener: function(callback) {
-      chrome.fileBrowserPrivate.onCopyProgress.listener_ = callback;
+      chrome.fileManagerPrivate.onCopyProgress.listener_ = callback;
     },
     removeListener: function() {
-      chrome.fileBrowserPrivate.onCopyProgress.listener_ = null;
+      chrome.fileManagerPrivate.onCopyProgress.listener_ = null;
     },
     listener_: null
   }
@@ -243,13 +243,13 @@ function testCopy(callback) {
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
 
-  chrome.fileBrowserPrivate.startCopy =
+  chrome.fileManagerPrivate.startCopy =
       function(source, destination, newName, callback) {
         var makeStatus = function(type) {
           return {type: type, sourceUrl: source, destinationUrl: destination};
         };
         callback(1);
-        var listener = chrome.fileBrowserPrivate.onCopyProgress.listener_;
+        var listener = chrome.fileManagerPrivate.onCopyProgress.listener_;
         listener(1, makeStatus('begin_copy_entry'));
         listener(1, makeStatus('progress'));
         var newPath = joinPath('/', newName);
@@ -396,7 +396,7 @@ function testZip(callback) {
   });
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
-  chrome.fileBrowserPrivate.zipSelection =
+  chrome.fileManagerPrivate.zipSelection =
       function(parentURL, sources, newName, success, error) {
         var newPath = joinPath('/', newName);
         var newEntry = new MockFileEntry(fileSystem, newPath, {size: 10});

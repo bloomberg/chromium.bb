@@ -13,7 +13,7 @@ var initializeQueue = new AsyncUtil.Queue();
 
 // Initializes the strings. This needs for the volume manager.
 initializeQueue.run(function(fulfill) {
-  chrome.fileBrowserPrivate.getStrings(function(stringData) {
+  chrome.fileManagerPrivate.getStrings(function(stringData) {
     loadTimeData.data = stringData;
     fulfill();
   }.wrap());
@@ -41,7 +41,7 @@ function onLaunched(launchData) {
       return item.entry;
     });
 
-    chrome.fileBrowserPrivate.resolveIsolatedEntries(isolatedEntries,
+    chrome.fileManagerPrivate.resolveIsolatedEntries(isolatedEntries,
         function(externalEntries) {
           videos = externalEntries.map(function(entry) {
             return Object.freeze({

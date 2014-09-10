@@ -131,7 +131,7 @@ DriveSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
   var numReadEntries = 0;
   var readEntries = function(nextFeed) {
-    chrome.fileBrowserPrivate.searchDrive(
+    chrome.fileManagerPrivate.searchDrive(
         {query: this.query_, nextFeed: nextFeed},
         function(entries, nextFeed) {
           if (this.cancelled_) {
@@ -292,7 +292,7 @@ DriveMetadataSearchContentScanner.SearchType = Object.freeze({
  */
 DriveMetadataSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  chrome.fileBrowserPrivate.searchDriveMetadata(
+  chrome.fileManagerPrivate.searchDriveMetadata(
       {query: '', types: this.searchType_, maxResults: 500},
       function(results) {
         if (this.cancelled_) {

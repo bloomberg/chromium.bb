@@ -1400,16 +1400,16 @@ file_browser_handler_internal.json</a>
 <tr class="vc_row_even">
 <td colspan="2">
 
-<a name="file_browser_private.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/file_browser_private.json?view=log" title="View file revision log">
+<a name="file_manager_private.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/file_manager_private.json?view=log" title="View file revision log">
 
 <img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-file_browser_private.json</a>
+file_manager_private.json</a>
 
 </td>
 
 
 
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/file_browser_private.json?revision=150806&amp;view=markup" title="View file contents"><strong>150806</strong></a></td>
+<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/file_manager_private.json?revision=150806&amp;view=markup" title="View file contents"><strong>150806</strong></a></td>
 
 <td>&nbsp;30 hours</td>
 <td>&nbsp;yoshiki@chromium.org</td>

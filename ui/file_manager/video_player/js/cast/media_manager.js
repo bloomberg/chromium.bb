@@ -49,7 +49,7 @@ MediaManager.prototype.getToken = function(refresh) {
 
   return new Promise(function(fulfill, reject) {
     // TODO(yoshiki): Creates the method to get a token and use it.
-    chrome.fileBrowserPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
+    chrome.fileManagerPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
   }.bind(this)).then(function(url) {
     if (chrome.runtime.lastError) {
       return Promise.reject(
@@ -78,7 +78,7 @@ MediaManager.prototype.getUrl = function() {
 
   return new Promise(function(fulfill, reject) {
     // TODO(yoshiki): Creates the method to get a url and use it.
-    chrome.fileBrowserPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
+    chrome.fileManagerPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
   }.bind(this)).then(function(url) {
     if (chrome.runtime.lastError) {
       return Promise.reject(
@@ -105,7 +105,7 @@ MediaManager.prototype.getMime = function() {
     return Promise.resolve(this.cachedDriveProp_.contentMimeType || '');
 
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.getEntryProperties(
+    chrome.fileManagerPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
     if (!props || !props[0]) {
@@ -131,7 +131,7 @@ MediaManager.prototype.getThumbnail = function() {
     return Promise.resolve(this.cachedDriveProp_.thumbnailUrl || '');
 
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.getEntryProperties(
+    chrome.fileManagerPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
     if (!props || !props[0]) {

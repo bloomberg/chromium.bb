@@ -74,7 +74,7 @@ function sendXHR(url) {
  */
 function requestDriveFileSystem() {
   return new Promise(function(fulfill) {
-    chrome.fileBrowserPrivate.requestFileSystem(
+    chrome.fileManagerPrivate.requestFileSystem(
         'drive:drive-user',
         function(fileSystem) {
           chrome.test.assertTrue(!!fileSystem);
@@ -107,7 +107,7 @@ function testResolveFileSystemURL() {
  */
 function testSendXHRToFileSystemURL() {
   // Thus we grant the permission to the extension in
-  // chrome.fileBrowserPrivate.requestFileSystem, we need to call the method
+  // chrome.fileManagerPrivate.requestFileSystem, we need to call the method
   // before.
   reportPromise(requestDriveFileSystem().then(function(fileSystem) {
     return Promise.all([

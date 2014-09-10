@@ -64,7 +64,7 @@ function runTests() {
           TESTING_WITH_MIME_FILE.name,
           {},
           function(entry) {
-          chrome.fileBrowserPrivate.getFileTasks(
+          chrome.fileManagerPrivate.getFileTasks(
               [entry.toURL()],
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
@@ -84,7 +84,7 @@ function runTests() {
       var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_WITH_MIME_FILE.name, {}, function(entry) {
-          chrome.fileBrowserPrivate.getFileTasks(
+          chrome.fileManagerPrivate.getFileTasks(
               [entry.toURL()],
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
@@ -105,7 +105,7 @@ function runTests() {
                   onSuccess();
                 };
                 chrome.app.runtime.onLaunched.addListener(onLaunched);
-                chrome.fileBrowserPrivate.executeTask(
+                chrome.fileManagerPrivate.executeTask(
                     tasks[0].taskId, [entry.toURL()]);
               });
           }, function(error) {
@@ -121,7 +121,7 @@ function runTests() {
           TESTING_WITHOUT_MIME_FILE.name,
           {},
           function(entry) {
-            chrome.fileBrowserPrivate.getFileTasks(
+            chrome.fileManagerPrivate.getFileTasks(
                 [entry.toURL()],
                 function(tasks) {
                   chrome.test.assertEq(0, tasks.length);

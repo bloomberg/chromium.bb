@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -154,7 +154,7 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
 
   // Dispatches the mount completed event.
   void DispatchMountCompletedEvent(
-      extensions::api::file_browser_private::MountCompletedEventType event_type,
+      extensions::api::file_manager_private::MountCompletedEventType event_type,
       chromeos::MountError error,
       const VolumeInfo& volume_info);
 

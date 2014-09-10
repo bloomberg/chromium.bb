@@ -34,7 +34,7 @@
 //
 // For example, if the user is now selecting a JPEG file, Files.app will
 // receive file tasks represented as a JSON object via
-// chrome.fileBrowserPrivate.getFileTasks() API, which look like:
+// chrome.fileManagerPrivate.getFileTasks() API, which look like:
 //
 // [
 //   {
@@ -93,10 +93,10 @@
 //
 // HOW TASKS ARE EXECUTED?
 //
-// chrome.fileBrowserPrivate.viewFiles() is used to open a file in a browser,
+// chrome.fileManagerPrivate.viewFiles() is used to open a file in a browser,
 // without any handler. Browser will take care of handling the file (ex. PDF).
 //
-// chrome.fileBrowserPrivate.executeTasks() is used to open a file with a
+// chrome.fileManagerPrivate.executeTasks() is used to open a file with a
 // handler (Chrome Extension/App or Drive App).
 //
 // Some built-in handlers such as "play" are handled internally in Files.app.
@@ -117,7 +117,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -222,7 +222,7 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task);
 
 // The callback is used for ExecuteFileTask(). Will be called with true if
 // the file task execution is successful, or false if unsuccessful.
-typedef base::Callback<void(extensions::api::file_browser_private::TaskResult
+typedef base::Callback<void(extensions::api::file_manager_private::TaskResult
                                 result)> FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.
