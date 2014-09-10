@@ -119,6 +119,7 @@ static_library("test_support") {
     "//ui/compositor:test_support",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events:test_support",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",

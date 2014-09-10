@@ -119,7 +119,9 @@
             '../aura/aura.gyp:aura',
           ],
         }],
-        ['toolkit_views==1', {
+        # On Mac, toolkit-views builds still use the Cocoa UI. Keep this in sync
+        # with message_center_unittests below.
+        ['toolkit_views==1 and OS!="mac"', {
           'dependencies': [
             '../events/events.gyp:events',
             '../views/views.gyp:views',
@@ -221,7 +223,7 @@
             '../gfx/gfx.gyp:gfx_test_support',
           ],
         }],
-        ['toolkit_views==1', {
+        ['toolkit_views==1 and OS!="mac"', {
           'dependencies': [
             # Compositor is needed by message_center_view_unittest.cc
             # and for the fonts used by bounded_label_unittest.cc.

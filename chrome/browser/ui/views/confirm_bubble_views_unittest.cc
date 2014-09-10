@@ -28,7 +28,7 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   TestConfirmBubbleModel* model =
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL);
   ConfirmBubbleViews* bubble = new ConfirmBubbleViews(model);
-  gfx::NativeView parent = parent_widget->GetNativeView();
+  gfx::NativeWindow parent = parent_widget->GetNativeWindow();
   CreateBrowserModalDialogViews(bubble, parent)->Show();
 
   // Clean up.

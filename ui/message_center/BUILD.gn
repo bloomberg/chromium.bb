@@ -76,7 +76,9 @@ component("message_center") {
       deps += [ "//ui/aura" ]
     }
 
-    if (toolkit_views) {
+    # On Mac, toolkit-views builds still use the Cocoa UI. Keep this in sync
+    # with message_center_unittests below.
+    if (toolkit_views && !is_mac) {
       sources += [
         "views/bounded_label.cc",
         "views/bounded_label.h",
@@ -209,7 +211,7 @@ test("message_center_unittests") {
       deps += [ "//ui/gfx:test_support" ]
     }
 
-    if (toolkit_views) {
+    if (toolkit_views && !is_mac) {
       sources += [
         "views/bounded_label_unittest.cc",
         "views/message_center_view_unittest.cc",
