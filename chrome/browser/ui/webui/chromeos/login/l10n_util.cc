@@ -67,12 +67,6 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   input_methods_list->Append(optgroup.release());
 }
 
-// TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
-// see: crbug.com/240586
-bool IsBlacklisted(const std::string& language_code) {
-  return language_code == "si";  // Sinhala
-}
-
 // Gets the list of languages with |descriptors| based on |base_language_codes|.
 // The |most_relevant_language_codes| will be first in the list. If
 // |insert_divider| is true, an entry with its "code" attribute set to
@@ -201,11 +195,6 @@ scoped_ptr<base::ListValue> GetLanguageList(
   for (size_t i = 0; i < base_language_codes.size(); ++i) {
     // Skip this language if it was already added.
     if (language_codes.find(base_language_codes[i]) != language_codes.end())
-      continue;
-
-    // TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
-    // see: crbug.com/240586
-    if (IsBlacklisted(base_language_codes[i]))
       continue;
 
     base::string16 display_name =
