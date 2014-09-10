@@ -210,7 +210,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
     if (!m_link) {
         if (m_relAttribute.isImport()) {
             m_link = LinkImport::create(this);
-        } else if (m_relAttribute.isManifest() && RuntimeEnabledFeatures::manifestEnabled()) {
+        } else if (m_relAttribute.isManifest()) {
             m_link = LinkManifest::create(this);
         } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
