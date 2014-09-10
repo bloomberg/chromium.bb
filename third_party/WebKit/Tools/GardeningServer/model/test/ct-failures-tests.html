@@ -398,6 +398,55 @@ describe('ct-failures', function() {
     });
   });
 
+  describe('checkBuildersForFailures', function() {
+    it('should generate alerts for hung bots', function() {
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      analyzer.builderLatestInfo =
+        {
+          'chromium.webkit': {
+            'Linux Tests': {
+              state: "building",
+              lastUpdateTime: 5000,
+              revisions: {
+                v8: 50,
+                chromium: 293001,
+                nacl: 50,
+                blink: 181262
+              },
+            },
+            'Win Tests': {
+              state: "building",
+              lastUpdateTime: 1,
+              revisions: {
+                v8: 50,
+                chromium: 293001,
+                nacl: 50,
+                blink: 181262
+              },
+            },
+            'Win ASAN': {
+              state: "offline",
+              lastUpdateTime: 5000,
+              revisions: {
+                v8: 50,
+                chromium: 293001,
+                nacl: 50,
+                blink: 181262
+              },
+            },
+          },
+        }
+      analyzer.lastUpdateDate = (3.5 * 60 * 60 * 1000) + 1;
+      var newFailures = {};
+      analyzer._checkBuildersForFailures(newFailures);
+      assert.ok('blink' in newFailures);
+      var blinkFailures = newFailures['blink'];
+      assert.lengthOf(blinkFailures, 2);
+      assert.equal(blinkFailures[0].key, "chromium.webkit::Win Tests::building");
+      assert.equal(blinkFailures[1].key, "chromium.webkit::Win ASAN::offline");
+    });
+  });
+
 });
 
 })()

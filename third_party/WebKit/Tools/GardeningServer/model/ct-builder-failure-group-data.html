@@ -1,0 +1,27 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+function CTBuilderFailureGroupData(failure, bot, url) {
+  this.bot = bot;
+  this.failure = failure;
+  this.category = 'builder';
+  this.url = url;
+};
+
+CTBuilderFailureGroupData.prototype.getAnnotations = function() {
+  return [this.failure.annotations()];
+};
+
+// FIXME: This function should be replaced and callers should just pass the original object.
+CTBuilderFailureGroupData.prototype.dataToExamine = function() {
+  return {url: this.url};
+};
+
+CTBuilderFailureGroupData.prototype.failureKeys = function() {
+  return [this.failure.keys()];
+};
+</script>

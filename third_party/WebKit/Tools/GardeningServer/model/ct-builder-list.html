@@ -11,6 +11,9 @@ found in the LICENSE file.
 function CTBuilderList(failures) {
   this.builders = [];
 
+  if (!Array.isArray(failures))
+    failures = [failures];
+
   var builderMap = {};
   failures.forEach(function(failure) {
     var results = failure.resultNodesByBuilder;

@@ -6,6 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../model/ct-builder-list.html">
 <link rel="import" href="ct-bot-failure-card.html">
+<link rel="import" href="ct-builder-failure-card.html">
 <link rel="import" href="ct-trooper-card.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
@@ -67,10 +68,14 @@ found in the LICENSE file.
     </style>
     <div id="container">
       <div class="card {{ { snoozed: group.isSnoozed } | tokenList }}">
-        <template if="{{ group.data.type == 'sheriff' }}">
+        <!-- FIXME: Refactor the buttons into their own widget so we don't need cards within cards -->
+        <template if="{{ group.data.category == 'sheriff' }}">
           <ct-bot-failure-card class='card' group="{{ group.data }}" builderList="{{ _builderList }}"></ct-bot-failure-card>
         </template>
-        <template if="{{ group.data.type != 'sheriff' }}">
+        <template if="{{ group.data.category == 'builder' }}">
+          <ct-builder-failure-card class='card' group="{{ group.data }}" builderList="{{ _builderList }}"></ct-builder-failure-card>
+        </template>
+        <template if="{{ group.data.category == 'trooper' }}">
           <ct-trooper-card class='card' group="{{ group.data }}"></ct-trooper-card>
         </template>
       </div>
@@ -109,6 +114,7 @@ found in the LICENSE file.
         group: '_updateCommitList',
         commitLog: '_updateCommitList',
         'group.data.failures': '_updateBuilderList',
+        'group.data.failure': '_updateBuilderList',
       },
 
       examine: function() {
@@ -129,8 +135,10 @@ found in the LICENSE file.
       },
 
       _updateBuilderList: function() {
-        if (this.group.data.type == 'sheriff')
+        if (this.group.data.category == 'sheriff')
           this._builderList = new CTBuilderList(this.group.data.failures);
+        else if (this.group.data.category == 'builder')
+          this._builderList = new CTBuilderList(this.group.data.failure);
       },
 
       linkBug: function() {

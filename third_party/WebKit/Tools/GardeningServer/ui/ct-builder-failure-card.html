@@ -1,0 +1,36 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-builder-grid.html">
+<link rel="import" href="ct-commit-list.html">
+<link rel="import" href="ct-test-list.html">
+
+<polymer-element name="ct-builder-failure-card" attributes="group builderList" noscript>
+  <template>
+    <style>
+      ct-builder-grid {
+        margin-right: 10px;
+        width: 250px;
+      }
+
+      #failure {
+        flex: 1;
+      }
+    </style>
+    <ct-builder-grid builderList="{{ builderList }}"></ct-builder-grid>
+    <div id="failure">
+      <template if="{{ group.failure.step == 'building' }}">
+        Running
+      </template>
+      <template if="{{ group.failure.step == 'offline' }}">
+        Offline
+      </template>
+      for {{ group.failure.testName }}
+    </div>
+  </template>
+</polymer-element>
+
+

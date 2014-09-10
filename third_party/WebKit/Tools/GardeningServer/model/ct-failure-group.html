@@ -7,10 +7,11 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 
 <script>
-function CTFailureGroup(key, data) {
+function CTFailureGroup(key, data, category) {
   this.key = key;
   this.data = data;
   this._annotation = CTFailureGroup._mergeAnnotations(data.getAnnotations());
+  this._originalCategory = category || 'default';
   this._computeProperties();
 }
 
@@ -56,7 +57,7 @@ CTFailureGroup.prototype._computeProperties = function() {
     if (this._failedOnce()) {
       this.category = 'failedOnce';
     } else {
-      this.category = 'default';
+      this.category = this._originalCategory;
     }
     // FIXME: crbug.com/400397 Split into: Whole step failure, Tree closer, Test failure, Flaky tests
   }

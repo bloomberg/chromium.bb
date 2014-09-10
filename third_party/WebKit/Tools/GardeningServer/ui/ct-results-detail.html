@@ -96,7 +96,11 @@ found in the LICENSE file.
         // which means that two failing tests from different test suites conflict!
         var testPart = result.actual == 'UNKNOWN' ? 'stdio' : this.failure.testName.split('.')[1];
         var url = result.masterUrl +
-            '/builders/' + encodeURIComponent(this.builder) +
+            '/builders/' + encodeURIComponent(this.builder);
+
+        // FIXME: Make failure groups aware of their own url
+        if (this.failure.testName)
+          url +=
             '/builds/' + result.lastFailingBuild +
             '/steps/' + this.failure.step +
             '/logs/' + testPart;
