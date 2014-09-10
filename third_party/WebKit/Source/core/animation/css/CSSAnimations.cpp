@@ -329,6 +329,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         const InertAnimation* inertAnimation = iter->animation.get();
         OwnPtrWillBeRawPtr<AnimationEventDelegate> eventDelegate = adoptPtrWillBeNoop(new AnimationEventDelegate(element, iter->name));
         RefPtrWillBeRawPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
+        animation->setName(inertAnimation->name());
         RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(animation.get());
         if (inertAnimation->paused())
             player->pause();
@@ -390,6 +391,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         }
 
         RefPtrWillBeRawPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
+        transition->setName(inertAnimation->name());
         RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(transition.get());
         player->update(TimingUpdateOnDemand);
         runningTransition.player = player;

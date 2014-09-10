@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 
@@ -125,7 +126,7 @@ void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime, TimingUpdate
     } else {
         m_holdTime = nullValue();
         m_startTime = calculateStartTime(newCurrentTime);
-        m_finished = false;
+        setFinished(false);
         outdated = true;
     }
 
@@ -456,7 +457,7 @@ void AnimationPlayer::play()
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
     else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
         setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
-    m_finished = false;
+    setFinished(false);
 }
 
 void AnimationPlayer::reverse()
@@ -512,7 +513,7 @@ bool AnimationPlayer::hasPendingActivity() const
 
 void AnimationPlayer::stop()
 {
-    m_finished = true;
+    setFinished(true);
     m_pendingFinishedEvent = nullptr;
 }
 
@@ -536,7 +537,7 @@ void AnimationPlayer::setPlaybackRate(double playbackRate)
 
     double storedCurrentTime = currentTimeInternal();
     if ((m_playbackRate < 0 && playbackRate >= 0) || (m_playbackRate > 0 && playbackRate <= 0))
-        m_finished = false;
+        setFinished(false);
 
     m_playbackRate = playbackRate;
     m_startTime = std::numeric_limits<double>::quiet_NaN();
@@ -623,7 +624,7 @@ bool AnimationPlayer::update(TimingUpdateReason reason)
                 m_pendingFinishedEvent->setCurrentTarget(this);
                 m_timeline->document()->enqueueAnimationFrameEvent(m_pendingFinishedEvent);
             }
-            m_finished = true;
+            setFinished(true);
         }
     }
     ASSERT(!m_outdated);
@@ -642,8 +643,26 @@ double AnimationPlayer::timeToEffectChange()
     return m_content->timeToReverseEffectChange() / -m_playbackRate;
 }
 
+void AnimationPlayer::setFinished(bool finished)
+{
+    if (m_finished && !finished) {
+        if (m_content) {
+            TRACE_EVENT_ASYNC_BEGIN1("blink", "Animation", this, "Name", TRACE_STR_COPY(m_content->name().utf8().data()));
+        } else {
+            TRACE_EVENT_ASYNC_BEGIN0("blink", "Animation", this);
+        }
+    }
+    if (!m_finished && finished) {
+        TRACE_EVENT_ASYNC_END0("blink", "Animation", this);
+    }
+    m_finished = finished;
+}
+
 void AnimationPlayer::cancel()
 {
+    if (m_idle)
+        return;
+
     m_holdTime = currentTimeInternal();
     m_held = true;
     m_idle = true;
@@ -651,6 +670,18 @@ void AnimationPlayer::cancel()
     m_currentTimePending = false;
     setCompositorPending();
 }
+
+void AnimationPlayer::uncancel()
+{
+    if (!m_idle)
+        return;
+
+    m_idle = false;
+    m_held = true;
+    m_holdTime = 0;
+    setFinished(false);
+}
+
 
 #if !ENABLE(OILPAN)
 bool AnimationPlayer::canFree() const

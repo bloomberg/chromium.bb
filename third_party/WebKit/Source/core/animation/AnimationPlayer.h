@@ -164,6 +164,8 @@ private:
     bool limited(double currentTime) const;
     void updateCurrentTimingState(TimingUpdateReason);
     void unpauseInternal();
+    void uncancel();
+    void setFinished(bool);
 
     double m_playbackRate;
 
@@ -211,16 +213,6 @@ private:
         bool sourceChanged;
         CompositorAction pendingAction;
     };
-
-    void uncancel()
-    {
-        if (m_idle) {
-            m_idle = false;
-            m_finished = false;
-            m_held = true;
-            m_holdTime = 0;
-        }
-    }
 
     // This mirrors the known compositor state. It is created when a compositor
     // animation is started. Updated once the start time is known and each time

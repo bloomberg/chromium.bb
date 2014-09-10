@@ -56,6 +56,7 @@ class CSSAnimationUpdate FINAL : public NoBaseWillBeGarbageCollectedFinalized<CS
 public:
     void startAnimation(AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
+        animation->setName(animationName);
         NewAnimation newAnimation;
         newAnimation.name = animationName;
         newAnimation.animation = animation;
@@ -75,6 +76,7 @@ public:
 
     void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
+        animation->setName(getPropertyName(id));
         NewTransition newTransition;
         newTransition.id = id;
         newTransition.eventId = eventId;
