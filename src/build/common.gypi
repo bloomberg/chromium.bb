@@ -186,7 +186,7 @@
     'linux_use_seccomp_sandbox%': 0,
 
     # Set to select the Title Case versions of strings in GRD files.
-    'use_titlecase_in_grd_files%': 0,
+    'use_titlecase_in_grd%': 0,
 
     # Used to disable Native Client at compile time, for platforms where it
     # isn't supported
