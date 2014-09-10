@@ -1320,49 +1320,28 @@ PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
 template <typename CharacterType>
 static inline String canonicalizedTitle(Document* document, const String& title)
 {
-    const CharacterType* characters = title.getCharacters<CharacterType>();
     unsigned length = title.length();
-    unsigned i;
+    unsigned builderIndex = 0;
+    const CharacterType* characters = title.getCharacters<CharacterType>();
 
     StringBuffer<CharacterType> buffer(length);
-    unsigned builderIndex = 0;
 
-    // Skip leading spaces and leading characters that would convert to spaces
-    for (i = 0; i < length; ++i) {
-        CharacterType c = characters[i];
-        if (!(c <= 0x20 || c == 0x7F))
-            break;
-    }
-
-    if (i == length)
-        return String();
-
-    // Replace control characters with spaces, and backslashes with currency symbols, and collapse whitespace.
-    bool previousCharWasWS = false;
-    for (; i < length; ++i) {
-        CharacterType c = characters[i];
+    // Replace control characters with spaces and collapse whitespace.
+    bool pendingWhitespace = false;
+    for (unsigned i = 0; i < length; ++i) {
+        UChar32 c = characters[i];
         if (c <= 0x20 || c == 0x7F || (WTF::Unicode::category(c) & (WTF::Unicode::Separator_Line | WTF::Unicode::Separator_Paragraph))) {
-            if (previousCharWasWS)
-                continue;
-            buffer[builderIndex++] = ' ';
-            previousCharWasWS = true;
+            if (builderIndex != 0)
+                pendingWhitespace = true;
         } else {
+            if (pendingWhitespace) {
+                buffer[builderIndex++] = ' ';
+                pendingWhitespace = false;
+            }
             buffer[builderIndex++] = c;
-            previousCharWasWS = false;
         }
     }
-
-    // Strip trailing spaces
-    while (builderIndex > 0) {
-        --builderIndex;
-        if (buffer[builderIndex] != ' ')
-            break;
-    }
-
-    if (!builderIndex && buffer[builderIndex] == ' ')
-        return String();
-
-    buffer.shrink(builderIndex + 1);
+    buffer.shrink(builderIndex);
 
     return String::adopt(buffer);
 }

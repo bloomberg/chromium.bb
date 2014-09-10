@@ -52,19 +52,6 @@ public:
     }
 
     void shrink(unsigned newLength);
-    void resize(unsigned newLength)
-    {
-        if (!m_data) {
-            CharType* characters;
-            m_data = StringImpl::createUninitialized(newLength, characters);
-            return;
-        }
-        if (newLength > m_data->length()) {
-            m_data = StringImpl::reallocate(m_data.release(), newLength);
-            return;
-        }
-        shrink(newLength);
-    }
 
     unsigned length() const { return m_data ? m_data->length() : 0; }
     CharType* characters() { return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>()) : 0; }
