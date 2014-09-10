@@ -21,6 +21,9 @@ function test()
 {
     WebInspector.inspectorView.showPanel("timeline");
 
+    var tracingManager = new WebInspector.TracingManager();
+    var tracingModel = new WebInspector.TracingModel();
+
     function runEventsSanityCheck()
     {
         var events = [];
@@ -61,21 +64,28 @@ function test()
 
     function onTracingComplete()
     {
-        tracingModel.removeEventListener(WebInspector.TracingModel.Events.TracingComplete, onTracingComplete);
+        tracingManager.removeEventListener(WebInspector.TracingManager.Events.TracingComplete, onTracingComplete);
         InspectorTest.addResult("Tracing complete");
         runEventsSanityCheck();
         InspectorTest.completeTest();
     }
 
-    var tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.mainTarget());
-    tracingModel.start("", "", onTracingStarted);
+    tracingManager.start("", "", onTracingStarted);
+    tracingManager.addEventListener(WebInspector.TracingManager.Events.EventsCollected, onEventsCollected);
+
     function onTracingStarted(error)
     {
         InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
+        tracingModel.reset();
         InspectorTest.evaluateInPage("doWork()", function() {
-            tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingComplete, onTracingComplete);
-            tracingModel.stop(onTracingComplete);
+            tracingManager.addEventListener(WebInspector.TracingManager.Events.TracingComplete, onTracingComplete);
+            tracingManager.stop();
         });
+    }
+
+    function onEventsCollected(event)
+    {
+        tracingModel.addEvents(event.data);
     }
 }
 
