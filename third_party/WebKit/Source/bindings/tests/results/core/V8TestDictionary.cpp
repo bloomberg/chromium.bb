@@ -21,13 +21,22 @@ TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Va
     // FIXME: Do not use Dictionary and DictionaryHelper
     // https://crbug.com/321462
     Dictionary dictionary(v8Value, isolate);
+    // FIXME: Remove this v8::TryCatch once the code is switched from
+    // Dictionary/DictionaryHelper to something that uses ExceptionState.
+    v8::TryCatch block;
     bool booleanMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "booleanMember", booleanMember)) {
         impl->setBooleanMember(booleanMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     double doubleOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember)) {
         impl->setDoubleOrNullMember(doubleOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     String enumMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "enumMember", enumMember)) {
@@ -37,50 +46,86 @@ TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Va
             return 0;
         }
         impl->setEnumMember(enumMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     int longMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "longMember", longMember)) {
         impl->setLongMember(longMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     Vector<String> stringArrayMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringArrayMember", stringArrayMember)) {
         impl->setStringArrayMember(stringArrayMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     String stringMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringMember", stringMember)) {
         impl->setStringMember(stringMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     String stringOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringOrNullMember", stringOrNullMember)) {
         impl->setStringOrNullMember(stringOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     Vector<String> stringSequenceMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringSequenceMember", stringSequenceMember)) {
         impl->setStringSequenceMember(stringSequenceMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedMember", testInterfaceGarbageCollectedMember)) {
         impl->setTestInterfaceGarbageCollectedMember(testInterfaceGarbageCollectedMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedOrNullMember", testInterfaceGarbageCollectedOrNullMember)) {
         impl->setTestInterfaceGarbageCollectedOrNullMember(testInterfaceGarbageCollectedOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RefPtr<TestInterfaceImplementation> testInterfaceMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceMember", testInterfaceMember)) {
         impl->setTestInterfaceMember(testInterfaceMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RefPtr<TestInterfaceImplementation> testInterfaceOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceOrNullMember", testInterfaceOrNullMember)) {
         impl->setTestInterfaceOrNullMember(testInterfaceOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedMember", testInterfaceWillBeGarbageCollectedMember)) {
         impl->setTestInterfaceWillBeGarbageCollectedMember(testInterfaceWillBeGarbageCollectedMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedOrNullMember", testInterfaceWillBeGarbageCollectedOrNullMember)) {
         impl->setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     return impl;
 }

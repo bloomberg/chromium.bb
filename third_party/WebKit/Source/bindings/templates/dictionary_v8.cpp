@@ -19,6 +19,9 @@ namespace blink {
     // FIXME: Do not use Dictionary and DictionaryHelper
     // https://crbug.com/321462
     Dictionary dictionary(v8Value, isolate);
+    // FIXME: Remove this v8::TryCatch once the code is switched from
+    // Dictionary/DictionaryHelper to something that uses ExceptionState.
+    v8::TryCatch block;
     {% for member in members %}
     {{member.cpp_type}} {{member.name}};
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "{{member.name}}", {{member.name}})) {
@@ -30,6 +33,9 @@ namespace blink {
         }
     {% endif %}
         impl->{{member.setter_name}}({{member.name}});
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     {% endfor %}
     return impl;
