@@ -18,7 +18,6 @@
       'accessibility_private.json',
       'activity_log_private.json',
       'alarms.idl',
-      'app_current_window_internal.idl',
       'audio.idl',
       'automation.idl',
       'automation_internal.idl',

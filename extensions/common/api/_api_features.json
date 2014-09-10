@@ -36,6 +36,16 @@
       "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
     ]
   }],
+  "app.currentWindowInternal": {
+    "noparent": true,
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension"]
+  },
+  "app.currentWindowInternal.setShape": {
+    "dependencies": ["permission:app.window.shape"],
+    "contexts": ["blessed_extension"]
+  },
   "dns": {
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]

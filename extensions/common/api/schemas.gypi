@@ -13,6 +13,7 @@
       'runtime.json',
     ],
     'main_schema_files': [
+      'app_current_window_internal.idl',
       'app_runtime.idl',
       'app_view_internal.json',
       'app_window.idl',

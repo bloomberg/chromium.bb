@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/app_current_window_internal/app_current_window_internal_api.h"
+#include "extensions/browser/api/app_current_window_internal/app_current_window_internal_api.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/app_current_window_internal.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
+#include "extensions/common/api/app_current_window_internal.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace app_current_window_internal =
-    extensions::api::app_current_window_internal;
+    extensions::core_api::app_current_window_internal;
 
 namespace Show = app_current_window_internal::Show;
 namespace SetBounds = app_current_window_internal::SetBounds;
@@ -119,7 +118,7 @@ BoundsType GetBoundsType(const std::string& type_as_string) {
 }  // namespace bounds
 
 bool AppCurrentWindowInternalExtensionFunction::RunSync() {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(browser_context());
   DCHECK(registry);
   content::RenderViewHost* rvh = render_view_host();
   if (!rvh)
@@ -274,7 +273,7 @@ bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
       window->GetBaseWindow()->GetContentMaximumSize();
   gfx::Size min_size = original_min_size;
   gfx::Size max_size = original_max_size;
-  const api::app_current_window_internal::SizeConstraints& constraints =
+  const app_current_window_internal::SizeConstraints& constraints =
       params->constraints;
 
   // Use the frame insets to convert window size constraints to content size
@@ -295,7 +294,7 @@ bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
 }
 
 bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+  if (AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
       extension()->location() != extensions::Manifest::COMPONENT) {
     error_ = kDevChannelOnly;
     return false;
@@ -315,7 +314,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
 
 bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
     AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }
@@ -334,7 +333,7 @@ bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalClearBadgeFunction::RunWithWindow(
     AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }
@@ -401,7 +400,7 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
     AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+  if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
     error_ = kDevChannelOnly;
     return false;
   }

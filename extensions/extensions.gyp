@@ -302,6 +302,8 @@
         'browser/api/api_resource.cc',
         'browser/api/api_resource.h',
         'browser/api/api_resource_manager.h',
+        'browser/api/app_current_window_internal/app_current_window_internal_api.cc',
+        'browser/api/app_current_window_internal/app_current_window_internal_api.h',
         'browser/api/app_runtime/app_runtime_api.cc',
         'browser/api/app_runtime/app_runtime_api.h',
         'browser/api/app_view/app_view_internal_api.cc',

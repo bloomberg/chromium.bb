@@ -35,6 +35,8 @@ source_set("browser") {
       "api/api_resource.cc",
       "api/api_resource.h",
       "api/api_resource_manager.h",
+      "api/app_current_window_internal/app_current_window_internal_api.cc",
+      "api/app_current_window_internal/app_current_window_internal_api.h",
       "api/app_runtime/app_runtime_api.cc",
       "api/app_runtime/app_runtime_api.h",
       "api/app_view/app_view_internal_api.cc",
