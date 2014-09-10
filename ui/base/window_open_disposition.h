@@ -7,12 +7,23 @@
 
 #include "ui/base/ui_base_export.h"
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui
 enum WindowOpenDisposition {
-
-#define WINDOW_OPEN_DISPOSITION(label, value) label = value,
-#include "window_open_disposition_list.h"
-#undef WINDOW_OPEN_DISPOSITION
-
+  UNKNOWN,
+  SUPPRESS_OPEN,
+  CURRENT_TAB,
+  // Indicates that only one tab with the url should exist in the same window.
+  SINGLETON_TAB,
+  NEW_FOREGROUND_TAB,
+  NEW_BACKGROUND_TAB,
+  NEW_POPUP,
+  NEW_WINDOW,
+  SAVE_TO_DISK,
+  OFF_THE_RECORD,
+  IGNORE_ACTION,
+  // Update when adding a new disposition.
+  WINDOW_OPEN_DISPOSITION_LAST = IGNORE_ACTION
 };
 
 namespace ui {

@@ -8,28 +8,20 @@
   },
   'targets': [
     {
-      'target_name': 'window_open_disposition_java',
-      'type': 'none',
-      'sources': [
-        'java/WindowOpenDisposition.template',
-      ],
-      'variables': {
-        'package_name': 'org/chromium/ui',
-        'template_deps': ['../base/window_open_disposition_list.h'],
-      },
-      'includes': [ '../../build/android/java_cpp_template.gypi' ],
-    },
-    {
       'target_name': 'bitmap_format_java',
       'type': 'none',
-      'sources': [
-        'java/BitmapFormat.template',
-      ],
       'variables': {
-        'package_name': 'org/chromium/ui/gfx',
-        'template_deps': ['../gfx/android/bitmap_config_list.h'],
+        'source_file': '../gfx/android/java_bitmap.h',
       },
-      'includes': [ '../../build/android/java_cpp_template.gypi' ],
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
+    {
+      'target_name': 'window_open_disposition_java',
+      'type': 'none',
+      'variables': {
+        'source_file': '../base/window_open_disposition.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
     {
       'target_name': 'ui_java',

@@ -261,6 +261,71 @@ template("java_cpp_template") {
   }
 }
 
+# Declare a target for generating Java classes from C++ enums.
+#
+# This target generates Java files from C++ enums using a script.
+#
+# This target will create a single .srcjar. Adding this target to an
+# android_library target's srcjar_deps will make the generated java files be
+# included in that library's final outputs.
+#
+# Variables
+#   sources: list of files to be processed by the script. For each annotated
+#     enum contained in the sources files the script will generate a .java
+#     file with the same name as the name of the enum.
+#
+#   outputs: list of outputs, relative to the output_dir. These paths are
+#     verified at build time by the script. To get the list programatically run:
+#       python build/android/gyp/java_cpp_enum.py --output_dir=. \
+#         --print_output_only path/to/header/file.h
+#
+# Example
+#   java_cpp_enum("foo_generated_enum") {
+#     sources = [
+#       "src/native_foo_header.h",
+#     ]
+#     outputs = [
+#       "org/chromium/FooEnum.java",
+#     ]
+#   }
+template("java_cpp_enum") {
+  assert(defined(invoker.sources))
+  assert(defined(invoker.outputs))
+
+  action("${target_name}__generate_enum") {
+    sources = rebase_path(invoker.sources, root_build_dir)
+    script = "//build/android/gyp/java_cpp_enum.py"
+    gen_dir = "${target_gen_dir}/${target_name}/enums"
+    outputs = get_path_info(
+        rebase_path(invoker.outputs, ".", gen_dir), "abspath")
+
+    args = [
+      "--output_dir", rebase_path(gen_dir, root_build_dir),
+    ]
+    foreach(output, rebase_path(outputs, root_build_dir)) {
+      args += ["--assert_file", output]
+    }
+    args += sources
+  }
+
+  generate_enum_outputs = get_target_outputs(":${target_name}__generate_enum")
+  base_gen_dir = get_label_info(":${target_name}__generate_enum",
+                                "target_gen_dir")
+
+  srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+  zip("${target_name}__zip_srcjar") {
+    inputs = generate_enum_outputs
+    output = srcjar_path
+    base_dir = base_gen_dir
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__zip_srcjar"
+    ]
+  }
+}
+
 
 # Declare an Android resources target
 #

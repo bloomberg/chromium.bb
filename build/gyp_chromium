@@ -27,6 +27,7 @@ import gyp
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Add paths so that pymod_do_main(...) can import files.
+sys.path.insert(1, os.path.join(chrome_src, 'build', 'android', 'gyp'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))

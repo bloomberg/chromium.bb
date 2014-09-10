@@ -2,23 +2,14 @@ import("//build/config/android/rules.gni")
 
 assert(is_android)
 
-java_cpp_template("window_open_disposition_srcjar") {
-  package_name = "org/chromium/ui"
+java_cpp_enum("java_enums_srcjar") {
   sources = [
-    "java/WindowOpenDisposition.template",
+    "../base/window_open_disposition.h",
+    "../gfx/android/java_bitmap.h",
   ]
-  inputs = [
-    "../base/window_open_disposition_list.h"
-  ]
-}
-
-java_cpp_template("bitmap_format_srcjar") {
-  package_name = "org/chromium/ui/gfx"
-  sources = [
-    "java/BitmapFormat.template",
-  ]
-  inputs = [
-    "../gfx/android/bitmap_config_list.h"
+  outputs = [
+    "org/chromium/ui/WindowOpenDisposition.java",
+    "org/chromium/ui/gfx/BitmapFormat.java",
   ]
 }
 
@@ -121,7 +112,6 @@ android_library("ui_java") {
     "//base:base_java",
   ]
   srcjar_deps = [
-    ":window_open_disposition_srcjar",
-    ":bitmap_format_srcjar",
+    ":java_enums_srcjar",
   ]
 }

@@ -13,13 +13,14 @@
 
 namespace gfx {
 
-// Define Bitmap Config values like BITMAP_CONFIG_ARGB_8888 in a
-// way that ensures they're always the same than their Java counterpart.
-
-enum BitmapConfig {
-#define DEFINE_BITMAP_CONFIG(x, y) BITMAP_##x = y,
-#include "bitmap_config_list.h"
-#undef DEFINE_BITMAP_CONFIG
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.gfx
+enum BitmapFormat {
+  BITMAP_FORMAT_NO_CONFIG,
+  BITMAP_FORMAT_ALPHA_8,
+  BITMAP_FORMAT_ARGB_4444,
+  BITMAP_FORMAT_ARGB_8888,
+  BITMAP_FORMAT_RGB_565,
 };
 
 // This class wraps a JNI AndroidBitmap object to make it easier to use. It
