@@ -906,6 +906,8 @@ component("base") {
       "message_loop/message_pump_glib.h",
     ]
   }
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
