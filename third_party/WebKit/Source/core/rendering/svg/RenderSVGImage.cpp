@@ -37,6 +37,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
+#include "platform/LengthFunctions.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -61,6 +62,32 @@ void RenderSVGImage::destroy()
     RenderSVGModelObject::destroy();
 }
 
+bool RenderSVGImage::forceNonUniformScaling(SVGImageElement* image) const
+{
+    // Images with preserveAspectRatio=none should force non-uniform
+    // scaling. This can be achieved by setting the image's container size to
+    // its intrinsic size. If the image does not have an intrinsic size - or
+    // the intrinsic size is degenerate - set the container size to the bounds
+    // as in pAR!=none cases.
+    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The ‘preserveAspectRatio’ attribute.
+    if (image->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
+        return false;
+    ImageResource* cachedImage = m_imageResource->cachedImage();
+    if (!cachedImage)
+        return false;
+    Length intrinsicWidth;
+    Length intrinsicHeight;
+    FloatSize intrinsicRatio;
+    cachedImage->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    if (!intrinsicWidth.isFixed() || !intrinsicHeight.isFixed())
+        return false;
+    // If the viewport defined by the referenced image is zero in either
+    // dimension, then SVGImage will have computed an intrinsic size of 300x150.
+    if (!floatValueForLength(intrinsicWidth, 0) || !floatValueForLength(intrinsicHeight, 0))
+        return false;
+    return true;
+}
+
 bool RenderSVGImage::updateImageViewport()
 {
     SVGImageElement* image = toSVGImageElement(element());
@@ -72,11 +99,8 @@ bool RenderSVGImage::updateImageViewport()
 
     bool boundsChanged = oldBoundaries != m_objectBoundingBox;
 
-    // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
-    // by setting the image's container size to its intrinsic size.
-    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The ‘preserveAspectRatio’ attribute.
     IntSize newViewportSize;
-    if (image->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
+    if (forceNonUniformScaling(image)) {
         LayoutSize intrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
         if (intrinsicSize != m_imageResource->imageSize(style()->effectiveZoom())) {
             newViewportSize = roundedIntSize(intrinsicSize);
