@@ -537,7 +537,7 @@ public class ContentViewCore
                     public void onImeEvent() {
                         mPopupZoomer.hide(true);
                         getContentViewClient().onImeEvent();
-                        hideTextHandles();
+                        if (mFocusedNodeEditable) hideTextHandles();
                     }
 
                     @Override

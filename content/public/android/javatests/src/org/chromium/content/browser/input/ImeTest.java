@@ -44,6 +44,7 @@ public class ImeTest extends ContentShellTestBase {
             "<input id=\"input_text\" type=\"text\" /><br/>" +
             "<input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />" +
             "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>" +
+            "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>" +
             "</form></body></html>");
 
     private TestAdapterInputConnection mConnection;
@@ -685,6 +686,26 @@ public class ImeTest extends ContentShellTestBase {
                 return pastePopup.isShowing();
             }
         }));
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testTextHandlesPreservedWithDpadNavigation() throws Throwable {
+        DOMUtils.longPressNode(this, mContentViewCore, "plain_text");
+        assertWaitForSelectActionBarStatus(true);
+        assertTrue(mContentViewCore.hasSelection());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final KeyEvent downKeyEvent = new KeyEvent(
+                        KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN);
+                mImeAdapter.dispatchKeyEvent(downKeyEvent);
+            }
+        });
+
+        assertWaitForSelectActionBarStatus(true);
+        assertTrue(mContentViewCore.hasSelection());
     }
 
     private void performGo(final AdapterInputConnection inputConnection,
