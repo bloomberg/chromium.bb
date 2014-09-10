@@ -168,8 +168,9 @@ bool RegisterAppTask::FilterCandidates(const TrackerIDSet& trackers,
 void RegisterAppTask::RegisterAppIntoDatabase(
     const FileTracker& tracker,
     const SyncStatusCallback& callback) {
-  metadata_database()->RegisterApp(
-      app_id_, tracker.file_id(), callback);
+  SyncStatusCode status =
+      metadata_database()->RegisterApp(app_id_, tracker.file_id());
+  callback.Run(status);
 }
 
 MetadataDatabase* RegisterAppTask::metadata_database() {

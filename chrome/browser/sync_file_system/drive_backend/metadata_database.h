@@ -10,23 +10,16 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
-#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-
-namespace base {
-class FilePath;
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
-}
 
 namespace leveldb {
 class Env;
@@ -114,10 +107,6 @@ class MetadataDatabase {
  public:
   typedef std::vector<std::string> FileIDList;
 
-  typedef base::Callback<
-      void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
-      CreateCallback;
-
   enum ActivationStatus {
     ACTIVATION_PENDING,
     ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER,
@@ -132,10 +121,10 @@ class MetadataDatabase {
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
-  static void Create(
+  static scoped_ptr<MetadataDatabase> Create(
       const base::FilePath& database_path,
       leveldb::Env* env_override,
-      const CreateCallback& callback);
+      SyncStatusCode* status);
   static SyncStatusCode CreateForTesting(
       scoped_ptr<LevelDBWrapper> db,
       bool enable_on_disk_index,
@@ -179,11 +168,10 @@ class MetadataDatabase {
   // Newly added trackers for |app_root_folders| are inactive and non-dirty.
   // Trackers for |app_root_folders| are not yet registered as app-roots, but
   // are ready to register.
-  void PopulateInitialData(
+  SyncStatusCode PopulateInitialData(
       int64 largest_change_id,
       const google_apis::FileResource& sync_root_folder,
-      const ScopedVector<google_apis::FileResource>& app_root_folders,
-      const SyncStatusCallback& callback);
+      const ScopedVector<google_apis::FileResource>& app_root_folders);
 
   // Returns true if the folder associated to |app_id| is enabled.
   bool IsAppEnabled(const std::string& app_id) const;
@@ -191,26 +179,22 @@ class MetadataDatabase {
   // Registers existing folder as the app-root for |app_id|.  The folder
   // must be an inactive folder that does not yet associated to any App.
   // This method associates the folder with |app_id| and activates it.
-  void RegisterApp(const std::string& app_id,
-                   const std::string& folder_id,
-                   const SyncStatusCallback& callback);
+  SyncStatusCode RegisterApp(const std::string& app_id,
+                             const std::string& folder_id);
 
   // Inactivates the folder associated to the app to disable |app_id|.
   // Does nothing if |app_id| is already disabled.
-  void DisableApp(const std::string& app_id,
-                  const SyncStatusCallback& callback);
+  SyncStatusCode DisableApp(const std::string& app_id);
 
   // Activates the folder associated to |app_id| to enable |app_id|.
   // Does nothing if |app_id| is already enabled.
-  void EnableApp(const std::string& app_id,
-                 const SyncStatusCallback& callback);
+  SyncStatusCode EnableApp(const std::string& app_id);
 
   // Unregisters the folder as the app-root for |app_id|.  If |app_id| does not
   // exist, does nothing.  The folder is left as an inactive regular folder.
   // Note that the inactivation drops all descendant files since they are no
   // longer reachable from sync-root via active folder or app-root.
-  void UnregisterApp(const std::string& app_id,
-                     const SyncStatusCallback& callback);
+  SyncStatusCode UnregisterApp(const std::string& app_id);
 
   // Finds the app-root folder for |app_id|.  Returns true if exists.
   // Copies the result to |tracker| if it is non-NULL.
@@ -264,45 +248,39 @@ class MetadataDatabase {
   // Updates database by |changes|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
-  void UpdateByChangeList(int64 largest_change_id,
-                          ScopedVector<google_apis::ChangeResource> changes,
-                          const SyncStatusCallback& callback);
+  SyncStatusCode UpdateByChangeList(
+      int64 largest_change_id,
+      ScopedVector<google_apis::ChangeResource> changes);
 
   // Updates database by |resource|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
-  void UpdateByFileResource(const google_apis::FileResource& resource,
-                            const SyncStatusCallback& callback);
-  void UpdateByFileResourceList(
-      ScopedVector<google_apis::FileResource> resources,
-      const SyncStatusCallback& callback);
+  SyncStatusCode UpdateByFileResource(
+      const google_apis::FileResource& resource);
+  SyncStatusCode UpdateByFileResourceList(
+      ScopedVector<google_apis::FileResource> resources);
 
-  void UpdateByDeletedRemoteFile(const std::string& file_id,
-                                 const SyncStatusCallback& callback);
-  void UpdateByDeletedRemoteFileList(const FileIDList& file_ids,
-                                     const SyncStatusCallback& callback);
+  SyncStatusCode UpdateByDeletedRemoteFile(const std::string& file_id);
+  SyncStatusCode UpdateByDeletedRemoteFileList(const FileIDList& file_ids);
 
   // Adds new FileTracker and FileMetadata.  The database must not have
   // |resource| beforehand.
   // The newly added tracker under |parent_tracker_id| is active and non-dirty.
   // Deactivates existing active tracker if exists that has the same title and
   // parent_tracker to the newly added tracker.
-  void ReplaceActiveTrackerWithNewResource(
+  SyncStatusCode ReplaceActiveTrackerWithNewResource(
       int64 parent_tracker_id,
-      const google_apis::FileResource& resource,
-      const SyncStatusCallback& callback);
+      const google_apis::FileResource& resource);
 
   // Adds |child_file_ids| to |folder_id| as its children.
   // This method affects the active tracker only.
   // If the tracker has no further change to sync, unmarks its dirty flag.
-  void PopulateFolderByChildList(const std::string& folder_id,
-                                 const FileIDList& child_file_ids,
-                                 const SyncStatusCallback& callback);
+  SyncStatusCode PopulateFolderByChildList(const std::string& folder_id,
+                                           const FileIDList& child_file_ids);
 
   // Updates |synced_details| of the tracker with |updated_details|.
-  void UpdateTracker(int64 tracker_id,
-                     const FileDetails& updated_details,
-                     const SyncStatusCallback& callback);
+  SyncStatusCode UpdateTracker(int64 tracker_id,
+                               const FileDetails& updated_details);
 
   // Activates a tracker identified by |parent_tracker_id| and |file_id| if the
   // tracker can be activated without inactivating other trackers that have the
@@ -319,7 +297,7 @@ class MetadataDatabase {
   //  - have |synced_details| with valid |title|.
   ActivationStatus TryActivateTracker(int64 parent_tracker_id,
                                       const std::string& file_id,
-                                      const SyncStatusCallback& callback);
+                                      SyncStatusCode* status);
 
   // Changes the priority of the tracker to low.
   void DemoteTracker(int64 tracker_id);
@@ -347,8 +325,7 @@ class MetadataDatabase {
 
   // Clears dirty flag of trackers that can be cleared without external
   // interactien.
-  void SweepDirtyTrackers(const std::vector<std::string>& file_ids,
-                          const SyncStatusCallback& callback);
+  SyncStatusCode SweepDirtyTrackers(const std::vector<std::string>& file_ids);
 
  private:
   friend class MetadataDatabaseTest;
@@ -390,7 +367,7 @@ class MetadataDatabase {
                             scoped_ptr<FileMetadata> file,
                             UpdateOption option);
 
-  void WriteToDatabase(const SyncStatusCallback& callback);
+  SyncStatusCode WriteToDatabase();
 
   bool HasNewerFileMetadata(const std::string& file_id, int64 change_id);
 

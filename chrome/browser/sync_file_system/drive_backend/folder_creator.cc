@@ -113,10 +113,10 @@ void FolderCreator::DidListFolders(
 
   std::string file_id = oldest->file_id();
 
-  metadata_database_->UpdateByFileResourceList(
-      candidates.Pass(), base::Bind(&FolderCreator::DidUpdateDatabase,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    file_id, callback));
+  status = metadata_database_->UpdateByFileResourceList(candidates.Pass());
+
+  // TODO(tzik): Expand this function.
+  DidUpdateDatabase(file_id, callback, status);
 }
 
 void FolderCreator::DidUpdateDatabase(const std::string& file_id,

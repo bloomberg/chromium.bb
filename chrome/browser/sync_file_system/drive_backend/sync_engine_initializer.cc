@@ -85,11 +85,11 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
-  MetadataDatabase::Create(
-      database_path_,
-      env_override_,
-      base::Bind(&SyncEngineInitializer::DidCreateMetadataDatabase,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+  SyncStatusCode status = SYNC_STATUS_FAILED;
+  scoped_ptr<MetadataDatabase> metadata_database =
+      MetadataDatabase::Create(database_path_, env_override_, &status);
+  // TODO(tzik): Expand this function.
+  DidCreateMetadataDatabase(token.Pass(), status, metadata_database.Pass());
 }
 
 scoped_ptr<MetadataDatabase> SyncEngineInitializer::PassMetadataDatabase() {
@@ -346,12 +346,10 @@ void SyncEngineInitializer::DidListAppRootFolders(
 void SyncEngineInitializer::PopulateDatabase(
     scoped_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
-  metadata_database_->PopulateInitialData(
-      largest_change_id_,
-      *sync_root_folder_,
-      app_root_folders_,
-      base::Bind(&SyncEngineInitializer::DidPopulateDatabase,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+  SyncStatusCode status = metadata_database_->PopulateInitialData(
+      largest_change_id_, *sync_root_folder_, app_root_folders_);
+  // TODO(tzik): Expand this function.
+  DidPopulateDatabase(token.Pass(), status);
 }
 
 void SyncEngineInitializer::DidPopulateDatabase(

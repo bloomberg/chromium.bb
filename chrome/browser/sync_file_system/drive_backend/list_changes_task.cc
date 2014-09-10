@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -118,11 +120,12 @@ void ListChangesTask::CheckInChangeList(int64 largest_change_id,
   for (size_t i = 0; i < change_list_.size(); ++i)
     file_ids_.push_back(change_list_[i]->file_id());
 
-  metadata_database()->UpdateByChangeList(
-      largest_change_id,
-      change_list_.Pass(),
-      base::Bind(&ListChangesTask::DidCheckInChangeList,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+  SyncStatusCode status =
+      metadata_database()->UpdateByChangeList(
+          largest_change_id, change_list_.Pass());
+
+  // TODO(tzik): Expand this function.
+  DidCheckInChangeList(token.Pass(), status);
 }
 
 void ListChangesTask::DidCheckInChangeList(scoped_ptr<SyncTaskToken> token,
@@ -132,9 +135,8 @@ void ListChangesTask::DidCheckInChangeList(scoped_ptr<SyncTaskToken> token,
     return;
   }
 
-  metadata_database()->SweepDirtyTrackers(
-      file_ids_,
-      base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token)));
+  status = metadata_database()->SweepDirtyTrackers(file_ids_);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
 bool ListChangesTask::IsContextReady() {

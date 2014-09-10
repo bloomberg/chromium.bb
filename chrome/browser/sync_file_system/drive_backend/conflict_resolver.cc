@@ -268,8 +268,9 @@ void ConflictResolver::DidRemoveFile(scoped_ptr<SyncTaskToken> token,
     return;
   }
 
-  metadata_database()->UpdateByDeletedRemoteFileList(
-      deleted_file_ids_, SyncTaskToken::WrapToCallback(token.Pass()));
+  status = metadata_database()->UpdateByDeletedRemoteFileList(
+      deleted_file_ids_);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
 bool ConflictResolver::IsContextReady() {
@@ -299,8 +300,8 @@ void ConflictResolver::DidGetRemoteMetadata(
   }
 
   if (error != google_apis::HTTP_NOT_FOUND) {
-    metadata_database()->UpdateByDeletedRemoteFile(
-        file_id, SyncTaskToken::WrapToCallback(token.Pass()));
+    status = metadata_database()->UpdateByDeletedRemoteFile(file_id);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
   }
 
@@ -310,8 +311,8 @@ void ConflictResolver::DidGetRemoteMetadata(
     return;
   }
 
-  metadata_database()->UpdateByFileResource(
-      *entry, SyncTaskToken::WrapToCallback(token.Pass()));
+  status = metadata_database()->UpdateByFileResource(*entry);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
 drive::DriveServiceInterface* ConflictResolver::drive_service() {

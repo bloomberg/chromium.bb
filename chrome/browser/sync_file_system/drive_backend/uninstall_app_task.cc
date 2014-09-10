@@ -41,7 +41,8 @@ void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
   }
 
   if (uninstall_flag_ == RemoteFileSyncService::UNINSTALL_AND_KEEP_REMOTE) {
-    metadata_database()->UnregisterApp(app_id_, callback);
+    SyncStatusCode status = metadata_database()->UnregisterApp(app_id_);
+    callback.Run(status);
     return;
   }
   DCHECK_EQ(RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE, uninstall_flag_);
@@ -84,7 +85,8 @@ void UninstallAppTask::DidDeleteAppRoot(const SyncStatusCallback& callback,
     return;
   }
 
-  metadata_database()->UnregisterApp(app_id_, callback);
+  status = metadata_database()->UnregisterApp(app_id_);
+  callback.Run(status);
 }
 
 bool UninstallAppTask::IsContextReady() {

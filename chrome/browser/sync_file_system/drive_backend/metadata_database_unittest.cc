@@ -202,11 +202,8 @@ class MetadataDatabaseTest : public testing::Test {
 
   SyncStatusCode InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    MetadataDatabase::Create(database_dir_.path(),
-                             in_memory_env_.get(),
-                             CreateResultReceiver(&status,
-                                                  &metadata_database_));
-    message_loop_.RunUntilIdle();
+    metadata_database_ = MetadataDatabase::Create(
+        database_dir_.path(), in_memory_env_.get(), &status);
     return status;
   }
 
@@ -555,79 +552,44 @@ class MetadataDatabaseTest : public testing::Test {
 
   SyncStatusCode RegisterApp(const std::string& app_id,
                              const std::string& folder_id) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->RegisterApp(
-        app_id, folder_id,
-        CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->RegisterApp(app_id, folder_id);
   }
 
   SyncStatusCode DisableApp(const std::string& app_id) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->DisableApp(
-        app_id, CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->DisableApp(app_id);
   }
 
   SyncStatusCode EnableApp(const std::string& app_id) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->EnableApp(
-        app_id, CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->EnableApp(app_id);
   }
 
   SyncStatusCode UnregisterApp(const std::string& app_id) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->UnregisterApp(
-        app_id, CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->UnregisterApp(app_id);
   }
 
   SyncStatusCode UpdateByChangeList(
       ScopedVector<google_apis::ChangeResource> changes) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->UpdateByChangeList(
-        current_change_id_,
-        changes.Pass(), CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->UpdateByChangeList(
+        current_change_id_, changes.Pass());
   }
 
   SyncStatusCode PopulateFolder(const std::string& folder_id,
                                 const FileIDList& listed_children) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->PopulateFolderByChildList(
-        folder_id, listed_children,
-        CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->PopulateFolderByChildList(
+        folder_id, listed_children);
   }
 
   SyncStatusCode UpdateTracker(const FileTracker& tracker) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->UpdateTracker(
-        tracker.tracker_id(), tracker.synced_details(),
-        CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->UpdateTracker(
+        tracker.tracker_id(), tracker.synced_details());
   }
 
   SyncStatusCode PopulateInitialData(
       int64 largest_change_id,
       const google_apis::FileResource& sync_root_folder,
       const ScopedVector<google_apis::FileResource>& app_root_folders) {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->PopulateInitialData(
-        largest_change_id,
-        sync_root_folder,
-        app_root_folders,
-        CreateResultReceiver(&status));
-    message_loop_.RunUntilIdle();
-    return status;
+    return metadata_database_->PopulateInitialData(
+        largest_change_id, sync_root_folder, app_root_folders);
   }
 
   void ResetTrackerID(FileTracker* tracker) {

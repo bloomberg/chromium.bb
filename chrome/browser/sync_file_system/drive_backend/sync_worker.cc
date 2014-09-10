@@ -339,22 +339,26 @@ void SyncWorker::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (GetMetadataDatabase()) {
-    GetMetadataDatabase()->DisableApp(app_id, callback);
-  } else {
+  if (!GetMetadataDatabase()) {
     callback.Run(SYNC_STATUS_OK);
+    return;
   }
+
+  SyncStatusCode status = GetMetadataDatabase()->DisableApp(app_id);
+  callback.Run(status);
 }
 
 void SyncWorker::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (GetMetadataDatabase()) {
-    GetMetadataDatabase()->EnableApp(app_id, callback);
-  } else {
+  if (!GetMetadataDatabase()) {
     callback.Run(SYNC_STATUS_OK);
+    return;
   }
+
+  SyncStatusCode status = GetMetadataDatabase()->EnableApp(app_id);
+  callback.Run(status);
 }
 
 void SyncWorker::PostInitializeTask() {

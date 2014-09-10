@@ -315,8 +315,9 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
   }
 
   if (error == google_apis::HTTP_NOT_FOUND) {
-    metadata_database()->UpdateByDeletedRemoteFile(
-        dirty_tracker_->file_id(), SyncCompletedCallback(token.Pass()));
+    status = metadata_database()->UpdateByDeletedRemoteFile(
+        dirty_tracker_->file_id());
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
@@ -326,11 +327,9 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
     return;
   }
 
-  metadata_database()->UpdateByFileResource(
-      *entry,
-      base::Bind(&RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)));
+  status = metadata_database()->UpdateByFileResource(*entry);
+  // TODO(tzik): Expand this function.
+  DidUpdateDatabaseForRemoteMetadata(token.Pass(), status);
 }
 
 void RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata(
@@ -584,9 +583,9 @@ void RemoteToLocalSyncer::DidListFolderContent(
     return;
   }
 
-  metadata_database()->PopulateFolderByChildList(
-      dirty_tracker_->file_id(), *children,
-      SyncCompletedCallback(token.Pass()));
+  status = metadata_database()->PopulateFolderByChildList(
+      dirty_tracker_->file_id(), *children);
+  SyncCompleted(token.Pass(), status);
 }
 
 void RemoteToLocalSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
@@ -627,12 +626,11 @@ void RemoteToLocalSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
       updated_details.set_missing(true);
     }
   }
-  metadata_database()->UpdateTracker(
-      dirty_tracker_->tracker_id(),
-      updated_details,
-      base::Bind(&RemoteToLocalSyncer::FinalizeSync,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)));
+
+  status = metadata_database()->UpdateTracker(
+      dirty_tracker_->tracker_id(), updated_details);
+  // TODO(tzik): Expand this function.
+  FinalizeSync(token.Pass(), status);
 }
 
 void RemoteToLocalSyncer::FinalizeSync(scoped_ptr<SyncTaskToken> token,

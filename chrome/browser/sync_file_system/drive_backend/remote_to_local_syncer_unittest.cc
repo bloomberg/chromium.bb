@@ -122,10 +122,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
 
   void RegisterApp(const std::string& app_id,
                    const std::string& app_root_folder_id) {
-    SyncStatusCode status = SYNC_STATUS_FAILED;
-    context_->GetMetadataDatabase()->RegisterApp(app_id, app_root_folder_id,
-                                                 CreateResultReceiver(&status));
-    base::RunLoop().RunUntilIdle();
+    SyncStatusCode status = context_->GetMetadataDatabase()->RegisterApp(
+        app_id, app_root_folder_id);
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 

@@ -107,12 +107,8 @@ class SyncEngineInitializerTest : public testing::Test {
       const google_apis::FileResource** app_roots,
       size_t app_roots_count) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    scoped_ptr<MetadataDatabase> database;
-    MetadataDatabase::Create(
-        database_path(),
-        in_memory_env_.get(),
-        CreateResultReceiver(&status, &database));
-    base::RunLoop().RunUntilIdle();
+    scoped_ptr<MetadataDatabase> database = MetadataDatabase::Create(
+        database_path(), in_memory_env_.get(), &status);
     if (status != SYNC_STATUS_OK)
       return status;
 
@@ -124,16 +120,11 @@ class SyncEngineInitializerTest : public testing::Test {
           const_cast<google_apis::FileResource*>(app_roots[i]));
     }
 
-    status = SYNC_STATUS_UNKNOWN;
-    database->PopulateInitialData(kInitialLargestChangeID,
-                                  sync_root,
-                                  app_root_list,
-                                  CreateResultReceiver(&status));
-    base::RunLoop().RunUntilIdle();
+    status = database->PopulateInitialData(
+        kInitialLargestChangeID, sync_root, app_root_list);
 
     app_root_list.weak_clear();
-
-    return SYNC_STATUS_OK;
+    return status;
   }
 
   scoped_ptr<google_apis::FileResource> CreateRemoteFolder(
