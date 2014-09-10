@@ -9,6 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/skia_util.h"
 
 namespace gfx {
 
@@ -44,6 +47,17 @@ TEST_F(CanvasTest, StringSizeEmptyString) {
   gfx::Size size = SizeStringInt("", 0, 0);
   EXPECT_EQ(0, size.width());
   EXPECT_GT(size.height(), 0);
+}
+
+// Verifies GetClipBounds() returns the correct value.
+TEST_F(CanvasTest, ClipRectWithScaling) {
+  Canvas canvas(gfx::Size(200, 100), 2.25, true);
+  canvas.sk_canvas()->clipRect(RectFToSkRect(gfx::RectF(100, 0, 20, 1.7f)));
+  gfx::Rect clip_rect;
+  ASSERT_TRUE(canvas.GetClipBounds(&clip_rect));
+  // Use Contains() rather than Equals() as skia may extend the rect in certain
+  // directions. None-the-less the clip must contain the region we damaged.
+  EXPECT_TRUE(clip_rect.Contains(gfx::Rect(100, 0, 20, 2)));
 }
 
 // Line height is only supported on Skia.
