@@ -24,8 +24,7 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   return true;
 }
 
-void EnsureV8Initialized(gin::IsolateHolder::ScriptMode mode,
-                         bool gin_managed) {
+void EnsureV8Initialized(bool gin_managed) {
   static bool v8_is_initialized = false;
   static bool v8_is_gin_managed = false;
   if (v8_is_initialized) {
@@ -34,24 +33,13 @@ void EnsureV8Initialized(gin::IsolateHolder::ScriptMode mode,
   }
   v8_is_initialized = true;
   v8_is_gin_managed = gin_managed;
-  if (!gin_managed)
-    return;
-
-  v8::V8::InitializePlatform(V8Platform::Get());
-  v8::V8::SetArrayBufferAllocator(ArrayBufferAllocator::SharedInstance());
-  if (mode == gin::IsolateHolder::kStrictMode) {
-    static const char v8_flags[] = "--use_strict";
-    v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);
-  }
-  v8::V8::SetEntropySource(&GenerateEntropy);
-  v8::V8::Initialize();
 }
 
 }  // namespace
 
-IsolateHolder::IsolateHolder(ScriptMode mode)
+IsolateHolder::IsolateHolder()
   : isolate_owner_(true) {
-  EnsureV8Initialized(mode, true);
+  EnsureV8Initialized(true);
   isolate_ = v8::Isolate::New();
   v8::ResourceConstraints constraints;
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
@@ -64,7 +52,7 @@ IsolateHolder::IsolateHolder(ScriptMode mode)
 IsolateHolder::IsolateHolder(v8::Isolate* isolate,
                              v8::ArrayBuffer::Allocator* allocator)
     : isolate_owner_(false), isolate_(isolate) {
-  EnsureV8Initialized(kNonStrictMode, false);
+  EnsureV8Initialized(false);
   Init(allocator);
 }
 
@@ -72,6 +60,23 @@ IsolateHolder::~IsolateHolder() {
   isolate_data_.reset();
   if (isolate_owner_)
     isolate_->Dispose();
+}
+
+// static
+void IsolateHolder::Initialize(ScriptMode mode,
+                               v8::ArrayBuffer::Allocator* allocator) {
+  static bool v8_is_initialized = false;
+  if (v8_is_initialized)
+    return;
+  v8::V8::InitializePlatform(V8Platform::Get());
+  v8::V8::SetArrayBufferAllocator(allocator);
+  if (mode == gin::IsolateHolder::kStrictMode) {
+    static const char v8_flags[] = "--use_strict";
+    v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);
+  }
+  v8::V8::SetEntropySource(&GenerateEntropy);
+  v8::V8::Initialize();
+  v8_is_initialized = true;
 }
 
 void IsolateHolder::Init(v8::ArrayBuffer::Allocator* allocator) {

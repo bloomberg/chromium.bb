@@ -20,7 +20,7 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   virtual void* AllocateUninitialized(size_t length) OVERRIDE;
   virtual void Free(void* data, size_t length) OVERRIDE;
 
-  static ArrayBufferAllocator* SharedInstance();
+  GIN_EXPORT static ArrayBufferAllocator* SharedInstance();
 };
 
 class GIN_EXPORT ArrayBuffer {

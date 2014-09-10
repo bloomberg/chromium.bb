@@ -5,6 +5,7 @@
 #include "gin/shell_runner.h"
 
 #include "base/compiler_specific.h"
+#include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,9 @@ namespace gin {
 TEST(RunnerTest, Run) {
   std::string source = "this.result = 'PASS';\n";
 
-  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  gin::IsolateHolder instance;
 
   ShellRunnerDelegate delegate;
   Isolate* isolate = instance.isolate();

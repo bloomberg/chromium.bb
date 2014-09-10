@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/apps/js/mojo_runner_delegate.h"
 #include "mojo/public/cpp/system/core.h"
@@ -24,7 +25,9 @@ namespace apps {
 void Start(MojoHandle pipe, const std::string& module) {
   base::MessageLoop loop;
 
-  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  gin::IsolateHolder instance;
   MojoRunnerDelegate delegate;
   gin::ShellRunner runner(&delegate, instance.isolate());
   delegate.Start(&runner, pipe, module);

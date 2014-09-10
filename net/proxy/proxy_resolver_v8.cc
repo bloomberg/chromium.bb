@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -768,8 +769,9 @@ int ProxyResolverV8::SetPacScript(
 void ProxyResolverV8::EnsureIsolateCreated() {
   if (g_proxy_resolver_isolate_)
     return;
-  g_proxy_resolver_isolate_ =
-      new gin::IsolateHolder(gin::IsolateHolder::kNonStrictMode);
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  g_proxy_resolver_isolate_ = new gin::IsolateHolder;
   ANNOTATE_LEAKING_OBJECT_PTR(g_proxy_resolver_isolate_);
 }
 

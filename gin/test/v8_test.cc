@@ -4,6 +4,7 @@
 
 #include "gin/test/v8_test.h"
 
+#include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 
 using v8::Context;
@@ -19,7 +20,9 @@ V8Test::~V8Test() {
 }
 
 void V8Test::SetUp() {
-  instance_.reset(new gin::IsolateHolder(gin::IsolateHolder::kStrictMode));
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  instance_.reset(new gin::IsolateHolder);
   instance_->isolate()->Enter();
   HandleScope handle_scope(instance_->isolate());
   context_.Reset(instance_->isolate(), Context::New(instance_->isolate()));

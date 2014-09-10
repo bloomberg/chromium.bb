@@ -32,10 +32,16 @@ class GIN_EXPORT IsolateHolder {
     kStrictMode
   };
 
-  explicit IsolateHolder(ScriptMode mode);
+  IsolateHolder();
+  // Deprecated.
   IsolateHolder(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
 
   ~IsolateHolder();
+
+  // Should be invoked once before creating IsolateHolder instances to
+  // initialize V8 and Gin.
+  static void Initialize(ScriptMode mode,
+                         v8::ArrayBuffer::Allocator* allocator);
 
   v8::Isolate* isolate() { return isolate_; }
 

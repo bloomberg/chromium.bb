@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
@@ -57,7 +58,9 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
 
   base::MessageLoop message_loop;
 
-  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
+  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                 gin::ArrayBufferAllocator::SharedInstance());
+  gin::IsolateHolder instance;
   gin::ShellRunner runner(delegate, instance.isolate());
   {
     gin::Runner::Scope scope(&runner);
