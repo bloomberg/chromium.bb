@@ -7,7 +7,7 @@
     "namespace": "events",
     "description": "The <code>chrome.events</code> namespace contains common types used by APIs dispatching events to notify you when something interesting happens.",
     "compiler_options": {
-      "implemented_in": "chrome/browser/extensions/api/declarative/declarative_api.h"
+      "implemented_in": "extensions/browser/api/declarative/declarative_api.h"
     },
     "types": [
       {

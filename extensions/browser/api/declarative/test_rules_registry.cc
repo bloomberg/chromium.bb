@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
+#include "extensions/browser/api/declarative/test_rules_registry.h"
 
 namespace extensions {
 

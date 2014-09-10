@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
 
 namespace extensions {
 
@@ -49,4 +49,4 @@ class TestRulesRegistry : public RulesRegistry {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_TEST_RULES_REGISTRY_H__

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_API_H_
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_API_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-class RulesFunction : public ChromeAsyncExtensionFunction {
+class RulesFunction : public AsyncExtensionFunction {
  public:
   RulesFunction();
 
@@ -66,4 +66,4 @@ class EventsEventGetRulesFunction : public RulesFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_API_H_

@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/api/events.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
+#include "extensions/common/api/events.h"
 
 namespace base {
 class Value;

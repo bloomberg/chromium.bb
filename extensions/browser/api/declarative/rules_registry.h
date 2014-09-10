@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_RULES_REGISTRY_H__
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_RULES_REGISTRY_H__
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_RULES_REGISTRY_H__
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_RULES_REGISTRY_H__
 
 #include <map>
 #include <set>
@@ -15,10 +15,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/api/events.h"
 #include "extensions/common/one_shot_event.h"
 
 namespace content {
@@ -39,7 +39,7 @@ class RulesCacheDelegate;
 // in the RulesCacheDelegate object.
 class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
  public:
-  typedef extensions::api::events::Rule Rule;
+  typedef extensions::core_api::events::Rule Rule;
   struct WebViewKey {
     int embedder_process_id;
     int webview_instance_id;
@@ -293,4 +293,4 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_RULES_REGISTRY_H__
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_RULES_REGISTRY_H__

@@ -165,6 +165,7 @@ test("unittests") {
   sources = [
     "browser/admin_policy_unittest.cc",
     "browser/api/api_resource_manager_unittest.cc",
+    "browser/api/declarative/declarative_rule_unittest.cc",
     "browser/api/declarative/deduping_factory_unittest.cc",
     "browser/api/sockets_tcp/sockets_tcp_api_unittest.cc",
     "browser/api/storage/settings_quota_unittest.cc",

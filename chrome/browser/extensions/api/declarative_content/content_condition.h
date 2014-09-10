@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "components/url_matcher/url_matcher.h"
+#include "extensions/browser/api/declarative/declarative_rule.h"
 
 namespace extensions {
 

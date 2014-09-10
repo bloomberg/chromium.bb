@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "components/url_matcher/url_matcher.h"
+#include "extensions/browser/api/declarative/declarative_rule.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {

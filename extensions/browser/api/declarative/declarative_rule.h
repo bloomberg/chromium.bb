@@ -7,8 +7,8 @@
 // templated on the Condition and Action types that define the behavior of a
 // particular declarative event.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_RULE_H__
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_RULE_H__
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_RULE_H__
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_RULE_H__
 
 #include <limits>
 #include <set>
@@ -20,8 +20,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "chrome/common/extensions/api/events.h"
 #include "components/url_matcher/url_matcher.h"
+#include "extensions/common/api/events.h"
 #include "extensions/common/extension.h"
 
 namespace base {
@@ -203,7 +203,7 @@ class DeclarativeRule {
   typedef int Priority;
   typedef DeclarativeConditionSet<ConditionT> ConditionSet;
   typedef DeclarativeActionSet<ActionT> ActionSet;
-  typedef extensions::api::events::Rule JsonRule;
+  typedef extensions::core_api::events::Rule JsonRule;
   typedef std::vector<std::string> Tags;
 
   // Checks whether the set of |conditions| and |actions| are consistent.
@@ -514,4 +514,4 @@ int DeclarativeRule<ConditionT, ActionT>::GetMinimumPriority() const {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_RULE_H__
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_RULE_H__

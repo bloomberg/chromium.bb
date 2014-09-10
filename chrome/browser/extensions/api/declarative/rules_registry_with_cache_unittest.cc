@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
 
 // Here we test the TestRulesRegistry which is the simplest possible
 // implementation of RulesRegistryWithCache as a proxy for
@@ -10,8 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
-#include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -19,6 +17,8 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/api/declarative/rules_cache_delegate.h"
+#include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/extension.h"

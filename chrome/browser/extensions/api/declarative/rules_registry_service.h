@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -27,7 +27,6 @@ class NotificationSource;
 namespace extensions {
 class ContentRulesRegistry;
 class ExtensionRegistry;
-class RulesRegistry;
 class RulesRegistryStorageDelegate;
 }
 
@@ -77,9 +76,8 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   // Returns the RulesRegistry for |event_name| and |webview_key| or NULL if no
   // such registry has been registered. Default rules registries (such as the
   // WebRequest rules registry) will be created on first access.
-  scoped_refptr<RulesRegistry> GetRulesRegistry(
-      const WebViewKey& webview_key,
-      const std::string& event_name);
+  scoped_refptr<RulesRegistry> GetRulesRegistry(const WebViewKey& webview_key,
+                                                const std::string& event_name);
 
   // Accessors for each type of rules registry.
   ContentRulesRegistry* content_rules_registry() const {

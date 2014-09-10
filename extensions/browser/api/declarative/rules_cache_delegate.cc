@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
+#include "extensions/browser/api/declarative/rules_cache_delegate.h"
 
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -127,16 +124,17 @@ void RulesCacheDelegate::CheckIfReady() {
 }
 
 void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
-  ExtensionSystem& system = *ExtensionSystem::Get(browser_context_);
-  ExtensionService* extension_service = system.extension_service();
-  DCHECK(extension_service);
+  bool is_ready = ExtensionSystem::Get(browser_context_)->ready().is_signaled();
   // In an OTR context, we start on top of a normal context already, so the
   // extension service should be ready.
-  DCHECK(!browser_context_->IsOffTheRecord() || extension_service->is_ready());
-  if (extension_service->is_ready()) {
-    const ExtensionSet* extensions = extension_service->extensions();
-    for (ExtensionSet::const_iterator i = extensions->begin();
-         i != extensions->end();
+  DCHECK(!browser_context_->IsOffTheRecord() || is_ready);
+  if (is_ready) {
+    const ExtensionSet& extensions =
+        ExtensionRegistry::Get(browser_context_)->enabled_extensions();
+    const ExtensionPrefs* extension_prefs =
+        ExtensionPrefs::Get(browser_context_);
+    for (ExtensionSet::const_iterator i = extensions.begin();
+         i != extensions.end();
          ++i) {
       bool needs_apis_storing_rules =
           (*i)->permissions_data()->HasAPIPermission(
@@ -145,7 +143,7 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
               APIPermission::kDeclarativeWebRequest);
       bool respects_off_the_record =
           !(browser_context_->IsOffTheRecord()) ||
-          util::IsIncognitoEnabled((*i)->id(), browser_context_);
+          extension_prefs->IsIncognitoEnabled((*i)->id());
       if (needs_apis_storing_rules && respects_off_the_record)
         ReadFromStorage((*i)->id());
     }

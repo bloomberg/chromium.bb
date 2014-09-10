@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
 class GURL;
@@ -76,6 +77,13 @@ class ExtensionsAPIClient {
           WebViewPermissionHelper* web_view_permission_helper) const;
 
   virtual void RegisterGuestViewTypes() {}
+
+  // TODO(wjmaclean): Remove this as soon as rules_registry_service.* moves to
+  // extensions/browser/api/declarative/.
+  virtual scoped_refptr<RulesRegistry> GetRulesRegistry(
+      content::BrowserContext* browser_context,
+      const RulesRegistry::WebViewKey& webview_key,
+      const std::string& event_name);
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

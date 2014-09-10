@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
 #include "base/files/file_path.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
@@ -69,6 +70,14 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
 
 void ChromeExtensionsAPIClient::RegisterGuestViewTypes() {
   ExtensionOptionsGuest::Register();
+}
+
+scoped_refptr<RulesRegistry> ChromeExtensionsAPIClient::GetRulesRegistry(
+    content::BrowserContext* browser_context,
+    const RulesRegistry::WebViewKey& webview_key,
+    const std::string& event_name) {
+  return RulesRegistryService::Get(browser_context)->
+      GetRulesRegistry(webview_key, event_name);
 }
 
 }  // namespace extensions

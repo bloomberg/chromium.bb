@@ -43,7 +43,6 @@
       'easy_unlock_private.idl',
       'echo_private.json',
       'enterprise_platform_keys_private.json',
-      'events.json',
       'experience_sampling_private.json',
       'extension_options_internal.idl',
       'feedback_private.idl',

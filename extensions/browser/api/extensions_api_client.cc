@@ -48,4 +48,11 @@ WebViewPermissionHelperDelegate* ExtensionsAPIClient::
   return NULL;
 }
 
+scoped_refptr<RulesRegistry> ExtensionsAPIClient::GetRulesRegistry(
+    content::BrowserContext* browser_context,
+    const RulesRegistry::WebViewKey& webview_key,
+    const std::string& event_name) {
+  return scoped_refptr<RulesRegistry>();
+}
+
 }  // namespace extensions

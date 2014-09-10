@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/declarative_api.h"
+#include "extensions/browser/api/declarative/declarative_api.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/common/api/events.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-using extensions::api::events::Rule;
+using extensions::core_api::events::Rule;
 
-namespace AddRules = extensions::api::events::Event::AddRules;
-namespace GetRules = extensions::api::events::Event::GetRules;
-namespace RemoveRules = extensions::api::events::Event::RemoveRules;
+namespace AddRules = extensions::core_api::events::Event::AddRules;
+namespace GetRules = extensions::core_api::events::Event::GetRules;
+namespace RemoveRules = extensions::core_api::events::Event::RemoveRules;
 
 
 namespace extensions {
@@ -89,12 +90,14 @@ bool RulesFunction::RunAsync() {
   event_name = GetWebRequestEventName(event_name);
 
   // If we are not operating on a particular <webview>, then the key is (0, 0).
-  RulesRegistryService::WebViewKey key(
+  RulesRegistry::WebViewKey key(
       webview_instance_id ? embedder_process_id : 0, webview_instance_id);
 
-  RulesRegistryService* rules_registry_service =
-      RulesRegistryService::Get(browser_context());
-  rules_registry_ = rules_registry_service->GetRulesRegistry(key, event_name);
+  // The following call will return a NULL pointer for apps_shell, but should
+  // never be called there anyways.
+  rules_registry_ = ExtensionsAPIClient::Get()->GetRulesRegistry(
+      browser_context(), key, event_name);
+  DCHECK(rules_registry_.get());
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.
   EXTENSION_FUNCTION_VALIDATE(rules_registry_.get());
