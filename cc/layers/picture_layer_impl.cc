@@ -1568,7 +1568,7 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
   if (!iterators_[index] || iterators_[index].get_type() != tile_type)
-    ++(*this);
+    AdvanceToNextStage();
 }
 
 PictureLayerImpl::LayerRasterTileIterator::~LayerRasterTileIterator() {}
@@ -1584,22 +1584,13 @@ operator++() {
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
   // First advance the iterator.
-  if (iterators_[index])
-    ++iterators_[index];
+  DCHECK(iterators_[index]);
+  DCHECK(iterators_[index].get_type() == tile_type);
+  ++iterators_[index];
 
-  if (iterators_[index] && iterators_[index].get_type() == tile_type)
-    return *this;
+  if (!iterators_[index] || iterators_[index].get_type() != tile_type)
+    AdvanceToNextStage();
 
-  // Next, advance the stage.
-  ++current_stage_;
-  while (current_stage_ < arraysize(stages_)) {
-    index = stages_[current_stage_].iterator_type;
-    tile_type = stages_[current_stage_].tile_type;
-
-    if (iterators_[index] && iterators_[index].get_type() == tile_type)
-      break;
-    ++current_stage_;
-  }
   return *this;
 }
 
@@ -1621,6 +1612,19 @@ const Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() const {
   DCHECK(iterators_[index].get_type() == stages_[current_stage_].tile_type);
 
   return *iterators_[index];
+}
+
+void PictureLayerImpl::LayerRasterTileIterator::AdvanceToNextStage() {
+  DCHECK_LT(current_stage_, arraysize(stages_));
+  ++current_stage_;
+  while (current_stage_ < arraysize(stages_)) {
+    IteratorType index = stages_[current_stage_].iterator_type;
+    TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
+
+    if (iterators_[index] && iterators_[index].get_type() == tile_type)
+      break;
+    ++current_stage_;
+  }
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()

@@ -2498,6 +2498,11 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
 }
 
 TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
@@ -2562,6 +2567,45 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   EXPECT_EQ(16u, high_res_tile_count);
   EXPECT_EQ(low_res_tile_count + high_res_tile_count + non_ideal_tile_count,
             unique_tiles.size());
+
+  // No NOW tiles.
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  pending_layer_->draw_properties().visible_content_rect =
+      gfx::Rect(1100, 1100, 500, 500);
+  pending_layer_->UpdateTiles(NULL);
+
+  unique_tiles.clear();
+  high_res_tile_count = 0u;
+  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    TilePriority priority = tile->priority(PENDING_TREE);
+
+    EXPECT_TRUE(tile);
+
+    // Non-high res tiles only get visible tiles.
+    EXPECT_EQ(HIGH_RESOLUTION, priority.resolution);
+    EXPECT_NE(TilePriority::NOW, priority.priority_bin);
+
+    high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
+
+    unique_tiles.insert(tile);
+  }
+
+  EXPECT_EQ(16u, high_res_tile_count);
+  EXPECT_EQ(high_res_tile_count, unique_tiles.size());
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  pending_layer_->draw_properties().visible_content_rect =
+      gfx::Rect(0, 0, 500, 500);
+  pending_layer_->UpdateTiles(NULL);
 
   std::vector<Tile*> high_res_tiles = high_res_tiling->AllTilesForTesting();
   for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();

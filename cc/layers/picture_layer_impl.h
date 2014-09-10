@@ -51,6 +51,8 @@ class CC_EXPORT PictureLayerImpl
    private:
     enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };
 
+    void AdvanceToNextStage();
+
     PictureLayerImpl* layer_;
 
     struct IterationStage {
