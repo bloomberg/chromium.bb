@@ -39,6 +39,15 @@ import mock
 
 # pylint: disable=W0212,R0904
 
+class RunCommandErrorStrTest(cros_test_lib.TestCase):
+  """Test that RunCommandError __str__ works as expected."""
+
+  def testNonUTF8Characters(self):
+    """Test that non-UTF8 characters do not kill __str__"""
+    result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
+                                        error_code_ok=True)
+    rce = cros_build_lib.RunCommandError('\x81', result)
+    str(rce)
 
 class CmdToStrTest(cros_test_lib.TestCase):
   """Test the CmdToStr function."""

@@ -209,7 +209,8 @@ class RunCommandError(Exception):
 
   def __str__(self):
     # __str__ needs to return ascii, thus force a conversion to be safe.
-    return self.Stringify().decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+    return self.Stringify().decode('utf-8', 'replace'
+                                   ).encode('ascii', 'xmlcharrefreplace')
 
   def __eq__(self, other):
     return (type(self) == type(other) and
