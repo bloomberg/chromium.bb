@@ -46,6 +46,11 @@ Location::Location(LocalFrame* frame)
 {
 }
 
+void Location::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 inline const KURL& Location::url() const
 {
     ASSERT(m_frame);

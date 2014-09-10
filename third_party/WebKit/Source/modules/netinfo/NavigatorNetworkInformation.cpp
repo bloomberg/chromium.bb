@@ -17,9 +17,7 @@ NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
 {
 }
 
-NavigatorNetworkInformation::~NavigatorNetworkInformation()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorNetworkInformation);
 
 NavigatorNetworkInformation& NavigatorNetworkInformation::from(Navigator& navigator)
 {
@@ -59,6 +57,7 @@ void NavigatorNetworkInformation::trace(Visitor* visitor)
 {
     visitor->trace(m_connection);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

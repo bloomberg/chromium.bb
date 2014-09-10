@@ -83,7 +83,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_replacesCurrentHistoryItem(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
-    , m_applicationCacheHost(adoptPtr(new ApplicationCacheHost(this)))
+    , m_applicationCacheHost(ApplicationCacheHost::create(this))
 {
 }
 
@@ -744,7 +744,7 @@ void DocumentLoader::startLoadingMainResource()
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
         // is now in a state where starting an empty load will be inconsistent. Replace it with
         // a new ApplicationCacheHost.
-        m_applicationCacheHost = adoptPtr(new ApplicationCacheHost(this));
+        m_applicationCacheHost = ApplicationCacheHost::create(this);
         maybeLoadEmpty();
         return;
     }

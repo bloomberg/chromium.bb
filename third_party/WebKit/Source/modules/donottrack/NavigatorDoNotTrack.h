@@ -41,17 +41,17 @@ namespace blink {
 class LocalFrame;
 class Navigator;
 
-class NavigatorDoNotTrack FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorDoNotTrack>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorDoNotTrack FINAL : public NoBaseWillBeGarbageCollected<NavigatorDoNotTrack>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorDoNotTrack);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorDoNotTrack);
 public:
-    virtual ~NavigatorDoNotTrack();
     static NavigatorDoNotTrack& from(Navigator&);
 
     static String doNotTrack(Navigator&);
 
     String doNotTrack();
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Navigator>::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit NavigatorDoNotTrack(LocalFrame*);

@@ -40,11 +40,12 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class Storage FINAL : public RefCountedWillBeGarbageCollectedFinalized<Storage>, public ScriptWrappable, public DOMWindowProperty {
+class Storage FINAL : public RefCountedWillBeGarbageCollected<Storage>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Storage);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Storage);
 public:
     static PassRefPtrWillBeRawPtr<Storage> create(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);
-    virtual ~Storage();
 
     unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
     String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }
@@ -65,7 +66,7 @@ public:
     void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     Storage(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);

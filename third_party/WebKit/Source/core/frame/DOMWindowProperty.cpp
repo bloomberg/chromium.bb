@@ -34,7 +34,7 @@ namespace blink {
 
 DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     : m_frame(frame)
-    , m_associatedDOMWindow(0)
+    , m_associatedDOMWindow(nullptr)
 {
     // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
     // See fast/dom/navigator-detached-no-crash.html for the recipe.
@@ -45,14 +45,16 @@ DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     }
 }
 
+#if !ENABLE(OILPAN)
 DOMWindowProperty::~DOMWindowProperty()
 {
     if (m_associatedDOMWindow)
         m_associatedDOMWindow->unregisterProperty(this);
 
-    m_associatedDOMWindow = 0;
-    m_frame = 0;
+    m_associatedDOMWindow = nullptr;
+    m_frame = nullptr;
 }
+#endif
 
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
@@ -64,8 +66,8 @@ void DOMWindowProperty::willDestroyGlobalObjectInFrame()
     // itself from any LocalDOMWindow it is associated with if that LocalDOMWindow is going away.
     if (m_associatedDOMWindow)
         m_associatedDOMWindow->unregisterProperty(this);
-    m_associatedDOMWindow = 0;
-    m_frame = 0;
+    m_associatedDOMWindow = nullptr;
+    m_frame = nullptr;
 }
 
 void DOMWindowProperty::willDetachGlobalObjectFromFrame()
@@ -73,6 +75,11 @@ void DOMWindowProperty::willDetachGlobalObjectFromFrame()
     // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
+}
+
+void DOMWindowProperty::trace(Visitor* visitor)
+{
+    visitor->trace(m_associatedDOMWindow);
 }
 
 }

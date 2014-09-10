@@ -44,6 +44,12 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
         cacheHost->setApplicationCache(this);
 }
 
+void ApplicationCache::trace(Visitor* visitor)
+{
+    EventTargetWithInlineData::trace(visitor);
+    DOMWindowProperty::trace(visitor);
+}
+
 void ApplicationCache::willDestroyGlobalObjectInFrame()
 {
     if (ApplicationCacheHost* cacheHost = applicationCacheHost())

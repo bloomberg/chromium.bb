@@ -128,6 +128,7 @@ void NavigatorGamepad::trace(Visitor* visitor)
     visitor->trace(m_webkitGamepads);
     visitor->trace(m_pendingEvents);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 void NavigatorGamepad::didUpdateData()
@@ -180,6 +181,9 @@ NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
 
 NavigatorGamepad::~NavigatorGamepad()
 {
+#if ENABLE(OILPAN)
+    stopUpdating();
+#endif
 }
 
 const char* NavigatorGamepad::supplementName()

@@ -41,16 +41,16 @@ namespace blink {
 
 class Navigator;
 
-class NavigatorWebMIDI FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorWebMIDI>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorWebMIDI FINAL : public NoBaseWillBeGarbageCollected<NavigatorWebMIDI>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorWebMIDI);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorWebMIDI);
 public:
-    virtual ~NavigatorWebMIDI();
     static NavigatorWebMIDI& from(Navigator&);
 
     static ScriptPromise requestMIDIAccess(ScriptState*, Navigator&, const Dictionary&);
     ScriptPromise requestMIDIAccess(ScriptState*, const Dictionary&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Navigator>::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     NavigatorWebMIDI(LocalFrame*);

@@ -33,8 +33,9 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
 {
 }
 
-DOMPluginArray::~DOMPluginArray()
+void DOMPluginArray::trace(Visitor* visitor)
 {
+    DOMWindowProperty::trace(visitor);
 }
 
 unsigned DOMPluginArray::length() const

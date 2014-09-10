@@ -18,9 +18,7 @@ NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
 {
 }
 
-NavigatorServiceWorker::~NavigatorServiceWorker()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorServiceWorker);
 
 NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document)
 {
@@ -78,6 +76,7 @@ void NavigatorServiceWorker::trace(Visitor* visitor)
 {
     visitor->trace(m_serviceWorker);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

@@ -33,8 +33,9 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
 {
 }
 
-DOMMimeTypeArray::~DOMMimeTypeArray()
+void DOMMimeTypeArray::trace(Visitor* visitor)
 {
+    DOMWindowProperty::trace(visitor);
 }
 
 unsigned DOMMimeTypeArray::length() const

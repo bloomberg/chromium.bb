@@ -345,7 +345,6 @@ private:
     virtual void willDetachFrameHost() OVERRIDE;
 
     void clearDocument();
-    void resetDOMWindowProperties();
     void willDestroyDocumentInFrame();
 
     // FIXME: Oilpan: the need for this internal method will fall
@@ -367,7 +366,7 @@ private:
     bool m_hasBeenReset;
 #endif
 
-    HashSet<DOMWindowProperty*> m_properties;
+    WillBeHeapHashSet<RawPtrWillBeMember<DOMWindowProperty> > m_properties;
 
     mutable RefPtrWillBeMember<Screen> m_screen;
     mutable RefPtrWillBeMember<History> m_history;

@@ -18,9 +18,7 @@ NavigatorCredentials::NavigatorCredentials(Navigator& navigator)
 {
 }
 
-NavigatorCredentials::~NavigatorCredentials()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorCredentials);
 
 NavigatorCredentials& NavigatorCredentials::from(Navigator& navigator)
 {
@@ -53,6 +51,7 @@ void NavigatorCredentials::trace(Visitor* visitor)
 {
     visitor->trace(m_credentialsContainer);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

@@ -354,4 +354,9 @@ unsigned long long PerformanceTiming::monotonicTimeToIntegerMilliseconds(double 
     return toIntegerMilliseconds(timing->monotonicTimeToPseudoWallTime(monotonicSeconds));
 }
 
+void PerformanceTiming::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 } // namespace blink

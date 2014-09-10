@@ -156,6 +156,7 @@ void Navigator::trace(Visitor* visitor)
     visitor->trace(m_plugins);
     visitor->trace(m_mimeTypes);
     WillBeHeapSupplementable<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

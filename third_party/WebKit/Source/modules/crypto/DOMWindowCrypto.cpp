@@ -41,9 +41,7 @@ DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
 {
 }
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowCrypto);
 
 const char* DOMWindowCrypto::supplementName()
 {
@@ -76,6 +74,7 @@ void DOMWindowCrypto::trace(Visitor* visitor)
 {
     visitor->trace(m_crypto);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

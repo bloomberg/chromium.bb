@@ -55,6 +55,12 @@ Console::~Console()
 {
 }
 
+void Console::trace(Visitor* visitor)
+{
+    ConsoleBase::trace(visitor);
+    DOMWindowProperty::trace(visitor);
+}
+
 ExecutionContext* Console::context()
 {
     if (!m_frame)

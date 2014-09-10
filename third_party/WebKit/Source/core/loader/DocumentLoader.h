@@ -219,7 +219,7 @@ namespace blink {
         double m_timeOfLastDataReceived;
 
         friend class ApplicationCacheHost;  // for substitute resource delivery
-        OwnPtr<ApplicationCacheHost> m_applicationCacheHost;
+        OwnPtrWillBePersistent<ApplicationCacheHost> m_applicationCacheHost;
     };
 }
 

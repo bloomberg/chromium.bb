@@ -34,14 +34,14 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 public:
     static PassRefPtrWillBeRawPtr<DOMPluginArray> create(LocalFrame* frame)
     {
         return adoptRefWillBeNoop(new DOMPluginArray(frame));
     }
-    virtual ~DOMPluginArray();
 
     unsigned length() const;
     PassRefPtrWillBeRawPtr<DOMPlugin> item(unsigned index);
@@ -50,7 +50,7 @@ public:
 
     void refresh(bool reload);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit DOMPluginArray(LocalFrame*);

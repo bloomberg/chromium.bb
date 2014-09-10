@@ -78,4 +78,9 @@ unsigned short PerformanceNavigation::redirectCount() const
     return timing->redirectCount();
 }
 
+void PerformanceNavigation::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 } // namespace blink

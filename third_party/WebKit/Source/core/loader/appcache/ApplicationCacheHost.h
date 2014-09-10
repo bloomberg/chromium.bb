@@ -31,12 +31,10 @@
 #ifndef ApplicationCacheHost_h
 #define ApplicationCacheHost_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
-#include "wtf/Deque.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -49,9 +47,15 @@ namespace blink {
     class ResourceResponse;
     class SubstituteData;
 
-    class ApplicationCacheHost : public blink::WebApplicationCacheHostClient {
+    class ApplicationCacheHost FINAL : public NoBaseWillBeGarbageCollectedFinalized<ApplicationCacheHost>, public WebApplicationCacheHostClient {
         WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
     public:
+        static PassOwnPtrWillBeRawPtr<ApplicationCacheHost> create(DocumentLoader* loader)
+        {
+            return adoptPtrWillBeNoop(new ApplicationCacheHost(loader));
+        }
+        virtual ~ApplicationCacheHost();
+
         // The Status numeric values are specified in the HTML5 spec.
         enum Status {
             UNCACHED = 0,
@@ -105,9 +109,6 @@ namespace blink {
 
         typedef Vector<ResourceInfo> ResourceInfoList;
 
-        explicit ApplicationCacheHost(DocumentLoader*);
-        virtual ~ApplicationCacheHost();
-
         void selectCacheWithoutManifest();
         void selectCacheWithManifest(const KURL& manifestURL);
 
@@ -125,19 +126,23 @@ namespace blink {
         void abort();
 
         void setApplicationCache(ApplicationCache*);
-        void notifyApplicationCache(EventID, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
+        void notifyApplicationCache(EventID, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
 
         void stopDeferringEvents(); // Also raises the events that have been queued up.
 
         void fillResourceList(ResourceInfoList*);
         CacheInfo applicationCacheInfo();
 
+        void trace(Visitor*);
+
     private:
+        explicit ApplicationCacheHost(DocumentLoader*);
+
         // WebApplicationCacheHostClient implementation
         virtual void didChangeCacheAssociation() OVERRIDE FINAL;
-        virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID) OVERRIDE FINAL;
-        virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone) OVERRIDE FINAL;
-        virtual void notifyErrorEventListener(blink::WebApplicationCacheHost::ErrorReason, const blink::WebURL&, int status, const blink::WebString& message) OVERRIDE FINAL;
+        virtual void notifyEventListener(WebApplicationCacheHost::EventID) OVERRIDE FINAL;
+        virtual void notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone) OVERRIDE FINAL;
+        virtual void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason, const WebURL&, int status, const WebString& message) OVERRIDE FINAL;
 
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() const { return m_documentLoader; }
@@ -146,11 +151,11 @@ namespace blink {
             EventID eventID;
             int progressTotal;
             int progressDone;
-            blink::WebApplicationCacheHost::ErrorReason errorReason;
+            WebApplicationCacheHost::ErrorReason errorReason;
             String errorURL;
             int errorStatus;
             String errorMessage;
-            DeferredEvent(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
+            DeferredEvent(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
                 : eventID(id)
                 , progressTotal(progressTotal)
                 , progressDone(progressDone)
@@ -162,14 +167,14 @@ namespace blink {
             }
         };
 
-        ApplicationCache* m_domApplicationCache;
+        RawPtrWillBeWeakMember<ApplicationCache> m_domApplicationCache;
         DocumentLoader* m_documentLoader;
         bool m_defersEvents; // Events are deferred until after document onload.
         Vector<DeferredEvent> m_deferredEvents;
 
-        void dispatchDOMEvent(EventID, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
+        void dispatchDOMEvent(EventID, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
 
-        OwnPtr<blink::WebApplicationCacheHost> m_host;
+        OwnPtr<WebApplicationCacheHost> m_host;
     };
 
 }  // namespace blink

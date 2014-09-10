@@ -35,10 +35,10 @@ namespace blink {
 class IDBFactory;
 class LocalDOMWindow;
 
-class DOMWindowIndexedDatabase FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class DOMWindowIndexedDatabase FINAL : public NoBaseWillBeGarbageCollected<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
 public:
-    virtual ~DOMWindowIndexedDatabase();
     static DOMWindowIndexedDatabase& from(LocalDOMWindow&);
 
     static IDBFactory* indexedDB(LocalDOMWindow&);

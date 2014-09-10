@@ -35,9 +35,7 @@ NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
 {
 }
 
-NavigatorGeolocation::~NavigatorGeolocation()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorGeolocation);
 
 const char* NavigatorGeolocation::supplementName()
 {
@@ -70,6 +68,7 @@ void NavigatorGeolocation::trace(Visitor* visitor)
 {
     visitor->trace(m_geolocation);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

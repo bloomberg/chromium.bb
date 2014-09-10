@@ -49,7 +49,12 @@ public:
     {
         return adoptRefWillBeNoop(new ApplicationCache(frame));
     }
-    virtual ~ApplicationCache() { ASSERT(!m_frame); }
+    virtual ~ApplicationCache()
+    {
+#if !ENABLE(OILPAN)
+        ASSERT(!m_frame);
+#endif
+    }
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
 
@@ -73,6 +78,8 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit ApplicationCache(LocalFrame*);

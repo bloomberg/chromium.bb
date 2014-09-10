@@ -47,8 +47,12 @@ NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
 {
 }
 
-NavigatorWebMIDI::~NavigatorWebMIDI()
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorWebMIDI);
+
+void NavigatorWebMIDI::trace(Visitor* visitor)
 {
+    WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 const char* NavigatorWebMIDI::supplementName()

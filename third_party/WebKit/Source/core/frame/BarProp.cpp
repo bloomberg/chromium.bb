@@ -41,6 +41,11 @@ BarProp::BarProp(LocalFrame* frame, Type type)
 {
 }
 
+void BarProp::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 bool BarProp::visible() const
 {
     if (!m_frame)

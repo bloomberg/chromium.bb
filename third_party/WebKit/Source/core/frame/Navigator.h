@@ -78,7 +78,7 @@ public:
     // NavigatorLanguage
     virtual Vector<String> languages() OVERRIDE;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit Navigator(LocalFrame*);

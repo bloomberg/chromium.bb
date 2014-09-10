@@ -42,9 +42,7 @@ NavigatorStorageQuota::NavigatorStorageQuota(LocalFrame* frame)
 {
 }
 
-NavigatorStorageQuota::~NavigatorStorageQuota()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorStorageQuota);
 
 const char* NavigatorStorageQuota::supplementName()
 {
@@ -103,6 +101,7 @@ void NavigatorStorageQuota::trace(Visitor* visitor)
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

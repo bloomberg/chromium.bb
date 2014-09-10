@@ -43,9 +43,7 @@ DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
 {
 }
 
-DOMWindowQuota::~DOMWindowQuota()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowQuota);
 
 const char* DOMWindowQuota::supplementName()
 {
@@ -80,6 +78,7 @@ void DOMWindowQuota::trace(Visitor* visitor)
 {
     visitor->trace(m_storageInfo);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

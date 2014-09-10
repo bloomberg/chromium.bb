@@ -39,8 +39,9 @@ namespace blink {
 
 class LocalFrame;
 
-class BarProp FINAL : public RefCountedWillBeGarbageCollectedFinalized<BarProp>, public ScriptWrappable, public DOMWindowProperty {
+class BarProp FINAL : public RefCountedWillBeGarbageCollected<BarProp>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BarProp);
 public:
     enum Type { Locationbar, Menubar, Personalbar, Scrollbars, Statusbar, Toolbar };
 
@@ -51,7 +52,7 @@ public:
 
     bool visible() const;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     BarProp(LocalFrame*, Type);

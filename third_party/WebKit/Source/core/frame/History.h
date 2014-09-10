@@ -44,6 +44,7 @@ class ExceptionState;
 
 class History FINAL : public RefCountedWillBeGarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(History);
 public:
     static PassRefPtrWillBeRawPtr<History> create(LocalFrame* frame)
     {
@@ -62,7 +63,7 @@ public:
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, FrameLoadType, ExceptionState&);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit History(LocalFrame*);

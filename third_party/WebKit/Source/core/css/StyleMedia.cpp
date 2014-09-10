@@ -67,4 +67,9 @@ bool StyleMedia::matchMedium(const String& query) const
     return screenEval.eval(media.get());
 }
 
+void StyleMedia::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 } // namespace blink

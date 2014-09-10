@@ -37,15 +37,16 @@ namespace blink {
 
 class LocalFrame;
 
-class StyleMedia : public RefCountedWillBeGarbageCollectedFinalized<StyleMedia>, public DOMWindowProperty, public ScriptWrappable {
+class StyleMedia : public RefCountedWillBeGarbageCollected<StyleMedia>, public DOMWindowProperty, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StyleMedia);
 public:
     static PassRefPtrWillBeRawPtr<StyleMedia> create(LocalFrame* frame) { return adoptRefWillBeNoop(new StyleMedia(frame));}
 
     AtomicString type() const;
     bool matchMedium(const String&) const;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit StyleMedia(LocalFrame*);

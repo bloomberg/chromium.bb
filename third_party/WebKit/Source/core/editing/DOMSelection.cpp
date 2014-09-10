@@ -557,4 +557,10 @@ void DOMSelection::addConsoleError(const String& message)
         m_treeScope->document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
+void DOMSelection::trace(Visitor* visitor)
+{
+    visitor->trace(m_treeScope);
+    DOMWindowProperty::trace(visitor);
+}
+
 } // namespace blink

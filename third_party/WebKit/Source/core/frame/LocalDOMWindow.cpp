@@ -497,7 +497,6 @@ void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 LocalDOMWindow::~LocalDOMWindow()
 {
     ASSERT(m_hasBeenReset);
-    reset();
 
 #if ENABLE(OILPAN)
     // Oilpan: the frame host and document objects are
@@ -508,6 +507,8 @@ LocalDOMWindow::~LocalDOMWindow()
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
 #else
+    reset();
+
     removeAllEventListenersInternal(DoBroadcastListenerRemoval);
 
     ASSERT(m_document->isStopped());
@@ -557,7 +558,7 @@ void LocalDOMWindow::willDestroyDocumentInFrame()
 {
     // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
     // unregister themselves from the LocalDOMWindow as a result of the call to willDestroyGlobalObjectInFrame.
-    Vector<DOMWindowProperty*> properties;
+    WillBeHeapVector<RawPtrWillBeMember<DOMWindowProperty> > properties;
     copyToVector(m_properties, properties);
     for (size_t i = 0; i < properties.size(); ++i)
         properties[i]->willDestroyGlobalObjectInFrame();
@@ -567,7 +568,7 @@ void LocalDOMWindow::willDetachDocumentFromFrame()
 {
     // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
     // unregister themselves from the LocalDOMWindow as a result of the call to willDetachGlobalObjectFromFrame.
-    Vector<DOMWindowProperty*> properties;
+    WillBeHeapVector<RawPtrWillBeMember<DOMWindowProperty> > properties;
     copyToVector(m_properties, properties);
     for (size_t i = 0; i < properties.size(); ++i)
         properties[i]->willDetachGlobalObjectFromFrame();
@@ -586,11 +587,6 @@ void LocalDOMWindow::unregisterProperty(DOMWindowProperty* property)
 void LocalDOMWindow::reset()
 {
     willDestroyDocumentInFrame();
-    resetDOMWindowProperties();
-}
-
-void LocalDOMWindow::resetDOMWindowProperties()
-{
     m_properties.clear();
 
     m_screen = nullptr;
@@ -1897,7 +1893,9 @@ PassOwnPtr<LifecycleNotifier<LocalDOMWindow> > LocalDOMWindow::createLifecycleNo
 
 void LocalDOMWindow::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
+    visitor->trace(m_properties);
     visitor->trace(m_screen);
     visitor->trace(m_history);
     visitor->trace(m_locationbar);
@@ -1916,6 +1914,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_performance);
     visitor->trace(m_css);
     visitor->trace(m_eventQueue);
+#endif
     WillBeHeapSupplementable<LocalDOMWindow>::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
     LifecycleContext<LocalDOMWindow>::trace(visitor);

@@ -42,10 +42,10 @@ class LocalFrame;
 class Navigator;
 class StorageQuota;
 
-class NavigatorStorageQuota FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorStorageQuota>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorStorageQuota FINAL : public NoBaseWillBeGarbageCollected<NavigatorStorageQuota>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorStorageQuota);
 public:
-    virtual ~NavigatorStorageQuota();
     static NavigatorStorageQuota& from(Navigator&);
 
     static StorageQuota* storageQuota(Navigator&);

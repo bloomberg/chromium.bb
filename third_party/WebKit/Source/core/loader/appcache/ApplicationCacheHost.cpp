@@ -61,7 +61,7 @@ namespace blink {
 // This file replaces webcore/appcache/ApplicationCacheHost.cpp in our build.
 
 ApplicationCacheHost::ApplicationCacheHost(DocumentLoader* documentLoader)
-    : m_domApplicationCache(0)
+    : m_domApplicationCache(nullptr)
     , m_documentLoader(documentLoader)
     , m_defersEvents(true)
 {
@@ -118,7 +118,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
         // of the navigation algorithm. The navigation will not result in the
         // same resource being loaded, because "foreign" entries are never picked
         // during navigation.
-        // see blink::ApplicationCacheGroup::selectCache()
+        // see ApplicationCacheGroup::selectCache()
         LocalFrame* frame = m_documentLoader->frame();
         frame->navigationScheduler().scheduleLocationChange(frame->document(), frame->document()->url(), Referrer(frame->document()->referrer(), frame->document()->referrerPolicy()));
     }
@@ -164,7 +164,7 @@ void ApplicationCacheHost::setApplicationCache(ApplicationCache* domApplicationC
     m_domApplicationCache = domApplicationCache;
 }
 
-void ApplicationCacheHost::notifyApplicationCache(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
+void ApplicationCacheHost::notifyApplicationCache(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
     if (id != PROGRESS_EVENT)
         InspectorInstrumentation::updateApplicationCacheStatus(m_documentLoader->frame());
@@ -182,7 +182,7 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::applicationCacheInfo()
     if (!m_host)
         return CacheInfo(KURL(), 0, 0, 0);
 
-    blink::WebApplicationCacheHost::CacheInfo webInfo;
+    WebApplicationCacheHost::CacheInfo webInfo;
     m_host->getAssociatedCacheInfo(&webInfo);
     return CacheInfo(webInfo.manifestURL, webInfo.creationTime, webInfo.updateTime, webInfo.totalSize);
 }
@@ -192,7 +192,7 @@ void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources)
     if (!m_host)
         return;
 
-    blink::WebVector<blink::WebApplicationCacheHost::ResourceInfo> webResources;
+    WebVector<WebApplicationCacheHost::ResourceInfo> webResources;
     m_host->getResourceList(&webResources);
     for (size_t i = 0; i < webResources.size(); ++i) {
         resources->append(ResourceInfo(
@@ -212,7 +212,7 @@ void ApplicationCacheHost::stopDeferringEvents()
     m_defersEvents = false;
 }
 
-void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
+void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
     if (m_domApplicationCache) {
         const AtomicString& eventType = ApplicationCache::toEventType(id);
@@ -262,19 +262,24 @@ void ApplicationCacheHost::didChangeCacheAssociation()
     // FIXME: Prod the inspector to update its notion of what cache the page is using.
 }
 
-void ApplicationCacheHost::notifyEventListener(blink::WebApplicationCacheHost::EventID eventID)
+void ApplicationCacheHost::notifyEventListener(WebApplicationCacheHost::EventID eventID)
 {
-    notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0, blink::WebApplicationCacheHost::UnknownError, String(), 0, String());
+    notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0, WebApplicationCacheHost::UnknownError, String(), 0, String());
 }
 
-void ApplicationCacheHost::notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone)
+void ApplicationCacheHost::notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone)
 {
-    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone, blink::WebApplicationCacheHost::UnknownError, String(), 0, String());
+    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone, WebApplicationCacheHost::UnknownError, String(), 0, String());
 }
 
-void ApplicationCacheHost::notifyErrorEventListener(blink::WebApplicationCacheHost::ErrorReason reason, const blink::WebURL& url, int status, const blink::WebString& message)
+void ApplicationCacheHost::notifyErrorEventListener(WebApplicationCacheHost::ErrorReason reason, const WebURL& url, int status, const WebString& message)
 {
     notifyApplicationCache(ERROR_EVENT, 0, 0, reason, url.string(), status, message);
+}
+
+void ApplicationCacheHost::trace(Visitor* visitor)
+{
+    visitor->trace(m_domApplicationCache);
 }
 
 } // namespace blink

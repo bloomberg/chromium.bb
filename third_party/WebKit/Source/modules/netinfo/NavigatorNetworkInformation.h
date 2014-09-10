@@ -14,13 +14,12 @@ class Navigator;
 class NetworkInformation;
 
 class NavigatorNetworkInformation FINAL
-    : public NoBaseWillBeGarbageCollectedFinalized<NavigatorNetworkInformation>
+    : public NoBaseWillBeGarbageCollected<NavigatorNetworkInformation>
     , public WillBeHeapSupplement<Navigator>
     , DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
-
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorNetworkInformation);
 public:
-    virtual ~NavigatorNetworkInformation();
     static NavigatorNetworkInformation& from(Navigator&);
     static NavigatorNetworkInformation* toNavigatorNetworkInformation(Navigator&);
     static const char* supplementName();

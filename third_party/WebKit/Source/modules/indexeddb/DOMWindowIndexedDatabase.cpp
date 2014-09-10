@@ -39,14 +39,13 @@ DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
 {
 }
 
-DOMWindowIndexedDatabase::~DOMWindowIndexedDatabase()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
 
 void DOMWindowIndexedDatabase::trace(Visitor* visitor)
 {
     visitor->trace(m_idbFactory);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 const char* DOMWindowIndexedDatabase::supplementName()

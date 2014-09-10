@@ -48,6 +48,11 @@ History::History(LocalFrame* frame)
 {
 }
 
+void History::trace(Visitor* visitor)
+{
+    DOMWindowProperty::trace(visitor);
+}
+
 unsigned History::length() const
 {
     if (!m_frame)

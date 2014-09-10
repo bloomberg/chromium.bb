@@ -45,6 +45,7 @@ class ScriptArguments;
 
 class Console FINAL : public ConsoleBase, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Console);
 public:
     static PassRefPtrWillBeRawPtr<Console> create(LocalFrame* frame)
     {
@@ -54,7 +55,7 @@ public:
 
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { ConsoleBase::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;
