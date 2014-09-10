@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
@@ -24,6 +25,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_handle.h"
@@ -465,6 +467,7 @@ int NaClIPCAdapter::TakeClientFileDescriptor() {
 
 bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   uint32_t type = msg.type();
+
   if (type == IPC_REPLY_ID) {
     int id = IPC::SyncMessage::GetMessageId(msg);
     IOThreadData::PendingSyncMsgMap::iterator it =
@@ -475,7 +478,49 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
       io_thread_data_.pending_sync_msgs_.erase(it);
     }
   }
+  // Handle PpapiHostMsg_OpenResource outside the lock as it requires sending
+  // IPC to handle properly.
+  if (type == PpapiHostMsg_OpenResource::ID) {
+    PickleIterator iter = IPC::SyncMessage::GetDataIterator(&msg);
+    ppapi::proxy::SerializedHandle sh;
+    uint64_t token_lo;
+    uint64_t token_hi;
+    if (!IPC::ReadParam(&msg, &iter, &sh) ||
+        !IPC::ReadParam(&msg, &iter, &token_lo) ||
+        !IPC::ReadParam(&msg, &iter, &token_hi)) {
+      return false;
+    }
 
+    if (sh.IsHandleValid() && (token_lo != 0 || token_hi != 0)) {
+      // We've received a valid file token. Instead of using the file
+      // descriptor received, we send the file token to the browser in
+      // exchange for a new file descriptor and file path information.
+      // That file descriptor can be used to construct a NaClDesc with
+      // identity-based validation caching.
+      //
+      // We do not use file descriptors from the renderer with validation
+      // caching; a compromised renderer should not be able to run
+      // arbitrary code in a plugin process.
+      DCHECK(!resolve_file_token_cb_.is_null());
+
+      // resolve_file_token_cb_ must be invoked from the main thread.
+      resolve_file_token_cb_.Run(
+          token_lo,
+          token_hi,
+          base::Bind(&NaClIPCAdapter::OnFileTokenResolved,
+                     this,
+                     msg));
+
+      // In this case, we don't release the message to NaCl untrusted code
+      // immediately. We defer it until we get an async message back from the
+      // browser process.
+      return true;
+    }
+  }
+  return RewriteMessage(msg, type);
+}
+
+bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
   {
     base::AutoLock lock(lock_);
     scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
@@ -538,8 +583,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
         }
 
         case ppapi::proxy::SerializedHandle::INVALID: {
-          // Nothing to do. TODO(dmichael): Should we log this? Or is it
-          // sometimes okay to pass an INVALID handle?
+          // Nothing to do.
           break;
         }
         // No default, so the compiler will warn us if new types get added.
@@ -554,6 +598,105 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
     cond_var_.Signal();
   }
   return true;
+}
+
+scoped_ptr<IPC::Message> CreateOpenResourceReply(
+    const IPC::Message& orig_msg,
+    ppapi::proxy::SerializedHandle sh) {
+  // The creation of new_msg must be kept in sync with
+  // SyncMessage::WriteSyncHeader.
+  scoped_ptr<IPC::Message> new_msg(new IPC::Message(
+      orig_msg.routing_id(),
+      orig_msg.type(),
+      IPC::Message::PRIORITY_NORMAL));
+  new_msg->set_reply();
+  new_msg->WriteInt(IPC::SyncMessage::GetMessageId(orig_msg));
+
+  ppapi::proxy::SerializedHandle::WriteHeader(sh.header(),
+                                              new_msg.get());
+  new_msg->WriteBool(true);  // valid == true
+  // The file descriptor is at index 0. There's only ever one file
+  // descriptor provided for this message type, so this will be correct.
+  new_msg->WriteInt(0);
+
+  // Write empty file tokens.
+  new_msg->WriteUInt64(0);  // token_lo
+  new_msg->WriteUInt64(0);  // token_hi
+  return new_msg.Pass();
+}
+
+void NaClIPCAdapter::OnFileTokenResolved(const IPC::Message& orig_msg,
+                                         IPC::PlatformFileForTransit ipc_fd,
+                                         base::FilePath file_path) {
+  // The path where an invalid ipc_fd is returned isn't currently
+  // covered by any tests.
+  if (ipc_fd == IPC::InvalidPlatformFileForTransit()) {
+    // The file token didn't resolve successfully, so we give the
+    // original FD to the client without making a validated NaClDesc.
+    // However, we must rewrite the message to clear the file tokens.
+    PickleIterator iter = IPC::SyncMessage::GetDataIterator(&orig_msg);
+    ppapi::proxy::SerializedHandle sh;
+
+    // We know that this can be read safely; see the original read in
+    // OnMessageReceived().
+    CHECK(IPC::ReadParam(&orig_msg, &iter, &sh));
+    scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
+
+    scoped_ptr<NaClDescWrapper> desc_wrapper(new NaClDescWrapper(
+        NaClDescIoDescFromHandleAllocCtor(
+#if defined(OS_WIN)
+            sh.descriptor(),
+#else
+            sh.descriptor().fd,
+#endif
+            NACL_ABI_O_RDONLY)));
+
+    scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
+    rewritten_msg->AddDescriptor(desc_wrapper.release());
+    {
+      base::AutoLock lock(lock_);
+      SaveMessage(*new_msg, rewritten_msg.get());
+      cond_var_.Signal();
+    }
+    return;
+  }
+
+  // The file token was sucessfully resolved.
+  std::string file_path_str = file_path.AsUTF8Unsafe();
+  base::PlatformFile handle =
+      IPC::PlatformFileForTransitToPlatformFile(ipc_fd);
+  // The file token was resolved successfully, so we populate the new
+  // NaClDesc with that information.
+  char* alloc_file_path = static_cast<char*>(
+      malloc(file_path_str.length() + 1));
+  strcpy(alloc_file_path, file_path_str.c_str());
+  scoped_ptr<NaClDescWrapper> desc_wrapper(new NaClDescWrapper(
+      NaClDescIoDescFromHandleAllocCtor(handle, NACL_ABI_O_RDONLY)));
+
+  // Mark the desc as OK for mapping as executable memory.
+  NaClDescMarkSafeForMmap(desc_wrapper->desc());
+
+  // Provide metadata for validation.
+  struct NaClRichFileInfo info;
+  NaClRichFileInfoCtor(&info);
+  info.known_file = 1;
+  info.file_path = alloc_file_path;  // Takes ownership.
+  info.file_path_length =
+      static_cast<uint32_t>(file_path_str.length());
+  NaClSetFileOriginInfo(desc_wrapper->desc(), &info);
+  NaClRichFileInfoDtor(&info);
+
+  ppapi::proxy::SerializedHandle sh;
+  sh.set_file_handle(ipc_fd, PP_FILEOPENFLAG_READ, 0);
+  scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
+  scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
+
+  rewritten_msg->AddDescriptor(desc_wrapper.release());
+  {
+    base::AutoLock lock(lock_);
+    SaveMessage(*new_msg, rewritten_msg.get());
+    cond_var_.Signal();
+  }
 }
 
 void NaClIPCAdapter::OnChannelConnected(int32 peer_pid) {

@@ -48,6 +48,16 @@ class NaClListener : public IPC::Listener {
 
   void* crash_info_shmem_memory() const { return crash_info_shmem_->memory(); }
 
+  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
+      ResolveFileTokenCallback;
+  void ResolveFileToken(uint64_t token_lo,
+                        uint64_t token_hi,
+                        ResolveFileTokenCallback cb);
+  void OnFileTokenResolved(uint64_t token_lo,
+                           uint64_t token_hi,
+                           IPC::PlatformFileForTransit ipc_fd,
+                           base::FilePath file_path);
+
  private:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -77,6 +87,8 @@ class NaClListener : public IPC::Listener {
   scoped_ptr<base::SharedMemory> crash_info_shmem_;
 
   scoped_refptr<NaClTrustedListener> trusted_listener_;
+
+  ResolveFileTokenCallback resolved_cb_;
 
   // Used to identify what thread we're on.
   base::MessageLoop* main_loop_;

@@ -53,9 +53,12 @@ void WriteHandle(int handle_index,
                  IPC::Message* msg) {
   SerializedHandle::WriteHeader(handle.header(), msg);
 
-  // Now write the handle itself in POSIX style.
-  msg->WriteBool(true);  // valid == true
-  msg->WriteInt(handle_index);
+  if (handle.type() != SerializedHandle::INVALID) {
+    // Now write the handle itself in POSIX style.
+    // See ParamTraits<FileDescriptor>::Read for where these values are read.
+    msg->WriteBool(true);  // valid == true
+    msg->WriteInt(handle_index);
+  }
 }
 
 // Define overloads for each kind of message parameter that requires special
@@ -318,6 +321,7 @@ bool NaClMessageScanner::ScanMessage(
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
     CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)
+    CASE_FOR_REPLY(PpapiHostMsg_OpenResource)
     CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_Create)
     CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer)
     CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateSimple)

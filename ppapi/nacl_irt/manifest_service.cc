@@ -80,18 +80,42 @@ void ManifestService::StartupInitializationComplete() {
 }
 
 bool ManifestService::OpenResource(const char* file, int* fd) {
+  // We currently restrict to only allow one concurrent open_resource() call
+  // per plugin. This could be fixed by doing a token lookup with
+  // NaClProcessMsg_ResolveFileTokenAsyncReply instead of using a
+  // global inside components/nacl/loader/nacl_listener.cc
+  base::AutoLock lock(open_resource_lock_);
+
   // OpenResource will return INVALID SerializedHandle, if it is not supported.
   // Specifically, PNaCl doesn't support open resource.
   ppapi::proxy::SerializedHandle ipc_fd;
+
+  // File tokens are ignored here, but needed when the message is processed
+  // inside NaClIPCAdapter.
+  uint64_t file_token_lo;
+  uint64_t file_token_hi;
   if (!filter_->Send(new PpapiHostMsg_OpenResource(
-          std::string(kFilePrefix) + file, &ipc_fd)) ||
-      !ipc_fd.is_file()) {
+          std::string(kFilePrefix) + file,
+          &ipc_fd,
+          &file_token_lo,
+          &file_token_hi))) {
     LOG(ERROR) << "ManifestService::OpenResource failed:" << file;
     *fd = -1;
     return false;
   }
 
-  *fd = ipc_fd.descriptor().fd;
+  // File tokens are used internally by NaClIPCAdapter and should have
+  // been cleared from the message when it is received here.
+  CHECK(file_token_lo == 0);
+  CHECK(file_token_hi == 0);
+
+  // Copy the file if we received a valid file descriptor. Otherwise, if we got
+  // a reply, the file doesn't exist, so provide an fd of -1.
+  // See IrtOpenResource() for how this function's result is interpreted.
+  if (ipc_fd.is_file())
+    *fd = ipc_fd.descriptor().fd;
+  else
+    *fd = -1;
   return true;
 }
 
@@ -105,7 +129,6 @@ int IrtOpenResource(const char* file, int* fd) {
       !manifest_service->OpenResource(file, fd)) {
     return NACL_ABI_EIO;
   }
-
   return (*fd == -1) ? NACL_ABI_ENOENT : 0;
 }
 

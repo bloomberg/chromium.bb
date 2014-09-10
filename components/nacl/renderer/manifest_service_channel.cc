@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace nacl {
@@ -29,6 +31,7 @@ ManifestServiceChannel::ManifestServiceChannel(
           content::RenderThread::Get()->GetIOMessageLoopProxy(),
           true,
           waitable_event)),
+      peer_pid_(base::kNullProcessId),
       weak_ptr_factory_(this) {
 }
 
@@ -54,6 +57,7 @@ bool ManifestServiceChannel::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ManifestServiceChannel::OnChannelConnected(int32 peer_pid) {
+  peer_pid_ = peer_pid;
   if (!connected_callback_.is_null())
     base::ResetAndReturn(&connected_callback_).Run(PP_OK);
 }
@@ -69,31 +73,38 @@ void ManifestServiceChannel::OnStartupInitializationComplete() {
 
 void ManifestServiceChannel::OnOpenResource(
     const std::string& key, IPC::Message* reply) {
-  // Currently this is used only for non-SFI mode, which is not supported on
-  // windows.
-#if !defined(OS_WIN)
   delegate_->OpenResource(
       key,
       base::Bind(&ManifestServiceChannel::DidOpenResource,
                  weak_ptr_factory_.GetWeakPtr(), reply));
-#else
-  PpapiHostMsg_OpenResource::WriteReplyParams(
-      reply, ppapi::proxy::SerializedHandle());
-  Send(reply);
-#endif
 }
 
-#if !defined(OS_WIN)
-void ManifestServiceChannel::DidOpenResource(
-    IPC::Message* reply, base::File file) {
-  // Here, PlatformFileForTransit is alias of base::FileDescriptor.
-  PpapiHostMsg_OpenResource::WriteReplyParams(
-      reply,
-      ppapi::proxy::SerializedHandle(
-          ppapi::proxy::SerializedHandle::FILE,
-          base::FileDescriptor(file.Pass())));
+void ManifestServiceChannel::DidOpenResource(IPC::Message* reply,
+                                             base::File file,
+                                             uint64_t token_lo,
+                                             uint64_t token_hi) {
+  ppapi::proxy::SerializedHandle handle;
+  if (file.IsValid()) {
+    IPC::PlatformFileForTransit file_for_transit;
+#if defined(OS_WIN)
+    bool ok = content::BrokerDuplicateHandle(
+        file.TakePlatformFile(),
+        peer_pid_,
+        &file_for_transit,
+        0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
+        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+    if (ok)
+      handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);
+#else
+    file_for_transit = base::FileDescriptor(file.Pass());
+    handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);
+#endif
+  }
+  PpapiHostMsg_OpenResource::WriteReplyParams(reply,
+                                              handle,
+                                              token_lo,
+                                              token_hi);
   Send(reply);
 }
-#endif
 
 }  // namespace nacl

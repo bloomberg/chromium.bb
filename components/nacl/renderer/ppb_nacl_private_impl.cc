@@ -203,7 +203,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     if (!ManifestResolveKey(pp_instance_, false, key, &url, &pnacl_options)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback, base::Passed(base::File())));
+          base::Bind(callback, base::Passed(base::File()), 0, 0));
       return;
     }
 
@@ -224,10 +224,12 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
       int32_t pp_error,
       const PP_NaClFileInfo& file_info) {
     if (pp_error != PP_OK) {
-      callback.Run(base::File());
+      callback.Run(base::File(), 0, 0);
       return;
     }
-    callback.Run(base::File(file_info.handle));
+    callback.Run(base::File(file_info.handle),
+                 file_info.token_lo,
+                 file_info.token_hi);
   }
 
   PP_Instance pp_instance_;
@@ -421,13 +423,11 @@ void LaunchSelLdr(PP_Instance instance,
 
   // Create the manifest service handle as well.
   // For security hardening, disable the IPCs for open_resource() when they
-  // aren't needed.  PNaCl doesn't expose open_resource(), and the new
-  // open_resource() IPCs are currently only used for Non-SFI NaCl so far,
-  // not SFI NaCl. Note that enable_dyncode_syscalls is true if and only if
-  // the plugin is a non-PNaCl plugin.
+  // aren't needed.  PNaCl doesn't expose open_resource().  Note that
+  // enable_dyncode_syscalls is true if and only if the plugin is a non-PNaCl
+  // plugin.
   if (load_manager &&
       enable_dyncode_syscalls &&
-      uses_nonsfi_mode &&
       IsValidChannelHandle(
           launch_result.manifest_service_ipc_channel_handle)) {
     scoped_ptr<ManifestServiceChannel> manifest_service_channel(

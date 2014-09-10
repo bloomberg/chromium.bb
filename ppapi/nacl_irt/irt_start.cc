@@ -19,7 +19,7 @@ void nacl_irt_start(uint32_t* info) {
   ppapi::SetIPCFileDescriptors(
       NACL_CHROME_DESC_BASE,
       NACL_CHROME_DESC_BASE + 1,
-      -1);  // Currently manifest service is disabled on NaCl in SFI mode.
+      NACL_CHROME_DESC_BASE + 2);
   ppapi::StartUpPlugin();
 
   nacl_irt_enter_user_code(info, chrome_irt_query);

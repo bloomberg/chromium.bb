@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -20,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/proxy/nacl_message_scanner.h"
 
@@ -112,6 +114,22 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
+  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
+      ResolveFileTokenReplyCallback;
+
+  typedef base::Callback<void(uint64_t,  // file_token_lo
+                              uint64_t,  // file_token_hi
+                              ResolveFileTokenReplyCallback)>
+      ResolveFileTokenCallback;
+
+  // Sets a callback to be invoked for resolving file tokens received from the
+  // renderer. When the file token is resolved, the
+  // ResolveFileTokenReplyCallback passed inside the ResolveFileTokenCallback
+  // will be invoked.
+  void set_resolve_file_token_callback(ResolveFileTokenCallback cb) {
+    resolve_file_token_cb_ = cb;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<NaClIPCAdapter>;
 
@@ -158,6 +176,12 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   virtual ~NaClIPCAdapter();
 
+  void OnFileTokenResolved(const IPC::Message& orig_msg,
+                           IPC::PlatformFileForTransit ipc_fd,
+                           base::FilePath file_path);
+
+  bool RewriteMessage(const IPC::Message& msg, uint32_t type);
+
   // Returns 0 if nothing is waiting.
   int LockedReceive(NaClImcTypedMsgHdr* msg);
 
@@ -182,6 +206,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   base::ConditionVariable cond_var_;
 
   scoped_refptr<base::TaskRunner> task_runner_;
+
+  ResolveFileTokenCallback resolve_file_token_cb_;
 
   // To be accessed inside of lock_ only.
   LockedData locked_data_;

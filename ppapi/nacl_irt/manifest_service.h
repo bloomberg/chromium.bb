@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -35,6 +36,8 @@ class ManifestService {
  private:
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_refptr<IPC::SyncMessageFilter> filter_;
+
+  base::Lock open_resource_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestService);
 };

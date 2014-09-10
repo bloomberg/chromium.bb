@@ -136,10 +136,11 @@ void DebugStubPortSelectedHandler(uint16_t port) {
 // the given message_loop_proxy runs.
 // Also, creates and sets the corresponding NaClDesc to the given nap with
 // the FD #.
-void SetUpIPCAdapter(IPC::ChannelHandle* handle,
-                     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-                     struct NaClApp* nap,
-                     int nacl_fd) {
+scoped_refptr<NaClIPCAdapter> SetUpIPCAdapter(
+    IPC::ChannelHandle* handle,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    struct NaClApp* nap,
+    int nacl_fd) {
   scoped_refptr<NaClIPCAdapter> ipc_adapter(
       new NaClIPCAdapter(*handle, message_loop_proxy.get()));
   ipc_adapter->ConnectChannel();
@@ -151,6 +152,7 @@ void SetUpIPCAdapter(IPC::ChannelHandle* handle,
   // Pass a NaClDesc to the untrusted side. This will hold a ref to the
   // NaClIPCAdapter.
   NaClAppSetDesc(nap, nacl_fd, ipc_adapter->MakeNaClDesc());
+  return ipc_adapter;
 }
 
 }  // namespace
@@ -181,6 +183,9 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     }
   }
 
+  // This is the "old" code path for resolving file tokens. It's only
+  // used for resolving the main nexe.
+  // TODO(teravest): Remove this.
   virtual bool ResolveFileToken(struct NaClFileToken* file_token,
                                 int32* fd, std::string* path) OVERRIDE {
     *fd = -1;
@@ -251,6 +256,34 @@ bool NaClListener::Send(IPC::Message* msg) {
   }
 }
 
+// The NaClProcessMsg_ResolveFileTokenAsyncReply message must be
+// processed in a MessageFilter so it can be handled on the IO thread.
+// The main thread used by NaClListener is busy in
+// NaClChromeMainAppStart(), so it can't be used for servicing messages.
+class FileTokenMessageFilter : public IPC::MessageFilter {
+ public:
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(FileTokenMessageFilter, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileTokenAsyncReply,
+                          OnResolveFileTokenAsyncReply)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnResolveFileTokenAsyncReply(
+      uint64_t token_lo,
+      uint64_t token_hi,
+      IPC::PlatformFileForTransit ipc_fd,
+      base::FilePath file_path) {
+    CHECK(g_listener);
+    g_listener->OnFileTokenResolved(token_lo, token_hi, ipc_fd, file_path);
+  }
+ private:
+  virtual ~FileTokenMessageFilter() { }
+};
+
 void NaClListener::Listen() {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -259,6 +292,7 @@ void NaClListener::Listen() {
       this, io_thread_.message_loop_proxy().get(), &shutdown_event_);
   filter_ = new IPC::SyncMessageFilter(&shutdown_event_);
   channel_->AddFilter(filter_.get());
+  channel_->AddFilter(new FileTokenMessageFilter());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
   main_loop_ = base::MessageLoop::current();
   main_loop_->Run();
@@ -298,10 +332,12 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   IPC::ChannelHandle browser_handle;
   IPC::ChannelHandle ppapi_renderer_handle;
+  IPC::ChannelHandle manifest_service_handle;
 
   if (params.enable_ipc_proxy) {
     browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
     ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
+    manifest_service_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
 
     // Create the PPAPI IPC channels between the NaCl IRT and the host
     // (browser/renderer) processes. The IRT uses these channels to
@@ -310,6 +346,14 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
                     nap, NACL_CHROME_DESC_BASE);
     SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
                     nap, NACL_CHROME_DESC_BASE + 1);
+
+    scoped_refptr<NaClIPCAdapter> manifest_ipc_adapter =
+        SetUpIPCAdapter(&manifest_service_handle,
+                        io_thread_.message_loop_proxy(),
+                        nap,
+                        NACL_CHROME_DESC_BASE + 2);
+    manifest_ipc_adapter->set_resolve_file_token_callback(
+        base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)));
   }
 
   trusted_listener_ = new NaClTrustedListener(
@@ -320,7 +364,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
           browser_handle,
           ppapi_renderer_handle,
           trusted_listener_->TakeClientChannelHandle(),
-          IPC::ChannelHandle())))
+          manifest_service_handle)))
     LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   std::vector<nacl::FileDescriptor> handles = params.handles;
@@ -426,4 +470,24 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   // Report the plugin's exit status if the application started successfully.
   trusted_listener_->Send(new NaClRendererMsg_ReportExitStatus(exit_status));
   NaClExit(exit_status);
+}
+
+void NaClListener::ResolveFileToken(
+    uint64_t token_lo,
+    uint64_t token_hi,
+    base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)> cb) {
+  if (!Send(new NaClProcessMsg_ResolveFileTokenAsync(token_lo, token_hi))) {
+    cb.Run(IPC::PlatformFileForTransit(), base::FilePath());
+    return;
+  }
+  resolved_cb_ = cb;
+}
+
+void NaClListener::OnFileTokenResolved(
+    uint64_t token_lo,
+    uint64_t token_hi,
+    IPC::PlatformFileForTransit ipc_fd,
+    base::FilePath file_path) {
+  resolved_cb_.Run(ipc_fd, file_path);
+  resolved_cb_.Reset();
 }

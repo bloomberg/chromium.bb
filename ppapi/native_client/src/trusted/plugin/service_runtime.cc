@@ -105,6 +105,16 @@ void PluginReverseInterface::StartupInitializationComplete() {
 // GetPOSIXFileDesc.
 bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
                                                struct NaClFileInfo* info) {
+  // This method should only ever be called from the PNaCl translator, as the
+  // IRT is not available there.
+  // TODO(teravest): Remove support for OpenManifestEntry here once
+  // crbug.com/302078 is resolved.
+  if (service_runtime_->main_service_runtime()) {
+    NaClLog(LOG_ERROR,
+            "OpenManifestEntry should only be used by PNaCl translator.\n");
+    return false;
+  }
+
   bool op_complete = false;  // NB: mu_ and cv_ also controls access to this!
   // The to_open object is owned by the weak ref callback. Because this function
   // waits for the callback to finish, the to_open object will be deallocated on
