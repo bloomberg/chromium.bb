@@ -201,12 +201,38 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
 void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   Gesture copy = gs;
   switch (copy.type) {
-    case kGestureTypeMove:
+    case kGestureTypeMove: {
+      int original_rel_x =
+          copy.details.move.ordinal_dx * mouse_cpi_.val_ / 25.4;
+      int original_rel_y =
+          copy.details.move.ordinal_dy * mouse_cpi_.val_ / 25.4;
       copy.details.move.dx *= screen_x_scale_;
       copy.details.move.dy *= screen_y_scale_;
       copy.details.move.ordinal_dx *= screen_x_scale_;
       copy.details.move.ordinal_dy *= screen_y_scale_;
+      // Special case of motion: if a mouse move of 1 device unit
+      // (rel_[xy] == 1) would move the cursor on the screen > 1
+      // pixel, force it to just one pixel. This prevents low-DPI mice
+      // from jumping 2 pixels at a time when doing slow moves.
+      // Note, we use 1 / 1.2 = 0.8333 instead of 1 for the number of
+      // screen pixels, as external monitors get a 20% distance boost.
+      // Mice are most commonly used w/ external displays.
+      if (device_mouse_.val_ &&
+          ((original_rel_x == 0) != (original_rel_y == 0))) {
+        const double kMinPixels = 1.0 / 1.2;
+        if (fabs(copy.details.move.dx) > kMinPixels &&
+            abs(original_rel_x) == 1) {
+          copy.details.move.dx = copy.details.move.ordinal_dx =
+              copy.details.move.dx > 0.0 ? kMinPixels : -kMinPixels;
+        }
+        if (fabs(copy.details.move.dy) > kMinPixels &&
+            abs(original_rel_y) == 1) {
+          copy.details.move.dy = copy.details.move.ordinal_dy =
+              copy.details.move.dy > 0.0 ? kMinPixels : -kMinPixels;
+        }
+      }
       break;
+    }
     case kGestureTypeScroll:
       if (devclass_ != GESTURES_DEVCLASS_MOUSE) {
         copy.details.scroll.dx *= screen_x_scale_;
