@@ -305,6 +305,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAOnclick) {
   RunTest(FILE_PATH_LITERAL("a-onclick.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaActivedescendant) {
+  RunTest(FILE_PATH_LITERAL("aria-activedescendant.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaAlert) {
   RunTest(FILE_PATH_LITERAL("aria-alert.html"));
 }
@@ -395,13 +400,23 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-readonly.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaSpinButton) {
+  RunTest(FILE_PATH_LITERAL("aria-spinbutton.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTimer) {
   RunTest(FILE_PATH_LITERAL("aria-timer.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaToggleButton) {
+  RunTest(FILE_PATH_LITERAL("aria-togglebutton.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaToolbar) {
-  RunTest(FILE_PATH_LITERAL("toolbar.html"));
+  RunTest(FILE_PATH_LITERAL("aria-toolbar.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
@@ -602,10 +617,6 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpan) {
   RunTest(FILE_PATH_LITERAL("span.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpinButton) {
-  RunTest(FILE_PATH_LITERAL("spinbutton.html"));
-}
-
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySub) {
   RunTest(FILE_PATH_LITERAL("sub.html"));
 }
@@ -632,22 +643,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTransition) {
   RunTest(FILE_PATH_LITERAL("transition.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityToggleButton) {
-  RunTest(FILE_PATH_LITERAL("togglebutton.html"));
-}
-
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityUl) {
   RunTest(FILE_PATH_LITERAL("ul.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityWbr) {
   RunTest(FILE_PATH_LITERAL("wbr.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaActivedescendant) {
-  RunTest(FILE_PATH_LITERAL("aria-activedescendant.html"));
 }
 
 }  // namespace content
