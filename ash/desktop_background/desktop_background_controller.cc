@@ -19,7 +19,7 @@
 #include "ash/wm/root_window_layout_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"

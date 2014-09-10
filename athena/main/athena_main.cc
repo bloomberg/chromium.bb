@@ -12,7 +12,7 @@
 #include "athena/main/public/athena_launcher.h"
 #include "athena/screen/public/screen_manager.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/app/content_main.h"
@@ -38,7 +38,7 @@ namespace {
 const char kDefaultAppPath[] =
     "chrome/common/extensions/docs/examples/apps/calculator/app";
 
-}  // namespace athena
+}  // namespace
 
 class AthenaDesktopController : public extensions::DesktopController {
  public:

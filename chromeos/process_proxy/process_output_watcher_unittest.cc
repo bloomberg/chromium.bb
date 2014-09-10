@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -191,7 +191,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_OutputWatcher) {
   test_cases.push_back(TestCase("testing error2\n", false));
 
   RunTest(test_cases);
-};
+}
 
 // http://crbug.com/396496
 TEST_F(ProcessOutputWatcherTest, DISABLED_SplitUTF8Character) {
@@ -299,7 +299,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_FourByteUTF8) {
   test_cases.push_back(TestCase("\xa2", false, "\xf0\xa4\xad\xa2"));
 
   RunTest(test_cases);
-};
+}
 
 // Verifies that sending '\0' generates PROCESS_OUTPUT_TYPE_OUT event and does
 // not terminate output watcher.
@@ -313,6 +313,6 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_SendNull) {
   test_cases.push_back(TestCase("a", true));
 
   RunTest(test_cases);
-};
+}
 
 }  // namespace chromeos

@@ -5,7 +5,7 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"

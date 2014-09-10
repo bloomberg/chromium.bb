@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
@@ -43,7 +43,7 @@ ProcessProxy::ProcessProxy(): process_launched_(false),
   // Set pipes to initial, invalid value so we can easily know if a pipe was
   // opened by us.
   ClearAllFdPairs();
-};
+}
 
 bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
   if (process_launched_)

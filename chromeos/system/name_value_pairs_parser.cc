@@ -5,8 +5,8 @@
 #include "chromeos/system/name_value_pairs_parser.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
@@ -19,7 +19,7 @@ namespace system {
 
 namespace {
 
-bool GetToolOutput(int argc, const char* argv[], std::string& output) {
+bool GetToolOutput(int argc, const char* argv[], std::string* output) {
   DCHECK_GE(argc, 1);
 
   if (!base::PathExists(base::FilePath(argv[0]))) {
@@ -30,7 +30,7 @@ bool GetToolOutput(int argc, const char* argv[], std::string& output) {
   std::vector<std::string> args;
   for (int argn = 0; argn < argc; ++argn)
     args.push_back(argv[argn]);
-  if (!base::GetAppOutput(args, &output)) {
+  if (!base::GetAppOutput(args, output)) {
     LOG(WARNING) << "Error executing " << argv[0];
     return false;
   }
@@ -109,7 +109,7 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
                                                   const char* argv[],
                                                   const std::string& key) {
   std::string output_string;
-  if (!GetToolOutput(argc, argv, output_string))
+  if (!GetToolOutput(argc, argv, &output_string))
     return false;
 
   base::TrimWhitespaceASCII(output_string, base::TRIM_ALL, &output_string);
@@ -138,7 +138,7 @@ bool NameValuePairsParser::ParseNameValuePairsFromTool(
     const std::string& delim,
     const std::string& comment_delim) {
   std::string output_string;
-  if (!GetToolOutput(argc, argv, output_string))
+  if (!GetToolOutput(argc, argv, &output_string))
     return false;
 
   return ParseNameValuePairsWithComments(

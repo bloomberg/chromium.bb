@@ -5,8 +5,8 @@
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/orientation_controller.h"
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path_watcher.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 
