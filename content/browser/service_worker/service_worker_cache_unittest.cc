@@ -78,12 +78,6 @@ class ServiceWorkerCacheTest : public testing::Test {
     CreateBackend();
   }
 
-  virtual void TearDown() OVERRIDE {
-    base::RunLoop().RunUntilIdle();
-    cache_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
-
   void CreateRequests(ChromeBlobStorageContext* blob_storage_context) {
     std::map<std::string, std::string> headers;
     headers.insert(std::make_pair("a", "a"));
@@ -169,27 +163,6 @@ class ServiceWorkerCacheTest : public testing::Test {
     return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
   }
 
-  bool Keys() {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-
-    cache_->Keys(base::Bind(&ServiceWorkerCacheTest::RequestsCallback,
-                            base::Unretained(this),
-                            base::Unretained(loop.get())));
-    loop->Run();
-
-    return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
-  }
-
-  void RequestsCallback(base::RunLoop* run_loop,
-                        ServiceWorkerCache::ErrorType error,
-                        scoped_ptr<ServiceWorkerCache::Requests> requests) {
-    callback_error_ = error;
-    callback_strings_.clear();
-    for (size_t i = 0u; i < requests->size(); ++i)
-      callback_strings_.push_back(requests->at(i).url.spec());
-    run_loop->Quit();
-  }
-
   void ErrorTypeCallback(base::RunLoop* run_loop,
                          ServiceWorkerCache::ErrorType error) {
     callback_error_ = error;
@@ -219,21 +192,6 @@ class ServiceWorkerCacheTest : public testing::Test {
       output->append(items[i].bytes(), items[i].length());
   }
 
-  bool VerifyKeys(const std::vector<std::string>& expected_keys) {
-    if (expected_keys.size() != callback_strings_.size())
-      return false;
-
-    std::set<std::string> found_set;
-    for (int i = 0, max = callback_strings_.size(); i < max; ++i)
-      found_set.insert(callback_strings_[i]);
-
-    for (int i = 0, max = expected_keys.size(); i < max; ++i) {
-      if (found_set.find(expected_keys[i]) == found_set.end())
-        return false;
-    }
-    return true;
-  }
-
   virtual bool MemoryOnly() { return false; }
 
  protected:
@@ -255,7 +213,6 @@ class ServiceWorkerCacheTest : public testing::Test {
   ServiceWorkerCache::ErrorType callback_error_;
   scoped_ptr<ServiceWorkerResponse> callback_response_;
   scoped_ptr<storage::BlobDataHandle> callback_response_data_;
-  std::vector<std::string> callback_strings_;
 };
 
 class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
@@ -286,65 +243,6 @@ TEST_P(ServiceWorkerCacheTestP, PutBodyDropBlobRef) {
   EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
 }
 
-TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Match(no_body_request_.get()));
-  EXPECT_EQ(200, callback_response_->status_code);
-  EXPECT_STREQ("OK", callback_response_->status_text.c_str());
-  EXPECT_STREQ("http://example.com/no_body.html",
-               callback_response_->url.spec().c_str());
-}
-
-TEST_P(ServiceWorkerCacheTestP, MatchBody) {
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Match(body_request_.get()));
-  EXPECT_EQ(200, callback_response_->status_code);
-  EXPECT_STREQ("OK", callback_response_->status_text.c_str());
-  EXPECT_STREQ("http://example.com/body.html",
-               callback_response_->url.spec().c_str());
-  std::string response_body;
-  CopyBody(callback_response_data_.get(), &response_body);
-  EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
-}
-
-TEST_P(ServiceWorkerCacheTestP, EmptyKeys) {
-  EXPECT_TRUE(Keys());
-  EXPECT_EQ(0u, callback_strings_.size());
-}
-
-TEST_P(ServiceWorkerCacheTestP, TwoKeys) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Keys());
-  EXPECT_EQ(2u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_->url.spec());
-  expected_keys.push_back(body_request_->url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
-}
-
-TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Keys());
-  EXPECT_EQ(2u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_->url.spec());
-  expected_keys.push_back(body_request_->url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
-
-  EXPECT_TRUE(Delete(body_request_.get()));
-  EXPECT_TRUE(Keys());
-  EXPECT_EQ(1u, callback_strings_.size());
-  std::vector<std::string> expected_key;
-  expected_key.push_back(no_body_request_->url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_key));
-}
-
-// TODO(jkarlin): Once SimpleCache is working bug-free on Windows reenable these
-// tests. In the meanwhile we know that Windows operations will be a little
-// flaky (though not crashy). See https://crbug.com/409109
-#ifndef OS_WIN
 TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
   EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
   EXPECT_TRUE(Match(no_body_request_.get()));
@@ -367,6 +265,27 @@ TEST_P(ServiceWorkerCacheTestP, DeleteBody) {
   EXPECT_TRUE(Delete(body_request_.get()));
 }
 
+TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
+  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
+  EXPECT_TRUE(Match(no_body_request_.get()));
+  EXPECT_EQ(200, callback_response_->status_code);
+  EXPECT_STREQ("OK", callback_response_->status_text.c_str());
+  EXPECT_STREQ("http://example.com/no_body.html",
+               callback_response_->url.spec().c_str());
+}
+
+TEST_P(ServiceWorkerCacheTestP, MatchBody) {
+  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
+  EXPECT_TRUE(Match(body_request_.get()));
+  EXPECT_EQ(200, callback_response_->status_code);
+  EXPECT_STREQ("OK", callback_response_->status_text.c_str());
+  EXPECT_STREQ("http://example.com/body.html",
+               callback_response_->url.spec().c_str());
+  std::string response_body;
+  CopyBody(callback_response_data_.get(), &response_body);
+  EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
+}
+
 TEST_P(ServiceWorkerCacheTestP, QuickStressNoBody) {
   for (int i = 0; i < 100; ++i) {
     EXPECT_FALSE(Match(no_body_request_.get()));
@@ -384,7 +303,6 @@ TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
     ASSERT_TRUE(Delete(body_request_.get()));
   }
 }
-#endif  // OS_WIN
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,
                         ServiceWorkerCacheTestP,
