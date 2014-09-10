@@ -467,8 +467,11 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
     }
 
+    /*
     @SmallTest
     @Feature({"TextInput", "Main"})
+    */
+    @DisabledTest
     public void testKeyCodesWhileSwipingText() throws Throwable {
         DOMUtils.focusNode(mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(true);
