@@ -1,0 +1,82 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Canvas Test</title>
+</head>
+
+<body>
+<p>On success, two same text string with equal width will be rendered.</p>
+<canvas id="myCanvas" width="500px" height="100px" style="border:1px solid #c3c3c3;">
+Your browser does not support the canvas element.
+</canvas>
+<div id="console"></div>
+
+<script type="text/javascript">
+function compareImageData(img1,img2)
+{
+    if(img1.data.length != img2.data.length)
+        return false;
+
+    for(var i = 0; i < img1.data.length; ++i){
+        if(img1.data[i] != img2.data[i])
+            return false;
+    }
+    return true;   
+}
+
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+
+var fontFamily = "Arial, san-serif";
+var fontSize = 20;
+ctx.font = fontSize + "px " + fontFamily;
+
+// This will test both Complex and Simple code path
+var text1 = "abgfMQO";
+var text2 = "العربية";
+var text3 = "हिन्दी";
+var textCombined = "abgfMQOالعربيةहिन्दी";
+var combinedTextXCo = 10;
+var combinedTextYCo = 50;
+
+var xCo = 10;
+var yCo = 80;
+var originalXCo = xCo;
+
+var textWidthLatin = ctx.measureText(text1).width;
+var textWidthArabic = ctx.measureText(text2).width;
+var textWidthHindi = ctx.measureText(text3).width;
+var textCombinedWidth = ctx.measureText(textCombined).width;
+var finalWidth = textWidthLatin+textWidthHindi+textWidthArabic;
+
+// draw combined string in single call, in this width returned from drawText
+// will be used to calculate width of string and next x-coordinate position
+ctx.fillStyle = "black";
+ctx.fillText(textCombined, combinedTextXCo, combinedTextYCo);
+ctx.fillText(" - width: " + textCombinedWidth, combinedTextXCo + textCombinedWidth, combinedTextYCo);
+
+// draw individual strings in different calls using measureString call to get width of string
+// and next x-coordinate position
+ctx.fillText(text1, xCo, yCo);
+xCo += textWidthLatin;
+ctx.fillText(text2, xCo, yCo);
+xCo += textWidthHindi;
+ctx.fillText(text3, xCo, yCo);
+xCo += textWidthArabic;
+ctx.fillText(" - width: " + finalWidth, xCo, yCo);
+
+// get Image data for strings rendered on Canvas
+var imgDataCombinedText = ctx.getImageData(10,combinedTextXCo-fontSize, textCombinedWidth,fontSize);
+var imgData = ctx.getImageData(10, originalXCo-fontSize, finalWidth,fontSize);
+
+if (compareImageData(imgDataCombinedText, imgData))
+    document.getElementById("console").innerHTML = "TEST PASSED";
+else
+    document.getElementById("console").innerHTML = "TEST FAILED";
+
+</script>
+</body>
+</html>

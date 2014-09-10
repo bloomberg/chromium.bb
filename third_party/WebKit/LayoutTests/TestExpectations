@@ -1353,3 +1353,7 @@ crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.htm
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
 crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsManualRebaseline ]
+
+# Need rebaseline for new test case canvas-drawtext-width-return.html
+crbug.com/410706 fast/canvas/canvas-drawtext-width-return.html [ NeedsRebaseline ]
+crbug.com/410706 virtual/gpu/fast/canvas/canvas-drawtext-width-return.html [ NeedsRebaseline ]

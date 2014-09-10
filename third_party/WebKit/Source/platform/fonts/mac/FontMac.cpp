@@ -172,7 +172,7 @@ void Font::drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint&) con
     // FIXME: Add text blob support to FontMac.
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds) const
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds, float& advance) const
 {
     // FIXME: Add text blob support to FontMac.
     return nullptr;

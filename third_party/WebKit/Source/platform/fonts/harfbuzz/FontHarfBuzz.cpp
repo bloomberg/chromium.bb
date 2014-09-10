@@ -223,25 +223,25 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
     }
 }
 
-void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
+float Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
 {
     if (!runInfo.run.length())
-        return;
+        return 0;
 
     TextDrawingModeFlags textMode = gc->textDrawingMode();
     bool fill = textMode & TextModeFill;
     bool stroke = (textMode & TextModeStroke) && gc->hasStroke();
 
     if (!fill && !stroke)
-        return;
+        return 0;
 
     GlyphBuffer glyphBuffer;
     HarfBuzzShaper shaper(this, runInfo.run);
     shaper.setDrawRange(runInfo.from, runInfo.to);
     if (!shaper.shape(&glyphBuffer) || glyphBuffer.isEmpty())
-        return;
+        return 0;
     FloatPoint adjustedPoint = shaper.adjustStartPoint(point);
-    drawGlyphBuffer(gc, runInfo, glyphBuffer, adjustedPoint);
+    return drawGlyphBuffer(gc, runInfo, glyphBuffer, adjustedPoint);
 }
 
 void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -299,7 +299,7 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return shaper.selectionRect(point, height, from, to);
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds) const
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds, float& advance) const
 {
     // FIXME: Except for setupPaint, this is not specific to FontHarfBuzz.
     // FIXME: Also implement the more general full-positioning path.
@@ -345,6 +345,7 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
         }
     }
 
+    advance = x;
     return adoptRef(builder.build());
 }
 

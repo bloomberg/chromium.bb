@@ -103,24 +103,23 @@ void Font::update(PassRefPtrWillBeRawPtr<FontSelector> fontSelector) const
     m_fontFallbackList->invalidate(fontSelector);
 }
 
-void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
+float Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
     // font).
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
-        return;
+        return 0;
 
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
     if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = ComplexPath;
 
-    if (codePathToUse != ComplexPath) {
-        drawSimpleText(context, runInfo, point);
-    } else {
-        drawComplexText(context, runInfo, point);
-    }
+    if (codePathToUse != ComplexPath)
+        return drawSimpleText(context, runInfo, point);
+
+    return drawComplexText(context, runInfo, point);
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -644,7 +643,7 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
     return initialAdvance;
 }
 
-void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
+float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
 {
     // This glyph buffer holds our glyphs+advances+font data for each glyph.
     GlyphBuffer glyphBuffer;
@@ -652,9 +651,10 @@ void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runI
     ASSERT(!glyphBuffer.hasVerticalAdvances());
 
     if (glyphBuffer.isEmpty())
-        return;
+        return 0;
 
     TextBlobPtr textBlob;
+    float advance = 0;
     if (RuntimeEnabledFeatures::textBlobEnabled()) {
         // Using text blob causes a small difference in how gradients and
         // patterns are rendered.
@@ -662,16 +662,17 @@ void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runI
         if (!context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern()) {
             FloatRect blobBounds = runInfo.bounds;
             blobBounds.moveBy(-point);
-            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds);
+            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance);
         }
     }
 
     if (textBlob) {
         drawTextBlob(context, textBlob.get(), point.data());
-    } else {
-        FloatPoint startPoint(point.x() + initialAdvance, point.y());
-        drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
+        return advance;
     }
+
+    FloatPoint startPoint(point.x() + initialAdvance, point.y());
+    return drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
 }
 
 void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -685,7 +686,7 @@ void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRu
     drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
 }
 
-void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point) const
+float Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point) const
 {
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
@@ -696,6 +697,9 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
 #if ENABLE(SVG_FONTS)
     TextRun::RenderingContext* renderingContext = runInfo.run.renderingContext();
 #endif
+
+    float widthSoFar = 0;
+    widthSoFar += glyphBuffer.advanceAt(0).width();
     while (nextGlyph < glyphBuffer.size()) {
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
 
@@ -712,6 +716,7 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
             startPoint = nextPoint;
         }
         nextPoint += glyphBuffer.advanceAt(nextGlyph);
+        widthSoFar += glyphBuffer.advanceAt(nextGlyph).width();
         nextGlyph++;
     }
 
@@ -721,6 +726,7 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
     else
 #endif
         drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
+        return widthSoFar;
 }
 
 inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph glyph)
