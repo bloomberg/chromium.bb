@@ -164,6 +164,7 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/fast_source_line_resolver.h \
 	src/google_breakpad/processor/memory_region.h \
+        src/google_breakpad/processor/microdump_processor.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google_breakpad/processor/process_result.h \
@@ -206,6 +207,7 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/logging.cc \
 	src/processor/map_serializers-inl.h \
 	src/processor/map_serializers.h \
+        src/processor/microdump_processor.cc \
 	src/processor/minidump.cc \
 	src/processor/minidump_processor.cc \
 	src/processor/module_comparer.cc \
@@ -325,6 +327,7 @@ check_PROGRAMS += \
 	src/processor/exploitability_unittest \
 	src/processor/fast_source_line_resolver_unittest \
 	src/processor/map_serializers_unittest \
+        src/processor/microdump_processor_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/minidump_unittest \
 	src/processor/static_address_map_unittest \
@@ -758,6 +761,19 @@ src_processor_map_serializers_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/pathname_stripper.o \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+src_processor_microdump_processor_unittest_SOURCES = \
+  src/processor/microdump_processor_unittest.cc \
+  src/testing/gtest/src/gtest-all.cc \
+  src/testing/src/gmock-all.cc
+src_processor_microdump_processor_unittest_CPPFLAGS = \
+  -I$(top_srcdir)/src \
+  -I$(top_srcdir)/src/testing/include \
+  -I$(top_srcdir)/src/testing/gtest/include \
+  -I$(top_srcdir)/src/testing/gtest \
+  -I$(top_srcdir)/src/testing
+src_processor_microdump_processor_unittest_LDADD = \
+  $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
