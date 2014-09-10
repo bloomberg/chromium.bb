@@ -186,6 +186,12 @@ static TextStream& operator<<(TextStream& ts, const SVGMarkerUnitsType& markerUn
     return ts;
 }
 
+static TextStream& operator<<(TextStream& ts, const SVGMarkerOrientType& orientType)
+{
+    ts << SVGEnumerationToString<SVGMarkerOrientType>(orientType);
+    return ts;
+}
+
 TextStream& operator<<(TextStream& ts, const Color& c)
 {
     return ts << c.nameForRenderTreeAsText();
@@ -526,7 +532,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         ts << " [ref at " << marker->referencePoint() << "]";
         ts << " [angle=";
         if (marker->angle() == -1)
-            ts << "auto" << "]\n";
+            ts << marker->orientType() << "]\n";
         else
             ts << marker->angle() << "]\n";
     } else if (resource->resourceType() == PatternResourceType) {

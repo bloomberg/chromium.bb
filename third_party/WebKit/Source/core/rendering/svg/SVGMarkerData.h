@@ -47,9 +47,10 @@ struct MarkerPosition {
 
 class SVGMarkerData {
 public:
-    SVGMarkerData(Vector<MarkerPosition>& positions)
+    SVGMarkerData(Vector<MarkerPosition>& positions, bool autoStartReverse)
         : m_positions(positions)
         , m_elementIndex(0)
+        , m_autoStartReverse(autoStartReverse)
     {
     }
 
@@ -88,6 +89,8 @@ private:
 
         switch (type) {
         case StartMarker:
+            if (m_autoStartReverse)
+                outAngle += 180;
             return narrowPrecisionToFloat(outAngle);
         case MidMarker:
             // WK193015: Prevent bugs due to angles being non-continuous.
@@ -147,6 +150,7 @@ private:
     FloatPoint m_subpathStart;
     FloatPoint m_inslopePoints[2];
     FloatPoint m_outslopePoints[2];
+    bool m_autoStartReverse;
 };
 
 }

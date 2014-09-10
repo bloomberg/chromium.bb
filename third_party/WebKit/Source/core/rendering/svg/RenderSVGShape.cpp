@@ -452,7 +452,12 @@ void RenderSVGShape::processMarkerPositions()
 
     ASSERT(m_path);
 
-    SVGMarkerData markerData(m_markerPositions);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
+    ASSERT(resources);
+
+    RenderSVGResourceMarker* markerStart = resources->markerStart();
+
+    SVGMarkerData markerData(m_markerPositions, markerStart ? markerStart->orientType() == SVGMarkerOrientAutoStartReverse : false);
     m_path->apply(&markerData, SVGMarkerData::updateFromPathElement);
     markerData.pathIsDone();
 }

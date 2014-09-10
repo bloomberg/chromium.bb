@@ -33,9 +33,11 @@ class SVGAngleTearOff;
 enum SVGMarkerOrientType {
     SVGMarkerOrientUnknown = 0,
     SVGMarkerOrientAuto,
-    SVGMarkerOrientAngle
+    SVGMarkerOrientAngle,
+    SVGMarkerOrientAutoStartReverse
 };
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerOrientType>();
+template<> unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
 
 class SVGMarkerOrientEnumeration : public SVGEnumeration<SVGMarkerOrientType> {
 public:

@@ -57,6 +57,7 @@ public:
     FloatPoint referencePoint() const;
     float angle() const;
     SVGMarkerUnitsType markerUnits() const { return toSVGMarkerElement(element())->markerUnits()->currentValue()->enumValue(); }
+    SVGMarkerOrientType orientType() const { return toSVGMarkerElement(element())->orientType()->currentValue()->enumValue(); }
 
     virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
