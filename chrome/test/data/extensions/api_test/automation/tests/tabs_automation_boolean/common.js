@@ -17,15 +17,10 @@ function setUpAndRunTests(allTests) {
     function gotTree(returnedRootNode) {
       rootNode = returnedRootNode;
       if (rootNode.attributes.docLoaded) {
-        console.log('In getTree() callback: ' +
-                    'docLoaded attr already true; running tests');
         chrome.test.runTests(allTests);
         return;
       }
-      console.log('In getTree() callback: ' +
-                  'docLoaded false; waiting for loadComplete');
       rootNode.addEventListener('loadComplete', function() {
-        console.log('loadComplete received; running tests.');
         chrome.test.runTests(allTests);
       });
     }
