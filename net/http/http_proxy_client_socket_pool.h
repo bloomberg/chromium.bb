@@ -28,6 +28,7 @@ namespace net {
 class HostResolver;
 class HttpAuthCache;
 class HttpAuthHandlerFactory;
+class ProxyDelegate;
 class SSLClientSocketPool;
 class SSLSocketParams;
 class SpdySessionPool;
@@ -51,7 +52,8 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
-      bool tunnel);
+      bool tunnel,
+      ProxyDelegate* proxy_delegate);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
@@ -73,6 +75,10 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   bool tunnel() const { return tunnel_; }
   bool ignore_limits() const { return ignore_limits_; }
 
+  ProxyDelegate* proxy_delegate() const {
+    return proxy_delegate_;
+  }
+
  private:
   friend class base::RefCounted<HttpProxySocketParams>;
   ~HttpProxySocketParams();
@@ -87,6 +93,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
   const bool tunnel_;
   bool ignore_limits_;
+  ProxyDelegate* proxy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);
 };
@@ -187,6 +194,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
       HostResolver* host_resolver,
       TransportClientSocketPool* transport_pool,
       SSLClientSocketPool* ssl_pool,
+      const ProxyDelegate* proxy_delegate,
       NetLog* net_log);
 
   virtual ~HttpProxyClientSocketPool();
@@ -252,6 +260,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
         TransportClientSocketPool* transport_pool,
         SSLClientSocketPool* ssl_pool,
         HostResolver* host_resolver,
+        const ProxyDelegate* proxy_delegate,
         NetLog* net_log);
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
@@ -266,6 +275,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
     TransportClientSocketPool* const transport_pool_;
     SSLClientSocketPool* const ssl_pool_;
     HostResolver* const host_resolver_;
+    const ProxyDelegate* proxy_delegate_;
     NetLog* net_log_;
     base::TimeDelta timeout_;
 

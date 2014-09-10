@@ -98,6 +98,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
@@ -653,6 +654,9 @@ void IOThread::InitAsync() {
           chrome::VersionInfo().Version(),
           globals_->data_reduction_proxy_params.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  globals_->data_reduction_proxy_delegate.reset(
+      new data_reduction_proxy::DataReductionProxyDelegate(
+          globals_->data_reduction_proxy_auth_request_handler.get()));
   // This is the same as in ProfileImplIOData except that we do not collect
   // usage stats.
   network_delegate->set_data_reduction_proxy_params(
@@ -1052,6 +1056,9 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
       globals.enable_user_alternate_protocol_ports;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  params->proxy_delegate = globals.data_reduction_proxy_delegate.get();
+#endif
 }
 
 base::TimeTicks IOThread::creation_time() const {

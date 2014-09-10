@@ -40,6 +40,7 @@ class DnsProbeService;
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 namespace data_reduction_proxy {
 class DataReductionProxyAuthRequestHandler;
+class DataReductionProxyDelegate;
 class DataReductionProxyParams;
 }
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
@@ -204,6 +205,8 @@ class IOThread : public content::BrowserThreadDelegate {
       data_reduction_proxy_params;
   scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyDelegate>
+      data_reduction_proxy_delegate;
 #endif
   };
 

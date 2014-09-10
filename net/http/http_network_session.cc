@@ -50,6 +50,7 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
       params.proxy_service,
       params.ssl_config_service,
       params.enable_ssl_connect_job_waiting,
+      params.proxy_delegate,
       pool_type);
 }
 
@@ -96,7 +97,8 @@ HttpNetworkSession::Params::Params()
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
       enable_user_alternate_protocol_ports(false),
-      quic_crypto_client_stream_factory(NULL) {
+      quic_crypto_client_stream_factory(NULL),
+      proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_19);
 }
 

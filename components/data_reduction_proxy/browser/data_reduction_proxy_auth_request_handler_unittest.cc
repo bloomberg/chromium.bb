@@ -169,7 +169,17 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
       &headers);
   EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
 
-  // Write headers with a valid data reduction proxy;
+  // Don't write headers with a valid data reduction ssl proxy.
+  auth_handler.MaybeAddRequestHeader(
+      NULL,
+      net::ProxyServer::FromURI(
+          net::HostPortPair::FromURL(
+              GURL(params->DefaultSSLOrigin())).ToString(),
+          net::ProxyServer::SCHEME_HTTP),
+      &headers);
+  EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
+
+  // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
       net::ProxyServer::FromURI(
@@ -181,10 +191,20 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   headers.GetHeader(kChromeProxyHeader, &header_value);
   EXPECT_EQ(kExpectedHeader2, header_value);
 
+  // Write headers with a valid data reduction ssl proxy when one is expected.
+  net::HttpRequestHeaders ssl_headers;
+  auth_handler.MaybeAddProxyTunnelRequestHandler(
+      net::HostPortPair::FromURL(GURL(params->DefaultSSLOrigin())),
+      &ssl_headers);
+  EXPECT_TRUE(ssl_headers.HasHeader(kChromeProxyHeader));
+  std::string ssl_header_value;
+  ssl_headers.GetHeader(kChromeProxyHeader, &ssl_header_value);
+  EXPECT_EQ(kExpectedHeader2, ssl_header_value);
+
   // Fast forward 24 hours. The header should be the same.
   auth_handler.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
   net::HttpRequestHeaders headers2;
-  // Write headers with a valid data reduction proxy;
+  // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
       net::ProxyServer::FromURI(
@@ -199,7 +219,7 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   // Fast forward one more second. The header should be new.
   auth_handler.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
   net::HttpRequestHeaders headers3;
-  // Write headers with a valid data reduction proxy;
+  // Write headers with a valid data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
       NULL,
       net::ProxyServer::FromURI(

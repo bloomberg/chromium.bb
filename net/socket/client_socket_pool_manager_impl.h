@@ -28,6 +28,7 @@ class CTVerifier;
 class HttpProxyClientSocketPool;
 class HostResolver;
 class NetLog;
+class ProxyDelegate;
 class ProxyService;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
@@ -68,6 +69,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               ProxyService* proxy_service,
                               SSLConfigService* ssl_config_service,
                               bool enable_ssl_connect_job_waiting,
+                              ProxyDelegate* proxy_delegate,
                               HttpNetworkSession::SocketPoolType pool_type);
   virtual ~ClientSocketPoolManagerImpl();
 
@@ -146,6 +148,8 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
 
   ClientSocketPoolHistograms ssl_socket_pool_for_proxies_histograms_;
   SSLSocketPoolMap ssl_socket_pools_for_proxies_;
+
+  const ProxyDelegate* proxy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPoolManagerImpl);
 };

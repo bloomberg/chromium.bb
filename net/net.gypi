@@ -259,6 +259,7 @@
       'base/prioritized_dispatcher.cc',
       'base/prioritized_dispatcher.h',
       'base/priority_queue.h',
+      'base/proxy_delegate.h',
       'base/request_priority.cc',
       'base/request_priority.h',
       'base/sdch_dictionary_fetcher.cc',

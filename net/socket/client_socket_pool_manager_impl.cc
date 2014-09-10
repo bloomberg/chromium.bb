@@ -46,6 +46,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     ProxyService* proxy_service,
     SSLConfigService* ssl_config_service,
     bool enable_ssl_connect_job_waiting,
+    ProxyDelegate* proxy_delegate,
     HttpNetworkSession::SocketPoolType pool_type)
     : net_log_(net_log),
       socket_factory_(socket_factory),
@@ -98,7 +99,8 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       transport_for_https_proxy_pool_histograms_("TCPforHTTPSProxy"),
       ssl_for_https_proxy_pool_histograms_("SSLforHTTPSProxy"),
       http_proxy_pool_histograms_("HTTPProxy"),
-      ssl_socket_pool_for_proxies_histograms_("SSLForProxies") {
+      ssl_socket_pool_for_proxies_histograms_("SSLForProxies"),
+      proxy_delegate_(proxy_delegate) {
   CertDatabase::GetInstance()->AddObserver(this);
 }
 
@@ -324,6 +326,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
                   host_resolver_,
                   tcp_http_ret.first->second,
                   ssl_https_ret.first->second,
+                  proxy_delegate_,
                   net_log_)));
 
   return ret.first->second;

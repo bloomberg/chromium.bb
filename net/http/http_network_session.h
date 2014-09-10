@@ -43,6 +43,7 @@ class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
 class NetworkDelegate;
+class ProxyDelegate;
 class ProxyService;
 class QuicClock;
 class QuicCryptoClientStreamFactory;
@@ -122,6 +123,7 @@ class NET_EXPORT HttpNetworkSession
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
     QuicVersionVector quic_supported_versions;
     QuicTagVector quic_connection_options;
+    ProxyDelegate* proxy_delegate;
   };
 
   enum SocketPoolType {

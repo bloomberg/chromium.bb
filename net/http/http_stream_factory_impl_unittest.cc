@@ -394,7 +394,8 @@ CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
 template<>
 CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
     HostResolver* host_resolver, CertVerifier* /* cert_verifier */)
-    : HttpProxyClientSocketPool(0, 0, NULL, host_resolver, NULL, NULL, NULL),
+    : HttpProxyClientSocketPool(
+          0, 0, NULL, host_resolver, NULL, NULL, NULL, NULL),
       last_num_streams_(-1) {}
 
 template <>

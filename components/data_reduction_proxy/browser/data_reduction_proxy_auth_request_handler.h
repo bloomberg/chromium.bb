@@ -16,6 +16,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
+class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyServer;
@@ -54,10 +55,19 @@ class DataReductionProxyAuthRequestHandler {
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the provided
-  // |proxy_server| is a data reduction proxy. Must be called on the IO thread.
+  // |proxy_server| is a data reduction proxy and not the data reduction proxy's
+  // CONNECT server. Must be called on the IO thread.
   void MaybeAddRequestHeader(net::URLRequest* request,
                              const net::ProxyServer& proxy_server,
                              net::HttpRequestHeaders* request_headers);
+
+  // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
+  // proxy authentication credentials. Only adds this header if the provided
+  // |proxy_server| is the data reduction proxy's CONNECT server. Must be called
+  // on the IO thread.
+  void MaybeAddProxyTunnelRequestHandler(
+      const net::HostPortPair& proxy_server,
+      net::HttpRequestHeaders* request_headers);
 
   // Sets a new authentication key. This must be called for platforms that do
   // not have a default key defined. See the constructor implementation for
@@ -105,6 +115,14 @@ class DataReductionProxyAuthRequestHandler {
   void ComputeCredentials(const base::Time& now,
                           std::string* session,
                           std::string* credentials);
+
+  // Adds authentication headers only if |expects_ssl| is true and
+  // |proxy_server| is a data reduction proxy used for ssl tunneling via
+  // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
+  // reduction proxy for HTTP traffic.
+  void MaybeAddRequestHeaderImpl(const net::HostPortPair& proxy_server,
+                                 bool expect_ssl,
+                                 net::HttpRequestHeaders* request_headers);
 
   // Authentication state.
   std::string key_;

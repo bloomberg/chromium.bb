@@ -13,6 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
@@ -35,6 +36,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     bool tunnel,
     bool using_spdy,
     NextProto protocol_negotiated,
+    ProxyDelegate* proxy_delegate,
     bool is_https_proxy)
     : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
                               base::Unretained(this))),
@@ -53,6 +55,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       protocol_negotiated_(protocol_negotiated),
       is_https_proxy_(is_https_proxy),
       redirect_has_load_timing_info_(false),
+      proxy_server_(proxy_server),
+      proxy_delegate_(proxy_delegate),
       net_log_(transport_socket->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
   request_.url = request_url;
@@ -405,6 +409,10 @@ int HttpProxyClientSocket::DoSendRequest() {
     HttpRequestHeaders authorization_headers;
     if (auth_->HaveAuth())
       auth_->AddAuthorizationHeader(&authorization_headers);
+    if (proxy_delegate_) {
+      proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
+                                             &authorization_headers);
+    }
     BuildTunnelRequest(request_, authorization_headers, endpoint_,
                        &request_line_, &request_headers_);
 
@@ -446,6 +454,13 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
   net_log_.AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+
+  if (proxy_delegate_) {
+    proxy_delegate_->OnTunnelHeadersReceived(
+        HostPortPair::FromURL(request_.url),
+        proxy_server_,
+        *response_.headers);
+  }
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

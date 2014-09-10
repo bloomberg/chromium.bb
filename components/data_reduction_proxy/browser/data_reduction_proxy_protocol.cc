@@ -53,6 +53,9 @@ bool MaybeBypassProxyAndPrepareToRetry(
           request, &data_reduction_proxy_type_info)) {
     return false;
   }
+  // TODO(bengr): Implement bypass for CONNECT tunnel.
+  if (data_reduction_proxy_type_info.is_ssl)
+    return false;
 
   // Empty implies either that the request was served from cache or that
   // request was served directly from the origin.

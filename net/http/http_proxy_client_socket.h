@@ -31,6 +31,7 @@ class HttpAuthCache;
 class HttpStream;
 class HttpStreamParser;
 class IOBuffer;
+class ProxyDelegate;
 
 class HttpProxyClientSocket : public ProxyClientSocket {
  public:
@@ -47,6 +48,7 @@ class HttpProxyClientSocket : public ProxyClientSocket {
                         bool tunnel,
                         bool using_spdy,
                         NextProto protocol_negotiated,
+                        ProxyDelegate* proxy_delegate,
                         bool is_https_proxy);
 
   // On destruction Disconnect() is called.
@@ -162,6 +164,11 @@ class HttpProxyClientSocket : public ProxyClientSocket {
   // Used only for redirects.
   bool redirect_has_load_timing_info_;
   LoadTimingInfo redirect_load_timing_info_;
+
+  const HostPortPair proxy_server_;
+
+  // This delegate must outlive this proxy client socket.
+  ProxyDelegate* proxy_delegate_;
 
   const BoundNetLog net_log_;
 

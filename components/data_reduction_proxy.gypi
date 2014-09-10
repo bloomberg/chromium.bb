@@ -26,6 +26,8 @@
         'data_reduction_proxy/browser/data_reduction_proxy_config_service.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_config_service.h',
         'data_reduction_proxy/browser/data_reduction_proxy_configurator.h',
+        'data_reduction_proxy/browser/data_reduction_proxy_delegate.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/browser/data_reduction_proxy_metrics.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_metrics.h',
         'data_reduction_proxy/browser/data_reduction_proxy_params.cc',
