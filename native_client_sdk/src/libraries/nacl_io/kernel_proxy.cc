@@ -843,20 +843,18 @@ int KernelProxy::fcntl(int fd, int request, va_list args) {
 }
 
 int KernelProxy::access(const char* path, int amode) {
-  ScopedFilesystem fs;
-  Path rel;
+  struct stat buf;
+  int rtn = stat(path, &buf);
+  if (rtn != 0)
+    return rtn;
 
-  Error error = AcquireFsAndRelPath(path, &fs, &rel);
-  if (error) {
-    errno = error;
+  if (((amode & R_OK) && !(buf.st_mode & S_IREAD)) ||
+      ((amode & W_OK) && !(buf.st_mode & S_IWRITE)) ||
+      ((amode & X_OK) && !(buf.st_mode & S_IEXEC))) {
+    errno = EACCES;
     return -1;
   }
 
-  error = fs->Access(rel, amode);
-  if (error) {
-    errno = error;
-    return -1;
-  }
   return 0;
 }
 

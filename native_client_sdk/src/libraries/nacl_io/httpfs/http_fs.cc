@@ -41,31 +41,6 @@ std::string NormalizeHeaderKey(const std::string& s) {
   return result;
 }
 
-Error HttpFs::Access(const Path& path, int a_mode) {
-  ScopedNode node = FindExistingNode(path);
-  if (node.get() == NULL) {
-    // If we can't find the node in the cache, fetch it
-    std::string url = MakeUrl(path);
-    node.reset(new HttpFsNode(this, url, cache_content_));
-    Error error = node->Init(0);
-    if (error)
-      return error;
-
-    error = node->GetStat(NULL);
-    if (error)
-      return error;
-  }
-
-  int obj_mode = node->GetMode();
-  if (((a_mode & R_OK) && !(obj_mode & S_IREAD)) ||
-      ((a_mode & W_OK) && !(obj_mode & S_IWRITE)) ||
-      ((a_mode & X_OK) && !(obj_mode & S_IEXEC))) {
-    return EACCES;
-  }
-
-  return 0;
-}
-
 Error HttpFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
 

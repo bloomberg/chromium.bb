@@ -36,6 +36,15 @@ class MemFsForTesting : public MemFs {
     EXPECT_EQ(0, Init(args));
   }
 
+  bool Exists(const char* filename) {
+    ScopedNode node;
+    if (Open(Path(filename), O_RDONLY, &node))
+      return false;
+
+    struct stat buf;
+    return node->GetStat(&buf) == 0;
+  }
+
   int num_nodes() { return inode_pool_.size(); }
 };
 

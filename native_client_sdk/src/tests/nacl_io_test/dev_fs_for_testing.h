@@ -20,6 +20,15 @@ class DevFsForTesting : public nacl_io::DevFs {
     Init(args);
   }
 
+  bool Exists(const char* filename) {
+    nacl_io::ScopedNode node;
+    if (Open(nacl_io::Path(filename), O_RDONLY, &node))
+      return false;
+
+    struct stat buf;
+    return node->GetStat(&buf) == 0;
+  }
+
   int num_nodes() { return (int)inode_pool_.size(); }
 };
 

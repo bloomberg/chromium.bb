@@ -14,7 +14,6 @@ class Node;
 
 class DevFs : public Filesystem {
  public:
-  virtual Error Access(const Path& path, int a_mode);
   virtual Error Open(const Path& path, int open_flags, ScopedNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int permissions);

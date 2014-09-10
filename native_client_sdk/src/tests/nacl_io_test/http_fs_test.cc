@@ -78,15 +78,6 @@ class HttpFsLargeFileTest : public HttpFsTest {
 
 }  // namespace
 
-TEST_P(HttpFsTest, Access) {
-  ASSERT_TRUE(ppapi_.server_template()->AddEntity("foo", "", NULL));
-
-  ASSERT_EQ(0, fs_.Access(Path("/foo"), R_OK));
-  ASSERT_EQ(EACCES, fs_.Access(Path("/foo"), W_OK));
-  ASSERT_EQ(EACCES, fs_.Access(Path("/foo"), X_OK));
-  ASSERT_EQ(ENOENT, fs_.Access(Path("/bar"), F_OK));
-}
-
 TEST_P(HttpFsTest, OpenAndCloseServerError) {
   EXPECT_TRUE(ppapi_.server_template()->AddError("file", 500));
 
@@ -278,9 +269,9 @@ TEST(HttpFsDirTest, Root) {
   ASSERT_TRUE(node->IsaDir());
 
   // We have to r+w access to the root node
-  ASSERT_EQ(0, fs.Access(Path("/"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/"), X_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/"), W_OK));
+  struct stat buf;
+  ASSERT_EQ(0, node->GetStat(&buf));
+  ASSERT_EQ(S_IXUSR | S_IRUSR, buf.st_mode & S_IRWXU);
 }
 
 TEST(HttpFsDirTest, Mkdir) {
@@ -392,20 +383,17 @@ TEST(HttpFsBlobUrlTest, Basic) {
 
   HttpFsForTesting fs(args, &ppapi);
 
-  // Check access to root folder
-  ASSERT_EQ(0, fs.Access(Path("/"), R_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/"), W_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/"), X_OK));
-
-  // Any other path will fail.
-  ScopedNode foo;
-  ASSERT_EQ(ENOENT, fs.Access(Path("/blah"), R_OK));
-
-  // Verify file size
+  // Any other path than / should fail.
   ScopedNode node;
-  struct stat statbuf;
+  ASSERT_EQ(ENOENT, fs.Open(Path("/blah"), R_OK, &node));
+
+  // Check access to blob file
   ASSERT_EQ(0, fs.Open(Path("/"), O_RDONLY, &node));
-  ASSERT_EQ(0, node->GetStat(&statbuf));
-  ASSERT_EQ(0, node->GetStat(&statbuf));
-  ASSERT_EQ(strlen(kContent), statbuf.st_size);
+  ASSERT_EQ(true, node->IsaFile());
+
+  // Verify file size and permissions
+  struct stat buf;
+  ASSERT_EQ(0, node->GetStat(&buf));
+  ASSERT_EQ(S_IRUSR, buf.st_mode & S_IRWXU);
+  ASSERT_EQ(strlen(kContent), buf.st_size);
 }

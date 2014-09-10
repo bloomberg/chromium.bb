@@ -57,19 +57,6 @@ void FuseFs::Destroy() {
     fuse_ops_->destroy(fuse_user_data_);
 }
 
-Error FuseFs::Access(const Path& path, int a_mode) {
-  if (!fuse_ops_->access) {
-    LOG_TRACE("fuse_ops_->access is NULL.");
-    return ENOSYS;
-  }
-
-  int result = fuse_ops_->access(path.Join().c_str(), a_mode);
-  if (result < 0)
-    return -result;
-
-  return 0;
-}
-
 Error FuseFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   std::string path_str = path.Join();
   const char* path_cstr = path_str.c_str();

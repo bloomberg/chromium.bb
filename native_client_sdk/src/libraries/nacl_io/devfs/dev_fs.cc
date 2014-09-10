@@ -240,21 +240,6 @@ Error FsNode::VIoctl(int request, va_list args) {
 
 }  // namespace
 
-Error DevFs::Access(const Path& path, int a_mode) {
-  ScopedNode node;
-  int error = root_->FindChild(path.Join(), &node);
-  if (error)
-    return error;
-
-  // Don't allow execute access.
-  if (a_mode & X_OK) {
-    LOG_TRACE("Executing devfs nodes is not allowed.");
-    return EACCES;
-  }
-
-  return 0;
-}
-
 Error DevFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
   int error;

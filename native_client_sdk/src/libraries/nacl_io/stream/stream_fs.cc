@@ -84,10 +84,6 @@ StreamFs::~StreamFs() {
   pthread_cond_destroy(&message_cond_);
 }
 
-Error StreamFs::Access(const Path& path, int a_mode) {
-  return EACCES;
-}
-
 Error StreamFs::Open(const Path& path, int o_flags, ScopedNode* out_node) {
   return EACCES;
 }

@@ -75,23 +75,6 @@ Error MemFs::FindNode(const Path& path, int type, ScopedNode* out_node) {
   return 0;
 }
 
-Error MemFs::Access(const Path& path, int a_mode) {
-  ScopedNode node;
-  Error error = FindNode(path, 0, &node);
-
-  if (error)
-    return error;
-
-  int obj_mode = node->GetMode();
-  if (((a_mode & R_OK) && !(obj_mode & S_IREAD)) ||
-      ((a_mode & W_OK) && !(obj_mode & S_IWRITE)) ||
-      ((a_mode & X_OK) && !(obj_mode & S_IEXEC))) {
-    return EACCES;
-  }
-
-  return 0;
-}
-
 Error MemFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
   ScopedNode node;

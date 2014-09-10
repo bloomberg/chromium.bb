@@ -28,6 +28,15 @@ class MemFsForTesting : public MemFs {
     EXPECT_EQ(0, Init(args));
   }
 
+  bool Exists(const char* filename) {
+    ScopedNode node;
+    if (Open(Path(filename), O_RDONLY, &node))
+      return false;
+
+    struct stat buf;
+    return node->GetStat(&buf) == 0;
+  }
+
   int num_nodes() { return (int)inode_pool_.size(); }
 };
 
@@ -42,13 +51,13 @@ TEST(FilesystemTest, Sanity) {
 
   off_t result_size = 0;
   int result_bytes = 0;
+  struct stat buf;
   char buf1[1024];
 
   // A memory filesystem starts with one directory node: the root.
   EXPECT_EQ(1, fs.num_nodes());
 
   // Fail to open non existent file
-  EXPECT_EQ(ENOENT, fs.Access(Path("/foo"), R_OK | W_OK));
   EXPECT_EQ(ENOENT, fs.Open(Path("/foo"), O_RDWR, &result_node));
   EXPECT_EQ(NULL, result_node.get());
   EXPECT_EQ(1, fs.num_nodes());
@@ -59,14 +68,16 @@ TEST(FilesystemTest, Sanity) {
 
   // We now have a directory and a file.  The file has a two references
   // one returned to the test, one for the name->inode map.
-  EXPECT_EQ(2, fs.num_nodes());
-  EXPECT_EQ(2, file->RefCount());
-  EXPECT_EQ(0, fs.Access(Path("/foo"), R_OK | W_OK));
-  EXPECT_EQ(EACCES, fs.Access(Path("/foo"), X_OK));
+  ASSERT_EQ(2, fs.num_nodes());
+  ASSERT_EQ(2, file->RefCount());
+  ASSERT_EQ(0, file->GetStat(&buf));
+  ASSERT_EQ(0, buf.st_mode & S_IXUSR);
 
   // All access should be allowed on the root directory.
-  EXPECT_EQ(0, fs.Access(Path("/"), R_OK | W_OK | X_OK));
-  // Open the root directory for write should fail.
+  EXPECT_EQ(0, fs.Open(Path("/"), O_RDONLY, &root));
+  ASSERT_EQ(0, root->GetStat(&buf));
+  ASSERT_EQ(S_IRWXU, buf.st_mode & S_IRWXU);
+  // Opening a directory for write should fail.
   EXPECT_EQ(EISDIR, fs.Open(Path("/"), O_RDWR, &root));
   EXPECT_EQ(2, fs.num_nodes());
 
@@ -157,8 +168,7 @@ TEST(FilesystemTest, Sanity) {
   EXPECT_EQ(1, fs.num_nodes());
 
   // Verify the directory is gone
-  EXPECT_EQ(ENOENT, fs.Access(Path("/foo"), F_OK));
-  EXPECT_EQ(ENOENT, fs.Open(Path("/foo"), O_RDWR, &file));
+  EXPECT_EQ(ENOENT, fs.Open(Path("/foo"), O_RDONLY, &file));
   EXPECT_EQ(NULL_NODE, file.get());
 }
 
@@ -213,25 +223,25 @@ TEST(FilesystemTest, MemFsRename) {
 
   ScopedNode file;
   ASSERT_EQ(0, fs.Open(Path("/dir1/file"), O_RDWR | O_CREAT | O_EXCL, &file));
-  ASSERT_EQ(0, fs.Access(Path("/dir1/file"), R_OK));
+  ASSERT_TRUE(fs.Exists("/dir1/file"));
   ASSERT_EQ(4, fs.num_nodes());
 
   // Move from one directory to another should ok
   ASSERT_EQ(0, fs.Rename(Path("/dir1/file"), Path("/dir2/new_file")));
-  ASSERT_NE(0, fs.Access(Path("/dir1/file"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/dir2/new_file"), R_OK));
+  ASSERT_FALSE(fs.Exists("/dir1/file"));
+  ASSERT_TRUE(fs.Exists("/dir2/new_file"));
   ASSERT_EQ(4, fs.num_nodes());
 
   // Move within the same directory
   ASSERT_EQ(0, fs.Rename(Path("/dir2/new_file"), Path("/dir2/new_file2")));
-  ASSERT_NE(0, fs.Access(Path("/dir2/new_file"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/dir2/new_file2"), R_OK));
+  ASSERT_FALSE(fs.Exists("/dir2/new_file"));
+  ASSERT_TRUE(fs.Exists("/dir2/new_file2"));
   ASSERT_EQ(4, fs.num_nodes());
 
   // Move to another directory but without a filename
   ASSERT_EQ(0, fs.Rename(Path("/dir2/new_file2"), Path("/dir1")));
-  ASSERT_NE(0, fs.Access(Path("/dir2/new_file2"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/dir1/new_file2"), R_OK));
+  ASSERT_FALSE(fs.Exists("/dir2/new_file2"));
+  ASSERT_TRUE(fs.Exists("/dir1/new_file2"));
   ASSERT_EQ(4, fs.num_nodes());
 }
 
@@ -244,8 +254,8 @@ TEST(FilesystemTest, MemFsRenameDir) {
 
   // Renaming one directory to another should work
   ASSERT_EQ(0, fs.Rename(Path("/dir1"), Path("/dir2")));
-  ASSERT_NE(0, fs.Access(Path("/dir1"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/dir2"), R_OK));
+  ASSERT_FALSE(fs.Exists("/dir1"));
+  ASSERT_TRUE(fs.Exists("/dir2"));
   EXPECT_EQ(2, fs.num_nodes());
 
   // Reset to initial state
@@ -254,8 +264,8 @@ TEST(FilesystemTest, MemFsRenameDir) {
 
   // Renaming a directory to a new name within another
   ASSERT_EQ(0, fs.Rename(Path("/dir1"), Path("/dir2/foo")));
-  ASSERT_EQ(0, fs.Access(Path("/dir2"), R_OK));
-  ASSERT_EQ(0, fs.Access(Path("/dir2/foo"), R_OK));
+  ASSERT_TRUE(fs.Exists("/dir2"));
+  ASSERT_TRUE(fs.Exists("/dir2/foo"));
   EXPECT_EQ(3, fs.num_nodes());
 
   // Reset to initial state
@@ -273,7 +283,7 @@ TEST(FilesystemTest, DevAccess) {
   FakePepperInterface pepper;
   DevFsForTesting fs(&pepper);
   ScopedNode invalid_node, valid_node;
-  ASSERT_EQ(ENOENT, fs.Access(Path("/foo"), F_OK));
+  ASSERT_FALSE(fs.Exists("/foo"));
   // Creating non-existent file should return EACCES
   ASSERT_EQ(EACCES, fs.Open(Path("/foo"), O_CREAT | O_RDWR, &invalid_node));
 
@@ -295,11 +305,12 @@ TEST(FilesystemTest, DevNull) {
   DevFsForTesting fs(&pepper);
   ScopedNode dev_null;
   int result_bytes = 0;
+  struct stat buf;
 
-  ASSERT_EQ(0, fs.Access(Path("/null"), R_OK | W_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/null"), X_OK));
   ASSERT_EQ(0, fs.Open(Path("/null"), O_RDWR, &dev_null));
   ASSERT_NE(NULL_NODE, dev_null.get());
+  ASSERT_EQ(0, dev_null->GetStat(&buf));
+  ASSERT_EQ(S_IRUSR | S_IWUSR, buf.st_mode & S_IRWXU);
 
   // Writing to /dev/null should write everything.
   const char msg[] = "Dummy test message.";
@@ -319,11 +330,12 @@ TEST(FilesystemTest, DevZero) {
   DevFsForTesting fs(&pepper);
   ScopedNode dev_zero;
   int result_bytes = 0;
+  struct stat buf;
 
-  ASSERT_EQ(0, fs.Access(Path("/zero"), R_OK | W_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/zero"), X_OK));
   ASSERT_EQ(0, fs.Open(Path("/zero"), O_RDWR, &dev_zero));
   ASSERT_NE(NULL_NODE, dev_zero.get());
+  ASSERT_EQ(0, dev_zero->GetStat(&buf));
+  ASSERT_EQ(S_IRUSR | S_IWUSR, buf.st_mode & S_IRWXU);
 
   // Writing to /dev/zero should write everything.
   HandleAttr attrs;
@@ -350,11 +362,12 @@ TEST(FilesystemTest, DISABLED_DevUrandom) {
   DevFsForTesting fs(&pepper);
   ScopedNode dev_urandom;
   int result_bytes = 0;
+  struct stat buf;
 
-  ASSERT_EQ(0, fs.Access(Path("/urandom"), R_OK | W_OK));
-  ASSERT_EQ(EACCES, fs.Access(Path("/urandom"), X_OK));
   ASSERT_EQ(0, fs.Open(Path("/urandom"), O_RDWR, &dev_urandom));
   ASSERT_NE(NULL_NODE, dev_urandom.get());
+  ASSERT_EQ(0, dev_urandom->GetStat(&buf));
+  ASSERT_EQ(S_IRUSR | S_IWUSR, buf.st_mode & S_IRWXU);
 
   // Writing to /dev/urandom should write everything.
   const char msg[] = "Dummy test message.";

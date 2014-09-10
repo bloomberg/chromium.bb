@@ -22,11 +22,6 @@ Error PassthroughFs::Init(const FsInitArgs& args) {
 void PassthroughFs::Destroy() {
 }
 
-Error PassthroughFs::Access(const Path& path, int a_mode) {
-  // There is no underlying 'access' syscall in NaCl. It just returns ENOSYS.
-  return ENOSYS;
-}
-
 Error PassthroughFs::Open(const Path& path, int mode, ScopedNode* out_node) {
   out_node->reset(NULL);
   int real_fd;

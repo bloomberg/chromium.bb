@@ -29,12 +29,6 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 }  // namespace
 
-Error Html5Fs::Access(const Path& path, int a_mode) {
-  // a_mode is unused, since all files are readable, writable and executable.
-  ScopedNode node;
-  return Open(path, O_RDONLY, &node);
-}
-
 Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
   Error error = BlockUntilFilesystemOpen();

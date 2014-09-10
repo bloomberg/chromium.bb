@@ -701,7 +701,6 @@ class KernelProxyMMapTest_Node : public Node {
 
 class KernelProxyMMapTest_Filesystem : public Filesystem {
  public:
-  virtual Error Access(const Path& path, int a_mode) { return 0; }
   virtual Error Open(const Path& path, int mode, ScopedNode* out_node) {
     out_node->reset(new KernelProxyMMapTest_Node(this));
     return 0;

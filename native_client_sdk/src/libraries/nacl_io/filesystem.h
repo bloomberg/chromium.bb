@@ -62,10 +62,6 @@ class Filesystem : public sdk_util::RefObject {
 
   // All paths in functions below are expected to containing a leading "/".
 
-  // Test whether a file or directory at a given path can be accessed.
-  // Returns 0 on success, or an appropriate errno value on failure.
-  virtual Error Access(const Path& path, int a_mode) = 0;
-
   // Open a node at |path| with the specified open flags. The resulting
   // Node is created with a ref count of 1.
   // Assumes that |out_node| is non-NULL.

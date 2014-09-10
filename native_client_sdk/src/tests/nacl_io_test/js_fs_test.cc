@@ -518,27 +518,6 @@ const int JsFsNodeTest::fd = 123;
 
 }  // namespace
 
-TEST_F(JsFsTest, Access) {
-  int a_mode = R_OK | W_OK | X_OK;
-
-  PP_Var expected;
-  ASSERT_EQ(true, CreateDict(&expected));
-  ASSERT_EQ(true, SetDictKeyValue(&expected, "id", 1));
-  ASSERT_EQ(true, SetDictKeyValue(&expected, "cmd", "access"));
-  ASSERT_EQ(true, SetDictKeyValue(&expected, "path", "/foo"));
-  ASSERT_EQ(true, SetDictKeyValue(&expected, "amode", a_mode));
-
-  PP_Var response;
-  ASSERT_EQ(true, CreateDict(&response));
-  ASSERT_EQ(true, SetDictKeyValue(&response, "id", 1));
-  ASSERT_EQ(true, SetDictKeyValue(&response, "error", 0));
-
-  Expect(expected, response);
-  StartJsThread();
-
-  EXPECT_EQ(0, fs_->Access(Path("/foo"), a_mode));
-}
-
 TEST_F(JsFsTest, Open) {
   PP_Var expected;
   ASSERT_EQ(true, CreateDict(&expected));

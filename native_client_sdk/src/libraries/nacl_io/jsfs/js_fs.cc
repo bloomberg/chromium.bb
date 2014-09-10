@@ -391,19 +391,6 @@ PP_Var JsFs::WaitForResponse(RequestId request_id) {
   }
 }
 
-Error JsFs::Access(const Path& path, int a_mode) {
-  ScopedVar response(ppapi_);
-  if (!SendRequestAndWait(&response, "%s%s%d",
-                          "cmd", "access",
-                          "path", path.Join().c_str(),
-                          "amode", a_mode)) {
-    LOG_ERROR("Failed to send request.");
-    return EINVAL;
-  }
-
-  return ErrorFromResponse(response);
-}
-
 Error JsFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
   ScopedVar response(ppapi_);

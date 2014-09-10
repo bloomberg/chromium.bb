@@ -37,10 +37,11 @@ class TtyNodeTest : public ::testing::Test {
   TtyNodeTest() : fs_(&ppapi_) {}
 
   void SetUp() {
-    ASSERT_EQ(0, fs_.Access(Path("/tty"), R_OK | W_OK));
-    ASSERT_EQ(EACCES, fs_.Access(Path("/tty"), X_OK));
     ASSERT_EQ(0, fs_.Open(Path("/tty"), O_RDWR, &dev_tty_));
     ASSERT_NE(NULL_NODE, dev_tty_.get());
+    struct stat buf;
+    ASSERT_EQ(0, dev_tty_->GetStat(&buf));
+    ASSERT_EQ(S_IRUSR | S_IWUSR, buf.st_mode & S_IRWXU);
   }
 
  protected:
