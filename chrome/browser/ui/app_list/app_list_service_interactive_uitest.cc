@@ -35,24 +35,7 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
   AppListServiceInteractiveTest()
     : profile2_(NULL) {}
 
-  void InitSecondProfile() {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    base::FilePath temp_profile_dir =
-        profile_manager->user_data_dir().AppendASCII("Profile 1");
-    profile_manager->CreateProfileAsync(
-        temp_profile_dir,
-        base::Bind(&AppListServiceInteractiveTest::OnProfileCreated,
-                   this),
-        base::string16(), base::string16(), std::string());
-    content::RunMessageLoop();  // Will stop in OnProfileCreated().
-  }
-
-  void OnProfileCreated(Profile* profile, Profile::CreateStatus status) {
-    if (status == Profile::CREATE_STATUS_INITIALIZED) {
-      profile2_ = profile;
-      base::MessageLoop::current()->Quit();
-    }
-  }
+  void InitSecondProfile() { profile2_ = test::CreateSecondProfileAsync(); }
 
  protected:
   Profile* profile2_;

@@ -23,6 +23,10 @@ namespace base {
 class FilePath;
 }
 
+namespace test {
+class AppListServiceImplTestApi;
+}
+
 // Parts of the AppListService implementation shared between platforms.
 class AppListServiceImpl : public AppListService,
                            public ProfileInfoCacheObserver {
@@ -67,6 +71,7 @@ class AppListServiceImpl : public AppListService,
   void PerformStartupChecks(Profile* initial_profile);
 
  private:
+  friend class test::AppListServiceImplTestApi;
   static void SendAppListStats();
 
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.

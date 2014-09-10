@@ -1396,6 +1396,7 @@
         'browser/translate/cld_data_harness.h',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/app_list/app_list_controller_browsertest.cc',
+        'browser/ui/app_list/app_list_service_impl_browsertest.cc',
         'browser/ui/app_list/app_list_service_views_browsertest.cc',
         'browser/ui/app_list/search/people/people_provider_browsertest.cc',
         'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
