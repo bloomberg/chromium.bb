@@ -63,9 +63,9 @@ SigninManager::SigninManager(SigninClient* client,
     : SigninManagerBase(client),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
-      weak_pointer_factory_(this),
       client_(client),
-      token_service_(token_service) {}
+      token_service_(token_service),
+      weak_pointer_factory_(this) {}
 
 void SigninManager::AddMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {

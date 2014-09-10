@@ -223,8 +223,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Socket pairs for the NaCl process and renderer.
   scoped_ptr<NaClInternal> internal_;
 
-  base::WeakPtrFactory<NaClProcessHost> weak_factory_;
-
   scoped_ptr<content::BrowserChildProcessHost> process_;
 
   bool uses_irt_;
@@ -252,6 +250,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Shared memory provided to the plugin and renderer for
   // reporting crash information.
   base::SharedMemory crash_info_shmem_;
+
+  base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

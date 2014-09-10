@@ -99,9 +99,6 @@ class POLICY_EXPORT AsyncPolicyLoader {
   // Callback for updates, passed in Init().
   UpdateCallback update_callback_;
 
-  // Used to get WeakPtrs for the periodic reload task.
-  base::WeakPtrFactory<AsyncPolicyLoader> weak_factory_;
-
   // Records last known modification timestamp.
   base::Time last_modification_time_;
 
@@ -113,6 +110,9 @@ class POLICY_EXPORT AsyncPolicyLoader {
 
   // The current policy schemas that this provider should load.
   scoped_refptr<SchemaMap> schema_map_;
+
+  // Used to get WeakPtrs for the periodic reload task.
+  base::WeakPtrFactory<AsyncPolicyLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyLoader);
 };

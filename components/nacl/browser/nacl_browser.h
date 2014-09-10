@@ -170,8 +170,6 @@ class NaClBrowser {
   void MarkValidationCacheAsModified();
   void PersistValidationCache();
 
-  // Singletons get destroyed at shutdown.
-  base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
   base::File irt_file_;
   base::FilePath irt_filepath_;
@@ -199,6 +197,9 @@ class NaClBrowser {
   scoped_ptr<NaClBrowserDelegate> browser_delegate_;
 
   std::deque<base::Time> crash_times_;
+
+  // Singletons get destroyed at shutdown.
+  base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };

@@ -114,8 +114,8 @@ ModelAssociationManager::ModelAssociationManager(
     : state_(IDLE),
       controllers_(controllers),
       delegate_(processor),
-      weak_ptr_factory_(this),
-      configure_status_(DataTypeManager::UNKNOWN) {
+      configure_status_(DataTypeManager::UNKNOWN),
+      weak_ptr_factory_(this) {
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {

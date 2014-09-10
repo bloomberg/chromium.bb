@@ -91,9 +91,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // Callback invoked to store the policy after validation has finished.
   void StorePolicyAfterValidation(UserCloudPolicyValidator* validator);
 
-  // WeakPtrFactory used to create callbacks for validating and storing policy.
-  base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
-
   // The key used to verify signatures of cached policy.
   std::string policy_key_;
 
@@ -105,6 +102,9 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
 
   // The hard-coded key used to verify new signing keys.
   const std::string verification_key_;
+
+  // WeakPtrFactory used to create callbacks for validating and storing policy.
+  base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStore);
 };

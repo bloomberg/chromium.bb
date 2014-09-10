@@ -137,8 +137,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
 }
 
 NaClBrowser::NaClBrowser()
-    : weak_factory_(this),
-      irt_filepath_(),
+    : irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
       validation_cache_file_path_(),
       validation_cache_is_enabled_(
@@ -147,7 +146,8 @@ NaClBrowser::NaClBrowser()
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
       path_cache_(kFilePathCacheSize),
-      ok_(true) {
+      ok_(true),
+      weak_factory_(this) {
 }
 
 void NaClBrowser::SetDelegate(NaClBrowserDelegate* delegate) {

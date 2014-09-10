@@ -146,9 +146,9 @@ class ModelAssociationManager {
   // Timer to track and limit how long a datatype takes to model associate.
   base::OneShotTimer<ModelAssociationManager> timer_;
 
-  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
-
   DataTypeManager::ConfigureStatus configure_status_;
+
+  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };

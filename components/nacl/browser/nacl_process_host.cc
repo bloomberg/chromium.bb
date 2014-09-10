@@ -274,7 +274,6 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       debug_exception_handler_requested_(false),
 #endif
       internal_(new NaClInternal()),
-      weak_factory_(this),
       uses_irt_(uses_irt),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       enable_debug_stub_(false),
@@ -283,7 +282,8 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       enable_crash_throttling_(enable_crash_throttling),
       off_the_record_(off_the_record),
       profile_directory_(profile_directory),
-      render_view_id_(render_view_id) {
+      render_view_id_(render_view_id),
+      weak_factory_(this) {
   process_.reset(content::BrowserChildProcessHost::Create(
       PROCESS_TYPE_NACL_LOADER, this));
 

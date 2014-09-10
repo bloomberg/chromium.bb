@@ -33,8 +33,8 @@ AutofillWebDataService::AutofillWebDataService(
     : WebDataServiceBase(wdbs, callback, ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      weak_ptr_factory_(this),
-      autofill_backend_(NULL) {
+      autofill_backend_(NULL),
+      weak_ptr_factory_(this) {
 
   base::Closure on_changed_callback = Bind(
       &AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread,
@@ -51,11 +51,11 @@ AutofillWebDataService::AutofillWebDataService(
           ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      weak_ptr_factory_(this),
       autofill_backend_(new AutofillWebDataBackendImpl(NULL,
           ui_thread_,
           db_thread_,
-          base::Closure())) {
+          base::Closure())),
+      weak_ptr_factory_(this) {
 }
 
 void AutofillWebDataService::ShutdownOnUIThread() {

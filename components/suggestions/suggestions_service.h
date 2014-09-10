@@ -188,12 +188,12 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Delay used when scheduling a blacklisting task.
   int blacklist_delay_sec_;
 
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;
-
   // Timeout (in ms) before serving requestors after a fetch suggestions request
   // has been issued.
   int request_timeout_ms_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsService);
 };

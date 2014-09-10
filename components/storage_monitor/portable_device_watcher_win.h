@@ -132,11 +132,11 @@ class PortableDeviceWatcherWin {
   // should not be performed on the UI thread.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  // Used by |media_task_runner_| to create cancelable callbacks.
-  base::WeakPtrFactory<PortableDeviceWatcherWin> weak_ptr_factory_;
-
   // The notifications object to use to signal newly attached devices.
   StorageMonitor::Receiver* storage_notifications_;
+
+  // Used by |media_task_runner_| to create cancelable callbacks.
+  base::WeakPtrFactory<PortableDeviceWatcherWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceWatcherWin);
 };

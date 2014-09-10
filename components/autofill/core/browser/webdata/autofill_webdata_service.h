@@ -118,11 +118,11 @@ class AutofillWebDataService : public AutofillWebData,
   // The MessageLoopProxy that this class uses as its DB thread.
   scoped_refptr<base::MessageLoopProxy> db_thread_;
 
+  scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
+
   // This factory is used on the UI thread. All vended weak pointers are
   // invalidated in ShutdownOnUIThread().
   base::WeakPtrFactory<AutofillWebDataService> weak_ptr_factory_;
-
-  scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };

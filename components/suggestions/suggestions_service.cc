@@ -127,8 +127,8 @@ SuggestionsService::SuggestionsService(
       thumbnail_manager_(thumbnail_manager.Pass()),
       url_request_context_(url_request_context),
       blacklist_delay_sec_(kBlacklistDefaultDelaySec),
-      weak_ptr_factory_(this),
-      request_timeout_ms_(kDefaultRequestTimeoutMs) {
+      request_timeout_ms_(kDefaultRequestTimeoutMs),
+      weak_ptr_factory_(this) {
   // Obtain various parameters from Variations.
   suggestions_url_ =
       GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) + "?" +
