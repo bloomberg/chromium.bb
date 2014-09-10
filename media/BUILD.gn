@@ -506,7 +506,9 @@ test("media_unittests") {
       # TODO(GYP)
       #"//testing/android:native_test_native_code"
     ]
-  } else {
+  }
+
+  if (media_use_ffmpeg) {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",

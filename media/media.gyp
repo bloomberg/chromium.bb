@@ -1237,7 +1237,19 @@
         }, {  # media_use_ffmpeg== 0
           'sources!': [
             'base/audio_video_metadata_extractor_unittest.cc',
+            'base/container_names_unittest.cc',
             'base/media_file_checker_unittest.cc',
+            'ffmpeg/ffmpeg_common_unittest.cc',
+            'filters/audio_decoder_unittest.cc',
+            'filters/audio_file_reader_unittest.cc',
+            'filters/blocking_url_protocol_unittest.cc',
+            'filters/ffmpeg_demuxer_unittest.cc',
+            'filters/ffmpeg_glue_unittest.cc',
+            'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
+            'filters/ffmpeg_video_decoder_unittest.cc',
+            'filters/in_memory_url_protocol_unittest.cc',
+            'filters/pipeline_integration_test.cc',
+            'filters/pipeline_integration_test_base.cc',
           ],
         }],
         ['use_alsa==1', {
@@ -1262,18 +1274,6 @@
         ['OS=="android"', {
           'sources!': [
             'audio/audio_input_volume_unittest.cc',
-            'base/container_names_unittest.cc',
-            'ffmpeg/ffmpeg_common_unittest.cc',
-            'filters/audio_decoder_unittest.cc',
-            'filters/audio_file_reader_unittest.cc',
-            'filters/blocking_url_protocol_unittest.cc',
-            'filters/ffmpeg_demuxer_unittest.cc',
-            'filters/ffmpeg_glue_unittest.cc',
-            'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
-            'filters/ffmpeg_video_decoder_unittest.cc',
-            'filters/in_memory_url_protocol_unittest.cc',
-            'filters/pipeline_integration_test.cc',
-            'filters/pipeline_integration_test_base.cc',
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
