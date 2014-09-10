@@ -171,7 +171,6 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
 }
 
 void ScopedXI2Event::InitGenericKeyEvent(int deviceid,
-                                         int sourceid,
                                          EventType type,
                                          KeyboardCode key_code,
                                          int flags) {
@@ -184,7 +183,6 @@ void ScopedXI2Event::InitGenericKeyEvent(int deviceid,
   xievent->display = display;
   xievent->mods.effective = XEventState(flags);
   xievent->detail = XKeyCodeForWindowsKeyCode(key_code, flags, display);
-  xievent->sourceid = sourceid;
 }
 
 void ScopedXI2Event::InitGenericButtonEvent(int deviceid,

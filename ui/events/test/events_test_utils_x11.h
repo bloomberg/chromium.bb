@@ -42,10 +42,7 @@ class ScopedXI2Event {
                     KeyboardCode key_code,
                     int flags);
 
-  // Initializes an Xinput2 key event.
-  // |deviceid| is the master, and |sourceid| is the slave device.
   void InitGenericKeyEvent(int deviceid,
-                           int sourceid,
                            EventType type,
                            KeyboardCode key_code,
                            int flags);

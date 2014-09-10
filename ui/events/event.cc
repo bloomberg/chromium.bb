@@ -230,7 +230,7 @@ Event::Event(const base::NativeEvent& native_event,
   if (native_event->type == GenericEvent) {
     XIDeviceEvent* xiev =
         static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-    source_device_id_ = xiev->sourceid;
+    source_device_id_ = xiev->deviceid;
   }
 #endif
 }
