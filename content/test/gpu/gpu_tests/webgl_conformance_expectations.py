@@ -38,11 +38,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
         ['win'], bug=402195)
 
-    # Win D3D9 failures (unfortunately can not target just this
-    # configuration with test expectations)
-    self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['win'], bug=401713)
-
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
