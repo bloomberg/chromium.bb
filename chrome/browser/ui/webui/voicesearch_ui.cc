@@ -245,7 +245,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     std::string audio_logging_enabled = "No";
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
-    if (hotword_service->IsOptedIntoAudioLogging())
+    if (hotword_service && hotword_service->IsOptedIntoAudioLogging())
       audio_logging_enabled = "Yes";
     AddPair(list, ASCIIToUTF16("Hotword Audio Logging Enabled"),
             ASCIIToUTF16(audio_logging_enabled));
