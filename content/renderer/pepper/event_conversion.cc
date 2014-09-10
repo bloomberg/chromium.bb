@@ -4,8 +4,6 @@
 
 #include "content/renderer/pepper/event_conversion.h"
 
-#include <map>
-
 #include "base/basictypes.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -215,11 +213,27 @@ void AppendMouseWheelEvent(const WebInputEvent& event,
   result_events->push_back(result);
 }
 
+enum IncludedTouchPointTypes {
+  ALL,     // All pointers targetting the plugin.
+  ACTIVE,  // Only pointers that are currently down.
+  CHANGED  // Only pointers that have changed since the previous event.
+};
 void SetPPTouchPoints(const WebTouchPoint* touches,
                       uint32_t touches_length,
+                      IncludedTouchPointTypes included_types,
                       std::vector<PP_TouchPoint>* result) {
   for (uint32_t i = 0; i < touches_length; i++) {
     const WebTouchPoint& touch_point = touches[i];
+    if (included_types == ACTIVE &&
+        (touch_point.state == WebTouchPoint::StateReleased ||
+         touch_point.state == WebTouchPoint::StateCancelled)) {
+      continue;
+    }
+    if (included_types == CHANGED &&
+        (touch_point.state == WebTouchPoint::StateUndefined ||
+         touch_point.state == WebTouchPoint::StateStationary)) {
+      continue;
+    }
     PP_TouchPoint pp_pt;
     pp_pt.id = touch_point.id;
     pp_pt.position.x = touch_point.position.x;
@@ -239,52 +253,67 @@ void AppendTouchEvent(const WebInputEvent& event,
 
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   SetPPTouchPoints(
-      touch_event.touches, touch_event.touchesLength, &result.touches);
-  SetPPTouchPoints(touch_event.changedTouches,
-                   touch_event.changedTouchesLength,
+      touch_event.touches, touch_event.touchesLength, ACTIVE, &result.touches);
+  SetPPTouchPoints(touch_event.touches,
+                   touch_event.touchesLength,
+                   CHANGED,
                    &result.changed_touches);
-  SetPPTouchPoints(touch_event.targetTouches,
-                   touch_event.targetTouchesLength,
+  SetPPTouchPoints(touch_event.touches,
+                   touch_event.touchesLength,
+                   ALL,
                    &result.target_touches);
 
   result_events->push_back(result);
 }
 
-// Structure used to map touch point id's to touch states.  Since the pepper
-// touch event structure does not have states for individual touch points and
-// instead relies on the event type in combination with the set of touch lists,
-// we have to set the state for the changed touches to be the same as the event
-// type and all others to be 'stationary.'
-typedef std::map<uint32_t, WebTouchPoint::State> TouchStateMap;
+WebTouchPoint CreateWebTouchPoint(const PP_TouchPoint& pp_pt,
+                                  WebTouchPoint::State state) {
+  WebTouchPoint pt;
+  pt.id = pp_pt.id;
+  pt.position.x = pp_pt.position.x;
+  pt.position.y = pp_pt.position.y;
+  // TODO bug:http://code.google.com/p/chromium/issues/detail?id=93902
+  pt.screenPosition.x = 0;
+  pt.screenPosition.y = 0;
+  pt.force = pp_pt.pressure;
+  pt.radiusX = pp_pt.radius.x;
+  pt.radiusY = pp_pt.radius.y;
+  pt.rotationAngle = pp_pt.rotation_angle;
+  pt.state = state;
+  return pt;
+}
 
-void SetWebTouchPoints(const std::vector<PP_TouchPoint>& pp_touches,
-                       const TouchStateMap& states_map,
-                       WebTouchPoint* web_touches,
-                       uint32_t* web_touches_length) {
+bool HasTouchPointWithId(const WebTouchPoint* web_touches,
+                         uint32_t web_touches_length,
+                         uint32_t id) {
+  // Note: A brute force search to find the (potentially) existing touch point
+  // is cheap given the small bound on |WebTouchEvent::touchesLengthCap|.
+  for (uint32_t i = 0; i < web_touches_length; ++i) {
+    if (web_touches[i].id == static_cast<int>(id))
+      return true;
+  }
+  return false;
+}
 
-  for (uint32_t i = 0;
-       i < pp_touches.size() && i < WebTouchEvent::touchesLengthCap;
-       i++) {
-    WebTouchPoint pt;
+void SetWebTouchPointsIfNotYetSet(const std::vector<PP_TouchPoint>& pp_touches,
+                                  WebTouchPoint::State state,
+                                  WebTouchPoint* web_touches,
+                                  uint32_t* web_touches_length) {
+  const uint32_t initial_web_touches_length = *web_touches_length;
+  const uint32_t touches_length =
+      std::min(static_cast<uint32_t>(pp_touches.size()),
+               static_cast<uint32_t>(WebTouchEvent::touchesLengthCap));
+  for (uint32_t i = 0; i < touches_length; ++i) {
+    const uint32_t touch_index = *web_touches_length;
+    if (touch_index >= static_cast<uint32_t>(WebTouchEvent::touchesLengthCap))
+      return;
+
     const PP_TouchPoint& pp_pt = pp_touches[i];
-    pt.id = pp_pt.id;
+    if (HasTouchPointWithId(web_touches, initial_web_touches_length, pp_pt.id))
+      continue;
 
-    if (states_map.find(pt.id) == states_map.end())
-      pt.state = WebTouchPoint::StateStationary;
-    else
-      pt.state = states_map.find(pt.id)->second;
-
-    pt.position.x = pp_pt.position.x;
-    pt.position.y = pp_pt.position.y;
-    // TODO bug:http://code.google.com/p/chromium/issues/detail?id=93902
-    pt.screenPosition.x = 0;
-    pt.screenPosition.y = 0;
-    pt.force = pp_pt.pressure;
-    pt.radiusX = pp_pt.radius.x;
-    pt.radiusY = pp_pt.radius.y;
-    pt.rotationAngle = pp_pt.rotation_angle;
-    web_touches[i] = pt;
-    (*web_touches_length)++;
+    web_touches[touch_index] = CreateWebTouchPoint(pp_pt, state);
+    ++(*web_touches_length);
   }
 }
 
@@ -314,35 +343,18 @@ WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
   }
   WebTouchEventTraits::ResetType(
       type, PPTimeTicksToEventTime(event.event_time_stamp), web_event);
+  web_event->touchesLength = 0;
 
-  TouchStateMap states_map;
-  for (uint32_t i = 0; i < event.changed_touches.size(); i++)
-    states_map[event.changed_touches[i].id] = state;
-
-  SetWebTouchPoints(event.changed_touches,
-                    states_map,
-                    web_event->changedTouches,
-                    &web_event->changedTouchesLength);
-
-  SetWebTouchPoints(
-      event.touches, states_map, web_event->touches, &web_event->touchesLength);
-
-  SetWebTouchPoints(event.target_touches,
-                    states_map,
-                    web_event->targetTouches,
-                    &web_event->targetTouchesLength);
-
-  if (web_event->type == WebInputEvent::TouchEnd ||
-      web_event->type == WebInputEvent::TouchCancel) {
-    SetWebTouchPoints(event.changed_touches,
-                      states_map,
-                      web_event->touches,
-                      &web_event->touchesLength);
-    SetWebTouchPoints(event.changed_touches,
-                      states_map,
-                      web_event->targetTouches,
-                      &web_event->targetTouchesLength);
-  }
+  // First add all changed touches, then add only the remaining unset
+  // (stationary) touches.
+  SetWebTouchPointsIfNotYetSet(event.changed_touches,
+                               state,
+                               web_event->touches,
+                               &web_event->touchesLength);
+  SetWebTouchPointsIfNotYetSet(event.touches,
+                               WebTouchPoint::StateStationary,
+                               web_event->touches,
+                               &web_event->touchesLength);
 
   return web_event;
 }

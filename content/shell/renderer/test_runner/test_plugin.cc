@@ -99,8 +99,6 @@ void PrintEventDetails(WebTestDelegate* delegate,
     const blink::WebTouchEvent& touch =
         static_cast<const blink::WebTouchEvent&>(event);
     PrintTouchList(delegate, touch.touches, touch.touchesLength);
-    PrintTouchList(delegate, touch.changedTouches, touch.changedTouchesLength);
-    PrintTouchList(delegate, touch.targetTouches, touch.targetTouchesLength);
   } else if (blink::WebInputEvent::isMouseEventType(event.type) ||
              event.type == blink::WebInputEvent::MouseWheel) {
     const blink::WebMouseEvent& mouse =

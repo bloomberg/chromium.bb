@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "content/common/content_export.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -27,12 +28,14 @@ namespace content {
 // Converts the given WebKit event to one or possibly multiple PP_InputEvents.
 // The generated events will be filled into the given vector. On failure, no
 // events will ge generated and the vector will be empty.
-void CreateInputEventData(const blink::WebInputEvent& event,
-                          std::vector<ppapi::InputEventData>* pp_events);
+CONTENT_EXPORT void CreateInputEventData(
+    const blink::WebInputEvent& event,
+    std::vector<ppapi::InputEventData>* pp_events);
 
 // Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
 // NULL.  The caller owns the created object on success.
-blink::WebInputEvent* CreateWebInputEvent(const ppapi::InputEventData& event);
+CONTENT_EXPORT blink::WebInputEvent* CreateWebInputEvent(
+    const ppapi::InputEventData& event);
 
 // Creates an array of WebInputEvents to make the given event look like a user
 // input event on all platforms. |plugin_x| and |plugin_y| should be the

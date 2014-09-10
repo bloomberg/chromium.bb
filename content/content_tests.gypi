@@ -710,6 +710,7 @@
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/webrtc/video_destination_handler_unittest.cc',
         'renderer/npapi/webplugin_impl_unittest.cc',
+        'renderer/pepper/event_conversion_unittest.cc',
         'renderer/pepper/host_var_tracker_unittest.cc',
         'renderer/pepper/mock_resource.h',
         'renderer/pepper/pepper_broker_unittest.cc',

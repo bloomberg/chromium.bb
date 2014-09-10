@@ -579,7 +579,10 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
 
   const blink::WebInputEvent* modified_event = &event;
   scoped_ptr<blink::WebTouchEvent> touch_event;
-  if (blink::WebInputEvent::isTouchEventType(event.type)) {
+  // TODO(jdduke): Remove this branch when Blink starts forwarding
+  // WebTouchEvents with a fully populated |touches| field.
+  if (blink::WebInputEvent::isTouchEventType(event.type) &&
+      static_cast<const blink::WebTouchEvent*>(&event)->changedTouchesLength) {
     const blink::WebTouchEvent* orig_touch_event =
         static_cast<const blink::WebTouchEvent*>(&event);
 
