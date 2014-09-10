@@ -445,6 +445,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Notifies this window and its parent hierarchy.
   void NotifyWindowVisibilityChangedUp(aura::Window* target, bool visible);
 
+  // Notifies this window and its child hierarchy of a transform applied to
+  // |source|.
+  void NotifyAncestorWindowTransformed(Window* source);
+
   // Invoked when the bounds of the window changes. This may be invoked directly
   // by us, or from the closure returned by PrepareForLayerBoundsChange() after
   // the bounds of the layer has changed. |old_bounds| is the previous bounds.

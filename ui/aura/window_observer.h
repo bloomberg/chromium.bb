@@ -82,6 +82,10 @@ class AURA_EXPORT WindowObserver {
   virtual void OnWindowTransforming(Window* window) {}
   virtual void OnWindowTransformed(Window* window) {}
 
+  // Invoked when SetTransform() is invoked on an ancestor of the window being
+  // observed (including the window itself).
+  virtual void OnAncestorWindowTransformed(Window* source, Window* window) {}
+
   // Invoked when |window|'s position among its siblings in the stacking order
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}

@@ -409,6 +409,7 @@ void Window::SetTransform(const gfx::Transform& transform) {
   layer()->SetTransform(transform);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowTransformed(this));
+  NotifyAncestorWindowTransformed(this);
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -1314,6 +1315,15 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
   for (Window* window = this; window; window = window->parent()) {
     bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
     DCHECK(ret);
+  }
+}
+
+void Window::NotifyAncestorWindowTransformed(Window* source) {
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnAncestorWindowTransformed(source, this));
+  for (Window::Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    (*it)->NotifyAncestorWindowTransformed(source);
   }
 }
 

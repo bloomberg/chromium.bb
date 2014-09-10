@@ -1707,6 +1707,18 @@ class WindowObserverTest : public WindowTest,
     return result;
   }
 
+  std::string TransformNotificationsAndClear() {
+    std::string result;
+    for (std::vector<std::pair<int, int> >::iterator it =
+            transform_notifications_.begin();
+        it != transform_notifications_.end();
+        ++it) {
+      base::StringAppendF(&result, "(%d,%d)", it->first, it->second);
+    }
+    transform_notifications_.clear();
+    return result;
+  }
+
  private:
   virtual void OnWindowAdded(Window* new_window) OVERRIDE {
     added_count_++;
@@ -1735,12 +1747,19 @@ class WindowObserverTest : public WindowTest,
     old_property_value_ = old;
   }
 
+  virtual void OnAncestorWindowTransformed(Window* source,
+                                           Window* window) OVERRIDE {
+    transform_notifications_.push_back(
+        std::make_pair(source->id(), window->id()));
+  }
+
   int added_count_;
   int removed_count_;
   int destroyed_count_;
   scoped_ptr<VisibilityInfo> visibility_info_;
   const void* property_key_;
   intptr_t old_property_value_;
+  std::vector<std::pair<int, int> > transform_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -1855,6 +1874,33 @@ TEST_F(WindowObserverTest, PropertyChanged) {
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
   EXPECT_EQ(PropertyChangeInfo(
       reinterpret_cast<const void*>(NULL), -3), PropertyChangeInfoAndClear());
+}
+
+TEST_F(WindowObserverTest, AncestorTransformed) {
+  // Create following window hierarchy:
+  //   root_window
+  //   +-- w1
+  //       +-- w2
+  //       +-- w3
+  //           +-- w4
+  // Then, apply a transform to |w1| and ensure all its descendants are
+  // notified.
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
+  w1->AddObserver(this);
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
+  w2->AddObserver(this);
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));
+  w3->AddObserver(this);
+  scoped_ptr<Window> w4(CreateTestWindowWithId(4, w3.get()));
+  w4->AddObserver(this);
+
+  EXPECT_EQ(std::string(), TransformNotificationsAndClear());
+
+  gfx::Transform transform;
+  transform.Translate(10, 10);
+  w1->SetTransform(transform);
+
+  EXPECT_EQ("(1,1)(1,2)(1,3)(1,4)", TransformNotificationsAndClear());
 }
 
 TEST_F(WindowTest, AcquireLayer) {
