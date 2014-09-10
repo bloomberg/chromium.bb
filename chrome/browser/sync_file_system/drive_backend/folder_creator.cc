@@ -114,14 +114,6 @@ void FolderCreator::DidListFolders(
   std::string file_id = oldest->file_id();
 
   status = metadata_database_->UpdateByFileResourceList(candidates.Pass());
-
-  // TODO(tzik): Expand this function.
-  DidUpdateDatabase(file_id, callback, status);
-}
-
-void FolderCreator::DidUpdateDatabase(const std::string& file_id,
-                                      const FileIDCallback& callback,
-                                      SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     callback.Run(std::string(), status);
     return;

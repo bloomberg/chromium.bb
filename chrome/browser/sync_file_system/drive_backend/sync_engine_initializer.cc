@@ -88,18 +88,7 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   SyncStatusCode status = SYNC_STATUS_FAILED;
   scoped_ptr<MetadataDatabase> metadata_database =
       MetadataDatabase::Create(database_path_, env_override_, &status);
-  // TODO(tzik): Expand this function.
-  DidCreateMetadataDatabase(token.Pass(), status, metadata_database.Pass());
-}
 
-scoped_ptr<MetadataDatabase> SyncEngineInitializer::PassMetadataDatabase() {
-  return metadata_database_.Pass();
-}
-
-void SyncEngineInitializer::DidCreateMetadataDatabase(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status,
-    scoped_ptr<MetadataDatabase> instance) {
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to initialize MetadataDatabase.");
@@ -107,8 +96,8 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
     return;
   }
 
-  DCHECK(instance);
-  metadata_database_ = instance.Pass();
+  DCHECK(metadata_database);
+  metadata_database_ = metadata_database.Pass();
   if (metadata_database_->HasSyncRoot()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Found local cache of sync-root.");
@@ -117,6 +106,10 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
   }
 
   GetAboutResource(token.Pass());
+}
+
+scoped_ptr<MetadataDatabase> SyncEngineInitializer::PassMetadataDatabase() {
+  return metadata_database_.Pass();
 }
 
 void SyncEngineInitializer::GetAboutResource(
@@ -348,13 +341,6 @@ void SyncEngineInitializer::PopulateDatabase(
   DCHECK(sync_root_folder_);
   SyncStatusCode status = metadata_database_->PopulateInitialData(
       largest_change_id_, *sync_root_folder_, app_root_folders_);
-  // TODO(tzik): Expand this function.
-  DidPopulateDatabase(token.Pass(), status);
-}
-
-void SyncEngineInitializer::DidPopulateDatabase(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to populate initial data"

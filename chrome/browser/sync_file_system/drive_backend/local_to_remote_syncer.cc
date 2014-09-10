@@ -548,14 +548,6 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
 
   DCHECK(entry);
   status = metadata_database()->UpdateByFileResource(*entry);
-
-  // TODO(tzik): Expand this function.
-  DidUpdateDatabaseForUploadExistingFile(token.Pass(), status);
-}
-
-void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     SyncCompleted(token.Pass(), status);
     return;

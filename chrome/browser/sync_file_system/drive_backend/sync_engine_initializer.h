@@ -77,10 +77,6 @@ class SyncEngineInitializer : public SyncTask {
  private:
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
-  void DidCreateMetadataDatabase(scoped_ptr<SyncTaskToken> token,
-                                 SyncStatusCode status,
-                                 scoped_ptr<MetadataDatabase> instance);
-
   void GetAboutResource(scoped_ptr<SyncTaskToken> token);
   void DidGetAboutResource(
       scoped_ptr<SyncTaskToken> token,
@@ -103,8 +99,6 @@ class SyncEngineInitializer : public SyncTask {
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
   void PopulateDatabase(scoped_ptr<SyncTaskToken> token);
-  void DidPopulateDatabase(scoped_ptr<SyncTaskToken> token,
-                           SyncStatusCode status);
 
   SyncEngineContext* sync_context_;  // Not owned.
   leveldb::Env* env_override_;

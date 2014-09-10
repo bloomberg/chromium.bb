@@ -123,13 +123,6 @@ void ListChangesTask::CheckInChangeList(int64 largest_change_id,
   SyncStatusCode status =
       metadata_database()->UpdateByChangeList(
           largest_change_id, change_list_.Pass());
-
-  // TODO(tzik): Expand this function.
-  DidCheckInChangeList(token.Pass(), status);
-}
-
-void ListChangesTask::DidCheckInChangeList(scoped_ptr<SyncTaskToken> token,
-                                           SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;

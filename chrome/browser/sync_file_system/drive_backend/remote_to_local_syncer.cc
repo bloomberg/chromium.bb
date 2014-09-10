@@ -328,13 +328,6 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
   }
 
   status = metadata_database()->UpdateByFileResource(*entry);
-  // TODO(tzik): Expand this function.
-  DidUpdateDatabaseForRemoteMetadata(token.Pass(), status);
-}
-
-void RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     SyncCompleted(token.Pass(), status);
     return;
@@ -629,7 +622,6 @@ void RemoteToLocalSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
 
   status = metadata_database()->UpdateTracker(
       dirty_tracker_->tracker_id(), updated_details);
-  // TODO(tzik): Expand this function.
   FinalizeSync(token.Pass(), status);
 }
 

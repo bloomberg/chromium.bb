@@ -40,8 +40,6 @@ class ListChangesTask : public SyncTask {
                       scoped_ptr<google_apis::ChangeList> change_list);
   void CheckInChangeList(int64 largest_change_id,
                          scoped_ptr<SyncTaskToken> token);
-  void DidCheckInChangeList(scoped_ptr<SyncTaskToken> token,
-                            SyncStatusCode status);
 
   bool IsContextReady();
   MetadataDatabase* metadata_database();

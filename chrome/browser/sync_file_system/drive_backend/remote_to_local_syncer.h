@@ -110,8 +110,6 @@ class RemoteToLocalSyncer : public SyncTask {
   void DidGetRemoteMetadata(scoped_ptr<SyncTaskToken> token,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::FileResource> entry);
-  void DidUpdateDatabaseForRemoteMetadata(scoped_ptr<SyncTaskToken> token,
-                                          SyncStatusCode status);
 
   // This implements the body of the HandleNewFile and HandleContentUpdate.
   // If the file doesn't have corresponding local file:
