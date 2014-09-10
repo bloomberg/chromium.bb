@@ -120,6 +120,7 @@ static_library("extensions") {
         "//build/config/linux:x11",
       ]
       deps += [
+        "//ui/events:events_base",
         "//ui/events/platform",
         "//ui/events/platform/x11",
       ]

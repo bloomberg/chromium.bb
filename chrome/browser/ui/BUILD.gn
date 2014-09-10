@@ -187,7 +187,10 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_ash_sources,
                            ".", "//chrome")
     deps += [
+      "//ash",
       "//ash:ash_with_content",
+      "//ash/strings",
+      "//components/user_manager",
     ]
     if (!is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_non_chromeos,

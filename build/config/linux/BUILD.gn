@@ -172,7 +172,13 @@ pkg_config("gio_config") {
   # (saucy) and earlier. Update the code to use
   # g_settings_schema_source_list_schemas instead.
   defines = [ "USE_GIO", "GLIB_DISABLE_DEPRECATION_WARNINGS" ]
-  ignore_libs = true  # Loader generated below.
+ 
+  # TODO(brettw) Theoretically I think ignore_libs should be set so that we
+  # don't link directly to GIO and use the loader generated below. But the gio
+  # target in GYP doesn't make any sense to me and appears to link directly to
+  # GIO in addition to making a loader. This this uncommented, the link in
+  # component build fails, so I think this is closer to the GYP build.
+  #ignore_libs = true  # Loader generated below.
 }
 
 # This generates a target named "gio".

@@ -64,6 +64,10 @@ proto_library("proto") {
     "protocol/checkin.proto",
     "protocol/mcs.proto",
   ]
+
+  cc_generator_options = "dllexport_decl=GCM_EXPORT:"
+  cc_include = "google_apis/gcm/base/gcm_export.h"
+  defines = [ "GCM_IMPLEMENTATION" ]
 }
 
 static_library("test_support") {

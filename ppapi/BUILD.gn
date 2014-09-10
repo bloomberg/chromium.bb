@@ -457,6 +457,8 @@ source_set("ppapi_ipc") {
     "proxy/var_serialization_rules.h",
   ]
 
+  defines = [ "PPAPI_PROXY_IMPLEMENTATION" ]
+
   deps = [
     ":ppapi_c",
     ":ppapi_shared",
