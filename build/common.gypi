@@ -337,7 +337,7 @@
       'component%': 'static_library',
 
       # Set to select the Title Case versions of strings in GRD files.
-      'use_titlecase_in_grd_files%': 0,
+      'use_titlecase_in_grd%': 0,
 
       # Use translations provided by volunteers at launchpad.net.  This
       # currently only works on Linux.
@@ -722,7 +722,7 @@
 
         ['OS=="mac" or OS=="ios"', {
           # Mac and iOS want Title Case strings
-          'use_titlecase_in_grd_files%': 1,
+          'use_titlecase_in_grd%': 1,
         }],
 
         # Enable loader extensions on Chrome OS.
@@ -1106,7 +1106,7 @@
     'system_libdir%': '<(system_libdir)',
     'component%': '<(component)',
     'enable_resource_whitelist_generation%': '<(enable_resource_whitelist_generation)',
-    'use_titlecase_in_grd_files%': '<(use_titlecase_in_grd_files)',
+    'use_titlecase_in_grd%': '<(use_titlecase_in_grd)',
     'use_third_party_translations%': '<(use_third_party_translations)',
     'remoting%': '<(remoting)',
     'enable_one_click_signin%': '<(enable_one_click_signin)',
@@ -2041,7 +2041,7 @@
       ['remoting==1', {
         'grit_defines': ['-D', 'remoting'],
       }],
-      ['use_titlecase_in_grd_files==1', {
+      ['use_titlecase_in_grd==1', {
         'grit_defines': ['-D', 'use_titlecase'],
       }],
       ['use_third_party_translations==1', {
