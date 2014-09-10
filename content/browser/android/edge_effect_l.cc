@@ -12,12 +12,16 @@ namespace content {
 namespace {
 
 // Time it will take the effect to fully recede in ms
-const int kRecedeTimeMs = 1000;
+const int kRecedeTimeMs = 600;
 
 // Time it will take before a pulled glow begins receding in ms
 const int kPullTimeMs = 167;
 
-const float kMaxAlpha = 1.f;
+// Time it will take for a pulled glow to decay to partial strength before
+// release
+const int kPullDecayTimeMs = 2000;
+
+const float kMaxAlpha = 0.5f;
 
 const float kPullGlowBegin = 0.f;
 
@@ -32,9 +36,9 @@ const float kCos = 0.866f;  // cos(PI / 6);
 
 // How much dragging should effect the height of the glow image.
 // Number determined by user testing.
-const float kPullDistanceAlphaGlowFactor = 1.1f;
+const float kPullDistanceAlphaGlowFactor = 0.8f;
 
-const int kVelocityGlowFactor = 12;
+const int kVelocityGlowFactor = 6;
 
 const ui::SystemUIResourceManager::ResourceType kResourceType =
     ui::SystemUIResourceManager::OVERSCROLL_GLOW_L;
@@ -196,7 +200,16 @@ bool EdgeEffectL::Update(base::TimeTicks current_time) {
         glow_scale_y_finish_ = 0.f;
         break;
       case STATE_PULL:
-        // Hold in this state until explicitly released.
+        state_ = STATE_PULL_DECAY;
+        start_time_ = current_time;
+        duration_ = base::TimeDelta::FromMilliseconds(kPullDecayTimeMs);
+
+        glow_alpha_start_ = glow_alpha_;
+        glow_scale_y_start_ = glow_scale_y_;
+
+        // After pull, the glow should fade to nothing.
+        glow_alpha_finish_ = 0.f;
+        glow_scale_y_finish_ = 0.f;
         break;
       case STATE_PULL_DECAY:
         state_ = STATE_RECEDE;
@@ -233,8 +246,13 @@ void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
   const float r = size.width() * 0.75f / kSin;
   const float y = kCos * r;
   const float h = r - y;
+  const float o_r = size.height() * 0.75f / kSin;
+  const float o_y = kCos * o_r;
+  const float o_h = o_r - o_y;
+  const float base_glow_scale = h > 0.f ? std::min(o_h / h, 1.f) : 1.f;
   bounds_ = gfx::Size(size.width(), (int)std::min(size.height(), h));
-  gfx::Size image_bounds(r, std::min(1.f, glow_scale_y_) * bounds_.height());
+  gfx::Size image_bounds(
+      r, std::min(1.f, glow_scale_y_) * base_glow_scale * bounds_.height());
 
   glow_->SetIsDrawable(true);
   glow_->SetUIResourceId(resource_manager_->GetUIResourceId(kResourceType));

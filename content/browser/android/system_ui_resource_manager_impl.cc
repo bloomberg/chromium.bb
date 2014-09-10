@@ -29,7 +29,7 @@ SkBitmap CreateOverscrollGlowLBitmap(const gfx::Size& screen_size) {
 
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setAlpha(0x33);
+  paint.setAlpha(0xBB);
   paint.setStyle(SkPaint::kFill_Style);
 
   const float arc_width =
