@@ -1192,6 +1192,14 @@ read_events(struct wl_display *display)
 	return 0;
 }
 
+static void
+cancel_read(struct wl_display *display)
+{
+	display->reader_count--;
+	if (display->reader_count == 0)
+		display_wakeup_threads(display);
+}
+
 /** Read events from display file descriptor
  *
  * \param display The display context object
@@ -1219,6 +1227,7 @@ wl_display_read_events(struct wl_display *display)
 	pthread_mutex_lock(&display->mutex);
 
 	if (display->last_error) {
+		cancel_read(display);
 		pthread_mutex_unlock(&display->mutex);
 
 		errno = display->last_error;
@@ -1365,9 +1374,7 @@ wl_display_cancel_read(struct wl_display *display)
 {
 	pthread_mutex_lock(&display->mutex);
 
-	display->reader_count--;
-	if (display->reader_count == 0)
-		display_wakeup_threads(display);
+	cancel_read(display);
 
 	pthread_mutex_unlock(&display->mutex);
 }
