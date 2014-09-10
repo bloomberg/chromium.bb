@@ -277,9 +277,9 @@ void ServiceWorkerDispatcher::OnRegistered(
                          request_id);
 }
 
-void ServiceWorkerDispatcher::OnUnregistered(
-    int thread_id,
-    int request_id) {
+void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
+                                             int request_id,
+                                             bool is_success) {
   WebServiceWorkerUnregistrationCallbacks* callbacks =
       pending_unregistration_callbacks_.Lookup(request_id);
   TRACE_EVENT_ASYNC_STEP_INTO0(
@@ -290,7 +290,6 @@ void ServiceWorkerDispatcher::OnUnregistered(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  bool is_success = true;
   callbacks->onSuccess(&is_success);
   pending_unregistration_callbacks_.Remove(request_id);
   TRACE_EVENT_ASYNC_END0("ServiceWorker",

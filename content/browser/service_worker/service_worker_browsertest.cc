@@ -882,12 +882,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
 
   const std::string kWorkerUrl = "/service_worker/fetch_event.js";
 
-  // Unregistering nothing should return true.
+  // Unregistering nothing should return false.
   {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
         embedded_test_server()->GetURL("/"),
-        base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+        base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
     run_loop.Run();
   }
 

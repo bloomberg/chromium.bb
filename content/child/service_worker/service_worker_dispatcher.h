@@ -137,7 +137,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                     const ServiceWorkerRegistrationObjectInfo& info,
                     const ServiceWorkerVersionAttributes& attrs);
   void OnUnregistered(int thread_id,
-                      int request_id);
+                      int request_id,
+                      bool is_success);
   void OnRegistrationError(int thread_id,
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,

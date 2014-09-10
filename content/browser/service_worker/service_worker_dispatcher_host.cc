@@ -594,12 +594,14 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
     int thread_id,
     int request_id,
     ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK) {
+  if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
     SendUnregistrationError(thread_id, request_id, status);
     return;
   }
-
-  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+  const bool is_success = (status == SERVICE_WORKER_OK);
+  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id,
+                                                      request_id,
+                                                      is_success));
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
       "ServiceWorkerDispatcherHost::UnregisterServiceWorker",

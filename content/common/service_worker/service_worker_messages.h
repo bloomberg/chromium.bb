@@ -192,9 +192,10 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
                      content::ServiceWorkerVersionAttributes)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int /* thread_id */,
-                     int /* request_id */)
+                     int /* request_id */,
+                     bool /* is_success */)
 
 // Sent when any kind of registration error occurs during a
 // RegisterServiceWorker handler above.
