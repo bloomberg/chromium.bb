@@ -388,7 +388,6 @@
       'fonts/android/FontCacheAndroid.cpp',
       'fonts/cocoa/FontPlatformDataCocoa.mm',
       'fonts/harfbuzz/FontHarfBuzz.cpp',
-      'fonts/harfbuzz/FontPlatformDataHarfBuzz.cpp',
       'fonts/harfbuzz/HarfBuzzFace.cpp',
       'fonts/harfbuzz/HarfBuzzFace.h',
       'fonts/harfbuzz/HarfBuzzFaceCoreText.cpp',

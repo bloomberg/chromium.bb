@@ -225,7 +225,6 @@ component("platform") {
   if (is_mac) {
     sources -= [
       "fonts/harfbuzz/FontHarfBuzz.cpp",
-      "fonts/harfbuzz/FontPlatformDataHarfBuzz.cpp",
       "fonts/harfbuzz/HarfBuzzFaceSkia.cpp",
       "fonts/opentype/OpenTypeTypes.h",
       "fonts/opentype/OpenTypeVerticalData.cpp",
@@ -262,9 +261,6 @@ component("platform") {
     ]
   } else {
     sources -= [
-      # FIXME: We will eventually compile this too, but for now it's
-      # only used on mac.
-      "fonts/FontPlatformData.cpp",
       "fonts/harfbuzz/HarfBuzzFaceCoreText.cpp",
       "geometry/cg/FloatPointCG.cpp",
       "geometry/cg/FloatRectCG.cpp",

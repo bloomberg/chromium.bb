@@ -252,7 +252,6 @@
         'sources/': [
           # Cherry-pick files excluded by the broader regular expressions above.
           ['include', 'fonts/harfbuzz/FontHarfBuzz\\.cpp$'],
-          ['include', 'fonts/harfbuzz/FontPlatformDataHarfBuzz\\.cpp$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
           ['include', 'fonts/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
           ['include', 'fonts/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
@@ -361,9 +360,6 @@
           ['exclude', 'geometry/cg/'],
           ['exclude', 'scroll/ScrollbarThemeMac'],
 
-          # FIXME: We will eventually compile this too, but for now it's
-          # only used on mac.
-          ['exclude', 'fonts/FontPlatformData\\.cpp$'],
           ['exclude', 'fonts/harfbuzz/HarfBuzzFaceCoreText\\.cpp$'],
         ],
       }],
