@@ -51,6 +51,9 @@ private:
     String m_stringMemberWithDefault;
     Nullable<Vector<String> > m_stringSequenceMember;
     Nullable<Vector<String> > m_stringSequenceOrNullMember;
+    String m_enumMember;
+    String m_enumMemberWithDefault;
+    String m_enumOrNullMember;
     RefPtrWillBeMember<Element> m_elementMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
 };

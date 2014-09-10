@@ -475,6 +475,7 @@ V8_VALUE_TO_CPP_VALUE = {
 
 def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_integer_type or
+            idl_type.is_dictionary or
             idl_type.name in ('ByteString', 'ScalarValueString'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
@@ -508,7 +509,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     elif idl_type.is_dictionary:
-        cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value})'
+        cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, exceptionState)'
     else:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')
@@ -803,12 +804,13 @@ IdlType.literal_cpp_value = literal_cpp_value
 def cpp_type_has_null_value(idl_type):
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::isNull() returns true.
+    # - Enum types, as they are implemented as Strings.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
     # - Dictionary types represent null as a null pointer. They are garbage
     #   collected so their type is raw pointer.
     return (idl_type.is_string_type or idl_type.is_wrapper_type or
-            idl_type.is_dictionary)
+            idl_type.is_enum or idl_type.is_dictionary)
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

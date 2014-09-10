@@ -8,57 +8,80 @@
 #include "V8TestDictionary.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/tests/v8/V8TestInterface.h"
 #include "bindings/tests/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/tests/v8/V8TestInterfaceWillBeGarbageCollected.h"
 
 namespace blink {
 
-TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
+TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, ExceptionState& exceptionState)
 {
     TestDictionary* impl = TestDictionary::create();
     // FIXME: Do not use Dictionary and DictionaryHelper
     // https://crbug.com/321462
     Dictionary dictionary(v8Value, isolate);
     bool booleanMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "booleanMember", booleanMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "booleanMember", booleanMember)) {
         impl->setBooleanMember(booleanMember);
+    }
     double doubleOrNullMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember)) {
         impl->setDoubleOrNullMember(doubleOrNullMember);
+    }
+    String enumMember;
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "enumMember", enumMember)) {
+        String string = enumMember;
+        if (!(string == "foo" || string == "bar" || string == "baz")) {
+            exceptionState.throwTypeError("member enumMember ('" + string + "') is not a valid enum value.");
+            return 0;
+        }
+        impl->setEnumMember(enumMember);
+    }
     int longMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "longMember", longMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "longMember", longMember)) {
         impl->setLongMember(longMember);
+    }
     Vector<String> stringArrayMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringArrayMember", stringArrayMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringArrayMember", stringArrayMember)) {
         impl->setStringArrayMember(stringArrayMember);
+    }
     String stringMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringMember", stringMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringMember", stringMember)) {
         impl->setStringMember(stringMember);
+    }
     String stringOrNullMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringOrNullMember", stringOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringOrNullMember", stringOrNullMember)) {
         impl->setStringOrNullMember(stringOrNullMember);
+    }
     Vector<String> stringSequenceMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringSequenceMember", stringSequenceMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "stringSequenceMember", stringSequenceMember)) {
         impl->setStringSequenceMember(stringSequenceMember);
+    }
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedMember", testInterfaceGarbageCollectedMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedMember", testInterfaceGarbageCollectedMember)) {
         impl->setTestInterfaceGarbageCollectedMember(testInterfaceGarbageCollectedMember);
+    }
     RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedOrNullMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedOrNullMember", testInterfaceGarbageCollectedOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceGarbageCollectedOrNullMember", testInterfaceGarbageCollectedOrNullMember)) {
         impl->setTestInterfaceGarbageCollectedOrNullMember(testInterfaceGarbageCollectedOrNullMember);
+    }
     RefPtr<TestInterfaceImplementation> testInterfaceMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceMember", testInterfaceMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceMember", testInterfaceMember)) {
         impl->setTestInterfaceMember(testInterfaceMember);
+    }
     RefPtr<TestInterfaceImplementation> testInterfaceOrNullMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceOrNullMember", testInterfaceOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceOrNullMember", testInterfaceOrNullMember)) {
         impl->setTestInterfaceOrNullMember(testInterfaceOrNullMember);
+    }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedMember", testInterfaceWillBeGarbageCollectedMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedMember", testInterfaceWillBeGarbageCollectedMember)) {
         impl->setTestInterfaceWillBeGarbageCollectedMember(testInterfaceWillBeGarbageCollectedMember);
+    }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedOrNullMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedOrNullMember", testInterfaceWillBeGarbageCollectedOrNullMember))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "testInterfaceWillBeGarbageCollectedOrNullMember", testInterfaceWillBeGarbageCollectedOrNullMember)) {
         impl->setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
+    }
     return impl;
 }
 
@@ -71,6 +94,10 @@ v8::Handle<v8::Value> toV8(TestDictionary* impl, v8::Handle<v8::Object> creation
         v8Object->Set(v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl->doubleOrNullMember()));
     else
         v8Object->Set(v8String(isolate, "doubleOrNullMember"), v8::Null(isolate));
+    if (impl->hasEnumMember())
+        v8Object->Set(v8String(isolate, "enumMember"), v8String(isolate, impl->enumMember()));
+    else
+        v8Object->Set(v8String(isolate, "enumMember"), v8String(isolate, String("foo")));
     if (impl->hasLongMember())
         v8Object->Set(v8String(isolate, "longMember"), v8::Integer::New(isolate, impl->longMember()));
     else

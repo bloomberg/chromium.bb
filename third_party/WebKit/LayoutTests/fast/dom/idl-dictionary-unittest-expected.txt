@@ -16,6 +16,9 @@ PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceOrNullMember is undefined.
 PASS dict.elementMember is undefined.
 PASS dict.elementOrNullMember is undefined.
+PASS dict.enumMember is undefined.
+PASS dict.enumMemberWithDefault is "foo"
+PASS dict.enumOrNullMember is undefined.
 
 Test for setting undefined
 PASS dict.longMember is undefined.
@@ -44,6 +47,9 @@ PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
 PASS dict.stringSequenceOrNullMember is []
 PASS dict.elementMember is element1
 PASS dict.elementOrNullMember is undefined.
+PASS dict.enumMember is "foo"
+PASS dict.enumMemberWithDefault is "bar"
+PASS dict.enumOrNullMember is "baz"
 
 Test for explicit undefined or null, and missing members
 PASS dict.longMember is undefined.
@@ -53,6 +59,9 @@ PASS dict.longOrNullMemberWithDefault is null
 
 Test for setting invalid member
 PASS dict.invalidMember is undefined.
+
+Test for setting invalid enum value
+PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member enumMember ('invalid') is not a valid enum value..
 
 PASS successfullyParsed is true
 

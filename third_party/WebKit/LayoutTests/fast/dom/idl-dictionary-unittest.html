@@ -21,6 +21,9 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
     shouldBeUndefined('dict.elementOrNullMember');
+    shouldBeUndefined('dict.enumMember');
+    shouldBeEqualToString('dict.enumMemberWithDefault', 'foo');
+    shouldBeUndefined('dict.enumOrNullMember');
     debug('');
 
     debug('Test for setting undefined');
@@ -56,6 +59,9 @@ if (window.internals && internals.dictionaryTest) {
         stringSequenceOrNullMember: [],
         elementMember: element1,
         elementOrNullMember: null,
+        enumMember: 'foo',
+        enumMemberWithDefault: 'bar',
+        enumOrNullMember: 'baz',
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '1');
@@ -71,6 +77,9 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.elementMember', 'element1');
     // This will be undefined as the spec says
     shouldBeUndefined('dict.elementOrNullMember');
+    shouldBeEqualToString('dict.enumMember', 'foo');
+    shouldBeEqualToString('dict.enumMemberWithDefault', 'bar');
+    shouldBeEqualToString('dict.enumOrNullMember', 'baz');
     debug('');
 
     debug('Test for explicit undefined or null, and missing members');
@@ -92,6 +101,10 @@ if (window.internals && internals.dictionaryTest) {
     dictionaryTest.set({invalidMember: 'shouldNotBeSet'});
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.invalidMember');
+    debug('');
+
+    debug('Test for setting invalid enum value');
+    shouldThrow("dictionaryTest.set({enumMember: 'invalid'})");
     debug('');
 }
 </script>

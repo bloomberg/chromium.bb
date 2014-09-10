@@ -8164,13 +8164,14 @@ static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestDictionary* testDictionaryArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(testDictionaryArg, V8TestDictionary::toImpl(info.GetIsolate(), info[0]));
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testDictionaryArg, V8TestDictionary::toImpl(info.GetIsolate(), info[0], exceptionState), exceptionState);
         } else {
             testDictionaryArg = TestDictionary::create();
         }

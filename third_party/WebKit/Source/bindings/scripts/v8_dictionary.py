@@ -18,6 +18,7 @@ DICTIONARY_H_INCLUDES = frozenset([
 ])
 
 DICTIONARY_CPP_INCLUDES = frozenset([
+    'bindings/core/v8/ExceptionState.h',
     # FIXME: Remove this, http://crbug.com/321462
     'bindings/core/v8/Dictionary.h',
 ])
@@ -75,6 +76,7 @@ def member_context(member):
             cpp_value='impl->%s()' % member.name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=member.extended_attributes),
+        'enum_validation_expression': idl_type.enum_validation_expression,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'name': member.name,
         'setter_name': setter_name_for_dictionary_member(member),
@@ -105,8 +107,7 @@ def member_impl_context(member, interfaces_info, header_includes):
         return 'm_%s' % member.name
 
     def has_method_expression():
-        if (idl_type.impl_should_use_nullable_container or
-            idl_type.is_string_type):
+        if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type:
             return '!m_%s.isNull()' % member.name
         else:
             return 'm_%s' % member.name

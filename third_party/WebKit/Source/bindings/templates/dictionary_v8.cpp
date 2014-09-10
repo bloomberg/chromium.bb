@@ -13,7 +13,7 @@
 
 namespace blink {
 
-{{cpp_class}}* {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
+{{cpp_class}}* {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, ExceptionState& exceptionState)
 {
     {{cpp_class}}* impl = {{cpp_class}}::create();
     // FIXME: Do not use Dictionary and DictionaryHelper
@@ -21,8 +21,16 @@ namespace blink {
     Dictionary dictionary(v8Value, isolate);
     {% for member in members %}
     {{member.cpp_type}} {{member.name}};
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "{{member.name}}", {{member.name}}))
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "{{member.name}}", {{member.name}})) {
+    {% if member.enum_validation_expression %}
+        String string = {{member.name}};
+        if (!({{member.enum_validation_expression}})) {
+            exceptionState.throwTypeError("member {{member.name}} ('" + string + "') is not a valid enum value.");
+            return 0;
+        }
+    {% endif %}
         impl->{{member.setter_name}}({{member.name}});
+    }
     {% endfor %}
     return impl;
 }

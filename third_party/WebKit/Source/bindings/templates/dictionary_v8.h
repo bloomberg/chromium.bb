@@ -13,9 +13,11 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class {{v8_class}} {
 public:
-    static {{cpp_class}}* toImpl(v8::Isolate*, v8::Handle<v8::Value>);
+    static {{cpp_class}}* toImpl(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 };
 
 v8::Handle<v8::Value> toV8({{cpp_class}}*, v8::Handle<v8::Object>, v8::Isolate*);

@@ -63,6 +63,9 @@ public:
     bool hasStringSequenceMember() const { return !m_stringSequenceMember.isNull(); }
     const Vector<String>& stringSequenceMember() const { return m_stringSequenceMember.get(); }
     void setStringSequenceMember(const Vector<String>& value) { m_stringSequenceMember = value; }
+    bool hasEnumMember() const { return !m_enumMember.isNull(); }
+    String enumMember() const { return m_enumMember; }
+    void setEnumMember(String value) { m_enumMember = value; }
 
     void trace(Visitor*);
 
@@ -82,6 +85,7 @@ private:
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollectedOrNullMember;
     Nullable<Vector<String> > m_stringArrayMember;
     Nullable<Vector<String> > m_stringSequenceMember;
+    String m_enumMember;
 
     friend class V8TestDictionary;
 };

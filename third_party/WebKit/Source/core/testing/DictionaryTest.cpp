@@ -39,6 +39,9 @@ void DictionaryTest::set(const InternalDictionary* testingDictionary)
         m_stringSequenceMember = testingDictionary->stringSequenceMember();
     if (testingDictionary->hasStringSequenceOrNullMember())
         m_stringSequenceOrNullMember = testingDictionary->stringSequenceOrNullMember();
+    m_enumMember = testingDictionary->enumMember();
+    m_enumMemberWithDefault = testingDictionary->enumMemberWithDefault();
+    m_enumOrNullMember = testingDictionary->enumOrNullMember();
     if (testingDictionary->hasElementMember())
         m_elementMember = testingDictionary->elementMember();
     if (testingDictionary->hasElementOrNullMember())
@@ -65,6 +68,9 @@ InternalDictionary* DictionaryTest::get()
         result->setStringSequenceMember(m_stringSequenceMember.get());
     if (m_stringSequenceOrNullMember)
         result->setStringSequenceOrNullMember(m_stringSequenceOrNullMember.get());
+    result->setEnumMember(m_enumMember);
+    result->setEnumMemberWithDefault(m_enumMemberWithDefault);
+    result->setEnumOrNullMember(m_enumOrNullMember);
     if (m_elementMember)
         result->setElementMember(m_elementMember);
     if (m_elementOrNullMember)
@@ -84,6 +90,9 @@ void DictionaryTest::reset()
     m_stringMemberWithDefault = String("Should not be returned");
     m_stringSequenceMember = Nullable<Vector<String> >();
     m_stringSequenceOrNullMember = Nullable<Vector<String> >();
+    m_enumMember = String();
+    m_enumMemberWithDefault = String();
+    m_enumOrNullMember = String();
     m_elementMember = nullptr;
     m_elementOrNullMember = nullptr;
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+enum InternalEnum { "foo", "bar", "baz" };
+
 [
     GarbageCollected
 ] dictionary InternalDictionary {
@@ -15,6 +17,9 @@
     DOMString stringMemberWithDefault = "defaultStringValue";
     sequence<DOMString> stringSequenceMember;
     sequence<DOMString>? stringSequenceOrNullMember;
+    InternalEnum enumMember;
+    InternalEnum enumMemberWithDefault = "foo";
+    InternalEnum? enumOrNullMember;
     Element elementMember;
     Element? elementOrNullMember;
 };
