@@ -495,6 +495,45 @@ TEST(threading_cancel_read_tst)
 	display_destroy(d);
 }
 
+static void
+threading_read_eagain(void)
+{
+	struct client *c = client_connect();
+	pthread_t th1, th2, th3;
+
+	register_reading(c->wl_display);
+
+	th1 = create_thread(c, thread_prepare_and_read);
+	th2 = create_thread(c, thread_prepare_and_read);
+	th3 = create_thread(c, thread_prepare_and_read);
+
+	/* All the threads are sleeping, waiting until read or cancel
+	 * is called. Since we have no data on socket waiting,
+	 * the wl_connection_read should end up with error and set errno
+	 * to EAGAIN. Check if the threads are woken up in this case. */
+	assert(wl_display_read_events(c->wl_display) == 0);
+	/* errno should be still set to EAGAIN if wl_connection_read
+	 * set it - check if we're testing the right case */
+	assert(errno == EAGAIN);
+
+	alarm(3);
+	pthread_join(th1, NULL);
+	pthread_join(th2, NULL);
+	pthread_join(th3, NULL);
+
+	client_disconnect(c);
+}
+
+TEST(threading_read_eagain_tst)
+{
+	struct display *d = display_create();
+	client_create(d, threading_read_eagain);
+
+	display_run(d);
+
+	display_destroy(d);
+}
+
 static void *
 thread_prepare_and_read2(void *data)
 {
