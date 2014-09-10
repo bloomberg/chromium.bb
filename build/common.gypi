@@ -205,11 +205,6 @@
             'enable_hidpi%': 1,
           }],
 
-          # Enable the OpenSSL backend on Mac OS.
-          ['OS=="mac"', {
-            'use_openssl%': 1,
-          }],
-
           # Enable App Launcher everywhere but mobile.
           ['OS!="ios" and OS!="android"', {
             'enable_app_list%': 1,
