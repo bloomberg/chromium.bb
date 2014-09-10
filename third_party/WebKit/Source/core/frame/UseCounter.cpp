@@ -437,9 +437,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyVectorEffect: return 393;
     case CSSPropertyWritingMode: return 394;
     // CSSPropertyWebkitSvgShadow has been removed, was return 395;
-#if defined(ENABLE_CURSOR_VISIBILITY) && ENABLE_CURSOR_VISIBILITY
-    case CSSPropertyWebkitCursorVisibility: return 396;
-#endif
+    // CSSPropertyWebkitCursorVisibility has been removed, was return 396;
     // CSSPropertyImageOrientation has been removed, was return 397;
     // CSSPropertyImageResolution has been removed, was return 398;
 #if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
