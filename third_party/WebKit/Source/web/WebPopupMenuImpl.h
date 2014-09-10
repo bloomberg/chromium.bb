@@ -31,17 +31,16 @@
 #ifndef WebPopupMenuImpl_h
 #define WebPopupMenuImpl_h
 
-#include "platform/scroll/FramelessScrollViewClient.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 #include "public/web/WebPopupMenu.h"
+#include "web/PopupContainerClient.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 class LocalFrame;
-class FramelessScrollView;
 class KeyboardEvent;
 class Page;
 class PlatformKeyboardEvent;
@@ -57,7 +56,7 @@ class WebTouchEvent;
 class Widget;
 struct WebRect;
 
-class WebPopupMenuImpl : public WebPopupMenu, public FramelessScrollViewClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
+class WebPopupMenuImpl : public WebPopupMenu, public PopupContainerClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebWidget functions:
@@ -92,7 +91,7 @@ public:
         WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
 
     // WebPopupMenuImpl
-    void initialize(FramelessScrollView* widget, const WebRect& bounds);
+    void initialize(PopupContainer* widget, const WebRect& bounds);
 
     WebWidgetClient* client() { return m_client; }
 
@@ -120,8 +119,8 @@ public:
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE FINAL;
     virtual WebScreenInfo screenInfo() const OVERRIDE FINAL;
 
-    // FramelessScrollViewClient methods:
-    virtual void popupClosed(FramelessScrollView*) OVERRIDE FINAL;
+    // PopupContainerClient methods:
+    virtual void popupClosed(PopupContainer*) OVERRIDE FINAL;
 
     WebWidgetClient* m_client;
     WebSize m_size;
@@ -133,13 +132,13 @@ public:
 
     // This is a non-owning ref. The popup will notify us via popupClosed()
     // before it is destroyed.
-    FramelessScrollView* m_widget;
+    PopupContainer* m_widget;
 };
 
 DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebWidget, widget, widget->isPopupMenu(), widget.isPopupMenu());
-// WebPopupMenuImpl is the only implementation of FramelessScrollViewClient, so
+// WebPopupMenuImpl is the only implementation of PopupContainerClient, so
 // no need for further checking.
-DEFINE_TYPE_CASTS(WebPopupMenuImpl, FramelessScrollViewClient, client, true, true);
+DEFINE_TYPE_CASTS(WebPopupMenuImpl, PopupContainerClient, client, true, true);
 
 } // namespace blink
 

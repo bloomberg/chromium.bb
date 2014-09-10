@@ -32,7 +32,7 @@
 #define PopupListBox_h
 
 #include "core/dom/Element.h"
-#include "platform/scroll/FramelessScrollView.h"
+#include "platform/scroll/ScrollView.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,6 +46,7 @@ class PlatformMouseEvent;
 class PlatformGestureEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
+class PopupContainer;
 class PopupMenuClient;
 typedef unsigned long long TimeStamp;
 
@@ -82,30 +83,38 @@ struct PopupItem {
     bool displayNone;
 };
 
-// This class uses WebCore code to paint and handle events for a drop-down list
-// box ("combobox" on Windows).
-class PopupListBox FINAL : public FramelessScrollView, public PopupContent {
+// This class manages the scrollable content inside a <select> popup.
+class PopupListBox FINAL : public ScrollView, public PopupContent {
 public:
-    static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch)
+    static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     {
-        return adoptRef(new PopupListBox(client, deviceSupportsTouch));
+        return adoptRef(new PopupListBox(client, deviceSupportsTouch, container));
     }
 
-    // FramelessScrollView
-    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
-    virtual bool handleMouseDownEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
-    virtual bool handleKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
-    virtual bool handleTouchEvent(const PlatformTouchEvent&) OVERRIDE;
-    virtual bool handleGestureEvent(const PlatformGestureEvent&) OVERRIDE;
+    // Widget
+    virtual void invalidateRect(const IntRect&) OVERRIDE;
+
+    // ScrollableArea
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
+    virtual bool isActive() const OVERRIDE;
+    virtual bool scrollbarsCanBeActive() const OVERRIDE;
+    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
 
     // ScrollView
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
     virtual HostWindow* hostWindow() const OVERRIDE;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
+    virtual IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
 
     // PopupListBox methods
+
+    virtual bool handleMouseDownEvent(const PlatformMouseEvent&);
+    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&);
+    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
+    virtual bool handleWheelEvent(const PlatformWheelEvent&);
+    virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
+    virtual bool handleTouchEvent(const PlatformTouchEvent&);
+    virtual bool handleGestureEvent(const PlatformGestureEvent&);
 
     // Closes the popup
     void abandon();
@@ -141,7 +150,7 @@ public:
     bool isInterestedInEventForKey(int keyCode);
 
     // Gets the height of a row.
-    int getRowHeight(int index);
+    int getRowHeight(int index) const;
 
     int getRowBaseWidth(int index);
 
@@ -159,16 +168,17 @@ public:
 
     static const int defaultMaxHeight;
 
+protected:
+    // ScrollView
+    virtual void paintContents(GraphicsContext*, const IntRect&) OVERRIDE { }
+    virtual void scrollbarExistenceDidChange() OVERRIDE { }
+
 private:
     friend class PopupContainer;
     friend class RefCounted<PopupListBox>;
 
-    PopupListBox(PopupMenuClient*, bool deviceSupportsTouch);
-
-    virtual ~PopupListBox()
-    {
-        clear();
-    }
+    PopupListBox(PopupMenuClient*, bool deviceSupportsTouch, PopupContainer*);
+    virtual ~PopupListBox();
 
     // Hides the popup. Other classes should not call this. Use abandon instead.
     void hidePopup();
@@ -211,7 +221,7 @@ private:
     void typeAheadFind(const PlatformKeyboardEvent&);
 
     // Returns the font to use for the given row
-    Font getRowFont(int index);
+    Font getRowFont(int index) const;
 
     // Moves the selection down/up one item, taking care of looping back to the
     // first/last element if m_loopSelectionNavigation is true.
@@ -275,6 +285,8 @@ private:
 
     // To forward last mouse release event.
     RefPtrWillBePersistent<Element> m_focusedElement;
+
+    PopupContainer* m_container;
 };
 
 } // namespace blink

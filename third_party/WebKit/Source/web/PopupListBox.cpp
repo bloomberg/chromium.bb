@@ -47,11 +47,11 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/scroll/FramelessScrollViewClient.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"
 #include "web/PopupContainer.h"
+#include "web/PopupContainerClient.h"
 #include "web/PopupMenuChromium.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/CurrentTime.h"
@@ -66,7 +66,7 @@ static const int maxVisibleRows = 20;
 static const int minEndOfLinePadding = 2;
 static const TimeStamp typeAheadTimeoutMs = 1000;
 
-PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch)
+PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     : m_deviceSupportsTouch(deviceSupportsTouch)
     , m_originalIndex(0)
     , m_selectedIndex(0)
@@ -78,8 +78,17 @@ PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch)
     , m_repeatingChar(0)
     , m_lastCharTime(0)
     , m_maxWindowWidth(std::numeric_limits<int>::max())
+    , m_container(container)
 {
     setScrollbarModes(ScrollbarAlwaysOff, ScrollbarAlwaysOff);
+}
+
+PopupListBox::~PopupListBox()
+{
+    clear();
+
+    setHasHorizontalScrollbar(false);
+    setHasVerticalScrollbar(false);
 }
 
 bool PopupListBox::handleMouseDownEvent(const PlatformMouseEvent& event)
@@ -467,7 +476,7 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     gc->drawBidiText(itemFont, textRunPaintInfo, IntPoint(textX, textY));
 }
 
-Font PopupListBox::getRowFont(int rowIndex)
+Font PopupListBox::getRowFont(int rowIndex) const
 {
     Font itemFont = m_popupClient->itemStyle(rowIndex).font();
     if (m_popupClient->itemIsLabel(rowIndex)) {
@@ -568,7 +577,7 @@ void PopupListBox::setOriginalIndex(int index)
     m_originalIndex = m_selectedIndex = index;
 }
 
-int PopupListBox::getRowHeight(int index)
+int PopupListBox::getRowHeight(int index) const
 {
     int minimumHeight = m_deviceSupportsTouch ? optionRowHeightForTouch : minRowHeight;
 
@@ -596,8 +605,7 @@ void PopupListBox::invalidateRow(int index)
     if (index < 0)
         return;
 
-    // Invalidate in the window contents, as FramelessScrollView::invalidateRect
-    // paints in the window coordinates.
+    // Invalidate in the window contents, as invalidateRect paints in the window coordinates.
     IntRect clipRect = contentsToWindow(getRowBounds(index));
     if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
         clipRect.move(verticalScrollbar()->width(), 0);
@@ -683,10 +691,9 @@ void PopupListBox::adjustSelectedIndex(int delta)
 void PopupListBox::hidePopup()
 {
     if (parent()) {
-        PopupContainer* container = static_cast<PopupContainer*>(parent());
-        if (container->client())
-            container->client()->popupClosed(container);
-        container->notifyPopupHidden();
+        if (m_container->client())
+            m_container->client()->popupClosed(m_container);
+        m_container->notifyPopupHidden();
     }
 
     if (m_popupClient)
@@ -832,6 +839,44 @@ bool PopupListBox::isPointInBounds(const IntPoint& point)
 int PopupListBox::popupContentHeight() const
 {
     return height();
+}
+
+void PopupListBox::invalidateRect(const IntRect& rect)
+{
+    if (HostWindow* h = hostWindow())
+        h->invalidateContentsAndRootView(rect);
+}
+
+IntRect PopupListBox::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) const
+{
+    IntRect clipRect = visibleContentRect(scrollbarInclusion);
+    if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
+        clipRect.move(verticalScrollbar()->width(), 0);
+    return contentsToWindow(clipRect);
+}
+
+void PopupListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
+{
+    // Add in our offset within the ScrollView.
+    IntRect dirtyRect = rect;
+    dirtyRect.move(scrollbar->x(), scrollbar->y());
+    invalidateRect(dirtyRect);
+}
+
+bool PopupListBox::isActive() const
+{
+    // FIXME
+    return true;
+}
+
+bool PopupListBox::scrollbarsCanBeActive() const
+{
+    return isActive();
+}
+
+IntRect PopupListBox::scrollableAreaBoundingBox() const
+{
+    return windowClipRect(IncludeScrollbars);
 }
 
 } // namespace blink

@@ -47,10 +47,10 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/scroll/FramelessScrollViewClient.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebPopupType.h"
 #include "public/web/WebViewClient.h"
+#include "web/PopupContainerClient.h"
 #include "web/WebPopupMenuImpl.h"
 #include "web/WebViewImpl.h"
 #include <limits>
@@ -59,7 +59,7 @@ namespace blink {
 
 static const int borderSize = 1;
 
-static PlatformMouseEvent constructRelativeMouseEvent(const PlatformMouseEvent& e, FramelessScrollView* parent, FramelessScrollView* child)
+static PlatformMouseEvent constructRelativeMouseEvent(const PlatformMouseEvent& e, PopupContainer* parent, PopupListBox* child)
 {
     IntPoint pos = parent->convertSelfToChild(child, e.position());
 
@@ -71,7 +71,7 @@ static PlatformMouseEvent constructRelativeMouseEvent(const PlatformMouseEvent& 
     return relativeEvent;
 }
 
-static PlatformWheelEvent constructRelativeWheelEvent(const PlatformWheelEvent& e, FramelessScrollView* parent, FramelessScrollView* child)
+static PlatformWheelEvent constructRelativeWheelEvent(const PlatformWheelEvent& e, PopupContainer* parent, PopupListBox* child)
 {
     IntPoint pos = parent->convertSelfToChild(child, e.position());
 
@@ -90,16 +90,16 @@ PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, bool 
 }
 
 PopupContainer::PopupContainer(PopupMenuClient* client, bool deviceSupportsTouch)
-    : m_listBox(PopupListBox::create(client, deviceSupportsTouch))
+    : m_listBox(PopupListBox::create(client, deviceSupportsTouch, this))
     , m_popupOpen(false)
+    , m_client(0)
 {
-    setScrollbarModes(ScrollbarAlwaysOff, ScrollbarAlwaysOff);
 }
 
 PopupContainer::~PopupContainer()
 {
-    if (m_listBox && m_listBox->parent())
-        removeChild(m_listBox.get());
+    if (m_listBox->parent())
+        m_listBox->setParent(0);
 }
 
 IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
@@ -212,14 +212,14 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
 void PopupContainer::showPopup(FrameView* view)
 {
     m_frameView = view;
-    listBox()->m_focusedElement = m_frameView->frame().document()->focusedElement();
+    m_listBox->m_focusedElement = m_frameView->frame().document()->focusedElement();
 
     IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
     popupOpened(layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())));
     m_popupOpen = true;
 
     if (!m_listBox->parent())
-        addChild(m_listBox.get());
+        m_listBox->setParent(this);
 
     // Enable scrollbars after the listbox is inserted into the hierarchy,
     // so it has a proper WidgetClient.
@@ -232,7 +232,7 @@ void PopupContainer::showPopup(FrameView* view)
 
 void PopupContainer::hidePopup()
 {
-    listBox()->abandon();
+    m_listBox->abandon();
 }
 
 void PopupContainer::notifyPopupHidden()
@@ -378,9 +378,9 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // The controlSize is the size of the select box. It's usually larger than
     // we need. Subtract border size so that usually the container will be
     // displayed exactly the same width as the select box.
-    listBox()->setBaseWidth(max(controlSize.width() - borderSize * 2, 0));
+    m_listBox->setBaseWidth(max(controlSize.width() - borderSize * 2, 0));
 
-    listBox()->updateFromElement();
+    m_listBox->updateFromElement();
 
     // We set the selected item in updateFromElement(), and disregard the
     // index passed into this function (same as Webkit's PopupMenuWin.cpp)
@@ -405,8 +405,8 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
 
 IntRect PopupContainer::refresh(const IntRect& targetControlRect)
 {
-    listBox()->setBaseWidth(max(m_controlSize.width() - borderSize * 2, 0));
-    listBox()->updateFromElement();
+    m_listBox->setBaseWidth(max(m_controlSize.width() - borderSize * 2, 0));
+    m_listBox->updateFromElement();
 
     IntPoint locationInWindow = m_frameView->contentsToWindow(targetControlRect.location());
 
@@ -460,7 +460,7 @@ String PopupContainer::getSelectedItemToolTip()
     // We cannot use m_popupClient->selectedIndex() to choose tooltip message,
     // because the selectedIndex() might return final selected index, not
     // hovering selection.
-    return listBox()->m_popupClient->itemToolTip(listBox()->m_selectedIndex);
+    return m_listBox->m_popupClient->itemToolTip(m_listBox->m_selectedIndex);
 }
 
 void PopupContainer::popupOpened(const IntRect& bounds)
@@ -512,6 +512,17 @@ void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
     info->selectedIndex = selectedIndex();
     info->items.swap(outputItems);
     info->rightAligned = menuStyle().textDirection() == RTL;
+}
+
+void PopupContainer::invalidateRect(const IntRect& rect)
+{
+    if (HostWindow* h = hostWindow())
+        h->invalidateContentsAndRootView(rect);
+}
+
+HostWindow* PopupContainer::hostWindow() const
+{
+    return const_cast<PopupContainerClient*>(m_client);
 }
 
 } // namespace blink

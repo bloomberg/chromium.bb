@@ -28,18 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FramelessScrollViewClient_h
-#define FramelessScrollViewClient_h
+#ifndef PopupContainerClient_h
+#define PopupContainerClient_h
 
 #include "platform/HostWindow.h"
-#include "platform/PlatformExport.h"
+#include "web/PopupContainer.h"
 
 namespace blink {
-class FramelessScrollView;
 
-class PLATFORM_EXPORT FramelessScrollViewClient : public HostWindow {
+class PopupContainerClient : public HostWindow {
 public:
-    virtual void popupClosed(FramelessScrollView*) = 0;
+    virtual void popupClosed(PopupContainer*) = 0;
 };
 
 } // namespace blink

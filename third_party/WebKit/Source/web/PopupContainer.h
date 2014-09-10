@@ -34,35 +34,44 @@
 
 #include "platform/PopupMenuStyle.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/scroll/FramelessScrollView.h"
 #include "web/PopupListBox.h"
 
 namespace blink {
 
 class ChromeClient;
 class FrameView;
+class PopupContainerClient;
 class PopupMenuClient;
 struct WebPopupMenuInfo;
 
-class PopupContainer FINAL : public FramelessScrollView {
+// This class wraps a PopupListBox. It positions the popup, paints the border
+// around it, and forwards input events.
+// FIXME(skobes): This class can probably be combined with PopupListBox.
+class PopupContainer FINAL : public Widget {
 public:
     static PassRefPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
 
     // Whether a key event should be sent to this popup.
     bool isInterestedInEventForKey(int keyCode);
 
-    // FramelessScrollView
+    // Widget
     virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
     virtual void hide() OVERRIDE;
-    virtual bool handleMouseDownEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
-    virtual bool handleKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
-    virtual bool handleTouchEvent(const PlatformTouchEvent&) OVERRIDE;
-    virtual bool handleGestureEvent(const PlatformGestureEvent&) OVERRIDE;
+    virtual HostWindow* hostWindow() const OVERRIDE;
+    virtual void invalidateRect(const IntRect&) OVERRIDE;
 
     // PopupContainer methods
+
+    bool handleMouseDownEvent(const PlatformMouseEvent&);
+    bool handleMouseMoveEvent(const PlatformMouseEvent&);
+    bool handleMouseReleaseEvent(const PlatformMouseEvent&);
+    bool handleWheelEvent(const PlatformWheelEvent&);
+    bool handleKeyEvent(const PlatformKeyboardEvent&);
+    bool handleTouchEvent(const PlatformTouchEvent&);
+    bool handleGestureEvent(const PlatformGestureEvent&);
+
+    PopupContainerClient* client() const { return m_client; }
+    void setClient(PopupContainerClient* client) { m_client = client; }
 
     // Show the popup
     void showPopup(FrameView*);
@@ -109,6 +118,10 @@ public:
     // This is public for testing.
     static IntRect layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent*, bool& needToResizeView);
 
+    void disconnectClient() { m_listBox->disconnectClient(); }
+
+    void updateFromElement() { m_listBox->updateFromElement(); }
+
 private:
     friend class WTF::RefCounted<PopupContainer>;
 
@@ -149,6 +162,8 @@ private:
 
     // Whether the popup is currently open.
     bool m_popupOpen;
+
+    PopupContainerClient* m_client;
 };
 
 } // namespace blink

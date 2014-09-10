@@ -41,7 +41,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/scroll/FramelessScrollView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebContentLayer.h"
@@ -89,7 +88,7 @@ void WebPopupMenuImpl::willCloseLayerTreeView()
     m_layerTreeView = 0;
 }
 
-void WebPopupMenuImpl::initialize(FramelessScrollView* widget, const WebRect& bounds)
+void WebPopupMenuImpl::initialize(PopupContainer* widget, const WebRect& bounds)
 {
     m_widget = widget;
     m_widget->setClient(this);
@@ -397,10 +396,7 @@ WebScreenInfo WebPopupMenuImpl::screenInfo() const
     return WebScreenInfo();
 }
 
-//-----------------------------------------------------------------------------
-// FramelessScrollViewClient
-
-void WebPopupMenuImpl::popupClosed(FramelessScrollView* widget)
+void WebPopupMenuImpl::popupClosed(PopupContainer* widget)
 {
     ASSERT(widget == m_widget);
     if (m_widget) {

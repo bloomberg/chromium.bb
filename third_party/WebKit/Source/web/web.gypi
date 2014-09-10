@@ -71,6 +71,7 @@
       'PageWidgetDelegate.h',
       'PopupContainer.cpp',
       'PopupContainer.h',
+      'PopupContainerClient.h',
       'PopupListBox.cpp',
       'PopupListBox.h',
       'PopupMenuChromium.cpp',
