@@ -11,7 +11,7 @@ if (is_chrome_branded) {
 }
 
 if (is_chromeos) {
-  _default_ffmpeg_branding = ffmpeg_branding + "OS"
+  _default_ffmpeg_branding = _default_ffmpeg_branding + "OS"
 }
 
 declare_args() {

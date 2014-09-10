@@ -199,7 +199,7 @@ if (build_ffmpegsumo) {
         # We want to be consistent with CrOS and have configured
         # ffmpeg for thumb. Protect yourself from -marm.
         if (is_chromeos) {
-          cflags = [ "-marm" ]
+          cflags += [ "-marm" ]
         }
         cflags += [
           "-mthumb",
