@@ -1103,7 +1103,10 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
-    template<typename T, typename HeapTraits = HeapTypeTrait<T> > static Address allocate(size_t);
+    template<typename T, typename HeapTraits> static Address allocate(size_t);
+    // FIXME: remove this once c++11 is allowed everywhere:
+    template<typename T> static Address allocate(size_t);
+
     template<typename T> static Address reallocate(void* previous, size_t);
 
     static void collectGarbage(ThreadState::StackState);
@@ -1571,6 +1574,12 @@ Address Heap::allocate(size_t size)
     int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
     BaseHeap* heap = state->heap(heapIndex);
     return static_cast<typename HeapTraits::HeapType*>(heap)->allocate(size, gcInfo);
+}
+
+template<typename T>
+Address Heap::allocate(size_t size)
+{
+    return allocate<T, HeapTypeTrait<T> >(size);
 }
 
 template<typename T>
