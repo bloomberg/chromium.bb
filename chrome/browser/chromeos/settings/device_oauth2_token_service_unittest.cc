@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -97,6 +98,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     CrosSettings::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     DeviceSettingsService::Shutdown();
     SystemSaltGetter::Shutdown();
