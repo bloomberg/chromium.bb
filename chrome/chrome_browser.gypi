@@ -1457,6 +1457,8 @@
       'browser/guest_view/extension_options/extension_options_guest.h',
       'browser/guest_view/app_view/chrome_app_view_guest_delegate.cc',
       'browser/guest_view/app_view/chrome_app_view_guest_delegate.h',
+      'browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.cc',
+      'browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h',
       'browser/guest_view/web_view/chrome_web_view_guest_delegate.cc',
       'browser/guest_view/web_view/chrome_web_view_guest_delegate.h',
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.cc',

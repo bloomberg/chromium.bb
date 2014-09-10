@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
+#include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -45,6 +46,14 @@ void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ChromeAppViewGuestDelegate();
+}
+
+scoped_ptr<MimeHandlerViewGuestDelegate>
+ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
+    MimeHandlerViewGuest* guest) const {
+  return scoped_ptr<ChromeMimeHandlerViewGuestDelegate>(
+             new ChromeMimeHandlerViewGuestDelegate(guest))
+      .PassAs<MimeHandlerViewGuestDelegate>();
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(

@@ -570,6 +570,7 @@
         'browser/guest_view/guest_view.h',
         'browser/guest_view/mime_handler_view/mime_handler_view_constants.cc',
         'browser/guest_view/mime_handler_view/mime_handler_view_constants.h',
+        'browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h',
         'browser/guest_view/mime_handler_view/mime_handler_view_guest.cc',
         'browser/guest_view/mime_handler_view/mime_handler_view_guest.h',
         'browser/guest_view/web_view/javascript_dialog_helper.cc',

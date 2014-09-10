@@ -9,6 +9,8 @@
 
 namespace extensions {
 
+class MimeHandlerViewGuestDelegate;
+
 class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
  public:
   static GuestViewBase* Create(content::BrowserContext* browser_context,
@@ -25,6 +27,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
       const base::DictionaryValue& create_params,
       const WebContentsCreatedCallback& callback) OVERRIDE;
   virtual void DidAttachToEmbedder() OVERRIDE;
+  virtual void DidInitialize() OVERRIDE;
 
   // WebContentsDelegate implementation.
   virtual void HandleKeyboardEvent(
@@ -35,6 +38,8 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest> {
   MimeHandlerViewGuest(content::BrowserContext* browser_context,
                        int guest_instance_id);
   virtual ~MimeHandlerViewGuest();
+
+  scoped_ptr<MimeHandlerViewGuestDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

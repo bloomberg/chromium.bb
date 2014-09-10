@@ -5,6 +5,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 
 #include "base/logging.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 
 namespace extensions {
 class AppViewGuestDelegate;
@@ -28,6 +29,12 @@ void ExtensionsAPIClient::AddAdditionalValueStoreCaches(
 
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;
+}
+
+scoped_ptr<MimeHandlerViewGuestDelegate>
+ExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
+    MimeHandlerViewGuest* guest) const {
+  return scoped_ptr<MimeHandlerViewGuestDelegate>();
 }
 
 WebViewGuestDelegate* ExtensionsAPIClient::CreateWebViewGuestDelegate(

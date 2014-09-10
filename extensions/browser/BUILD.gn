@@ -308,6 +308,7 @@ source_set("browser") {
       "guest_view/mime_handler_view/mime_handler_view_constants.h",
       "guest_view/mime_handler_view/mime_handler_view_guest.h",
       "guest_view/mime_handler_view/mime_handler_view_guest.cc",
+      "guest_view/mime_handler_view/mime_handler_view_guest_delegate.h",
       "guest_view/web_view/javascript_dialog_helper.cc",
       "guest_view/web_view/javascript_dialog_helper.h",
       "guest_view/web_view/web_view_constants.cc",

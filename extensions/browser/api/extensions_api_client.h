@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
 class GURL;
@@ -22,6 +23,8 @@ class BrowserContext;
 namespace extensions {
 
 class AppViewGuestDelegate;
+class MimeHandlerViewGuest;
+class MimeHandlerViewGuestDelegate;
 class WebViewGuest;
 class WebViewGuestDelegate;
 class WebViewPermissionHelper;
@@ -56,6 +59,10 @@ class ExtensionsAPIClient {
 
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
+
+  // Creates a delegate for MimeHandlerViewGuest.
+  virtual scoped_ptr<MimeHandlerViewGuestDelegate>
+      CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest) const;
 
   // Returns a delegate for some of WebViewGuest's behavior. The caller owns the
   // returned WebViewGuestDelegate.

@@ -8,9 +8,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "net/base/url_util.h"
@@ -35,7 +37,9 @@ GuestViewBase* MimeHandlerViewGuest::Create(
 MimeHandlerViewGuest::MimeHandlerViewGuest(
     content::BrowserContext* browser_context,
     int guest_instance_id)
-    : GuestView<MimeHandlerViewGuest>(browser_context, guest_instance_id) {
+    : GuestView<MimeHandlerViewGuest>(browser_context, guest_instance_id),
+      delegate_(ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(
+          this)) {
 }
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
@@ -92,6 +96,11 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
+}
+
+void MimeHandlerViewGuest::DidInitialize() {
+  if (delegate_)
+    delegate_->AttachHelpers();
 }
 
 void MimeHandlerViewGuest::HandleKeyboardEvent(
