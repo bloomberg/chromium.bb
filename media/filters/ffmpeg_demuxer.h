@@ -166,8 +166,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
                           bool enable_text_tracks) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual Liveness GetLiveness() const OVERRIDE;
 
   // Calls |need_key_cb_| with the initialization data encountered in the file.

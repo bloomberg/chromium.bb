@@ -161,8 +161,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                           bool enable_text_tracks) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) OVERRIDE;
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual Liveness GetLiveness() const OVERRIDE;
 
   // Methods used by an external object to control this demuxer.

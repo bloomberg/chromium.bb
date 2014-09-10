@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer.h"
-#include "media/base/demuxer.h"
+#include "media/base/demuxer_stream_provider.h"
 #include "media/base/time_source.h"
 #include "media/base/video_renderer.h"
 #include "media/base/wall_clock_time_source.h"
@@ -20,12 +20,12 @@ namespace media {
 
 RendererImpl::RendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    Demuxer* demuxer,
+    DemuxerStreamProvider* demuxer_stream_provider,
     scoped_ptr<AudioRenderer> audio_renderer,
     scoped_ptr<VideoRenderer> video_renderer)
     : state_(STATE_UNINITIALIZED),
       task_runner_(task_runner),
-      demuxer_(demuxer),
+      demuxer_stream_provider_(demuxer_stream_provider),
       audio_renderer_(audio_renderer.Pass()),
       video_renderer_(video_renderer.Pass()),
       time_source_(NULL),
@@ -66,8 +66,8 @@ void RendererImpl::Initialize(const base::Closure& init_cb,
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(demuxer_->GetStream(DemuxerStream::AUDIO) ||
-         demuxer_->GetStream(DemuxerStream::VIDEO));
+  DCHECK(demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO) ||
+         demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO));
 
   statistics_cb_ = statistics_cb;
   ended_cb_ = ended_cb;
@@ -189,14 +189,14 @@ void RendererImpl::InitializeAudioRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
-  if (!demuxer_->GetStream(DemuxerStream::AUDIO)) {
+  if (!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO)) {
     audio_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
 
   audio_renderer_->Initialize(
-      demuxer_->GetStream(DemuxerStream::AUDIO),
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO),
       done_cb,
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
@@ -229,15 +229,16 @@ void RendererImpl::InitializeVideoRenderer() {
   PipelineStatusCB done_cb =
       base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
-  if (!demuxer_->GetStream(DemuxerStream::VIDEO)) {
+  if (!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO)) {
     video_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
     return;
   }
 
   video_renderer_->Initialize(
-      demuxer_->GetStream(DemuxerStream::VIDEO),
-      demuxer_->GetLiveness() == Demuxer::LIVENESS_LIVE,
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO),
+      demuxer_stream_provider_->GetLiveness() ==
+          DemuxerStreamProvider::LIVENESS_LIVE,
       done_cb,
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged,

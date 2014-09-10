@@ -652,6 +652,10 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
                  status_cb));
 }
 
+base::Time FFmpegDemuxer::GetTimelineOffset() const {
+  return timeline_offset_;
+}
+
 DemuxerStream* FFmpegDemuxer::GetStream(DemuxerStream::Type type) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return GetFFmpegStream(type);
@@ -666,10 +670,6 @@ FFmpegDemuxerStream* FFmpegDemuxer::GetFFmpegStream(
     }
   }
   return NULL;
-}
-
-base::Time FFmpegDemuxer::GetTimelineOffset() const {
-  return timeline_offset_;
 }
 
 Demuxer::Liveness FFmpegDemuxer::GetLiveness() const {

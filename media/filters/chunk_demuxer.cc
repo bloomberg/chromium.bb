@@ -1093,6 +1093,10 @@ void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
 }
 
 // Demuxer implementation.
+base::Time ChunkDemuxer::GetTimelineOffset() const {
+  return timeline_offset_;
+}
+
 DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
   DCHECK_NE(type, DemuxerStream::TEXT);
   base::AutoLock auto_lock(lock_);
@@ -1103,10 +1107,6 @@ DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
     return audio_.get();
 
   return NULL;
-}
-
-base::Time ChunkDemuxer::GetTimelineOffset() const {
-  return timeline_offset_;
 }
 
 Demuxer::Liveness ChunkDemuxer::GetLiveness() const {

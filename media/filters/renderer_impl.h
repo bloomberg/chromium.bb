@@ -24,19 +24,19 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioRenderer;
-class Demuxer;
+class DemuxerStreamProvider;
 class TimeSource;
 class VideoRenderer;
 class WallClockTimeSource;
 
 class MEDIA_EXPORT RendererImpl : public Renderer {
  public:
-  // Renders audio/video streams in |demuxer| using |audio_renderer| and
-  // |video_renderer| provided. All methods except for GetMediaTime() run on the
-  // |task_runner|. GetMediaTime() runs on the render main thread because it's
-  // part of JS sync API.
+  // Renders audio/video streams in |demuxer_stream_provider| using
+  // |audio_renderer| and |video_renderer| provided. All methods except for
+  // GetMediaTime() run on the |task_runner|. GetMediaTime() runs on the render
+  // main thread because it's part of JS sync API.
   RendererImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               Demuxer* demuxer,
+               DemuxerStreamProvider* demuxer_stream_provider,
                scoped_ptr<AudioRenderer> audio_renderer,
                scoped_ptr<VideoRenderer> video_renderer);
 
@@ -118,7 +118,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Task runner used to execute pipeline tasks.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  Demuxer* demuxer_;
+  DemuxerStreamProvider* demuxer_stream_provider_;
 
   // Permanent callbacks to notify various renderer states/stats.
   StatisticsCB statistics_cb_;

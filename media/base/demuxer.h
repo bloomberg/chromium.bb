@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -42,14 +43,8 @@ class MEDIA_EXPORT DemuxerHost {
   virtual ~DemuxerHost();
 };
 
-class MEDIA_EXPORT Demuxer {
+class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
  public:
-  enum Liveness {
-    LIVENESS_UNKNOWN,
-    LIVENESS_RECORDED,
-    LIVENESS_LIVE,
-  };
-
   // A new potentially encrypted stream has been parsed.
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
@@ -78,17 +73,10 @@ class MEDIA_EXPORT Demuxer {
   // method (including Stop()) after a demuxer has stopped.
   virtual void Stop() = 0;
 
-  // Returns the first stream of the given stream type (which is not allowed
-  // to be DemuxerStream::TEXT), or NULL if that type of stream is not present.
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
-
   // Returns Time represented by presentation timestamp 0.
   // If the timstamps are not associated with a Time, then
   // a null Time is returned.
   virtual base::Time GetTimelineOffset() const = 0;
-
-  // Returns liveness of the stream, i.e. whether it is recorded or live.
-  virtual Liveness GetLiveness() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

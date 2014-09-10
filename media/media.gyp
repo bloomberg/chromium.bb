@@ -277,6 +277,8 @@
         'base/demuxer.h',
         'base/demuxer_stream.cc',
         'base/demuxer_stream.h',
+        'base/demuxer_stream_provider.cc',
+        'base/demuxer_stream_provider.h',
         'base/djb2.cc',
         'base/djb2.h',
         'base/keyboard_event_counter.cc',

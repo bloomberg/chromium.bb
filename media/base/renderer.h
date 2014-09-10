@@ -26,7 +26,6 @@ class MEDIA_EXPORT Renderer {
 
   // Initializes the Renderer, executing |init_cb| upon completion.
   // If initialization failed, fires |error_cb| before |init_cb|.
-  // TODO(xhwang): Provide a set of DemuxerStreams in Initialize().
   //
   // Permanent callbacks:
   // - |statistics_cb|: Executed periodically with rendering statistics.

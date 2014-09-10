@@ -4,8 +4,6 @@
 
 #include "media/base/demuxer.h"
 
-#include "base/logging.h"
-
 namespace media {
 
 DemuxerHost::~DemuxerHost() {}

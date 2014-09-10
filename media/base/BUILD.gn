@@ -77,6 +77,8 @@ source_set("base") {
     "demuxer.h",
     "demuxer_stream.cc",
     "demuxer_stream.h",
+    "demuxer_stream_provider.cc",
+    "demuxer_stream_provider.h",
     "djb2.cc",
     "djb2.h",
     "media.cc",
