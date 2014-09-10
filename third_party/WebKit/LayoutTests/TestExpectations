@@ -143,10 +143,11 @@ crbug.com/360889 virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-
 
 crbug.com/410461 fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
+crbug.com/325673 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
+crbug.com/325673 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
+crbug.com/325673 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
+
 # New W3C failures (dpranke@ to triage)
-crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
