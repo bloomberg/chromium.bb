@@ -394,12 +394,6 @@ void WebRemoteFrameImpl::loadHTMLString(
     ASSERT_NOT_REACHED();
 }
 
-bool WebRemoteFrameImpl::isLoading() const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 void WebRemoteFrameImpl::stopLoading()
 {
     ASSERT_NOT_REACHED();

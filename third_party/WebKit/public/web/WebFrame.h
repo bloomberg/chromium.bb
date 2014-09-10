@@ -371,9 +371,6 @@ public:
                                 const WebURL& unreachableURL = WebURL(),
                                 bool replace = false) = 0;
 
-    // Returns true if the current frame is busy loading content.
-    virtual bool isLoading() const = 0;
-
     // Stops any pending loads on the frame and its children.
     virtual void stopLoading() = 0;
 

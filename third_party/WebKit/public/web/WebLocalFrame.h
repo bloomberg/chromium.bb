@@ -41,6 +41,9 @@ public:
 
     // Navigation State -------------------------------------------------------
 
+    // Returns true if the current frame's load event has not completed.
+    virtual bool isLoading() const = 0;
+
     // Returns true if any resource load is currently in progress. Exposed
     // primarily for use in layout tests. You probably want isLoading()
     // instead.
