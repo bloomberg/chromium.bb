@@ -5494,9 +5494,9 @@
    ...
    fun:shared_dispatch_stub_*
    ...
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:*gpu*gles*GLES2DecoderImpl*DoCommand*
+   fun:*gpu*CommandParser*ProcessCommand*
+   fun:*gpu*GpuScheduler*PutChanged*
 }
 {
    bug_348863
