@@ -8,6 +8,8 @@
 build, report on differences between the command lines."""
 
 
+import os
+import subprocess
 import sys
 
 
@@ -101,16 +103,29 @@ def CompareLists(gyp, gn, name, dont_care=None):
   return output
 
 
+def Run(command_line):
+  """Run |command_line| as a subprocess and return stdout. Raises on error."""
+  return subprocess.check_output(command_line, shell=True)
+
+
 def main():
-  if len(sys.argv) != 3:
-    print 'usage: %s gyp_commands.txt gn_commands.txt' % __file__
+  if len(sys.argv) != 2 and len(sys.argv) != 3:
+    print 'usage: %s gyp_target gn_target' % __file__
+    print '   or: %s target' % __file__
     return 1
-  with open(sys.argv[1], 'rb') as f:
-    gyp = f.readlines()
-  with open(sys.argv[2], 'rb') as f:
-    gn = f.readlines()
-  all_gyp_flags = GetFlags(gyp)
-  all_gn_flags = GetFlags(gn)
+
+  if len(sys.argv) == 2:
+    sys.argv.append(sys.argv[1])
+
+  print >>sys.stderr, 'Regenerating...'
+  # Currently only Release, non-component.
+  Run('gn gen out/gn_flags --args="is_debug=false is_component_build=false"')
+  del os.environ['GYP_DEFINES']
+  Run('python build/gyp_chromium -Goutput_dir=out_gyp_flags -Gconfig=Release')
+  gn = Run('ninja -C out/gn_flags -t commands %s' % sys.argv[2])
+  gyp = Run('ninja -C out_gyp_flags/Release -t commands %s' % sys.argv[1])
+  all_gyp_flags = GetFlags(gyp.splitlines())
+  all_gn_flags = GetFlags(gn.splitlines())
   gyp_files = set(all_gyp_flags.keys())
   gn_files = set(all_gn_flags.keys())
   different_source_list = gyp_files != gn_files
