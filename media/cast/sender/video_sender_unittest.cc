@@ -140,6 +140,7 @@ class VideoSenderTest : public ::testing::Test {
         NULL,
         testing_clock_,
         dummy_endpoint,
+        make_scoped_ptr(new base::DictionaryValue),
         base::Bind(&UpdateCastTransportStatus),
         BulkRawEventsCallback(),
         base::TimeDelta(),

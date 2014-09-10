@@ -59,7 +59,8 @@ class CastSessionDelegate {
   // This will start the session by configuring and creating the Cast transport
   // and the Cast sender.
   // Must be called before initialization of audio or video.
-  void StartUDP(const net::IPEndPoint& remote_endpoint);
+  void StartUDP(const net::IPEndPoint& remote_endpoint,
+                scoped_ptr<base::DictionaryValue> options);
 
   // After calling StartAudio() or StartVideo() encoding of that media will
   // begin as soon as data is delivered to its sink, if the second method is

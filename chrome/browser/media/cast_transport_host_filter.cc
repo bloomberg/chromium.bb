@@ -74,7 +74,8 @@ void CastTransportHostFilter::SendCastMessage(
 
 void CastTransportHostFilter::OnNew(
     int32 channel_id,
-    const net::IPEndPoint& remote_end_point) {
+    const net::IPEndPoint& remote_end_point,
+    const base::DictionaryValue& options) {
   if (!power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more transports are active for Cast Streaming.");
@@ -92,6 +93,7 @@ void CastTransportHostFilter::OnNew(
           g_browser_process->net_log(),
           &clock_,
           remote_end_point,
+          make_scoped_ptr(options.DeepCopy()),
           base::Bind(&CastTransportHostFilter::NotifyStatusChange,
                      weak_factory_.GetWeakPtr(),
                      channel_id),

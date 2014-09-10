@@ -26,5 +26,11 @@ namespace cast.streaming.udpTransport {
     // |destination| : The address and port to send packets to.
     [nocompile] static void setDestination(long transportId,
                                            IPEndPoint destination);
+
+    // Sets the options.
+    // Attributes of this object will be used to activate optional
+    // behaviours in the transport. Normally this is only used for
+    // experimentation. Must be called before setDestination.
+    [nocompile] static void setOptions(object options);
   };
 };

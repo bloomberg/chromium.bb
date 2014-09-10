@@ -82,7 +82,8 @@ void CastSessionDelegate::StartVideo(
       create_video_encode_mem_cb);
 }
 
-void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
+void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint,
+                                   scoped_ptr<base::DictionaryValue> options) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
@@ -100,6 +101,7 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
   // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(
       remote_endpoint,
+      options.Pass(),
       base::Bind(&CastSessionDelegate::StatusNotificationCB,
                  base::Unretained(this)),
       base::Bind(&CastSessionDelegate::LogRawEvents, base::Unretained(this))));

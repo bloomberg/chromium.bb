@@ -48,6 +48,8 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void SetDestinationCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+  void SetOptionsCastUdpTransport(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   void StopCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 

@@ -141,10 +141,11 @@ IPC_MESSAGE_CONTROL3(
     uint32 /* ssrc */,
     uint32 /* frame_id */)
 
-IPC_MESSAGE_CONTROL2(
+IPC_MESSAGE_CONTROL3(
     CastHostMsg_New,
     int32 /* channel_id */,
-    net::IPEndPoint /*remote_end_point*/)
+    net::IPEndPoint /* remote_end_point */,
+    base::DictionaryValue /* options */)
 
 IPC_MESSAGE_CONTROL1(
     CastHostMsg_Delete,

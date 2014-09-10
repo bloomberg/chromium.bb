@@ -22,6 +22,7 @@ class CastTransportSenderIPC
  public:
   CastTransportSenderIPC(
       const net::IPEndPoint& remote_end_point,
+      scoped_ptr<base::DictionaryValue> options,
       const media::cast::CastTransportStatusCallback& status_cb,
       const media::cast::BulkRawEventsCallback& raw_events_cb);
 

@@ -58,6 +58,7 @@ class CastTransportSenderImpl : public CastTransportSender {
       net::NetLog* net_log,
       base::TickClock* clock,
       const net::IPEndPoint& remote_end_point,
+      scoped_ptr<base::DictionaryValue> options,
       const CastTransportStatusCallback& status_callback,
       const BulkRawEventsCallback& raw_events_callback,
       base::TimeDelta raw_events_callback_interval,

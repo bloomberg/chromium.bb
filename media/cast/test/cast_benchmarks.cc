@@ -302,6 +302,7 @@ class RunOneBenchmark {
             NULL,
             testing_clock_sender_,
             dummy_endpoint,
+            make_scoped_ptr(new base::DictionaryValue),
             base::Bind(&UpdateCastTransportStatus),
             base::Bind(&IgnoreRawEvents),
             base::TimeDelta::FromSeconds(1),

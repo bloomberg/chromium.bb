@@ -596,6 +596,7 @@ class End2EndTest : public ::testing::Test {
         NULL,
         testing_clock_sender_,
         dummy_endpoint,
+        make_scoped_ptr(new base::DictionaryValue),
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(1),

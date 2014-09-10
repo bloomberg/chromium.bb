@@ -5,6 +5,7 @@
 #include "media/cast/net/cast_transport_sender_impl.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/values.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/udp_transport.h"
@@ -17,6 +18,7 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
     net::NetLog* net_log,
     base::TickClock* clock,
     const net::IPEndPoint& remote_end_point,
+    scoped_ptr<base::DictionaryValue> options,
     const CastTransportStatusCallback& status_callback,
     const BulkRawEventsCallback& raw_events_callback,
     base::TimeDelta raw_events_callback_interval,
@@ -25,6 +27,7 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
       new CastTransportSenderImpl(net_log,
                                   clock,
                                   remote_end_point,
+                                  options.Pass(),
                                   status_callback,
                                   raw_events_callback,
                                   raw_events_callback_interval,
@@ -40,6 +43,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     net::NetLog* net_log,
     base::TickClock* clock,
     const net::IPEndPoint& remote_end_point,
+    scoped_ptr<base::DictionaryValue> options,
     const CastTransportStatusCallback& status_callback,
     const BulkRawEventsCallback& raw_events_callback,
     base::TimeDelta raw_events_callback_interval,
@@ -74,9 +78,11 @@ CastTransportSenderImpl::CastTransportSenderImpl(
         raw_events_callback_interval);
   }
   if (transport_) {
-    // The default DSCP value for cast is AF41. Which gives it a higher
-    // priority over other traffic.
-    transport_->SetDscp(net::DSCP_AF41);
+    if (options->HasKey("DSCP")) {
+      // The default DSCP value for cast is AF41. Which gives it a higher
+      // priority over other traffic.
+      transport_->SetDscp(net::DSCP_AF41);
+    }
     transport_->StartReceiving(
         base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
                    weak_factory_.GetWeakPtr()));

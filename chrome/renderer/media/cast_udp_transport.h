@@ -10,6 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 class CastSession;
 
 // This class represents the transport mechanism used by Cast RTP streams
@@ -23,9 +27,13 @@ class CastUdpTransport {
   // Specify the remote IP address and port.
   void SetDestination(const net::IPEndPoint& remote_address);
 
+  // Set options.
+  void SetOptions(scoped_ptr<base::DictionaryValue> options);
+
  private:
   const scoped_refptr<CastSession> cast_session_;
   net::IPEndPoint remote_address_;
+  scoped_ptr<base::DictionaryValue> options_;
   base::WeakPtrFactory<CastUdpTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastUdpTransport);

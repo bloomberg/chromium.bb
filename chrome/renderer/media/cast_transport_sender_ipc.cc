@@ -16,13 +16,14 @@ CastTransportSenderIPC::ClientCallbacks::~ClientCallbacks() {}
 
 CastTransportSenderIPC::CastTransportSenderIPC(
     const net::IPEndPoint& remote_end_point,
+    scoped_ptr<base::DictionaryValue> options,
     const media::cast::CastTransportStatusCallback& status_cb,
     const media::cast::BulkRawEventsCallback& raw_events_cb)
     : status_callback_(status_cb), raw_events_callback_(raw_events_cb) {
   if (CastIPCDispatcher::Get()) {
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
   }
-  Send(new CastHostMsg_New(channel_id_, remote_end_point));
+  Send(new CastHostMsg_New(channel_id_, remote_end_point, *options));
 }
 
 CastTransportSenderIPC::~CastTransportSenderIPC() {

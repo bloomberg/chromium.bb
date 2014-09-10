@@ -64,7 +64,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                                  uint32 frame_id);
   void OnNew(
       int32 channel_id,
-      const net::IPEndPoint& remote_end_point);
+      const net::IPEndPoint& remote_end_point,
+      const base::DictionaryValue& options);
   void OnDelete(int32 channel_id);
 
   IDMap<media::cast::CastTransportSender, IDMapOwnPointer> id_map_;

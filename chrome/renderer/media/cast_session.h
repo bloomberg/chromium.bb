@@ -67,8 +67,11 @@ class CastSession : public base::RefCounted<CastSession> {
                   const ErrorCallback& error_callback);
 
   // This will create the Cast transport and connect to |remote_endpoint|.
+  // |options| is a dictionary which contain optional configuration for the
+  // udp transport.
   // Must be called before initialization of audio or video.
-  void StartUDP(const net::IPEndPoint& remote_endpoint);
+  void StartUDP(const net::IPEndPoint& remote_endpoint,
+                scoped_ptr<base::DictionaryValue> options);
 
   // Creates or destroys event subscriber for the audio or video stream.
   // |is_audio|: true if the event subscriber is for audio. Video otherwise.

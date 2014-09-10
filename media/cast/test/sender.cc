@@ -322,6 +322,7 @@ int main(int argc, char** argv) {
           NULL,  // net log.
           cast_environment->Clock(),
           remote_endpoint,
+          make_scoped_ptr(new base::DictionaryValue),  // options
           base::Bind(&UpdateCastTransportStatus),
           base::Bind(&LogRawEvents, cast_environment),
           base::TimeDelta::FromSeconds(1),
