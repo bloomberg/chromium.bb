@@ -69,6 +69,8 @@ private:
 class PLATFORM_EXPORT ImageDecoder {
     WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED;
 public:
+    enum SizeType { ActualSize, SizeForMemoryAllocation };
+
     static const size_t noDecodedImageByteLimit = blink::Platform::noDecodedImageByteLimit;
 
     ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption, size_t maxDecodedBytes)
@@ -120,7 +122,7 @@ public:
 
     // Decoders which support YUV decoding can override this to
     // give potentially different sizes per component.
-    virtual IntSize decodedYUVSize(int component) const { return decodedSize(); }
+    virtual IntSize decodedYUVSize(int component, SizeType) const { return decodedSize(); }
 
     // This will only differ from size() for ICO (where each frame is a
     // different icon) or other formats where different frames are different

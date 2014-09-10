@@ -91,7 +91,7 @@ bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], 
 
     TRACE_EVENT0("blink", "DecodingImageGenerator::onGetYUV8Planes");
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
-    bool decoded = m_frameGenerator->decodeToYUV(planes, rowBytes);
+    bool decoded = m_frameGenerator->decodeToYUV(sizes, planes, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
     return decoded;
 }

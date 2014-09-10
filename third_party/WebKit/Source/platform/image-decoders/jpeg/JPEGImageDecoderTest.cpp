@@ -93,9 +93,9 @@ void readYUV(size_t maxDecodedBytes, unsigned* outputYWidth, unsigned* outputYHe
     ASSERT_TRUE(sizeIsAvailable);
 
     IntSize size = decoder->decodedSize();
-    IntSize ySize = decoder->decodedYUVSize(0);
-    IntSize uSize = decoder->decodedYUVSize(1);
-    IntSize vSize = decoder->decodedYUVSize(2);
+    IntSize ySize = decoder->decodedYUVSize(0, ImageDecoder::ActualSize);
+    IntSize uSize = decoder->decodedYUVSize(1, ImageDecoder::ActualSize);
+    IntSize vSize = decoder->decodedYUVSize(2, ImageDecoder::ActualSize);
 
     ASSERT_TRUE(size.width() == ySize.width());
     ASSERT_TRUE(size.height() == ySize.height());

@@ -72,7 +72,7 @@ public:
     bool decodeAndScale(const SkImageInfo&, size_t index, void* pixels, size_t rowBytes);
 
     // Decodes YUV components directly into the provided memory planes.
-    bool decodeToYUV(void* planes[3], size_t rowBytes[3]);
+    bool decodeToYUV(SkISize componentSizes[3], void* planes[3], size_t rowBytes[3]);
 
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 

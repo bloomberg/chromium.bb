@@ -69,6 +69,22 @@ private:
     size_t m_rowBytes;
 };
 
+static bool updateYUVComponentSizes(const ImageDecoder* decoder, SkISize componentSizes[3], ImageDecoder::SizeType sizeType)
+{
+    // canDecodeToYUV() has to be called AFTER isSizeAvailable(),
+    // otherwise the output color space may not be set in the decoder.
+    if (!decoder->isSizeAvailable() || !decoder->canDecodeToYUV())
+        return false;
+
+    IntSize size = decoder->decodedYUVSize(0, sizeType);
+    componentSizes[0].set(size.width(), size.height());
+    size = decoder->decodedYUVSize(1, sizeType);
+    componentSizes[1].set(size.width(), size.height());
+    size = decoder->decodedYUVSize(2, sizeType);
+    componentSizes[2].set(size.width(), size.height());
+    return true;
+}
+
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame)
     : m_fullSize(fullSize)
     , m_isMultiFrame(isMultiFrame)
@@ -133,7 +149,7 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     return result;
 }
 
-bool ImageFrameGenerator::decodeToYUV(void* planes[3], size_t rowBytes[3])
+bool ImageFrameGenerator::decodeToYUV(SkISize componentSizes[3], void* planes[3], size_t rowBytes[3])
 {
     // This method is called to populate a discardable memory owned by Skia.
 
@@ -165,6 +181,10 @@ bool ImageFrameGenerator::decodeToYUV(void* planes[3], size_t rowBytes[3])
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes(planes, rowBytes));
     decoder->setImagePlanes(imagePlanes.release());
+
+    bool sizeUpdated = updateYUVComponentSizes(decoder.get(), componentSizes, ImageDecoder::ActualSize);
+    RELEASE_ASSERT(sizeUpdated);
+
     bool yuvDecoded = decoder->decodeToYUV();
     if (yuvDecoded)
         setHasAlpha(0, false); // YUV is always opaque
@@ -314,18 +334,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
     OwnPtr<ImagePlanes> dummyImagePlanes = adoptPtr(new ImagePlanes);
     decoder->setImagePlanes(dummyImagePlanes.release());
 
-    // canDecodeToYUV() has to be called AFTER isSizeAvailable(),
-    // otherwise the output color space may not be set in the decoder.
-    if (!decoder->isSizeAvailable() || !decoder->canDecodeToYUV())
-        return false;
-
-    IntSize size = decoder->decodedYUVSize(0);
-    componentSizes[0].set(size.width(), size.height());
-    size = decoder->decodedYUVSize(1);
-    componentSizes[1].set(size.width(), size.height());
-    size = decoder->decodedYUVSize(2);
-    componentSizes[2].set(size.width(), size.height());
-    return true;
+    return updateYUVComponentSizes(decoder.get(), componentSizes, ImageDecoder::SizeForMemoryAllocation);
 }
 
 } // namespace blink

@@ -48,7 +48,7 @@ public:
     virtual bool isSizeAvailable() OVERRIDE;
     virtual bool hasColorProfile() const OVERRIDE { return m_hasColorProfile; }
     virtual IntSize decodedSize() const OVERRIDE { return m_decodedSize; }
-    virtual IntSize decodedYUVSize(int component) const OVERRIDE;
+    virtual IntSize decodedYUVSize(int component, SizeType) const OVERRIDE;
     virtual bool setSize(unsigned width, unsigned height) OVERRIDE;
     virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
     // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid

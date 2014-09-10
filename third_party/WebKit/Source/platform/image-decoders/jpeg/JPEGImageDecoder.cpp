@@ -252,11 +252,12 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
 }
 #endif
 
-static IntSize computeUVSize(const jpeg_decompress_struct* info)
+static IntSize computeYUVSize(const jpeg_decompress_struct* info, int component, ImageDecoder::SizeType sizeType)
 {
-    int h = info->cur_comp_info[0]->h_samp_factor;
-    int v = info->cur_comp_info[0]->v_samp_factor;
-    return IntSize((info->output_width + h - 1) / h, (info->output_height + v - 1) / v);
+    if (sizeType == ImageDecoder::SizeForMemoryAllocation) {
+        return IntSize(info->cur_comp_info[component]->width_in_blocks * DCTSIZE, info->cur_comp_info[component]->height_in_blocks * DCTSIZE);
+    }
+    return IntSize(info->cur_comp_info[component]->downsampled_width, info->cur_comp_info[component]->downsampled_height);
 }
 
 static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
@@ -475,6 +476,7 @@ public:
             if (overrideColorSpace == JCS_YCbCr) {
                 m_info.out_color_space = JCS_YCbCr;
                 m_info.raw_data_out = TRUE;
+                m_uvSize = computeYUVSize(&m_info, 1, ImageDecoder::SizeForMemoryAllocation); // U size and V size have to be the same if we got here
             }
 
             // Don't allocate a giant and superfluous memory buffer when the
@@ -596,6 +598,7 @@ public:
     jpeg_decompress_struct* info() { return &m_info; }
     JSAMPARRAY samples() const { return m_samples; }
     JPEGImageDecoder* decoder() { return m_decoder; }
+    IntSize uvSize() const { return m_uvSize; }
 #if USE(QCMSLIB)
     qcms_transform* colorTransform() const { return m_transform; }
 
@@ -637,6 +640,8 @@ private:
     jstate m_state;
 
     JSAMPARRAY m_samples;
+
+    IntSize m_uvSize;
 
 #if USE(QCMSLIB)
     qcms_transform* m_transform;
@@ -712,16 +717,13 @@ void JPEGImageDecoder::setDecodedSize(unsigned width, unsigned height)
     m_decodedSize = IntSize(width, height);
 }
 
-IntSize JPEGImageDecoder::decodedYUVSize(int component) const
+IntSize JPEGImageDecoder::decodedYUVSize(int component, ImageDecoder::SizeType sizeType) const
 {
-    if (((component == 1) || (component == 2)) && m_reader.get()) { // Asking for U or V
-        const jpeg_decompress_struct* info = m_reader->info();
-        if (info && (info->out_color_space == JCS_YCbCr)) {
-            return computeUVSize(info);
-        }
-    }
+    ASSERT((component >= 0) && (component <= 2) && m_reader);
+    const jpeg_decompress_struct* info = m_reader->info();
 
-    return m_decodedSize;
+    ASSERT(info->out_color_space == JCS_YCbCr);
+    return computeYUVSize(info, component, sizeType);
 }
 
 unsigned JPEGImageDecoder::desiredScaleNumerator() const
@@ -855,7 +857,7 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
     int yHeight = info->output_height;
     int yMaxH = yHeight - 1;
     int v = info->cur_comp_info[0]->v_samp_factor;
-    IntSize uvSize = computeUVSize(info);
+    IntSize uvSize = reader->uvSize();
     int uvMaxH = uvSize.height() - 1;
     JSAMPROW outputY = static_cast<JSAMPROW>(imagePlanes->plane(0));
     JSAMPROW outputU = static_cast<JSAMPROW>(imagePlanes->plane(1));
