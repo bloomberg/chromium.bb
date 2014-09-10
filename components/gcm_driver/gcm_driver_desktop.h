@@ -36,6 +36,7 @@ namespace gcm {
 
 class GCMAppHandler;
 class GCMClientFactory;
+class GCMDelayedTaskController;
 
 // GCMDriver implementation for desktop and Chrome OS, using GCMClient.
 class GCMDriverDesktop : public GCMDriver {
@@ -94,7 +95,6 @@ class GCMDriverDesktop : public GCMDriver {
                         const GCMClient::OutgoingMessage& message) OVERRIDE;
 
  private:
-  class DelayedTaskController;
   class IOWorker;
 
   //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
@@ -146,7 +146,7 @@ class GCMDriverDesktop : public GCMDriver {
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
 
-  scoped_ptr<DelayedTaskController> delayed_task_controller_;
+  scoped_ptr<GCMDelayedTaskController> delayed_task_controller_;
 
   // For all the work occurring on the IO thread. Must be destroyed on the IO
   // thread.

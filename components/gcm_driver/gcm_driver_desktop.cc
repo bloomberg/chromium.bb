@@ -15,68 +15,13 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_delayed_task_controller.h"
 #include "components/gcm_driver/system_encryptor.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gcm {
-
-// Helper class to save tasks to run until we're ready to execute them.
-class GCMDriverDesktop::DelayedTaskController {
- public:
-  DelayedTaskController();
-  ~DelayedTaskController();
-
-  // Adds a task that will be invoked once we're ready.
-  void AddTask(const base::Closure& task);
-
-  // Sets ready status. It is ready only when check-in is completed and
-  // the GCMClient is fully initialized.
-  void SetReady();
-
-  // Returns true if it is ready to perform tasks.
-  bool CanRunTaskWithoutDelay() const;
-
- private:
-  void RunTasks();
-
-  // Flag that indicates that GCM is ready.
-  bool ready_;
-
-  std::vector<base::Closure> delayed_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedTaskController);
-};
-
-GCMDriverDesktop::DelayedTaskController::DelayedTaskController()
-    : ready_(false) {
-}
-
-GCMDriverDesktop::DelayedTaskController::~DelayedTaskController() {
-}
-
-void GCMDriverDesktop::DelayedTaskController::AddTask(
-    const base::Closure& task) {
-  delayed_tasks_.push_back(task);
-}
-
-void GCMDriverDesktop::DelayedTaskController::SetReady() {
-  ready_ = true;
-  RunTasks();
-}
-
-bool GCMDriverDesktop::DelayedTaskController::CanRunTaskWithoutDelay() const {
-  return ready_;
-}
-
-void GCMDriverDesktop::DelayedTaskController::RunTasks() {
-  DCHECK(ready_);
-
-  for (size_t i = 0; i < delayed_tasks_.size(); ++i)
-    delayed_tasks_[i].Run();
-  delayed_tasks_.clear();
-}
 
 class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
  public:
@@ -676,7 +621,7 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
     return GCMClient::NOT_SIGNED_IN;
 
   DCHECK(!delayed_task_controller_);
-  delayed_task_controller_.reset(new DelayedTaskController);
+  delayed_task_controller_.reset(new GCMDelayedTaskController);
 
   // Note that we need to pass weak pointer again since the existing weak
   // pointer in IOWorker might have been invalidated when check-out occurs.
