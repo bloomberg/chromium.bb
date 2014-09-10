@@ -314,6 +314,11 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
       return IsAuthenticatedInWindow(active_web_contents());
   }
 
+  // Callback used by Approve to check whether the Accept button is enabled
+  // and ready to receive a click.
+  static bool IsEnabled(
+      content::WebContents* web_contents, const std::string& name);
+
   // If the "Host version out-of-date" form is visible, dismiss it.
   void DismissHostVersionWarningIfVisible();
 

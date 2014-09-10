@@ -309,9 +309,8 @@ void RemoteDesktopBrowserTest::Approve() {
               &RemoteDesktopBrowserTest::IsAuthenticatedInWindow,
               browser()->tab_strip_model()->GetActiveWebContents()));
 
-    ExecuteScript(
-        "lso.approveButtonAction();"
-        "document.forms[\"connect-approve\"].submit();");
+    // Click to Approve the web-app.
+    ClickOnControl("submit_approve_access");
 
     observer.Wait();
 
@@ -708,6 +707,13 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
 void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
   ASSERT_TRUE(HtmlElementVisible(name));
 
+  ConditionalTimeoutWaiter waiter(
+        base::TimeDelta::FromSeconds(5),
+        base::TimeDelta::FromMilliseconds(500),
+        base::Bind(&RemoteDesktopBrowserTest::IsEnabled,
+          active_web_contents(), name));
+  ASSERT_TRUE(waiter.Wait());
+
   ExecuteScript("document.getElementById(\"" + name + "\").click();");
 }
 
@@ -799,6 +805,15 @@ bool RemoteDesktopBrowserTest::IsHostActionComplete(
   return ExecuteScriptAndExtractBool(
       client_web_content,
       host_action_var);
+}
+
+// static
+bool RemoteDesktopBrowserTest::IsEnabled(
+    content::WebContents* client_web_content,
+    const std::string& element_name) {
+  return !ExecuteScriptAndExtractBool(
+    client_web_content,
+    "document.getElementById(\"" + element_name + "\").disabled");
 }
 
 }  // namespace remoting
