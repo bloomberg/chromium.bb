@@ -647,7 +647,8 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 typedef std::set<QuicPacketSequenceNumber> SequenceNumberSet;
 typedef std::list<QuicPacketSequenceNumber> SequenceNumberList;
 
-typedef std::list<std::pair<QuicPacketSequenceNumber, QuicTime>> PacketTimeList;
+typedef std::list<
+    std::pair<QuicPacketSequenceNumber, QuicTime> > PacketTimeList;
 
 struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicStopWaitingFrame();
