@@ -49,12 +49,7 @@ cr.define('options', function() {
       $('resourceType').onchange = function(event) {
         var target = event.target;
         assert(target.tagName == 'SELECT');
-        if (target.value == 'storage')
-          chrome.send('updateLocalStorage');
-        else if (target.value == 'battery')
-          chrome.send('updateBatteryUsage');
-        else
-          chrome.send('updateOrigins', [target.value]);
+        WebsiteSettingsManager.getInstance().updatePage_(target.value);
       };
 
       var searchBox = $('website-settings-search-box');
@@ -67,7 +62,22 @@ cr.define('options', function() {
       };
 
       this.createOriginsList_();
-      chrome.send('updateOrigins', ['geolocation']);
+      this.updatePage_('geolocation');
+    },
+
+    /**
+     * Called after the page has been shown. Show the content settings or
+     * resource auditing for the location's hash.
+     */
+    didShowPage: function() {
+      var hash = location.hash;
+      if (hash)
+        hash = hash.slice(1);
+      else
+        hash = 'geolocation';
+      this.updatePage_(hash);
+
+      $('resourceType').value = hash;
     },
 
     /**
@@ -158,6 +168,20 @@ cr.define('options', function() {
       this.queryDelayTimerId_ = window.setTimeout(this.searchOrigins.bind(this),
                                                   160);
     },
+
+    /**
+     * Updates the page with the given content setting or resource name's
+     * information.
+     * @param {string} typeName The name of the content setting or resource.
+     */
+    updatePage_: function(typeName) {
+      if (typeName == 'storage')
+        chrome.send('updateLocalStorage');
+      else if (typeName == 'battery')
+        chrome.send('updateBatteryUsage');
+      else
+        chrome.send('updateOrigins', [typeName]);
+    }
   };
 
   WebsiteSettingsManager.populateOrigins = function(allowedDict, blockedDict) {
