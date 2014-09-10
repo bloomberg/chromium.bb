@@ -24,7 +24,6 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -472,38 +471,6 @@ gfx::NativeViewAccessible
   if (view)
     return view->AccessibilityGetNativeViewAccessible();
   return NULL;
-}
-
-BrowserAccessibilityManager* RenderFrameHostImpl::AccessibilityGetChildFrame(
-    int64 frame_tree_node_id) {
-  FrameTreeNode* child_node = FrameTree::GloballyFindByID(frame_tree_node_id);
-  if (!child_node)
-    return NULL;
-
-  // We should have gotten a node in the same frame tree.
-  CHECK(child_node->frame_tree() == frame_tree_node()->frame_tree());
-
-  RenderFrameHostImpl* child_rfhi = child_node->current_frame_host();
-
-  // Return NULL if this isn't an out-of-process iframe. Same-process iframes
-  // are already part of the accessibility tree.
-  if (child_rfhi->GetProcess()->GetID() == GetProcess()->GetID())
-    return NULL;
-
-  return child_rfhi->GetOrCreateBrowserAccessibilityManager();
-}
-
-BrowserAccessibilityManager*
-RenderFrameHostImpl::AccessibilityGetParentFrame() {
-  FrameTreeNode* parent_node = frame_tree_node()->parent();
-  if (!parent_node)
-    return NULL;
-
-  RenderFrameHostImpl* parent_frame = parent_node->current_frame_host();
-  if (!parent_frame)
-    return NULL;
-
-  return parent_frame->GetOrCreateBrowserAccessibilityManager();
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
@@ -1033,33 +1000,6 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
         browser_accessibility_manager_->OnAccessibilityEvents(params);
     }
 
-    if (browser_accessibility_manager_) {
-      // Get the frame routing ids from out-of-process iframes and use them
-      // to notify our BrowserAccessibilityManager of the frame tree node id of
-      // any of its child frames.
-      for (unsigned int i = 0; i < params.size(); ++i) {
-        const AccessibilityHostMsg_EventParams& param = params[i];
-        std::map<int32, int>::const_iterator iter;
-        for (iter = param.node_to_frame_routing_id_map.begin();
-             iter != param.node_to_frame_routing_id_map.end();
-             ++iter) {
-          // This is the id of the accessibility node that has a child frame.
-          int32 node_id = iter->first;
-          // The routing id from either a RenderFrame or a RenderFrameProxy.
-          int frame_routing_id = iter->second;
-
-          FrameTree* frame_tree = frame_tree_node()->frame_tree();
-          FrameTreeNode* child_frame_tree_node = frame_tree->FindByRoutingID(
-              GetProcess()->GetID(), frame_routing_id);
-          if (child_frame_tree_node) {
-            browser_accessibility_manager_->SetChildFrameTreeNodeId(
-                 node_id, child_frame_tree_node->frame_tree_node_id());
-          }
-        }
-      }
-    }
-
-    // Send the updates to the automation extension API.
     std::vector<AXEventNotificationDetails> details;
     details.reserve(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
@@ -1088,16 +1028,8 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
     const AccessibilityHostMsg_EventParams& param = params[i];
     if (static_cast<int>(param.event_type) < 0)
       continue;
-
     if (!ax_tree_for_testing_) {
-      if (browser_accessibility_manager_) {
-        ax_tree_for_testing_.reset(new ui::AXTree(
-            browser_accessibility_manager_->SnapshotAXTreeForTesting()));
-      } else {
-        ax_tree_for_testing_.reset(new ui::AXTree());
-        CHECK(ax_tree_for_testing_->Unserialize(param.update))
-            << ax_tree_for_testing_->error();
-      }
+      ax_tree_for_testing_.reset(new ui::AXTree(param.update));
     } else {
       CHECK(ax_tree_for_testing_->Unserialize(param.update))
           << ax_tree_for_testing_->error();

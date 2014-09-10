@@ -51,16 +51,9 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate)
   IPC_STRUCT_TRAITS_MEMBER(nodes)
 IPC_STRUCT_TRAITS_END()
 
-typedef std::map<int32, int> FrameIDMap;
-
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // The tree update.
   IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
-
-  // Mapping from node id to routing id of its child frame - either the
-  // routing id of a RenderFrame or a RenderFrameProxy for an out-of-process
-  // iframe.
-  IPC_STRUCT_MEMBER(FrameIDMap, node_to_frame_routing_id_map)
 
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)

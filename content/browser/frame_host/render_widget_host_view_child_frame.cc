@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -342,8 +341,9 @@ SkColorType RenderWidgetHostViewChildFrame::PreferredReadbackFormat() {
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {
-  return BrowserAccessibilityManager::Create(
-      BrowserAccessibilityManager::GetEmptyDocument(), delegate);
+  // This eventually needs to be implemented for cross-process iframes.
+  // http://crbug.com/368298
+  return NULL;
 }
 
 }  // namespace content

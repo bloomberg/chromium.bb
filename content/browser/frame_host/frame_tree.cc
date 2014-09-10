@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +35,20 @@ bool FrameTreeNodeForId(int64 frame_tree_node_id,
                         FrameTreeNode** out_node,
                         FrameTreeNode* node) {
   if (node->frame_tree_node_id() == frame_tree_node_id) {
+    *out_node = node;
+    // Terminate iteration once the node has been found.
+    return false;
+  }
+  return true;
+}
+
+bool FrameTreeNodeForRoutingId(int routing_id,
+                               int process_id,
+                               FrameTreeNode** out_node,
+                               FrameTreeNode* node) {
+  // TODO(creis): Look through the swapped out RFHs as well.
+  if (node->current_frame_host()->GetProcess()->GetID() == process_id &&
+      node->current_frame_host()->GetRoutingID() == routing_id) {
     *out_node = node;
     // Terminate iteration once the node has been found.
     return false;
@@ -107,23 +120,10 @@ FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
 }
 
 FrameTreeNode* FrameTree::FindByRoutingID(int routing_id, int process_id) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(process_id, routing_id);
-  if (render_frame_host) {
-    FrameTreeNode* result = render_frame_host->frame_tree_node();
-    if (this == result->frame_tree())
-      return result;
-  }
-
-  RenderFrameProxyHost* render_frame_proxy_host =
-      RenderFrameProxyHost::FromID(process_id, routing_id);
-  if (render_frame_proxy_host) {
-    FrameTreeNode* result = render_frame_proxy_host->frame_tree_node();
-    if (this == result->frame_tree())
-      return result;
-  }
-
-  return NULL;
+  FrameTreeNode* node = NULL;
+  ForEach(
+      base::Bind(&FrameTreeNodeForRoutingId, routing_id, process_id, &node));
+  return node;
 }
 
 void FrameTree::ForEach(

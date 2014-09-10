@@ -26,8 +26,12 @@ RendererAccessibility::~RendererAccessibility() {
 }
 
 WebDocument RendererAccessibility::GetMainDocument() {
-  if (render_frame_ && render_frame_->GetWebFrame())
-    return render_frame_->GetWebFrame()->document();
+  WebView* view = render_frame_->render_view()->GetWebView();
+  WebFrame* main_frame = view ? view->mainFrame() : NULL;
+
+  if (main_frame)
+    return main_frame->document();
+
   return WebDocument();
 }
 

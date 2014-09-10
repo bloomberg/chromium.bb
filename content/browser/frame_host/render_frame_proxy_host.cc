@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 
-#include "base/lazy_instance.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -14,31 +13,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
-
-namespace {
-
-// The (process id, routing id) pair that identifies one RenderFrameProxy.
-typedef std::pair<int32, int32> RenderFrameProxyHostID;
-typedef base::hash_map<RenderFrameProxyHostID, RenderFrameProxyHost*>
-    RoutingIDFrameProxyMap;
-base::LazyInstance<RoutingIDFrameProxyMap> g_routing_id_frame_proxy_map =
-  LAZY_INSTANCE_INITIALIZER;
-
-}
-
-// static
-RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
-                                                   int routing_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RoutingIDFrameProxyMap* frames = g_routing_id_frame_proxy_map.Pointer();
-  RoutingIDFrameProxyMap::iterator it = frames->find(
-      RenderFrameProxyHostID(process_id, routing_id));
-  return it == frames->end() ? NULL : it->second;
-}
 
 RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
                                            FrameTreeNode* frame_tree_node)
@@ -46,10 +23,6 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
       site_instance_(site_instance),
       frame_tree_node_(frame_tree_node) {
   GetProcess()->AddRoute(routing_id_, this);
-  CHECK(g_routing_id_frame_proxy_map.Get().insert(
-      std::make_pair(
-          RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
-          this)).second);
 
   if (!frame_tree_node_->IsMainFrame() &&
       frame_tree_node_->parent()
@@ -72,8 +45,6 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
     Send(new FrameMsg_DeleteProxy(routing_id_));
 
   GetProcess()->RemoveRoute(routing_id_);
-  g_routing_id_frame_proxy_map.Get().erase(
-      RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
 }
 
 void RenderFrameProxyHost::SetChildRWHView(RenderWidgetHostView* view) {
@@ -142,5 +113,6 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 void RenderFrameProxyHost::DisownOpener() {
   Send(new FrameMsg_DisownOpener(GetRoutingID()));
 }
+
 
 }  // namespace content

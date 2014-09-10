@@ -26,8 +26,7 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 
 BrowserAccessibility::BrowserAccessibility()
     : manager_(NULL),
-      node_(NULL),
-      child_frame_tree_node_id_(0) {
+      node_(NULL) {
 }
 
 BrowserAccessibility::~BrowserAccessibility() {
@@ -64,15 +63,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
 }
 
 uint32 BrowserAccessibility::PlatformChildCount() const {
-  if (child_frame_tree_node_id_ &&
-      manager_ && manager_->delegate()) {
-    BrowserAccessibilityManager* child_manager =
-        manager_->delegate()->AccessibilityGetChildFrame(
-            child_frame_tree_node_id_);
-    if (child_manager)
-      return 1;
-  }
-
   return PlatformIsLeaf() ? 0 : InternalChildCount();
 }
 
@@ -93,16 +83,6 @@ bool BrowserAccessibility::IsDescendantOf(
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32 child_index) const {
-  if (child_index == 0 && child_frame_tree_node_id_ &&
-      manager_ &&
-      manager_->delegate()) {
-    BrowserAccessibilityManager* child_manager =
-        manager_->delegate()->AccessibilityGetChildFrame(
-            child_frame_tree_node_id_);
-    if (child_manager)
-      return child_manager->GetRoot();
-  }
-
   DCHECK(child_index < InternalChildCount());
   return InternalGetChild(child_index);
 }
@@ -142,9 +122,7 @@ BrowserAccessibility* BrowserAccessibility::GetParent() const {
   if (!node_ || !manager_)
     return NULL;
   ui::AXNode* parent = node_->parent();
-  if (parent)
-    return manager_->GetFromAXNode(parent);
-  return manager_->GetCrossFrameParent();
+  return parent ? manager_->GetFromAXNode(parent) : NULL;
 }
 
 int32 BrowserAccessibility::GetIndexInParent() const {
@@ -700,12 +678,6 @@ int BrowserAccessibility::GetStaticTextLenRecursive() const {
   for (size_t i = 0; i < InternalChildCount(); ++i)
     len += InternalGetChild(i)->GetStaticTextLenRecursive();
   return len;
-}
-
-void BrowserAccessibility::SetChildFrameTreeNodeId(
-    int64 child_frame_tree_node_id) {
-  child_frame_tree_node_id_ = child_frame_tree_node_id;
-  manager_->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, this);
 }
 
 }  // namespace content

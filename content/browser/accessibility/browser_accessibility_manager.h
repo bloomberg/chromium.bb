@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,7 +22,6 @@ struct AccessibilityHostMsg_LocationChangeParams;
 
 namespace content {
 class BrowserAccessibility;
-class BrowserAccessibilityManager;
 #if defined(OS_ANDROID)
 class BrowserAccessibilityManagerAndroid;
 #endif
@@ -43,12 +42,6 @@ CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node9 = ui::AXNodeData());
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
-// Note: BrowserAccessibilityManager should never cache any of the return
-// values from any of these interfaces, especially those that return pointers.
-// They may only be valid within this call stack. That policy eliminates any
-// concerns about ownership and lifecycle issues; none of these interfaces
-// transfer ownership and no return values are guaranteed to be valid outside
-// of the current call stack.
 class CONTENT_EXPORT BrowserAccessibilityDelegate {
  public:
   virtual ~BrowserAccessibilityDelegate() {}
@@ -70,9 +63,6 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
-  virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int64 frame_tree_node_id) = 0;
-  virtual BrowserAccessibilityManager* AccessibilityGetParentFrame() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -199,13 +189,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
     delegate_ = delegate;
   }
 
-  // Get a snapshot of the current tree as an AXTreeUpdate.
-  ui::AXTreeUpdate SnapshotAXTreeForTesting();
-
-  // Frame tree support.
-  void SetChildFrameTreeNodeId(int32 node_id, int64 child_frame_tree_node_id);
-  BrowserAccessibility* GetCrossFrameParent();
-
  protected:
   BrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
@@ -242,6 +225,21 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
     OSK_ALLOWED
   };
 
+  // Update a set of nodes using data received from the renderer
+  // process.
+  bool UpdateNodes(const std::vector<ui::AXNodeData>& nodes);
+
+  // Update one node from the tree using data received from the renderer
+  // process. Returns true on success, false on fatal error.
+  bool UpdateNode(const ui::AXNodeData& src);
+
+  void SetRoot(BrowserAccessibility* root);
+
+  BrowserAccessibility* CreateNode(
+      BrowserAccessibility* parent,
+      int32 id,
+      int32 index_in_parent);
+
  protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
@@ -250,7 +248,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   scoped_ptr<BrowserAccessibilityFactory> factory_;
 
   // The underlying tree of accessibility objects.
-  scoped_ptr<ui::AXSerializableTree> tree_;
+  scoped_ptr<ui::AXTree> tree_;
 
   // The node that currently has focus.
   ui::AXNode* focus_;

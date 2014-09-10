@@ -28,9 +28,6 @@ class AccessibilityNotificationWaiter {
       Shell* shell,
       AccessibilityMode accessibility_mode,
       ui::AXEvent event);
-  AccessibilityNotificationWaiter(
-      RenderFrameHostImpl* frame_host,
-       ui::AXEvent event);
   ~AccessibilityNotificationWaiter();
 
   // Blocks until the specific accessibility notification registered in
@@ -54,6 +51,7 @@ class AccessibilityNotificationWaiter {
   // GetAXTree() is about the page with the url "about:blank".
   bool IsAboutBlank();
 
+  Shell* shell_;
   RenderFrameHostImpl* frame_host_;
   ui::AXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;

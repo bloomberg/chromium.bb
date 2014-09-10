@@ -1997,6 +1997,11 @@ int RenderViewImpl::historyForwardListCount() {
   return history_list_length_ - historyBackListCount() - 1;
 }
 
+void RenderViewImpl::postAccessibilityEvent(
+    const WebAXObject& obj, blink::WebAXEvent event) {
+  main_render_frame()->HandleWebAccessibilityEvent(obj, event);
+}
+
 // blink::WebWidgetClient ----------------------------------------------------
 
 void RenderViewImpl::didFocus() {

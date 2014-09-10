@@ -207,8 +207,6 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     }
 
     AccessibilityHostMsg_EventParams event_msg;
-    tree_source_.CollectChildFrameIdMapping(
-        &event_msg.node_to_frame_routing_id_map);
     event_msg.event_type = event.event_type;
     event_msg.id = event.id;
     serializer_.SerializeChanges(obj, &event_msg.update);
