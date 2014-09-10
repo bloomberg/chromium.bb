@@ -1076,12 +1076,6 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
             if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_SELECTOR_SYM;
         }
-        CASE("-internal-medialist") {
-            if (!m_internal)
-                return;
-            m_parsingMode = MediaQueryMode;
-            m_token = INTERNAL_MEDIALIST_SYM;
-        }
         CASE("-internal-keyframe-rule") {
             if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_KEYFRAME_RULE_SYM;

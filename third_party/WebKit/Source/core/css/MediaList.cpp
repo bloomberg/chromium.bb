@@ -72,11 +72,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaS
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
 
-    if (RuntimeEnabledFeatures::mediaQueryParserEnabled())
-        return MediaQueryParser::parseMediaQuerySet(mediaString);
-
-    BisonCSSParser parser(strictCSSParserContext());
-    return parser.parseMediaQueryList(mediaString);
+    return MediaQueryParser::parseMediaQuerySet(mediaString);
 }
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::createOffMainThread(const String& mediaString)

@@ -188,7 +188,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token NAMESPACE_SYM
 %token VIEWPORT_RULE_SYM
 %token INTERNAL_DECLS_SYM
-%token INTERNAL_MEDIALIST_SYM
 %token INTERNAL_RULE_SYM
 %token INTERNAL_SELECTOR_SYM
 %token INTERNAL_VALUE_SYM
@@ -380,7 +379,6 @@ stylesheet:
   | internal_rule
   | internal_selector
   | internal_value
-  | internal_medialist
   | internal_keyframe_rule
   | internal_keyframe_key_list
   | internal_supports_condition
@@ -417,12 +415,6 @@ internal_value:
         if (!parser->parseValue(parser->m_id, parser->m_important))
             parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
         parser->m_valueList = nullptr;
-    }
-;
-
-internal_medialist:
-    INTERNAL_MEDIALIST_SYM maybe_space location_label maybe_media_list TOKEN_EOF {
-        parser->m_mediaList = $4;
     }
 ;
 
