@@ -25,9 +25,9 @@ chrome.test.getConfig(function(config) {
       wallpaperRequest.onloadend = function(e) {
         if (wallpaperRequest.status === 200) {
           chrome.wallpaper.setWallpaper(
-              {'wallpaperData': wallpaperRequest.response,
+              {'data': wallpaperRequest.response,
                'layout': 'CENTER_CROPPED',
-               'name': 'test'},
+               'filename': 'test'},
               // Set wallpaper directly with an arraybuffer should pass.
               pass()
           );
@@ -56,7 +56,7 @@ chrome.test.getConfig(function(config) {
       chrome.wallpaper.setWallpaper(
           {'url': url,
            'layout': 'CENTER_CROPPED',
-           'name': 'test'},
+           'filename': 'test'},
            // A valid url should set wallpaper correctly.
            pass()
       );
@@ -68,7 +68,7 @@ chrome.test.getConfig(function(config) {
       chrome.wallpaper.setWallpaper(
          {'url': url,
           'layout': 'CENTER_CROPPED',
-          'name': 'test'},
+          'filename': 'test'},
           // Expect a failure.
           fail(optExpectedError));
     }

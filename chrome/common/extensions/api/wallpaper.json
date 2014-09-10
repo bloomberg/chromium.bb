@@ -20,7 +20,7 @@
           "name": "details",
           "type": "object",
           "properties": {
-            "wallpaperData": {
+            "data": {
               "type": "binary",
               "optional": true,
               "description": "The jpeg or png encoded wallpaper image."
@@ -35,7 +35,7 @@
               "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ],
               "description": "The supported wallpaper layouts."
             },
-            "name": {
+            "filename": {
               "type": "string",
               "description": "The file name of the saved wallpaper."
             },
