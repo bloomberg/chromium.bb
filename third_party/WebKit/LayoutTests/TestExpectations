@@ -1216,8 +1216,6 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-ste
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
-crbug.com/395425 [ Win7 ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash NeedsManualRebaseline ]
-
 # Ahem font is sometimes not loaded on Windows.
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
@@ -1313,7 +1311,7 @@ crbug.com/407993 [ Mac Win Release ] media/encrypted-media/encrypted-media-playb
 crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Timeout Pass ]
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-in-foreign-domain-subframe.html [ Pass Timeout ]
-#crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
+crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409713 [ Linux Win Release ] fast/dom/Window/window-early-properties-xhr.html [ Pass Timeout ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
