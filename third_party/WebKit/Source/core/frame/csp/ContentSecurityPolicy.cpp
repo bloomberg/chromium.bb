@@ -619,7 +619,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header)
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header)
 {
     // FIXME: Support sending reports from worker.
     Document* document = this->document();
@@ -636,7 +636,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (experimentalFeaturesEnabled())
         frame->domWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
-    if (reportURIs.isEmpty())
+    if (reportEndpoints.isEmpty())
         return;
 
     // We need to be careful here when deciding what information to send to the
@@ -673,8 +673,8 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
     RefPtr<FormData> report = FormData::create(stringifiedReport.utf8());
 
-    for (size_t i = 0; i < reportURIs.size(); ++i)
-        PingLoader::sendViolationReport(frame, reportURIs[i], report, PingLoader::ContentSecurityPolicyViolationReport);
+    for (size_t i = 0; i < reportEndpoints.size(); ++i)
+        PingLoader::sendViolationReport(frame, completeURL(reportEndpoints[i]), report, PingLoader::ContentSecurityPolicyViolationReport);
 
     didSendViolationReport(stringifiedReport);
 }

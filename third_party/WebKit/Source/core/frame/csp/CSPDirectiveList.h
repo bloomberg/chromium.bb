@@ -61,7 +61,7 @@ public:
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
     bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
     bool isReportOnly() const { return m_reportOnly; }
-    const Vector<KURL>& reportURIs() const { return m_reportURIs; }
+    const Vector<String>& reportEndpoints() const { return m_reportEndpoints; }
 
 private:
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
@@ -130,7 +130,7 @@ private:
     OwnPtr<SourceListDirective> m_scriptSrc;
     OwnPtr<SourceListDirective> m_styleSrc;
 
-    Vector<KURL> m_reportURIs;
+    Vector<String> m_reportEndpoints;
 
     String m_evalDisabledErrorMessage;
 };

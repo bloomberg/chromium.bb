@@ -172,12 +172,11 @@ public:
     void reportInvalidReferrer(const String&);
     void reportReportOnlyInMeta(const String&);
     void reportMetaOutsideHead(const String&);
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
     const KURL url() const;
-    KURL completeURL(const String&) const;
     void enforceSandboxFlags(SandboxFlags);
     String evalDisabledErrorMessage() const;
 
@@ -199,6 +198,7 @@ private:
 
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
+    KURL completeURL(const String&) const;
 
     void logToConsole(const String& message, MessageLevel = ErrorMessageLevel);
     void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
