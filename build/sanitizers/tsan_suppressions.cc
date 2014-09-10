@@ -124,6 +124,8 @@ char kTSanDefaultSuppressions[] =
 "race:base::g_power_monitor\n"
 "race:base::PowerMonitor::PowerMonitor\n"
 "race:base::PowerMonitor::AddObserver\n"
+"race:base::PowerMonitor::RemoveObserver\n"
+"race:base::PowerMonitor::IsOnBatteryPower\n"
 
 // http://crbug.com/268941
 "race:tracked_objects::ThreadData::tls_index_\n"
@@ -298,6 +300,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/397022
 "deadlock:"
 "base::debug::TraceEventTestFixture_ThreadOnceBlocking_Test::TestBody\n"
+
+// http://crbug.com/412764
+"race:media::WallClockTimeSource::SetPlaybackRate\n"
 
 // End of suppressions.
 ;  // Please keep this semicolon.
