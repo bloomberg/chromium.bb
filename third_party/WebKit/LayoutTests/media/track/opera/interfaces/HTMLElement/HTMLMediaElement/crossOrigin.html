@@ -10,7 +10,7 @@ test(function(){
 });
 test(function(){
     var video = document.createElement('video');
-    assert_equals(video.crossOrigin, '');
+    assert_equals(video.crossOrigin, null);
 }, document.title+', content attribute missing');
 test(function(){
     var video = document.createElement('video');
@@ -40,7 +40,7 @@ test(function(){
 test(function(){
     var video = document.createElement('video');
     video.crossOrigin = null;
-    assert_equals(video.getAttribute('crossorigin'), 'null');
+    assert_false(video.hasAttribute('crossorigin'));
 }, document.title+', setting to null');
 test(function(){
     var video = document.createElement('video');

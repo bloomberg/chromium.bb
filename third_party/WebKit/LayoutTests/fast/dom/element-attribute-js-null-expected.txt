@@ -136,7 +136,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLIFrameElement.width
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLImageElement.align]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLImageElement.alt]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLImageElement.border]
-TEST SUCCEEDED: The value was the string 'anonymous'. [tested HTMLImageElement.crossOrigin]
+TEST SUCCEEDED: The value was null. [tested HTMLImageElement.crossOrigin]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLImageElement.longDesc]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLImageElement.lowsrc]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLImageElement.name]
@@ -242,7 +242,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.event
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.charset]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLScriptElement.src]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.type]
-TEST SUCCEEDED: The value was the string 'anonymous'. [tested HTMLScriptElement.crossOrigin]
+TEST SUCCEEDED: The value was null. [tested HTMLScriptElement.crossOrigin]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.nonce]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.value]

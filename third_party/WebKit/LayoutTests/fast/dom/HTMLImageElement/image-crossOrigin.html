@@ -4,15 +4,15 @@
 description("This tests the handling of the img.crossOrigin attribute");
 var img = document.createElement("img");
 shouldBeTrue("'crossOrigin' in img");
-shouldBeEqualToString("img.crossOrigin", "");
+shouldBeNull("img.crossOrigin");
 shouldBeEqualToString("img.setAttribute('crossorigin', ''); img.crossOrigin", "anonymous");
-shouldBeEqualToString("img.removeAttribute('crossorigin'); img.crossOrigin", "");
+shouldBeNull("img.removeAttribute('crossorigin'); img.crossOrigin");
 shouldBeEqualToString("img.setAttribute('crossorigin', 'foo'); img.crossOrigin", "anonymous");
 shouldBeEqualToString("img.setAttribute('crossorigin', 'ANONYMOUS'); img.crossOrigin", "anonymous");
 shouldBeEqualToString("img.setAttribute('crossorigin', 'use-credentials'); img.crossOrigin", "use-credentials");
 shouldBeEqualToString("img.crossOrigin = ''; img.getAttribute('crossorigin')", "");
 shouldBeEqualToString("img.crossOrigin = 'foo'; img.getAttribute('crossorigin')", "foo");
-shouldBeEqualToString("img.crossOrigin = null; img.getAttribute('crossorigin')", "null");
+shouldBeFalse("img.crossOrigin = null; img.hasAttribute('crossorigin')");
 shouldBeEqualToString("img.crossOrigin = 'ANONYMOUS'; img.getAttribute('crossorigin')", "ANONYMOUS");
 shouldBeEqualToString("img.crossOrigin = 'use-credentials'; img.getAttribute('crossorigin')", "use-credentials");
 </script>
