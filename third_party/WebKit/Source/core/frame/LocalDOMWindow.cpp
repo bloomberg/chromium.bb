@@ -556,32 +556,19 @@ void LocalDOMWindow::willDetachFrameHost()
 
 void LocalDOMWindow::willDestroyDocumentInFrame()
 {
-    // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
-    // unregister themselves from the LocalDOMWindow as a result of the call to willDestroyGlobalObjectInFrame.
-    WillBeHeapVector<RawPtrWillBeMember<DOMWindowProperty> > properties;
-    copyToVector(m_properties, properties);
-    for (size_t i = 0; i < properties.size(); ++i)
-        properties[i]->willDestroyGlobalObjectInFrame();
+    for (WillBeHeapHashSet<RawPtrWillBeMember<DOMWindowProperty> >::const_iterator it = m_properties.begin(); it != m_properties.end(); ++it)
+        (*it)->willDestroyGlobalObjectInFrame();
 }
 
 void LocalDOMWindow::willDetachDocumentFromFrame()
 {
-    // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
-    // unregister themselves from the LocalDOMWindow as a result of the call to willDetachGlobalObjectFromFrame.
-    WillBeHeapVector<RawPtrWillBeMember<DOMWindowProperty> > properties;
-    copyToVector(m_properties, properties);
-    for (size_t i = 0; i < properties.size(); ++i)
-        properties[i]->willDetachGlobalObjectFromFrame();
+    for (WillBeHeapHashSet<RawPtrWillBeMember<DOMWindowProperty> >::const_iterator it = m_properties.begin(); it != m_properties.end(); ++it)
+        (*it)->willDetachGlobalObjectFromFrame();
 }
 
 void LocalDOMWindow::registerProperty(DOMWindowProperty* property)
 {
     m_properties.add(property);
-}
-
-void LocalDOMWindow::unregisterProperty(DOMWindowProperty* property)
-{
-    m_properties.remove(property);
 }
 
 void LocalDOMWindow::reset()

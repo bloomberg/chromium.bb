@@ -30,10 +30,10 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class LocalFrame;
 
 class DOMWindowProperty : public WillBeGarbageCollectedMixin {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowProperty);
 public:
     explicit DOMWindowProperty(LocalFrame*);
 
@@ -42,15 +42,10 @@ public:
 
     LocalFrame* frame() const { return m_frame; }
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) { }
 
 protected:
-#if !ENABLE(OILPAN)
-    virtual ~DOMWindowProperty();
-#endif
-
     LocalFrame* m_frame;
-    RawPtrWillBeMember<LocalDOMWindow> m_associatedDOMWindow;
 };
 
 }
