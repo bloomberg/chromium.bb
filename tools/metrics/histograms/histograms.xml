@@ -15466,13 +15466,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpAuthCount" enum="HttpAuthCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asanka@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
   <summary>
     Per-authentication-scheme counts of authentication attempts and rejections.
   </summary>
 </histogram>
 
 <histogram name="Net.HttpAuthResource" enum="HttpAuthResource">
+  <obsolete>
+    Removed in https://crrev.com/209100
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Count of authentication requests for top level pages vs. sub-resources, such
@@ -15481,7 +15485,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpAuthTarget" enum="HttpAuthTarget">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asanka@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
   <summary>
     Per-authentication-scheme counts of authentication targets, such as secure
     servers or proxies.
