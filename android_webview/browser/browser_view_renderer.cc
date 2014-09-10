@@ -264,6 +264,9 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!compositor_)
     return false;
 
+  if (last_on_draw_global_visible_rect_.IsEmpty())
+    return client_->RequestDrawGL(java_canvas, false);
+
   if (!hardware_enabled_) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
     if (hardware_enabled_) {
