@@ -114,7 +114,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
       "URL", url.spec());
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
-  provider_host_->UnassociateRegistration();
+  provider_host_->DisassociateRegistration();
 
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);

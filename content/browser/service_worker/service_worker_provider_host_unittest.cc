@@ -97,7 +97,7 @@ TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
 
   // Resetting the provider_host's active version should remove process refs
   // from the version.
-  provider_host1_->UnassociateRegistration();
+  provider_host1_->DisassociateRegistration();
   ASSERT_FALSE(HasProcessToRun());
 }
 
@@ -113,11 +113,11 @@ TEST_F(ServiceWorkerProviderHostTest,
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  provider_host1_->UnassociateRegistration();
+  provider_host1_->DisassociateRegistration();
   ASSERT_TRUE(HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->UnassociateRegistration();
+  provider_host2_->DisassociateRegistration();
   ASSERT_FALSE(HasProcessToRun());
 }
 
@@ -136,7 +136,7 @@ TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
 
   // Resetting the provider_host's waiting version should remove process refs
   // from the version.
-  provider_host1_->UnassociateRegistration();
+  provider_host1_->DisassociateRegistration();
   ASSERT_FALSE(HasProcessToRun());
 }
 
@@ -152,11 +152,11 @@ TEST_F(ServiceWorkerProviderHostTest,
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  provider_host1_->UnassociateRegistration();
+  provider_host1_->DisassociateRegistration();
   ASSERT_TRUE(HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->UnassociateRegistration();
+  provider_host2_->DisassociateRegistration();
   ASSERT_FALSE(HasProcessToRun());
 }
 
@@ -176,7 +176,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   VerifyVersionAttributes(provider_host2_, NULL, version_.get(), NULL);
 
   // Disassociating the registration should clear all version attributes.
-  provider_host2_->UnassociateRegistration();
+  provider_host2_->DisassociateRegistration();
   VerifyVersionAttributes(provider_host1_, NULL, version_.get(), NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
@@ -213,7 +213,7 @@ TEST_F(ServiceWorkerProviderHostTest,
       provider_host2_, version2.get(), version1.get(), NULL);
 
   // Disassociating the registration should clear all version attributes.
-  provider_host2_->UnassociateRegistration();
+  provider_host2_->DisassociateRegistration();
   VerifyVersionAttributes(
       provider_host1_, version2.get(), version1.get(), NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);

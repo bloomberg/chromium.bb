@@ -30,6 +30,7 @@ class ServiceWorkerRegistrationHandleReference {
 
   ~ServiceWorkerRegistrationHandleReference();
 
+  const ServiceWorkerRegistrationObjectInfo& info() const { return info_; }
   int handle_id() const { return info_.handle_id; }
   GURL scope() const { return info_.scope; }
 

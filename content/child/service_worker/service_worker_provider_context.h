@@ -24,6 +24,7 @@ class Message;
 namespace content {
 
 class ServiceWorkerHandleReference;
+class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
 class ThreadSafeSender;
 
@@ -38,15 +39,18 @@ class ServiceWorkerProviderContext
   explicit ServiceWorkerProviderContext(int provider_id);
 
   // Called from ServiceWorkerDispatcher.
+  void OnAssociateRegistration(const ServiceWorkerRegistrationObjectInfo& info,
+                               const ServiceWorkerVersionAttributes& attrs);
+  void OnDisassociateRegistration();
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
-  void OnSetInstallingServiceWorker(int provider_id,
+  void OnSetInstallingServiceWorker(int registration_handle_id,
                                     const ServiceWorkerObjectInfo& info);
-  void OnSetWaitingServiceWorker(int provider_id,
+  void OnSetWaitingServiceWorker(int registration_handle_id,
                                  const ServiceWorkerObjectInfo& info);
-  void OnSetActiveServiceWorker(int provider_id,
+  void OnSetActiveServiceWorker(int registration_handle_id,
                                 const ServiceWorkerObjectInfo& info);
-  void OnSetControllerServiceWorker(int provider_id,
+  void OnSetControllerServiceWorker(int registration_handle_id,
                                     const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
@@ -55,6 +59,9 @@ class ServiceWorkerProviderContext
   ServiceWorkerHandleReference* waiting();
   ServiceWorkerHandleReference* active();
   ServiceWorkerHandleReference* controller();
+  ServiceWorkerRegistrationHandleReference* registration();
+
+  ServiceWorkerVersionAttributes GetVersionAttributes();
 
   // Gets the handle ID of the installing Service Worker, or
   // kInvalidServiceWorkerHandleId if the provider does not have a
@@ -76,9 +83,16 @@ class ServiceWorkerProviderContext
   // by a Service Worker.
   int controller_handle_id() const;
 
+  // Gets the handle ID of the associated registration, or
+  // kInvalidRegistrationHandleId if the provider is not associated with any
+  // registration.
+  int registration_handle_id() const;
+
  private:
   friend class base::RefCounted<ServiceWorkerProviderContext>;
   ~ServiceWorkerProviderContext();
+
+  bool IsAssociatedWithRegistration(int registration_handle_id) const;
 
   const int provider_id_;
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
@@ -87,6 +101,7 @@ class ServiceWorkerProviderContext
   scoped_ptr<ServiceWorkerHandleReference> waiting_;
   scoped_ptr<ServiceWorkerHandleReference> active_;
   scoped_ptr<ServiceWorkerHandleReference> controller_;
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
 };

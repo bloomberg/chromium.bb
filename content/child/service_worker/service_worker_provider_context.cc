@@ -10,6 +10,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -56,6 +57,47 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   return controller_.get();
 }
 
+ServiceWorkerRegistrationHandleReference*
+ServiceWorkerProviderContext::registration() {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return registration_.get();
+}
+
+ServiceWorkerVersionAttributes
+ServiceWorkerProviderContext::GetVersionAttributes() {
+  ServiceWorkerVersionAttributes attrs;
+  if (installing())
+    attrs.installing = installing()->info();
+  if (waiting())
+    attrs.waiting = waiting()->info();
+  if (active())
+    attrs.active = active()->info();
+  return attrs;
+}
+
+void ServiceWorkerProviderContext::OnAssociateRegistration(
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  DCHECK(!registration_);
+  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info.handle_id);
+  registration_ = ServiceWorkerRegistrationHandleReference::Adopt(
+      info, thread_safe_sender_.get());
+  installing_ = ServiceWorkerHandleReference::Adopt(
+      attrs.installing, thread_safe_sender_.get());
+  waiting_ = ServiceWorkerHandleReference::Adopt(
+      attrs.waiting, thread_safe_sender_.get());
+  active_ = ServiceWorkerHandleReference::Adopt(
+      attrs.active, thread_safe_sender_.get());
+}
+
+void ServiceWorkerProviderContext::OnDisassociateRegistration() {
+  controller_.reset();
+  active_.reset();
+  waiting_.reset();
+  installing_.reset();
+  registration_.reset();
+}
+
 void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     int handle_id,
     blink::WebServiceWorkerState state) {
@@ -80,33 +122,33 @@ void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
 }
 
 void ServiceWorkerProviderContext::OnSetInstallingServiceWorker(
-    int provider_id,
+    int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
-  DCHECK_EQ(provider_id_, provider_id);
+  DCHECK(IsAssociatedWithRegistration(registration_handle_id));
   installing_ =
       ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
-    int provider_id,
+    int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
-  DCHECK_EQ(provider_id_, provider_id);
+  DCHECK(IsAssociatedWithRegistration(registration_handle_id));
   waiting_ =
       ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetActiveServiceWorker(
-    int provider_id,
+    int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
-  DCHECK_EQ(provider_id_, provider_id);
+  DCHECK(IsAssociatedWithRegistration(registration_handle_id));
   active_ =
       ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
-    int provider_id,
+    int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
-  DCHECK_EQ(provider_id_, provider_id);
+  DCHECK(IsAssociatedWithRegistration(registration_handle_id));
 
   // This context is is the primary owner of this handle, keeps the
   // initial reference until it goes away.
@@ -139,6 +181,21 @@ int ServiceWorkerProviderContext::controller_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return controller_ ? controller_->info().handle_id
                      : kInvalidServiceWorkerHandleId;
+}
+
+int ServiceWorkerProviderContext::registration_handle_id() const {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return registration_ ? registration_->info().handle_id
+                       : kInvalidServiceWorkerRegistrationHandleId;
+}
+
+bool ServiceWorkerProviderContext::IsAssociatedWithRegistration(
+    int registration_handle_id) const {
+  if (!registration_)
+    return false;
+  if (registration_handle_id == kInvalidServiceWorkerRegistrationHandleId)
+    return false;
+  return registration_->info().handle_id == registration_handle_id;
 }
 
 }  // namespace content

@@ -96,12 +96,19 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       const ServiceWorkerObjectInfo& info,
       bool adopt_handle);
 
-  // If an existing WebServiceWorkerRegistrationImpl exists for the
-  // registration, it is returned; otherwise a WebServiceWorkerRegistrationImpl
-  // is created and its ownership is transferred to the caller. If
-  // |adopt_handle| is true, a ServiceWorkerRegistrationHandleReference will be
-  // adopted for the specified registration.
-  WebServiceWorkerRegistrationImpl* GetServiceWorkerRegistration(
+  // Finds a WebServiceWorkerRegistrationImpl for the specified registration.
+  // If it's not found, returns NULL. If |adopt_handle| is true,
+  // a ServiceWorkerRegistrationHandleReference will be adopted for the
+  // registration.
+  WebServiceWorkerRegistrationImpl* FindServiceWorkerRegistration(
+      const ServiceWorkerRegistrationObjectInfo& info,
+      bool adopt_handle);
+
+  // Creates a WebServiceWorkerRegistrationImpl for the specified registration
+  // and transfers its ownership to the caller. If |adopt_handle| is true, a
+  // ServiceWorkerRegistrationHandleReference will be adopted for the
+  // registration.
+  WebServiceWorkerRegistrationImpl* CreateServiceWorkerRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       bool adopt_handle);
 
@@ -132,6 +139,12 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
+  void OnAssociateRegistration(int thread_id,
+                               int provider_id,
+                               const ServiceWorkerRegistrationObjectInfo& info,
+                               const ServiceWorkerVersionAttributes& attrs);
+  void OnDisassociateRegistration(int thread_id,
+                                  int provider_id);
   void OnRegistered(int thread_id,
                     int request_id,
                     const ServiceWorkerRegistrationObjectInfo& info,
@@ -178,6 +191,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       int provider_id,
       int registration_handle_id,
       const ServiceWorkerObjectInfo& info);
+  void SetReadyRegistration(
+      int provider_id,
+      int registration_handle_id);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);

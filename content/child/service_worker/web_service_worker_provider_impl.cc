@@ -10,7 +10,9 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
@@ -46,6 +48,30 @@ void WebServiceWorkerProviderImpl::setClient(
   // the single provider context across threads. (http://crbug.com/366538
   // for more context)
   GetDispatcher()->AddScriptClient(provider_id_, client);
+
+  if (!context_->registration()) {
+    // This provider is not associated with any registration.
+    return;
+  }
+
+  // Set .ready if the associated registration has the active service worker.
+  if (context_->active_handle_id() != kInvalidServiceWorkerHandleId) {
+    WebServiceWorkerRegistrationImpl* registration =
+        GetDispatcher()->FindServiceWorkerRegistration(
+            context_->registration()->info(), false);
+    if (!registration) {
+      registration = GetDispatcher()->CreateServiceWorkerRegistration(
+          context_->registration()->info(), false);
+      ServiceWorkerVersionAttributes attrs = context_->GetVersionAttributes();
+      registration->SetInstalling(
+          GetDispatcher()->GetServiceWorker(attrs.installing, false));
+      registration->SetWaiting(
+          GetDispatcher()->GetServiceWorker(attrs.waiting, false));
+      registration->SetActive(
+          GetDispatcher()->GetServiceWorker(attrs.active, false));
+    }
+    client->setReadyRegistration(registration);
+  }
 
   if (context_->controller_handle_id() != kInvalidServiceWorkerHandleId) {
     client->setController(GetDispatcher()->GetServiceWorker(

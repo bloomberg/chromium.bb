@@ -83,7 +83,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void AssociateRegistration(ServiceWorkerRegistration* registration);
 
   // Clears the associated registration and stop listening to it.
-  void UnassociateRegistration();
+  void DisassociateRegistration();
 
   // Returns false if the version is not in the expected STARTING in our
   // process state. That would be indicative of a bad IPC message.

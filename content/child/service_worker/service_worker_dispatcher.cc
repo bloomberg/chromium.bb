@@ -54,6 +54,10 @@ ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
 void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_AssociateRegistration,
+                        OnAssociateRegistration)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DisassociateRegistration,
+                        OnDisassociateRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered, OnRegistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
                         OnUnregistered)
@@ -219,24 +223,29 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
 }
 
 WebServiceWorkerRegistrationImpl*
-ServiceWorkerDispatcher::GetServiceWorkerRegistration(
+ServiceWorkerDispatcher::FindServiceWorkerRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     bool adopt_handle) {
+  RegistrationObjectMap::iterator registration =
+      registrations_.find(info.handle_id);
+  if (registration == registrations_.end())
+    return NULL;
+  if (adopt_handle) {
+    // We are instructed to adopt a handle but we already have one, so
+    // adopt and destroy a handle ref.
+    ServiceWorkerRegistrationHandleReference::Adopt(
+        info, thread_safe_sender_.get());
+  }
+  return registration->second;
+}
+
+WebServiceWorkerRegistrationImpl*
+ServiceWorkerDispatcher::CreateServiceWorkerRegistration(
+    const ServiceWorkerRegistrationObjectInfo& info,
+    bool adopt_handle) {
+  DCHECK(!FindServiceWorkerRegistration(info, adopt_handle));
   if (info.handle_id == kInvalidServiceWorkerRegistrationHandleId)
     return NULL;
-
-  RegistrationObjectMap::iterator existing_registration =
-      registrations_.find(info.handle_id);
-
-  if (existing_registration != registrations_.end()) {
-    if (adopt_handle) {
-      // We are instructed to adopt a handle but we already have one, so
-      // adopt and destroy a handle ref.
-      ServiceWorkerRegistrationHandleReference::Adopt(
-          info, thread_safe_sender_.get());
-    }
-    return existing_registration->second;
-  }
 
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref =
       adopt_handle ? ServiceWorkerRegistrationHandleReference::Adopt(
@@ -247,6 +256,36 @@ ServiceWorkerDispatcher::GetServiceWorkerRegistration(
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
   return new WebServiceWorkerRegistrationImpl(handle_ref.Pass());
+}
+
+void ServiceWorkerDispatcher::OnAssociateRegistration(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider == provider_contexts_.end())
+    return;
+  provider->second->OnAssociateRegistration(info, attrs);
+  if (attrs.installing.handle_id != kInvalidServiceWorkerHandleId)
+    worker_to_provider_[attrs.installing.handle_id] = provider->second;
+  if (attrs.waiting.handle_id != kInvalidServiceWorkerHandleId)
+    worker_to_provider_[attrs.waiting.handle_id] = provider->second;
+  if (attrs.active.handle_id != kInvalidServiceWorkerHandleId)
+    worker_to_provider_[attrs.active.handle_id] = provider->second;
+}
+
+void ServiceWorkerDispatcher::OnDisassociateRegistration(
+    int thread_id,
+    int provider_id) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider == provider_contexts_.end())
+    return;
+  provider->second->OnDisassociateRegistration();
+  worker_to_provider_.erase(provider->second->installing_handle_id());
+  worker_to_provider_.erase(provider->second->waiting_handle_id());
+  worker_to_provider_.erase(provider->second->active_handle_id());
+  worker_to_provider_.erase(provider->second->controller_handle_id());
 }
 
 void ServiceWorkerDispatcher::OnRegistered(
@@ -265,10 +304,22 @@ void ServiceWorkerDispatcher::OnRegistered(
     return;
 
   WebServiceWorkerRegistrationImpl* registration =
-      GetServiceWorkerRegistration(info, true);
-  registration->SetInstalling(GetServiceWorker(attrs.installing, true));
-  registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
-  registration->SetActive(GetServiceWorker(attrs.active, true));
+      FindServiceWorkerRegistration(info, true);
+  if (!registration) {
+    registration = CreateServiceWorkerRegistration(info, true);
+    registration->SetInstalling(GetServiceWorker(attrs.installing, true));
+    registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
+    registration->SetActive(GetServiceWorker(attrs.active, true));
+  } else {
+    // |registration| must already have version attributes, so adopt and destroy
+    // handle refs for them.
+    ServiceWorkerHandleReference::Adopt(
+        attrs.installing, thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(
+        attrs.waiting, thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(
+        attrs.active, thread_safe_sender_.get());
+  }
 
   callbacks->onSuccess(registration);
   pending_registration_callbacks_.Remove(request_id);
@@ -387,6 +438,7 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
     SetActiveServiceWorker(provider_id,
                            registration_handle_id,
                            attributes.active);
+    SetReadyRegistration(provider_id, registration_handle_id);
   }
 }
 
@@ -405,7 +457,8 @@ void ServiceWorkerDispatcher::SetInstallingServiceWorker(
     int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end()) {
+  if (provider != provider_contexts_.end() &&
+      provider->second->registration_handle_id() == registration_handle_id) {
     int existing_installing_id = provider->second->installing_handle_id();
     if (existing_installing_id != info.handle_id &&
         existing_installing_id != kInvalidServiceWorkerHandleId) {
@@ -415,7 +468,8 @@ void ServiceWorkerDispatcher::SetInstallingServiceWorker(
       DCHECK(associated_provider->second->provider_id() == provider_id);
       worker_to_provider_.erase(associated_provider);
     }
-    provider->second->OnSetInstallingServiceWorker(provider_id, info);
+    provider->second->OnSetInstallingServiceWorker(
+        registration_handle_id, info);
     if (info.handle_id != kInvalidServiceWorkerHandleId)
       worker_to_provider_[info.handle_id] = provider->second;
   }
@@ -433,7 +487,8 @@ void ServiceWorkerDispatcher::SetWaitingServiceWorker(
     int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end()) {
+  if (provider != provider_contexts_.end() &&
+      provider->second->registration_handle_id() == registration_handle_id) {
     int existing_waiting_id = provider->second->waiting_handle_id();
     if (existing_waiting_id != info.handle_id &&
         existing_waiting_id != kInvalidServiceWorkerHandleId) {
@@ -443,7 +498,7 @@ void ServiceWorkerDispatcher::SetWaitingServiceWorker(
       DCHECK(associated_provider->second->provider_id() == provider_id);
       worker_to_provider_.erase(associated_provider);
     }
-    provider->second->OnSetWaitingServiceWorker(provider_id, info);
+    provider->second->OnSetWaitingServiceWorker(registration_handle_id, info);
     if (info.handle_id != kInvalidServiceWorkerHandleId)
       worker_to_provider_[info.handle_id] = provider->second;
   }
@@ -461,7 +516,8 @@ void ServiceWorkerDispatcher::SetActiveServiceWorker(
     int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end()) {
+  if (provider != provider_contexts_.end() &&
+      provider->second->registration_handle_id() == registration_handle_id) {
     int existing_active_id = provider->second->active_handle_id();
     if (existing_active_id != info.handle_id &&
         existing_active_id != kInvalidServiceWorkerHandleId) {
@@ -471,7 +527,7 @@ void ServiceWorkerDispatcher::SetActiveServiceWorker(
       DCHECK(associated_provider->second->provider_id() == provider_id);
       worker_to_provider_.erase(associated_provider);
     }
-    provider->second->OnSetActiveServiceWorker(provider_id, info);
+    provider->second->OnSetActiveServiceWorker(registration_handle_id, info);
     if (info.handle_id != kInvalidServiceWorkerHandleId)
       worker_to_provider_[info.handle_id] = provider->second;
   }
@@ -484,6 +540,37 @@ void ServiceWorkerDispatcher::SetActiveServiceWorker(
   }
 }
 
+void ServiceWorkerDispatcher::SetReadyRegistration(
+    int provider_id,
+    int registration_handle_id) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider == provider_contexts_.end() ||
+      provider->second->registration_handle_id() != registration_handle_id ||
+      provider->second->active_handle_id() == kInvalidServiceWorkerHandleId) {
+    return;
+  }
+
+  ScriptClientMap::iterator client = script_clients_.find(provider_id);
+  if (client == script_clients_.end())
+    return;
+
+  ServiceWorkerRegistrationObjectInfo info =
+      provider->second->registration()->info();
+  WebServiceWorkerRegistrationImpl* registration =
+      FindServiceWorkerRegistration(info, false);
+  if (!registration) {
+    registration = CreateServiceWorkerRegistration(info, false);
+    ServiceWorkerVersionAttributes attrs =
+        provider->second->GetVersionAttributes();
+    registration->SetInstalling(GetServiceWorker(attrs.installing, false));
+    registration->SetWaiting(GetServiceWorker(attrs.waiting, false));
+    registration->SetActive(GetServiceWorker(attrs.active, false));
+  }
+
+  // Resolve the .ready promise with the registration object.
+  client->second->setReadyRegistration(registration);
+}
+
 void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     int thread_id,
     int provider_id,
@@ -494,7 +581,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
                "Provider ID", provider_id);
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end()) {
-    provider->second->OnSetControllerServiceWorker(provider_id, info);
+    provider->second->OnSetControllerServiceWorker(
+        provider->second->registration_handle_id(), info);
     worker_to_provider_[info.handle_id] = provider->second;
   }
 

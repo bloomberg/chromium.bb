@@ -60,7 +60,7 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(associated_registration_.get(), registration);
-  UnassociateRegistration();
+  DisassociateRegistration();
 }
 
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
@@ -116,15 +116,32 @@ void ServiceWorkerProviderHost::AssociateRegistration(
     DecreaseProcessReference(associated_registration_->pattern());
   IncreaseProcessReference(registration->pattern());
 
+  if (dispatcher_host_) {
+    ServiceWorkerRegistrationHandle* handle =
+        dispatcher_host_->GetOrCreateRegistrationHandle(
+            provider_id(), registration);
+
+    ServiceWorkerVersionAttributes attrs;
+    attrs.installing = handle->CreateServiceWorkerHandleAndPass(
+        registration->installing_version());
+    attrs.waiting = handle->CreateServiceWorkerHandleAndPass(
+        registration->waiting_version());
+    attrs.active = handle->CreateServiceWorkerHandleAndPass(
+        registration->active_version());
+
+    dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
+        kDocumentMainThreadId, provider_id(), handle->GetObjectInfo(), attrs));
+  }
+
   associated_registration_ = registration;
-  registration->AddListener(this);
+  associated_registration_->AddListener(this);
   installing_version_ = registration->installing_version();
   waiting_version_ = registration->waiting_version();
   active_version_ = registration->active_version();
   SetControllerVersionAttribute(registration->active_version());
 }
 
-void ServiceWorkerProviderHost::UnassociateRegistration() {
+void ServiceWorkerProviderHost::DisassociateRegistration() {
   if (!associated_registration_.get())
     return;
   DecreaseProcessReference(associated_registration_->pattern());
@@ -134,6 +151,11 @@ void ServiceWorkerProviderHost::UnassociateRegistration() {
   waiting_version_ = NULL;
   active_version_ = NULL;
   SetControllerVersionAttribute(NULL);
+
+  if (dispatcher_host_) {
+    dispatcher_host_->Send(new ServiceWorkerMsg_DisassociateRegistration(
+        kDocumentMainThreadId, provider_id()));
+  }
 }
 
 scoped_ptr<ServiceWorkerRequestHandler>
