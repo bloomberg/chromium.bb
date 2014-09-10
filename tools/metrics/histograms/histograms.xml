@@ -38817,7 +38817,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="ComputeCurrentSigninStatus" type="int">
   <int value="0" label="Tried to compute current signin status."/>
-  <int value="1" label="No signin manager found."/>
+  <int value="1" label="Error: No profiles found."/>
+  <int value="2" label="No opened browser found."/>
+  <int value="3" label="User signed in when the signin status is unknown."/>
+  <int value="4" label="User signed out when the signin status is unknown."/>
 </enum>
 
 <enum name="ConnectionFailureReason" type="int">
@@ -48480,6 +48483,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="All profiles not signed in"/>
   <int value="2" label="Mixed signin status"/>
   <int value="3" label="Unknown signin status"/>
+  <int value="4" label="Error getting signin status"/>
 </enum>
 
 <enum name="ProfileSync" type="int">

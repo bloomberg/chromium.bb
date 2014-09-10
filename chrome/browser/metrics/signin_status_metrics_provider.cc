@@ -28,7 +28,10 @@ namespace {
 // occurred during the function execution.
 enum ComputeSigninStatus {
   ENTERED_COMPUTE_SIGNIN_STATUS,
-  ERROR_COMPUTE_SIGNIN_STATUS,
+  ERROR_NO_PROFILE_FOUND,
+  NO_BROWSER_OPENED,
+  USER_SIGNIN_WHEN_STATUS_UNKNOWN,
+  USER_SIGNOUT_WHEN_STATUS_UNKNOWN,
   COMPUTE_SIGNIN_STATUS_MAX,
 };
 
@@ -123,14 +126,26 @@ void SigninStatusMetricsProvider::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  if (signin_status_ == ALL_PROFILES_NOT_SIGNED_IN)
+  if (signin_status_ == ALL_PROFILES_NOT_SIGNED_IN) {
     signin_status_ = MIXED_SIGNIN_STATUS;
+  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+    // There should have at least one browser opened if the user can sign in, so
+    // signin_status_ value should not be unknown.
+    signin_status_ = ERROR_GETTING_SIGNIN_STATUS;
+    RecordComputeSigninStatusHistogram(USER_SIGNIN_WHEN_STATUS_UNKNOWN);
+  }
 }
 
 void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& account_id,
                                                   const std::string& username) {
-  if (signin_status_ == ALL_PROFILES_SIGNED_IN)
+  if (signin_status_ == ALL_PROFILES_SIGNED_IN) {
     signin_status_ = MIXED_SIGNIN_STATUS;
+  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+    // There should have at least one browser opened if the user can sign out,
+    // so signin_status_ value should not be unknown.
+    signin_status_ = ERROR_GETTING_SIGNIN_STATUS;
+    RecordComputeSigninStatusHistogram(USER_SIGNOUT_WHEN_STATUS_UNKNOWN);
+  }
 }
 
 void SigninStatusMetricsProvider::Initialize() {
@@ -168,13 +183,8 @@ void SigninStatusMetricsProvider::Initialize() {
 void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
     size_t total_count,
     size_t signed_in_profiles_count) {
-  RecordComputeSigninStatusHistogram(ENTERED_COMPUTE_SIGNIN_STATUS);
-
-  if (total_count == 0) {
-    // This should never happen. If it does, record it in histogram.
-    RecordComputeSigninStatusHistogram(ERROR_COMPUTE_SIGNIN_STATUS);
-    signin_status_ = UNKNOWN_SIGNIN_STATUS;
-  } else if (signed_in_profiles_count == 0) {
+  // total_count is known to be bigger than 0.
+  if (signed_in_profiles_count == 0) {
     signin_status_ = ALL_PROFILES_NOT_SIGNED_IN;
   } else if (total_count == signed_in_profiles_count) {
     signin_status_ = ALL_PROFILES_SIGNED_IN;
@@ -188,14 +198,19 @@ void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
   if ((signin_status_ == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
       (signin_status_ == ALL_PROFILES_SIGNED_IN && !signed_in)) {
     signin_status_ = MIXED_SIGNIN_STATUS;
+  } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+    // If when function RecordSigninStatusHistogram() is called, Chrome is
+    // running in the background with no browser window opened, |signin_status_|
+    // will be reset to |UNKNOWN_SIGNIN_STATUS|. Then this newly added browser
+    // is the only opened browser/profile and its signin status represents
+    // the whole status.
+    signin_status_ = signed_in ? ALL_PROFILES_SIGNED_IN :
+                                 ALL_PROFILES_NOT_SIGNED_IN;
   }
 #endif
 }
 
 void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
-  // Get the sign-in status of all currently open profiles. Sign-in status is
-  // indicated by its username. When username is not empty, the profile is
-  // signed-in.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profile_list = profile_manager->GetLoadedProfiles();
 
@@ -215,7 +230,20 @@ void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
     if (manager && manager->IsAuthenticated())
       signed_in_profiles_count++;
   }
-  UpdateInitialSigninStatus(opened_profiles_count, signed_in_profiles_count);
+
+  RecordComputeSigninStatusHistogram(ENTERED_COMPUTE_SIGNIN_STATUS);
+  if (profile_list.empty()) {
+    // This should not happen. If it does, record it in histogram.
+    RecordComputeSigninStatusHistogram(ERROR_NO_PROFILE_FOUND);
+    signin_status_ = ERROR_GETTING_SIGNIN_STATUS;
+  } else if (opened_profiles_count == 0) {
+    // The code indicates that Chrome is running in the background but no
+    // browser window is opened.
+    RecordComputeSigninStatusHistogram(NO_BROWSER_OPENED);
+    signin_status_ = UNKNOWN_SIGNIN_STATUS;
+  } else {
+    UpdateInitialSigninStatus(opened_profiles_count, signed_in_profiles_count);
+  }
 }
 
 SigninStatusMetricsProvider::ProfilesSigninStatus

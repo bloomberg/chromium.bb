@@ -61,6 +61,7 @@ class SigninStatusMetricsProvider : public metrics::MetricsProvider,
     ALL_PROFILES_NOT_SIGNED_IN,
     MIXED_SIGNIN_STATUS,
     UNKNOWN_SIGNIN_STATUS,
+    ERROR_GETTING_SIGNIN_STATUS,
     SIGNIN_STATUS_MAX,
   };
 
