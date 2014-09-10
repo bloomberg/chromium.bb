@@ -1867,7 +1867,10 @@ std::string PDFiumEngine::GetSelectedText() {
 std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
   int temp;
   PDFiumPage::LinkTarget target;
-  PDFiumPage::Area area = GetCharIndex(point, &temp, &temp, &target);
+  pp::Point point_in_page(
+      static_cast<int>((point.x() + position_.x()) / current_zoom_),
+      static_cast<int>((point.y() + position_.y()) / current_zoom_));
+  PDFiumPage::Area area = GetCharIndex(point_in_page, &temp, &temp, &target);
   if (area == PDFiumPage::WEBLINK_AREA)
     return target.url;
   return std::string();
