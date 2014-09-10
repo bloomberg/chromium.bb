@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/loader/resource_message_delegate.h"
 #include "url/gurl.h"
@@ -77,6 +78,8 @@ class AsyncResourceHandler : public ResourceHandler,
   bool sent_first_data_msg_;
 
   int64_t reported_transfer_size_;
+
+  base::TimeTicks redirect_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };

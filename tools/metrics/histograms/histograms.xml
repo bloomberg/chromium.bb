@@ -14102,6 +14102,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.AsyncResourceHandler_RedirectHopTime" units="milliseconds">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    The time between the call of AsyncResourceHandler::OnRequestRedirected and
+    the FollowRedirect IPC message from ResourceHost, that is, the length of the
+    redirect browser-renderer-browser hop.
+  </summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_SharedIOBuffer_Alloc" units="bytes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The size of a SharedIOBuffer allocation.</summary>
