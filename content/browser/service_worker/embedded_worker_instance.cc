@@ -127,7 +127,6 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
                                    const GURL& scope,
                                    const GURL& script_url,
                                    bool pause_after_download,
-                                   const std::vector<int>& possible_process_ids,
                                    const StatusCallback& callback) {
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
@@ -151,7 +150,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   params->wait_for_debugger = false;
   context_->process_manager()->AllocateWorkerProcess(
       embedded_worker_id_,
-      SortProcesses(possible_process_ids),
+      scope,
       script_url,
       base::Bind(&EmbeddedWorkerInstance::RunProcessAllocated,
                  weak_factory_.GetWeakPtr(),
@@ -184,23 +183,6 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
   return registry_->Send(process_id_,
                          new EmbeddedWorkerContextMsg_MessageToWorker(
                              thread_id_, embedded_worker_id_, message));
-}
-
-void EmbeddedWorkerInstance::AddProcessReference(int process_id) {
-  ProcessRefMap::iterator found = process_refs_.find(process_id);
-  if (found == process_refs_.end())
-    found = process_refs_.insert(std::make_pair(process_id, 0)).first;
-  ++found->second;
-}
-
-void EmbeddedWorkerInstance::ReleaseProcessReference(int process_id) {
-  ProcessRefMap::iterator found = process_refs_.find(process_id);
-  if (found == process_refs_.end()) {
-    NOTREACHED() << "Releasing unknown process ref " << process_id;
-    return;
-  }
-  if (--found->second == 0)
-    process_refs_.erase(found);
 }
 
 EmbeddedWorkerInstance::EmbeddedWorkerInstance(
@@ -364,28 +346,6 @@ void EmbeddedWorkerInstance::AddListener(Listener* listener) {
 
 void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
   listener_list_.RemoveObserver(listener);
-}
-
-std::vector<int> EmbeddedWorkerInstance::SortProcesses(
-    const std::vector<int>& possible_process_ids) const {
-  // Add the |possible_process_ids| to the existing process_refs_ since each one
-  // is likely to take a reference once the SW starts up.
-  ProcessRefMap refs_with_new_ids = process_refs_;
-  for (std::vector<int>::const_iterator it = possible_process_ids.begin();
-       it != possible_process_ids.end();
-       ++it) {
-    refs_with_new_ids[*it]++;
-  }
-
-  std::vector<std::pair<int, int> > counted(refs_with_new_ids.begin(),
-                                            refs_with_new_ids.end());
-  // Sort descending by the reference count.
-  std::sort(counted.begin(), counted.end(), SecondGreater());
-
-  std::vector<int> result(counted.size());
-  for (size_t i = 0; i < counted.size(); ++i)
-    result[i] = counted[i].first;
-  return result;
 }
 
 }  // namespace content

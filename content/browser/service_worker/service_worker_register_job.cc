@@ -58,12 +58,13 @@ ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
       << "Jobs should only be interrupted during shutdown.";
 }
 
-void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
-                                           int process_id) {
+void ServiceWorkerRegisterJob::AddCallback(
+    const RegistrationCallback& callback,
+    ServiceWorkerProviderHost* provider_host) {
   if (!is_promise_resolved_) {
     callbacks_.push_back(callback);
-    if (process_id != -1 && (phase_ < UPDATE || !new_version()))
-      pending_process_ids_.push_back(process_id);
+    if (provider_host)
+      provider_host->AddScopedProcessReferenceToPattern(pattern_);
     return;
   }
   RunSoon(base::Bind(
@@ -323,8 +324,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   bool pause_after_download = job_type_ == UPDATE_JOB;
   if (pause_after_download)
     new_version()->embedded_worker()->AddListener(this);
-  new_version()->StartWorkerWithCandidateProcesses(
-      pending_process_ids_,
+  new_version()->StartWorker(
       pause_after_download,
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));

@@ -107,6 +107,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void PostMessage(const base::string16& message,
                    const std::vector<int>& sent_message_port_ids);
 
+  // Adds reference of this host's process to the |pattern|, the reference will
+  // be removed in destructor.
+  void AddScopedProcessReferenceToPattern(const GURL& pattern);
+
  private:
   friend class ServiceWorkerProviderHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
@@ -122,13 +126,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   virtual void OnRegistrationFailed(
       ServiceWorkerRegistration* registration) OVERRIDE;
 
-  // Adds this provider host to the potential controllee list of the given
-  // versions and removes it from the previous versions.
-  void UpdatePotentialControllees(
-      ServiceWorkerVersion* installing_version,
-      ServiceWorkerVersion* waiting_version,
-      ServiceWorkerVersion* active_version);
-
   // Sets the controller version field to |version| or if |version| is NULL,
   // clears the field.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version);
@@ -138,10 +135,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // provider is responsible for releasing the handle.
   ServiceWorkerObjectInfo CreateHandleAndPass(ServiceWorkerVersion* version);
 
+  // Increase/decrease this host's process reference for |pattern|.
+  void IncreaseProcessReference(const GURL& pattern);
+  void DecreaseProcessReference(const GURL& pattern);
+
   const int process_id_;
   const int provider_id_;
   GURL document_url_;
 
+  std::vector<GURL> associated_patterns_;
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   scoped_refptr<ServiceWorkerVersion> controlling_version_;

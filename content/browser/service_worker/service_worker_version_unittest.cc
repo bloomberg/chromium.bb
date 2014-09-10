@@ -119,8 +119,9 @@ class ServiceWorkerVersionTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     helper_.reset(new MessageReceiver());
 
+    pattern_ = GURL("http://www.example.com/");
     registration_ = new ServiceWorkerRegistration(
-        GURL("http://www.example.com/"),
+        pattern_,
         1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
@@ -129,10 +130,10 @@ class ServiceWorkerVersionTest : public testing::Test {
         1L,
         helper_->context()->AsWeakPtr());
 
-    // Simulate adding one process to the worker.
-    int embedded_worker_id = version_->embedded_worker()->embedded_worker_id();
-    helper_->SimulateAddProcessToWorker(embedded_worker_id, kRenderProcessId);
-    ASSERT_TRUE(version_->HasProcessToRun());
+    // Simulate adding one process to the pattern.
+    helper_->SimulateAddProcessToPattern(pattern_, kRenderProcessId);
+    ASSERT_TRUE(helper_->context()->process_manager()
+        ->PatternHasProcessToRun(pattern_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -145,6 +146,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   scoped_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  GURL pattern_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
@@ -325,28 +327,6 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATING, statuses[2]);
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATED, statuses[3]);
   ASSERT_EQ(ServiceWorkerVersion::REDUNDANT, statuses[4]);
-}
-
-TEST_F(ServiceWorkerVersionTest, AddAndRemoveProcesses) {
-  // Preparation (to reset the process count to 0).
-  ASSERT_TRUE(version_->HasProcessToRun());
-  version_->RemoveProcessFromWorker(kRenderProcessId);
-  ASSERT_FALSE(version_->HasProcessToRun());
-
-  // Add another process to the worker twice, and then remove process once.
-  const int another_process_id = kRenderProcessId + 1;
-  version_->AddProcessToWorker(another_process_id);
-  version_->AddProcessToWorker(another_process_id);
-  version_->RemoveProcessFromWorker(another_process_id);
-
-  // We're ref-counting the process internally, so adding the same process
-  // multiple times should be handled correctly.
-  ASSERT_TRUE(version_->HasProcessToRun());
-
-  // Removing the process again (so that # of AddProcess == # of RemoveProcess
-  // for the process) should remove all process references.
-  version_->RemoveProcessFromWorker(another_process_id);
-  ASSERT_FALSE(version_->HasProcessToRun());
 }
 
 TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {

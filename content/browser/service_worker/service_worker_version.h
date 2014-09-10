@@ -123,13 +123,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorker(const StatusCallback& callback);
 
   // Starts an embedded worker for this version.
-  // |potential_process_ids| is a list of processes in which to start the
-  // worker.
+  // |pause_after_download| notifies worker to pause after download finished
+  // which could be resumed by EmbeddedWorkerInstance::ResumeAfterDownload.
   // This returns OK (success) if the worker is already running.
-  void StartWorkerWithCandidateProcesses(
-      const std::vector<int>& potential_process_ids,
-      bool pause_after_download,
-      const StatusCallback& callback);
+  void StartWorker(bool pause_after_download,
+                   const StatusCallback& callback);
 
   // Stops an embedded worker for this version.
   // This returns OK (success) if the worker is already stopped.
@@ -199,22 +197,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchPushEvent(const StatusCallback& callback,
                          const std::string& data);
 
-  // These are expected to be called when a renderer process host for the
-  // same-origin as for this ServiceWorkerVersion is created.  The added
-  // processes are used to run an in-renderer embedded worker.
-  void AddProcessToWorker(int process_id);
-  void RemoveProcessFromWorker(int process_id);
-
-  // Returns true if this has at least one process to run.
-  bool HasProcessToRun() const;
-
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   // A potential controllee is a host having the version as its .installing
   // or .waiting version.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
-  void AddPotentialControllee(ServiceWorkerProviderHost* provider_host);
-  void RemovePotentialControllee(ServiceWorkerProviderHost* provider_host);
 
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }

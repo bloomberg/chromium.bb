@@ -12,6 +12,18 @@
 
 namespace content {
 
+namespace {
+
+// Functor to sort by the .second element of a struct.
+struct SecondGreater {
+  template <typename Value>
+  bool operator()(const Value& lhs, const Value& rhs) {
+    return lhs.second > rhs.second;
+  }
+};
+
+}  // namespace
+
 static bool IncrementWorkerRefCountByPid(int process_id) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   if (!rph || rph->FastShutdownStarted())
@@ -61,9 +73,66 @@ void ServiceWorkerProcessManager::Shutdown() {
   instance_info_.clear();
 }
 
+void ServiceWorkerProcessManager::AddProcessReferenceToPattern(
+    const GURL& pattern, int process_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ServiceWorkerProcessManager::AddProcessReferenceToPattern,
+                   weak_this_,
+                   pattern,
+                   process_id));
+    return;
+  }
+
+  ProcessRefMap& process_refs = pattern_processes_[pattern];
+  ++process_refs[process_id];
+}
+
+void ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern(
+    const GURL& pattern, int process_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+          &ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern,
+          weak_this_,
+          pattern,
+          process_id));
+    return;
+  }
+
+  PatternProcessRefMap::iterator it = pattern_processes_.find(pattern);
+  if (it == pattern_processes_.end()) {
+    NOTREACHED() << "process refrences not found for pattern: " << pattern;
+    return;
+  }
+  ProcessRefMap& process_refs = it->second;
+  ProcessRefMap::iterator found = process_refs.find(process_id);
+  if (found == process_refs.end()) {
+    NOTREACHED() << "Releasing unknown process ref " << process_id;
+    return;
+  }
+  if (--found->second == 0) {
+    process_refs.erase(found);
+    if (process_refs.empty())
+      pattern_processes_.erase(it);
+  }
+}
+
+bool ServiceWorkerProcessManager::PatternHasProcessToRun(
+    const GURL& pattern) const {
+  PatternProcessRefMap::const_iterator it = pattern_processes_.find(pattern);
+  if (it == pattern_processes_.end())
+    return false;
+  return !it->second.empty();
+}
+
 void ServiceWorkerProcessManager::AllocateWorkerProcess(
     int embedded_worker_id,
-    const std::vector<int>& process_ids,
+    const GURL& pattern,
     const GURL& script_url,
     const base::Callback<void(ServiceWorkerStatusCode, int process_id)>&
         callback) {
@@ -74,7 +143,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
         base::Bind(&ServiceWorkerProcessManager::AllocateWorkerProcess,
                    weak_this_,
                    embedded_worker_id,
-                   process_ids,
+                   pattern,
                    script_url,
                    callback));
     return;
@@ -93,17 +162,18 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
-  for (std::vector<int>::const_iterator it = process_ids.begin();
-       it != process_ids.end();
+  std::vector<int> sorted_candidates = SortProcessesForPattern(pattern);
+  for (std::vector<int>::const_iterator it = sorted_candidates.begin();
+       it != sorted_candidates.end();
        ++it) {
-    if (IncrementWorkerRefCountByPid(*it)) {
-      instance_info_.insert(
-          std::make_pair(embedded_worker_id, ProcessInfo(*it)));
-      BrowserThread::PostTask(BrowserThread::IO,
-                              FROM_HERE,
-                              base::Bind(callback, SERVICE_WORKER_OK, *it));
-      return;
-    }
+    if (!IncrementWorkerRefCountByPid(*it))
+      continue;
+    instance_info_.insert(
+        std::make_pair(embedded_worker_id, ProcessInfo(*it)));
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_OK, *it));
+    return;
   }
 
   if (!browser_context_) {
@@ -177,6 +247,22 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   }
   static_cast<RenderProcessHostImpl*>(rph)->DecrementWorkerRefCount();
   instance_info_.erase(info);
+}
+
+std::vector<int> ServiceWorkerProcessManager::SortProcessesForPattern(
+    const GURL& pattern) const {
+  PatternProcessRefMap::const_iterator it = pattern_processes_.find(pattern);
+  if (it == pattern_processes_.end())
+    return std::vector<int>();
+
+  std::vector<std::pair<int, int> > counted(
+      it->second.begin(), it->second.end());
+  std::sort(counted.begin(), counted.end(), SecondGreater());
+
+  std::vector<int> result(counted.size());
+  for (size_t i = 0; i < counted.size(); ++i)
+    result[i] = counted[i].first;
+  return result;
 }
 
 }  // namespace content

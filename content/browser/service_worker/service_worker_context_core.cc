@@ -175,7 +175,6 @@ ServiceWorkerContextCore::GetProviderHostIterator() {
 void ServiceWorkerContextCore::RegisterServiceWorker(
     const GURL& pattern,
     const GURL& script_url,
-    int source_process_id,
     ServiceWorkerProviderHost* provider_host,
     const RegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -186,13 +185,10 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
     return;
   }
 
-  // TODO(kinuko): Wire the provider_host so that we can tell which document
-  // is calling .register.
-
   job_coordinator_->Register(
       pattern,
       script_url,
-      source_process_id,
+      provider_host,
       base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
                  AsWeakPtr(),
                  pattern,
@@ -408,7 +404,9 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
-  return wrapper_->process_manager();
+  if (wrapper_)
+    return wrapper_->process_manager();
+  return NULL;
 }
 
 }  // namespace content

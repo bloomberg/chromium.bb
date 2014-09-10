@@ -37,13 +37,12 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
     wrapper_->Shutdown();
 }
 
-void EmbeddedWorkerTestHelper::SimulateAddProcessToWorker(
-    int embedded_worker_id,
+void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(
+    const GURL& pattern,
     int process_id) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker);
   registry()->AddChildProcessSender(process_id, this);
-  worker->AddProcessReference(process_id);
+  wrapper_->process_manager()->AddProcessReferenceToPattern(
+      pattern, process_id);
 }
 
 bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {

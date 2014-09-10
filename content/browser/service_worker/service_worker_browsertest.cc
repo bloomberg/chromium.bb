@@ -294,9 +294,9 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
   ServiceWorkerContext* public_context() { return wrapper(); }
 
-  void AssociateRendererProcessToWorker(EmbeddedWorkerInstance* worker) {
-    worker->AddProcessReference(
-        shell()->web_contents()->GetRenderProcessHost()->GetID());
+  void AssociateRendererProcessToPattern(const GURL& pattern) {
+    wrapper_->process_manager()->AddProcessReferenceToPattern(
+        pattern, shell()->web_contents()->GetRenderProcessHost()->GetID());
   }
 
  private:
@@ -326,21 +326,20 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker_->status());
     worker_->AddListener(this);
 
-    AssociateRendererProcessToWorker(worker_.get());
 
     const int64 service_worker_version_id = 33L;
-    const GURL scope = embedded_test_server()->GetURL("/");
+    const GURL pattern = embedded_test_server()->GetURL("/");
     const GURL script_url = embedded_test_server()->GetURL(
         "/service_worker/worker.js");
-    std::vector<int> processes;
-    processes.push_back(
-        shell()->web_contents()->GetRenderProcessHost()->GetID());
+    AssociateRendererProcessToPattern(pattern);
+    int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+    wrapper()->process_manager()->AddProcessReferenceToPattern(
+        pattern, process_id);
     worker_->Start(
         service_worker_version_id,
-        scope,
+        pattern,
         script_url,
         pause_mode_ != DONT_PAUSE,
-        processes,
         base::Bind(&EmbeddedWorkerBrowserTest::StartOnIOThread2, this));
   }
   void StartOnIOThread2(ServiceWorkerStatusCode status) {
@@ -503,8 +502,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
+    const GURL pattern = embedded_test_server()->GetURL("/");
     registration_ = new ServiceWorkerRegistration(
-        embedded_test_server()->GetURL("/"),
+        pattern,
         wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
@@ -512,7 +512,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         embedded_test_server()->GetURL(worker_url),
         wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
-    AssociateRendererProcessToWorker(version_->embedded_worker());
+    AssociateRendererProcessToPattern(pattern);
   }
 
   void StartOnIOThread(const base::Closure& done,

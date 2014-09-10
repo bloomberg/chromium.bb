@@ -245,7 +245,6 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   GetContext()->RegisterServiceWorker(
       pattern,
       script_url,
-      render_process_id_,
       provider_host,
       base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
                  this,

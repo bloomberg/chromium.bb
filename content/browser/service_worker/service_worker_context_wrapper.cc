@@ -106,7 +106,6 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
   context()->RegisterServiceWorker(
       pattern,
       script_url,
-      -1,
       NULL /* provider_host */,
       base::Bind(&FinishRegistrationOnIO, continuation));
 }

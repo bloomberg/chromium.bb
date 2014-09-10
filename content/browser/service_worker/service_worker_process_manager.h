@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -21,9 +22,9 @@ class BrowserContext;
 class SiteInstance;
 
 // Interacts with the UI thread to keep RenderProcessHosts alive while the
-// ServiceWorker system is using them. Each instance of
-// ServiceWorkerProcessManager is destroyed on the UI thread shortly after its
-// ServiceWorkerContextWrapper is destroyed.
+// ServiceWorker system is using them. It also tracks candidate processes
+// for each pattern. Each instance of ServiceWorkerProcessManager is destroyed
+// on the UI thread shortly after its ServiceWorkerContextWrapper is destroyed.
 class CONTENT_EXPORT ServiceWorkerProcessManager {
  public:
   // |*this| must be owned by a ServiceWorkerContextWrapper in a
@@ -38,16 +39,14 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   void Shutdown();
 
   // Returns a reference to a running process suitable for starting the Service
-  // Worker at |script_url|. Processes in |process_ids| will be checked in order
-  // for existence, and if none exist, then a new process will be created. Posts
-  // |callback| to the IO thread to indicate whether creation succeeded and the
-  // process ID that has a new reference.
+  // Worker at |script_url|. Posts |callback| to the IO thread to indicate
+  // whether creation succeeded and the process ID that has a new reference.
   //
   // Allocation can fail with SERVICE_WORKER_ERROR_START_WORKER_FAILED if
   // RenderProcessHost::Init fails.
   void AllocateWorkerProcess(
       int embedded_worker_id,
-      const std::vector<int>& process_ids,
+      const GURL& pattern,
       const GURL& script_url,
       const base::Callback<void(ServiceWorkerStatusCode, int process_id)>&
           callback);
@@ -65,7 +64,17 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     process_id_for_test_ = process_id;
   }
 
+  // Adds/removes process reference for the |pattern|, the process with highest
+  // references count will be chosen to start a worker.
+  void AddProcessReferenceToPattern(const GURL& pattern, int process_id);
+  void RemoveProcessReferenceFromPattern(const GURL& pattern, int process_id);
+
+  // Returns true if the |pattern| has at least one process to run.
+  bool PatternHasProcessToRun(const GURL& pattern) const;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
+
   // Information about the process for an EmbeddedWorkerInstance.
   struct ProcessInfo {
     explicit ProcessInfo(const scoped_refptr<SiteInstance>& site_instance);
@@ -84,6 +93,15 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     int process_id;
   };
 
+  // Maps the process ID to its reference count.
+  typedef std::map<int, int> ProcessRefMap;
+
+  // Maps registration scope pattern to ProcessRefMap.
+  typedef std::map<const GURL, ProcessRefMap> PatternProcessRefMap;
+
+  // Returns a process vector sorted by the reference count for the |pattern|.
+  std::vector<int> SortProcessesForPattern(const GURL& pattern) const;
+
   // These fields are only accessed on the UI thread.
   BrowserContext* browser_context_;
 
@@ -99,6 +117,10 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // In unit tests, this will be returned as the process for all
   // EmbeddedWorkerInstances.
   int process_id_for_test_;
+
+  // Candidate processes info for each pattern, should be accessed on the
+  // UI thread.
+  PatternProcessRefMap pattern_processes_;
 
   // Used to double-check that we don't access *this after it's destroyed.
   base::WeakPtrFactory<ServiceWorkerProcessManager> weak_this_factory_;

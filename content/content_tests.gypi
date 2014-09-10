@@ -597,6 +597,7 @@
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
         'browser/service_worker/service_worker_handle_unittest.cc',
         'browser/service_worker/service_worker_job_unittest.cc',
+        'browser/service_worker/service_worker_process_manager_unittest.cc',
         'browser/service_worker/service_worker_provider_host_unittest.cc',
         'browser/service_worker/service_worker_registration_unittest.cc',
         'browser/service_worker/service_worker_request_handler_unittest.cc',

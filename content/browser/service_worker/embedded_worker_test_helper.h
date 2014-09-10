@@ -48,9 +48,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   explicit EmbeddedWorkerTestHelper(int mock_render_process_id);
   virtual ~EmbeddedWorkerTestHelper();
 
-  // Call this to simulate add/associate a process to a worker.
+  // Call this to simulate add/associate a process to a pattern.
   // This also registers this sender for the process.
-  void SimulateAddProcessToWorker(int embedded_worker_id, int process_id);
+  void SimulateAddProcessToPattern(const GURL& pattern, int process_id);
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;

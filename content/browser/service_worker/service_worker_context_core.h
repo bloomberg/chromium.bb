@@ -145,11 +145,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // A child process of |source_process_id| may be used to run the created
   // worker for initial installation.
-  // Non-null |provider_host| must be given if this is called from a document,
-  // whose process_id() must match with |source_process_id|.
+  // Non-null |provider_host| must be given if this is called from a document.
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
-                             int source_process_id,
                              ServiceWorkerProviderHost* provider_host,
                              const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,

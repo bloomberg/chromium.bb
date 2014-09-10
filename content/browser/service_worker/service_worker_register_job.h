@@ -55,11 +55,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   virtual ~ServiceWorkerRegisterJob();
 
   // Registers a callback to be called when the promise would resolve (whether
-  // successfully or not). Multiple callbacks may be registered. If |process_id|
-  // is not -1, it's added to the existing clients when deciding in which
-  // process to create the Service Worker instance.  If there are no existing
-  // clients, a new RenderProcessHost will be created.
-  void AddCallback(const RegistrationCallback& callback, int process_id);
+  // successfully or not). Multiple callbacks may be registered.
+  // If |provider_host| is not NULL, its process will be regarded as a candidate
+  // process to run the worker.
+  void AddCallback(const RegistrationCallback& callback,
+                   ServiceWorkerProviderHost* provider_host);
 
   // ServiceWorkerRegisterJobBase implementation:
   virtual void Start() OVERRIDE;
@@ -158,7 +158,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   const GURL pattern_;
   const GURL script_url_;
   std::vector<RegistrationCallback> callbacks_;
-  std::vector<int> pending_process_ids_;
   Phase phase_;
   Internal internal_;
   bool is_promise_resolved_;

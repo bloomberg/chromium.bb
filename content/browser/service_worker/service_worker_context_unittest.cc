@@ -144,7 +144,6 @@ TEST_F(ServiceWorkerContextTest, Register) {
   context()->RegisterServiceWorker(
       GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
@@ -187,7 +186,6 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   context()->RegisterServiceWorker(
       GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
@@ -230,7 +228,6 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   context()->RegisterServiceWorker(
       GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
@@ -271,7 +268,6 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   context()->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
@@ -311,7 +307,6 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   context()->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &old_registration_id, &old_version_id));
 
@@ -327,7 +322,6 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   context()->RegisterServiceWorker(
       pattern,
       GURL("http://www.example.com/service_worker_new.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &new_registration_id, &new_version_id));
 
@@ -353,7 +347,6 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   context()->RegisterServiceWorker(
       pattern,
       script_url,
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &old_registration_id, &old_version_id));
 
@@ -369,7 +362,6 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   context()->RegisterServiceWorker(
       pattern,
       script_url,
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &new_registration_id, &new_version_id));
 
@@ -388,7 +380,6 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   context()->RegisterServiceWorker(
       GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
@@ -436,7 +427,6 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   context()->RegisterServiceWorker(
       GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
       NULL,
       MakeRegisteredCallback(&called, &registration_id, &version_id));
 
