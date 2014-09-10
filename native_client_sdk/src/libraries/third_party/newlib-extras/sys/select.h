@@ -6,15 +6,13 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include "sdk_util/macros.h"
-
-EXTERN_C_BEGIN
+__BEGIN_DECLS
 
 int select (int __nfds, fd_set *__restrict __readfds,
             fd_set *__restrict __writefds,
             fd_set *__restrict __exceptfds,
             struct timeval *__restrict __timeout) __THROW;
 
-EXTERN_C_END
+__END_DECLS
 
 #endif /* sys/select.h */
