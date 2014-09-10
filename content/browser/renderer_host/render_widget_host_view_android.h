@@ -251,6 +251,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       gfx::Rect src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback);
 
+  scoped_refptr<cc::DelegatedRendererLayer>
+      CreateDelegatedLayerForFrameProvider() const;
+
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);

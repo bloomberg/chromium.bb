@@ -411,6 +411,19 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
       src_subrect, dst_size, result_callback, color_type);
 }
 
+scoped_refptr<cc::DelegatedRendererLayer>
+RenderWidgetHostViewAndroid::CreateDelegatedLayerForFrameProvider() const {
+  DCHECK(frame_provider_);
+
+  scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
+      cc::DelegatedRendererLayer::Create(frame_provider_);
+  delegated_layer->SetBounds(content_size_in_layer_);
+  delegated_layer->SetIsDrawable(true);
+  delegated_layer->SetContentsOpaque(true);
+
+  return delegated_layer;
+}
+
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (!content_view_core_)
     return false;
@@ -869,11 +882,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   DCHECK(compositor);
   DCHECK(frame_provider_);
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
-      cc::DelegatedRendererLayer::Create(frame_provider_);
-  delegated_layer->SetBounds(content_size_in_layer_);
+      CreateDelegatedLayerForFrameProvider();
   delegated_layer->SetHideLayerAndSubtree(true);
-  delegated_layer->SetIsDrawable(true);
-  delegated_layer->SetContentsOpaque(true);
   compositor->AttachLayerForReadback(delegated_layer);
 
   readback_layer = delegated_layer;
