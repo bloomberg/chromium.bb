@@ -322,6 +322,16 @@ below:
         Clear Recent Searches
       </message>
 
+      <message name="IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR" desc="Accessible description of a button to show month selection panel in a calendar picker.">
+        Show month selection panel
+      </message>
+      <message name="IDS_AX_CALENDAR_SHOW_NEXT_MONTH" desc="Accessible description of a button to show next month in a calendar picker.">
+        Show next month
+      </message>
+      <message name="IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH" desc="Accessible description of a button to show previous month in a calendar picker.">
+        Show previous month
+      </message>
+
       <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
         HTML content
       </message>

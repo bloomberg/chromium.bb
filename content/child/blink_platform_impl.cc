@@ -169,6 +169,12 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::AXButtonActionVerb:
       return IDS_AX_BUTTON_ACTION_VERB;
+    case WebLocalizedString::AXCalendarShowMonthSelector:
+      return IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR;
+    case WebLocalizedString::AXCalendarShowNextMonth:
+      return IDS_AX_CALENDAR_SHOW_NEXT_MONTH;
+    case WebLocalizedString::AXCalendarShowPreviousMonth:
+      return IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH;
     case WebLocalizedString::AXCheckedCheckBoxActionVerb:
       return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXDateTimeFieldEmptyValueText:
