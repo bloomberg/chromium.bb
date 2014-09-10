@@ -332,7 +332,7 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
 
   if (!server_certificate_ptr ||
       server_certificate_size < media::limits::kMinCertificateLength ||
-      server_certificate_size > media::limits::kMinCertificateLength) {
+      server_certificate_size > media::limits::kMaxCertificateLength) {
     RejectPromise(
         promise_id, cdm::kInvalidAccessError, 0, "Incorrect certificate.");
     return;
