@@ -35,9 +35,6 @@
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
-#if INSIDE_BLINK
-#include "platform/heap/Handle.h"
-#endif
 
 namespace blink {
 
@@ -60,9 +57,6 @@ public:
 #endif
 
     private:
-#if INSIDE_BLINK
-        GC_PLUGIN_IGNORE("http://crbug.com/409526")
-#endif
         MediaStreamSource* m_owner;
     };
 
@@ -117,8 +111,9 @@ public:
     BLINK_PLATFORM_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamSource(MediaStreamSource*);
+    BLINK_PLATFORM_EXPORT WebMediaStreamSource(const WTF::PassRefPtr<MediaStreamSource>&);
     BLINK_PLATFORM_EXPORT WebMediaStreamSource& operator=(MediaStreamSource*);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamSource>() const;
     BLINK_PLATFORM_EXPORT operator MediaStreamSource*() const;
 #endif
 
