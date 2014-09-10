@@ -52,12 +52,12 @@ if (!is_mac) {
   }
 }
 
-# On iOS the output needs to additionally be copied to another location, so
-# we have this intermediate step.
+# On iOS and Mac the output needs to additionally be copied to another location,
+# so we have this intermediate step.
 #
 # GYP version: ui/resources/ui_resources.gyp:ui_test_pak
 #              (copy_ui_test_pak action)
-if (is_ios) {
+if (is_ios || is_mac) {
   copy("ui_test_pak") {
     sources = [ "$root_out_dir/ui_test.pak" ]
     outputs = [ "$root_out_dir/ui/en.lproj/locale.pak" ]
@@ -74,7 +74,7 @@ repack("repack_ui_test_pak") {
   # Depend on ui_test_pak instead of this one.
   visibility = [ ":ui_test_pak" ]
 
-  sources = [ 
+  sources = [
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
