@@ -289,6 +289,13 @@ this.redraw = function() {
     this.redrawPsStats_();
 };
 
+this.clear = function() {
+  this.stopSelectedProcessStats();
+  $('#device_tabs').tabs('option', 'active', 0);
+  this.psTableData_ = new google.visualization.DataTable();
+  this.redraw();
+};
+
 $(document).ready(this.onDomReady_.bind(this));
 
 })();

@@ -111,6 +111,6 @@ def Parse(lines):
     if not map_entry:
       continue
     stack_frame.SetExecFileInfo(map_entry.mapped_file,
-                                map_entry.GetRelativeOffset(abs_addr))
+                                map_entry.GetRelativeFileOffset(abs_addr))
 
   return nativeheap

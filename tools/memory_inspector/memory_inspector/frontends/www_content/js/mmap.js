@@ -8,13 +8,18 @@ this.COL_START = 0;
 this.COL_END = 1;
 this.COL_LEN = 2;
 this.COL_PROT = 3;
-this.COL_PRIV_DIRTY = 4;
-this.COL_PRIV_CLEAN = 5;
-this.COL_SHARED_DIRTY = 6;
-this.COL_SHARED_CLEAN = 7;
-this.COL_FILE = 8;
-this.COL_RESIDENT = 10;
-this.SHOW_COLUMNS = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+this.COL_RSS = 4;
+this.COL_PRIV_DIRTY = 5;
+this.COL_PRIV_CLEAN = 6;
+this.COL_SHARED_DIRTY = 7;
+this.COL_SHARED_CLEAN = 8;
+this.COL_FILE = 9;
+this.COL_OFFSET = 10;
+this.COL_RESIDENT = 11;
+this.SHOW_COLUMNS = [this.COL_START, this.COL_END, this.COL_LEN, this.COL_PROT,
+    this.COL_RSS, this.COL_PRIV_DIRTY, this.COL_PRIV_CLEAN,
+    this.COL_SHARED_DIRTY, this.COL_SHARED_CLEAN, this.COL_FILE];
+
 this.PAGE_SIZE = 4096;
 
 this.mapsData_ = null;

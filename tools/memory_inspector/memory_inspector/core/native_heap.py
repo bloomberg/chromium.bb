@@ -13,7 +13,7 @@ class NativeHeap(object):
   """
 
   def __init__(self):
-    self.allocations = []
+    self.allocations = []  # list of individual |Allocation|s.
     self.stack_frames = {}  # absolute_address (int) -> |stacktrace.Frame|.
 
   def Add(self, allocation):
@@ -21,7 +21,8 @@ class NativeHeap(object):
     self.allocations += [allocation]
 
   def GetStackFrame(self, absolute_addr):
-    assert(isinstance(absolute_addr, int))
+    """Guarantees that multiple calls with the same addr return the same obj."""
+    assert(isinstance(absolute_addr, (long, int)))
     stack_frame = self.stack_frames.get(absolute_addr)
     if not stack_frame:
       stack_frame = stacktrace.Frame(absolute_addr)
@@ -31,6 +32,8 @@ class NativeHeap(object):
   def SymbolizeUsingSymbolDB(self, symbols):
     assert(isinstance(symbols, symbol.Symbols))
     for stack_frame in self.stack_frames.itervalues():
+      if stack_frame.exec_file_rel_path is None:
+        continue
       sym = symbols.Lookup(stack_frame.exec_file_rel_path, stack_frame.offset)
       if sym:
         stack_frame.SetSymbolInfo(sym)

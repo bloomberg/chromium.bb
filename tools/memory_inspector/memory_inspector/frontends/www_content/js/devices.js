@@ -75,6 +75,7 @@ this.onDeviceSelectionChange_ = function() {
   if (!this.selDeviceUri_)
     return;
 
+  processes.clear();
   this.initializeSelectedDevice(false);
 };
 

@@ -6,6 +6,8 @@ webservice = new (function() {
 
 this.AJAX_BASE_URL_ = '/ajax';
 
+this.onServerUnreachableOrTimeout = null;
+
 this.ajaxRequest = function(path, responseCallback, errorCallback, postArgs) {
   var reqType = postArgs ? 'POST' : 'GET';
   var reqData = postArgs ? JSON.stringify(postArgs) : '';
@@ -23,6 +25,8 @@ this.ajaxRequest = function(path, responseCallback, errorCallback, postArgs) {
       console.log(xhr.responseText);
       if (errorCallback)
         errorCallback(xhr.status, xhr.responseText);
+      if (xhr.readyState < 4 && this_.onServerUnreachableOrTimeout != null)
+        webservice.onServerUnreachableOrTimeout();
     }
   });
 };

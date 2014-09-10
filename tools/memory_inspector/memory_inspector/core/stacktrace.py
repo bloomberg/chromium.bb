@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
+import posixpath
 
 from memory_inspector.core import symbol
 
@@ -67,7 +67,9 @@ class Frame(object):
   @property
   def exec_file_name(self):
     """Returns the file name (stripped of the path) of the executable."""
-    return os.path.basename(self.exec_file_rel_path)
+    if self.exec_file_rel_path is None:
+      return None
+    return posixpath.basename(self.exec_file_rel_path.replace('\\', '/'))
 
   @property
   def raw_address(self):

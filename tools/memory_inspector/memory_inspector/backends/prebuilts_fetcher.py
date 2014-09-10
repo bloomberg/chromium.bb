@@ -12,8 +12,8 @@ import logging
 import os
 import urllib
 
+from memory_inspector import constants
 
-_PREBUILTS_BUCKET = 'chromium-telemetry'
 
 # Bypass the GCS download logic in unittests and use the *_ForTests mock.
 in_test_harness = False
@@ -31,10 +31,11 @@ def GetIfChanged(local_file_path):
   if not is_changed:
     return
   obj_name = _GetRemoteFileID(local_file_path)
-  url = 'https://storage.googleapis.com/%s/%s' % (_PREBUILTS_BUCKET, obj_name)
+  url = constants.PREBUILTS_BASE_URL + obj_name
   logging.info('Downloading %s prebuilt from %s.' % (local_file_path, url))
   urllib.urlretrieve(url, local_file_path)
-  assert(not _IsChanged(local_file_path)), 'GCS download failed.'
+  assert(not _IsChanged(local_file_path)), ('GCS download for %s failed.' %
+                                            local_file_path)
 
 
 def _IsChanged(local_file_path):

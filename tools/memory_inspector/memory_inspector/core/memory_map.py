@@ -61,9 +61,19 @@ class MapEntry(object):
     # the presence of its corresponding page.
     self.resident_pages = resident_pages or []
 
-  def GetRelativeOffset(self, abs_addr):
+  def GetRelativeMMOffset(self, abs_addr):
+    """Converts abs_addr to the corresponding offset in the mm.
+
+    Returns:
+      A tuple: (page_index, offset_in_page)
+    """
+    assert(self.Contains(abs_addr))
+    offset = abs_addr - self.start
+    return (offset / PAGE_SIZE, offset & (PAGE_SIZE - 1))
+
+  def GetRelativeFileOffset(self, abs_addr):
     """Converts abs_addr to the corresponding offset in the mapped file."""
-    assert(abs_addr >= self.start and abs_addr <= self.end)
+    assert(self.Contains(abs_addr))
     return abs_addr - self.start + self.mapped_offset
 
   def IsPageResident(self, relative_page_index):
@@ -77,6 +87,10 @@ class MapEntry(object):
       return False
     return (self.resident_pages[arr_idx] & (1 << arr_bit)) != 0
 
+  def Contains(self, abs_addr):
+    """Determines whether a given absolute address belongs to the current mm."""
+    return abs_addr >= self.start and abs_addr <= self.end
+
   def __cmp__(self, other):
     """Comparison operator required for bisect."""
     if isinstance(other, MapEntry):
@@ -89,6 +103,10 @@ class MapEntry(object):
   @property
   def len(self):
     return self.end - self.start + 1
+
+  @property
+  def num_pages(self):
+    return self.len / PAGE_SIZE
 
   @property
   def rss_bytes(self):

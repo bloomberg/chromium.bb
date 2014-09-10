@@ -16,8 +16,9 @@ if __name__ == '__main__':
 
   suite = unittest.TestSuite()
   loader = unittest.TestLoader()
+  pattern = '*%s*_unittest.py' % ('' if len(sys.argv) < 2 else sys.argv[1])
   suite.addTests(loader.discover(start_dir=memory_inspector.ROOT_DIR,
-                                 pattern='*_unittest.py'))
+                                 pattern=pattern))
   res = unittest.TextTestRunner(verbosity=2).run(suite)
   if res.wasSuccessful():
     sys.exit(0)

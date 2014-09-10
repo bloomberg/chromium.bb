@@ -102,16 +102,15 @@ def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
     if i < count:
       time.sleep(interval)
 
-  log.put((90, 'Symbolizing'))
-  symbols = backend.ExtractSymbols(heaps_to_symbolize,
-                                   device.settings['native_symbol_paths'] or '')
-
-  expected_symbols_count = len(set.union(
-      *[set(x.stack_frames.iterkeys()) for x in heaps_to_symbolize]))
-  log.put((99, 'Symbolization complete. Got %d symbols (%.1f%%).' % (
-      len(symbols), 100.0 * len(symbols) / expected_symbols_count)))
-
-  archive.StoreSymbols(symbols)
+  if heaps_to_symbolize:
+    log.put((90, 'Symbolizing'))
+    symbols = backend.ExtractSymbols(
+        heaps_to_symbolize, device.settings['native_symbol_paths'] or '')
+    expected_symbols_count = len(set.union(
+        *[set(x.stack_frames.iterkeys()) for x in heaps_to_symbolize]))
+    log.put((99, 'Symbolization complete. Got %d symbols (%.1f%%).' % (
+        len(symbols), 100.0 * len(symbols) / expected_symbols_count)))
+    archive.StoreSymbols(symbols)
 
   log.put((100, 'Trace complete.'))
   return 0

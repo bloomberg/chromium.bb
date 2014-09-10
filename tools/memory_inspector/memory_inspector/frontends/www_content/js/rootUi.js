@@ -8,6 +8,8 @@ this.onDomReady_ = function() {
   $('#js_loading_banner').hide();
   $('#tabs').tabs({activate: this.onTabChange_.bind(this)});
   $('#tabs').css('visibility', 'visible');
+  webservice.onServerUnreachableOrTimeout =
+      this.onServerUnreachableOrTimeout.bind(this);
 
   // Initialize the status bar.
   $('#status_messages').mouseenter(function() {
@@ -69,6 +71,12 @@ this.setProgress = function(value) {
 
 this.setStatusMessage = function(content) {
   $('#status_messages').text(content);
+};
+
+this.onServerUnreachableOrTimeout = function() {
+  timers.stopAll();
+  this.showDialog('The www service is unreachable. ' +
+                  'It probably crashed, Check the terminal output.');
 };
 
 $(document).ready(this.onDomReady_.bind(this));
