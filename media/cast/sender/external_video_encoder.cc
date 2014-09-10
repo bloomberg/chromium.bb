@@ -114,7 +114,11 @@ class LocalVideoEncodeAcceleratorClient
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           result);
     if (!result) {
-      NotifyError(VideoEncodeAccelerator::kInvalidArgumentError);
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN,
+          FROM_HERE,
+          base::Bind(&ExternalVideoEncoder::EncoderInitialized, weak_owner_,
+                     false));
       return;
     }
 
@@ -342,7 +346,8 @@ class LocalVideoEncodeAcceleratorClient
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(&ExternalVideoEncoder::EncoderInitialized, weak_owner_));
+        base::Bind(&ExternalVideoEncoder::EncoderInitialized, weak_owner_,
+                   true));
   }
 
   static void DestroyVideoEncodeAcceleratorOnEncoderThread(
@@ -379,12 +384,14 @@ class LocalVideoEncodeAcceleratorClient
 ExternalVideoEncoder::ExternalVideoEncoder(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
+    const CastInitializationCallback& initialization_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
     : video_config_(video_config),
       cast_environment_(cast_environment),
       encoder_active_(false),
       key_frame_requested_(false),
+      initialization_cb_(initialization_cb),
       weak_factory_(this) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -399,9 +406,14 @@ ExternalVideoEncoder::ExternalVideoEncoder(
 ExternalVideoEncoder::~ExternalVideoEncoder() {
 }
 
-void ExternalVideoEncoder::EncoderInitialized() {
+void ExternalVideoEncoder::EncoderInitialized(bool success) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  encoder_active_ = true;
+  encoder_active_ = success;
+  DCHECK(!initialization_cb_.is_null());
+  initialization_cb_.Run(
+      success ?
+      STATUS_VIDEO_INITIALIZED : STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED);
+  initialization_cb_.Reset();
 }
 
 void ExternalVideoEncoder::EncoderError() {

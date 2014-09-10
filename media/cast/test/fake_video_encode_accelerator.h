@@ -45,6 +45,9 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   virtual void Destroy() OVERRIDE;
 
   void SendDummyFrameForTesting(bool key_frame);
+  void SetWillInitializationSucceed(bool will_initialization_succeed) {
+    will_initialization_succeed_ = will_initialization_succeed;
+  }
 
  private:
   void DoRequireBitstreamBuffers(unsigned int input_count,
@@ -58,6 +61,7 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   std::vector<uint32>* const stored_bitrates_;
   VideoEncodeAccelerator::Client* client_;
   bool first_;
+  bool will_initialization_succeed_;
 
   std::list<int32> available_buffer_ids_;
 

@@ -311,6 +311,7 @@ void RunSimulation(const base::FilePath& source_path,
                                base::Bind(&VideoInitializationStatus),
                                CreateDefaultVideoEncodeAcceleratorCallback(),
                                CreateDefaultVideoEncodeMemoryCallback());
+  task_runner->RunTasks();
 
   // Start sending.
   if (!source_path.empty()) {

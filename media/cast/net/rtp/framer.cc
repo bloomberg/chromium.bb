@@ -44,7 +44,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
     waiting_for_key_ = false;
   }
 
-  VLOG(0) << "InsertPacket frame:" << frame_id
+  VLOG(1) << "InsertPacket frame:" << frame_id
           << " packet:" << static_cast<int>(rtp_header.packet_id)
           << " max packet:" << static_cast<int>(rtp_header.max_packet_id);
 

@@ -26,6 +26,7 @@ namespace cast {
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
+    const CastInitializationCallback& initialization_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     CastTransportSender* const transport_sender)
@@ -51,11 +52,15 @@ VideoSender::VideoSender(
   DCHECK_GT(max_unacked_frames_, 0);
 
   if (video_config.use_external_encoder) {
-    video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
-                                                  video_config,
-                                                  create_vea_cb,
-                                                  create_video_encode_mem_cb));
+    video_encoder_.reset(new ExternalVideoEncoder(
+        cast_environment,
+        video_config,
+        base::Bind(&VideoSender::OnEncoderInitialized,
+                   weak_factory_.GetWeakPtr(), initialization_cb),
+        create_vea_cb,
+        create_video_encode_mem_cb));
   } else {
+    // Software encoder is initialized immediately.
     congestion_control_.reset(
         NewAdaptiveCongestionControl(cast_environment->Clock(),
                                      video_config.max_bitrate,
@@ -63,8 +68,15 @@ VideoSender::VideoSender(
                                      max_unacked_frames_));
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment, video_config, max_unacked_frames_));
+    cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
   }
-  cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
+
+  if (cast_initialization_status_ == STATUS_VIDEO_INITIALIZED) {
+    cast_environment->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(initialization_cb, cast_initialization_status_));
+  }
 
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = video_config.ssrc;
@@ -142,6 +154,13 @@ int VideoSender::GetNumberOfFramesInEncoder() const {
 
 void VideoSender::OnAck(uint32 frame_id) {
   video_encoder_->LatestFrameIdToReference(frame_id);
+}
+
+void VideoSender::OnEncoderInitialized(
+    const CastInitializationCallback& initialization_cb,
+    CastInitializationStatus status) {
+  cast_initialization_status_ = status;
+  initialization_cb.Run(status);
 }
 
 void VideoSender::OnEncodedVideoFrame(

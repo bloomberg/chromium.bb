@@ -23,6 +23,7 @@ FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
       stored_bitrates_(stored_bitrates),
       client_(NULL),
       first_(true),
+      will_initialization_succeed_(true),
       weak_this_factory_(this) {
   DCHECK(stored_bitrates_);
 }
@@ -37,6 +38,8 @@ bool FakeVideoEncodeAccelerator::Initialize(
     VideoCodecProfile output_profile,
     uint32 initial_bitrate,
     Client* client) {
+  if (!will_initialization_succeed_)
+    return false;
   client_ = client;
   if (output_profile != media::VP8PROFILE_ANY &&
       output_profile != media::H264PROFILE_MAIN) {

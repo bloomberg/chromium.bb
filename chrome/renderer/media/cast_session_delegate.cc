@@ -55,7 +55,7 @@ void CastSessionDelegate::StartAudio(
   cast_sender_->InitializeAudio(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), error_callback));
 }
 
 void CastSessionDelegate::StartVideo(
@@ -77,7 +77,7 @@ void CastSessionDelegate::StartVideo(
   cast_sender_->InitializeVideo(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,
-                 weak_factory_.GetWeakPtr()),
+                 weak_factory_.GetWeakPtr(), error_callback),
       create_vea_cb,
       create_video_encode_mem_cb);
 }
@@ -205,16 +205,44 @@ void CastSessionDelegate::StatusNotificationCB(
 }
 
 void CastSessionDelegate::InitializationResultCB(
+    const ErrorCallback& error_callback,
     media::cast::CastInitializationStatus result) const {
   DCHECK(cast_sender_);
 
-  // TODO(pwestin): handle the error codes.
-  if (result == media::cast::STATUS_AUDIO_INITIALIZED) {
-    audio_frame_input_available_callback_.Run(
-        cast_sender_->audio_frame_input());
-  } else if (result == media::cast::STATUS_VIDEO_INITIALIZED) {
-    video_frame_input_available_callback_.Run(
-        cast_sender_->video_frame_input());
+  switch (result) {
+    case media::cast::STATUS_AUDIO_INITIALIZED:
+      audio_frame_input_available_callback_.Run(
+          cast_sender_->audio_frame_input());
+      break;
+    case media::cast::STATUS_VIDEO_INITIALIZED:
+      video_frame_input_available_callback_.Run(
+          cast_sender_->video_frame_input());
+      break;
+    case media::cast::STATUS_INVALID_CAST_ENVIRONMENT:
+      error_callback.Run("Invalid cast environment.");
+      break;
+    case media::cast::STATUS_INVALID_CRYPTO_CONFIGURATION:
+      error_callback.Run("Invalid encryption keys.");
+      break;
+    case media::cast::STATUS_UNSUPPORTED_AUDIO_CODEC:
+      error_callback.Run("Audio codec not supported.");
+      break;
+    case media::cast::STATUS_UNSUPPORTED_VIDEO_CODEC:
+      error_callback.Run("Video codec not supported.");
+      break;
+    case media::cast::STATUS_INVALID_AUDIO_CONFIGURATION:
+      error_callback.Run("Invalid audio configuration.");
+      break;
+    case media::cast::STATUS_INVALID_VIDEO_CONFIGURATION:
+      error_callback.Run("Invalid video configuration.");
+      break;
+    case media::cast::STATUS_HW_VIDEO_ENCODER_NOT_SUPPORTED:
+      error_callback.Run("Hardware video encoder not supported.");
+      break;
+    case media::cast::STATUS_AUDIO_UNINITIALIZED:
+    case media::cast::STATUS_VIDEO_UNINITIALIZED:
+      NOTREACHED() << "Not an error.";
+      break;
   }
 }
 

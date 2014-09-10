@@ -28,6 +28,7 @@ class ExternalVideoEncoder : public VideoEncoder {
   ExternalVideoEncoder(
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
+      const CastInitializationCallback& initialization_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb);
 
@@ -56,7 +57,9 @@ class ExternalVideoEncoder : public VideoEncoder {
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner);
 
  protected:
-  void EncoderInitialized();
+  // If |success| is true then encoder is initialized successfully.
+  // Otherwise encoder initialization failed.
+  void EncoderInitialized(bool success);
   void EncoderError();
 
  private:
@@ -70,6 +73,8 @@ class ExternalVideoEncoder : public VideoEncoder {
 
   scoped_refptr<LocalVideoEncodeAcceleratorClient> video_accelerator_client_;
   scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+
+  CastInitializationCallback initialization_cb_;
 
   // Weak pointer factory for posting back LocalVideoEncodeAcceleratorClient
   // notifications to ExternalVideoEncoder.

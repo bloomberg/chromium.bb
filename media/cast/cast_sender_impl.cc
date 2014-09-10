@@ -105,7 +105,6 @@ void CastSenderImpl::InitializeAudio(
 
   const CastInitializationStatus status = audio_sender_->InitializationResult();
   if (status == STATUS_AUDIO_INITIALIZED) {
-    ssrc_of_audio_sender_ = audio_config.incoming_feedback_ssrc;
     audio_frame_input_ =
         new LocalAudioFrameInput(cast_environment_, audio_sender_->AsWeakPtr());
   }
@@ -127,19 +126,14 @@ void CastSenderImpl::InitializeVideo(
 
   VLOG(1) << "CastSenderImpl@" << this << "::InitializeVideo()";
 
-  video_sender_.reset(new VideoSender(cast_environment_,
-                                      video_config,
-                                      create_vea_cb,
-                                      create_video_encode_mem_cb,
-                                      transport_sender_));
-
-  const CastInitializationStatus status = video_sender_->InitializationResult();
-  if (status == STATUS_VIDEO_INITIALIZED) {
-    ssrc_of_video_sender_ = video_config.incoming_feedback_ssrc;
-    video_frame_input_ =
-        new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
-  }
-  cast_initialization_cb.Run(status);
+  video_sender_.reset(new VideoSender(
+      cast_environment_,
+      video_config,
+      base::Bind(&CastSenderImpl::OnVideoInitialized,
+                 weak_factory_.GetWeakPtr(), cast_initialization_cb),
+      create_vea_cb,
+      create_video_encode_mem_cb,
+      transport_sender_));
   if (audio_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
            video_sender_->GetTargetPlayoutDelay());
@@ -168,6 +162,15 @@ void CastSenderImpl::SetTargetPlayoutDelay(
   if (video_sender_) {
     video_sender_->SetTargetPlayoutDelay(new_target_playout_delay);
   }
+}
+
+void CastSenderImpl::OnVideoInitialized(
+    const CastInitializationCallback& initialization_cb,
+    media::cast::CastInitializationStatus result) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  video_frame_input_ =
+      new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
+  initialization_cb.Run(result);
 }
 
 }  // namespace cast

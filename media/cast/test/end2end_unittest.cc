@@ -613,6 +613,7 @@ class End2EndTest : public ::testing::Test {
                                   base::Bind(&VideoInitializationStatus),
                                   CreateDefaultVideoEncodeAcceleratorCallback(),
                                   CreateDefaultVideoEncodeMemoryCallback());
+    task_runner_->RunTasks();
 
     receiver_to_sender_.SetPacketReceiver(
         transport_sender_->PacketReceiverForTesting(),

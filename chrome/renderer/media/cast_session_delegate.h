@@ -90,6 +90,7 @@ class CastSessionDelegate {
   // If this callback is called with STATUS_INITIALIZED it will report back
   // to the sinks that it's ready to accept incoming audio / video frames.
   void InitializationResultCB(
+      const ErrorCallback& error_callback,
       media::cast::CastInitializationStatus result) const;
 
  private:

@@ -37,15 +37,12 @@ class VideoSender : public FrameSender,
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
+              const CastInitializationCallback& initialization_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
               CastTransportSender* const transport_sender);
 
   virtual ~VideoSender();
-
-  CastInitializationStatus InitializationResult() const {
-    return cast_initialization_status_;
-  }
 
   // Note: It is not guaranteed that |video_frame| will actually be encoded and
   // sent, if VideoSender detects too many frames in flight.  Therefore, clients
@@ -61,6 +58,11 @@ class VideoSender : public FrameSender,
   virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:
+  // Called when the encoder is initialized or has failed to initialize.
+  void OnEncoderInitialized(
+      const CastInitializationCallback& initialization_cb,
+      CastInitializationStatus status);
+
   // Called by the |video_encoder_| with the next EncodedFrame to send.
   void OnEncodedVideoFrame(int encoder_bitrate,
                            scoped_ptr<EncodedFrame> encoded_frame);
