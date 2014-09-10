@@ -456,17 +456,31 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
         }
+
+        var guestInstanceId = getGuestInstanceId();
+        if (!guestInstanceId) {
+          // If the opener is already gone, then we won't have its
+          // guestInstanceId.
+          return;
+        }
+
         // If the object being passed into attach is not a valid <webview>
         // then we will fail and it will be treated as if the new window
         // was rejected. The permission API plumbing is used here to clean
         // up the state created for the new window if attaching fails.
         WebView.setPermission(
-            getGuestInstanceId(), requestId, attached ? 'allow' : 'deny');
+            guestInstanceId, requestId, attached ? 'allow' : 'deny');
       }, 0);
     },
     discard: function() {
       validateCall();
-      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
+      var guestInstanceId = getGuestInstanceId();
+      if (!guestInstanceId) {
+        // If the opener is already gone, then we won't have its
+        // guestInstanceId.
+        return;
+      }
+      WebView.setPermission(guestInstanceId, requestId, 'deny');
     }
   };
   webViewEvent.window = windowObj;
@@ -483,13 +497,21 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       if (actionTaken) {
         return;
       }
+
+      var guestInstanceId = getGuestInstanceId();
+      if (!guestInstanceId) {
+        // If the opener is already gone, then we won't have its
+        // guestInstanceId.
+        return;
+      }
+
       WebView.setPermission(
-          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
-        if (allowed) {
-          return;
-        }
-        showWarningMessage();
-      });
+          guestInstanceId, requestId, 'default', '', function(allowed) {
+            if (allowed) {
+              return;
+            }
+            showWarningMessage();
+          });
     });
   } else {
     actionTaken = true;

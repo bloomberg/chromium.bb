@@ -37,18 +37,32 @@ using extensions::AppWindow;
 
 class TestGuestViewManager : public extensions::GuestViewManager {
  public:
-  explicit TestGuestViewManager(content::BrowserContext* context) :
-      GuestViewManager(context),
-      web_contents_(NULL) {}
+  explicit TestGuestViewManager(content::BrowserContext* context)
+      : GuestViewManager(context),
+        guest_add_count_(0),
+        guest_remove_count_(0),
+        web_contents_(NULL) {}
 
-  content::WebContents* WaitForGuestCreated() {
+  content::WebContents* WaitForGuestAdded() {
     if (web_contents_)
       return web_contents_;
 
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
+    add_message_loop_runner_ = new content::MessageLoopRunner;
+    add_message_loop_runner_->Run();
     return web_contents_;
   }
+
+  // Waits so that at least |expected_remove_count| guests' creation
+  // has been seen by this manager.
+  void WaitForGuestRemoved(size_t expected_remove_count) {
+    if (guest_remove_count_ >= expected_remove_count)
+      return;
+
+    remove_message_loop_runner_ = new content::MessageLoopRunner;
+    remove_message_loop_runner_->Run();
+  }
+
+  size_t guest_add_count() { return guest_add_count_; }
 
  private:
   // GuestViewManager override:
@@ -56,13 +70,25 @@ class TestGuestViewManager : public extensions::GuestViewManager {
                         content::WebContents* guest_web_contents) OVERRIDE{
     GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
+    ++guest_add_count_;
 
-    if (message_loop_runner_.get())
-      message_loop_runner_->Quit();
+    if (add_message_loop_runner_.get())
+      add_message_loop_runner_->Quit();
   }
 
+  virtual void RemoveGuest(int guest_instance_id) OVERRIDE {
+    GuestViewManager::RemoveGuest(guest_instance_id);
+    ++guest_remove_count_;
+
+    if (remove_message_loop_runner_.get())
+      remove_message_loop_runner_->Quit();
+  }
+
+  size_t guest_add_count_;
+  size_t guest_remove_count_;
   content::WebContents* web_contents_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> add_message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> remove_message_loop_runner_;
 };
 
 // Test factory for creating test instances of GuestViewManager.
@@ -258,7 +284,7 @@ class WebViewInteractiveTest
     ASSERT_TRUE(done_listener);
     ASSERT_TRUE(done_listener->WaitUntilSatisfied());
 
-    guest_web_contents_ = GetGuestViewManager()->WaitForGuestCreated();
+    guest_web_contents_ = GetGuestViewManager()->WaitForGuestAdded();
   }
 
   void RunTest(const std::string& app_name) {
@@ -733,6 +759,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_AttachAfterOpenerDestroyed) {
+  TestHelper("testNewWindowAttachAfterOpenerDestroyed",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_NewWindowNameTakesPrecedence) {
   TestHelper("testNewWindowNameTakesPrecedence",
              "web_view/newwindow",
@@ -741,13 +774,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_WebViewNameTakesPrecedence) {
-  TestHelper("testWebViewNameTakesPrecedence",
+  TestHelper("testNewWindowWebViewNameTakesPrecedence",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_NoName) {
-  TestHelper("testNoName",
+  TestHelper("testNewWindowNoName",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
 }
@@ -779,6 +812,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_ExecuteScript) {
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_DeclarativeWebRequest) {
   TestHelper("testNewWindowDeclarativeWebRequest",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_DiscardAfterOpenerDestroyed) {
+  TestHelper("testNewWindowDiscardAfterOpenerDestroyed",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
 }
@@ -831,6 +871,19 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_OpenInNewTab) {
   ASSERT_TRUE(done_listener->WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_OpenerDestroyedWhileUnattached) {
+  TestHelper("testNewWindowOpenerDestroyedWhileUnattached",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+  ASSERT_EQ(2u, GetGuestViewManager()->guest_add_count());
+
+  // We have two guests in this test, one is the intial one, the other
+  // is the newwindow one.
+  // Before the embedder goes away, both the guests should go away.
+  // This ensures that unattached guests are gone if opener is gone.
+  GetGuestViewManager()->WaitForGuestRemoved(2u);
+}
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
