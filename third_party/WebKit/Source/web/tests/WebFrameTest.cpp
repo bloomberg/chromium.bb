@@ -6125,6 +6125,49 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
     remoteFrame->close();
 }
 
+void swapAndVerifySubframeConsistency(const char* const message, WebFrame* oldFrame, WebFrame* newFrame)
+{
+    SCOPED_TRACE(message);
+
+    EXPECT_TRUE(oldFrame->firstChild());
+    oldFrame->swap(newFrame);
+
+    EXPECT_FALSE(newFrame->firstChild());
+    EXPECT_FALSE(newFrame->lastChild());
+}
+
+TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
+{
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(0);
+    WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
+    EXPECT_TRUE(targetFrame);
+    swapAndVerifySubframeConsistency("local->remote", targetFrame, remoteFrame);
+
+    targetFrame = mainFrame()->firstChild()->nextSibling();
+    EXPECT_TRUE(targetFrame);
+
+    // Create child frames in the target frame before testing the swap.
+    FrameTestHelpers::TestWebFrameClient remoteFrameClient;
+    remoteFrame->createRemoteChild("", &remoteFrameClient);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebFrame* localFrame = WebLocalFrame::create(&client);
+    swapAndVerifySubframeConsistency("remote->local", targetFrame, localFrame);
+
+    // FIXME: This almost certainly fires more load events on the iframe element
+    // than it should.
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    std::string content = localFrame->contentAsText(1024).utf8();
+    EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
 class MockDocumentThreadableLoaderClient : public DocumentThreadableLoaderClient {
 public:
     MockDocumentThreadableLoaderClient() : m_failed(false) { }
