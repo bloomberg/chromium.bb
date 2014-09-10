@@ -82,7 +82,6 @@ class PrintWebViewHelper
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
