@@ -40,7 +40,9 @@ OFFICIAL_CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/'
                           'src/+log/%s..%s?pretty=full')
 
 # DEPS file URL.
-DEPS_FILE = 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
+DEPS_FILE_OLD = ('http://src.chromium.org/viewvc/chrome/trunk/src/'
+                 'DEPS?revision=%d')
+DEPS_FILE_NEW = ('https://chromium.googlesource.com/chromium/src/+/%s/DEPS')
 
 # Blink changelogs URL.
 BLINK_CHANGELOG_URL = ('http://build.chromium.org'
@@ -877,18 +879,28 @@ def Bisect(context,
   return (revlist[minrev], revlist[maxrev], context)
 
 
-def GetBlinkDEPSRevisionForChromiumRevision(rev):
+def GetBlinkDEPSRevisionForChromiumRevision(self, rev):
   """Returns the blink revision that was in REVISIONS file at
   chromium revision |rev|."""
-  # . doesn't match newlines without re.DOTALL, so this is safe.
-  blink_re = re.compile(r'webkit_revision\D*(\d+)')
-  url = urllib.urlopen(DEPS_FILE % rev)
-  m = blink_re.search(url.read())
-  url.close()
-  if m:
-    return int(m.group(1))
+
+  def _GetBlinkRev(url, blink_re):
+    m = blink_re.search(url.read())
+    url.close()
+    if m:
+      return m.group(1)
+
+  url = urllib.urlopen(DEPS_FILE_OLD % rev)
+  if url.getcode() == 200:
+    # . doesn't match newlines without re.DOTALL, so this is safe.
+    blink_re = re.compile(r'webkit_revision\D*(\d+)')
+    return int(_GetBlinkRev(url, blink_re))
   else:
-    raise Exception('Could not get Blink revision for Chromium rev %d' % rev)
+    url = urllib.urlopen(DEPS_FILE_NEW % GetGitHashFromSVNRevision(rev))
+    if url.getcode() == 200:
+      blink_re = re.compile(r'webkit_revision\D*\d+;\D*\d+;(\w+)')
+      blink_git_sha = _GetBlinkRev(url, blink_re)
+      return self.GetSVNRevisionFromGitHash(blink_git_sha, 'blink')
+  raise Exception('Could not get Blink revision for Chromium rev %d' % rev)
 
 
 def GetBlinkRevisionForChromiumRevision(context, rev):
@@ -928,7 +940,7 @@ def FixChromiumRevForBlink(revisions_final, revisions, self, rev):
   blink snapshots point to tip of tree blink.
   Note: The revisions_final variable might get modified to include
   additional revisions."""
-  blink_deps_rev = GetBlinkDEPSRevisionForChromiumRevision(rev)
+  blink_deps_rev = GetBlinkDEPSRevisionForChromiumRevision(self, rev)
 
   while (GetBlinkRevisionForChromiumRevision(self, rev) > blink_deps_rev):
     idx = revisions.index(rev)
@@ -953,19 +965,19 @@ def GetChromiumRevision(context, url):
     print 'Could not determine latest revision. This could be bad...'
     return 999999999
 
+def GetGitHashFromSVNRevision(svn_revision):
+  crrev_url = CRREV_URL + str(svn_revision)
+  url = urllib.urlopen(crrev_url)
+  if url.getcode() == 200:
+    data = json.loads(url.read())
+    if 'git_sha' in data:
+      return data['git_sha']
+
 def PrintChangeLog(min_chromium_rev, max_chromium_rev):
   """Prints the changelog URL."""
 
-  def _GetGitHashFromSVNRevision(svn_revision):
-    crrev_url = CRREV_URL + str(svn_revision)
-    url = urllib.urlopen(crrev_url)
-    if url.getcode() == 200:
-      data = json.loads(url.read())
-      if 'git_sha' in data:
-        return data['git_sha']
-
-  print ('  ' + CHANGELOG_URL % (_GetGitHashFromSVNRevision(min_chromium_rev),
-         _GetGitHashFromSVNRevision(max_chromium_rev)))
+  print ('  ' + CHANGELOG_URL % (GetGitHashFromSVNRevision(min_chromium_rev),
+         GetGitHashFromSVNRevision(max_chromium_rev)))
 
 
 def main():
