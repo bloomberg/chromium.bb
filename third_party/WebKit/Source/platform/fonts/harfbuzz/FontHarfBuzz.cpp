@@ -206,17 +206,11 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
     // See also paintGlyphs.
     TextDrawingModeFlags textMode = gc->textDrawingMode();
 
-    if (textMode & TextModeFill) {
-        SkPaint paint = gc->fillPaint();
-        gc->adjustTextRenderMode(&paint);
-        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-        gc->drawTextBlob(blob, origin, paint);
-    }
+    if (textMode & TextModeFill)
+        gc->drawTextBlob(blob, origin, gc->fillPaint());
 
     if ((textMode & TextModeStroke) && gc->hasStroke()) {
         SkPaint paint = gc->strokePaint();
-        gc->adjustTextRenderMode(&paint);
-        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
         if (textMode & TextModeFill)
             paint.setLooper(0);
         gc->drawTextBlob(blob, origin, paint);
@@ -299,7 +293,8 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return shaper.selectionRect(point, height, from, to);
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds, float& advance) const
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance,
+    const FloatRect& bounds, float& advance, bool couldUseLCD) const
 {
     // FIXME: Except for setupPaint, this is not specific to FontHarfBuzz.
     // FIXME: Also implement the more general full-positioning path.
@@ -327,6 +322,9 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
         SkPaint paint;
         fontData->platformData().setupPaint(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+        // FIXME: this should go away after the big LCD cleanup.
+        paint.setLCDRenderText(paint.isLCDRenderText() && couldUseLCD);
 
         unsigned start = i++;
         while (i < glyphBuffer.size() && glyphBuffer.fontDataAt(i) == fontData)

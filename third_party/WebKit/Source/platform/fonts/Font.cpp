@@ -662,7 +662,7 @@ float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& run
         if (!context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern()) {
             FloatRect blobBounds = runInfo.bounds;
             blobBounds.moveBy(-point);
-            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance);
+            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, advance, context->couldUseLCDRenderedText());
         }
     }
 

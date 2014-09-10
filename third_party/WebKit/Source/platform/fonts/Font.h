@@ -187,7 +187,8 @@ private:
         return m_fontFallbackList && m_fontFallbackList->shouldSkipDrawing();
     }
 
-    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds, float& advance) const;
+    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds,
+        float& advance, bool couldUseLCD) const;
 
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;

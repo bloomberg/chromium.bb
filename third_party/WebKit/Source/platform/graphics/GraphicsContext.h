@@ -168,8 +168,8 @@ public:
     bool shouldSmoothFonts() const { return m_shouldSmoothFonts; }
 
     // Turn off LCD text for the paint if not supported on this context.
-    void adjustTextRenderMode(SkPaint*);
-    bool couldUseLCDRenderedText();
+    void adjustTextRenderMode(SkPaint*) const;
+    bool couldUseLCDRenderedText() const;
 
     void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }

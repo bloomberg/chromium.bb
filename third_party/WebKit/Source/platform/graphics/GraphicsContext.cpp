@@ -378,7 +378,7 @@ SkMatrix GraphicsContext::getTotalMatrix() const
     return totalMatrix;
 }
 
-void GraphicsContext::adjustTextRenderMode(SkPaint* paint)
+void GraphicsContext::adjustTextRenderMode(SkPaint* paint) const
 {
     if (contextDisabled())
         return;
@@ -389,7 +389,7 @@ void GraphicsContext::adjustTextRenderMode(SkPaint* paint)
     paint->setLCDRenderText(couldUseLCDRenderedText());
 }
 
-bool GraphicsContext::couldUseLCDRenderedText()
+bool GraphicsContext::couldUseLCDRenderedText() const
 {
     // Our layers only have a single alpha channel. This means that subpixel
     // rendered text cannot be composited correctly when the layer is
