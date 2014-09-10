@@ -216,6 +216,12 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* FindFromPublicKeyInfoInSlot(
       const std::vector<uint8>& input,
       PK11SlotInfo* slot);
+#elif defined(USE_OPENSSL)
+  // Create a new instance from an existing EVP_PKEY, taking a
+  // reference to it. |key| must be an RSA key. Returns NULL on
+  // failure.
+  static RSAPrivateKey* CreateFromKey(EVP_PKEY* key);
+
 #endif
 
 #if defined(USE_OPENSSL)

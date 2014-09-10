@@ -98,6 +98,16 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   return result.release();
 }
 
+// static
+RSAPrivateKey* RSAPrivateKey::CreateFromKey(EVP_PKEY* key) {
+  DCHECK(key);
+  if (EVP_PKEY_type(key->type) != EVP_PKEY_RSA)
+    return NULL;
+  RSAPrivateKey* copy = new RSAPrivateKey();
+  copy->key_ = EVP_PKEY_dup(key);
+  return copy;
+}
+
 RSAPrivateKey::RSAPrivateKey()
     : key_(NULL) {
 }

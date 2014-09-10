@@ -403,3 +403,30 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
   ASSERT_TRUE(0 == memcmp(&output2.front(), &input2.front(),
                           input2.size()));
 }
+
+// The following test can run if either USE_NSS or USE_OPENSSL is defined, but
+// not otherwise (since it uses crypto::RSAPrivateKey::CreateFromKey).
+#if defined(USE_NSS) || defined(USE_OPENSSL)
+TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
+  scoped_ptr<crypto::RSAPrivateKey> key_pair(
+      crypto::RSAPrivateKey::Create(256));
+
+  scoped_ptr<crypto::RSAPrivateKey> key_copy(
+      crypto::RSAPrivateKey::CreateFromKey(key_pair->key()));
+  ASSERT_TRUE(key_copy.get());
+
+  std::vector<uint8> privkey;
+  std::vector<uint8> pubkey;
+  ASSERT_TRUE(key_pair->ExportPrivateKey(&privkey));
+  ASSERT_TRUE(key_pair->ExportPublicKey(&pubkey));
+
+  std::vector<uint8> privkey_copy;
+  std::vector<uint8> pubkey_copy;
+  ASSERT_TRUE(key_copy->ExportPrivateKey(&privkey_copy));
+  ASSERT_TRUE(key_copy->ExportPublicKey(&pubkey_copy));
+
+  ASSERT_EQ(privkey, privkey_copy);
+  ASSERT_EQ(pubkey, pubkey_copy);
+}
+#endif
+

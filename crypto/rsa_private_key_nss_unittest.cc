@@ -24,27 +24,6 @@ class RSAPrivateKeyNSSTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RSAPrivateKeyNSSTest);
 };
 
-TEST_F(RSAPrivateKeyNSSTest, CreateFromKeyTest) {
-  scoped_ptr<crypto::RSAPrivateKey> key_pair(RSAPrivateKey::Create(256));
-
-  scoped_ptr<crypto::RSAPrivateKey> key_copy(
-      RSAPrivateKey::CreateFromKey(key_pair->key()));
-  ASSERT_TRUE(key_copy.get());
-
-  std::vector<uint8> privkey;
-  std::vector<uint8> pubkey;
-  ASSERT_TRUE(key_pair->ExportPrivateKey(&privkey));
-  ASSERT_TRUE(key_pair->ExportPublicKey(&pubkey));
-
-  std::vector<uint8> privkey_copy;
-  std::vector<uint8> pubkey_copy;
-  ASSERT_TRUE(key_copy->ExportPrivateKey(&privkey_copy));
-  ASSERT_TRUE(key_copy->ExportPublicKey(&pubkey_copy));
-
-  ASSERT_EQ(privkey, privkey_copy);
-  ASSERT_EQ(pubkey, pubkey_copy);
-}
-
 TEST_F(RSAPrivateKeyNSSTest, FindFromPublicKey) {
   // Create a keypair, which will put the keys in the user's NSSDB.
   scoped_ptr<crypto::RSAPrivateKey> key_pair(RSAPrivateKey::Create(256));
