@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/infobar.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -259,7 +260,8 @@ class TranslateManagerRenderViewHostTest
     InfoBarService::CreateForWebContents(web_contents());
     ChromeTranslateClient::CreateForWebContents(web_contents());
     ChromeTranslateClient::FromWebContents(web_contents())
-        ->set_translate_max_reload_attempts(0);
+        ->translate_driver()
+        .set_translate_max_reload_attempts(0);
 
     notification_registrar_.Add(
         this,
@@ -815,7 +817,8 @@ TEST_F(TranslateManagerRenderViewHostTest, Reload) {
   // If we set reload attempts to a high value, we will not see the infobar
   // immediately.
   ChromeTranslateClient::FromWebContents(web_contents())
-      ->set_translate_max_reload_attempts(100);
+      ->translate_driver()
+      .set_translate_max_reload_attempts(100);
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }

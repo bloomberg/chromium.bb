@@ -6,7 +6,9 @@
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_CONTENT_TRANSLATE_DRIVER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/translate_driver.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class NavigationController;
@@ -15,8 +17,11 @@ class WebContents;
 
 namespace translate {
 
+class TranslateManager;
+
 // Content implementation of TranslateDriver.
-class ContentTranslateDriver : public TranslateDriver {
+class ContentTranslateDriver : public TranslateDriver,
+                               public content::WebContentsObserver {
  public:
 
   // The observer for the ContentTranslateDriver.
@@ -38,6 +43,19 @@ class ContentTranslateDriver : public TranslateDriver {
   // Sets the Observer. Calling this method is optional.
   void set_observer(Observer* observer) { observer_ = observer; }
 
+  // Number of attempts before waiting for a page to be fully reloaded.
+  void set_translate_max_reload_attempts(int attempts) {
+    max_reload_check_attempts_ = attempts;
+  }
+
+  // Sets the TranslateManager associated with this driver.
+  void set_translate_manager(TranslateManager* manager) {
+    translate_manager_ = manager;
+  }
+
+  // Initiates translation once the page is finished loading.
+  void InitiateTranslation(const std::string& page_lang, int attempt);
+
   // TranslateDriver methods.
   virtual void OnIsPageTranslatedChanged() OVERRIDE;
   virtual void OnTranslateEnabledChanged() OVERRIDE;
@@ -55,11 +73,25 @@ class ContentTranslateDriver : public TranslateDriver {
   virtual bool HasCurrentPage() OVERRIDE;
   virtual void OpenUrlInNewTab(const GURL& url) OVERRIDE;
 
+  // content::WebContentsObserver implementation.
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) OVERRIDE;
+  virtual void DidNavigateAnyFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+
  private:
   // The navigation controller of the tab we are associated with.
   content::NavigationController* navigation_controller_;
 
+  TranslateManager* translate_manager_;
+
   Observer* observer_;
+
+  // Max number of attempts before checking if a page has been reloaded.
+  int max_reload_check_attempts_;
+
+  base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentTranslateDriver);
 };

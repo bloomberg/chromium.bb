@@ -34,20 +34,13 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
 namespace {
-
-// The maximum number of attempts we'll do to see if the page has finshed
-// loading before giving up the translation
-const int kMaxTranslateLoadCheckAttempts = 20;
 
 // TODO(andrewhayden): Make the data file path into a gyp/gn define
 // If you change this, also update standalone_cld_data_harness.cc
@@ -63,13 +56,12 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       translate_driver_(&web_contents->GetController()),
       translate_manager_(
           new translate::TranslateManager(this, prefs::kAcceptLanguages)),
       cld_data_provider_(
-          translate::CreateBrowserCldDataProviderFor(web_contents)),
-      weak_pointer_factory_(this) {
+          translate::CreateBrowserCldDataProviderFor(web_contents)) {
+  translate_driver_.set_translate_manager(translate_manager_.get());
   // Customization: for the standalone data source, we configure the path to
   // CLD data immediately on startup.
   if (translate::CldDataSource::ShouldUseStandaloneDataFile() &&
@@ -287,96 +279,11 @@ bool ChromeTranslateClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ChromeTranslateClient::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  // Check whether this is a reload: When doing a page reload, the
-  // TranslateLanguageDetermined IPC is not sent so the translation needs to be
-  // explicitly initiated.
-
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-
-  // If the navigation happened while offline don't show the translate
-  // bar since there will be nothing to translate.
-  if (load_details.http_status_code == 0 ||
-      load_details.http_status_code == net::HTTP_INTERNAL_SERVER_ERROR) {
-    return;
-  }
-
-  if (!load_details.is_main_frame &&
-      GetLanguageState().translation_declined()) {
-    // Some sites (such as Google map) may trigger sub-frame navigations
-    // when the user interacts with the page.  We don't want to show a new
-    // infobar if the user already dismissed one in that case.
-    return;
-  }
-
-  // If not a reload, return.
-  if (entry->GetTransitionType() != content::PAGE_TRANSITION_RELOAD &&
-      load_details.type != content::NAVIGATION_TYPE_SAME_PAGE) {
-    return;
-  }
-
-  if (!GetLanguageState().page_needs_translation())
-    return;
-
-  // Note that we delay it as the ordering of the processing of this callback
-  // by WebContentsObservers is undefined and might result in the current
-  // infobars being removed. Since the translation initiation process might add
-  // an infobar, it must be done after that.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromeTranslateClient::InitiateTranslation,
-                 weak_pointer_factory_.GetWeakPtr(),
-                 GetLanguageState().original_language(),
-                 0));
-}
-
-void ChromeTranslateClient::DidNavigateAnyFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Let the LanguageState clear its state.
-  const bool reload =
-      details.entry->GetTransitionType() == content::PAGE_TRANSITION_RELOAD ||
-      details.type == content::NAVIGATION_TYPE_SAME_PAGE;
-  GetLanguageState().DidNavigate(
-      details.is_in_page, details.is_main_frame, reload);
-}
-
 void ChromeTranslateClient::WebContentsDestroyed() {
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with NULL WebContents.
   translate_manager_.reset();
-}
-
-void ChromeTranslateClient::InitiateTranslation(const std::string& page_lang,
-                                                int attempt) {
-  if (GetLanguageState().translation_pending())
-    return;
-
-  // During a reload we need web content to be available before the
-  // translate script is executed. Otherwise we will run the translate script on
-  // an empty DOM which will fail. Therefore we wait a bit to see if the page
-  // has finished.
-  if (web_contents()->IsLoading() && attempt < max_reload_check_attempts_) {
-    int backoff = attempt * kMaxTranslateLoadCheckAttempts;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ChromeTranslateClient::InitiateTranslation,
-                   weak_pointer_factory_.GetWeakPtr(),
-                   page_lang,
-                   attempt + 1),
-        base::TimeDelta::FromMilliseconds(backoff));
-    return;
-  }
-
-  translate_manager_->InitiateTranslation(
-      translate::TranslateDownloadManager::GetLanguageCode(page_lang));
 }
 
 void ChromeTranslateClient::OnTranslateAssignedSequenceNumber(int page_seq_no) {
