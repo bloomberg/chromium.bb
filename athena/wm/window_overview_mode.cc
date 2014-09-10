@@ -33,16 +33,21 @@
 
 namespace {
 
+const float kOverviewDefaultScale = 0.75f;
+
 struct WindowOverviewState {
-  // The transform for when the window is at the topmost position.
-  gfx::Transform top;
-
-  // The transform for when the window is at the bottom-most position.
-  gfx::Transform bottom;
-
   // The current overview state of the window. 0.f means the window is at the
   // topmost position. 1.f means the window is at the bottom-most position.
   float progress;
+
+  // The top-most and bottom-most vertical position of the window in overview
+  // mode.
+  float max_y;
+  float min_y;
+
+  // |split| is set if this window is one of the two split windows in split-view
+  // mode.
+  bool split;
 };
 
 }  // namespace
@@ -55,18 +60,51 @@ namespace athena {
 
 namespace {
 
+gfx::Transform GetTransformForSplitWindow(aura::Window* window, float scale) {
+  const float kScrollWindowPositionInOverview = 0.65f;
+  int x_translate = window->bounds().width() * (1 - scale) / 2;
+  gfx::Transform transform;
+  transform.Translate(
+      x_translate, window->bounds().height() * kScrollWindowPositionInOverview);
+  transform.Scale(scale, scale);
+  return transform;
+}
+
 // Gets the transform for the window in its current state.
-gfx::Transform GetTransformForState(WindowOverviewState* state) {
-  return gfx::Tween::TransformValueBetween(state->progress,
-                                           state->top,
-                                           state->bottom);
+gfx::Transform GetTransformForState(aura::Window* window,
+                                    WindowOverviewState* state) {
+  if (state->split)
+    return GetTransformForSplitWindow(window, kOverviewDefaultScale);
+
+  const float kProgressToStartShrinking = 0.07;
+  const float kOverviewScale = 0.75f;
+  float scale = kOverviewScale;
+  if (state->progress < kProgressToStartShrinking) {
+    const float kShrunkMinimumScale = 0.7f;
+    scale = gfx::Tween::FloatValueBetween(
+        state->progress / kProgressToStartShrinking,
+        kShrunkMinimumScale,
+        kOverviewScale);
+  }
+  int container_width = window->parent()->bounds().width();
+  int window_width = window->bounds().width();
+  int window_x = window->bounds().x();
+  float x_translate = (container_width - (window_width * scale)) / 2 - window_x;
+  float y_translate = gfx::Tween::FloatValueBetween(
+      state->progress, state->min_y, state->max_y);
+  gfx::Transform transform;
+  transform.Translate(x_translate, y_translate);
+  transform.Scale(scale, scale);
+  return transform;
 }
 
 // Sets the progress-state for the window in the overview mode.
 void SetWindowProgress(aura::Window* window, float progress) {
   WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
   state->progress = progress;
-  window->SetTransform(GetTransformForState(state));
+
+  gfx::Transform transform = GetTransformForState(window, state);
+  window->SetTransform(transform);
 }
 
 void HideWindowIfNotVisible(aura::Window* window,
@@ -111,14 +149,6 @@ gfx::RectF GetTransformedBounds(aura::Window* window) {
   transform.Translate(-bounds.x(), -bounds.y());
   transform.TransformRect(&bounds);
   return bounds;
-}
-
-gfx::Transform GetTransformForSplitWindow(aura::Window* window, float scale) {
-  int x_translate = window->bounds().width() * (1 - scale) / 2;
-  gfx::Transform transform;
-  transform.Translate(x_translate, window->bounds().height() * 0.65);
-  transform.Scale(scale, scale);
-  return transform;
 }
 
 void TransformSplitWindowScale(aura::Window* window, float scale) {
@@ -209,11 +239,14 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           (window == split_view_controller_->left_window() ||
            window == split_view_controller_->right_window())) {
         // Do not let the left/right windows be scrolled.
-        state->top = GetTransformForSplitWindow(window, kMaxScale);
-        state->bottom = state->top;
+        gfx::Transform transform =
+            GetTransformForSplitWindow(window, kOverviewDefaultScale);
+        state->max_y = state->min_y = transform.To2dTranslation().y();
+        state->split = true;
         --index;
         continue;
       }
+      state->split = false;
       UpdateTerminalStateForWindowAtIndex(window, index, windows.size());
     }
   }
@@ -228,26 +261,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     const int kGapBetweenWindowsBottom = 10;
     const int kGapBetweenWindowsTop = 5;
 
-    const int container_width = container_->bounds().width();
-    const int window_width = window->bounds().width();
-    const int window_x = window->bounds().x();
-    gfx::Transform top_transform;
     int top = (window_count - index - 1) * kGapBetweenWindowsTop;
-    float x_translate =
-        (container_width - (window_width * kMinScale)) / 2 - window_x;
-    top_transform.Translate(x_translate, top);
-    top_transform.Scale(kMinScale, kMinScale);
-
-    gfx::Transform bottom_transform;
     int bottom = GetScrollableHeight() - (index * kGapBetweenWindowsBottom);
-    x_translate = (container_width - (window_width * kMaxScale)) / 2 - window_x;
-    bottom_transform.Translate(x_translate, bottom - window->bounds().y());
-    bottom_transform.Scale(kMaxScale, kMaxScale);
 
     WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
     CHECK(state);
-    state->top = top_transform;
-    state->bottom = bottom_transform;
+    if (state->split)
+      return;
+    state->min_y = top;
+    state->max_y = bottom - window->bounds().y();
     state->progress = 0.f;
   }
 
@@ -350,7 +372,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   int GetScrollableHeight() const {
-    const float kScrollableFraction = 0.65f;
+    const float kScrollableFraction = 0.85f;
     const float kScrollableFractionInSplit = 0.5f;
     const float fraction = split_view_controller_->IsSplitViewModeActive()
                                ? kScrollableFractionInSplit
@@ -400,7 +422,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     WindowOverviewState* dragged_state =
         dragged_window_->GetProperty(kWindowOverviewState);
     CHECK(dragged_state);
-    gfx::Transform transform = GetTransformForState(dragged_state);
+    gfx::Transform transform =
+        GetTransformForState(dragged_window_, dragged_state);
     transform.Translate(-dragged_distance.x(), 0);
     dragged_window_->SetTransform(transform);
 
@@ -452,12 +475,12 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     }
 
     if (split_view_controller_->IsSplitViewModeActive()) {
-      float scale = kMaxScale;
+      float scale = kOverviewDefaultScale;
       if (split_drop == split_view_controller_->left_window())
         scale = kMaxScaleForSplitTarget;
       TransformSplitWindowScale(split_view_controller_->left_window(), scale);
 
-      scale = kMaxScale;
+      scale = kOverviewDefaultScale;
       if (split_drop == split_view_controller_->right_window())
         scale = kMaxScaleForSplitTarget;
       TransformSplitWindowScale(split_view_controller_->right_window(), scale);
@@ -496,9 +519,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         transform_x = container_->bounds().right() - transformed_bounds.x();
       else
         transform_x = -(transformed_bounds.x() + transformed_bounds.width());
-      float scale = gfx::Tween::FloatValueBetween(
-          dragged_state->progress, kMinScale, kMaxScale);
-      transform.Translate(transform_x / scale, 0);
+      transform.Translate(transform_x / kOverviewDefaultScale, 0);
       dragged_window_->SetTransform(transform);
       dragged_window_->layer()->SetOpacity(kMinOpacity);
     }
@@ -559,7 +580,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         dragged_window_->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    dragged_window_->SetTransform(GetTransformForState(dragged_state));
+    dragged_window_->SetTransform(
+        GetTransformForState(dragged_window_, dragged_state));
     dragged_window_->layer()->SetOpacity(1.f);
     dragged_window_ = NULL;
   }
@@ -704,8 +726,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   const int kMinDistanceForDismissal = 300;
-  const float kMinScale = 0.6f;
-  const float kMaxScale = 0.75f;
   const float kMaxOpacity = 1.0f;
   const float kMinOpacity = 0.2f;
   const float kMaxScaleForSplitTarget = 0.9f;
