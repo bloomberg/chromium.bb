@@ -74,7 +74,7 @@ class GDataWapiRequestsTest : public testing::Test {
           request.content.find("<docs:authorizedApp>") != std::string::npos) {
         scoped_ptr<net::test_server::BasicHttpResponse> result(
             test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath("gdata/testfile.txt")));
+                test_util::GetTestFilePath("drive/testfile.txt")));
         return result.PassAs<net::test_server::HttpResponse>();
       }
     }

@@ -569,7 +569,7 @@ TEST_F(DriveApiRequestsTest, AboutGetRequest_ValidJson) {
 TEST_F(DriveApiRequestsTest, AboutGetRequest_InvalidJson) {
   // Set an expected data file containing invalid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
-      "gdata/testfile.txt");
+      "drive/testfile.txt");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;

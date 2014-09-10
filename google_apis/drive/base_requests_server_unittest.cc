@@ -81,7 +81,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
             test_util::CreateCopyResultCallback(&result_code, &temp_file)),
         GetContentCallback(),
         ProgressCallback(),
-        test_server_.GetURL("/files/gdata/testfile.txt"),
+        test_server_.GetURL("/files/drive/testfile.txt"),
         GetTestCachedFilePath(
             base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
     request_sender_->StartRequestWithRetry(request);
@@ -94,10 +94,10 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
+  EXPECT_EQ("/files/drive/testfile.txt", http_request_.relative_url);
 
   const base::FilePath expected_path =
-      test_util::GetTestFilePath("gdata/testfile.txt");
+      test_util::GetTestFilePath("drive/testfile.txt");
   std::string expected_contents;
   base::ReadFileToString(expected_path, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
