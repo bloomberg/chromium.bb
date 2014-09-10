@@ -15,6 +15,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
 
@@ -41,6 +42,11 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
        source_stopped_(false) {
   }
 
+  virtual void TearDown() OVERRIDE {
+    webkit_source_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
+
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
     delegate_ = new MockVideoCapturerDelegate(device_info);
     source_ = new MediaStreamVideoCapturerSource(
@@ -53,6 +59,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"));
     webkit_source_.setExtraData(source_);
+    webkit_source_id_ = webkit_source_.id();
   }
 
   blink::WebMediaStreamTrack StartSource() {
@@ -73,7 +80,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
     source_stopped_ =  true;
-    EXPECT_EQ(source.id(), webkit_source_.id());
+    EXPECT_EQ(source.id(), webkit_source_id_);
   }
 
  protected:
@@ -87,6 +94,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.
   scoped_refptr<VideoCapturerDelegate> delegate_;
+  blink::WebString webkit_source_id_;
   bool source_stopped_;
 };
 
@@ -132,6 +140,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"));
   webkit_source_.setExtraData(source_);
+  webkit_source_id_ = webkit_source_.id();
   blink::WebMediaStreamTrack track = StartSource();
   message_loop_.RunUntilIdle();
 

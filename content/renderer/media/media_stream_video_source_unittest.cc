@@ -18,6 +18,7 @@
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -53,6 +54,11 @@ class MediaStreamVideoSourceTest
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"));
     webkit_source_.setExtraData(mock_source_);
+  }
+
+  virtual void TearDown() {
+    webkit_source_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
  protected:

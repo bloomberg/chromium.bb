@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
 
@@ -150,6 +151,11 @@ class UserMediaClientImplTest : public ::testing::Test {
         scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_).Pass()));
   }
 
+  virtual void TearDown() OVERRIDE {
+    used_media_impl_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
+
   blink::WebMediaStream RequestLocalMediaStream() {
     used_media_impl_->RequestUserMedia();
     FakeMediaStreamDispatcherRequestUserMediaComplete();
@@ -210,10 +216,12 @@ class UserMediaClientImplTest : public ::testing::Test {
         used_media_impl_->last_created_video_source();
     if (video_source->SourceHasAttemptedToStart())
       video_source->FailToStartMockedSource();
+    blink::WebHeap::collectGarbageForTesting();
   }
 
   void FailToCreateNextAudioCapturer() {
     dependency_factory_->FailToCreateNextAudioCapturer();
+    blink::WebHeap::collectGarbageForTesting();
   }
 
  protected:
@@ -343,6 +351,7 @@ TEST_F(UserMediaClientImplTest, StopSourceWhenMediaStreamGoesOutOfScope) {
   // Makes sure the test itself don't hold a reference to the created
   // MediaStream.
   used_media_impl_->ClearLastGeneratedStream();
+  blink::WebHeap::collectGarbageForTesting();
 
   // Expect the sources to be stopped when the MediaStream goes out of scope.
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
@@ -369,6 +378,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
             used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
             used_media_impl_->error_reason());
+  blink::WebHeap::collectGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
@@ -384,6 +394,7 @@ TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
             used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
             used_media_impl_->error_reason());
+  blink::WebHeap::collectGarbageForTesting();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());

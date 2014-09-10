@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 static const char kDummySdp[] = "dummy sdp";
@@ -217,6 +218,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);
+  }
+
+  virtual void TearDown() {
+    pc_handler_.reset();
+    mock_tracker_.reset();
+    mock_dependency_factory_.reset();
+    mock_client_.reset();
+    blink::WebHeap::collectAllGarbageForTesting();
   }
 
   // Creates a WebKit local MediaStream.
@@ -762,6 +771,8 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
     EXPECT_EQ(0u, modified_audio_tracks1.size());
   }
 
+  blink::WebHeap::collectGarbageForTesting();
+
   // Add the WebRtc audio track again.
   remote_stream->AddTrack(webrtc_track.get());
   blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks2;
@@ -797,6 +808,8 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
     webkit_stream.videoTracks(modified_video_tracks1);
     EXPECT_EQ(0u, modified_video_tracks1.size());
   }
+
+  blink::WebHeap::collectGarbageForTesting();
 
   // Add the WebRtc video track again.
   remote_stream->AddTrack(webrtc_track.get());
