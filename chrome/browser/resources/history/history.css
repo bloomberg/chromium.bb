@@ -254,6 +254,7 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
   margin-bottom: 6px;
   /* The box should be no bigger than its parent. */
   max-width: 100%;
+  min-height: 2em;
   overflow: hidden;
   padding-bottom: 1px;
 }
@@ -509,6 +510,14 @@ html .expand .site-domain-arrow {
   color: rgb(48, 57, 66);
   margin: 2px;
   padding: 2px;
+  /* Focus outlines are rendered differently for each platform. */
+<if expr="is_macosx">
+  margin: 4px;
+  padding: 0;
+</if>
+<if expr="is_win">
+  padding: 0 2px;
+</if>
   text-decoration: none;
 }
 
