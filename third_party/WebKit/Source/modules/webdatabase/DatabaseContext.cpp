@@ -133,8 +133,6 @@ void DatabaseContext::contextDestroyed()
 {
     RefPtrWillBeRawPtr<DatabaseContext> protector(this);
     stopDatabases();
-    if (executionContext()->isWorkerGlobalScope())
-        toWorkerGlobalScope(executionContext())->unregisterTerminationObserver(this);
     DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();
 }

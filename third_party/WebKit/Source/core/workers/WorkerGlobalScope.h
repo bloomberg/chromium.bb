@@ -94,7 +94,6 @@ public:
         virtual void wasRequestedToTerminate() = 0;
     };
     void registerTerminationObserver(TerminationObserver*);
-    void unregisterTerminationObserver(TerminationObserver*);
     void wasRequestedToTerminate();
 
     void dispose();

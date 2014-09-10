@@ -203,13 +203,6 @@ void WorkerGlobalScope::registerTerminationObserver(TerminationObserver* observe
     m_terminationObserver = observer;
 }
 
-void WorkerGlobalScope::unregisterTerminationObserver(TerminationObserver* observer)
-{
-    ASSERT(observer);
-    ASSERT(m_terminationObserver == observer);
-    m_terminationObserver = 0;
-}
-
 void WorkerGlobalScope::wasRequestedToTerminate()
 {
     if (m_terminationObserver)
