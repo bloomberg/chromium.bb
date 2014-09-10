@@ -15,6 +15,7 @@
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 #include "sync/internal_api/public/attachments/attachment_uploader.h"
+#include "sync/internal_api/public/attachments/task_queue.h"
 
 namespace syncer {
 
@@ -22,11 +23,6 @@ namespace syncer {
 class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                           public base::NonThreadSafe {
  public:
-  // |delegate| is optional delegate for AttachmentService to notify about
-  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
-  // provided. AttachmentService doesn't take ownership of delegate, the pointer
-  // must be valid throughout AttachmentService lifetime.
-  //
   // |attachment_uploader| is optional. If null, attachments will never be
   // uploaded to the sync server and |delegate|'s OnAttachmentUploaded will
   // never be invoked.
@@ -34,11 +30,26 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   // |attachment_downloader| is optional. If null, attachments will never be
   // downloaded. Only attachments in |attachment_store| will be returned from
   // GetOrDownloadAttachments.
-
+  //
+  // |delegate| is optional delegate for AttachmentService to notify about
+  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
+  // provided. AttachmentService doesn't take ownership of delegate, the pointer
+  // must be valid throughout AttachmentService lifetime.
+  //
+  // |initial_backoff_delay| the initial delay between upload attempts.  This
+  // class automatically retries failed uploads.  After the first failure, it
+  // will wait this amount of time until it tries again.  After each failure,
+  // the delay is doubled until the |max_backoff_delay| is reached.  A
+  // successful upload clears the delay.
+  //
+  // |max_backoff_delay| the maxmium delay between upload attempts when backed
+  // off.
   AttachmentServiceImpl(scoped_refptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
                         scoped_ptr<AttachmentDownloader> attachment_downloader,
-                        Delegate* delegate);
+                        Delegate* delegate,
+                        const base::TimeDelta& initial_backoff_delay,
+                        const base::TimeDelta& max_backoff_delay);
   virtual ~AttachmentServiceImpl();
 
   // Create an AttachmentServiceImpl suitable for use in tests.
@@ -69,7 +80,7 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                     const AttachmentId& attachment_id,
                     const AttachmentDownloader::DownloadResult& result,
                     scoped_ptr<Attachment> attachment);
-  void ProcessQueuedUploads();
+  void BeginUpload(const AttachmentId& attachment_id);
   void ReadDoneNowUpload(
       const AttachmentStore::Result& result,
       scoped_ptr<AttachmentMap> attachments,
@@ -86,12 +97,7 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   // May be null.
   Delegate* delegate_;
 
-  // Queue of attachment ids to be uploaded.  Every entry in this queue should
-  // also exist in ids_in_queue_.
-  std::deque<AttachmentId> queue_;
-
-  // Ids of attachments currently being uploaded or queued for upload.
-  AttachmentIdSet ids_in_queue_;
+  scoped_ptr<TaskQueue<AttachmentId> > upload_task_queue_;
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;

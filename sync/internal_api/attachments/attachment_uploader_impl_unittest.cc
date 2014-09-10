@@ -509,7 +509,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
 
   // See that the done callback was invoked.
   ASSERT_EQ(1U, upload_results().size());
-  EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
+  EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 
@@ -521,6 +521,43 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
 TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
   token_service().AddAccount(kAccountId);
   request_handler().SetStatusCode(net::HTTP_SERVICE_UNAVAILABLE);
+
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  some_data->data() = kAttachmentData;
+  Attachment attachment = Attachment::Create(some_data);
+  uploader()->UploadAttachment(attachment, upload_callback());
+
+  RunAndWaitFor(1);
+
+  // See that the done callback was invoked.
+  ASSERT_EQ(1U, upload_results().size());
+  EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
+  ASSERT_EQ(1U, attachment_ids().size());
+  EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+
+  // See that the HTTP server received one request.
+  ASSERT_EQ(1U, http_requests_received().size());
+  const HttpRequest& http_request = http_requests_received().front();
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request.method);
+  std::string expected_relative_url(kAttachments +
+                                    attachment.GetId().GetProto().unique_id());
+  EXPECT_EQ(expected_relative_url, http_request.relative_url);
+  EXPECT_TRUE(http_request.has_content);
+  EXPECT_EQ(kAttachmentData, http_request.content);
+  std::string expected_header(kAuthorization);
+  const std::string header_name(kAuthorization);
+  const std::string header_value(std::string("Bearer ") + kAccessToken);
+  EXPECT_THAT(http_request.headers,
+              testing::Contains(testing::Pair(header_name, header_value)));
+
+  // See that we did not invalidate the token.
+  ASSERT_EQ(0, token_service().num_invalidate_token());
+}
+
+// Verify that we "403 Forbidden" as a non-transient error.
+TEST_F(AttachmentUploaderImplTest, UploadAttachment_Forbidden) {
+  token_service().AddAccount(kAccountId);
+  request_handler().SetStatusCode(net::HTTP_FORBIDDEN);
 
   scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
   some_data->data() = kAttachmentData;
@@ -569,7 +606,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
 
   // See that the done callback was invoked.
   ASSERT_EQ(1U, upload_results().size());
-  EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
+  EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 

@@ -319,7 +319,7 @@ TEST_F(AttachmentDownloaderImplTest, RequestAccessTokenFails) {
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   RunMessageLoop();
   // Only id2 should fail.
-  VerifyDownloadResult(id2, AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
+  VerifyDownloadResult(id2, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
   // Complete request for id1.
   CompleteDownload(net::HTTP_OK);
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_SUCCESS);
@@ -337,7 +337,7 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_BadToken) {
   // invalidation.
   CompleteDownload(net::HTTP_UNAUTHORIZED);
   EXPECT_EQ(1, token_service()->num_invalidate_token());
-  VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
+  VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
 }
 
 TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
@@ -352,7 +352,7 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
   // shouldn't be invalidated.
   CompleteDownload(net::HTTP_SERVICE_UNAVAILABLE);
   EXPECT_EQ(0, token_service()->num_invalidate_token());
-  VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
+  VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
 }
 
 }  // namespace syncer

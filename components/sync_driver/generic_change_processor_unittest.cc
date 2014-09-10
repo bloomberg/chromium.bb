@@ -56,7 +56,9 @@ MockAttachmentService::MockAttachmentService(
                                 new syncer::FakeAttachmentUploader),
                             scoped_ptr<syncer::AttachmentDownloader>(
                                 new syncer::FakeAttachmentDownloader),
-                            NULL) {
+                            NULL,
+                            base::TimeDelta(),
+                            base::TimeDelta()) {
 }
 
 MockAttachmentService::~MockAttachmentService() {

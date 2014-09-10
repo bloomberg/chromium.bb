@@ -630,12 +630,20 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         token_service_provider);
   }
 
+  // It is important that the initial backoff delay is relatively large.  For
+  // whatever reason, the server may fail all requests for a short period of
+  // time.  When this happens we don't want to overwhelm the server with
+  // requests so we use a large initial backoff.
+  const base::TimeDelta initial_backoff_delay =
+      base::TimeDelta::FromMinutes(30);
+  const base::TimeDelta max_backoff_delay = base::TimeDelta::FromHours(4);
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(attachment_store,
                                         attachment_uploader.Pass(),
                                         attachment_downloader.Pass(),
-                                        delegate));
-
+                                        delegate,
+                                        initial_backoff_delay,
+                                        max_backoff_delay));
   return attachment_service.Pass();
 }
 

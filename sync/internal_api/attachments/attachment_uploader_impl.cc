@@ -133,20 +133,22 @@ const Attachment& AttachmentUploaderImpl::UploadState::GetAttachment() {
 void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
-  UploadResult result = UPLOAD_UNSPECIFIED_ERROR;
+  UploadResult result = UPLOAD_TRANSIENT_ERROR;
   AttachmentId attachment_id = attachment_.GetId();
-  if (source->GetResponseCode() == net::HTTP_OK) {
+  const int response_code = source->GetResponseCode();
+  if (response_code == net::HTTP_OK) {
     result = UPLOAD_SUCCESS;
-  } else if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
-    // TODO(maniscalco): One possibility is that we received a 401 because our
-    // access token has expired.  We should probably fetch a new access token
-    // and retry this upload before giving up and reporting failure to our
-    // caller (bug 380437).
+  } else if (response_code == net::HTTP_UNAUTHORIZED) {
+    // Server tells us we've got a bad token so invalidate it.
     OAuth2TokenServiceRequest::InvalidateToken(
         token_service_provider_, account_id_, scopes_, access_token_);
-  } else {
-    // TODO(maniscalco): Once the protocol is better defined, deal with the
-    // various HTTP response codes we may encounter.
+    // Fail the request, but indicate that it may be successful if retried.
+    result = UPLOAD_TRANSIENT_ERROR;
+  } else if (response_code == net::HTTP_FORBIDDEN) {
+    // User is not allowed to use attachments.  Retrying won't help.
+    result = UPLOAD_UNSPECIFIED_ERROR;
+  } else if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
+    result = UPLOAD_TRANSIENT_ERROR;
   }
   ReportResult(result, attachment_id);
 }
@@ -160,6 +162,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   access_token_ = access_token;
   fetcher_.reset(
       net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
+  fetcher_->SetAutomaticallyRetryOn5xx(false);
   fetcher_->SetRequestContext(url_request_context_getter_.get());
   // TODO(maniscalco): Is there a better way?  Copying the attachment data into
   // a string feels wrong given how large attachments may be (several MBs).  If
@@ -184,7 +187,11 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
-  ReportResult(UPLOAD_UNSPECIFIED_ERROR, attachment_.GetId());
+  // TODO(maniscalco): We treat this as a transient error, but it may in fact be
+  // a very long lived error and require user action.  Consider differentiating
+  // between the causes of GetToken failure and act accordingly.  Think about
+  // the causes of GetToken failure. Are there (bug 412802).
+  ReportResult(UPLOAD_TRANSIENT_ERROR, attachment_.GetId());
 }
 
 void AttachmentUploaderImpl::UploadState::GetToken() {

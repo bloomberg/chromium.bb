@@ -24,6 +24,7 @@ class SYNC_EXPORT AttachmentDownloader {
   enum DownloadResult {
     DOWNLOAD_SUCCESS,            // No error, attachment was downloaded
                                  // successfully.
+    DOWNLOAD_TRANSIENT_ERROR,    // A transient error occurred, try again later.
     DOWNLOAD_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 

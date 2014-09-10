@@ -115,7 +115,7 @@ void AttachmentDownloaderImpl::OnGetTokenFailure(
     DownloadState* download_state = *iter;
     scoped_refptr<base::RefCountedString> null_attachment_data;
     ReportResult(
-        *download_state, DOWNLOAD_UNSPECIFIED_ERROR, null_attachment_data);
+        *download_state, DOWNLOAD_TRANSIENT_ERROR, null_attachment_data);
     DCHECK(state_map_.find(download_state->attachment_url) != state_map_.end());
     state_map_.erase(download_state->attachment_url);
   }
@@ -133,22 +133,28 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
   const DownloadState& download_state = *iter->second;
   DCHECK(source == download_state.url_fetcher.get());
 
-  DownloadResult result = DOWNLOAD_UNSPECIFIED_ERROR;
+  DownloadResult result = DOWNLOAD_TRANSIENT_ERROR;
   scoped_refptr<base::RefCountedString> attachment_data;
 
-  if (source->GetResponseCode() == net::HTTP_OK) {
+  const int response_code = source->GetResponseCode();
+  if (response_code == net::HTTP_OK) {
     result = DOWNLOAD_SUCCESS;
     std::string data_as_string;
     source->GetResponseAsString(&data_as_string);
     attachment_data = base::RefCountedString::TakeString(&data_as_string);
-  } else if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
+  } else if (response_code == net::HTTP_UNAUTHORIZED) {
+    // Server tells us we've got a bad token so invalidate it.
     OAuth2TokenServiceRequest::InvalidateToken(token_service_provider_.get(),
                                                account_id_,
                                                oauth2_scopes_,
                                                download_state.access_token);
-    // TODO(pavely): crbug/380437. This is transient error. Request new access
-    // token for this DownloadState. The only trick is to do it with exponential
-    // backoff.
+    // Fail the request, but indicate that it may be successful if retried.
+    result = DOWNLOAD_TRANSIENT_ERROR;
+  } else if (response_code == net::HTTP_FORBIDDEN) {
+    // User is not allowed to use attachments.  Retrying won't help.
+    result = DOWNLOAD_UNSPECIFIED_ERROR;
+  } else if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
+    result = DOWNLOAD_TRANSIENT_ERROR;
   }
   ReportResult(download_state, result, attachment_data);
   state_map_.erase(iter);
@@ -159,6 +165,7 @@ scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
     const std::string& access_token) {
   scoped_ptr<net::URLFetcher> url_fetcher(
       net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
+  url_fetcher->SetAutomaticallyRetryOn5xx(false);
   const std::string auth_header("Authorization: Bearer " + access_token);
   url_fetcher->AddExtraRequestHeader(auth_header);
   url_fetcher->SetRequestContext(url_request_context_getter_.get());

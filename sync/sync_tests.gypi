@@ -284,6 +284,7 @@
         'internal_api/attachments/attachment_uploader_impl_unittest.cc',
         'internal_api/attachments/fake_attachment_downloader_unittest.cc',
         'internal_api/attachments/fake_attachment_uploader_unittest.cc',
+        'internal_api/attachments/task_queue_unittest.cc',
         'internal_api/debug_info_event_listener_unittest.cc',
         'internal_api/http_bridge_unittest.cc',
         'internal_api/js_mutation_event_observer_unittest.cc',

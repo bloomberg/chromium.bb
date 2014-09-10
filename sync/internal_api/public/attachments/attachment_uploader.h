@@ -20,6 +20,7 @@ class SYNC_EXPORT AttachmentUploader {
   enum UploadResult {
     UPLOAD_SUCCESS,            // No error, attachment was uploaded
                                // successfully.
+    UPLOAD_TRANSIENT_ERROR,    // A transient error occurred, try again later.
     UPLOAD_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 

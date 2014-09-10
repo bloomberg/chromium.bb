@@ -191,7 +191,9 @@ class AttachmentServiceImplTest : public testing::Test,
         new AttachmentServiceImpl(attachment_store,
                                   uploader.PassAs<AttachmentUploader>(),
                                   downloader.PassAs<AttachmentDownloader>(),
-                                  delegate));
+                                  delegate,
+                                  base::TimeDelta(),
+                                  base::TimeDelta()));
   }
 
   AttachmentService* attachment_service() { return attachment_service_.get(); }
@@ -344,32 +346,31 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
   AttachmentIdSet attachment_ids;
-  const size_t num_attachments = 3;
+  const unsigned num_attachments = 3;
   for (unsigned i = 0; i < num_attachments; ++i) {
     attachment_ids.insert(AttachmentId::Create());
   }
   attachment_service()->UploadAttachments(attachment_ids);
-  RunLoop();
-  // See that the service has issued reads for the attachments, but not yet
-  // uploaded anything.
-  EXPECT_EQ(num_attachments, store()->read_ids.size());
-  EXPECT_EQ(0U, uploader()->upload_requests.size());
-  for (unsigned i = 0; i < num_attachments; ++i) {
-    store()->RespondToRead(attachment_ids);
-  }
 
-  RunLoop();
-  EXPECT_EQ(0U, store()->read_ids.size());
-  EXPECT_EQ(num_attachments, uploader()->upload_requests.size());
-  AttachmentIdSet::const_iterator iter = attachment_ids.begin();
-  const AttachmentIdSet::const_iterator end = attachment_ids.end();
-  for (; iter != end; ++iter) {
-    uploader()->RespondToUpload(*iter, AttachmentUploader::UPLOAD_SUCCESS);
+  for (unsigned i = 0; i < num_attachments; ++i) {
+    RunLoop();
+    // See that the service has issued a read for at least one of the
+    // attachments.
+    ASSERT_GE(1U, store()->read_ids.size());
+    store()->RespondToRead(attachment_ids);
+    RunLoop();
+    ASSERT_GE(1U, uploader()->upload_requests.size());
+    uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
+                                AttachmentUploader::UPLOAD_SUCCESS);
   }
   RunLoop();
+  ASSERT_EQ(0U, store()->read_ids.size());
+  ASSERT_EQ(0U, uploader()->upload_requests.size());
 
   // See that all the attachments were uploaded.
   ASSERT_EQ(attachment_ids.size(), on_attachment_uploaded_list().size());
+  AttachmentIdSet::const_iterator iter = attachment_ids.begin();
+  const AttachmentIdSet::const_iterator end = attachment_ids.end();
   for (iter = attachment_ids.begin(); iter != end; ++iter) {
     EXPECT_THAT(on_attachment_uploaded_list(), testing::Contains(*iter));
   }
@@ -400,47 +401,45 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_SomeMissingFromStore) {
   AttachmentIdSet attachment_ids;
   attachment_ids.insert(AttachmentId::Create());
   attachment_ids.insert(AttachmentId::Create());
-
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoop();
-  EXPECT_EQ(2U, store()->read_ids.size());
-  EXPECT_EQ(0U, uploader()->upload_requests.size());
-  store()->RespondToRead(attachment_ids);
-  EXPECT_EQ(1U, store()->read_ids.size());
-  // Not found!
-  store()->RespondToRead(AttachmentIdSet());
-  EXPECT_EQ(0U, store()->read_ids.size());
-  RunLoop();
+  ASSERT_GE(1U, store()->read_ids.size());
 
-  // One attachment went missing so we should see only one upload request.
-  EXPECT_EQ(1U, uploader()->upload_requests.size());
+  ASSERT_EQ(0U, uploader()->upload_requests.size());
+  store()->RespondToRead(attachment_ids);
+  RunLoop();
+  ASSERT_EQ(1U, uploader()->upload_requests.size());
+
   uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
                               AttachmentUploader::UPLOAD_SUCCESS);
   RunLoop();
-
-  // See that the delegate was called for only one.
   ASSERT_EQ(1U, on_attachment_uploaded_list().size());
+  ASSERT_GE(1U, store()->read_ids.size());
+  // Not found!
+  store()->RespondToRead(AttachmentIdSet());
+  RunLoop();
+  // No upload requests since the read failed.
+  ASSERT_EQ(0U, uploader()->upload_requests.size());
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
-  attachment_ids.insert(AttachmentId::Create());
-
+  const unsigned num_attachments = 2;
+  for (unsigned i = 0; i < num_attachments; ++i) {
+    attachment_ids.insert(AttachmentId::Create());
+  }
   attachment_service()->UploadAttachments(attachment_ids);
-  RunLoop();
-  EXPECT_EQ(2U, store()->read_ids.size());
-  EXPECT_EQ(0U, uploader()->upload_requests.size());
-  // None found!
-  store()->RespondToRead(AttachmentIdSet());
-  store()->RespondToRead(AttachmentIdSet());
-  EXPECT_EQ(0U, store()->read_ids.size());
+
+  for (unsigned i = 0; i < num_attachments; ++i) {
+    RunLoop();
+    ASSERT_GE(1U, store()->read_ids.size());
+    // None found!
+    store()->RespondToRead(AttachmentIdSet());
+  }
   RunLoop();
 
   // Nothing uploaded.
   EXPECT_EQ(0U, uploader()->upload_requests.size());
-  RunLoop();
-
   // See that the delegate was never called.
   ASSERT_EQ(0U, on_attachment_uploaded_list().size());
 }
@@ -461,32 +460,31 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
 // Upload three attachments.  For one of them, server responds with error.
 TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
-  attachment_ids.insert(AttachmentId::Create());
-  attachment_ids.insert(AttachmentId::Create());
-
+  const unsigned num_attachments = 3;
+  for (unsigned i = 0; i < num_attachments; ++i) {
+    attachment_ids.insert(AttachmentId::Create());
+  }
   attachment_service()->UploadAttachments(attachment_ids);
-  RunLoop();
-  EXPECT_EQ(3U, store()->read_ids.size());
-  EXPECT_EQ(0U, uploader()->upload_requests.size());
 
-  // All attachments found.
-  store()->RespondToRead(attachment_ids);
-  store()->RespondToRead(attachment_ids);
-  store()->RespondToRead(attachment_ids);
+  for (unsigned i = 0; i < num_attachments; ++i) {
+    RunLoop();
+    ASSERT_GE(1U, store()->read_ids.size());
+    store()->RespondToRead(attachment_ids);
+    RunLoop();
+    ASSERT_EQ(1U, uploader()->upload_requests.size());
+    AttachmentUploader::UploadResult result =
+        AttachmentUploader::UPLOAD_SUCCESS;
+    // Fail the 2nd one.
+    if (i == 2U) {
+      result = AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR;
+    } else {
+      result = AttachmentUploader::UPLOAD_SUCCESS;
+    }
+    uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
+                                result);
+  }
   RunLoop();
-
-  EXPECT_EQ(3U, uploader()->upload_requests.size());
-  uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
-                              AttachmentUploader::UPLOAD_SUCCESS);
-  uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
-                              AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR);
-  uploader()->RespondToUpload(uploader()->upload_requests.begin()->first,
-                              AttachmentUploader::UPLOAD_SUCCESS);
-  EXPECT_EQ(0U, uploader()->upload_requests.size());
-  RunLoop();
-
-  EXPECT_EQ(2U, on_attachment_uploaded_list().size());
+  ASSERT_EQ(2U, on_attachment_uploaded_list().size());
 }
 
 }  // namespace syncer
