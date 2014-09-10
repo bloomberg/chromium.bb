@@ -51,6 +51,7 @@ class MockSystemHost(object):
         # FIXME: Should this take pointers to the filesystem and the executive?
         self.workspace = MockWorkspace()
 
+        self.stdin = StringIO()
         self.stdout = StringIO()
         self.stderr = StringIO()
 
@@ -60,8 +61,5 @@ class MockSystemHost(object):
     def print_(self, *args, **kwargs):
         sep = kwargs.get('sep', ' ')
         end = kwargs.get('end', '\n')
-        file = kwargs.get('file', None)
-        stderr = kwargs.get('stderr', False)
-
-        file = file or (self.stderr if stderr else self.stdout)
-        file.write(sep.join([str(arg) for arg in args]) + end)
+        stream = kwargs.get('stream', self.stdout)
+        stream.write(sep.join([str(arg) for arg in args]) + end)

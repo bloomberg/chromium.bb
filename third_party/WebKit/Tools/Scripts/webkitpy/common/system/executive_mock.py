@@ -168,6 +168,9 @@ class MockExecutive(object):
         self.calls.append(new_calls)
         return command_outputs
 
+    def map(self, thunk, arglist, processes=None):
+        return map(thunk, arglist)
+
 
 class MockExecutive2(MockExecutive):
     """MockExecutive2 is like MockExecutive except it doesn't log anything."""
