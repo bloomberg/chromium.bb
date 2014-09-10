@@ -13,6 +13,18 @@ function assertUndefined(a) {
 }
 
 /**
+ * Asserts that the argument is neither null nor undefined.
+ * @param {object} obj The argument to check.
+ * @param {string=} opt_message Error message if the condition is not met.
+ */
+function assertNotNullNorUndefined(obj, opt_message) {
+  if (obj === undefined || obj === null) {
+    throw new Error('Can\'t be null or undefined: ' + (opt_message || '') +
+        '\n' + 'Actual: ' + a);
+  }
+}
+
+/**
  * Asserts that a given function call throws an exception.
  * @param {string} msg Message to print if exception not thrown.
  * @param {Function} fn The function to call.
@@ -56,13 +68,15 @@ function assertEqualStringArrays(array1, array2) {
 
 /**
  * Asserts that two objects have the same JSON serialization.
- * @param {Object} obj1 The expected object.
- * @param {Object} obj2 The actual object.
+ * @param {Object} expected The expected object.
+ * @param {Object} actual The actual object.
+ * @param {string=} opt_message Message used for errors.
  */
-function assertEqualsJSON(obj1, obj2) {
-  if (!eqJSON(obj1, obj2)) {
-    throw new Error('Expected ' + JSON.stringify(obj1) +
-                    ', got ' + JSON.stringify(obj2));
+function assertEqualsJSON(expected, actual, opt_message) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error((opt_message ? opt_message + '\n' : '') +
+        'Expected ' + JSON.stringify(expected) + '\n' +
+        'Got      ' + JSON.stringify(actual));
   }
 }
 

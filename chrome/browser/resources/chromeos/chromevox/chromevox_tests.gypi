@@ -53,6 +53,7 @@
             '<(js2gtest)',
             '<(chromevox_test_deps_js_file)',
             'testing/chromevox_unittest_base.js',
+            'testing/assert_additions.js',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
@@ -85,7 +86,8 @@
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
-            'testing/chromevox_unittest_base.js',
+            'testing/chromevox_e2e_test_base.js',
+            'testing/assert_additions.js',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
@@ -138,6 +140,11 @@
         'common/page_selection_test.unitjs',
         'common/selection_util_test.unitjs',
         'common/spannable_test.unitjs',
+        'host/chrome/braille_display_manager_test.unitjs',
+        'host/chrome/braille_input_handler_test.unitjs',
+        'host/chrome/braille_integration_test.unitjs',
+        'host/chrome/braille_table_test.extjs',
+        'host/chrome/expanding_braille_translator_test.unitjs',
       ],
       'conditions': [
         ['use_chromevox_next==1', {

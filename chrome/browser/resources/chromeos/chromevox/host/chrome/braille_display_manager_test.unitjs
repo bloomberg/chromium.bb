@@ -1,0 +1,216 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_unittest_base.js',
+             '../../testing/fake_objects.js']);
+
+/**
+ * Test fixture.
+ * @constructor
+ * @extends {ChromeVoxUnitTestBase}
+ */
+function CvoxBrailleDisplayManagerUnitTest() {}
+
+CvoxBrailleDisplayManagerUnitTest.prototype = {
+  __proto__: ChromeVoxUnitTestBase.prototype,
+
+  /** @override */
+  closureModuleDeps: [
+    'cvox.BrailleDisplayManager',
+    'cvox.BrailleInterface',
+    'cvox.LibLouis',
+    'cvox.NavBraille',
+  ],
+
+  /** @override */
+  setUp: function() {
+    /** @const */
+    this.NAV_BRAILLE = new cvox.NavBraille({ text: 'Hello, world!' });
+    this.EMPTY_NAV_BRAILLE = new cvox.NavBraille({ text: '' });
+    this.translator = new FakeTranslator();
+    /** @const */
+    this.DISPLAY_SIZE = 12;
+  },
+
+  addFakeApi: function() {
+    chrome.brailleDisplayPrivate = {};
+    chrome.brailleDisplayPrivate.getDisplayState = function(callback) {
+      callback(this.displayState);
+    }.bind(this);
+    this.writtenCells = [];
+    chrome.brailleDisplayPrivate.writeDots = function(cells) {
+      this.writtenCells.push(cells);
+    }.bind(this);
+    chrome.brailleDisplayPrivate.onDisplayStateChanged = new FakeChromeEvent();
+    chrome.brailleDisplayPrivate.onKeyEvent = new FakeChromeEvent();
+  },
+
+  displayAvailable: function() {
+    this.displayState = {available: true, textCellCount: this.DISPLAY_SIZE};
+  },
+
+  /**
+   * Asserts display pan position and selection markers on the last written
+   * display content and clears it.  There must be exactly one
+   * set of cells written.
+   * @param {number} start expected pan position
+   * @param {number=} opt_selStart first cell (relative to buffer start that
+   *                               should have a selection
+   * @param {number=} opt_selEnd last cell that should have a selection.
+   */
+  assertDisplayPositionAndClear: function(start, opt_selStart, opt_selEnd) {
+    if (opt_selStart !== undefined && opt_selEnd === undefined) {
+      opt_selEnd = opt_selStart + 1;
+    }
+    assertEquals(1, this.writtenCells.length);
+    var a = new Uint8Array(this.writtenCells[0]);
+    this.writtenCells.length = 0;
+    assertEquals(start, a[0] & ~cvox.BrailleDisplayManager.CURSOR_DOTS_,
+                 'Start mismatch: ' + start + ' vs. ' + a[0]);
+    if (opt_selStart !== undefined) {
+      for (var i = opt_selStart; i < opt_selEnd; ++i) {
+        assertEquals(cvox.BrailleDisplayManager.CURSOR_DOTS_,
+                     a[i] & cvox.BrailleDisplayManager.CURSOR_DOTS_,
+                     'Missing cursor marker at position ' + i);
+      }
+    }
+  },
+
+  /**
+   * Asserts that the last written display content is an empty buffer of
+   * of cells and clears the list of written cells.
+   * There must be only one buffer in the list.
+   */
+  assertEmptyDisplayAndClear: function() {
+    assertEquals(1, this.writtenCells.length);
+    var content = this.writtenCells[0];
+    this.writtenCells.length = 0;
+    assertTrue(content instanceof ArrayBuffer);
+    assertTrue(content.byteLength == 0);
+  }
+};
+
+/** @extends {cvox.LibLouis.Translator} */
+function FakeTranslator() {
+}
+
+FakeTranslator.prototype = {
+  /**
+   * Does a translation where every other character becomes two cells.
+  * @override
+  */
+  translate: function(text, callback) {
+    var buf = new Uint8Array(text.length + text.length / 2);
+    var textToBraille = [];
+    var brailleToText = [];
+    var idx = 0;
+    for (var i = 0; i < text.length; ++i) {
+      textToBraille.push(idx);
+      brailleToText.push(i);
+      buf[idx] = idx;
+      idx++;
+      if ((i % 2) == 1) {
+        buf[idx] = idx;
+        idx++;
+        brailleToText.push(i);
+      }
+    }
+    callback(buf.buffer, textToBraille, brailleToText);
+  }
+};
+
+var chrome = {};
+
+
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoApi', function() {
+  var manager = new cvox.BrailleDisplayManager();
+  manager.setContent(this.NAV_BRAILLE);
+  manager.setTranslator(this.translator);
+  manager.setContent(this.NAV_BRAILLE);
+});
+
+/**
+ * Test that we don't write to the display when the API is available, but
+ * the display is not.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
+  this.addFakeApi();
+  this.displayState = {available: false};
+
+  var manager = new cvox.BrailleDisplayManager();
+  manager.setContent(this.NAV_BRAILLE);
+  manager.setTranslator(this.translator);
+  manager.setContent(this.NAV_BRAILLE);
+  assertEquals(0, this.writtenCells.length);
+});
+
+
+/**
+ * Tests the typical sequence: setContent, setTranslator, setContent.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'BasicSetContent', function() {
+  this.addFakeApi();
+  this.displayAvailable();
+  var manager = new cvox.BrailleDisplayManager();
+  this.assertEmptyDisplayAndClear();
+  manager.setContent(this.NAV_BRAILLE);
+  manager.setTranslator(this.translator);
+  this.assertDisplayPositionAndClear(0);
+  manager.setContent(this.NAV_BRAILLE);
+  this.assertDisplayPositionAndClear(0);
+});
+
+
+/**
+ * Tests that setting empty content clears the display.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'SetEmptyContentWithTranslator',
+       function() {
+  this.addFakeApi();
+  this.displayAvailable();
+
+  var manager = new cvox.BrailleDisplayManager();
+  this.assertEmptyDisplayAndClear();
+  manager.setContent(this.NAV_BRAILLE);
+  manager.setTranslator(this.translator);
+  this.assertDisplayPositionAndClear(0);
+  manager.setContent(this.EMPTY_NAV_BRAILLE);
+  this.assertEmptyDisplayAndClear();
+});
+
+
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
+  var text = 'This is a test string';
+  function createNavBrailleWithCursor(start, end) {
+    return new cvox.NavBraille({ text: text, startIndex: start,
+                                 endIndex: end});
+  }
+
+  var translatedSize = Math.floor(text.length + text.length / 2);
+
+  this.addFakeApi();
+  this.displayAvailable();
+
+  var manager = new cvox.BrailleDisplayManager();
+  this.assertEmptyDisplayAndClear();
+  manager.setTranslator(this.translator);
+  this.assertEmptyDisplayAndClear();
+
+  // Cursor at beginning of line.
+  manager.setContent(createNavBrailleWithCursor(0, 0));
+  this.assertDisplayPositionAndClear(0, 0);
+  // Cursor at end of line.
+  manager.setContent(createNavBrailleWithCursor(text.length, text.length));
+  this.assertDisplayPositionAndClear(
+      2 * this.DISPLAY_SIZE,
+      translatedSize % this.DISPLAY_SIZE);
+  // Selection from the end of what fits on the first display to the end of the
+  // line.
+  manager.setContent(createNavBrailleWithCursor(7, text.length));
+  this.assertDisplayPositionAndClear(0, 10, this.DISPLAY_SIZE);
+  // Selection on all of the line.
+  manager.setContent(createNavBrailleWithCursor(0, text.length));
+  this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_SIZE);
+});
