@@ -700,8 +700,10 @@ config("default_warnings") {
         # http://crbug.com/255186
         "-Wno-deprecated-register",
 
-        # Clang spots more unused functions.
-        "-Wno-unused-function",
+        # TODO(thakis): This used to be implied by -Wno-unused-function,
+        # which we no longer use. Check if it makes sense to remove
+        # this as well. http://crbug.com/316352
+        "-Wno-unneeded-internal-declaration",
       ]
 
       if (!is_mac && !is_ios) {

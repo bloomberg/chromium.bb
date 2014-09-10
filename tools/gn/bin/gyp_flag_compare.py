@@ -86,20 +86,28 @@ def GetFlags(lines):
   return flags_by_output
 
 
-def CompareLists(gyp, gn, name, dont_care=None):
-  """Return a report of any differences between two lists, ignoring anything
-  in |dont_care|."""
-  if not dont_care:
-    dont_care = []
+def CompareLists(gyp, gn, name, dont_care_gyp=None, dont_care_gn=None):
+  """Return a report of any differences between gyp and gn lists, ignoring
+  anything in |dont_care_{gyp|gn}| respectively."""
+  if not dont_care_gyp:
+    dont_care_gyp = []
+  if not dont_care_gn:
+    dont_care_gn = []
   output = ''
   if gyp[name] != gn[name]:
     output += '  %s differ:\n' % name
-    gyp_set = set(gyp[name]) - set(dont_care)
-    gn_set = set(gn[name]) - set(dont_care)
-    output += '    In gyp, but not in GN:\n      %s' % '\n      '.join(
-        sorted(gyp_set - gn_set)) + '\n'
-    output += '    In GN, but not in gyp:\n      %s' % '\n      '.join(
-        sorted(gn_set - gyp_set)) + '\n\n'
+    gyp_set = set(gyp[name])
+    gn_set = set(gn[name])
+    missing_in_gyp = gyp_set - gn_set
+    missing_in_gn = gn_set - gyp_set
+    missing_in_gyp -= set(dont_care_gyp)
+    missing_in_gn -= set(dont_care_gn)
+    if missing_in_gyp:
+      output += '    In gyp, but not in GN:\n      %s' % '\n      '.join(
+          sorted(missing_in_gyp)) + '\n'
+    if missing_in_gn:
+      output += '    In GN, but not in gyp:\n      %s' % '\n      '.join(
+          sorted(missing_in_gn)) + '\n\n'
   return output
 
 
@@ -120,7 +128,7 @@ def main():
   print >>sys.stderr, 'Regenerating...'
   # Currently only Release, non-component.
   Run('gn gen out/gn_flags --args="is_debug=false is_component_build=false"')
-  del os.environ['GYP_DEFINES']
+  os.environ.pop('GYP_DEFINES', None)
   Run('python build/gyp_chromium -Goutput_dir=out_gyp_flags -Gconfig=Release')
   gn = Run('ninja -C out/gn_flags -t commands %s' % sys.argv[2])
   gyp = Run('ninja -C out_gyp_flags/Release -t commands %s' % sys.argv[1])
@@ -142,15 +150,14 @@ def main():
     gyp_flags = all_gyp_flags[filename]
     gn_flags = all_gn_flags[filename]
     differences = CompareLists(gyp_flags, gn_flags, 'dash_f')
-    differences += CompareLists(gyp_flags, gn_flags, 'defines', dont_care=[
-        '-DENABLE_PRE_SYNC_BACKUP',
-        '-DENABLE_WEBRTC=1',
-        '-DUSE_LIBJPEG_TURBO=1',
-        '-DUSE_PANGO=1',
-        '-DUSE_SYMBOLIZE',
-        ])
+    differences += CompareLists(gyp_flags, gn_flags, 'defines')
     differences += CompareLists(gyp_flags, gn_flags, 'include_dirs')
-    differences += CompareLists(gyp_flags, gn_flags, 'warnings')
+    differences += CompareLists(gyp_flags, gn_flags, 'warnings', dont_care_gn=[
+        # More conservative warnings in GN we consider to be OK.
+        '-Wendif-labels',
+        '-Wextra',
+        '-Wsign-compare',
+        ])
     differences += CompareLists(gyp_flags, gn_flags, 'other')
     if differences:
       files_with_given_differences.setdefault(differences, []).append(filename)

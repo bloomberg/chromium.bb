@@ -52,6 +52,12 @@ template("python_binary_module") {
     lib_dirs = exec_script(python_flags,
                            [ "--gn", "--library_dirs" ],
                            "list lines")
+    if (!is_win) {
+      # Generated code includes static utility functions that often go unused.
+      cflags = [
+        "-Wno-unused-function",
+      ]
+    }
   }
 
   shared_library(shared_library_name) {

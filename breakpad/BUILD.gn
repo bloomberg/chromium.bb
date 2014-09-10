@@ -145,6 +145,10 @@ if (current_toolchain == host_toolchain && !is_win) {
     ]
 
     configs += [ ":tools_config" ]
+
+    # There are some warnings in this code.
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 }
 
@@ -478,6 +482,10 @@ if (is_linux) {
       "src/third_party/linux/include",
       ".",
     ]
+
+    # There are some warnings in this code.
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 
   test("breakpad_unittests") {
