@@ -8,6 +8,7 @@
 #include <stack>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/logging.h"
 
 namespace ui {
@@ -22,11 +23,13 @@ namespace ui {
 template <class NodeType>
 class TreeNodeIterator {
  public:
+  typedef base::Callback<bool(NodeType*)> PruneCallback;
+
   // This contructor accepts an optional filter function |prune| which could be
   // used to prune complete branches of the tree. The filter function will be
   // evaluated on each tree node and if it evaluates to true the node and all
   // its descendants will be skipped by the iterator.
-  TreeNodeIterator(NodeType* node, bool (*prune)(NodeType*))
+  TreeNodeIterator(NodeType* node, const PruneCallback& prune)
       : prune_(prune) {
     int index = 0;
 
@@ -35,14 +38,14 @@ class TreeNodeIterator {
     // Position at the top of the _positions list must point to a node the
     // iterator will be returning.
     for (; index < node->child_count(); ++index)
-      if (!prune || !prune(node->GetChild(index)))
+      if (prune.is_null() || !prune.Run(node->GetChild(index)))
         break;
 
     if (index < node->child_count())
       positions_.push(Position<NodeType>(node, index));
   }
 
-  explicit TreeNodeIterator(NodeType* node) : prune_(NULL) {
+  explicit TreeNodeIterator(NodeType* node) {
     if (!node->empty())
       positions_.push(Position<NodeType>(node, 0));
   }
@@ -73,8 +76,8 @@ class TreeNodeIterator {
     while (!positions_.empty()) {
       if (positions_.top().index >= positions_.top().node->child_count())
         positions_.pop(); // This Position is all processed, move to the next.
-      else if (prune_ &&
-          prune_(positions_.top().node->GetChild(positions_.top().index)))
+      else if (!prune_.is_null() &&
+          prune_.Run(positions_.top().node->GetChild(positions_.top().index)))
         positions_.top().index++;  // Prune the branch.
       else
         break;  // Now positioned at the next node to be returned.
@@ -94,7 +97,7 @@ class TreeNodeIterator {
   };
 
   std::stack<Position<NodeType> > positions_;
-  bool (*prune_)(NodeType*);
+  PruneCallback prune_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeIterator);
 };

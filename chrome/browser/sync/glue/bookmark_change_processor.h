@@ -206,6 +206,9 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // Creates or updates a sync node associated with |node|.
   void CreateOrUpdateSyncNode(const BookmarkNode* node);
 
+  // Returns false if |node| should not be synced.
+  bool CanSyncNode(const BookmarkNode* node);
+
   // The bookmark model we are processing changes from.  Non-NULL when
   // |running_| is true.
   BookmarkModel* bookmark_model_;

@@ -31,6 +31,9 @@ const BookmarkNode* GetOtherNode(int index) WARN_UNUSED_RESULT;
 // Used to access the "Synced Bookmarks" node within a particular sync profile.
 const BookmarkNode* GetSyncedBookmarksNode(int index) WARN_UNUSED_RESULT;
 
+// Used to access the "Managed Bookmarks" node for the given profile.
+const BookmarkNode* GetManagedNode(int index) WARN_UNUSED_RESULT;
+
 // Used to access the bookmarks within the verifier sync profile.
 BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;
 
@@ -85,8 +88,8 @@ const BookmarkNode* AddFolder(
 // Changes the title of the node |node| in the bookmark model of profile
 // |profile| to |new_title|.
 void SetTitle(int profile,
-                     const BookmarkNode* node,
-                     const std::string& new_title);
+              const BookmarkNode* node,
+              const std::string& new_title);
 
 // The source of the favicon.
 enum FaviconSource {

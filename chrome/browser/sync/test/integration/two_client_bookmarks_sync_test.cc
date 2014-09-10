@@ -3,13 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/rand_util.h"
+#include "base/run_loop.h"
+#include "base/values.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "policy/policy_constants.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
 
 using bookmarks_helper::AddFolder;
@@ -20,6 +27,7 @@ using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
+using bookmarks_helper::GetManagedNode;
 using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::GetSyncedBookmarksNode;
 using bookmarks_helper::GetUniqueNodeByURL;
@@ -43,17 +51,29 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 using sync_integration_test_util::AwaitPassphraseAccepted;
 using sync_integration_test_util::AwaitPassphraseRequired;
 
-const std::string kGenericURL = "http://www.host.ext:1234/path/filename";
-const std::string kGenericURLTitle = "URL Title";
-const std::string kGenericFolderName = "Folder Name";
-const std::string kGenericSubfolderName = "Subfolder Name";
-const std::string kGenericSubsubfolderName = "Subsubfolder Name";
-const char* kValidPassphrase = "passphrase!";
+namespace {
+
+const char kGenericURL[] = "http://www.host.ext:1234/path/filename";
+const char kGenericURLTitle[] = "URL Title";
+const char kGenericFolderName[] = "Folder Name";
+const char kGenericSubfolderName[] = "Subfolder Name";
+const char kValidPassphrase[] = "passphrase!";
+
+}  // namespace
 
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
   TwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientBookmarksSyncTest() {}
+
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    SyncTest::TearDownInProcessBrowserTestFixture();
+    policy_provider_.Shutdown();
+  }
+
+ protected:
+  // Needs to be deleted after all Profiles are deleted.
+  policy::MockConfigurationPolicyProvider policy_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTest);
@@ -2041,4 +2061,73 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_EQ(0, GetOtherNode(0)->child_count());
   EXPECT_EQ(0, GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(AllModelsMatch());
+}
+
+// Verifies that managed bookmarks (installed by policy) don't get synced.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, ManagedBookmarks) {
+  // Make sure the first Profile has an overridden policy provider.
+  EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  policy::ProfilePolicyConnectorFactory::GetInstance()->PushProviderForTesting(
+      &policy_provider_);
+
+  // Set up sync.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Verify that there are no managed bookmarks at startup in either profile.
+  // The Managed Bookmarks folder should not be visible at this stage.
+  const BookmarkNode* managed_node0 = GetManagedNode(0);
+  ASSERT_TRUE(managed_node0->empty());
+  ASSERT_FALSE(managed_node0->IsVisible());
+  const BookmarkNode* managed_node1 = GetManagedNode(1);
+  ASSERT_TRUE(managed_node1->empty());
+  ASSERT_FALSE(managed_node1->IsVisible());
+
+  // Verify that the bookmark bar node is empty on both profiles too.
+  const BookmarkNode* bar_node0 = GetBookmarkBarNode(0);
+  ASSERT_TRUE(bar_node0->empty());
+  ASSERT_TRUE(bar_node0->IsVisible());
+  const BookmarkNode* bar_node1 = GetBookmarkBarNode(1);
+  ASSERT_TRUE(bar_node1->empty());
+  ASSERT_TRUE(bar_node1->IsVisible());
+
+  // Verify that adding a bookmark is observed by the second Profile.
+  GURL google_url("http://www.google.com");
+  ASSERT_TRUE(AddURL(0, "Google", google_url) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_EQ(1, bar_node0->child_count());
+  ASSERT_EQ(1, bar_node1->child_count());
+
+  // Set the ManagedBookmarks policy for the first Profile,
+  // which will add one new managed bookmark.
+  base::DictionaryValue* bookmark = new base::DictionaryValue();
+  bookmark->SetString("name", "Managed bookmark");
+  bookmark->SetString("url", "youtube.com");
+  base::ListValue* list = new base::ListValue();
+  list->Append(bookmark);
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kManagedBookmarks,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             list, NULL);
+  policy_provider_.UpdateChromePolicy(policy);
+  base::RunLoop().RunUntilIdle();
+
+  // Now add another user bookmark and wait for it to sync.
+  ASSERT_TRUE(AddURL(0, "Google 2", google_url) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  EXPECT_FALSE(GetSyncService(0)->HasUnrecoverableError());
+  EXPECT_FALSE(GetSyncService(1)->HasUnrecoverableError());
+
+  // Verify that the managed bookmark exists in the local model of the first
+  // Profile, and has a child node.
+  ASSERT_EQ(1, managed_node0->child_count());
+  ASSERT_TRUE(managed_node0->IsVisible());
+  EXPECT_EQ(GURL("http://youtube.com/"), managed_node0->GetChild(0)->url());
+
+  // Verify that the second Profile didn't get this node.
+  ASSERT_EQ(0, managed_node1->child_count());
 }

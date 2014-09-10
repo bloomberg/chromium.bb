@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -15,6 +16,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_db_task.h"
@@ -28,6 +31,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -337,13 +341,22 @@ bool NodesMatch(const BookmarkNode* node_a, const BookmarkNode* node_b) {
   return true;
 }
 
+// Helper for BookmarkModelsMatch.
+bool NodeCantBeSynced(bookmarks::BookmarkClient* client,
+                      const BookmarkNode* node) {
+  // Return true to skip a node.
+  return !client->CanSyncNode(node);
+}
+
 // Checks if the hierarchies in |model_a| and |model_b| are equivalent in
 // terms of the data model and favicon. Returns true if they both match.
 // Note: Some peripheral fields like creation times are allowed to mismatch.
 bool BookmarkModelsMatch(BookmarkModel* model_a, BookmarkModel* model_b) {
   bool ret_val = true;
-  ui::TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
-  ui::TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
+  ui::TreeNodeIterator<const BookmarkNode> iterator_a(
+      model_a->root_node(), base::Bind(&NodeCantBeSynced, model_a->client()));
+  ui::TreeNodeIterator<const BookmarkNode> iterator_b(
+      model_b->root_node(), base::Bind(&NodeCantBeSynced, model_b->client()));
   while (iterator_a.has_next()) {
     const BookmarkNode* node_a = iterator_a.Next();
     if (!iterator_b.has_next()) {
@@ -408,6 +421,11 @@ const BookmarkNode* GetOtherNode(int index) {
 
 const BookmarkNode* GetSyncedBookmarksNode(int index) {
   return GetBookmarkModel(index)->mobile_node();
+}
+
+const BookmarkNode* GetManagedNode(int index) {
+  return ChromeBookmarkClientFactory::GetForProfile(
+      sync_datatype_helper::test()->GetProfile(index))->managed_node();
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {

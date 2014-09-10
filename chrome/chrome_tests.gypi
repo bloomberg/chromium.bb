@@ -2425,6 +2425,7 @@
         'chrome_resources.gyp:packed_resources',
         'common',
         'renderer',
+        'test_support_common',
         'test_support_sync_integration',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',

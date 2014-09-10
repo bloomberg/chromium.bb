@@ -4,6 +4,7 @@
 
 #include "ui/base/models/tree_node_iterator.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -66,12 +67,12 @@ TEST(TreeNodeIteratorTest, Prune) {
   f4->Add(new TestNode(5), 0);
   f3->Add(new TestNode(7), 1);
 
-  TreeNodeIterator<TestNode> odd_iterator(&root, PruneOdd);
+  TreeNodeIterator<TestNode> odd_iterator(&root, base::Bind(&PruneOdd));
   ASSERT_TRUE(odd_iterator.has_next());
   ASSERT_EQ(2, odd_iterator.Next()->value);
   ASSERT_FALSE(odd_iterator.has_next());
 
-  TreeNodeIterator<TestNode> even_iterator(&root, PruneEven);
+  TreeNodeIterator<TestNode> even_iterator(&root, base::Bind(&PruneEven));
   ASSERT_TRUE(even_iterator.has_next());
   ASSERT_EQ(1, even_iterator.Next()->value);
   ASSERT_TRUE(even_iterator.has_next());

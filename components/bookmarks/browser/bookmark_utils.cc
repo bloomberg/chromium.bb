@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
@@ -214,8 +215,8 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     BookmarkModel* model,
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
-  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node(),
-                                                    PruneInvisibleFolders);
+  ui::TreeNodeIterator<const BookmarkNode> iterator(
+      model->root_node(), base::Bind(&PruneInvisibleFolders));
 
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();

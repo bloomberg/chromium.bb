@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_PROFILE_POLICY_CONNECTOR_FACTORY_H_
 #define CHROME_BROWSER_POLICY_PROFILE_POLICY_CONNECTOR_FACTORY_H_
 
+#include <list>
 #include <map>
 
 #include "base/basictypes.h"
@@ -26,6 +27,7 @@ class BrowserContext;
 
 namespace policy {
 
+class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 
 // Creates ProfilePolicyConnectors for Profiles, which manage the common
@@ -56,6 +58,11 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   void SetServiceForTesting(Profile* profile,
                             ProfilePolicyConnector* connector);
 
+  // The next Profile to call CreateForProfile() will get a PolicyService
+  // with |provider| as its sole policy provider. This can be called multiple
+  // times to override the policy providers for more than 1 Profile.
+  void PushProviderForTesting(ConfigurationPolicyProvider* provider);
+
  private:
   friend struct DefaultSingletonTraits<ProfilePolicyConnectorFactory>;
 
@@ -80,6 +87,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
 
   typedef std::map<Profile*, ProfilePolicyConnector*> ConnectorMap;
   ConnectorMap connectors_;
+  std::list<ConfigurationPolicyProvider*> test_providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnectorFactory);
 };

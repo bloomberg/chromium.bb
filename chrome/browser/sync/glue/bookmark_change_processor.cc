@@ -23,6 +23,7 @@
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_utils.h"
+#include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -214,6 +215,11 @@ void BookmarkChangeProcessor::RemoveAllChildNodes(
 }
 
 void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
+  if (!CanSyncNode(node)) {
+    NOTREACHED();
+    return;
+  }
+
   const BookmarkNode* parent = node->parent();
   int index = node->parent()->GetIndexOf(node);
 
@@ -262,7 +268,9 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
                                                 const BookmarkNode* parent,
                                                 int index) {
   DCHECK(share_handle());
-  CreateOrUpdateSyncNode(parent->GetChild(index));
+  const BookmarkNode* node = parent->GetChild(index);
+  if (CanSyncNode(node))
+    CreateOrUpdateSyncNode(node);
 }
 
 // static
@@ -301,7 +309,8 @@ void BookmarkChangeProcessor::BookmarkNodeRemoved(
     int index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
-  RemoveSyncNodeHierarchy(node);
+  if (CanSyncNode(node))
+    RemoveSyncNodeHierarchy(node);
 }
 
 void BookmarkChangeProcessor::BookmarkAllUserNodesRemoved(
@@ -312,6 +321,8 @@ void BookmarkChangeProcessor::BookmarkAllUserNodesRemoved(
 
 void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
                                                   const BookmarkNode* node) {
+  if (!CanSyncNode(node))
+    return;
   // We shouldn't see changes to the top-level nodes.
   if (model->is_permanent_node(node)) {
     NOTREACHED() << "Saw update to permanent node!";
@@ -354,6 +365,10 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
       const BookmarkNode* old_parent, int old_index,
       const BookmarkNode* new_parent, int new_index) {
   const BookmarkNode* child = new_parent->GetChild(new_index);
+
+  if (!CanSyncNode(child))
+    return;
+
   // We shouldn't see changes to the top-level nodes.
   if (model->is_permanent_node(child)) {
     NOTREACHED() << "Saw update to permanent node!";
@@ -399,6 +414,8 @@ void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
 
 void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
+  if (!CanSyncNode(node))
+    return;
   int64 new_version = syncer::syncable::kInvalidTransactionVersion;
   std::vector<const BookmarkNode*> children;
   {
@@ -872,6 +889,10 @@ void BookmarkChangeProcessor::SetSyncNodeFavicon(
     updated_specifics.set_icon_url(bookmark_node->icon_url().spec());
     sync_node->SetBookmarkSpecifics(updated_specifics);
   }
+}
+
+bool BookmarkChangeProcessor::CanSyncNode(const BookmarkNode* node) {
+  return bookmark_model_->client()->CanSyncNode(node);
 }
 
 }  // namespace browser_sync
