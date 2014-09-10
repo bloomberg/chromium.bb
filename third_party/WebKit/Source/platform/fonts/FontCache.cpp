@@ -69,6 +69,7 @@ static FontPlatformDataCache* gFontPlatformDataCache = 0;
 bool FontCache::s_useDirectWrite = false;
 IDWriteFactory* FontCache::s_directWriteFactory = 0;
 bool FontCache::s_useSubpixelPositioning = false;
+float FontCache::s_deviceScaleFactor = 1.0;
 #endif // OS(WIN)
 
 FontCache* FontCache::fontCache()

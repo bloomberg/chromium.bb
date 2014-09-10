@@ -22,6 +22,12 @@ void WebFontRendering::setDirectWriteFactory(IDWriteFactory* factory)
 }
 
 // static
+void WebFontRendering::setDeviceScaleFactor(float deviceScaleFactor)
+{
+    blink::FontCache::setDeviceScaleFactor(deviceScaleFactor);
+}
+
+// static
 void WebFontRendering::setUseSubpixelPositioning(bool useSubpixelPositioning)
 {
     blink::FontCache::setUseSubpixelPositioning(useSubpixelPositioning);

@@ -16,6 +16,7 @@ class WebFontRendering {
 public:
     BLINK_EXPORT static void setUseDirectWrite(bool);
     BLINK_EXPORT static void setDirectWriteFactory(IDWriteFactory*);
+    BLINK_EXPORT static void setDeviceScaleFactor(float);
     BLINK_EXPORT static void setUseSubpixelPositioning(bool);
     BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);
 };
