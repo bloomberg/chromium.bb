@@ -85,10 +85,6 @@ class CONTENT_EXPORT RequestExtraData
       int service_worker_provider_id) {
     service_worker_provider_id_ = service_worker_provider_id;
   }
-  bool skip_service_worker() const { return skip_service_worker_; }
-  void set_skip_service_worker(bool skip_service_worker) {
-    skip_service_worker_ = skip_service_worker;
-  }
   // |custom_user_agent| is used to communicate an overriding custom user agent
   // to |RenderViewImpl::willSendRequest()|; set to a null string to indicate no
   // override and an empty string to indicate that there should be no user
@@ -119,7 +115,6 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_child_id_;
   int transferred_request_request_id_;
   int service_worker_provider_id_;
-  bool skip_service_worker_;
   blink::WebString custom_user_agent_;
   blink::WebString requested_with_;
 

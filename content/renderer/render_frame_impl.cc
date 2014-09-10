@@ -2768,7 +2768,6 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_transferred_request_request_id(
       navigation_state->transferred_request_request_id());
   extra_data->set_service_worker_provider_id(provider_id);
-  extra_data->set_skip_service_worker(request.skipServiceWorker());
   request.setExtraData(extra_data);
 
   DocumentState* top_document_state =

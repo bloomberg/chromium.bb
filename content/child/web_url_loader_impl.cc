@@ -396,6 +396,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
+  request_info.skip_service_worker = request.skipServiceWorker();
   request_info.extra_data = request.extraData();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer_policy = request.referrerPolicy();

@@ -75,6 +75,9 @@ struct CONTENT_EXPORT RequestInfo {
   // True if the request was user initiated.
   bool has_user_gesture;
 
+  // True if the request should not be handled by the ServiceWorker.
+  bool skip_service_worker;
+
   // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
   // True if load timing data should be collected for the request.
   bool enable_load_timing;
