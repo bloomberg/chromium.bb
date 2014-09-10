@@ -48,6 +48,7 @@ class OrdinalNumber;
 namespace blink {
 
 class ContentSecurityPolicyResponseHeaders;
+class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
 class DOMStringList;
@@ -58,6 +59,7 @@ class SecurityOrigin;
 
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
+typedef Vector<RefPtrWillBeRawPtr<ConsoleMessage> > ConsoleMessageVector;
 
 class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -154,20 +156,22 @@ public:
 
     bool isActive() const;
 
-    void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression) const;
-    void reportDuplicateDirective(const String&) const;
-    void reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value) const;
-    void reportInvalidPathCharacter(const String& directiveName, const String& value, const char) const;
-    void reportInvalidPluginTypes(const String&) const;
-    void reportInvalidSandboxFlags(const String&) const;
-    void reportInvalidSourceExpression(const String& directiveName, const String& source) const;
-    void reportInvalidReflectedXSS(const String&) const;
-    void reportMissingReportURI(const String&) const;
-    void reportUnsupportedDirective(const String&) const;
-    void reportInvalidInReportOnly(const String&) const;
-    void reportInvalidReferrer(const String&) const;
-    void reportReportOnlyInMeta(const String&) const;
-    void reportMetaOutsideHead(const String&) const;
+    void logToConsole(PassRefPtr<ConsoleMessage>);
+
+    void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
+    void reportDuplicateDirective(const String&);
+    void reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value);
+    void reportInvalidPathCharacter(const String& directiveName, const String& value, const char);
+    void reportInvalidPluginTypes(const String&);
+    void reportInvalidSandboxFlags(const String&);
+    void reportInvalidSourceExpression(const String& directiveName, const String& source);
+    void reportInvalidReflectedXSS(const String&);
+    void reportMissingReportURI(const String&);
+    void reportUnsupportedDirective(const String&);
+    void reportInvalidInReportOnly(const String&);
+    void reportInvalidReferrer(const String&);
+    void reportReportOnlyInMeta(const String&);
+    void reportMetaOutsideHead(const String&);
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
@@ -196,7 +200,7 @@ private:
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
 
-    void logToConsole(const String& message, MessageLevel = ErrorMessageLevel) const;
+    void logToConsole(const String& message, MessageLevel = ErrorMessageLevel);
     void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool shouldSendViolationReport(const String&) const;
@@ -205,6 +209,7 @@ private:
     ExecutionContext* m_executionContext;
     bool m_overrideInlineStyleAllowed;
     CSPDirectiveListVector m_policies;
+    ConsoleMessageVector m_consoleMessages;
 
     HashSet<unsigned, AlreadyHashed> m_violationReportsSent;
 

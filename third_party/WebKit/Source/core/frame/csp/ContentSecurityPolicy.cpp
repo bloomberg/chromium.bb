@@ -146,11 +146,19 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     // Ensure that 'self' processes correctly.
     m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), false, false));
 
-    // If we're in a Document, set the referrer policy and sandbox flags.
+    // If we're in a Document, set the referrer policy and sandbox flags, then dump all the
+    // parsing error messages, then poke at histograms.
     if (Document* document = this->document()) {
         document->enforceSandboxFlags(m_sandboxMask);
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
+
+        for (ConsoleMessageVector::const_iterator iter = m_consoleMessages.begin(); iter != m_consoleMessages.end(); ++iter)
+            executionContext()->addConsoleMessage(*iter);
+        m_consoleMessages.clear();
+
+        for (CSPDirectiveListVector::const_iterator iter = m_policies.begin(); iter != m_policies.end(); ++iter)
+            UseCounter::count(*document, getUseCounterType((*iter)->headerType()));
     }
 
     // We disable 'eval()' even in the case of report-only policies, and rely on the check in the
@@ -201,18 +209,9 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecuri
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
-    Document* document = this->document();
-    if (document) {
-        UseCounter::count(*document, getUseCounterType(type));
-
-        // CSP 1.1 defines report-only in a <meta> element as invalid. Measure for now, disable in experimental mode.
-        if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport) {
-            UseCounter::count(*document, UseCounter::ContentSecurityPolicyReportOnlyInMeta);
-            if (experimentalFeaturesEnabled()) {
-                reportReportOnlyInMeta(header);
-                return;
-            }
-        }
+    if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport && experimentalFeaturesEnabled()) {
+        reportReportOnlyInMeta(header);
+        return;
     }
 
     Vector<UChar> characters;
@@ -680,27 +679,27 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     didSendViolationReport(stringifiedReport);
 }
 
-void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue) const
+void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue)
 {
     logToConsole("The 'referrer' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"always\", \"default\", \"never\", and \"origin\".");
 }
 
-void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header) const
+void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header)
 {
     logToConsole("The report-only Content Security Policy '" + header + "' was delivered via a <meta> element, which is disallowed. The policy has been ignored.");
 }
 
-void ContentSecurityPolicy::reportMetaOutsideHead(const String& header) const
+void ContentSecurityPolicy::reportMetaOutsideHead(const String& header)
 {
     logToConsole("The Content Security Policy '" + header + "' was delivered via a <meta> element outside the document's <head>, which is disallowed. The policy has been ignored.");
 }
 
-void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name) const
+void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name)
 {
     logToConsole("The Content Security Policy directive '" + name + "' is ignored when delivered in a report-only policy.");
 }
 
-void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
+void ContentSecurityPolicy::reportUnsupportedDirective(const String& name)
 {
     DEFINE_STATIC_LOCAL(String, allow, ("allow"));
     DEFINE_STATIC_LOCAL(String, options, ("options"));
@@ -725,19 +724,19 @@ void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
     logToConsole(message, level);
 }
 
-void ContentSecurityPolicy::reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression) const
+void ContentSecurityPolicy::reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression)
 {
     String message = "The Content Security Policy directive '" + directiveName + "' contains '" + sourceExpression + "' as a source expression. Did you mean '" + directiveName + " ...; " + sourceExpression + "...' (note the semicolon)?";
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportDuplicateDirective(const String& name) const
+void ContentSecurityPolicy::reportDuplicateDirective(const String& name)
 {
     String message = "Ignoring duplicate Content-Security-Policy directive '" + name + "'.\n";
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportInvalidPluginTypes(const String& pluginType) const
+void ContentSecurityPolicy::reportInvalidPluginTypes(const String& pluginType)
 {
     String message;
     if (pluginType.isNull())
@@ -747,23 +746,23 @@ void ContentSecurityPolicy::reportInvalidPluginTypes(const String& pluginType) c
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportInvalidSandboxFlags(const String& invalidFlags) const
+void ContentSecurityPolicy::reportInvalidSandboxFlags(const String& invalidFlags)
 {
     logToConsole("Error while parsing the 'sandbox' Content Security Policy directive: " + invalidFlags);
 }
 
-void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue) const
+void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue)
 {
     logToConsole("The 'reflected-xss' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"allow\", \"filter\", and \"block\".");
 }
 
-void ContentSecurityPolicy::reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value) const
+void ContentSecurityPolicy::reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value)
 {
     String message = "The value for Content Security Policy directive '" + directiveName + "' contains an invalid character: '" + value + "'. Non-whitespace characters outside ASCII 0x21-0x7E must be percent-encoded, as described in RFC 3986, section 2.1: http://tools.ietf.org/html/rfc3986#section-2.1.";
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportInvalidPathCharacter(const String& directiveName, const String& value, const char invalidChar) const
+void ContentSecurityPolicy::reportInvalidPathCharacter(const String& directiveName, const String& value, const char invalidChar)
 {
     ASSERT(invalidChar == '#' || invalidChar == '?');
 
@@ -774,7 +773,7 @@ void ContentSecurityPolicy::reportInvalidPathCharacter(const String& directiveNa
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportInvalidSourceExpression(const String& directiveName, const String& source) const
+void ContentSecurityPolicy::reportInvalidSourceExpression(const String& directiveName, const String& source)
 {
     String message = "The source list for Content Security Policy directive '" + directiveName + "' contains an invalid source: '" + source + "'. It will be ignored.";
     if (equalIgnoringCase(source, "'none'"))
@@ -782,14 +781,22 @@ void ContentSecurityPolicy::reportInvalidSourceExpression(const String& directiv
     logToConsole(message);
 }
 
-void ContentSecurityPolicy::reportMissingReportURI(const String& policy) const
+void ContentSecurityPolicy::reportMissingReportURI(const String& policy)
 {
     logToConsole("The Content Security Policy '" + policy + "' was delivered in report-only mode, but does not specify a 'report-uri'; the policy will have no effect. Please either add a 'report-uri' directive, or deliver the policy via the 'Content-Security-Policy' header.");
 }
 
-void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel level) const
+void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel level)
 {
-    m_executionContext->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, level, message));
+    logToConsole(ConsoleMessage::create(SecurityMessageSource, level, message));
+}
+
+void ContentSecurityPolicy::logToConsole(PassRefPtr<ConsoleMessage> consoleMessage)
+{
+    if (m_executionContext)
+        m_executionContext->addConsoleMessage(consoleMessage);
+    else
+        m_consoleMessages.append(consoleMessage);
 }
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String& directiveText) const

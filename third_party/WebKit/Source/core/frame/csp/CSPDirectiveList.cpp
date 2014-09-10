@@ -46,14 +46,14 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
 void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->executionContext()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
+    m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->executionContext()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt()));
+    m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt()));
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
@@ -62,7 +62,7 @@ void CSPDirectiveList::reportViolationWithState(const String& directiveText, con
     String reportMessage = m_reportOnly ? "[Report Only] " + message : message;
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
     consoleMessage->setScriptState(scriptState);
-    m_policy->executionContext()->addConsoleMessage(consoleMessage.release());
+    m_policy->logToConsole(consoleMessage.release());
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
