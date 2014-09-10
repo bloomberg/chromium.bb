@@ -127,6 +127,8 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // reworked at hackaton.
   void EnableUserImageScreenReturnToPreviousHack();
 
+  // Callback for enrollment auth token.
+  void OnEnrollmentAuthTokenReceived(const std::string& auth_token);
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -296,9 +298,6 @@ class WizardController : public ScreenObserver, public ScreenManager {
   // Returns true if callback has been installed.
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
-
-  // Callback for enrollment auth token.
-  void OnEnrollmentAuthTokenReceived(const std::string& auth_token);
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).

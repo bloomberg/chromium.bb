@@ -63,6 +63,10 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
 
   std::string desired_page;
   switch (new_stage) {
+    case HostPairingController::STAGE_NONE:
+    case HostPairingController::STAGE_INITIALIZATION_ERROR: {
+      break;
+    }
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER:
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE: {
       desired_page = kPageWelcome;
@@ -98,11 +102,7 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case HostPairingController::STAGE_FINISHED: {
-      get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
-      break;
-    }
-    default: {
-      NOTREACHED();
+      // This page is closed in EnrollHost.
       break;
     }
   }
@@ -122,9 +122,9 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
 }
 
 void HostPairingScreen::EnrollHost(const std::string& auth_token) {
-  // TODO(zork,achuith): Enroll device, send error on error.
-  // (http://crbug.com/374990)
-  controller_->SetEnrollmentComplete(true);
+  controller_->RemoveObserver(this);
+  WizardController::default_controller()->OnEnrollmentAuthTokenReceived(
+      auth_token);
 }
 
 void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {

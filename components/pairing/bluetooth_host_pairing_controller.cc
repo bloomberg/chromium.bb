@@ -266,9 +266,6 @@ void BluetoothHostPairingController::OnPairDevicesMessage(
   }
 
   ChangeStage(STAGE_ENROLLING);
-  // TODO(zork,achuith): Enroll device, send error on error.
-  // (http://crbug.com/374990)
-  // For now, test domain is sent in the access token.
   FOR_EACH_OBSERVER(Observer, observers_,
                     EnrollHost(message.parameters().admin_access_token()));
 }

@@ -24,9 +24,12 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/pairing/controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "policy/proto/device_management_backend.pb.h"
+
+using namespace pairing_chromeos;
 
 namespace chromeos {
 
@@ -40,6 +43,8 @@ EnrollmentScreen::EnrollmentScreen(
     ScreenObserver* observer,
     EnrollmentScreenActor* actor)
     : WizardScreen(observer),
+      shark_controller_(NULL),
+      remora_controller_(NULL),
       actor_(actor),
       enrollment_mode_(EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL),
       enrollment_failed_once_(false),
@@ -52,16 +57,26 @@ EnrollmentScreen::EnrollmentScreen(
       EmptyVoidDBusMethodCallback());
 }
 
-EnrollmentScreen::~EnrollmentScreen() {}
+EnrollmentScreen::~EnrollmentScreen() {
+  if (remora_controller_)
+    remora_controller_->RemoveObserver(this);
+}
 
 void EnrollmentScreen::SetParameters(
     EnrollmentScreenActor::EnrollmentMode enrollment_mode,
     const std::string& management_domain,
     const std::string& user,
-    const std::string& auth_token) {
+    const std::string& auth_token,
+    pairing_chromeos::ControllerPairingController* shark_controller,
+    pairing_chromeos::HostPairingController* remora_controller) {
   enrollment_mode_ = enrollment_mode;
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
   auth_token_ = auth_token;
+  shark_controller_ = shark_controller;
+  DCHECK(!remora_controller_);
+  remora_controller_ = remora_controller;
+  if (remora_controller_)
+    remora_controller_->AddObserver(this);
   actor_->SetParameters(this, enrollment_mode_, management_domain);
 }
 
@@ -93,6 +108,27 @@ void EnrollmentScreen::Hide() {
 
 std::string EnrollmentScreen::GetName() const {
   return WizardController::kEnrollmentScreenName;
+}
+
+void EnrollmentScreen::PairingStageChanged(Stage new_stage) {
+  DCHECK(remora_controller_);
+  if (new_stage == HostPairingController::STAGE_FINISHED) {
+    remora_controller_->RemoveObserver(this);
+    remora_controller_ = NULL;
+    // TODO(zork): Check that this is the best exit status. crbug.com/412798
+    get_screen_observer()->OnExit(
+        WizardController::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
+  }
+}
+
+void EnrollmentScreen::ConfigureHost(bool accepted_eula,
+                                     const std::string& lang,
+                                     const std::string& timezone,
+                                     bool send_reports,
+                                     const std::string& keyboard_layout) {
+}
+
+void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
 }
 
 void EnrollmentScreen::OnLoginDone(const std::string& user) {
@@ -239,7 +275,9 @@ void EnrollmentScreen::RegisterForDevicePolicy(const std::string& token) {
 }
 
 void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
-  // TODO(achuith, zork): Send token via Bluetooth to remote device.
+  // TODO(achuith, zork): Extract and send domain.
+  if (shark_controller_)
+    shark_controller_->OnAuthenticationDone("", token);
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
@@ -257,6 +295,8 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
                      status));
       UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
                                : policy::kMetricEnrollmentOK);
+      if (remora_controller_)
+        remora_controller_->SetEnrollmentComplete(true);
       return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
@@ -331,6 +371,8 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       break;
   }
 
+  if (remora_controller_)
+    remora_controller_->SetEnrollmentComplete(false);
   enrollment_failed_once_ = true;
   actor_->ShowEnrollmentStatus(status);
 }

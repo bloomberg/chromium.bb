@@ -13,8 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "components/pairing/host_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
+
+namespace pairing_chromeos {
+class ControllerPairingController;
+}
 
 namespace chromeos {
 
@@ -25,24 +30,45 @@ class ScreenObserver;
 // OOBE wizard.
 class EnrollmentScreen
     : public WizardScreen,
+      public pairing_chromeos::HostPairingController::Observer,
       public EnrollmentScreenActor::Controller {
  public:
+  typedef pairing_chromeos::HostPairingController::Stage Stage;
+
   EnrollmentScreen(ScreenObserver* observer,
                    EnrollmentScreenActor* actor);
   virtual ~EnrollmentScreen();
 
   static EnrollmentScreen* Get(ScreenManager* manager);
 
-  void SetParameters(EnrollmentScreenActor::EnrollmentMode enrollment_mode,
-                     const std::string& management_domain,
-                     const std::string& enrollment_user,
-                     const std::string& auth_token);
+  // Setup how this screen will handle enrollment.
+  //   |auth_token| is an optional OAuth token to attempt to enroll with.
+  //   |shark_controller| is an interface that is used to communicate with a
+  //     remora device for remote enrollment.
+  //   |remora_controller| is an interface that is used to communicate with a
+  //     shark device for remote enrollment.
+  void SetParameters(
+      EnrollmentScreenActor::EnrollmentMode enrollment_mode,
+      const std::string& management_domain,
+      const std::string& enrollment_user,
+      const std::string& auth_token,
+      pairing_chromeos::ControllerPairingController* shark_controller,
+      pairing_chromeos::HostPairingController* remora_controller);
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
+
+  // pairing_chromeos::HostPairingController::Observer:
+  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
+  virtual void ConfigureHost(bool accepted_eula,
+                             const std::string& lang,
+                             const std::string& timezone,
+                             bool send_reports,
+                             const std::string& keyboard_layout) OVERRIDE;
+  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
 
   // EnrollmentScreenActor::Controller implementation:
   virtual void OnLoginDone(const std::string& user) OVERRIDE;
@@ -95,6 +121,8 @@ class EnrollmentScreen
     return enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
   }
 
+  pairing_chromeos::ControllerPairingController* shark_controller_;
+  pairing_chromeos::HostPairingController* remora_controller_;
   EnrollmentScreenActor* actor_;
   EnrollmentScreenActor::EnrollmentMode enrollment_mode_;
   bool enrollment_failed_once_;

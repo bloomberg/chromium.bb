@@ -12,10 +12,6 @@
 using namespace chromeos::controller_pairing;
 using namespace pairing_chromeos;
 
-namespace {
-const char* kTestAuthToken = "TestAuthToken";
-};
-
 namespace chromeos {
 
 ControllerPairingScreen::ControllerPairingScreen(
@@ -112,6 +108,10 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case ControllerPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
+      controller_->RemoveObserver(this);
+      get_screen_observer()->OnExit(
+          WizardController::CONTROLLER_PAIRING_FINISHED);
+      // TODO: Move the rest of the stages to the proper location.
       desired_page = kPageEnrollmentIntroduction;
       break;
     }
@@ -200,8 +200,6 @@ void ControllerPairingScreen::OnUserActed(const std::string& action) {
         gaia::SanitizeEmail(context_.GetString(kContextKeyAccountId));
     const std::string domain(gaia::ExtractDomainName(account_id));
     context_.SetString(kContextKeyEnrollmentDomain, domain);
-    // TODO(zork): Get proper credentials. (http://crbug.com/405744)
-    controller_->OnAuthenticationDone(domain, kTestAuthToken);
   } else if (action == kActionStartSession) {
     controller_->StartSession();
   }

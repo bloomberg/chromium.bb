@@ -427,7 +427,9 @@ void WizardController::ShowEnrollmentScreen() {
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
   }
 
-  screen->SetParameters(mode, enrollment_domain, user, auth_token_);
+  screen->SetParameters(mode, enrollment_domain, user, auth_token_,
+                        controller_pairing_controller_.get(),
+                        host_pairing_controller_.get());
   SetCurrentScreen(screen);
 }
 
@@ -624,6 +626,18 @@ void WizardController::OnUpdateErrorUpdating() {
 
 void WizardController::EnableUserImageScreenReturnToPreviousHack() {
   user_image_screen_return_to_previous_hack_ = true;
+}
+
+void WizardController::OnEnrollmentAuthTokenReceived(
+    const std::string& token) {
+  VLOG(1) << "OnEnrollmentAuthTokenReceived " << token;
+  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
+    StartupUtils::MarkEulaAccepted();
+    auth_token_ = token;
+    ShowEnrollmentScreen();
+  } else {
+    LOG(WARNING) << "Not in device enrollment.";
+  }
 }
 
 void WizardController::OnUserImageSelected() {
@@ -1212,20 +1226,6 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 
   on_timezone_resolved_for_testing_ = callback;
   return true;
-}
-
-void WizardController::OnEnrollmentAuthTokenReceived(
-    const std::string& token) {
-  // TODO(achuith, zork): This will be called via Bluetooth from a remote
-  // controller.
-  VLOG(1) << "OnEnrollmentAuthTokenReceived " << token;
-  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
-    StartupUtils::MarkEulaAccepted();
-    auth_token_ = token;
-    InitiateOOBEUpdate();
-  } else {
-    LOG(WARNING) << "Not in device enrollment.";
-  }
 }
 
 }  // namespace chromeos
