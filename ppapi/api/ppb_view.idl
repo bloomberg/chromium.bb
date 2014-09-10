@@ -13,7 +13,7 @@
 label Chrome {
   M18 = 1.0,
   M28 = 1.1,
-  [channel=dev] M37 = 1.2
+  M37 = 1.2
 };
 
 /**
