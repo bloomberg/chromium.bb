@@ -4013,6 +4013,7 @@ GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 
 void WebViewImpl::scheduleAnimation()
 {
+    WTF_LOG(ScriptedAnimationController, "WebViewImpl::scheduleAnimation: accelerated = %d", isAcceleratedCompositingActive() ? 1 : 0);
     if (isAcceleratedCompositingActive()) {
         ASSERT(m_layerTreeView);
         m_layerTreeView->setNeedsAnimate();
