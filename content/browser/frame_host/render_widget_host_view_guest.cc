@@ -63,6 +63,19 @@ RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
 #endif  // defined(USE_AURA)
 }
 
+bool RenderWidgetHostViewGuest::OnMessageReceivedFromEmbedder(
+    const IPC::Message& message,
+    RenderWidgetHostImpl* embedder) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(RenderWidgetHostViewGuest, message,
+                                   embedder)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
+                        OnHandleInputEvent)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void RenderWidgetHostViewGuest::WasShown() {
   // If the WebContents associated with us showed an interstitial page in the
   // beginning, the teardown path might call WasShown() while |host_| is in
@@ -528,6 +541,46 @@ RenderWidgetHostViewBase*
 RenderWidgetHostViewGuest::GetGuestRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewBase*>(
       guest_->GetEmbedderRenderWidgetHostView());
+}
+
+void RenderWidgetHostViewGuest::OnHandleInputEvent(
+    RenderWidgetHostImpl* embedder,
+    int browser_plugin_instance_id,
+    const gfx::Rect& guest_window_rect,
+    const blink::WebInputEvent* event) {
+  if (blink::WebInputEvent::isMouseEventType(event->type)) {
+    host_->ForwardMouseEvent(
+        *static_cast<const blink::WebMouseEvent*>(event));
+    return;
+  }
+
+  if (event->type == blink::WebInputEvent::MouseWheel) {
+    host_->ForwardWheelEvent(
+        *static_cast<const blink::WebMouseWheelEvent*>(event));
+    return;
+  }
+
+  if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
+    if (!embedder->GetLastKeyboardEvent())
+      return;
+    NativeWebKeyboardEvent keyboard_event(
+        *embedder->GetLastKeyboardEvent());
+    host_->ForwardKeyboardEvent(keyboard_event);
+    return;
+  }
+
+  if (blink::WebInputEvent::isTouchEventType(event->type)) {
+    host_->ForwardTouchEventWithLatencyInfo(
+        *static_cast<const blink::WebTouchEvent*>(event),
+        ui::LatencyInfo());
+    return;
+  }
+
+  if (blink::WebInputEvent::isGestureEventType(event->type)) {
+    host_->ForwardGestureEvent(
+        *static_cast<const blink::WebGestureEvent*>(event));
+    return;
+  }
 }
 
 }  // namespace content

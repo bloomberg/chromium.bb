@@ -21,9 +21,9 @@
 struct ViewHostMsg_TextInputState_Params;
 
 namespace content {
+class BrowserPluginGuest;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
-class BrowserPluginGuest;
 struct NativeWebKeyboardEvent;
 
 // See comments in render_widget_host_view.h about this class and its members.
@@ -45,6 +45,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                             BrowserPluginGuest* guest,
                             RenderWidgetHostViewBase* platform_view);
   virtual ~RenderWidgetHostViewGuest();
+
+  bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
+                                     RenderWidgetHostImpl* embedder);
 
   // RenderWidgetHostView implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -162,6 +165,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   RenderWidgetHostViewBase* GetGuestRenderWidgetHostView() const;
+
+  void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
+                          int browser_plugin_instance_id,
+                          const gfx::Rect& guest_window_rect,
+                          const blink::WebInputEvent* event);
 
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
   // to one another, therefore we access |guest_| through WeakPtr.

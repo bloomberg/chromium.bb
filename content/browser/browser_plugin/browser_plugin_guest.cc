@@ -128,6 +128,16 @@ WebContentsImpl* BrowserPluginGuest::CreateNewGuestWindow(
 
 bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
+  RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
+      web_contents()->GetRenderWidgetHostView());
+  if (rwhv &&
+      rwhv->OnMessageReceivedFromEmbedder(
+          message,
+          static_cast<RenderViewHostImpl*>(
+              embedder_web_contents()->GetRenderViewHost()))) {
+    return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
@@ -140,8 +150,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
-                        OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeConfirmComposition,
                         OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeSetComposition,
@@ -629,50 +637,6 @@ void BrowserPluginGuest::OnReclaimCompositorResources(
                                                        params.output_surface_id,
                                                        params.renderer_host_id,
                                                        params.ack);
-}
-
-void BrowserPluginGuest::OnHandleInputEvent(
-    int browser_plugin_instance_id,
-    const gfx::Rect& guest_window_rect,
-    const blink::WebInputEvent* event) {
-  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-      GetWebContents()->GetRenderViewHost());
-
-  if (blink::WebInputEvent::isMouseEventType(event->type)) {
-    guest_rvh->ForwardMouseEvent(
-        *static_cast<const blink::WebMouseEvent*>(event));
-    return;
-  }
-
-  if (event->type == blink::WebInputEvent::MouseWheel) {
-    guest_rvh->ForwardWheelEvent(
-        *static_cast<const blink::WebMouseWheelEvent*>(event));
-    return;
-  }
-
-  if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
-    RenderViewHostImpl* embedder_rvh = static_cast<RenderViewHostImpl*>(
-        embedder_web_contents_->GetRenderViewHost());
-    if (!embedder_rvh->GetLastKeyboardEvent())
-      return;
-    NativeWebKeyboardEvent keyboard_event(
-        *embedder_rvh->GetLastKeyboardEvent());
-    guest_rvh->ForwardKeyboardEvent(keyboard_event);
-    return;
-  }
-
-  if (blink::WebInputEvent::isTouchEventType(event->type)) {
-    guest_rvh->ForwardTouchEventWithLatencyInfo(
-        *static_cast<const blink::WebTouchEvent*>(event),
-        ui::LatencyInfo());
-    return;
-  }
-
-  if (blink::WebInputEvent::isGestureEventType(event->type)) {
-    guest_rvh->ForwardGestureEvent(
-        *static_cast<const blink::WebGestureEvent*>(event));
-    return;
-  }
 }
 
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
