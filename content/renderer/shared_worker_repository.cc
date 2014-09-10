@@ -9,7 +9,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 

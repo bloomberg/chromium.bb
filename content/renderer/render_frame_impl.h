@@ -249,7 +249,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrame implementation:
   virtual RenderView* GetRenderView() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
-  virtual blink::WebFrame* GetWebFrame() OVERRIDE;
+  virtual blink::WebLocalFrame* GetWebFrame() OVERRIDE;
   virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual int ShowContextMenu(ContextMenuClient* client,
                               const ContextMenuParams& params) OVERRIDE;

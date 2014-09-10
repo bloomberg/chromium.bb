@@ -37,7 +37,7 @@
 
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using blink::WebFrame;
 using blink::WebHistoryItem;

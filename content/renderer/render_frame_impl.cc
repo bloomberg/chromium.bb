@@ -1461,7 +1461,7 @@ int RenderFrameImpl::GetRoutingID() {
   return routing_id_;
 }
 
-blink::WebFrame* RenderFrameImpl::GetWebFrame() {
+blink::WebLocalFrame* RenderFrameImpl::GetWebFrame() {
   DCHECK(frame_);
   return frame_;
 }

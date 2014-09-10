@@ -14,6 +14,7 @@
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_dispatcher_delegate.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"

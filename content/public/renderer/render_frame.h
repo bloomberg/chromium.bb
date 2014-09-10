@@ -45,7 +45,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual int GetRoutingID() = 0;
 
   // Returns the associated WebFrame.
-  virtual blink::WebFrame* GetWebFrame() = 0;
+  virtual blink::WebLocalFrame* GetWebFrame() = 0;
 
    // Gets WebKit related preferences associated with this frame.
   virtual WebPreferences& GetWebkitPreferences() = 0;
