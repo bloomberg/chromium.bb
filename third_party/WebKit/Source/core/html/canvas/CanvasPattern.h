@@ -27,6 +27,7 @@
 #define CanvasPattern_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/svg/SVGMatrixTearOff.h"
 #include "platform/graphics/Pattern.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -53,6 +54,8 @@ public:
     bool originClean() const { return m_originClean; }
 
     void trace(Visitor*) { }
+
+    void setTransform(SVGMatrixTearOff*);
 
 private:
     CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool originClean);

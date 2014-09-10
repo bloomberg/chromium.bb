@@ -150,8 +150,11 @@ function test()
         return;
     }
     output("New properties and functions of CanvasPattern object that should be manually examined (should be empty to pass the test):");
-    for (var property in pattern)
+    for (var property in pattern) {
+        if (property == "setTransform")
+            continue;
         output(property);
+    }
 }
 
 function runTest()
