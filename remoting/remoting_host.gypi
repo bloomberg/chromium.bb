@@ -561,7 +561,25 @@
             ],
           }],
         },  # end of target 'remoting_native_messaging_manifests'
-
+        {
+          'target_name': 'remoting_start_host',
+          'type': 'executable',
+          'dependencies': [
+            'remoting_host_setup_base',
+          ],
+          'sources': [
+            'host/setup/host_starter.cc',
+            'host/setup/host_starter.h',
+            'host/setup/start_host.cc',
+          ],
+          'conditions': [
+            ['OS=="linux" and use_allocator!="none"', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_start_host'
         {
           'target_name': 'remoting_infoplist_strings',
           'type': 'none',
