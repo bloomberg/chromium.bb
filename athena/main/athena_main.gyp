@@ -36,9 +36,13 @@
       'sources': [
         'athena_content_client.cc',
         'athena_content_client.h',
+        'athena_frame_view.cc',
+        'athena_frame_view.h',
         'athena_launcher.cc',
         'athena_renderer_pdf_helper.cc',
         'athena_renderer_pdf_helper.h',
+        'athena_views_delegate.cc',
+        'athena_views_delegate.h',
         'placeholder.cc',
         'placeholder.h',
         'public/athena_launcher.h',

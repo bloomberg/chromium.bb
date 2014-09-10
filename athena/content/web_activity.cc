@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/content/public/dialogs.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -300,6 +301,20 @@ class AthenaWebView : public views::WebView {
     settings.AddObserver(new ui::ClosureAnimationObserver(
         base::Bind(&base::DeletePointer<ui::Layer>, progress_bar_.release())));
     layer->SetOpacity(0.f);
+  }
+
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE {
+    return athena::OpenColorChooser(web_contents, color, suggestions);
+  }
+
+  // Called when a file selection is to be done.
+  virtual void RunFileChooser(
+      content::WebContents* web_contents,
+      const content::FileChooserParams& params) OVERRIDE {
+    return athena::OpenFileChooser(web_contents, params);
   }
 
  private:

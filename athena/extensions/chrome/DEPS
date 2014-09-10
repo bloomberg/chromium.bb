@@ -1,5 +1,8 @@
 include_rules = [
+  "+athena/env/public",
   "+chrome/browser",
   "+chrome/common/extensions",
+  "+content/public/browser",
   "+net/base",
+  "+ui/base",
 ]

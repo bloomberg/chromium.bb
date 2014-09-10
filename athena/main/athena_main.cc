@@ -105,6 +105,7 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
   }
 
   virtual void Shutdown() OVERRIDE {
+    athena::AthenaEnv::Get()->OnTerminating();
     athena::ShutdownAthena();
   }
 

@@ -44,9 +44,12 @@ specific_include_rules = {
   ],
 # TODO(oshima): Remove this.
   "placeholder\.*": [
-    "+third_party/skia",
+    "+third_party/skia/include",
     "+ui/gfx",
     "+ui/views",
+  ],
+  "athena_frame_view\.*": [
+    "+third_party/skia/include",
   ],
 }
 

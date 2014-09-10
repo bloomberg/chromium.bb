@@ -6,11 +6,11 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/extensions/chrome/athena_app_delegate.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -35,7 +35,7 @@ AthenaAppsClient::GetLoadedBrowserContexts() {
 extensions::AppWindow* AthenaAppsClient::CreateAppWindow(
     content::BrowserContext* context,
     const extensions::Extension* extension) {
-  return new extensions::AppWindow(context, new ChromeAppDelegate, extension);
+  return new extensions::AppWindow(context, new AthenaAppDelegate, extension);
 }
 
 extensions::NativeAppWindow* AthenaAppsClient::CreateNativeAppWindow(

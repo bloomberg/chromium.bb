@@ -6,13 +6,14 @@
 #define ATHENA_ENV_PUBLIC_ATHENA_ENV_H_
 
 #include "athena/athena_export.h"
-
-namespace gfx {
-class Insets;
-}
+#include "base/callback_forward.h"
 
 namespace aura {
 class WindowTreeHost;
+}
+
+namespace gfx {
+class Insets;
 }
 
 namespace athena {
@@ -32,6 +33,13 @@ class ATHENA_EXPORT AthenaEnv {
 
   // Sets the insets for the primary displays's work area.
   virtual void SetDisplayWorkAreaInsets(const gfx::Insets& insets) = 0;
+
+  // Adds the callback called when the athena is about to exit.
+  virtual void AddTerminatingCallback(const base::Closure& closure) = 0;
+  virtual void RemoveTerminatingCallback(const base::Closure& closure) = 0;
+
+  // Called when the athena is about to exist.
+  virtual void OnTerminating() = 0;
 };
 
 }  // namespace athena

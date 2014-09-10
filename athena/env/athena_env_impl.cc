@@ -4,6 +4,8 @@
 
 #include "athena/env/public/athena_env.h"
 
+#include <vector>
+
 #include "athena/util/fill_layout_manager.h"
 #include "base/sys_info.h"
 #include "ui/aura/client/aura_constants.h"
@@ -249,11 +251,48 @@ class AthenaEnvImpl : public AthenaEnv,
   }
 
  private:
-  virtual aura::WindowTreeHost* GetHost() OVERRIDE { return host_.get(); }
+  struct Finder {
+    explicit Finder(const base::Closure& c) : closure(c) {}
+    bool operator()(const base::Closure& other) {
+      return closure.Equals(other);
+    }
+    base::Closure closure;
+  };
 
   // AthenaEnv:
+  virtual aura::WindowTreeHost* GetHost() OVERRIDE { return host_.get(); }
+
   virtual void SetDisplayWorkAreaInsets(const gfx::Insets& insets) OVERRIDE {
     screen_->SetWorkAreaInsets(insets);
+  }
+
+  virtual void AddTerminatingCallback(const base::Closure& closure) OVERRIDE {
+    if (closure.is_null())
+      return;
+    DCHECK(terminating_callbacks_.end() ==
+           std::find_if(terminating_callbacks_.begin(),
+                        terminating_callbacks_.end(),
+                        Finder(closure)));
+    terminating_callbacks_.push_back(closure);
+  }
+
+  virtual void RemoveTerminatingCallback(
+      const base::Closure& closure) OVERRIDE {
+    std::vector<base::Closure>::iterator iter =
+        std::find_if(terminating_callbacks_.begin(),
+                     terminating_callbacks_.end(),
+                     Finder(closure));
+    if (iter != terminating_callbacks_.end())
+      terminating_callbacks_.erase(iter);
+  }
+
+  virtual void OnTerminating() OVERRIDE {
+    for (std::vector<base::Closure>::iterator iter =
+             terminating_callbacks_.begin();
+         iter != terminating_callbacks_.end();
+         ++iter) {
+      iter->Run();
+    }
   }
 
   // ui::DisplayConfigurator::Observer:
@@ -289,6 +328,8 @@ class AthenaEnvImpl : public AthenaEnv,
   scoped_ptr<wm::UserActivityDetector> user_activity_detector_;
   scoped_ptr<ui::DisplayConfigurator> display_configurator_;
   scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
+
+  std::vector<base::Closure> terminating_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaEnvImpl);
 };

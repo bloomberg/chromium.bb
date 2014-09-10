@@ -6,7 +6,6 @@
 #define ATHENA_ACTIVITY_ACTIVITY_FRAME_VIEW_H_
 
 #include "athena/wm/public/window_manager_observer.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -24,7 +23,7 @@ class ActivityViewModel;
 class ActivityFrameView : public views::NonClientFrameView,
                           public WindowManagerObserver {
  public:
-  // Internal class name.
+  // The frame class name.
   static const char kViewClassName[];
 
   ActivityFrameView(views::Widget* frame, ActivityViewModel* view_model);

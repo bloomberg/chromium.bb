@@ -13,11 +13,11 @@
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/home/public/home_card.h"
 #include "athena/input/public/input_manager.h"
+#include "athena/main/athena_views_delegate.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
 #include "athena/resource_manager/public/resource_manager.h"
-#include "athena/screen/public/screen_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/public/system_ui.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
@@ -30,7 +30,6 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/native_theme/native_theme_switches.h"
-#include "ui/views/views_delegate.h"
 #include "ui/wm/core/visibility_controller.h"
 
 #if defined(USE_X11)
@@ -76,22 +75,6 @@ class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
   }
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardObserver);
-};
-
-class AthenaViewsDelegate : public views::ViewsDelegate {
- public:
-  AthenaViewsDelegate() {}
-  virtual ~AthenaViewsDelegate() {}
-
- private:
-  // views::ViewsDelegate:
-  virtual void OnBeforeWidgetInit(
-      views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
-    params->context = athena::ScreenManager::Get()->GetContext();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaViewsDelegate);
 };
 
 void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
