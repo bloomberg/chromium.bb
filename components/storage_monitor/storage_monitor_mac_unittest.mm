@@ -5,7 +5,7 @@
 #include "components/storage_monitor/storage_monitor_mac.h"
 
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/run_loop.h"

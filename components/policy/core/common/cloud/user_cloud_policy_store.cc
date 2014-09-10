@@ -5,7 +5,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"

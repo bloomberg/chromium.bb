@@ -4,7 +4,7 @@
 
 #include "components/component_updater/test/url_request_post_interceptor.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "components/component_updater/test/test_configurator.h"

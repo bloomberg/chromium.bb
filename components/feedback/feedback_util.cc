@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/feedback/feedback_uploader_factory.h"

@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"

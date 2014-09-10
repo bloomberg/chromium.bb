@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"

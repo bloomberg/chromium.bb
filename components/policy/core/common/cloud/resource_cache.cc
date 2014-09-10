@@ -6,8 +6,8 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"

@@ -4,7 +4,7 @@
 
 #import "components/storage_monitor/image_capture_device.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace storage_monitor {

@@ -4,7 +4,7 @@
 
 #include "components/nacl/common/nacl_paths.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 
 namespace {

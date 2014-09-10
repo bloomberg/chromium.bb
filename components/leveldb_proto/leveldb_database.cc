@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

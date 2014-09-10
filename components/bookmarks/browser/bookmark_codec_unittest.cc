@@ -4,8 +4,8 @@
 
 #include "components/bookmarks/browser/bookmark_codec.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
