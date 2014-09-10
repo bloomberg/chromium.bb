@@ -25,7 +25,6 @@ include_rules = [
   "+ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h",
   "+ppapi/shared_impl",
   "+remoting/client/plugin",
-  "+webkit/common/user_agent",
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer",

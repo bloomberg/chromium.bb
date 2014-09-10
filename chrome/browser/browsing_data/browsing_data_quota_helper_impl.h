@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "webkit/common/quota/quota_types.h"
+#include "storage/common/quota/quota_types.h"
 
 class GURL;
 

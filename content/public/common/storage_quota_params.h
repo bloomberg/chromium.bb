@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
+#include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 

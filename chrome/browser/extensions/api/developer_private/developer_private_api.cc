@@ -69,6 +69,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "net/base/net_util.h"
+#include "storage/common/blob/shareable_file_reference.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -77,7 +78,6 @@
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/common/blob/shareable_file_reference.h"
 
 using content::RenderViewHost;
 

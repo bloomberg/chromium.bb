@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/storage_quota_params.h"
-#include "webkit/common/quota/quota_types.h"
+#include "storage/common/quota/quota_types.h"
 
 class GURL;
 

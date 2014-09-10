@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
-#include "webkit/common/blob/shareable_file_reference.h"
+#include "storage/common/blob/shareable_file_reference.h"
 
 using storage::ShareableFileReference;
 

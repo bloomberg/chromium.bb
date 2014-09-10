@@ -17,6 +17,8 @@
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
+#include "storage/common/blob/shareable_file_reference.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -26,8 +28,6 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
-#include "webkit/common/blob/shareable_file_reference.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemOperation;

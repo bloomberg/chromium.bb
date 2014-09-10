@@ -61,6 +61,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
@@ -76,7 +77,6 @@
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
-#include "webkit/common/quota/quota_types.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/synchronous_compositor_factory.h"

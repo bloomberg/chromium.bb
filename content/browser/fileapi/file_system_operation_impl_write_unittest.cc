@@ -18,6 +18,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/common/blob/blob_data.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_storage_context.h"
@@ -27,8 +29,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/local_file_util.h"
-#include "webkit/common/blob/blob_data.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using storage::FileSystemOperation;
 using storage::FileSystemOperationRunner;

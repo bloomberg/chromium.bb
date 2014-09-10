@@ -14,7 +14,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/gdata_errorcode.h"
-#include "webkit/common/blob/scoped_file.h"
+#include "storage/common/blob/scoped_file.h"
 
 namespace google_apis {
 class ChangeResource;

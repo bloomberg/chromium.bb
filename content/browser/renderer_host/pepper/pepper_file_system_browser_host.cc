@@ -22,11 +22,11 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
+#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/quota/quota_types.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
-#include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 

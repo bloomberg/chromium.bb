@@ -18,8 +18,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/database/database_identifier.h"
 
 // Declared to shorten the line lengths.
 static const storage::StorageType kTemp = storage::kStorageTypeTemporary;

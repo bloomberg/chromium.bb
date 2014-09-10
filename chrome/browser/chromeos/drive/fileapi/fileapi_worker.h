@@ -25,7 +25,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "webkit/common/blob/scoped_file.h"
+#include "storage/common/blob/scoped_file.h"
 
 namespace base {
 class FilePath;

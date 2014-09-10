@@ -26,11 +26,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/database/database_util.h"
-#include "webkit/common/database/database_identifier.h"
 
 using storage::DatabaseUtil;
 using blink::WebIDBKey;

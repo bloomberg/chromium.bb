@@ -31,10 +31,7 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/shared_impl",
   "+skia",
-
-  "+webkit/common",
-  "+webkit/glue",
-  "+webkit/renderer",
+  "+storage/common",
 
   "+third_party/cld_2",
   "+third_party/sqlite",

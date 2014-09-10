@@ -18,11 +18,11 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "storage/common/blob/blob_data.h"
+#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/quota/quota_types.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/common/blob/blob_data.h"
-#include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/quota/quota_types.h"
 
 class GURL;
 

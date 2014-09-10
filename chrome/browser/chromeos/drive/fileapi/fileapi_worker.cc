@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/common/fileapi/directory_entry.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/fileapi/directory_entry.h"
 
 using content::BrowserThread;
 

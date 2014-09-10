@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "webkit/common/blob/blob_data.h"
+#include "storage/common/blob/blob_data.h"
 
 class GURL;
 

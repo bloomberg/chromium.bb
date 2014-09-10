@@ -35,7 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/cookies/canonical_cookie.h"
-#include "webkit/common/fileapi/file_system_types.h"
+#include "storage/common/fileapi/file_system_types.h"
 
 using content::BrowserThread;
 using content::NavigationController;

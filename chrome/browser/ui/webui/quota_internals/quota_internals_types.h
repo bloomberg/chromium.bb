@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace base {
 class Value;
@@ -107,6 +107,6 @@ class PerOriginStorageInfo {
   base::Time last_access_time_;
   base::Time last_modified_time_;
 };
-}  // quota_internals
+}  // namespace quota_internals
 
 #endif  // CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_TYPES_H_

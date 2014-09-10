@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_observers.h"
@@ -26,7 +27,6 @@
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/watcher_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemOperation;

@@ -17,9 +17,9 @@
 #include "content/browser/dom_storage/session_storage_database_adapter.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "storage/common/database/database_identifier.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "webkit/browser/database/database_util.h"
-#include "webkit/common/database/database_identifier.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using storage::DatabaseUtil;
 

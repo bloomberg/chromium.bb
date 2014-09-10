@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -21,7 +22,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/native_file_util.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 using content::AsyncFileTestHelper;
 using storage::AsyncFileUtilAdapter;

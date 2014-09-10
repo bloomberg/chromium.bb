@@ -12,7 +12,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_task_runner.h"
-#include "webkit/common/quota/quota_types.h"
+#include "storage/common/quota/quota_types.h"
 
 class GURL;
 

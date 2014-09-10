@@ -14,11 +14,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "content/browser/fileapi/sandbox_database_test_helper.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/db/filename.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using storage::SandboxOriginDatabase;
 

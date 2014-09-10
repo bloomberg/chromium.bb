@@ -6,9 +6,9 @@
 #define CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
 
 #include "base/basictypes.h"
+#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/quota/quota_status_code.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/quota/quota_status_code.h"
 
 namespace storage {
 class QuotaManager;

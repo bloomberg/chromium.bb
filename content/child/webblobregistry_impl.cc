@@ -12,11 +12,11 @@
 #include "content/child/child_thread.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "storage/common/blob/blob_data.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/common/blob/blob_data.h"
 
 using blink::WebBlobData;
 using blink::WebString;

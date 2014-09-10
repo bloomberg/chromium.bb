@@ -13,11 +13,11 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "url/gurl.h"
-#include "webkit/common/database/database_identifier.h"
 
 using base::ASCIIToUTF16;
 

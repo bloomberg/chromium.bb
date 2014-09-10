@@ -20,6 +20,5 @@ include_rules = [
   "+media/base",
   "+mojo/embedder",
   "+sandbox/win/tests",
-  "+webkit/glue",
   "+win8/test",
 ]

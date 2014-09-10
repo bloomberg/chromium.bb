@@ -12,6 +12,8 @@
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -19,8 +21,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/quota/quota_manager.h"
-#include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/quota/quota_types.h"
 
 using content::SandboxFileSystemTestHelper;
 using storage::FileSystemContext;

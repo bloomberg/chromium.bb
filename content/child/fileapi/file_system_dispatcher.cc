@@ -10,7 +10,7 @@
 #include "base/process/process.h"
 #include "content/child/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"
-#include "webkit/common/fileapi/file_system_info.h"
+#include "storage/common/fileapi/file_system_info.h"
 
 namespace content {
 

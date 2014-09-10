@@ -15,9 +15,9 @@
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
+#include "storage/common/quota/quota_types.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_task.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 class AppCacheQuotaClientTest;

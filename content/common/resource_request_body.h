@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "storage/common/data_element.h"
 #include "url/gurl.h"
-#include "webkit/common/data_element.h"
 
 namespace base {
 class FilePath;

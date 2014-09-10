@@ -12,6 +12,6 @@ include_rules = [
   "-v8",
   "+v8/include",
 
-  "+webkit/common/fileapi",
+  "+storage/common/fileapi",
 ]
 

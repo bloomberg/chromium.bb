@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/url_constants.h"
+#include "storage/common/database/database_identifier.h"
 #include "url/gurl.h"
 #include "webkit/browser/database/database_tracker.h"
-#include "webkit/common/database/database_identifier.h"
 
 class Profile;
 

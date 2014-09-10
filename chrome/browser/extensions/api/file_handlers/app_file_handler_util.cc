@@ -14,9 +14,9 @@
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_util.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/common/fileapi/file_system_mount_option.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"

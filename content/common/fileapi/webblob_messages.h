@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/common/blob/blob_data.h"
+#include "storage/common/blob/blob_data.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

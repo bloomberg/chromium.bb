@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using storage::ExternalMountPoints;
 using storage::FileSystemContext;

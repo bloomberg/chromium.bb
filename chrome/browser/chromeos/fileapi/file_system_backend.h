@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 namespace storage {
 class CopyOrMoveFileValidatorFactory;

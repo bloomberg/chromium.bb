@@ -107,6 +107,7 @@ include_rules = [
   # explicit.
   "-ui/views",
 
+  "+storage/common",
   "+webkit",
 
   # For generated JNI includes.

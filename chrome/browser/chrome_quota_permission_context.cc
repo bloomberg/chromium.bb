@@ -24,9 +24,9 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "storage/common/quota/quota_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace {
 

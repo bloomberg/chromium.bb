@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/url_constants.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 namespace storage {
 class FileSystemContext;

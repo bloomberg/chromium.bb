@@ -16,13 +16,13 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using ppapi::ResourceVar;
 

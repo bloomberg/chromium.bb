@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/common/quota/quota_types.h"
+#include "storage/common/quota/quota_types.h"
 
 class GURL;
 

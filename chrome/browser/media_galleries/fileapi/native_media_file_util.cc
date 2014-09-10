@@ -16,11 +16,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
+#include "storage/common/blob/shareable_file_reference.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/native_file_util.h"
-#include "webkit/common/blob/shareable_file_reference.h"
 
 namespace {
 

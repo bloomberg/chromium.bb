@@ -17,10 +17,10 @@
 #include "extensions/common/extension.h"
 #include "google_apis/drive/task_util.h"
 #include "net/base/escape.h"
+#include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using content::BrowserThread;
 

@@ -30,11 +30,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
+#include "storage/common/database/database_identifier.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/common/database/database_identifier.h"
 
 using base::DictionaryValue;
 using base::ListValue;

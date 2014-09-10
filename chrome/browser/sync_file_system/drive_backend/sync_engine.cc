@@ -54,8 +54,8 @@
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/common/blob/scoped_file.h"
-#include "webkit/common/fileapi/file_system_util.h"
+#include "storage/common/blob/scoped_file.h"
+#include "storage/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 

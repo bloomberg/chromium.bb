@@ -7,8 +7,8 @@
 #include "base/basictypes.h"
 #include "content/public/common/storage_quota_params.h"
 #include "ipc/ipc_message_macros.h"
+#include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "webkit/common/quota/quota_types.h"
 
 #define IPC_MESSAGE_START QuotaMsgStart
 
