@@ -3947,6 +3947,12 @@
                     'cflags!': [
                        '-fstack-protector',  # stack protector is always enabled on arm64.
                     ],
+                    # This is a workaround for a NDK bug (b/15574841) and
+                    # should be removed by the r10c-rc3 NDK roll.
+                    # Ping primiano@ if you see this after Oct 2014.
+                    'ldflags': [
+                       '-Wl,--dynamic-linker=/system/bin/linker64',
+                    ],
                   }],
                 ],
               }],
