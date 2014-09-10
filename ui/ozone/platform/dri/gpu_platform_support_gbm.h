@@ -46,8 +46,9 @@ class GpuPlatformSupportGbm : public GpuPlatformSupport {
   void OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
                              const gfx::Rect& bounds);
   void OnCursorSet(gfx::AcceleratedWidget widget,
-                   const SkBitmap& bitmap,
-                   const gfx::Point& location);
+                   const std::vector<SkBitmap>& bitmaps,
+                   const gfx::Point& location,
+                   int frame_delay_ms);
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
 
   IPC::Sender* sender_;

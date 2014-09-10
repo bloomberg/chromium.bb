@@ -54,9 +54,10 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
 
   // HardwareCursorDelegate:
-  virtual void SetHardwareCursor(gfx::AcceleratedWidget window,
-                                 const SkBitmap& image,
-                                 const gfx::Point& location) OVERRIDE;
+  virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
+                                 const std::vector<SkBitmap>& bitmaps,
+                                 const gfx::Point& location,
+                                 int frame_delay_ms) OVERRIDE;
   virtual void MoveHardwareCursor(gfx::AcceleratedWidget window,
                                   const gfx::Point& location) OVERRIDE;
 
@@ -72,8 +73,9 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
   scoped_refptr<DriBuffer> cursor_buffers_[2];
   int cursor_frontbuffer_;
 
-  SkBitmap cursor_bitmap_;
+  std::vector<SkBitmap> cursor_bitmaps_;
   gfx::Point cursor_location_;
+  int cursor_frame_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };

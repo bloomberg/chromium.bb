@@ -20,18 +20,25 @@ namespace ui {
 class UI_BASE_EXPORT BitmapCursorOzone
     : public base::RefCounted<BitmapCursorOzone> {
  public:
-  BitmapCursorOzone(const SkBitmap& bitmap, const gfx::Point& hotspot)
-      : bitmap_(bitmap), hotspot_(hotspot) {}
+  BitmapCursorOzone(const SkBitmap& bitmap, const gfx::Point& hotspot);
+  BitmapCursorOzone(const std::vector<SkBitmap>& bitmaps,
+                    const gfx::Point& hotspot,
+                    int frame_delay_ms);
 
-  const gfx::Point& hotspot() { return hotspot_; }
-  const SkBitmap& bitmap() { return bitmap_; }
+  const gfx::Point& hotspot();
+  const SkBitmap& bitmap();
+
+  // For animated cursors.
+  const std::vector<SkBitmap>& bitmaps();
+  int frame_delay_ms();
 
  private:
   friend class base::RefCounted<BitmapCursorOzone>;
-  ~BitmapCursorOzone() {}
+  ~BitmapCursorOzone();
 
-  SkBitmap bitmap_;
+  std::vector<SkBitmap> bitmaps_;
   gfx::Point hotspot_;
+  int frame_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapCursorOzone);
 };

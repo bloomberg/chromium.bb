@@ -100,10 +100,12 @@ bool GpuPlatformSupportHostGbm::Send(IPC::Message* message) {
   return true;
 }
 
-void GpuPlatformSupportHostGbm::SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                                  const SkBitmap& bitmap,
-                                                  const gfx::Point& location) {
-  Send(new OzoneGpuMsg_CursorSet(widget, bitmap, location));
+void GpuPlatformSupportHostGbm::SetHardwareCursor(
+    gfx::AcceleratedWidget widget,
+    const std::vector<SkBitmap>& bitmaps,
+    const gfx::Point& location,
+    int frame_delay_ms) {
+  Send(new OzoneGpuMsg_CursorSet(widget, bitmaps, location, frame_delay_ms));
 }
 
 void GpuPlatformSupportHostGbm::MoveHardwareCursor(

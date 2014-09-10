@@ -30,6 +30,39 @@ scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(int type) {
 
 }  // namespace
 
+BitmapCursorOzone::BitmapCursorOzone(const SkBitmap& bitmap,
+                                     const gfx::Point& hotspot)
+    : hotspot_(hotspot), frame_delay_ms_(0) {
+  bitmaps_.push_back(bitmap);
+}
+
+BitmapCursorOzone::BitmapCursorOzone(const std::vector<SkBitmap>& bitmaps,
+                                     const gfx::Point& hotspot,
+                                     int frame_delay_ms)
+    : bitmaps_(bitmaps), hotspot_(hotspot), frame_delay_ms_(frame_delay_ms) {
+  DCHECK_LT(0U, bitmaps.size());
+  DCHECK_LE(0, frame_delay_ms);
+}
+
+BitmapCursorOzone::~BitmapCursorOzone() {
+}
+
+const gfx::Point& BitmapCursorOzone::hotspot() {
+  return hotspot_;
+}
+
+const SkBitmap& BitmapCursorOzone::bitmap() {
+  return bitmaps_[0];
+}
+
+const std::vector<SkBitmap>& BitmapCursorOzone::bitmaps() {
+  return bitmaps_;
+}
+
+int BitmapCursorOzone::frame_delay_ms() {
+  return frame_delay_ms_;
+}
+
 BitmapCursorFactoryOzone::BitmapCursorFactoryOzone() {}
 
 BitmapCursorFactoryOzone::~BitmapCursorFactoryOzone() {}
@@ -57,8 +90,10 @@ PlatformCursor BitmapCursorFactoryOzone::CreateAnimatedCursor(
     const gfx::Point& hotspot,
     int frame_delay_ms) {
   DCHECK_LT(0U, bitmaps.size());
-  NOTIMPLEMENTED();
-  return CreateImageCursor(bitmaps[0], hotspot);
+  BitmapCursorOzone* cursor =
+      new BitmapCursorOzone(bitmaps, hotspot, frame_delay_ms);
+  cursor->AddRef();  // Balanced by UnrefImageCursor.
+  return ToPlatformCursor(cursor);
 }
 
 void BitmapCursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {

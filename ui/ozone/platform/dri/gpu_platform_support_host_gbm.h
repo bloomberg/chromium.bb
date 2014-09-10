@@ -50,8 +50,9 @@ class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
 
   // HardwareCursorDelegate:
   virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                 const SkBitmap& bitmap,
-                                 const gfx::Point& location) OVERRIDE;
+                                 const std::vector<SkBitmap>& bitmaps,
+                                 const gfx::Point& location,
+                                 int frame_delay_ms) OVERRIDE;
   virtual void MoveHardwareCursor(gfx::AcceleratedWidget widget,
                                   const gfx::Point& location) OVERRIDE;
 

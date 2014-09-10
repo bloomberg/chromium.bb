@@ -52,8 +52,11 @@ IPC_STRUCT_TRAITS_END()
 // These are messages from the browser to the GPU process.
 
 // Update the HW cursor bitmap & move to specified location.
-IPC_MESSAGE_CONTROL3(OzoneGpuMsg_CursorSet,
-                     gfx::AcceleratedWidget, SkBitmap, gfx::Point)
+IPC_MESSAGE_CONTROL4(OzoneGpuMsg_CursorSet,
+                     gfx::AcceleratedWidget,
+                     std::vector<SkBitmap>,
+                     gfx::Point /* location */,
+                     int /* frame_delay_ms */)
 
 // Move the HW cursor to the specified location.
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CursorMove,

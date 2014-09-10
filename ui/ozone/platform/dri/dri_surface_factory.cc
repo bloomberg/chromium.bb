@@ -110,10 +110,15 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
 }
 
 void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                          const SkBitmap& image,
-                                          const gfx::Point& location) {
-  cursor_bitmap_ = image;
+                                          const std::vector<SkBitmap>& bitmaps,
+                                          const gfx::Point& location,
+                                          int frame_delay_ms) {
+  cursor_bitmaps_ = bitmaps;
   cursor_location_ = location;
+  cursor_frame_delay_ms_ = frame_delay_ms;
+
+  if (bitmaps.size() > 1)
+    NOTIMPLEMENTED();  // No animation of animated cursors.
 
   if (state_ != INITIALIZED)
     return;
@@ -141,10 +146,10 @@ void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget widget) {
   HardwareDisplayController* controller =
       window_manager_->GetWindowDelegate(widget)->GetController();
 
-  if (!cursor_bitmap_.empty()) {
+  if (cursor_bitmaps_.size()) {
     // Draw new cursor into backbuffer.
     UpdateCursorImage(cursor_buffers_[cursor_frontbuffer_ ^ 1].get(),
-                      cursor_bitmap_);
+                      cursor_bitmaps_[0]);
 
     // Reset location & buffer.
     if (controller) {

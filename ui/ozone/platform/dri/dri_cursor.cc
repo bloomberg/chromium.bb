@@ -32,16 +32,18 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
 
   cursor_ = cursor;
   if (cursor_.get())
-    hardware_->SetHardwareCursor(
-        cursor_window_, cursor_->bitmap(), bitmap_location());
+    hardware_->SetHardwareCursor(cursor_window_,
+                                 cursor_->bitmaps(),
+                                 bitmap_location(),
+                                 cursor_->frame_delay_ms());
   else
-    hardware_->SetHardwareCursor(cursor_window_, SkBitmap(), gfx::Point());
+    UnsetCursor(cursor_window_);
 }
 
 void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
                              const gfx::PointF& location) {
   if (widget != cursor_window_)
-    hardware_->SetHardwareCursor(cursor_window_, SkBitmap(), gfx::Point());
+    UnsetCursor(cursor_window_);
 
   cursor_window_ = widget;
   cursor_location_ = location;
@@ -73,6 +75,11 @@ gfx::PointF DriCursor::location() {
 gfx::Point DriCursor::bitmap_location() {
   return gfx::ToFlooredPoint(cursor_location_) -
          cursor_->hotspot().OffsetFromOrigin();
+}
+
+void DriCursor::UnsetCursor(gfx::AcceleratedWidget widget) {
+  hardware_->SetHardwareCursor(
+      widget, std::vector<SkBitmap>(), gfx::Point(), 0);
 }
 
 }  // namespace ui

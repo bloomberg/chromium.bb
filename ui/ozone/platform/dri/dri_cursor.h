@@ -37,6 +37,8 @@ class DriCursor : public CursorDelegateEvdev {
   virtual gfx::PointF location() OVERRIDE;
 
  private:
+  void UnsetCursor(gfx::AcceleratedWidget widget);
+
   // The location of the bitmap (the cursor location is the hotspot location).
   gfx::Point bitmap_location();
 

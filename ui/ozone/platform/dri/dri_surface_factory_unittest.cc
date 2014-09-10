@@ -130,8 +130,12 @@ TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
   image.allocPixels(info);
   image.eraseColor(SK_ColorWHITE);
 
-  factory_->SetHardwareCursor(
-      ui::DriSurfaceFactory::kDefaultWidgetHandle, image, gfx::Point(4, 2));
+  std::vector<SkBitmap> cursor_bitmaps;
+  cursor_bitmaps.push_back(image);
+  factory_->SetHardwareCursor(ui::DriSurfaceFactory::kDefaultWidgetHandle,
+                              cursor_bitmaps,
+                              gfx::Point(4, 2),
+                              0);
 
   SkBitmap cursor;
   // Buffers 0 and 1 are the cursor buffers.

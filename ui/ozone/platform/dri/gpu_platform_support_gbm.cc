@@ -83,9 +83,10 @@ void GpuPlatformSupportGbm::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
 }
 
 void GpuPlatformSupportGbm::OnCursorSet(gfx::AcceleratedWidget widget,
-                                        const SkBitmap& bitmap,
-                                        const gfx::Point& location) {
-  dri_->SetHardwareCursor(widget, bitmap, location);
+                                        const std::vector<SkBitmap>& bitmaps,
+                                        const gfx::Point& location,
+                                        int frame_delay_ms) {
+  dri_->SetHardwareCursor(widget, bitmaps, location, frame_delay_ms);
 }
 
 void GpuPlatformSupportGbm::OnCursorMove(gfx::AcceleratedWidget widget,
