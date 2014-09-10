@@ -269,8 +269,12 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitColumnSpan: return 225;
     case CSSPropertyWebkitColumnWidth: return 226;
     case CSSPropertyWebkitColumns: return 227;
-    // case CSSPropertyWebkitBoxDecorationBreak: return 228;
-    // case CSSPropertyWebkitFilter: return 229;
+#if defined(ENABLE_CSS_BOX_DECORATION_BREAK) && ENABLE_CSS_BOX_DECORATION_BREAK
+    case CSSPropertyWebkitBoxDecorationBreak: return 228;
+#endif
+#if defined(ENABLE_CSS_FILTERS) && ENABLE_CSS_FILTERS
+    case CSSPropertyWebkitFilter: return 229;
+#endif
     case CSSPropertyAlignContent: return 230;
     case CSSPropertyAlignItems: return 231;
     case CSSPropertyAlignSelf: return 232;
@@ -386,8 +390,12 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // case CSSPropertyWebkitWrapFlow: return 350;
     // case CSSPropertyWebkitWrapThrough: return 351;
     // CSSPropertyWebkitWrap was 352.
-    // case CSSPropertyWebkitTapHighlightColor: return 353;
-    // case CSSPropertyWebkitAppRegion: return 354;
+#if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
+    case CSSPropertyWebkitTapHighlightColor: return 353;
+#endif
+#if defined(ENABLE_DRAGGABLE_REGION) && ENABLE_DRAGGABLE_REGION
+    case CSSPropertyWebkitAppRegion: return 354;
+#endif
     case CSSPropertyClipPath: return 355;
     case CSSPropertyClipRule: return 356;
     case CSSPropertyMask: return 357;
@@ -429,7 +437,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyVectorEffect: return 393;
     case CSSPropertyWritingMode: return 394;
     // CSSPropertyWebkitSvgShadow has been removed, was return 395;
-    // CSSPropertyWebkitCursorVisibility has been removed, was return 396;
+#if defined(ENABLE_CURSOR_VISIBILITY) && ENABLE_CURSOR_VISIBILITY
+    case CSSPropertyWebkitCursorVisibility: return 396;
+#endif
     // CSSPropertyImageOrientation has been removed, was return 397;
     // CSSPropertyImageResolution has been removed, was return 398;
 #if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
