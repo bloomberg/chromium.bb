@@ -47,10 +47,10 @@ void DeviceController::Start() {
 
 DeviceController::DeviceController(scoped_ptr<Socket> host_socket,
                                    int exit_notifier_fd)
-    : weak_ptr_factory_(this),
-      host_socket_(host_socket.Pass()),
+    : host_socket_(host_socket.Pass()),
       exit_notifier_fd_(exit_notifier_fd),
-      construction_task_runner_(base::MessageLoopProxy::current()) {
+      construction_task_runner_(base::MessageLoopProxy::current()),
+      weak_ptr_factory_(this) {
   host_socket_->AddEventFd(exit_notifier_fd);
 }
 

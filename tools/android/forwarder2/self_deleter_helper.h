@@ -99,10 +99,10 @@ class SelfDeleterHelper {
 
   SelfDeleterHelper(T* self_deleting_object,
                     const DeletionCallback& deletion_callback)
-      : weak_ptr_factory_(this),
-        construction_runner_(base::MessageLoopProxy::current()),
+      : construction_runner_(base::MessageLoopProxy::current()),
         self_deleting_object_(self_deleting_object),
-        deletion_callback_(deletion_callback) {
+        deletion_callback_(deletion_callback),
+        weak_ptr_factory_(this) {
   }
 
   ~SelfDeleterHelper() {
@@ -123,10 +123,15 @@ class SelfDeleterHelper {
     deletion_callback_.Run(make_scoped_ptr(self_deleting_object_));
   }
 
-  base::WeakPtrFactory<SelfDeleterHelper<T> > weak_ptr_factory_;
   const scoped_refptr<base::SingleThreadTaskRunner> construction_runner_;
   T* const self_deleting_object_;
   const DeletionCallback deletion_callback_;
+
+  //WeakPtrFactory's documentation says:
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to Controller are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<SelfDeleterHelper<T> > weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeleterHelper);
 };

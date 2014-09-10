@@ -49,7 +49,6 @@ class DeviceController {
       const base::WeakPtr<DeviceController>& device_controller_ptr,
       scoped_ptr<DeviceListener> device_listener);
 
-  base::WeakPtrFactory<DeviceController> weak_ptr_factory_;
   const scoped_ptr<Socket> host_socket_;
   // Used to notify the controller to exit.
   const int exit_notifier_fd_;
@@ -57,6 +56,12 @@ class DeviceController {
   // created on.
   const scoped_refptr<base::SingleThreadTaskRunner> construction_task_runner_;
   ListenersMap listeners_;
+
+  //WeakPtrFactory's documentation says:
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to Controller are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<DeviceController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceController);
 };
