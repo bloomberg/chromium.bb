@@ -372,7 +372,7 @@ wl_shm_buffer_get_stride(struct wl_shm_buffer *buffer)
  * Returns a pointer which can be used to read the data contained in
  * the given SHM buffer.
  *
- * As this buffer is memory-mapped, reading it from may generate
+ * As this buffer is memory-mapped, reading from it may generate
  * SIGBUS signals. This can happen if the client claims that the
  * buffer is larger than it is or if something truncates the
  * underlying file. To prevent this signal from causing the compositor
