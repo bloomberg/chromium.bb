@@ -345,7 +345,7 @@ cr.define('login', function() {
 
       this.hideTooltip_(true);
       this.iconElement.classList.add('faded');
-      this.hideTransitionListener_ = this.hide_.bind(this);
+      this.hideTransitionListener_ = this.hide.bind(this);
       this.iconElement.addEventListener('webkitTransitionEnd',
                                         this.hideTransitionListener_);
       ensureTransitionEndEvent(this.iconElement, 200);
@@ -467,9 +467,8 @@ cr.define('login', function() {
 
     /**
      * Hides the icon. Makes sure the tooltip is hidden and animation reset.
-     * @private
      */
-    hide_: function() {
+    hide: function() {
       this.hideTooltip_(true);
       this.hidden = true;
       this.setAnimation(null);
@@ -2358,7 +2357,8 @@ cr.define('login', function() {
         return;
       }
 
-      pod.customIconElement.fadeOut();
+      // TODO(tengs): Allow option for a fading transition.
+      pod.customIconElement.hide();
     },
 
     /**

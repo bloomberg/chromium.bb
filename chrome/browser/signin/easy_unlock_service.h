@@ -84,11 +84,12 @@ class EasyUnlockService : public KeyedService {
   // Initializes the service after ExtensionService is ready.
   void Initialize();
 
-  // Loads the Easy unlock component app.
+  // Installs the Easy unlock component app if it isn't installed or enables
+  // the app if it is installed but disabled.
   void LoadApp();
 
-  // Unloads the Easy unlock component app.
-  void UnloadApp();
+  // Disables the Easy unlock component app.
+  void DisableApp();
 
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();
@@ -114,6 +115,12 @@ class EasyUnlockService : public KeyedService {
   TurnOffFlowStatus turn_off_flow_status_;
   scoped_ptr<EasyUnlockToggleFlow> turn_off_flow_;
   ObserverList<EasyUnlockServiceObserver> observers_;
+
+#if defined(OS_CHROMEOS)
+  // Monitors suspend and wake state of ChromeOS.
+  class PowerMonitor;
+  scoped_ptr<PowerMonitor> power_monitor_;
+#endif
 
   base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_;
 

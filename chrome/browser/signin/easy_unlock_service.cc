@@ -26,12 +26,15 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -105,6 +108,37 @@ class EasyUnlockService::BluetoothDetector
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
 };
+
+#if defined(OS_CHROMEOS)
+class EasyUnlockService::PowerMonitor :
+  public chromeos::PowerManagerClient::Observer {
+ public:
+  explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        AddObserver(this);
+  }
+
+  virtual ~PowerMonitor() {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        RemoveObserver(this);
+  }
+
+ private:
+  // chromeos::PowerManagerClient::Observer:
+  virtual void SuspendImminent() OVERRIDE {
+    service_->DisableApp();
+    service_->screenlock_state_handler_.reset();
+  }
+
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE {
+    service_->LoadApp();
+  }
+
+  EasyUnlockService* service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
+};
+#endif
 
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
@@ -319,26 +353,56 @@ void EasyUnlockService::LoadApp() {
 
   if (!easy_unlock_path.empty()) {
     extensions::ComponentLoader* loader = GetComponentLoader(profile_);
-    if (!loader->Exists(extension_misc::kEasyUnlockAppId))
+    if (!loader->Exists(extension_misc::kEasyUnlockAppId)) {
       loader->Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
+    } else {
+      extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(profile_);
+
+      // If the app is installed but disabled, then enable it.
+      if (registry->GetExtensionById(extension_misc::kEasyUnlockAppId,
+                                     extensions::ExtensionRegistry::DISABLED)) {
+        ExtensionService* extension_service =
+            extensions::ExtensionSystem::Get(profile_)->extension_service();
+        extension_service->EnableExtension(extension_misc::kEasyUnlockAppId);
+      }
+    }
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
-void EasyUnlockService::UnloadApp() {
+void EasyUnlockService::DisableApp() {
   extensions::ComponentLoader* loader = GetComponentLoader(profile_);
-  if (loader->Exists(extension_misc::kEasyUnlockAppId))
-    loader->Remove(extension_misc::kEasyUnlockAppId);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+
+  if (loader->Exists(extension_misc::kEasyUnlockAppId) &&
+      registry->GetExtensionById(extension_misc::kEasyUnlockAppId,
+                                 extensions::ExtensionRegistry::ENABLED)) {
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    extension_service->DisableExtension(extension_misc::kEasyUnlockAppId,
+                                        extensions::Extension::DISABLE_RELOAD);
+  }
 }
 
 void EasyUnlockService::UpdateAppState() {
   if (IsAllowed()) {
     LoadApp();
+
+#if defined(OS_CHROMEOS)
+  if (!power_monitor_)
+    power_monitor_.reset(new PowerMonitor(this));
+#endif
   } else {
-    UnloadApp();
+    DisableApp();
     // Reset the screenlock state handler to make sure Screenlock state set
     // by Easy Unlock app is reset.
     screenlock_state_handler_.reset();
+
+#if defined(OS_CHROMEOS)
+    power_monitor_.reset();
+#endif
   }
 }
 
