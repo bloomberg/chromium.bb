@@ -23,3 +23,6 @@ DeferredImageDecoderTest.drawIntoSkPictureProgressive
 
 # crbug.com/320005
 CoreAnimationCompositorAnimationsTest.ConvertTimingForCompositorIterationCount
+
+# crbug.com/412145
+TouchActionTest.Pan
