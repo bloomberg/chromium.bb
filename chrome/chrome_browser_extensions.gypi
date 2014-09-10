@@ -193,8 +193,6 @@
       'browser/extensions/api/declarative_content/content_constants.h',
       'browser/extensions/api/declarative_content/content_rules_registry.cc',
       'browser/extensions/api/declarative_content/content_rules_registry.h',
-      'browser/extensions/api/declarative_webrequest/request_stage.cc',
-      'browser/extensions/api/declarative_webrequest/request_stage.h',
       'browser/extensions/api/declarative_webrequest/webrequest_action.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_action.h',
       'browser/extensions/api/declarative_webrequest/webrequest_condition.cc',

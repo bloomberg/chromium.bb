@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/web_request_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
@@ -1986,7 +1986,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
       is_web_view_guest ? web_view_info.instance_id : 0);
   RulesRegistryKey rules_key(profile, webview_key);
   // If this check fails, check that the active stages are up-to-date in
-  // browser/extensions/api/declarative_webrequest/request_stage.h .
+  // extensions/browser/api/declarative_webrequest/request_stage.h .
   DCHECK(request_stage & extensions::kActiveStages);
 
   // Rules of the current |profile| may apply but we need to check also whether

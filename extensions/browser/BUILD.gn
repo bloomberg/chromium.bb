@@ -87,6 +87,8 @@ source_set("browser") {
       "api/cast_channel/logger.h",
       "api/cast_channel/logger_util.cc",
       "api/cast_channel/logger_util.h",
+      "api/declarative_webrequest/request_stage.cc",
+      "api/declarative_webrequest/request_stage.h",
       "api/declarative_webrequest/webrequest_constants.cc",
       "api/declarative_webrequest/webrequest_constants.h",
       "api/dns/dns_api.cc",

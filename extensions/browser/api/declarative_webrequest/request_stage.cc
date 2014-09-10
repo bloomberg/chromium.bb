@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
+#include "extensions/browser/api/declarative_webrequest/request_stage.h"
 
 #include "base/basictypes.h"
 

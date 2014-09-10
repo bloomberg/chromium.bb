@@ -355,6 +355,8 @@
         'browser/api/cast_channel/logger_util.cc',
         'browser/api/cast_channel/logger_util.h',
         'browser/api/declarative/deduping_factory.h',
+        'browser/api/declarative_webrequest/request_stage.cc',
+        'browser/api/declarative_webrequest/request_stage.h',
         'browser/api/declarative_webrequest/webrequest_constants.cc',
         'browser/api/declarative_webrequest/webrequest_constants.h',
         'browser/api/dns/dns_api.cc',

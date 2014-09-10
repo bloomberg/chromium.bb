@@ -13,9 +13,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/extensions/api/events.h"
+#include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "url/gurl.h"
 
 class WebRequestPermission;
