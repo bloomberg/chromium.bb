@@ -81,7 +81,11 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
 
 static inline bool includesDisallowedPseudoClass(const CSSSelector& selector)
 {
-    return selector.match() == CSSSelector::PseudoClass && selector.pseudoType() != CSSSelector::PseudoNot;
+    if (selector.pseudoType() == CSSSelector::PseudoNot) {
+        const CSSSelector* subSelector = selector.selectorList()->first();
+        return subSelector->match() == CSSSelector::PseudoClass;
+    }
+    return selector.match() == CSSSelector::PseudoClass;
 }
 
 bool HTMLContentElement::validateSelect() const

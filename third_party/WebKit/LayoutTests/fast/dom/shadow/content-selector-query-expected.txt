@@ -162,6 +162,18 @@ div, div:first-of-type
 PASS internals.isValidContentSelect(content) is false
 div:first-of-type, div:last-of-type
 PASS internals.isValidContentSelect(content) is false
+div:not(:not(div))
+PASS internals.isValidContentSelect(content) is false
+div:not(:hover)
+PASS internals.isValidContentSelect(content) is false
+div:not(div div)
+PASS internals.isValidContentSelect(content) is false
+div:not(div div:not)
+PASS internals.isValidContentSelect(content) is false
+div:not(div div:hover)
+PASS internals.isValidContentSelect(content) is false
+div div:not(:hover)
+PASS internals.isValidContentSelect(content) is false
 null
 PASS internals.isValidContentSelect(content) is true
 

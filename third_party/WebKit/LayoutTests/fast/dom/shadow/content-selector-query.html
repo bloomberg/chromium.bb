@@ -51,7 +51,7 @@ var dataOfInvalidCases = [
     'div:nth-last-of-type(1)', 'div:first-child', 'div:last-child', 'div:first-of-type',
     'div:last-of-type', 'div:only-of-type',
     'div:first-of-type:last-of-type', 'div.elem:visited', '*:visited',
-    'div:first-of-type, div', 'div, div:first-of-type', 'div:first-of-type, div:last-of-type',
+    'div:first-of-type, div', 'div, div:first-of-type', 'div:first-of-type, div:last-of-type', 'div:not(:not(div))', 'div:not(:hover)', 'div:not(div div)', 'div:not(div div:not)', 'div:not(div div:hover)', 'div div:not(:hover)',
 ];
 
 var dataOfValidCasesIfPseudoClassIsAllowed = [
