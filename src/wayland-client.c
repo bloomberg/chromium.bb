@@ -1152,8 +1152,13 @@ read_events(struct wl_display *display)
 	if (display->reader_count == 0) {
 		total = wl_connection_read(display->connection);
 		if (total == -1) {
-			if (errno == EAGAIN)
+			if (errno == EAGAIN) {
+				/* we must wake up threads whenever
+				 * the reader_count dropped to 0 */
+				display_wakeup_threads(display);
+
 				return 0;
+			}
 
 			display_fatal_error(display, errno);
 			return -1;
