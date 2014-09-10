@@ -547,17 +547,23 @@ void* operator new(size_t size, sandbox::AllocationType type,
                    void* near_to) {
   using namespace sandbox;
 
+  void* result = NULL;
   if (NT_ALLOC == type) {
-    if (!InitHeap())
-      return NULL;
-
-    // Use default flags for the allocation.
-    return g_nt.RtlAllocateHeap(sandbox::g_heap, 0, size);
+    if (InitHeap()) {
+      // Use default flags for the allocation.
+      result = g_nt.RtlAllocateHeap(sandbox::g_heap, 0, size);
+    }
   } else if (NT_PAGE == type) {
-    return AllocateNearTo(near_to, size);
+    result = AllocateNearTo(near_to, size);
+  } else {
+    NOTREACHED_NT();
   }
-  NOTREACHED_NT();
-  return NULL;
+
+  // TODO: Returning NULL from operator new has undefined behavior, but
+  // the Allocate() functions called above can return NULL. Consider checking
+  // for NULL here and crashing or throwing.
+
+  return result;
 }
 
 void operator delete(void* memory, sandbox::AllocationType type) {
