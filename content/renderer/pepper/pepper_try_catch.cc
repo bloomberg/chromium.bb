@@ -109,10 +109,9 @@ void PepperTryCatchV8::ThrowException(const char* message) {
 }
 
 void PepperTryCatchV8::SetException(const char* message) {
-  if (HasException()) {
-    NOTREACHED();
+  if (HasException())
     return;
-  }
+
   exception_ = ppapi::StringVar::StringToPPVar(message);
 }
 
@@ -156,10 +155,9 @@ bool PepperTryCatchVar::HasException() {
 }
 
 void PepperTryCatchVar::SetException(const char* message) {
-  if (exception_is_set_) {
-    NOTREACHED();
+  if (exception_is_set_)
     return;
-  }
+
   if (exception_)
     *exception_ = ppapi::StringVar::StringToPPVar(message, strlen(message));
   exception_is_set_ = true;
