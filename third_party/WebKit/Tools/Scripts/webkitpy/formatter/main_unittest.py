@@ -40,33 +40,32 @@ EXPECTED_CHROMIUM_OUTPUT = '''
 def foo():
   """triple-quoted docstring"""
   try:
-    bar = "bar"
+    bar = 'bar'
     long_list = [
-        "this is a list of strings that should be wrapped",
-        "and consistently quoted"]
+        'this is a list of strings that should be wrapped',
+        'and consistently quoted']
     longer_list = [
-        "this is a list of strings that should be wrapped",
-        "and consistently quoted",
+        'this is a list of strings that should be wrapped',
+        'and consistently quoted',
         "because it's important to test quoting"]
   except Exception as e:
     pass
 '''
 
+EXPECTED_ONLY_DOUBLE_QUOTED_OUTPUT = '''
+def foo():
+    """triple-quoted docstring"""
+    try:
+        bar = "bar"
+        long_list = ["this is a list of strings that should be wrapped", "and consistently quoted"]
+        longer_list = ["this is a list of strings that should be wrapped", "and consistently quoted", "because it's important to test quoting"]
+    except Exception, e:
+        pass
+'''
+
 
 class TestMain(unittest.TestCase):
     maxDiff = 4096
-
-    def test_stdin_blink(self):
-        host = MockSystemHost()
-        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
-        main(host, ['-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_BLINK_OUTPUT)
-
-    def test_stdin_chromium(self):
-        host = MockSystemHost()
-        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
-        main(host, ['--chromium', '-'])
-        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_CHROMIUM_OUTPUT)
 
     def test_files_blink(self):
         host = MockSystemHost()
@@ -84,3 +83,27 @@ class TestMain(unittest.TestCase):
         main(host, ['--no-backups', 'test.py'])
         self.assertEqual(host.filesystem.files, {
             'test.py': EXPECTED_BLINK_OUTPUT})
+
+    def test_stdin_blink(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
+        main(host, ['-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_BLINK_OUTPUT)
+
+    def test_stdin_chromium(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
+        main(host, ['--chromium', '-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_CHROMIUM_OUTPUT)
+
+    def test_stdin_no_changes(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
+        main(host, ['--no-autopep8', '--leave-strings-alone', '-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), ACTUAL_INPUT)
+
+    def test_stdin_only_double_quoting(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO(ACTUAL_INPUT)
+        main(host, ['--no-autopep8', '--double-quote-strings', '-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_ONLY_DOUBLE_QUOTED_OUTPUT)
