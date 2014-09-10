@@ -87,7 +87,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '280ff82b92d6382596194c445ffaac6c720ecf40', # from svn revision r13710
+  'nacl_revision': '040ce5b24430e8f114d50a359517e6f82aa43ecf', # from svn revision r13724
 }
 
 deps = {
