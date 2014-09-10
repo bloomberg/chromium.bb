@@ -80,7 +80,7 @@ void ShellNativeAppWindow::ShowInactive() {
 }
 
 void ShellNativeAppWindow::Close() {
-  NOTIMPLEMENTED();
+  app_window_->OnNativeClose();
 }
 
 void ShellNativeAppWindow::Activate() {

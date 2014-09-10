@@ -67,8 +67,11 @@ class ShellDesktopController : public DesktopController,
 
   // DesktopController:
   virtual aura::WindowTreeHost* GetHost() OVERRIDE;
-  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
-                                          const Extension* extension) OVERRIDE;
+  virtual ShellAppWindow* CreateShellAppWindow(
+      content::BrowserContext* context,
+      const Extension* extension) OVERRIDE;
+  virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
+                                     const Extension* extension) OVERRIDE;
   virtual void AddAppWindow(aura::Window* window) OVERRIDE;
   virtual void CloseAppWindows() OVERRIDE;
 
@@ -131,7 +134,8 @@ class ShellDesktopController : public DesktopController,
 #endif
 
   // The desktop supports a single app window.
-  scoped_ptr<ShellAppWindow> app_window_;
+  scoped_ptr<ShellAppWindow> shell_app_window_;
+  AppWindow* app_window_;  // NativeAppWindow::Close() deletes this.
 
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
 };

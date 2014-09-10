@@ -15,6 +15,7 @@ class BrowserContext;
 }
 
 namespace extensions {
+class AppWindow;
 class Extension;
 class ShellAppWindow;
 
@@ -35,11 +36,17 @@ class DesktopController {
   // Returns the WindowTreeHost created by this DesktopController.
   virtual aura::WindowTreeHost* GetHost() = 0;
 
+  // Creates a new ShellAppWindow and adds it to the desktop. The desktop
+  // maintains ownership of the window. The window must be closed before
+  // |extension| is destroyed.
+  virtual ShellAppWindow* CreateShellAppWindow(content::BrowserContext* context,
+                                               const Extension* extension) = 0;
+
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window. The window must be closed before |extension| is
   // destroyed.
-  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
-                                          const Extension* extension) = 0;
+  virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
+                                     const Extension* extension) = 0;
 
   // Attaches the window to our window hierarchy.
   virtual void AddAppWindow(aura::Window* window) = 0;

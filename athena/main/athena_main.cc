@@ -51,9 +51,9 @@ class AthenaDesktopController : public extensions::DesktopController {
     return athena::AthenaEnv::Get()->GetHost();
   }
 
-  // Creates a new app window and adds it to the desktop. The desktop maintains
-  // ownership of the window.
-  virtual extensions::ShellAppWindow* CreateAppWindow(
+  // Creates a new ShellAppWindow and adds it to the desktop. The desktop
+  // maintains ownership of the window.
+  virtual extensions::ShellAppWindow* CreateShellAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE {
     extensions::ShellAppWindow* app_window = new extensions::ShellAppWindow();
@@ -62,6 +62,15 @@ class AthenaDesktopController : public extensions::DesktopController {
         athena::ActivityFactory::Get()->CreateAppActivity(app_window,
                                                           extension->id()));
     return app_window;
+  }
+
+  // Creates a new app window and adds it to the desktop. The desktop maintains
+  // ownership of the window.
+  virtual extensions::AppWindow* CreateAppWindow(
+      content::BrowserContext* context,
+      const extensions::Extension* extension) OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
   }
 
   // Adds the window to the desktop.

@@ -6,7 +6,6 @@
 
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/shell/browser/desktop_controller.h"
-#include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_native_app_window.h"
 
 namespace extensions {
@@ -25,7 +24,7 @@ ShellAppsClient::GetLoadedBrowserContexts() {
 
 AppWindow* ShellAppsClient::CreateAppWindow(content::BrowserContext* context,
                                             const Extension* extension) {
-  return new AppWindow(context, new ShellAppDelegate, extension);
+  return DesktopController::instance()->CreateAppWindow(context, extension);
 }
 
 NativeAppWindow* ShellAppsClient::CreateNativeAppWindow(
