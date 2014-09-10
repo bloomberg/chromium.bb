@@ -19,8 +19,8 @@ namespace plugin {
 namespace {
 
 template <typename Val>
-nacl::string MakeCommandLineArg(const char* key, const Val val) {
-  nacl::stringstream ss;
+std::string MakeCommandLineArg(const char* key, const Val val) {
+  std::stringstream ss;
   ss << key << val;
   return ss.str();
 }
@@ -30,8 +30,8 @@ void GetLlcCommandLine(Plugin* plugin,
                        size_t obj_files_size,
                        int32_t opt_level,
                        bool is_debug,
-                       const nacl::string &architecture_attributes) {
-  typedef std::vector<nacl::string> Args;
+                       const std::string &architecture_attributes) {
+  typedef std::vector<std::string> Args;
   Args args;
 
   // TODO(dschuff): This CL override is ugly. Change llc to default to
@@ -76,7 +76,7 @@ void PnaclTranslateThread::RunTranslate(
     ErrorInfo* error_info,
     PnaclResources* resources,
     PP_PNaClOptions* pnacl_options,
-    const nacl::string &architecture_attributes,
+    const std::string &architecture_attributes,
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
@@ -215,8 +215,8 @@ void PnaclTranslateThread::DoTranslate() {
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error message is only present if the error was returned from llc
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
-                      nacl::string("Stream init failed: ") +
-                      nacl::string(params.outs()[0]->arrays.str));
+                      std::string("Stream init failed: ") +
+                      std::string(params.outs()[0]->arrays.str));
     } else {
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                       "Stream init internal error");
@@ -393,7 +393,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
 
 void PnaclTranslateThread::TranslateFailed(
     PP_NaClError err_code,
-    const nacl::string& error_string) {
+    const std::string& error_string) {
   PLUGIN_PRINTF(("PnaclTranslateThread::TranslateFailed (error_string='%s')\n",
                  error_string.c_str()));
   pp::Core* core = pp::Module::Get()->core();
@@ -401,7 +401,7 @@ void PnaclTranslateThread::TranslateFailed(
     // Only use our message if one hasn't already been set by the coordinator
     // (e.g. pexe load failed).
     coordinator_error_info_->SetReport(err_code,
-                                       nacl::string("PnaclCoordinator: ") +
+                                       std::string("PnaclCoordinator: ") +
                                        error_string);
   }
   core->CallOnMainThread(0, report_translate_finished_, PP_ERROR_FAILED);

@@ -9,28 +9,20 @@
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
 #include <string.h>
-#include <set>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 
-#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
-#include "native_client/src/shared/platform/scoped_ptr_refcount.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
-// remove when we no longer need to cast the DescWrapper below.
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
-#include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/public/imc_types.h"
@@ -81,7 +73,7 @@ void PluginReverseInterface::ShutDown() {
   NaClLog(4, "PluginReverseInterface::Shutdown: broadcasted, exiting\n");
 }
 
-void PluginReverseInterface::DoPostMessage(nacl::string message) {
+void PluginReverseInterface::DoPostMessage(std::string message) {
   // This feature is no longer used.
   // TODO(teravest): Remove this once this is gone from nacl::ReverseInterface.
 }
@@ -103,7 +95,7 @@ void PluginReverseInterface::StartupInitializationComplete() {
 // TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey
 // and invoke StreamAsFile with a completion callback that invokes
 // GetPOSIXFileDesc.
-bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
+bool PluginReverseInterface::OpenManifestEntry(std::string url_key,
                                                struct NaClFileInfo* info) {
   // This method should only ever be called from the PNaCl translator, as the
   // IRT is not available there.
@@ -239,7 +231,7 @@ void PluginReverseInterface::ReportExitStatus(int exit_status) {
 }
 
 int64_t PluginReverseInterface::RequestQuotaForWrite(
-    nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
+    std::string file_id, int64_t offset, int64_t bytes_to_write) {
   return bytes_to_write;
 }
 
@@ -524,7 +516,7 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
   }
 }
 
-bool ServiceRuntime::RemoteLog(int severity, const nacl::string& msg) {
+bool ServiceRuntime::RemoteLog(int severity, const std::string& msg) {
   NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(&command_channel_,
                                 "log:is:",

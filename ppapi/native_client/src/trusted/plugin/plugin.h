@@ -11,15 +11,10 @@
 
 #include <stdio.h>
 
-#include <map>
-#include <queue>
-#include <set>
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/include/nacl_string.h"
-#include "native_client/src/public/nacl_file_info.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/instance.h"
@@ -112,7 +107,7 @@ class Plugin : public pp::Instance {
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
-  NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
+  NaClSubprocess* LoadHelperNaClModule(const std::string& helper_url,
                                        PP_NaClFileInfo file_info,
                                        ErrorInfo* error_info);
 
@@ -183,7 +178,7 @@ class Plugin : public pp::Instance {
   void NaClManifestFileDidOpen(int32_t pp_error);
 
   // Processes the JSON manifest string and starts loading the nexe.
-  void ProcessNaClManifest(const nacl::string& manifest_json);
+  void ProcessNaClManifest(const std::string& manifest_json);
 
   // Keep track of the NaCl module subprocess that was spun up in the plugin.
   NaClSubprocess main_subprocess_;

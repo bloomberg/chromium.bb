@@ -14,7 +14,6 @@
 #include <stdarg.h>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
@@ -30,7 +29,7 @@ class SrpcParams;
 // A class representing an instance of a NaCl module, loaded by the plugin.
 class NaClSubprocess {
  public:
-  NaClSubprocess(const nacl::string& description,
+  NaClSubprocess(const std::string& description,
                  ServiceRuntime* service_runtime,
                  SrpcClient* srpc_client)
     : description_(description),
@@ -48,11 +47,11 @@ class NaClSubprocess {
   SrpcClient* srpc_client() const { return srpc_client_.get(); }
 
   // A basic description of the subprocess.
-  nacl::string description() const { return description_; }
+  std::string description() const { return description_; }
 
   // A detailed description of the subprocess that may contain addresses.
   // Only use for debugging, but do not expose this to untrusted webapps.
-  nacl::string detailed_description() const;
+  std::string detailed_description() const;
 
   // Start up interfaces.
   bool StartSrpcServices();
@@ -62,8 +61,8 @@ class NaClSubprocess {
   // on success any out-params (if any) will be placed in |out_params|.
   // Input types must be listed in |input_signature|, with the actual
   // arguments passed in as var-args.  Returns |true| on success.
-  bool InvokeSrpcMethod(const nacl::string& method_name,
-                        const nacl::string& input_signature,
+  bool InvokeSrpcMethod(const std::string& method_name,
+                        const std::string& input_signature,
                         SrpcParams* out_params,
                         ...);
 
@@ -73,12 +72,12 @@ class NaClSubprocess {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
 
-  bool VInvokeSrpcMethod(const nacl::string& method_name,
-                         const nacl::string& signature,
+  bool VInvokeSrpcMethod(const std::string& method_name,
+                         const std::string& signature,
                          SrpcParams* params,
                          va_list vl);
 
-  nacl::string description_;
+  std::string description_;
 
   // The service runtime representing the NaCl module instance.
   nacl::scoped_ptr<ServiceRuntime> service_runtime_;

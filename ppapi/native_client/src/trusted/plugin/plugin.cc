@@ -12,15 +12,10 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_string.h"
-#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -191,7 +186,7 @@ bool Plugin::LoadNaClModuleContinuationIntern() {
   return PP_ToBool(nacl_interface_->StartPpapiProxy(pp_instance()));
 }
 
-NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
+NaClSubprocess* Plugin::LoadHelperNaClModule(const std::string& helper_url,
                                              PP_NaClFileInfo file_info,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(

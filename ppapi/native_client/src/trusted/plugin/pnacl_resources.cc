@@ -17,8 +17,8 @@ namespace {
 
 static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
 
-nacl::string GetFullUrl(const nacl::string& partial_url) {
-  return nacl::string(kPnaclBaseUrl) + GetNaClInterface()->GetSandboxArch() +
+std::string GetFullUrl(const std::string& partial_url) {
+  return std::string(kPnaclBaseUrl) + GetNaClInterface()->GetSandboxArch() +
          "/" + partial_url;
 }
 

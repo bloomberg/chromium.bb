@@ -5,12 +5,9 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
 
-#include <set>
-#include <map>
 #include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -61,7 +58,7 @@ class PnaclCoordinator {
   // The factory method for translations.
   static PnaclCoordinator* BitcodeToNative(
       Plugin* plugin,
-      const nacl::string& pexe_url,
+      const std::string& pexe_url,
       const PP_PNaClOptions& pnacl_options,
       const pp::CompletionCallback& translate_notify_callback);
 
@@ -103,7 +100,7 @@ class PnaclCoordinator {
   // BitcodeToNative is the factory method for PnaclCoordinators.
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
-                   const nacl::string& pexe_url,
+                   const std::string& pexe_url,
                    const PP_PNaClOptions& pnacl_options,
                    const pp::CompletionCallback& translate_notify_callback);
 
@@ -129,12 +126,12 @@ class PnaclCoordinator {
   void ExitWithError();
   // Run |translate_notify_callback_| with an error condition that is not
   // PPAPI specific.  Also set ErrorInfo report.
-  void ReportNonPpapiError(PP_NaClError err, const nacl::string& message);
+  void ReportNonPpapiError(PP_NaClError err, const std::string& message);
   // Run when faced with a PPAPI error condition. Bring control back to the
   // plugin by invoking the |translate_notify_callback_|.
   // Also set ErrorInfo report.
   void ReportPpapiError(PP_NaClError err,
-                        int32_t pp_error, const nacl::string& message);
+                        int32_t pp_error, const std::string& message);
 
 
   // Keeps track of the pp_error upon entry to TranslateFinished,
@@ -159,13 +156,13 @@ class PnaclCoordinator {
   nacl::scoped_ptr<PnaclResources> resources_;
 
   // The URL for the pexe file.
-  nacl::string pexe_url_;
+  std::string pexe_url_;
   // Options for translation.
   PP_PNaClOptions pnacl_options_;
   // Architecture-specific attributes used for translation. These are
   // supplied by Chrome, not the developer, and are therefore different
   // from PNaCl options.
-  nacl::string architecture_attributes_;
+  std::string architecture_attributes_;
 
   // Object file, produced by the translator and consumed by the linker.
   std::vector<TempFile*> obj_files_;

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -36,8 +35,8 @@ class PnaclResources {
   // Start loading the resources.
   bool StartLoad();
 
-  const nacl::string& GetLlcUrl() { return llc_tool_name_; }
-  const nacl::string& GetLdUrl() { return ld_tool_name_; }
+  const std::string& GetLlcUrl() { return llc_tool_name_; }
+  const std::string& GetLdUrl() { return ld_tool_name_; }
 
   PP_NaClFileInfo TakeLlcFileInfo();
   PP_NaClFileInfo TakeLdFileInfo();
@@ -49,8 +48,8 @@ class PnaclResources {
   Plugin* plugin_;
 
   // Tool names for llc and ld; read from the resource info file.
-  nacl::string llc_tool_name_;
-  nacl::string ld_tool_name_;
+  std::string llc_tool_name_;
+  std::string ld_tool_name_;
 
   // File info for llc and ld executables, after they've been opened.
   // Only valid after the callback for StartLoad() has been called, and until

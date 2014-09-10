@@ -12,8 +12,8 @@
 
 namespace plugin {
 
-nacl::string NaClSubprocess::detailed_description() const {
-  nacl::stringstream ss;
+std::string NaClSubprocess::detailed_description() const {
+  std::stringstream ss;
   ss << description()
      << "={ this=" << static_cast<const void*>(this)
      << ", srpc_client=" << static_cast<void*>(srpc_client_.get())
@@ -40,8 +40,8 @@ bool NaClSubprocess::StartSrpcServices() {
   return NULL != srpc_client_.get();
 }
 
-bool NaClSubprocess::InvokeSrpcMethod(const nacl::string& method_name,
-                                      const nacl::string& input_signature,
+bool NaClSubprocess::InvokeSrpcMethod(const std::string& method_name,
+                                      const std::string& input_signature,
                                       SrpcParams* params,
                                       ...) {
   va_list vl;
@@ -51,8 +51,8 @@ bool NaClSubprocess::InvokeSrpcMethod(const nacl::string& method_name,
   return result;
 }
 
-bool NaClSubprocess::VInvokeSrpcMethod(const nacl::string& method_name,
-                                       const nacl::string& input_signature,
+bool NaClSubprocess::VInvokeSrpcMethod(const std::string& method_name,
+                                       const std::string& input_signature,
                                        SrpcParams* params,
                                        va_list vl) {
   if (NULL == srpc_client_.get()) {

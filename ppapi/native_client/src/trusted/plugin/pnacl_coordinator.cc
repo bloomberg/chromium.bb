@@ -4,10 +4,9 @@
 
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 
+#include <algorithm>
 #include <utility>
-#include <vector>
 
-#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -35,7 +34,7 @@ const int32_t kRatioMax = 10*100;          // max of 10x difference.
 const uint32_t kRatioBuckets = 100;
 
 void HistogramSizeKB(pp::UMAPrivate& uma,
-                     const nacl::string& name, int32_t kb) {
+                     const std::string& name, int32_t kb) {
   if (kb < 0) return;
   uma.HistogramCustomCounts(name,
                             kb,
@@ -44,7 +43,7 @@ void HistogramSizeKB(pp::UMAPrivate& uma,
 }
 
 void HistogramRatio(pp::UMAPrivate& uma,
-                    const nacl::string& name, int64_t a, int64_t b) {
+                    const std::string& name, int64_t a, int64_t b) {
   if (a < 0 || b <= 0) return;
   uma.HistogramCustomCounts(name,
                             100 * a / b,
@@ -52,7 +51,7 @@ void HistogramRatio(pp::UMAPrivate& uma,
                             kRatioBuckets);
 }
 
-nacl::string GetArchitectureAttributes(Plugin* plugin) {
+std::string GetArchitectureAttributes(Plugin* plugin) {
   pp::Var attrs_var(pp::PASS_REF,
                     plugin->nacl_interface()->GetCpuFeatureAttrs());
   return attrs_var.AsString();
@@ -91,7 +90,7 @@ PPP_PexeStreamHandler kPexeStreamHandler = {
 
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
-    const nacl::string& pexe_url,
+    const std::string& pexe_url,
     const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
@@ -115,7 +114,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
 
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
-    const nacl::string& pexe_url,
+    const std::string& pexe_url,
     const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback)
   : translate_finish_error_(PP_OK),
@@ -164,7 +163,7 @@ PP_FileHandle PnaclCoordinator::TakeTranslatedFileHandle() {
 }
 
 void PnaclCoordinator::ReportNonPpapiError(PP_NaClError err_code,
-                                           const nacl::string& message) {
+                                           const std::string& message) {
   ErrorInfo error_info;
   error_info.SetReport(err_code, message);
   plugin_->ReportLoadError(error_info);
@@ -173,8 +172,8 @@ void PnaclCoordinator::ReportNonPpapiError(PP_NaClError err_code,
 
 void PnaclCoordinator::ReportPpapiError(PP_NaClError err_code,
                                         int32_t pp_error,
-                                        const nacl::string& message) {
-  nacl::stringstream ss;
+                                        const std::string& message) {
+  std::stringstream ss;
   ss << "PnaclCoordinator: " << message << " (pp_error=" << pp_error << ").";
   ErrorInfo error_info;
   error_info.SetReport(err_code, ss.str());
@@ -298,7 +297,7 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
   if (handle == PP_kInvalidFileHandle) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,
-        nacl::string(
+        std::string(
             "PnaclCoordinator: Got bad temp file handle from GetNexeFd"));
     BitcodeStreamDidFinish(PP_ERROR_FAILED);
     return;
@@ -330,7 +329,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   if (!resources_->StartLoad()) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client (pnacl) component is not "
+        std::string("The Portable Native Client (pnacl) component is not "
                      "installed. Please consult chrome://components for more "
                       "information."));
     return;
@@ -384,7 +383,7 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       error_info_.SetReport(PP_NACL_ERROR_PNACL_PEXE_FETCH_NOACCESS,
                             "PnaclCoordinator: pexe load failed (no access).");
     } else {
-      nacl::stringstream ss;
+      std::stringstream ss;
       ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
       error_info_.SetReport(PP_NACL_ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }

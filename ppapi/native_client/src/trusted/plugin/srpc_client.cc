@@ -141,7 +141,7 @@ void SrpcClient::GetMethods() {
   }
 }
 
-bool SrpcClient::HasMethod(const nacl::string& method_name) {
+bool SrpcClient::HasMethod(const std::string& method_name) {
   bool has_method = (NULL != methods_[method_name]);
   PLUGIN_PRINTF((
       "SrpcClient::HasMethod (this=%p, method_name='%s', return %d)\n",
@@ -149,7 +149,7 @@ bool SrpcClient::HasMethod(const nacl::string& method_name) {
   return has_method;
 }
 
-bool SrpcClient::InitParams(const nacl::string& method_name,
+bool SrpcClient::InitParams(const std::string& method_name,
                             SrpcParams* params) {
   MethodInfo* method_info = methods_[method_name];
   if (method_info) {
@@ -158,7 +158,7 @@ bool SrpcClient::InitParams(const nacl::string& method_name,
   return false;
 }
 
-bool SrpcClient::Invoke(const nacl::string& method_name, SrpcParams* params) {
+bool SrpcClient::Invoke(const std::string& method_name, SrpcParams* params) {
   // It would be better if we could set the exception on each detailed failure
   // case.  However, there are calls to Invoke from within the plugin itself,
   // and these could leave residual exceptions pending.  This seems to be
