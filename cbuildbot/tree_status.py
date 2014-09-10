@@ -203,11 +203,11 @@ def _UpdateTreeStatus(status_url, message):
     logging.error('Unable to update tree status: %s', e)
     raise e
   else:
-    logging.info('Updated tree status to %s', message)
+    logging.info('Updated tree status with message: %s', message)
 
 
 def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
-                     status_url=None):
+                     status_url=None, dryrun=False):
   """Updates the tree status to |status| with additional |message|.
 
   Args:
@@ -216,6 +216,7 @@ def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
     announcer: The announcer the message.
     epilogue: The string to append to |message|.
     status_url: The URL of the tree status to update.
+    dryrun: If set, don't update the tree status.
   """
   if status_url is None:
     status_url = CROS_TREE_STATUS_UPDATE_URL
@@ -241,10 +242,14 @@ def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
   else:
     text = 'Tree is %(status)s (%(announcer)s: %(message)s)' % text_dict
 
-  _UpdateTreeStatus(status_url, text)
+  if dryrun:
+    logging.info('Would have updated the tree status with message: %s', text)
+  else:
+    _UpdateTreeStatus(status_url, text)
 
 
-def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None):
+def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None,
+                           dryrun=False):
   """Throttle or close the tree with |message|.
 
   By default, this function throttles the tree with an updated
@@ -262,6 +267,7 @@ def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None):
     internal: Whether the build is internal or not. Append the build type
       if this is set. Defaults to None.
     buildnumber: The build number to append.
+    dryrun: If set, generate the message but don't update the tree status.
   """
   # Get current tree status.
   status_dict = _GetStatusDict(CROS_TREE_STATUS_JSON_URL)
@@ -299,7 +305,9 @@ def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None):
 
   if buildnumber:
     announcer = '%s-%d' % (announcer, buildnumber)
-  UpdateTreeStatus(status, message, announcer=announcer, epilogue=epilogue)
+
+  UpdateTreeStatus(status, message, announcer=announcer, epilogue=epilogue,
+                   dryrun=dryrun)
 
 
 def _OpenSheriffURL(sheriff_url):
