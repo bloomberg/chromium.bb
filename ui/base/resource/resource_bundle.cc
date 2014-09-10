@@ -321,8 +321,10 @@ std::string ResourceBundle::LoadLocaleResources(
 
 void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {
+  DCHECK(!ui::GetSupportedScaleFactors().empty());
+  const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
   // Use the given resource pak for both common and localized resources.
-  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (!path.empty() && data_pack->LoadFromPath(path))
     AddDataPack(data_pack.release());
 
