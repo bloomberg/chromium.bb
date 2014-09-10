@@ -50,6 +50,12 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         url_request_context, blob_storage_context->context()->AsWeakPtr());
   }
 
+  virtual void TearDown() OVERRIDE {
+    base::RunLoop().RunUntilIdle();
+    cache_manager_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
   virtual bool MemoryOnly() { return false; }
 
   void BoolAndErrorCallback(
