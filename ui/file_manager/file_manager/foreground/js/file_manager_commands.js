@@ -60,7 +60,6 @@ CommandUtil.getCommandEntry = function(element) {
     // Check if it is Entry or not by checking for toURL().
     return entry && 'toURL' in entry ? entry : null;
   } else {
-    console.warn('Unsupported element');
     return null;
   }
 };
@@ -329,8 +328,11 @@ CommandHandler.COMMANDS_['unmount'] = {
    */
   execute: function(event, fileManager) {
     var root = CommandUtil.getCommandEntry(event.target);
-    if (!root)
+    if (!root) {
+      console.warn('unmount command executed on an element which does not ' +
+                   'have corresponding entry.');
       return;
+    }
     var errorCallback = function() {
       fileManager.alert.showHtml('', str('UNMOUNT_FAILED'));
     };
@@ -806,8 +808,12 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
    */
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
-    if (entry)
-      fileManager.createFolderShortcut(entry);
+    if (!entry) {
+      console.warn('create-folder-shortcut command executed on an element ' +
+                   'which does not have corresponding entry.');
+      return;
+    }
+    fileManager.createFolderShortcut(entry);
   },
 
   /**
@@ -846,8 +852,12 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
    */
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
-    if (entry)
-      fileManager.removeFolderShortcut(entry);
+    if (!entry) {
+      console.warn('remove-folder-shortcut command executed on an element ' +
+                   'which does not have corresponding entry.');
+      return;
+    }
+    fileManager.removeFolderShortcut(entry);
   },
 
   /**
