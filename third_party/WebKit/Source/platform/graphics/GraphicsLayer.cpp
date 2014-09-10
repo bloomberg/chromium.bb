@@ -29,8 +29,10 @@
 
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
@@ -273,6 +275,8 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
 {
     if (!m_client)
         return;
+    if (firstPaintInvalidationTrackingEnabled())
+        m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
     m_client->paintContents(this, context, m_paintingPhase, clip);
 }
@@ -897,10 +901,12 @@ void GraphicsLayer::setNeedsDisplay()
     }
 }
 
-void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect)
+void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, WebInvalidationDebugAnnotations annotations)
 {
     if (drawsContent()) {
         m_layer->layer()->invalidateRect(rect);
+        if (firstPaintInvalidationTrackingEnabled())
+            m_debugInfo.appendAnnotatedInvalidateRect(rect, annotations);
         addRepaintRect(rect);
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();

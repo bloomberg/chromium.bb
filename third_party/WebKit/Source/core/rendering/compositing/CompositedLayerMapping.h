@@ -132,7 +132,7 @@ public:
     void setSquashingContentsNeedDisplay();
     void setContentsNeedDisplay();
     // r is in the coordinate space of the layer's render object
-    void setContentsNeedDisplayInRect(const LayoutRect&);
+    void setContentsNeedDisplayInRect(const LayoutRect&, WebInvalidationDebugAnnotations);
 
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);

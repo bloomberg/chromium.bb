@@ -84,6 +84,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
@@ -98,6 +99,13 @@ namespace blink {
 namespace {
 
 static bool gModifyRenderTreeStructureAnyState = false;
+
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<const RenderObject> > RenderObjectWeakSet;
+RenderObjectWeakSet& renderObjectNeverHadPaintInvalidationSet()
+{
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<RenderObjectWeakSet>, set, (adoptPtrWillBeNoop(new RenderObjectWeakSet())));
+    return *set;
+}
 
 } // namespace
 
@@ -233,6 +241,9 @@ RenderObject::RenderObject(Node* node)
 #endif
     , m_bitfields(node)
 {
+    if (firstPaintInvalidationTrackingEnabled())
+        renderObjectNeverHadPaintInvalidationSet().add(this);
+
 #ifndef NDEBUG
     renderObjectCounter.increment();
 #endif
@@ -241,6 +252,9 @@ RenderObject::RenderObject(Node* node)
 
 RenderObject::~RenderObject()
 {
+    if (firstPaintInvalidationTrackingEnabled())
+        renderObjectNeverHadPaintInvalidationSet().remove(this);
+
     ASSERT(!m_hasAXObject);
 #if ENABLE(OILPAN)
     ASSERT(m_didCallDestroy);
@@ -1408,6 +1422,20 @@ LayoutRect RenderObject::paintingRootRect(LayoutRect& topLevelRect)
 
 void RenderObject::paint(PaintInfo&, const LayoutPoint&)
 {
+}
+
+void RenderObject::setHadPaintInvalidation()
+{
+    if (firstPaintInvalidationTrackingEnabled())
+        renderObjectNeverHadPaintInvalidationSet().remove(this);
+}
+
+bool RenderObject::hadPaintInvalidation() const
+{
+    if (!firstPaintInvalidationTrackingEnabled())
+        return true;
+
+    return !renderObjectNeverHadPaintInvalidationSet().contains(this);
 }
 
 const RenderLayerModelObject* RenderObject::containerForPaintInvalidation() const

@@ -35,6 +35,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
+#include "public/platform/WebInvalidationDebugAnnotations.h"
 
 #include "wtf/Vector.h"
 
@@ -46,6 +47,7 @@ public:
     virtual ~GraphicsLayerDebugInfo();
 
     virtual void appendAsTraceFormat(WebString* out) const OVERRIDE;
+    virtual void getAnnotatedInvalidationRects(WebVector<WebAnnotatedInvalidationRect>& rects) const OVERRIDE;
 
     GraphicsLayerDebugInfo* clone() const;
 
@@ -54,6 +56,9 @@ public:
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
     Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
+
+    void appendAnnotatedInvalidateRect(const FloatRect&, WebInvalidationDebugAnnotations);
+    void clearAnnotatedInvalidateRects();
 
 private:
     void appendLayoutRects(JSONObject*) const;
@@ -65,6 +70,7 @@ private:
     CompositingReasons m_compositingReasons;
     int m_ownerNodeId;
     Vector<LayoutRect> m_currentLayoutRects;
+    Vector<WebAnnotatedInvalidationRect> m_invalidations;
 };
 
 } // namespace blink

@@ -20,6 +20,8 @@
 #include "config.h"
 
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "public/platform/WebGraphicsLayerDebugInfo.h"
+#include "public/platform/WebVector.h"
 
 #include "wtf/text/CString.h"
 
@@ -42,6 +44,11 @@ void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
     *out = jsonObject->toJSONString();
 }
 
+void GraphicsLayerDebugInfo::getAnnotatedInvalidationRects(WebVector<WebAnnotatedInvalidationRect>& result) const
+{
+    result.assign(m_invalidations.data(), m_invalidations.size());
+}
+
 GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
 {
     GraphicsLayerDebugInfo* toReturn = new GraphicsLayerDebugInfo();
@@ -49,6 +56,7 @@ GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
         toReturn->currentLayoutRects().append(m_currentLayoutRects[i]);
     toReturn->setCompositingReasons(m_compositingReasons);
     toReturn->setOwnerNodeId(m_ownerNodeId);
+    toReturn->m_invalidations = m_invalidations;
     return toReturn;
 }
 
@@ -94,6 +102,20 @@ void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
         return;
 
     jsonObject->setNumber("owner_node", m_ownerNodeId);
+}
+
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, WebInvalidationDebugAnnotations annotations)
+{
+    WebAnnotatedInvalidationRect annotatedRect = {
+        WebFloatRect(rect),
+        annotations
+    };
+    m_invalidations.append(annotatedRect);
+}
+
+void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects()
+{
+    m_invalidations.clear();
 }
 
 } // namespace blink

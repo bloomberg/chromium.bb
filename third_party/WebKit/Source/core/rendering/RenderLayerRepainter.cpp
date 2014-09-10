@@ -96,14 +96,20 @@ void RenderLayerRepainter::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(m_renderer.compositingState() != NotComposited);
+
+    WebInvalidationDebugAnnotations annotations = WebInvalidationDebugAnnotationsNone;
+    if (!m_renderer.hadPaintInvalidation())
+        annotations = WebInvalidationDebugAnnotationsFirstPaint;
+    m_renderer.setHadPaintInvalidation();
+
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
     if (m_renderer.layer()->groupedMapping()) {
         LayoutRect paintInvalidationRect = r;
         paintInvalidationRect.move(m_renderer.layer()->subpixelAccumulation());
         if (GraphicsLayer* squashingLayer = m_renderer.layer()->groupedMapping()->squashingLayer())
-            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect));
+            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), annotations);
     } else {
-        m_renderer.layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r);
+        m_renderer.layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, annotations);
     }
 }
 

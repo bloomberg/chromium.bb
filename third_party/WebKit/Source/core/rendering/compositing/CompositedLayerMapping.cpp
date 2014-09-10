@@ -2028,21 +2028,23 @@ struct SetContentsNeedsDisplayInRectFunctor {
         if (layer->drawsContent()) {
             IntRect layerDirtyRect = r;
             layerDirtyRect.move(-layer->offsetFromRenderer());
-            layer->setNeedsDisplayInRect(layerDirtyRect);
+            layer->setNeedsDisplayInRect(layerDirtyRect, annotations);
         }
     }
 
     IntRect r;
+    WebInvalidationDebugAnnotations annotations;
 };
 
 // r is in the coordinate space of the layer's render object
-void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r)
+void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, WebInvalidationDebugAnnotations annotations)
 {
     // FIXME: need to split out paint invalidations for the background.
     ASSERT(!paintsIntoCompositedAncestor());
 
     SetContentsNeedsDisplayInRectFunctor functor = {
-        pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())
+        pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size()),
+        annotations
     };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }

@@ -35,9 +35,14 @@
 
 namespace blink {
 
+struct WebAnnotatedInvalidationRect;
+template <typename T>
+class WebVector;
+
 class WebGraphicsLayerDebugInfo {
 public:
     virtual void appendAsTraceFormat(WebString* out) const = 0;
+    virtual void getAnnotatedInvalidationRects(WebVector<WebAnnotatedInvalidationRect>&) const = 0;
     virtual ~WebGraphicsLayerDebugInfo() { }
 };
 

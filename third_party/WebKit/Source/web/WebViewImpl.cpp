@@ -109,6 +109,7 @@
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/scheduler/Scheduler.h"
@@ -861,6 +862,7 @@ void WebViewImpl::setShowPaintRects(bool show)
         m_layerTreeView->setShowPaintRects(show);
     }
     m_showPaintRects = show;
+    setFirstPaintInvalidationTrackingEnabledForShowPaintRects(show);
 }
 
 void WebViewImpl::setShowDebugBorders(bool show)

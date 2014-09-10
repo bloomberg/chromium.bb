@@ -41,6 +41,7 @@
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
+#include "public/platform/WebInvalidationDebugAnnotations.h"
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebNinePatchLayer.h"
@@ -182,7 +183,7 @@ public:
 
     void setNeedsDisplay();
     // mark the given rect (in layer coords) as needing dispay. Never goes deep.
-    void setNeedsDisplayInRect(const FloatRect&);
+    void setNeedsDisplayInRect(const FloatRect&, WebInvalidationDebugAnnotations);
 
     void setContentsNeedsDisplay();
 

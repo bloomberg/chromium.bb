@@ -569,6 +569,8 @@
       'graphics/DisplayList.h',
       'graphics/DrawLooperBuilder.cpp',
       'graphics/DrawLooperBuilder.h',
+      'graphics/FirstPaintInvalidationTracking.cpp',
+      'graphics/FirstPaintInvalidationTracking.h',
       'graphics/FrameData.cpp',
       'graphics/FrameData.h',
       'graphics/GeneratedImage.cpp',
