@@ -290,6 +290,11 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
+            
+            # Dependencies of component_updater
+            'components.gyp:component_updater',
+            'components.gyp:component_updater_test_support',
+            '../third_party/libxml/libxml.gyp:libxml',
 
             # Dependencies of crash
             'components.gyp:crash_test_support',
@@ -444,11 +449,6 @@
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
 
-                # Dependencies of component_updater
-                'components.gyp:component_updater',
-                'components.gyp:component_updater_test_support',
-                '../third_party/libxml/libxml.gyp:libxml',
-
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',
 
@@ -495,6 +495,7 @@
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/core/'],
                 ['include', '^bookmarks/'],
+                ['include', '^component_updater/'],
                 ['include', '^crash/'],
                 ['include', '^data_reduction_proxy/'],
                 ['include', '^dom_distiller/'],

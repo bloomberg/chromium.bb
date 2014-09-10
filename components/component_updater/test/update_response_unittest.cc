@@ -122,7 +122,7 @@ const char* kInvalidVersion =
 // must be able to parse responses that include namespaces.
 const char* kUsesNamespacePrefix =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<g:response xmlns='http://www.google.com/update2/response' protocol='3.0'>"
+    "<g:response xmlns:g='http://www.google.com/update2/response' protocol='3.0'>"
     " <g:app appid='12345'>"
     "   <g:updatecheck status='ok'>"
     "     <g:urls>"
