@@ -59,7 +59,7 @@ class SecurityOrigin;
 
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
-typedef Vector<RefPtrWillBeRawPtr<ConsoleMessage> > ConsoleMessageVector;
+typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage> > ConsoleMessageVector;
 
 class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -156,7 +156,7 @@ public:
 
     bool isActive() const;
 
-    void logToConsole(PassRefPtr<ConsoleMessage>);
+    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
     void reportDuplicateDirective(const String&);

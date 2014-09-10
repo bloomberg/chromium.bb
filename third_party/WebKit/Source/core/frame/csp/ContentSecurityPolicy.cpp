@@ -791,7 +791,7 @@ void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel lev
     logToConsole(ConsoleMessage::create(SecurityMessageSource, level, message));
 }
 
-void ContentSecurityPolicy::logToConsole(PassRefPtr<ConsoleMessage> consoleMessage)
+void ContentSecurityPolicy::logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     if (m_executionContext)
         m_executionContext->addConsoleMessage(consoleMessage);
