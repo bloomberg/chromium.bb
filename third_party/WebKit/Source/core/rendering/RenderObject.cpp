@@ -1466,6 +1466,15 @@ void addJsonObjectForRect(TracedValue* value, const char* name, const T& rect)
     value->endDictionary();
 }
 
+template <typename T>
+void addJsonObjectForPoint(TracedValue* value, const char* name, const T& point)
+{
+    value->beginDictionary(name);
+    value->setDouble("x", point.x());
+    value->setDouble("y", point.y());
+    value->endDictionary();
+}
+
 static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
     RefPtr<TracedValue> value = TracedValue::create();
@@ -1612,11 +1621,13 @@ void RenderObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationStat
     }
 }
 
-static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
+static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    addJsonObjectForRect(value.get(), "old", oldRect);
-    addJsonObjectForRect(value.get(), "new", newRect);
+    addJsonObjectForRect(value.get(), "oldRect", oldRect);
+    addJsonObjectForPoint(value.get(), "oldLocation", oldLocation);
+    addJsonObjectForRect(value.get(), "newRect", newRect);
+    addJsonObjectForPoint(value.get(), "newLocation", newLocation);
     return value;
 }
 
@@ -1641,7 +1652,7 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
-        "info", jsonObjectForOldAndNewRects(oldBounds, newBounds));
+        "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
 
     InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
