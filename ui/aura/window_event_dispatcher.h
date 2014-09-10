@@ -88,7 +88,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // event during the event dispatch. Once the event is properly processed, the
   // window should let the WindowEventDispatcher know about the result of the
   // event processing, so that gesture events can be properly created and
-  // dispatched.
+  // dispatched. |event|'s location should be in the dispatcher's coordinate
+  // space, in DIPs.
   void ProcessedTouchEvent(ui::TouchEvent* event,
                            Window* window,
                            ui::EventResult result);

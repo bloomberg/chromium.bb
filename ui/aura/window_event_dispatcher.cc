@@ -159,12 +159,10 @@ DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
 void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
                                                 Window* window,
                                                 ui::EventResult result) {
-  ui::TouchEvent orig_event(*event, window, this->window());
-
   // TODO(tdresser): Move this to PreDispatchTouchEvent, to enable eager
   // gesture detection. See crbug.com/410280.
   if (!ui::GestureRecognizer::Get()
-           ->ProcessTouchEventPreDispatch(orig_event, window)) {
+           ->ProcessTouchEventPreDispatch(*event, window)) {
     return;
   }
 
@@ -172,7 +170,7 @@ void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
   // pass an event here.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures(
       ui::GestureRecognizer::Get()->ProcessTouchEventOnAsyncAck(
-          orig_event, result, window));
+          *event, result, window));
   DispatchDetails details = ProcessGestures(gestures.get());
   if (details.dispatcher_destroyed)
     return;
