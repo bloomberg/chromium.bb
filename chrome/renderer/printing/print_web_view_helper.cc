@@ -68,6 +68,12 @@ const char kPageLoadScriptFormat[] =
 
 const char kPageSetupScriptFormat[] = "setup(%s);";
 
+#if defined(ENABLE_FULL_PRINTING)
+bool g_is_preview_enabled_ = true;
+#else
+bool g_is_preview_enabled_ = false;
+#endif
+
 void ExecuteScript(blink::WebFrame* frame,
                    const char* script_format,
                    const base::Value& parameters) {
@@ -791,14 +797,23 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
+// static
+void PrintWebViewHelper::DisablePreview() {
+  g_is_preview_enabled_ = false;
+}
+
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
     blink::WebFrame* frame, bool user_initiated) {
 #if defined(OS_ANDROID)
   return false;
 #endif  // defined(OS_ANDROID)
-  if (is_scripted_printing_blocked_)
-    return false;
-  return true;
+  // If preview is enabled, then the print dialog is tab modal, and the user
+  // can always close the tab on a mis-behaving page (the system print dialog
+  // is app modal). If the print was initiated through user action, don't
+  // throttle. Or, if the command line flag to skip throttling has been set.
+  return !is_scripted_printing_blocked_ &&
+         (user_initiated || g_is_preview_enabled_ ||
+          scripting_throttler_.IsAllowed(frame));
 }
 
 void PrintWebViewHelper::DidStartLoading() {
@@ -827,8 +842,13 @@ void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
 
   if (!IsScriptInitiatedPrintAllowed(frame, user_initiated))
     return;
-  print_preview_context_.InitWithFrame(frame);
-  RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
+
+  if (!g_is_preview_enabled_) {
+    Print(frame, blink::WebNode());
+  } else {
+    print_preview_context_.InitWithFrame(frame);
+    RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
+  }
 }
 
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
@@ -1220,13 +1240,17 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
 
   // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
   // its |context_menu_node_|.
-  print_preview_context_.InitWithNode(node);
-  RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE);
+  if (!g_is_preview_enabled_) {
+    blink::WebNode duplicate_node(node);
+    Print(duplicate_node.document().frame(), duplicate_node);
+  } else {
+    print_preview_context_.InitWithNode(node);
+    RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE);
+  }
 
   print_node_in_progress_ = false;
 }
 
-#if !defined(DISABLE_BASIC_PRINTING)
 void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
                                const blink::WebNode& node) {
   // If still not finished with earlier print request simply ignore.
@@ -1259,8 +1283,8 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }
+  scripting_throttler_.Reset();
 }
-#endif  // !DISABLE_BASIC_PRINTING
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   switch (result) {
@@ -1968,6 +1992,51 @@ void PrintWebViewHelper::SetPrintPagesParams(
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
+}
+
+PrintWebViewHelper::ScriptingThrottler::ScriptingThrottler() : count_(0) {
+}
+
+bool PrintWebViewHelper::ScriptingThrottler::IsAllowed(blink::WebFrame* frame) {
+  const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
+  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 32;
+  bool too_frequent = false;
+
+  // Check if there is script repeatedly trying to print and ignore it if too
+  // frequent.  The first 3 times, we use a constant wait time, but if this
+  // gets excessive, we switch to exponential wait time. So for a page that
+  // calls print() in a loop the user will need to cancel the print dialog
+  // after: [2, 2, 2, 4, 8, 16, 32, 32, ...] seconds.
+  // This gives the user time to navigate from the page.
+  if (count_ > 0) {
+    base::TimeDelta diff = base::Time::Now() - last_print_;
+    int min_wait_seconds = kMinSecondsToIgnoreJavascriptInitiatedPrint;
+    if (count_ > 3) {
+      min_wait_seconds =
+          std::min(kMinSecondsToIgnoreJavascriptInitiatedPrint << (count_ - 3),
+                   kMaxSecondsToIgnoreJavascriptInitiatedPrint);
+    }
+    if (diff.InSeconds() < min_wait_seconds) {
+      too_frequent = true;
+    }
+  }
+
+  if (!too_frequent) {
+    ++count_;
+    last_print_ = base::Time::Now();
+    return true;
+  }
+
+  blink::WebString message(
+      blink::WebString::fromUTF8("Ignoring too frequent calls to print()."));
+  frame->addMessageToConsole(blink::WebConsoleMessage(
+      blink::WebConsoleMessage::LevelWarning, message));
+  return false;
+}
+
+void PrintWebViewHelper::ScriptingThrottler::Reset() {
+  // Reset counter on successful print.
+  count_ = 0;
 }
 
 }  // namespace printing

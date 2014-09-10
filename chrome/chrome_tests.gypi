@@ -2080,10 +2080,14 @@
             ['exclude', '^browser/printing/print_preview_pdf_generated_browsertest.cc'],
             ['exclude', '^browser/service_process/service_process_control_browsertest.cc'],
             ['exclude', '^browser/ui/webui/print_preview/print_preview_ui_browsertest.cc'],
-            ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
             ['exclude', '^test/data/webui/print_preview.cc'],
             ['exclude', '^test/data/webui/print_preview.h'],
             ['exclude', '^test/data/webui/print_preview.js'],
+          ],
+        }],
+        ['enable_printing==0', {
+          'sources/': [
+            ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
           ],
         }],
         ['enable_mdns==1', {

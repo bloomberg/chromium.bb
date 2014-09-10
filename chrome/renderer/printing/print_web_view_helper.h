@@ -69,6 +69,10 @@ class PrintWebViewHelper
   explicit PrintWebViewHelper(content::RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
+  // Disable print preview and switch to system dialog printing even if full
+  // printing is build-in. This method is used by CEF.
+  static void DisablePreview();
+
   bool IsPrintingEnabled();
 
   void PrintNode(const blink::WebNode& node);
@@ -78,7 +82,11 @@ class PrintWebViewHelper
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
-
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+                           BlockScriptInitiatedPrinting);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+                           BlockScriptInitiatedPrintingFromPopup);
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintWithIframe);
@@ -309,6 +317,7 @@ class PrintWebViewHelper
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   bool is_print_ready_metafile_sent_;
   bool ignore_css_margins_;
+
   // Used for scripted initiated printing blocking.
   bool is_scripted_printing_blocked_;
 
@@ -427,6 +436,25 @@ class PrintWebViewHelper
 
     State state_;
   };
+
+  class ScriptingThrottler {
+   public:
+    ScriptingThrottler();
+
+    // Returns false if script initiated printing occurs too often.
+    bool IsAllowed(blink::WebFrame* frame);
+
+    // Reset the counter for script initiated printing.
+    // Scripted printing will be allowed to continue.
+    void Reset();
+
+   private:
+    base::Time last_print_;
+    int count_ = 0;
+    DISALLOW_COPY_AND_ASSIGN(ScriptingThrottler);
+  };
+
+  ScriptingThrottler scripting_throttler_;
 
   bool print_node_in_progress_;
   PrintPreviewContext print_preview_context_;
