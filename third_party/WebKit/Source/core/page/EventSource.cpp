@@ -33,7 +33,6 @@
 #include "config.h"
 #include "core/page/EventSource.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -48,6 +47,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/ThreadableLoader.h"
+#include "core/page/EventSourceInit.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -59,10 +59,10 @@ namespace blink {
 
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
-inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const Dictionary& eventSourceInit)
+inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const EventSourceInit* eventSourceInit)
     : ActiveDOMObject(context)
     , m_url(url)
-    , m_withCredentials(false)
+    , m_withCredentials(eventSourceInit->withCredentials())
     , m_state(CONNECTING)
     , m_decoder(TextResourceDecoder::create("text/plain", "UTF-8"))
     , m_connectTimer(this, &EventSource::connectTimerFired)
@@ -70,10 +70,9 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
 {
-    DictionaryHelper::get(eventSourceInit, "withCredentials", m_withCredentials);
 }
 
-PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit* eventSourceInit, ExceptionState& exceptionState)
 {
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");

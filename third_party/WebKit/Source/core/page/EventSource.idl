@@ -32,7 +32,7 @@
 [
     WillBeGarbageCollected,
     ActiveDOMObject,
-    Constructor(DOMString url, optional Dictionary eventSourceInit),
+    Constructor(DOMString url, optional EventSourceInit eventSourceInit),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
