@@ -4,7 +4,7 @@
 
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 

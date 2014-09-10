@@ -5,7 +5,7 @@
 #include "extensions/browser/file_reader.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 

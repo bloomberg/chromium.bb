@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"

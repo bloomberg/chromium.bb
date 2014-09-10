@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "components/crx_file/id_util.h"

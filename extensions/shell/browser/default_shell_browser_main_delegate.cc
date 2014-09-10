@@ -5,8 +5,8 @@
 #include "extensions/shell/browser/default_shell_browser_main_delegate.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/common/switches.h"

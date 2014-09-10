@@ -4,7 +4,7 @@
 
 #include "apps/app_shim/unix_domain_socket_acceptor.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "ipc/unix_domain_socket_util.h"

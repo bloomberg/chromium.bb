@@ -5,7 +5,7 @@
 #include "extensions/browser/verified_contents.h"
 
 #include "base/base64.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

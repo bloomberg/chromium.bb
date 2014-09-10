@@ -5,7 +5,7 @@
 #include "extensions/browser/content_hash_reader.h"
 
 #include "base/base64.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"

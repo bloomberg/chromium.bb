@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
