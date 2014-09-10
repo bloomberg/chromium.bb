@@ -10,7 +10,7 @@ without disrupting what's in front of them.
 You can keep your users informed and help them decide
 when is a good time to re-engage with your app using
 <a href="cloudMessaging">Google Cloud Messaging (GCM)</a> and
-<a href="richNotifications">Rich Notifications</a> APIs. 
+<a href="richNotifications">Rich Notifications</a> APIs.
 </p>
 
 <p><img src="{{static}}/images/notifications.png"
@@ -19,8 +19,8 @@ when is a good time to re-engage with your app using
 
 <p class="note">
 <b>GCM and Rich Notifications sample</b><br>
-The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gcm-notifications">gcm-notifications sample</a>
-shows a simple integration between GCM and Rich Notifications API. 
+The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/gcm-notifications">gcm-notifications sample</a>
+shows a simple integration between GCM and Rich Notifications API.
 </p>
 
 <h2 id="summary_workflow">Summary of user workflow</h2>
@@ -95,7 +95,7 @@ you need to <a href="cloudMessaging#enable_gcm">enable it first</a>.
 <h2 id="send_message">Send message to app</h2>
 
 <p>
-Use the <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gcm-notifications">gcm-notifications sample</a>
+Use the <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/gcm-notifications">gcm-notifications sample</a>
 to generate a curl command to send a message to the server:
 </p>
 
@@ -123,16 +123,16 @@ the event handler creates a notification:
   function messageReceived(message) {
     // A message is an object with a data property that
     // consists of key-value pairs.
-  
+
     // Returns a new notification ID used in the notification.
     function getNotificationId() {
-      var id = Math.floor(Math.random() * 9007199254740992) + 1; 
+      var id = Math.floor(Math.random() * 9007199254740992) + 1;
       //Stores latest notification ID so that event handlers can access
       //notification when background page is closed.
       chrome.storage.local.set({'id': id});
       return id.toString();
     }
-  
+
     // Concatenate all key-value pairs to form a display string.
     var messageString = "";
     for (var key in message.data) {
@@ -140,7 +140,7 @@ the event handler creates a notification:
         messageString += ", "
       messageString += key + ":" + message.data[key];
     }
-  
+
     // Pop up a notification to show the GCM message.
     chrome.notifications.create(getNotificationId(), {
       title: 'New email',

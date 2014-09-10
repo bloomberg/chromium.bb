@@ -5,7 +5,7 @@
 // Use the <code>chrome.app.window</code> API to create windows. Windows
 // have an optional frame with title bar and size controls. They are not
 // associated with any Chrome browser windows. See the <a
-// href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/window-state">
+// href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/window-state">
 // Window State Sample</a> for a demonstration of these options.
 namespace app.window {
 

@@ -6,7 +6,7 @@ GITILES_BASE = 'https://chromium.googlesource.com/chromium/src/+'
 GITILES_BRANCH_BASE = '%s/refs/branch-heads' % GITILES_BASE
 
 GITHUB_REPOS = 'https://api.github.com/repos'
-GITHUB_BASE = 'https://github.com/GoogleChrome/chrome-app-samples/tree/master'
+GITHUB_BASE = 'https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples'
 RAW_GITHUB_BASE = ('https://github.com/GoogleChrome/chrome-app-samples/raw/'
                    'master')
 OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'

@@ -7,7 +7,7 @@ with the <a href="http://angularjs.org/">AngularJS</a> MVC framework.
 To illustrate Angular in action,
 we'll be referencing an actual app built using the framework,
 the Google Drive Uploader.
-The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/gdrive">source code</a>
+The <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/gdrive">source code</a>
 is available on GitHub.
 </p>
 
@@ -128,11 +128,11 @@ to launch the app and respond to system events.
 
 <p>
 In its
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/background.js">background.js</a> 
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/background.js">background.js</a>
 script,
 Drive Uploader opens a 500x600px window to the main page.
 It also specifies a minimum height and width for the window
-so the content doesn't become too crunched: 
+so the content doesn't become too crunched:
 </p>
 
 <pre data-filename="background.js">
@@ -204,7 +204,7 @@ this button is hooked up to <code>window.close()</code>.
 <h2 id="four">Designing the app the Angular way</h2>
 
 <p>
-Angular is an MVC framework, so we need to define the app in such a way that a 
+Angular is an MVC framework, so we need to define the app in such a way that a
 model, view, and controller logically fall out of it. Luckily, this is trivial when using Angular.
 </p>
 
@@ -223,7 +223,7 @@ In Angular, templates are simple blocks of HTML with some special sauce.
 <p>
 Ultimately we want to display the user's list of files.
 For that, a simple &lt;ul> list makes sense.
-The Angular bits are highlighted in bold: 
+The Angular bits are highlighted in bold:
 </p>
 
 <pre data-filename="main.html">
@@ -503,7 +503,7 @@ along with other custom headers and parameters.
 
 <p>
 The <code>successCallback</code> processes the API response and
-creates a new doc object for each entry in the feed. 
+creates a new doc object for each entry in the feed.
 </p>
 
 <p>
@@ -640,7 +640,7 @@ $scope.fetchDocs = function() {
       <strong>var fsURL = fs.root.toURL() + FOLDERNAME + '/' + doc.iconFilename;
       window.webkitResolveLocalFileSystemURL(fsURL, function(entry) {
         doc.icon = entry.toURL(); // should be === to fsURL, but whatevs.</strong>
-        
+
         $scope.docs.push(doc); // add doc to model.
 
         // Only want to sort and call $apply() when we have all entries.
@@ -651,7 +651,7 @@ $scope.fetchDocs = function() {
 
       <strong>}, function(e) {
         // Error: file doesn't exist yet. XHR it in and write it to the FS.
-        
+
         $http.get(doc.icon, {responseType: 'blob'}).success(function(blob) {
           console.log('Fetched icon via XHR');
 
@@ -742,7 +742,7 @@ Simply adding this to the gdocs service does the job:
 <pre data-filename="app.js">
 gDriveApp.factory('gdocs', function() {
   var gdocs = new GDocs();
-  
+
   var dnd = new DnDFileController('body', function(files) {
     var $scope = angular.element(this).scope();
     Util.toArray(files).forEach(function(file, i) {

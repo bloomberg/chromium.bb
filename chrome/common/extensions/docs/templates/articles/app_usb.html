@@ -10,10 +10,10 @@ Chrome Apps can also connect to <a href="serial">serial</a> and
 
 <p class="note">
 <b>Samples:</b> For examples that illustrate how Chrome Apps can connect to hardware devices, see the
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/serial">serial</a>,
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/servo">servo</a>,
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/usb">usb</a>, and
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/zephyr_hxm">zephyr_hxm
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/serial">serial</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/servo">servo</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/usb">usb</a>, and
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/zephyr_hxm">zephyr_hxm
 Bluetooth</a> samples.
 </p>
 
@@ -639,7 +639,7 @@ chrome.usb.interruptTransfer(connectionHandle, transferInfo, optionalCallback);
   are not accessible because either the Operating System's kernel or a native
   driver holds them off from user space code. Some examples are devices with
   HID profiles on OSX systems, and USB pen drives.</p>
-  
+
 <p>
   On most Linux systems, USB devices are mapped with read-only permissions by
   default. To open a device through this API, your user will need to have

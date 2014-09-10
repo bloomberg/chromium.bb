@@ -24,9 +24,9 @@ to use Chrome's File System and Sync File System APIs
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>,
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/syncfs-editor">syncfs-editor</a>
-and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/storage">storage</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/filesystem-access">filesystem-access</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/syncfs-editor">syncfs-editor</a>
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/storage">storage</a> samples.
 </p>
 
 <h2 id="options">Storage options</h2>
@@ -78,7 +78,7 @@ apps can save and synchronize data
 on a user's Google Drive
 so that the same data can be available across different clients.
 For example, a
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/syncfs-editor">cloud-backed text editor</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/syncfs-editor">cloud-backed text editor</a>
 app can automatically sync new text files to a user's Google Drive account.
 When the user opens the text editor in a new client,
 Google Drive pushes new text files to that instance of the text editor.
@@ -145,7 +145,7 @@ function displayPath(fileEntry) {
 If you need to implement drag-and-drop selection,
 the drag-and-drop file controller
 (<code>dnd.js</code>) in the
-<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/filesystem-access">filesystem-access</a>
 sample is a good starting point.
 The controller creates a file entry
 from a <code>DataTransferItem</code>
@@ -175,7 +175,7 @@ var chosenFileEntry = null;
 
 chooseFileButton.addEventListener('click', function(e) {
   chrome.fileSystem.chooseEntry({type: 'openFile'}, function(readOnlyEntry) {
- 
+
     readOnlyEntry.file(function(file) {
       var reader = new FileReader();
 
