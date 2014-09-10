@@ -458,17 +458,6 @@ util.applyTransform = function(element, transform) {
 };
 
 /**
- * Makes filesystem: URL from the path.
- * @param {string} path File or directory path.
- * @return {string} URL.
- */
-util.makeFilesystemUrl = function(path) {
-  path = path.split('/').map(encodeURIComponent).join('/');
-  var prefix = 'external';
-  return 'filesystem:' + chrome.runtime.getURL(prefix + path);
-};
-
-/**
  * Extracts path from filesystem: URL.
  * @param {string} url Filesystem URL.
  * @return {string} The path.
