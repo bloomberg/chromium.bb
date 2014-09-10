@@ -15,6 +15,7 @@ namespace chrome_pdf {
 
 PageIndicator::PageIndicator()
     : current_page_(0),
+      fade_out_timer_id_(0),
       splash_timeout_(kPageIndicatorSplashTimeoutMs),
       fade_timeout_(kPageIndicatorScrollFadeTimeoutMs),
       always_visible_(false) {
