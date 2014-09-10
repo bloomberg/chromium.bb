@@ -77,7 +77,7 @@ int RunGen(const std::vector<std::string>& args) {
 
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup = new Setup();
-  if (!setup->DoSetup(args[0]))
+  if (!setup->DoSetup(args[0], true))
     return 1;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kSwitchCheck))

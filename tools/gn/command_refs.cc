@@ -230,7 +230,7 @@ int RunRefs(const std::vector<std::string>& args) {
 
   Setup* setup = new Setup;
   setup->set_check_for_bad_items(false);
-  if (!setup->DoSetup(args[0]) || !setup->Run())
+  if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 
   // Figure out the target or targets that the user is querying.

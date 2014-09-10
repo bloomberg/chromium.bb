@@ -98,7 +98,14 @@ class Setup : public CommonSetup {
   // The parameter is the string the user specified for the build directory. We
   // will try to interpret this as a SourceDir if possible, and will fail if is
   // is malformed.
-  bool DoSetup(const std::string& build_dir);
+  //
+  // With force_create = false, setup will fail if the build directory doesn't
+  // alreay exist with an args file in it. With force_create set to true, the
+  // directory will be created if necessary. Commands explicitly doing
+  // generation should set this to true to create it, but querying commands
+  // should set it to false to prevent creating oddly-named directories in case
+  // the user omits the build directory argument (which is easy to do).
+  bool DoSetup(const std::string& build_dir, bool force_create);
 
   // Runs the load, returning true on success. On failure, prints the error
   // and returns false. This includes both RunPreMessageLoop() and
@@ -139,8 +146,8 @@ class Setup : public CommonSetup {
 
   // Fills the build directory given the value the user has specified.
   // Must happen after FillSourceDir so we can resolve source-relative
-  // paths.
-  bool FillBuildDir(const std::string& build_dir);
+  // paths. If require_exists is false, it will fail if the dir doesn't exist.
+  bool FillBuildDir(const std::string& build_dir, bool require_exists);
 
   // Fills the python path portion of the command line. On failure, sets
   // it to just "python".

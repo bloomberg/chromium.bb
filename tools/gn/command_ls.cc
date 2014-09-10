@@ -67,7 +67,7 @@ int RunLs(const std::vector<std::string>& args) {
   }
 
   Setup* setup = new Setup;
-  if (!setup->DoSetup(args[0]) || !setup->Run())
+  if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 
   const CommandLine* cmdline = CommandLine::ForCurrentProcess();
