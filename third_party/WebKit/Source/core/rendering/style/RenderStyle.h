@@ -100,6 +100,7 @@ class FilterOperations;
 
 class AppliedTextDecoration;
 class BorderData;
+struct BorderEdge;
 class CounterContent;
 class Font;
 class FontMetrics;
@@ -1535,6 +1536,9 @@ public:
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
 
     bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter(); }
+
+    bool borderObscuresBackground() const;
+    void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
 
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BSEPARATE; }

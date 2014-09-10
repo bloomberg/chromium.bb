@@ -28,6 +28,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
+#include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
@@ -1693,6 +1694,56 @@ float calcBorderRadiiConstraintScaleFor(const FloatRect& rect, const FloatRounde
 
     ASSERT(factor <= 1);
     return factor;
+}
+
+bool RenderStyle::borderObscuresBackground() const
+{
+    if (!hasBorder())
+        return false;
+
+    // Bail if we have any border-image for now. We could look at the image alpha to improve this.
+    if (borderImage().image())
+        return false;
+
+    BorderEdge edges[4];
+    getBorderEdgeInfo(edges);
+
+    for (int i = BSTop; i <= BSLeft; ++i) {
+        const BorderEdge& currEdge = edges[i];
+        if (!currEdge.obscuresBackground())
+            return false;
+    }
+
+    return true;
+}
+
+void RenderStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+{
+    bool horizontal = isHorizontalWritingMode();
+
+    edges[BSTop] = BorderEdge(borderTopWidth(),
+        visitedDependentColor(CSSPropertyBorderTopColor),
+        borderTopStyle(),
+        borderTopIsTransparent(),
+        horizontal || includeLogicalLeftEdge);
+
+    edges[BSRight] = BorderEdge(borderRightWidth(),
+        visitedDependentColor(CSSPropertyBorderRightColor),
+        borderRightStyle(),
+        borderRightIsTransparent(),
+        !horizontal || includeLogicalRightEdge);
+
+    edges[BSBottom] = BorderEdge(borderBottomWidth(),
+        visitedDependentColor(CSSPropertyBorderBottomColor),
+        borderBottomStyle(),
+        borderBottomIsTransparent(),
+        horizontal || includeLogicalRightEdge);
+
+    edges[BSLeft] = BorderEdge(borderLeftWidth(),
+        visitedDependentColor(CSSPropertyBorderLeftColor),
+        borderLeftStyle(),
+        borderLeftIsTransparent(),
+        !horizontal || includeLogicalLeftEdge);
 }
 
 } // namespace blink

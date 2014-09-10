@@ -844,7 +844,8 @@ RenderBlock* RenderObject::containingBlock() const
 
 bool RenderObject::canRenderBorderImage() const
 {
-    ASSERT(style()->hasBorder());
+    if (!style()->hasBorder())
+        return false;
 
     StyleImage* borderImage = style()->borderImage().image();
     return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();

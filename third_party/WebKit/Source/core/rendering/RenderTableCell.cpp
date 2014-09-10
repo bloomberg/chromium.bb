@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLTableCellElement.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderView.h"
@@ -1183,7 +1184,7 @@ void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, const Lay
                 width() - borderLeft() - borderRight(), height() - borderTop() - borderBottom());
             paintInfo.context->clip(clipRect);
         }
-        paintFillLayers(paintInfo, c, bgLayer, LayoutRect(adjustedPaintOffset, pixelSnappedSize()), BackgroundBleedNone, CompositeSourceOver, backgroundObject);
+        BoxPainter(*this).paintFillLayers(paintInfo, c, bgLayer, LayoutRect(adjustedPaintOffset, pixelSnappedSize()), BackgroundBleedNone, CompositeSourceOver, backgroundObject);
     }
 }
 
@@ -1219,7 +1220,7 @@ void RenderTableCell::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (!tableElt->collapseBorders() && style()->emptyCells() == HIDE && !firstChild())
         return;
 
-    paintMaskImages(paintInfo, LayoutRect(paintOffset, pixelSnappedSize()));
+    BoxPainter(*this).paintMaskImages(paintInfo, LayoutRect(paintOffset, pixelSnappedSize()));
 }
 
 bool RenderTableCell::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const

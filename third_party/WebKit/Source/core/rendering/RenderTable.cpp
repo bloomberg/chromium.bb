@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
@@ -709,7 +710,7 @@ void RenderTable::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layou
 
     LayoutRect rect(paintOffset, size());
     subtractCaptionRect(rect);
-    paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
+    BoxPainter(*this).paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 
 void RenderTable::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -720,7 +721,7 @@ void RenderTable::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset
     LayoutRect rect(paintOffset, size());
     subtractCaptionRect(rect);
 
-    paintMaskImages(paintInfo, rect);
+    BoxPainter(*this).paintMaskImages(paintInfo, rect);
 }
 
 void RenderTable::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const

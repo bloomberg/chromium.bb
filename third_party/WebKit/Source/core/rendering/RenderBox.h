@@ -68,7 +68,6 @@ public:
     LayoutSize m_previousBorderBoxSize;
 };
 
-
 class RenderBox : public RenderBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
@@ -622,8 +621,11 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
+    bool backgroundHasOpaqueTopLayer() const;
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
+
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
@@ -634,28 +636,6 @@ protected:
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() OVERRIDE;
 
-    void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);
-
-    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, CompositeOperator, RenderObject* backgroundObject, bool skipBaseColor = false);
-    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0);
-
-    void paintMaskImages(const PaintInfo&, const LayoutRect&);
-    void paintBoxDecorationBackgroundWithRect(PaintInfo&, const LayoutPoint&, const LayoutRect&);
-
-    // Information extracted from RenderStyle for box painting.
-    // These are always needed during box painting and recomputing them takes time.
-    struct BoxDecorationData {
-        BoxDecorationData(const RenderStyle&);
-
-        Color backgroundColor;
-        bool hasBackground;
-        bool hasBorder;
-        bool hasAppearance;
-    };
-
-    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(GraphicsContext*, const BoxDecorationData&) const;
-    bool backgroundHasOpaqueTopLayer() const;
-
     void computePositionedLogicalWidth(LogicalExtentComputedValues&) const;
 
     LayoutUnit computeIntrinsicLogicalWidthUsing(const Length& logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const;
@@ -665,8 +645,6 @@ protected:
 
     virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
-
-    void paintRootBoxFillLayers(const PaintInfo&);
 
     RenderObject* splitAnonymousBoxesAroundChild(RenderObject* beforeChild);
 

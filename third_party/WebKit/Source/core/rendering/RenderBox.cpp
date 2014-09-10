@@ -40,6 +40,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
@@ -51,13 +52,11 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderTableCell.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include <algorithm>
 #include <math.h>
 
@@ -1076,123 +1075,17 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     return false;
 }
 
-// --------------------- painting stuff -------------------------------
-
 void RenderBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-    // default implementation. Just pass paint through to the children
-    PaintInfo childInfo(paintInfo);
-    childInfo.updatePaintingRootForChildren(this);
-    for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling())
-        child->paint(childInfo, adjustedPaintOffset);
+    BoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderBox::paintRootBoxFillLayers(const PaintInfo& paintInfo)
-{
-    if (paintInfo.skipRootBackground())
-        return;
-
-    RenderObject* rootBackgroundRenderer = rendererForRootBackground();
-
-    const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
-    Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
-
-    paintFillLayers(paintInfo, bgColor, bgLayer, view()->backgroundRect(this), BackgroundBleedNone, CompositeSourceOver, rootBackgroundRenderer);
-}
-
-BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsContext* context, const BoxDecorationData& boxDecorationData) const
-{
-    if (!boxDecorationData.hasBackground || !boxDecorationData.hasBorder || !style()->hasBorderRadius() || canRenderBorderImage())
-        return BackgroundBleedNone;
-
-    // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
-    // rasterized, and should not be relied on to make decisions about bleeding.
-    AffineTransform ctm = context->getCTM();
-    FloatSize contextScaling(static_cast<float>(ctm.xScale()), static_cast<float>(ctm.yScale()));
-
-    // Because RoundedRect uses IntRect internally the inset applied by the
-    // BackgroundBleedShrinkBackground strategy cannot be less than one integer
-    // layout coordinate, even with subpixel layout enabled. To take that into
-    // account, we clamp the contextScaling to 1.0 for the following test so
-    // that borderObscuresBackgroundEdge can only return true if the border
-    // widths are greater than 2 in both layout coordinates and screen
-    // coordinates.
-    // This precaution will become obsolete if RoundedRect is ever promoted to
-    // a sub-pixel representation.
-    if (contextScaling.width() > 1)
-        contextScaling.setWidth(1);
-    if (contextScaling.height() > 1)
-        contextScaling.setHeight(1);
-
-    if (borderObscuresBackgroundEdge(contextScaling))
-        return BackgroundBleedShrinkBackground;
-    if (!boxDecorationData.hasAppearance && borderObscuresBackground() && backgroundHasOpaqueTopLayer())
-        return BackgroundBleedBackgroundOverBorder;
-
-    return BackgroundBleedClipBackground;
-}
 
 void RenderBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(this))
-        return;
-
-    LayoutRect paintRect = borderBoxRect();
-    paintRect.moveBy(paintOffset);
-    paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
+    BoxPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void RenderBox::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
-{
-    RenderStyle* style = this->style();
-    BoxDecorationData boxDecorationData(*style);
-    BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context, boxDecorationData);
-
-    // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
-    // custom shadows of their own.
-    if (!boxShadowShouldBeAppliedToBackground(bleedAvoidance))
-        paintBoxShadow(paintInfo, paintRect, style, Normal);
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-    if (bleedAvoidance == BackgroundBleedClipBackground) {
-        stateSaver.save();
-        RoundedRect border = style->getRoundedBorderFor(paintRect);
-        paintInfo.context->clipRoundedRect(border);
-    }
-
-    // If we have a native theme appearance, paint that before painting our background.
-    // The theme will tell us whether or not we should also paint the CSS background.
-    IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    bool themePainted = boxDecorationData.hasAppearance && !RenderTheme::theme().paint(this, paintInfo, snappedPaintRect);
-    if (!themePainted) {
-        if (bleedAvoidance == BackgroundBleedBackgroundOverBorder)
-            paintBorder(paintInfo, paintRect, style, bleedAvoidance);
-
-        paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, bleedAvoidance);
-
-        if (boxDecorationData.hasAppearance)
-            RenderTheme::theme().paintDecorations(this, paintInfo, snappedPaintRect);
-    }
-    paintBoxShadow(paintInfo, paintRect, style, Inset);
-
-    // The theme will tell us whether or not we should also paint the CSS border.
-    if (boxDecorationData.hasBorder && bleedAvoidance != BackgroundBleedBackgroundOverBorder && (!boxDecorationData.hasAppearance || (!themePainted && RenderTheme::theme().paintBorderOnly(this, paintInfo, snappedPaintRect))) && !(isTable() && toRenderTable(this)->collapseBorders()))
-        paintBorder(paintInfo, paintRect, style, bleedAvoidance);
-}
-
-void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const Color& backgroundColor, BackgroundBleedAvoidance bleedAvoidance)
-{
-    if (isDocumentElement()) {
-        paintRootBoxFillLayers(paintInfo);
-        return;
-    }
-    if (isBody() && skipBodyBackground(this))
-        return;
-    if (boxDecorationBackgroundIsKnownToBeObscured())
-        return;
-    paintFillLayers(paintInfo, backgroundColor, style()->backgroundLayers(), paintRect, bleedAvoidance);
-}
 
 bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
 {
@@ -1356,122 +1249,12 @@ bool RenderBox::backgroundHasOpaqueTopLayer() const
 
 void RenderBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
-        return;
-
-    LayoutRect paintRect = LayoutRect(paintOffset, size());
-    paintMaskImages(paintInfo, paintRect);
+    BoxPainter(*this).paintMask(paintInfo, paintOffset);
 }
 
 void RenderBox::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseClippingMask)
-        return;
-
-    if (!layer() || layer()->compositingState() != PaintsIntoOwnBacking)
-        return;
-
-    // We should never have this state in this function. A layer with a mask
-    // should have always created its own backing if it became composited.
-    ASSERT(layer()->compositingState() != HasOwnBackingButPaintsIntoAncestor);
-
-    LayoutRect paintRect = LayoutRect(paintOffset, size());
-    paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);
-}
-
-void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& paintRect)
-{
-    // Figure out if we need to push a transparency layer to render our mask.
-    bool pushTransparencyLayer = false;
-    bool compositedMask = hasLayer() && layer()->hasCompositedMask();
-    bool flattenCompositingLayers = view()->frameView() && view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
-    CompositeOperator compositeOp = CompositeSourceOver;
-
-    bool allMaskImagesLoaded = true;
-
-    if (!compositedMask || flattenCompositingLayers) {
-        pushTransparencyLayer = true;
-        StyleImage* maskBoxImage = style()->maskBoxImage().image();
-        const FillLayer& maskLayers = style()->maskLayers();
-
-        // Don't render a masked element until all the mask images have loaded, to prevent a flash of unmasked content.
-        if (maskBoxImage)
-            allMaskImagesLoaded &= maskBoxImage->isLoaded();
-
-        allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
-
-        paintInfo.context->setCompositeOperation(CompositeDestinationIn);
-        paintInfo.context->beginTransparencyLayer(1);
-        compositeOp = CompositeSourceOver;
-    }
-
-    if (allMaskImagesLoaded) {
-        paintFillLayers(paintInfo, Color::transparent, style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
-        paintNinePieceImage(paintInfo.context, paintRect, style(), style()->maskBoxImage(), compositeOp);
-    }
-
-    if (pushTransparencyLayer)
-        paintInfo.context->endLayer();
-}
-
-void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
-{
-    Vector<const FillLayer*, 8> layers;
-    const FillLayer* curLayer = &fillLayer;
-    bool shouldDrawBackgroundInSeparateBuffer = false;
-    bool isBottomLayerOccluded = false;
-    while (curLayer) {
-        layers.append(curLayer);
-        // Stop traversal when an opaque layer is encountered.
-        // FIXME : It would be possible for the following occlusion culling test to be more aggressive
-        // on layers with no repeat by testing whether the image covers the layout rect.
-        // Testing that here would imply duplicating a lot of calculations that are currently done in
-        // RenderBoxModelObject::paintFillLayerExtended. A more efficient solution might be to move
-        // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
-        // and pass it down.
-
-        if (!shouldDrawBackgroundInSeparateBuffer && curLayer->blendMode() != WebBlendModeNormal)
-            shouldDrawBackgroundInSeparateBuffer = true;
-
-        // The clipOccludesNextLayers condition must be evaluated first to avoid short-circuiting.
-        if (curLayer->clipOccludesNextLayers(curLayer == &fillLayer) && curLayer->hasOpaqueImage(this) && curLayer->image()->canRender(*this, style()->effectiveZoom()) && curLayer->hasRepeatXY() && curLayer->blendMode() == WebBlendModeNormal && !boxShadowShouldBeAppliedToBackground(bleedAvoidance))
-            break;
-        curLayer = curLayer->next();
-    }
-
-    if (layers.size() > 0  && (**layers.rbegin()).next())
-        isBottomLayerOccluded = true;
-
-    GraphicsContext* context = paintInfo.context;
-    if (!context)
-        shouldDrawBackgroundInSeparateBuffer = false;
-
-    bool skipBaseColor = false;
-    if (shouldDrawBackgroundInSeparateBuffer) {
-        bool isBaseColorVisible = !isBottomLayerOccluded && c.hasAlpha();
-
-        // Paint the document's base background color outside the transparency layer,
-        // so that the background images don't blend with this color: http://crbug.com/389039.
-        if (isBaseColorVisible && isDocumentElementWithOpaqueBackground()) {
-            paintRootBackgroundColor(paintInfo, rect, Color());
-            skipBaseColor = true;
-        }
-        context->beginTransparencyLayer(1);
-    }
-
-    Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
-    for (Vector<const FillLayer*>::const_reverse_iterator it = layers.rbegin(); it != topLayer; ++it)
-        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject, skipBaseColor);
-
-    if (shouldDrawBackgroundInSeparateBuffer)
-        context->endLayer();
-}
-
-void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject, bool skipBaseColor)
-{
-    paintFillLayerExtended(paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject, skipBaseColor);
+    BoxPainter(*this).paintClippingMask(paintInfo, paintOffset);
 }
 
 void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
@@ -4741,15 +4524,6 @@ LayoutSize RenderBox::computePreviousBorderBoxSize(const LayoutSize& previousBou
 
     // We didn't save the old border box size because it was the same as the size of oldBounds.
     return previousBoundsSize;
-}
-
-RenderBox::BoxDecorationData::BoxDecorationData(const RenderStyle& style)
-{
-    backgroundColor = style.visitedDependentColor(CSSPropertyBackgroundColor);
-    hasBackground = backgroundColor.alpha() || style.hasBackgroundImage();
-    ASSERT(hasBackground == style.hasBackground());
-    hasBorder = style.hasBorder();
-    hasAppearance = style.hasAppearance();
 }
 
 } // namespace blink

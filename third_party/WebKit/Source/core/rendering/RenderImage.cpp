@@ -480,7 +480,7 @@ bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
         return false;
     EFillBox backgroundClip = style()->backgroundClip();
     // Background paints under borders.
-    if (backgroundClip == BorderFillBox && style()->hasBorder() && !borderObscuresBackground())
+    if (backgroundClip == BorderFillBox && style()->hasBorder() && !style()->borderObscuresBackground())
         return false;
     // Background shows in padding area.
     if ((backgroundClip == BorderFillBox || backgroundClip == PaddingFillBox) && style()->hasPadding())
