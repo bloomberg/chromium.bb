@@ -222,9 +222,9 @@ void AudioNodeOutput::disable()
     ASSERT(context()->isGraphOwner());
 
     if (m_isEnabled) {
+        m_isEnabled = false;
         for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
             i->key->disable(*this);
-        m_isEnabled = false;
     }
 }
 
@@ -233,9 +233,9 @@ void AudioNodeOutput::enable()
     ASSERT(context()->isGraphOwner());
 
     if (!m_isEnabled) {
+        m_isEnabled = true;
         for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
             i->key->enable(*this);
-        m_isEnabled = true;
     }
 }
 
