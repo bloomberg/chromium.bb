@@ -45,16 +45,7 @@ CTFailureGroup.prototype.clearBug = function(bug) {
 };
 
 CTFailureGroup.prototype._failedOnce = function() {
-  var totalFailures = 0;
-  for (var i = 0; i < this.data.dataToExamine().length; i++) {
-    var resultNodes = this.data.dataToExamine()[i].resultNodesByBuilder;
-    Object.keys(resultNodes, function(r) {
-      totalFailures += resultNodes[r].failingBuildCount;
-      if (totalFailures > 1)
-        return false;
-    }.bind(this));
-  }
-  return totalFailures == 1;
+  return this.data.failedOnce && this.data.failedOnce();
 }
 
 CTFailureGroup.prototype._computeProperties = function() {

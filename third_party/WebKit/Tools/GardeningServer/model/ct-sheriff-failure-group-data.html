@@ -28,4 +28,17 @@ CTSheriffFailureGroupData.prototype.failureKeys = function() {
     return failure.keys();
   }).flatten();
 };
+
+CTSheriffFailureGroupData.prototype.failedOnce = function() {
+  var totalFailures = 0;
+  for (var i = 0; i < this.failures.length; i++) {
+    var resultNodes = this.failures[i].resultNodesByBuilder;
+    for (var r in resultNodes) {
+      totalFailures += resultNodes[r].failingBuildCount;
+      if (totalFailures > 1)
+        return false;
+    }
+  }
+  return totalFailures == 1;
+}
 </script>
