@@ -4,9 +4,14 @@
 
 static_library("proximity_auth") {
   sources = [
+    "connection.cc",
+    "connection.h",
+    "connection_observer.h",
     "proximity_auth_system.cc",
     "proximity_auth_system.h",
     "remote_device.h",
+    "wire_message.cc",
+    "wire_message.h",
   ]
 
   deps = [
@@ -17,12 +22,14 @@ static_library("proximity_auth") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "connection_unittest.cc",
     "proximity_auth_system_unittest.cc",
   ]
 
   deps = [
     ":proximity_auth",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

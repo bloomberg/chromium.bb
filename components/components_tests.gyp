@@ -174,6 +174,7 @@
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
+            'proximity_auth/connection_unittest.cc',
             'proximity_auth/proximity_auth_system_unittest.cc',
             'query_parser/query_parser_unittest.cc',
             'query_parser/snippet_unittest.cc',
