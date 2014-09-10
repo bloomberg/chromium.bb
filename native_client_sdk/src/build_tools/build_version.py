@@ -28,7 +28,7 @@ def ChromeVersion():
   Returns:
     Chrome version string or trunk + svn rev.
   '''
-  info = FetchVersionInfo()
+  info = FetchGitCommitPosition()
   if info.url == 'git':
     _, ref, revision = ParseCommitPosition(info.revision)
     if ref == 'refs/heads/master':
@@ -88,26 +88,7 @@ def NaClRevision():
     The NaCl revision as a string. e.g. "12345"
   '''
   nacl_dir = os.path.join(SRC_DIR, 'native_client')
-  return FetchVersionInfo(nacl_dir, 'native_client').revision
-
-
-def FetchVersionInfo(directory=None,
-                     directory_regex_prior_to_src_url='chrome|blink|svn'):
-  '''Returns the last change (in the form of a branch, revision tuple),
-  from some appropriate revision control system.
-
-  TODO(binji): This is copied from lastchange.py. Remove this function and use
-  lastchange.py directly when the dust settles. (see crbug.com/406783)
-  '''
-  svn_url_regex = re.compile(
-      r'.*/(' + directory_regex_prior_to_src_url + r')(/.*)')
-
-  version_info = (lastchange.FetchSVNRevision(directory, svn_url_regex) or
-                  lastchange.FetchGitSVNRevision(directory, svn_url_regex) or
-                  FetchGitCommitPosition(directory))
-  if not version_info:
-    version_info = lastchange.VersionInfo(None, None)
-  return version_info
+  return lastchange.FetchVersionInfo(None, nacl_dir, 'native_client').revision
 
 
 def FetchGitCommitPosition(directory=None):
