@@ -35,9 +35,6 @@ namespace athena {
 
 typedef test::AthenaTestBase WindowManagerTest;
 
-TEST_F(WindowManagerTest, Empty) {
-}
-
 TEST_F(WindowManagerTest, OverviewModeBasics) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> first(CreateWindow(&delegate));

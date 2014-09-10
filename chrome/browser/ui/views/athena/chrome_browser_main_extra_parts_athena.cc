@@ -6,26 +6,36 @@
 
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/main/public/athena_launcher.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
 
 class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts {
  public:
-  ChromeBrowserMainExtraPartsAthena() {}
+  ChromeBrowserMainExtraPartsAthena() {
+  }
+
   virtual ~ChromeBrowserMainExtraPartsAthena() {}
 
+ private:
   // Overridden from ChromeBrowserMainExtraParts:
   virtual void PreProfileInit() OVERRIDE {
     athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::FILE));
   }
   virtual void PostProfileInit() OVERRIDE {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableZeroBrowsersOpenForTests)) {
+      chrome::IncrementKeepAliveCount();
+    }
     Profile* profile =
         g_browser_process->profile_manager()->GetActiveUserProfile();
     // TODO(oshima|polukhin): Start OOBE/Login process.
@@ -34,7 +44,6 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts {
   }
   virtual void PostMainMessageLoopRun() OVERRIDE { athena::ShutdownAthena(); }
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAthena);
 };
 

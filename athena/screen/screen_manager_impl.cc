@@ -240,6 +240,13 @@ ScreenManagerImpl::~ScreenManagerImpl() {
   root_window_->RemovePreTargetHandler(focus_controller);
   aura::client::SetActivationClient(root_window_, NULL);
   aura::client::SetFocusClient(root_window_, NULL);
+  aura::Window::Windows children = root_window_->children();
+  // Close All children:
+  for (aura::Window::Windows::iterator iter = children.begin();
+       iter != children.end();
+       ++iter) {
+    delete *iter;
+  }
   instance = NULL;
 }
 

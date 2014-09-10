@@ -34,6 +34,63 @@ namespace {
 
 AthenaEnv* instance = NULL;
 
+// Screen object used during shutdown.
+gfx::Screen* screen_for_shutdown = NULL;
+
+// TODO(flackr:oshima): Remove this once athena switches to share
+// ash::DisplayManager.
+class ScreenForShutdown : public gfx::Screen {
+ public:
+  // Creates and sets the screen for shutdown. Deletes existing one if any.
+  static void Create(const gfx::Screen* screen) {
+    delete screen_for_shutdown;
+    screen_for_shutdown = new ScreenForShutdown(screen->GetPrimaryDisplay());
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                   screen_for_shutdown);
+  }
+
+ private:
+  explicit ScreenForShutdown(const gfx::Display& primary_display)
+      : primary_display_(primary_display) {}
+
+  // gfx::Screen overrides:
+  virtual bool IsDIPEnabled() OVERRIDE { return true; }
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE { return gfx::Point(); }
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE { return NULL; }
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(
+      const gfx::Point& point) OVERRIDE {
+    return NULL;
+  }
+  virtual int GetNumDisplays() const OVERRIDE { return 1; }
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    std::vector<gfx::Display> displays(1, primary_display_);
+    return displays;
+  }
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const OVERRIDE {
+    return primary_display_;
+  }
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
+    return primary_display_;
+  }
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    return primary_display_;
+  }
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    return primary_display_;
+  }
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    NOTREACHED() << "Observer should not be added during shutdown";
+  }
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {}
+
+  const gfx::Display primary_display_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenForShutdown);
+};
+
 // A class that bridges the gap between CursorManager and Aura. It borrows
 // heavily from AshNativeCursorManager.
 class AthenaNativeCursorManager : public wm::NativeCursorManager {
@@ -182,9 +239,9 @@ class AthenaEnvImpl : public AthenaEnv,
 
     input_method_filter_.reset();
     host_.reset();
-    screen_.reset();
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
 
+    ScreenForShutdown::Create(screen_.get());
+    screen_.reset();
     aura::Env::DeleteInstance();
 
     display_configurator_->RemoveObserver(this);

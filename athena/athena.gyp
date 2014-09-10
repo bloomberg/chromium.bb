@@ -244,6 +244,7 @@
         'activity/activity_manager_unittest.cc',
         'util/fill_layout_manager_unittest.cc',
         'content/app_activity_unittest.cc',
+        'env/athena_env_unittest.cc',
         'home/athena_start_page_view_unittest.cc',
         'home/home_card_gesture_manager_unittest.cc',
         'home/home_card_unittest.cc',

@@ -627,11 +627,11 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 #endif
   data_promo_notification_.reset(new DataPromoNotification());
 
+#if !defined(USE_ATHENA)
+  // TODO(oshima): Support accessibility on athena. crbug.com/408733.
   keyboard_event_rewriters_.reset(new EventRewriterController());
   keyboard_event_rewriters_->AddEventRewriter(
       scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
-#if !defined(USE_ATHENA)
-  // TODO(oshima): Support accessibility on athena. crbug.com/408733.
   keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
       new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
   keyboard_event_rewriters_->Init();
@@ -705,7 +705,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
 
+#if !defined(USE_ATHENA)
   MagnificationManager::Shutdown();
+#endif
   AccessibilityManager::Shutdown();
 
   media::SoundsManager::Shutdown();
