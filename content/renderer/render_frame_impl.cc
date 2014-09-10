@@ -24,6 +24,7 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_request_util.h"
@@ -3187,6 +3188,22 @@ blink::WebScreenOrientationClient*
   if (!screen_orientation_dispatcher_)
     screen_orientation_dispatcher_ = new ScreenOrientationDispatcher(this);
   return screen_orientation_dispatcher_;
+}
+
+bool RenderFrameImpl::isControlledByServiceWorker() {
+  // If we're in the middle of committing a load, the data source we need
+  // will still be provisional.
+  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  WebDataSource* data_source = NULL;
+  if (main_frame->provisionalDataSource())
+    data_source = main_frame->provisionalDataSource();
+  else
+    data_source = main_frame->dataSource();
+  ServiceWorkerNetworkProvider* provider =
+      ServiceWorkerNetworkProvider::FromDocumentState(
+          DocumentState::FromDataSource(data_source));
+  return provider->context()->controller_handle_id() !=
+      kInvalidServiceWorkerHandleId;
 }
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {

@@ -437,6 +437,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,
                                     float scale_factor);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
+  virtual bool isControlledByServiceWorker();
 
   // WebMediaPlayerDelegate implementation:
   virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
