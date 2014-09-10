@@ -890,7 +890,6 @@ public:
 
     enum LoadEventProgress {
         LoadEventNotRun,
-        LoadEventTried,
         LoadEventInProgress,
         LoadEventCompleted,
         BeforeUnloadEventInProgress,

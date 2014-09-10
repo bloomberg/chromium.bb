@@ -2496,15 +2496,9 @@ void Document::explicitClose()
 void Document::implicitClose()
 {
     ASSERT(!inStyleRecalc());
-
-    bool wasLocationChangePending = frame() && frame()->navigationScheduler().locationChangePending();
-    bool doload = !parsing() && m_parser && !processingLoadEvent() && !wasLocationChangePending;
-
-    // If the load was blocked because of a pending location change and the location change triggers a same document
-    // navigation, don't fire load events after the same document navigation completes (unless there's an explicit open).
-    m_loadEventProgress = LoadEventTried;
-
-    if (!doload)
+    if (processingLoadEvent() || !m_parser)
+        return;
+    if (frame() && frame()->navigationScheduler().locationChangePending())
         return;
 
     // The call to dispatchWindowLoadEvent can detach the LocalDOMWindow and cause it (and its
@@ -2632,7 +2626,10 @@ void Document::dispatchUnloadEvents()
     if (m_parser)
         m_parser->stopParsing();
 
-    if (m_loadEventProgress >= LoadEventTried && m_loadEventProgress <= UnloadEventInProgress) {
+    if (m_loadEventProgress == LoadEventNotRun)
+        return;
+
+    if (m_loadEventProgress <= UnloadEventInProgress) {
         Element* currentFocusedElement = focusedElement();
         if (isHTMLInputElement(currentFocusedElement))
             toHTMLInputElement(*currentFocusedElement).endEditing();
