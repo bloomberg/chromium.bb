@@ -147,9 +147,23 @@ void AnimationPlayer::updateCurrentTimingState(TimingUpdateReason reason)
     m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
 }
 
+double AnimationPlayer::startTime(bool& isNull) const
+{
+    double result = startTime();
+    isNull = std::isnan(result);
+    return result;
+}
+
 double AnimationPlayer::startTime() const
 {
     return m_startTime * 1000;
+}
+
+double AnimationPlayer::currentTime(bool& isNull)
+{
+    double result = currentTime();
+    isNull = std::isnan(result);
+    return result;
 }
 
 double AnimationPlayer::currentTime()

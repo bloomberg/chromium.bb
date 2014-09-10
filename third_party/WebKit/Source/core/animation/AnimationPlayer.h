@@ -70,6 +70,7 @@ public:
 
     void cancel();
 
+    double currentTime(bool& isNull);
     double currentTime();
     void setCurrentTime(double newCurrentTime);
 
@@ -110,6 +111,7 @@ public:
 
     double calculateStartTime(double currentTime) const;
     bool hasStartTime() const { return !isNull(m_startTime); }
+    double startTime(bool& isNull) const;
     double startTime() const;
     double startTimeInternal() const { return m_startTime; }
     void setStartTime(double);
