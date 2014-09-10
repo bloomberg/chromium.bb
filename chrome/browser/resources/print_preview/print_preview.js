@@ -855,6 +855,13 @@ cr.define('print_preview', function() {
         return;
       }
 
+      // On Mac, Cmd- should close the print dialog.
+      if (cr.isMac && e.keyCode == 189 && e.metaKey) {
+        this.close_();
+        e.preventDefault();
+        return;
+      }
+
       // Ctrl + Shift + p / Mac equivalent.
       if (e.keyCode == 80) {
         if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
