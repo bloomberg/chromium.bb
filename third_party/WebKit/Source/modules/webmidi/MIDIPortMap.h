@@ -31,7 +31,7 @@ public:
     bool has(const String& key) const { return m_entries.contains(key); }
     Iterator* iterator(ScriptState*, ExceptionState&) { return entries(); }
 
-    void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor)
     {
         visitor->trace(m_entries);
     }
