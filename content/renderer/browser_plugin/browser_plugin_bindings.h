@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "ppapi/shared_impl/resource.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 namespace content {

@@ -4,36 +4,14 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 
-#include <cstdlib>
 #include <string>
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "v8/include/v8.h"
 
 using blink::WebBindings;
-using blink::WebElement;
-using blink::WebDOMEvent;
-using blink::WebDOMMessageEvent;
-using blink::WebPluginContainer;
-using blink::WebString;
 
 namespace content {
 
