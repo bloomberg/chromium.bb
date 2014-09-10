@@ -284,7 +284,7 @@ TEST_F(AnimationAnimationPlayerTest, StartTimePauseFinish)
     EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
     EXPECT_TRUE(std::isnan(player->startTime()));
     player->finish(exceptionState);
-    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_EQ(AnimationPlayer::Paused, player->playStateInternal());
     EXPECT_TRUE(std::isnan(player->startTime()));
 }
 
@@ -300,9 +300,8 @@ TEST_F(AnimationAnimationPlayerTest, PauseBeatsFinish)
 
 TEST_F(AnimationAnimationPlayerTest, StartTimeFinishPause)
 {
-    double startTime = player->startTime();
     player->finish(exceptionState);
-    EXPECT_EQ(startTime, player->startTime());
+    EXPECT_EQ(-30 * 1000, player->startTime());
     player->pause();
     EXPECT_TRUE(std::isnan(player->startTime()));
 }
@@ -461,18 +460,18 @@ TEST_F(AnimationAnimationPlayerTest, ReverseSeeksToEnd)
     EXPECT_EQ(30, player->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationPlayerTest, ReverseLimitsAnimationPlayer)
+TEST_F(AnimationAnimationPlayerTest, ReverseBeyondLimit)
 {
     player->setCurrentTimeInternal(40);
     player->setPlaybackRate(-1);
     player->reverse();
-    EXPECT_TRUE(player->finished());
-    EXPECT_EQ(40, player->currentTimeInternal());
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_EQ(0, player->currentTimeInternal());
 
     player->setCurrentTimeInternal(-10);
     player->reverse();
-    EXPECT_TRUE(player->finished());
-    EXPECT_EQ(-10, player->currentTimeInternal());
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_EQ(30, player->currentTimeInternal());
 }
 
 
@@ -849,8 +848,6 @@ TEST_F(AnimationAnimationPlayerTest, PlayBackwardsAfterCancel)
     EXPECT_EQ(40 * 1000, player->startTime());
 }
 
-// FIXME: crbug.com/410229, when fixed, will reuqire the expected results of
-// this test to change (currentTime -> 30 * 1000).
 TEST_F(AnimationAnimationPlayerTest, ReverseAfterCancel)
 {
     player->cancel();
@@ -859,12 +856,12 @@ TEST_F(AnimationAnimationPlayerTest, ReverseAfterCancel)
     EXPECT_TRUE(std::isnan(player->startTime()));
     player->reverse();
     EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
-    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_EQ(30 * 1000, player->currentTime());
     EXPECT_TRUE(std::isnan(player->startTime()));
     simulateFrame(10);
-    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
-    EXPECT_EQ(0 * 1000, player->currentTime());
-    EXPECT_EQ(10 * 1000, player->startTime());
+    EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
+    EXPECT_EQ(30 * 1000, player->currentTime());
+    EXPECT_EQ(40 * 1000, player->startTime());
 }
 
 TEST_F(AnimationAnimationPlayerTest, FinishAfterCancel)
@@ -874,9 +871,9 @@ TEST_F(AnimationAnimationPlayerTest, FinishAfterCancel)
     EXPECT_TRUE(std::isnan(player->currentTime()));
     EXPECT_TRUE(std::isnan(player->startTime()));
     player->finish(exceptionState);
-    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
-    EXPECT_EQ(30 * 1000, player->currentTime());
-    EXPECT_EQ(0, player->startTime());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
 }
 
 TEST_F(AnimationAnimationPlayerTest, PauseAfterCancel)

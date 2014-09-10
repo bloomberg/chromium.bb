@@ -307,19 +307,13 @@ void AnimationPlayer::setCurrentTime(double newCurrentTime)
         return;
 
     setCompositorPending();
-
-    // Setting current time while pending forces a start time.
-    if (m_currentTimePending) {
-        m_startTime = 0;
-        m_currentTimePending = false;
-    }
-
+    m_currentTimePending = false;
     setCurrentTimeInternal(newCurrentTime / 1000, TimingUpdateOnDemand);
 }
 
 void AnimationPlayer::setStartTime(double startTime)
 {
-    if (m_paused) // FIXME: Should this throw an exception?
+    if (m_paused || m_idle)
         return;
     if (!std::isfinite(startTime))
         return;
@@ -472,23 +466,13 @@ void AnimationPlayer::reverse()
     }
 
     uncancel();
-
-    if (m_content) {
-        if (m_playbackRate > 0 && currentTimeInternal() > sourceEnd()) {
-            setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
-            ASSERT(finished());
-        } else if (m_playbackRate < 0 && currentTimeInternal() < 0) {
-            setCurrentTimeInternal(0, TimingUpdateOnDemand);
-            ASSERT(finished());
-        }
-    }
     setPlaybackRate(-m_playbackRate);
-    unpauseInternal();
+    play();
 }
 
 void AnimationPlayer::finish(ExceptionState& exceptionState)
 {
-    if (!m_playbackRate) {
+    if (!m_playbackRate || m_idle) {
         return;
     }
     if (m_playbackRate > 0 && sourceEnd() == std::numeric_limits<double>::infinity()) {
@@ -500,13 +484,14 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
     }
 
     uncancel();
-    m_startTime = 0;
 
-    if (m_playbackRate < 0) {
-        setCurrentTimeInternal(0, TimingUpdateOnDemand);
-    } else {
-        setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
+    double newCurrentTime = m_playbackRate < 0 ? 0 : sourceEnd();
+    setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
+    if (!paused()) {
+        m_startTime = calculateStartTime(newCurrentTime);
     }
+
+    m_currentTimePending = false;
     ASSERT(finished());
 }
 
@@ -546,7 +531,7 @@ void AnimationPlayer::setPlaybackRate(double playbackRate)
         return;
 
     setCompositorPending();
-    if (!finished() && !paused())
+    if (!finished() && !paused() && hasStartTime())
         m_currentTimePending = true;
 
     double storedCurrentTime = currentTimeInternal();
@@ -663,6 +648,7 @@ void AnimationPlayer::cancel()
     m_held = true;
     m_idle = true;
     m_startTime = nullValue();
+    m_currentTimePending = false;
     setCompositorPending();
 }
 
