@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -617,34 +618,57 @@ class BuildSpecsManager(object):
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
 
-  def GetBuildersStatus(self, builders_array, timeout=3 * 60):
-    """Get the statuses of the builders.
+  @staticmethod
+  def GetSlaveStatusesFromCIDB(master_build_id):
+    """Get statuses of slaves associated with |master_build_id|.
 
     Args:
+      master_build_id: Master build id to check.
+
+    Returns:
+      A dictionary mapping the slave name to a status in
+      BuildStatus.ALL_STATUSES.
+    """
+    status_dict = dict()
+    db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+    assert db, 'No database connection to use.'
+    status_list = db.GetSlaveStatuses(master_build_id)
+    for d in status_list:
+      status_dict[d['build_config']] = d['status']
+    return status_dict
+
+  def GetBuildersStatus(self, master_build_id, builders_array, timeout=3 * 60):
+    """Get the statuses of the slave builders of the master.
+
+    This function checks the status of slaves in |builders_array|. It
+    queries CIDB for all builds associated with the |master_build_id|,
+    then filters out builds that are not in |builders_array| (e.g.,
+    slaves that are not important).
+
+    Args:
+      master_build_id: Master build id to check.
       builders_array: A list of the names of the builders to check.
       timeout: Number of seconds to wait for the results.
 
     Returns:
       A build-names->status dictionary of build statuses.
+
     """
     builders_completed = set()
-    builder_statuses = {}
 
-    def _CheckStatusOfBuildersArray():
+    def _GetStatusesFromDB():
       """Helper function that iterates through current statuses."""
-      for builder_name in builders_array:
-        cached_status = builder_statuses.get(builder_name)
-        if not cached_status or not cached_status.Completed():
-          logging.debug("Checking for builder %s's status", builder_name)
-          builder_status = self.GetBuildStatus(builder_name,
-                                               self.current_version)
-          builder_statuses[builder_name] = builder_status
-          if builder_status.Missing():
-            logging.warn('No status found for builder %s.', builder_name)
-          elif builder_status.Completed():
-            builders_completed.add(builder_name)
-            logging.info('Builder %s completed with status "%s".',
-                         builder_name, builder_status.status)
+      status_dict = self.GetSlaveStatusesFromCIDB(master_build_id)
+      for builder in set(builders_array) - set(status_dict.keys()):
+        logging.warn('No status found for builder %s.', builder)
+
+      latest_completed = set(
+          [b for b, s in status_dict.iteritems() if s in
+           BuilderStatus.COMPLETED_STATUSES and b in builders_array])
+      for builder in sorted(latest_completed - builders_completed):
+        logging.info('Builder %s completed with status "%s".',
+                     builder, status_dict[builder])
+      builders_completed.update(latest_completed)
 
       if len(builders_completed) < len(builders_array):
         logging.info('Still waiting for the following builds to complete: %r',
@@ -660,12 +684,19 @@ class BuildSpecsManager(object):
     try:
       builds_succeeded = timeout_util.WaitForSuccess(
           lambda x: x is None,
-          _CheckStatusOfBuildersArray,
+          _GetStatusesFromDB,
           timeout,
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)
     except timeout_util.TimeoutError:
       builds_succeeded = None
+
+    # Actually fetch the BuildStatus pickles from Google Storage.
+    builder_statuses = {}
+    for builder in builders_array:
+      logging.debug("Checking for builder %s's status", builder)
+      builder_status = self.GetBuildStatus(builder, self.current_version)
+      builder_statuses[builder] = builder_status
 
     if not builds_succeeded:
       logging.error('Not all builds finished before timeout (%d minutes)'

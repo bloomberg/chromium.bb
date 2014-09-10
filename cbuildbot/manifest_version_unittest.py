@@ -357,39 +357,48 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     self.assertTrue(empty_string_status.Failed())
 
   def _GetBuildersStatus(self, builders, status_runs):
-    """Test a call to BuildSpecsManger.GetBuildersStatus.
+    """Test a call to BuildSpecsManager.GetBuildersStatus.
 
     Args:
       builders: List of builders to get status for.
-      status_runs: List of expected (builder, status) tuples.
+      status_runs: List of dictionaries of expected build and status.
     """
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
+                             'GetSlaveStatusesFromCIDB')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetBuildStatus')
-    for builder, status in status_runs:
-      status = manifest_version.BuilderStatus(status, None)
+    for status_dict in status_runs:
+      manifest_version.BuildSpecsManager.GetSlaveStatusesFromCIDB(
+          mox.IgnoreArg()).AndReturn(status_dict)
+
+    final_status_dict = status_runs[-1]
+    for builder in builders:
+      status = manifest_version.BuilderStatus(
+          final_status_dict.get(builder), None)
       manifest_version.BuildSpecsManager.GetBuildStatus(
           builder, mox.IgnoreArg()).AndReturn(status)
 
     self.mox.ReplayAll()
-    statuses = self.manager.GetBuildersStatus(builders)
+    statuses = self.manager.GetBuildersStatus(mox.IgnoreArg, builders)
     self.mox.VerifyAll()
     return statuses
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
-    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_FAILED),
-                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
+    status_runs = [{'build1': manifest_version.BuilderStatus.STATUS_FAILED,
+                    'build2': manifest_version.BuilderStatus.STATUS_PASSED}]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):
     """Tests GetBuilderStatus where builds are inflight."""
-    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_INFLIGHT),
-                   ('build2', manifest_version.BuilderStatus.STATUS_MISSING),
-                   ('build1', manifest_version.BuilderStatus.STATUS_FAILED),
-                   ('build2', manifest_version.BuilderStatus.STATUS_INFLIGHT),
-                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
+    status_runs = [{'build1': manifest_version.BuilderStatus.STATUS_INFLIGHT,
+                    'build2': manifest_version.BuilderStatus.STATUS_MISSING},
+                   {'build1': manifest_version.BuilderStatus.STATUS_FAILED,
+                    'build2': manifest_version.BuilderStatus.STATUS_INFLIGHT},
+                   {'build1': manifest_version.BuilderStatus.STATUS_FAILED,
+                    'build2': manifest_version.BuilderStatus.STATUS_PASSED}]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
