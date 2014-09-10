@@ -240,7 +240,7 @@ source_set("remaining") {
       "rendering/RenderThemeChromiumFontProviderWin.cpp",
     ]
   }
-  if (!is_linux) {
+  if (!is_linux && !is_android) {
     sources -= [
       "rendering/RenderThemeChromiumFontProviderLinux.cpp",
     ]
@@ -275,13 +275,6 @@ source_set("remaining") {
   } else {  # !is_mac
     sources -= [
       "editing/SmartReplaceCF.cpp",
-    ]
-  }
-
-  if (!use_default_render_theme) {
-    sources -= [
-      "rendering/RenderThemeChromiumDefault.cpp",
-      "rendering/RenderThemeChromiumDefault.h",
     ]
   }
 }
