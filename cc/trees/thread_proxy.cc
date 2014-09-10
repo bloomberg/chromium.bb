@@ -257,6 +257,8 @@ void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(
 
 void ThreadProxy::SendCommitRequestToImplThreadIfNeeded() {
   DCHECK(IsMainThread());
+  VLOG(2) << "ThreadProxy::SendCommitRequestToImplThreadIfNeeded: "
+          << "already_sent = " << main().commit_request_sent_to_impl_thread;
   if (main().commit_request_sent_to_impl_thread)
     return;
   main().commit_request_sent_to_impl_thread = true;
@@ -274,6 +276,8 @@ const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
 
 void ThreadProxy::SetNeedsAnimate() {
   DCHECK(IsMainThread());
+  VLOG(2) << "ThreadProxy::SetNeedsAnimate: already_requested = "
+          << main().animate_requested;
   if (main().animate_requested)
     return;
 
@@ -380,6 +384,7 @@ void ThreadProxy::NotifyReadyToActivate() {
 
 void ThreadProxy::SetNeedsCommitOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommitOnImplThread");
+  VLOG(2) << "ThreadProxy::SetNeedsCommitOnImplThread";
   DCHECK(IsImplThread());
   impl().scheduler->SetNeedsCommit();
 }
@@ -772,6 +777,7 @@ void ThreadProxy::BeginMainFrame(
   // callbacks will trigger another frame.
   main().commit_requested = true;
   main().commit_request_sent_to_impl_thread = true;
+  VLOG(2) << "ThreadProxy::BeginMainFrame: Commit requests silenced.";
 
   layer_tree_host()->ApplyScrollAndScale(
       begin_main_frame_state->scroll_info.get());
@@ -826,8 +832,11 @@ void ThreadProxy::BeginMainFrame(
   // thread.
   if (main().animate_requested) {
     // Forces SetNeedsAnimate to consider posting a commit task.
+    VLOG(2) << "ThreadProxy::BeginMainFrame: RAF requested.";
     main().animate_requested = false;
     SetNeedsAnimate();
+  } else {
+    VLOG(2) << "ThreadProxy::BeginMainFrame: RAF NOT requested.";
   }
 
   if (!updated && can_cancel_this_commit) {
