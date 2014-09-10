@@ -32,6 +32,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
       contents_switcher_view_(NULL),
       view_model_(new views::ViewModel),
       page_before_search_(0) {
+  pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
+                                           kOverscrollPageTransitionDurationMs);
   pagination_model_.AddObserver(this);
 }
 
