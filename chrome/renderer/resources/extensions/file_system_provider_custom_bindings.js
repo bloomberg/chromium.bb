@@ -172,23 +172,29 @@ eventBindings.registerArgumentMassager(
       var executionStart = Date.now();
       var options = args[0];
       var onSuccessCallback = function(metadata) {
+        var error;
         // It is invalid to return a thumbnail when it's not requested. The
         // restriction is added in order to avoid fetching the thumbnail while
         // it's not needed.
-        if (!options.thumbnail && metadata.thumbnail) {
-          fileSystemProviderInternal.operationRequestedError(
-              options.fileSystemId, options.requestId, 'FAILED',
-              Date.now() - executionStart);
-          throw new Error('Thumbnail data provided, but not requested.');
-        }
+        if (!options.thumbnail && metadata.thumbnail)
+          error = 'Thumbnail data provided, but not requested.';
 
         // Check the format and size. Note, that in the C++ layer, there is
         // another sanity check to avoid passing any evil URL.
         if ('thumbnail' in metadata && !verifyImageURI(metadata.thumbnail))
-          throw new Error('Thumbnail format invalid.');
+          error = 'Thumbnail format invalid.';
+
         if ('thumbnail' in metadata &&
             metadata.thumbnail.length > METADATA_THUMBNAIL_SIZE_LIMIT) {
-          throw new Error('Thumbnail data too large.');
+          error = 'Thumbnail data too large.';
+        }
+
+        if (error) {
+          console.error(error);
+          fileSystemProviderInternal.operationRequestedError(
+              options.fileSystemId, options.requestId, 'FAILED',
+              Date.now() - executionStart);
+          return;
         }
 
         fileSystemProviderInternal.getMetadataRequestedSuccess(
@@ -197,11 +203,13 @@ eventBindings.registerArgumentMassager(
             annotateMetadata(metadata),
             Date.now() - executionStart);
       };
+
       var onErrorCallback = function(error) {
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,
             Date.now() - executionStart);
       }
+
       dispatch([options, onSuccessCallback, onErrorCallback]);
     });
 
@@ -213,19 +221,28 @@ eventBindings.registerArgumentMassager(
       var onSuccessCallback = function(entries, hasNext) {
         var annotatedEntries = entries.map(annotateMetadata);
         // It is invalid to return a thumbnail when it's not requested.
+        var error;
         annotatedEntries.forEach(function(metadata) {
           if (metadata.thumbnail) {
-            fileSystemProviderInternal.operationRequestedError(
-                options.fileSystemId, options.requestId, 'FAILED',
-                Date.now() - executionStart);
-            throw new Error(
-                'Thumbnails must not be provided when reading a directory.');
+            var error =
+                'Thumbnails must not be provided when reading a directory.';
+            return;
           }
         });
+
+        if (error) {
+          console.error(error);
+          fileSystemProviderInternal.operationRequestedError(
+              options.fileSystemId, options.requestId, 'FAILED',
+              Date.now() - executionStart);
+          return;
+        }
+
         fileSystemProviderInternal.readDirectoryRequestedSuccess(
             options.fileSystemId, options.requestId, annotatedEntries, hasNext,
             Date.now() - executionStart);
       };
+
       var onErrorCallback = function(error) {
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,

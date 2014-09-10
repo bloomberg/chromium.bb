@@ -125,4 +125,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Extension) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Thumbnail) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/thumbnail",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions
