@@ -4,8 +4,6 @@
 
 // The client dump tool for libheap_profiler. It attaches to a process (given
 // its pid) and dumps all the libheap_profiler tracking information in JSON.
-// The target process is frozen (SIGSTOP) while dumping, unless the -n opt.
-// is passed (in which case the caller is responsible for un/freezing).
 // The JSON output looks like this:
 // {
 //   "total_allocated": 908748493,   # Total bytes allocated and not freed.
@@ -31,15 +29,16 @@
 //       +---------------------> Index of the entry (as for "allocs" xref).
 //                               Indexes are hex and might not be monotonic.
 
+#include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/ptrace.h>
 #include <sys/stat.h>
 
 #include "tools/android/heap_profiler/heap_profiler.h"
@@ -47,6 +46,7 @@
 
 static void lseek_abs(int fd, size_t off);
 static void read_proc_cmdline(char* cmdline, int size);
+static ssize_t read_safe(int fd, void* buf, size_t count);
 
 static int pid;
 
@@ -55,6 +55,7 @@ static int dump_process_heap(
     int mem_fd,
     FILE* fmaps,
     bool dump_also_allocs,
+    bool pedantic,  // Enable pedantic consistency checks on memory counters.
     char* comment) {
   HeapStats stats;
   time_t tm;
@@ -83,7 +84,14 @@ static int dump_process_heap(
 
     // The mmap looks promising. Let's check for the magic marker.
     lseek_abs(mem_fd, start);
-    if (read(mem_fd, &stats, sizeof(stats)) < sizeof(stats))
+    ssize_t rsize = read_safe(mem_fd, &stats, sizeof(stats));
+
+    if (rsize == -1) {
+      perror("read");
+      return -1;
+    }
+
+    if (rsize < sizeof(stats))
       continue;
 
     if (stats.magic_start == HEAP_PROFILER_MAGIC_MARKER) {
@@ -120,7 +128,7 @@ static int dump_process_heap(
     lseek_abs(mem_fd, (uintptr_t) stats.allocs);
     for (i = 0; i < stats.max_allocs; ++i) {
       Alloc alloc;
-      if (read(mem_fd, &alloc, sizeof(alloc)) != sizeof(alloc)) {
+      if (read_safe(mem_fd, &alloc, sizeof(alloc)) != sizeof(alloc)) {
         fprintf(stderr, "ERROR: cannot read allocation table\n");
         perror("read");
         return -1;
@@ -150,14 +158,14 @@ static int dump_process_heap(
     }
     printf("},\n");
 
-    if (dbg_counted_allocs != stats.num_allocs) {
+    if (pedantic && dbg_counted_allocs != stats.num_allocs) {
       fprintf(stderr,
               "ERROR: inconsistent alloc count (%"PRIu32" vs %"PRIu32").\n",
               dbg_counted_allocs, stats.num_allocs);
       return -1;
     }
 
-    if (dbg_counted_total_alloc_bytes != stats.total_alloc_bytes) {
+    if (pedantic && dbg_counted_total_alloc_bytes != stats.total_alloc_bytes) {
       fprintf(stderr, "ERROR: inconsistent alloc totals (%zu vs %zu).\n",
               dbg_counted_total_alloc_bytes, stats.total_alloc_bytes);
       return -1;
@@ -171,7 +179,7 @@ static int dump_process_heap(
   lseek_abs(mem_fd, (uintptr_t) stats.stack_traces);
   for (i = 0; i < stats.max_stack_traces; ++i) {
     StacktraceEntry st;
-    if (read(mem_fd, &st, sizeof(st)) != sizeof(st)) {
+    if (read_safe(mem_fd, &st, sizeof(st)) != sizeof(st)) {
       fprintf(stderr, "ERROR: cannot read stack trace table\n");
       perror("read");
       return -1;
@@ -201,7 +209,7 @@ static int dump_process_heap(
   }
   printf("}\n}\n");
 
-  if (dbg_counted_total_alloc_bytes != stats.total_alloc_bytes) {
+  if (pedantic && dbg_counted_total_alloc_bytes != stats.total_alloc_bytes) {
     fprintf(stderr, "ERROR: inconsistent stacks totals (%zu vs %zu).\n",
             dbg_counted_total_alloc_bytes, stats.total_alloc_bytes);
     return -1;
@@ -209,25 +217,6 @@ static int dump_process_heap(
 
   fflush(stdout);
   return 0;
-}
-
-// If the dump is interrupted, resume the target process before exiting.
-static void exit_handler() {
-  kill(pid, SIGCONT);
-  waitpid(pid, NULL, 0);
-  exit(-1);
-}
-
-static bool freeze_process() {
-  if (kill(pid, SIGSTOP) != 0) {
-    fprintf(stderr, "Could not freeze the target process.\n");
-    perror("kill");
-    return false;
-  }
-
-  signal(SIGPIPE, exit_handler);
-  signal(SIGINT, exit_handler);
-  return true;
 }
 
 // Unfortunately lseek takes a *signed* offset, which is unsuitable for large
@@ -240,6 +229,22 @@ static void lseek_abs(int fd, size_t off) {
   }
   lseek(fd, (off_t) OFF_T_MAX, SEEK_SET);
   lseek(fd, (off_t) (off - OFF_T_MAX), SEEK_CUR);
+}
+
+static ssize_t read_safe(int fd, void* buf, size_t count) {
+  ssize_t res;
+  size_t bytes_read = 0;
+  if (count < 0)
+    return -1;
+  do {
+    do {
+      res = read(fd, buf + bytes_read, count - bytes_read);
+    } while (res == -1  && errno == EINTR);
+    if (res <= 0)
+      break;
+    bytes_read += res;
+  } while (bytes_read < count);
+  return bytes_read ? bytes_read : res;
 }
 
 static int open_proc_mem_fd() {
@@ -274,7 +279,7 @@ static void read_proc_cmdline(char* cmdline, int size) {
     cmdline[0] = '\0';
     return;
   }
-  int length = read(cmdline_fd, cmdline, size);
+  int length = read_safe(cmdline_fd, cmdline, size);
   if (length < 0) {
     fprintf(stderr, "Could not read %s.\n", path);
     perror("read");
@@ -287,17 +292,17 @@ static void read_proc_cmdline(char* cmdline, int size) {
 int main(int argc, char** argv) {
   char c;
   int ret = 0;
-  bool should_freeze_process = true;
   bool dump_also_allocs = false;
+  bool pedantic = true;
   char comment[1024] = { '\0' };
 
-  while (((c = getopt(argc, argv, "nxc:")) & 0x80) == 0) {
+  while (((c = getopt(argc, argv, "xnc:")) & 0x80) == 0) {
    switch (c) {
-      case 'n':
-        should_freeze_process = false;
-        break;
       case 'x':
         dump_also_allocs = true;
+        break;
+      case 'n':
+        pedantic = false;
         break;
       case 'c':
         strlcpy(comment, optarg, sizeof(comment));
@@ -306,14 +311,20 @@ int main(int argc, char** argv) {
   }
 
   if (optind >= argc) {
-    printf("Usage: %s [-n] [-x] [-c comment] pid\n", argv[0]);
+    printf("Usage: %s [-n] [-x] [-c comment] pid\n"
+           "  -n: Skip pedantic checks on dump consistency.\n"
+           "  -x: Extended dump, includes individual allocations.\n"
+           "  -c: Appends the given comment to the JSON dump.\n",
+           argv[0]);
     return -1;
   }
 
   pid = atoi(argv[optind]);
 
-  if (should_freeze_process && !freeze_process())
+  if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) == -1) {
+    perror("ptrace");
     return -1;
+  }
 
   // Wait for the process to actually freeze.
   waitpid(pid, NULL, 0);
@@ -327,10 +338,9 @@ int main(int argc, char** argv) {
     ret = -1;
 
   if (ret == 0)
-    ret = dump_process_heap(mem_fd, fmaps, dump_also_allocs, comment);
+    ret = dump_process_heap(mem_fd, fmaps, dump_also_allocs, pedantic, comment);
 
-  if (should_freeze_process)
-    kill(pid, SIGCONT);
+  ptrace(PTRACE_DETACH, pid, NULL, NULL);
 
   // Cleanup.
   fflush(stdout);
