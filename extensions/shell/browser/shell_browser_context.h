@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace extensions {
 

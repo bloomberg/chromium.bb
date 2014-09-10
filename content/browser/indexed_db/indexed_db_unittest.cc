@@ -16,10 +16,10 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace content {
 

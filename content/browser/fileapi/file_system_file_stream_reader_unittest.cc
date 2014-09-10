@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/file_system_file_stream_reader.h"
+#include "storage/browser/fileapi/file_system_file_stream_reader.h"
 
 #include <limits>
 #include <string>
@@ -15,10 +15,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;

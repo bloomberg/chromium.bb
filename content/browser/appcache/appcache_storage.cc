@@ -9,8 +9,8 @@
 #include "base/stl_util.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 

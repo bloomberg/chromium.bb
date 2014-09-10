@@ -23,9 +23,9 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
 
 class Profile;
 

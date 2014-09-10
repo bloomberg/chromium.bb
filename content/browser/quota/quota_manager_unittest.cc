@@ -19,11 +19,11 @@
 #include "base/time/time.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
+#include "storage/browser/quota/quota_database.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_database.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
 
 using base::MessageLoopProxy;
 using storage::kQuotaErrorAbort;

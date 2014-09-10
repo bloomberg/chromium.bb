@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
 
 #include "content/browser/quota/mock_quota_manager.h"
+#include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
 
 using storage::QuotaManagerProxy;
 

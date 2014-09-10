@@ -19,7 +19,7 @@
 #include "content/public/browser/appcache_service.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace base {
 class FilePath;

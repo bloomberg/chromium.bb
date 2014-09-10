@@ -16,12 +16,12 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace drive {
 namespace util {

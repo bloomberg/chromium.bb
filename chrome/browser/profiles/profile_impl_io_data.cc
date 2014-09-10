@@ -50,7 +50,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"

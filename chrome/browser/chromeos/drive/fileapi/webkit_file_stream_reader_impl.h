@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 #include "net/base/completion_callback.h"
-#include "webkit/browser/blob/file_stream_reader.h"
+#include "storage/browser/blob/file_stream_reader.h"
 
 namespace base {
 class SequencedTaskRunner;

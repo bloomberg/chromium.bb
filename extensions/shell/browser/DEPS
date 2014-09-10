@@ -23,6 +23,7 @@ include_rules = [
   "+net",
 
   "+ppapi",
+  "+storage/browser/quota",
   "+sync/api",
 
   # Disallow views to keep the binary size down.
@@ -31,5 +32,4 @@ include_rules = [
   "+third_party/cros_system_api",
 
   "-webkit",
-  "+webkit/browser/quota",
 ]

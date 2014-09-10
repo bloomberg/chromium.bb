@@ -11,11 +11,11 @@
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;

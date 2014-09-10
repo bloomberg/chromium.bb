@@ -11,7 +11,7 @@
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/async_file_util.h"
 
 namespace {
 

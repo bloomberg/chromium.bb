@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_VALIDATOR_FACTORY_H_
 
 #include "base/basictypes.h"
-#include "webkit/browser/fileapi/copy_or_move_file_validator.h"
+#include "storage/browser/fileapi/copy_or_move_file_validator.h"
 
 namespace base {
 class FilePath;

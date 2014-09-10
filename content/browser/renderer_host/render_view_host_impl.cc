@@ -74,6 +74,7 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/touch/touch_enabled.h"
@@ -83,7 +84,6 @@
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/url_constants.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

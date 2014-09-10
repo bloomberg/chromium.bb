@@ -24,7 +24,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_system_util.h"
-#include "webkit/browser/fileapi/isolated_context.h"
+#include "storage/browser/fileapi/isolated_context.h"
 
 namespace chrome {
 

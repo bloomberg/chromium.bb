@@ -16,9 +16,9 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "storage/browser/quota/quota_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_database.h"
 
 using storage::kStorageTypePersistent;
 using storage::kStorageTypeTemporary;

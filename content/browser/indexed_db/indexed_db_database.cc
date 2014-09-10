@@ -26,9 +26,9 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 
 using base::ASCIIToUTF16;
 using base::Int64ToString16;

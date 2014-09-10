@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "storage/browser/quota/quota_client.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_client.h"
 
 namespace storage {
 class QuotaManagerProxy;

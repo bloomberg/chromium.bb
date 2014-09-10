@@ -7,8 +7,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 #include "chrome/browser/media_galleries/fileapi/supported_image_type_validator.h"
-#include "webkit/browser/fileapi/copy_or_move_file_validator.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/copy_or_move_file_validator.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace {
 

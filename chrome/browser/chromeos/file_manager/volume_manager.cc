@@ -28,7 +28,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace {

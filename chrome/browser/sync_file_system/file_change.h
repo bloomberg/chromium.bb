@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/sync_file_system/sync_file_type.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace sync_file_system {
 

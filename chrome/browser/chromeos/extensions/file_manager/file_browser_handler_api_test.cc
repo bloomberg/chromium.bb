@@ -20,8 +20,8 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace utils = extension_function_test_utils;
 

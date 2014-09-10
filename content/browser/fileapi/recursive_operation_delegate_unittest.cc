@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/recursive_operation_delegate.h"
+#include "storage/browser/fileapi/recursive_operation_delegate.h"
 
 #include <vector>
 
@@ -14,10 +14,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
+#include "storage/browser/fileapi/file_system_file_util.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemOperationContext;

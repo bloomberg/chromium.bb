@@ -29,10 +29,10 @@
 #include "net/base/net_errors.h"
 #include "sql/connection.h"
 #include "sql/transaction.h"
-#include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
 

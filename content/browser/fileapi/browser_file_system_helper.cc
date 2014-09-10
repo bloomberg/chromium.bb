@@ -17,14 +17,14 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_permission_policy.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/file_system_options.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "url/url_constants.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_permission_policy.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_options.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
 

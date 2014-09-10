@@ -10,9 +10,9 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/quota/quota_manager.h"
 
 namespace content {
 

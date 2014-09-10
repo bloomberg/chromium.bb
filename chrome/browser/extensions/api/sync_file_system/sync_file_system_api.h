@@ -12,8 +12,8 @@
 #include "chrome/browser/sync_file_system/sync_file_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/quota/quota_types.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace storage {
 class FileSystemContext;

@@ -33,10 +33,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using ppapi::host::PpapiHost;
 using ppapi::host::ResourceHost;

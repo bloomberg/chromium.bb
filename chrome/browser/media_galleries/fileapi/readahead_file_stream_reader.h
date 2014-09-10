@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
-#include "webkit/browser/blob/file_stream_reader.h"
+#include "storage/browser/blob/file_stream_reader.h"
 
 // Wraps a source FileStreamReader with a readahead buffer.
 class ReadaheadFileStreamReader

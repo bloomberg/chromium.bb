@@ -29,9 +29,9 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 
 namespace base {
 class SequencedTaskRunner;

@@ -17,8 +17,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
 #include "extensions/browser/event_router.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace extensions {
 namespace {

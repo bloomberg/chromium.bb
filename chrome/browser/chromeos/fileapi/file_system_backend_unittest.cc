@@ -10,10 +10,10 @@
 #include "base/path_service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "content/public/test/mock_special_storage_policy.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 

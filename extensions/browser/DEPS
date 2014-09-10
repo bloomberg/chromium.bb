@@ -9,11 +9,11 @@ include_rules = [
   "+grit/extensions_strings.h",
   "+net",
   "+skia/ext/image_operations.h",
+  "+storage/browser/fileapi",
   "+sync",
   "+third_party/leveldatabase",
   "+third_party/skia/include",
   "+third_party/WebKit/public/web/WebInputEvent.h",
-  "+webkit/browser/fileapi",
 ]
 
 specific_include_rules = {

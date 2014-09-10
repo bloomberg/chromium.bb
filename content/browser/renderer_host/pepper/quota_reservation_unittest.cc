@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/quota/quota_reservation.h"
 
 using storage::QuotaReservationManager;
 

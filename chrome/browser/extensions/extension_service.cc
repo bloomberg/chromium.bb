@@ -82,8 +82,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #endif
 
 using content::BrowserContext;

@@ -107,6 +107,7 @@ include_rules = [
   # explicit.
   "-ui/views",
 
+  "+storage/browser",
   "+storage/common",
   "+webkit",
 

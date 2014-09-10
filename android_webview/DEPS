@@ -19,5 +19,5 @@ include_rules = [
   "+ui/android",
   "+ui/base",
   "+ui/gfx",
-  "+webkit",
+  "+webkit/common/gpu"
 ]

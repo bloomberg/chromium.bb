@@ -11,7 +11,7 @@
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/common/content_export.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace base {
 class FilePath;

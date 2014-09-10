@@ -23,9 +23,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace file_manager_private = extensions::api::file_manager_private;
 

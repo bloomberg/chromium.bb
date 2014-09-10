@@ -124,10 +124,10 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

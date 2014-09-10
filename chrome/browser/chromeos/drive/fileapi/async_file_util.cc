@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/blob/shareable_file_reference.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
 

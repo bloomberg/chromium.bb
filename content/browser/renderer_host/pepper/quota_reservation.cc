@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/quota/open_file_handle.h"
+#include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/quota/open_file_handle.h"
-#include "webkit/browser/fileapi/quota/quota_reservation.h"
 
 namespace content {
 

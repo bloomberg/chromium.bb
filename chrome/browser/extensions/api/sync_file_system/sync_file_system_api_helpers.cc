@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 
 #include "base/logging.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace extensions {
 

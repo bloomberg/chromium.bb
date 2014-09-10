@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "webkit/browser/fileapi/file_observers.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "storage/browser/fileapi/file_observers.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 
 namespace storage {
 

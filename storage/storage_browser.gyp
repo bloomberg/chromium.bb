@@ -183,7 +183,7 @@
       ],
     },
     {
-      # GN version: //webkit/browser:dump_file_system
+      # GN version: //storage/browser:dump_file_system
       'target_name': 'dump_file_system',
       'type': 'executable',
       'sources': [

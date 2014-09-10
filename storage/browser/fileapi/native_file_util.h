@@ -24,7 +24,7 @@ namespace storage {
 //
 // For the error checks it performs please see the comment for
 // FileSystemFileUtil interface
-// (webkit/browser/fileapi/file_system_file_util.h).
+// (storage/browser/fileapi/file_system_file_util.h).
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.

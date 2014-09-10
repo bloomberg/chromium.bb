@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using ::testing::_;
 using ::testing::Invoke;

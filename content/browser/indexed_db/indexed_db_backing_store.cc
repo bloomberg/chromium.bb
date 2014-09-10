@@ -32,14 +32,14 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/fileapi/file_writer_delegate.h"
+#include "storage/browser/fileapi/local_file_stream_writer.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/browser/fileapi/file_writer_delegate.h"
-#include "webkit/browser/fileapi/local_file_stream_writer.h"
 
 using base::FilePath;
 using base::StringPiece;

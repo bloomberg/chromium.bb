@@ -121,10 +121,8 @@ include_rules = [
   # webkit/. See crbug.com/146251
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
 
-  # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
-  # up webkit/. crbug.com/239710
+  "+storage/browser",
   "+storage/common",
-  "+webkit/browser",
 
   "-chrome/browser/ui/views",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",

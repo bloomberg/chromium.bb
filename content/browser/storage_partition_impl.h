@@ -15,7 +15,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
 

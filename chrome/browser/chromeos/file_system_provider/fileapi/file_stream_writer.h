@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace chromeos {
 namespace file_system_provider {

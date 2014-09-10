@@ -38,9 +38,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 using content::BrowserThread;
 using content::NavigationController;

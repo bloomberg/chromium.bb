@@ -19,12 +19,12 @@
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_file_util.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/common/blob/scoped_file.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemFileUtil;

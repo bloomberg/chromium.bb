@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/blob/file_stream_reader.h"
+#include "storage/browser/blob/file_stream_reader.h"
 
 namespace net {
 class IOBuffer;

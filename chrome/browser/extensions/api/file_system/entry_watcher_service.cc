@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
-#include "webkit/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_context.h"
 
 namespace extensions {
 namespace {

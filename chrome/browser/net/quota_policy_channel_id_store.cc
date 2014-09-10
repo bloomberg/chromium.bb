@@ -17,8 +17,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/cookies/cookie_util.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 QuotaPolicyChannelIDStore::QuotaPolicyChannelIDStore(
     const base::FilePath& path,

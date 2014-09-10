@@ -10,8 +10,8 @@
 
 #include "base/synchronization/lock.h"
 #include "extensions/common/extension_set.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 class CookieSettings;
 

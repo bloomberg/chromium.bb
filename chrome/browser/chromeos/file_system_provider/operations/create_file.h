@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
-#include "webkit/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/async_file_util.h"
 
 namespace base {
 class FilePath;

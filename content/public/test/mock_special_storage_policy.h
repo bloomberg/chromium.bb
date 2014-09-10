@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
+#include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 using storage::SpecialStoragePolicy;
 

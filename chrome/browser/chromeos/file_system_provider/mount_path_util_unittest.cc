@@ -22,9 +22,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace chromeos {
 namespace file_system_provider {

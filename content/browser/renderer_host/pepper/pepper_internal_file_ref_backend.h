@@ -12,9 +12,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/ppapi_host.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace content {
 

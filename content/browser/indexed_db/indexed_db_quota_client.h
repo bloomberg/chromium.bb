@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/content_export.h"
+#include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_task.h"
 #include "storage/common/quota/quota_types.h"
-#include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_task.h"
 
 namespace content {
 class IndexedDBContextImpl;

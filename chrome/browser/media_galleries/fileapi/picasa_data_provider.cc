@@ -16,8 +16,8 @@
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace picasa {
 

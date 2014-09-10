@@ -32,10 +32,10 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/escape.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;

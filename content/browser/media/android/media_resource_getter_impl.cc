@@ -26,9 +26,9 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;

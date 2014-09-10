@@ -45,7 +45,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "webkit/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #endif
 
 #if defined(ENABLE_APP_LIST)

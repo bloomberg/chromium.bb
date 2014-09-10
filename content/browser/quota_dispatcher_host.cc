@@ -10,8 +10,8 @@
 #include "content/common/quota_messages.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "net/base/net_util.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 using storage::QuotaClient;
 using storage::QuotaManager;

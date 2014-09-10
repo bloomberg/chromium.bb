@@ -33,8 +33,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 using content::BrowserContext;
 

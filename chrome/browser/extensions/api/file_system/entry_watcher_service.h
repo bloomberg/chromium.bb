@@ -14,8 +14,8 @@
 #include "base/scoped_observer.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/watcher_manager.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace content {
 class BrowserContext;

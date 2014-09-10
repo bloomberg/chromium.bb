@@ -114,6 +114,8 @@
 #include "net/cookies/cookie_options.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "storage/common/database/database_identifier.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/string_ordinal.h"
@@ -127,8 +129,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
-#include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"

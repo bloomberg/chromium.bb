@@ -34,8 +34,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "webkit/browser/database/database_util.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_manager.h"
 
 using base::ASCIIToUTF16;
 using storage::QuotaManager;

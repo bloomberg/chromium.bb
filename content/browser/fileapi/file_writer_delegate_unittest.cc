@@ -20,12 +20,12 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_quota_util.h"
+#include "storage/browser/fileapi/file_writer_delegate.h"
+#include "storage/browser/fileapi/sandbox_file_stream_writer.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/file_writer_delegate.h"
-#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemURL;

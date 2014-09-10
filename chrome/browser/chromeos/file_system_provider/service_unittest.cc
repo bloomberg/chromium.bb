@@ -27,8 +27,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace chromeos {
 namespace file_system_provider {

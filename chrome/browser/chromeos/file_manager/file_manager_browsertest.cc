@@ -49,7 +49,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 using drive::DriveIntegrationServiceFactory;
 

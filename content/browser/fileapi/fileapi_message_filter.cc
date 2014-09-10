@@ -27,6 +27,11 @@
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/fileapi/file_observers.h"
+#include "storage/browser/fileapi/file_permission_policy.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/blob/blob_data.h"
 #include "storage/common/blob/shareable_file_reference.h"
 #include "storage/common/fileapi/directory_entry.h"
@@ -34,11 +39,6 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/fileapi/file_observers.h"
-#include "webkit/browser/fileapi/file_permission_policy.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 using storage::FileSystemFileUtil;
 using storage::FileSystemBackend;

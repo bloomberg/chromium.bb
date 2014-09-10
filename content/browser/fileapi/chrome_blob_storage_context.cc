@@ -9,8 +9,8 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 using base::UserDataAdapter;
 using storage::BlobStorageContext;

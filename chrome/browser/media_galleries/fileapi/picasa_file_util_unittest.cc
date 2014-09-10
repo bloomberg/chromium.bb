@@ -28,14 +28,14 @@
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_file_system_options.h"
+#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 using storage::FileSystemOperationContext;
 using storage::FileSystemOperation;

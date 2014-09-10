@@ -8,9 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/browser/fileapi/async_file_util_adapter.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "storage/browser/fileapi/async_file_util_adapter.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 
 namespace base {
 class SequencedTaskRunner;

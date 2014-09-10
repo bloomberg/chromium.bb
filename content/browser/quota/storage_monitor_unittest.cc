@@ -11,11 +11,11 @@
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
 #include "net/base/net_util.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/storage_monitor.h"
+#include "storage/browser/quota/storage_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
-#include "webkit/browser/quota/storage_monitor.h"
-#include "webkit/browser/quota/storage_observer.h"
 
 using storage::HostStorageObservers;
 using storage::kQuotaErrorNotSupported;

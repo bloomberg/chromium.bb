@@ -22,10 +22,10 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "storage/common/blob/blob_data.h"
 #include "storage/common/blob/shareable_file_reference.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 using storage::ShareableFileReference;
 

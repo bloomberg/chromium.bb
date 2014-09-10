@@ -24,7 +24,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_operation.h"
 
 class PrefChangeRegistrar;
 class Profile;

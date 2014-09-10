@@ -22,8 +22,8 @@
 #include "content/public/common/content_constants.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "storage/browser/database/database_tracker.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "webkit/browser/database/database_tracker.h"
 
 namespace diagnostics {
 

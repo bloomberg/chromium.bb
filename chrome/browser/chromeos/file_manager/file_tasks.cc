@@ -31,7 +31,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 using extensions::Extension;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;

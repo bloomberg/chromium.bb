@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace storage {
 class FileSystemURL;

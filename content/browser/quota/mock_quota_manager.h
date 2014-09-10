@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_task.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/quota_task.h"
 
 using storage::GetOriginsCallback;
 using storage::QuotaClient;

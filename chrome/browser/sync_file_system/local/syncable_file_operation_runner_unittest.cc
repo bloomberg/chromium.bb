@@ -21,11 +21,11 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 using storage::FileSystemOperation;
 using storage::FileSystemURL;

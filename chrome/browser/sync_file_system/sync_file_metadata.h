@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync_file_system/file_change.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace sync_file_system {
 

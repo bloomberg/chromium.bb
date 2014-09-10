@@ -13,8 +13,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/blob_storage_context.h"
 
 namespace content {
 

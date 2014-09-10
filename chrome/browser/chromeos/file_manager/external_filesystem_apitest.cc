@@ -28,7 +28,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "google_apis/drive/time_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 // Tests for access to external file systems (as defined in
 // storage/common/fileapi/file_system_types.h) from extensions with

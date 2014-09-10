@@ -17,7 +17,7 @@
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "google_apis/drive/gdata_errorcode.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace drive {
 class DriveServiceInterface;

@@ -18,7 +18,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 namespace chromeos {
 namespace file_system_provider {

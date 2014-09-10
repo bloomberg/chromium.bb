@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/async_file_util.h"
 
 struct SnapshotRequestInfo;
 

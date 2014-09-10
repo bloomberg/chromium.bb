@@ -6,8 +6,8 @@
 #include "base/run_loop.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/net_util.h"
+#include "storage/browser/quota/usage_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/usage_tracker.h"
 
 using storage::kQuotaStatusOk;
 using storage::kStorageTypeTemporary;

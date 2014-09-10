@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/quota/quota_backend_impl.h"
+#include "storage/browser/fileapi/quota/quota_backend_impl.h"
 
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
+#include "storage/browser/fileapi/file_system_usage_cache.h"
+#include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
-#include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/browser/fileapi/obfuscated_file_util.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
 
 using storage::FileSystemUsageCache;
 using storage::ObfuscatedFileUtil;

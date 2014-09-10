@@ -15,9 +15,9 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_request_job_factory.h"
 
 namespace content {
 

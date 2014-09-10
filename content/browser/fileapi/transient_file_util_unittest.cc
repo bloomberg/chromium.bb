@@ -9,12 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_file_system_context.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/isolated_context.h"
+#include "storage/browser/fileapi/transient_file_util.h"
 #include "storage/common/blob/scoped_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/transient_file_util.h"
 
 using storage::FileSystemURL;
 

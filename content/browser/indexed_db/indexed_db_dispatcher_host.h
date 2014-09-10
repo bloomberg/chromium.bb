@@ -15,8 +15,8 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCount_Params;

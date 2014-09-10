@@ -22,9 +22,9 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_request_job_factory.h"
 
 namespace content {
 

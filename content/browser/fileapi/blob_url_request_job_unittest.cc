@@ -22,12 +22,12 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/browser/blob/blob_url_request_job.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/blob_url_request_job.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using storage::BlobData;
 using storage::BlobURLRequestJob;

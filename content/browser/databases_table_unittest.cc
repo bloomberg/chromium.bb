@@ -8,9 +8,9 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
+#include "storage/browser/database/databases_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "webkit/browser/database/databases_table.h"
 
 using base::ASCIIToUTF16;
 using storage::DatabaseDetails;

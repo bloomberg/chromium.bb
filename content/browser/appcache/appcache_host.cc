@@ -12,7 +12,7 @@
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "net/url_request/url_request.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 

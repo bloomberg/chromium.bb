@@ -19,6 +19,7 @@
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
@@ -31,7 +32,6 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "v8/include/v8.h"
-#include "webkit/browser/database/vfs_backend.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

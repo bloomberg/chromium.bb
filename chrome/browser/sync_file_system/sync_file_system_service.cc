@@ -34,8 +34,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_context.h"
 
 using content::BrowserThread;
 using extensions::Extension;

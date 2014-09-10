@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/database/database_quota_client.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/database/database_quota_client.h"
-#include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/database/database_util.h"
 
 using storage::DatabaseQuotaClient;
 using storage::DatabaseTracker;

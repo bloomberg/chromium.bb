@@ -14,13 +14,13 @@
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/quota/quota_callbacks.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "storage/common/quota/quota_types.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/quota/quota_callbacks.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -10,7 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 using ::testing::_;
 using ::testing::Invoke;

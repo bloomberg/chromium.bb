@@ -41,13 +41,13 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>

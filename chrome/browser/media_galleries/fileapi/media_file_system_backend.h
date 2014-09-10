@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_backend.h"
 
 namespace base {
 class SequencedTaskRunner;

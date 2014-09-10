@@ -54,8 +54,8 @@
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_sniffer.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 
 using content::WebContents;
 using storage_monitor::MediaStorageUtil;

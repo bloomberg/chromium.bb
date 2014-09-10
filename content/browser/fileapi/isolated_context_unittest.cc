@@ -6,9 +6,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 

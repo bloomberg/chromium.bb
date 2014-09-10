@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_context.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -10,10 +10,10 @@
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_options.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 

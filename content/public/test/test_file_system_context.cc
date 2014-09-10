@@ -8,9 +8,9 @@
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_options.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
 

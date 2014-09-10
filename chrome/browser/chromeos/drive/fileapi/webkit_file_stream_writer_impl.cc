@@ -12,7 +12,7 @@
 #include "google_apis/drive/task_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/fileapi/file_stream_writer.h"
 
 using content::BrowserThread;
 

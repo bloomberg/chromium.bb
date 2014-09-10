@@ -23,10 +23,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace content {
 

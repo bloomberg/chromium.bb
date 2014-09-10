@@ -10,8 +10,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 using storage::BlobData;
 using storage::BlobDataHandle;

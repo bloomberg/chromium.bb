@@ -35,10 +35,10 @@
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/fileapi/file_system_url_request_job_factory.h"
 #include "storage/common/blob/blob_data.h"
-#include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/blob/blob_url_request_job_factory.h"
-#include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 
 using storage::FileSystemContext;
 using storage::BlobStorageContext;

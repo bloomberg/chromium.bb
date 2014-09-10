@@ -10,9 +10,9 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "webkit/browser/fileapi/file_system_backend.h"
-#include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
+#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/file_system_quota_util.h"
+#include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
 namespace sync_file_system {
 

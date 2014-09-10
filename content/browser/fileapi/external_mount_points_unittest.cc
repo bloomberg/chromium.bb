@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 #include <string>
 
 #include "base/files/file_path.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 #define FPL FILE_PATH_LITERAL
 

@@ -22,8 +22,8 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 #endif // !OS_IOS
 
 using base::UserDataAdapter;

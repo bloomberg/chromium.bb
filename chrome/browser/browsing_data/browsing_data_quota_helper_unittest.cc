@@ -13,8 +13,8 @@
 #include "content/public/test/mock_storage_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 using content::BrowserThread;
 using content::MockOriginData;

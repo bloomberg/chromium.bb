@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 

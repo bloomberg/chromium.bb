@@ -4,9 +4,9 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/database/database_util.h"
 
 using base::ASCIIToUTF16;
 using storage::DatabaseUtil;

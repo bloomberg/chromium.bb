@@ -13,8 +13,8 @@
 #include "sql/error_delegate_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace content {
 

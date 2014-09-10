@@ -29,12 +29,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/storage_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/views/constants.h"
-#include "webkit/browser/quota/quota_manager.h"
-#include "webkit/browser/quota/storage_observer.h"
 
 using content::BrowserThread;
 

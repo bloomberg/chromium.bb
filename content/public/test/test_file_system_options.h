@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_OPTIONS_H_
 #define CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_OPTIONS_H_
 
-#include "webkit/browser/fileapi/file_system_options.h"
+#include "storage/browser/fileapi/file_system_options.h"
 
 namespace content {
 

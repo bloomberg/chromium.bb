@@ -21,10 +21,10 @@
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 using base::ASCIIToUTF16;
 

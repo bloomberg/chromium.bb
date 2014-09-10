@@ -10,12 +10,12 @@
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "net/url_request/url_request.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_writer_delegate.h"
 #include "storage/common/blob/shareable_file_reference.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/file_writer_delegate.h"
 
 using storage::FileSystemURL;
 

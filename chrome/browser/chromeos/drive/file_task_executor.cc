@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 using storage::FileSystemURL;
 

@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager.h"
 
 namespace content {
 

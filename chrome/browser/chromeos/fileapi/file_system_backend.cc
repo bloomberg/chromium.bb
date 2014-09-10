@@ -11,14 +11,14 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#include "webkit/browser/blob/file_stream_reader.h"
-#include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace chromeos {
 

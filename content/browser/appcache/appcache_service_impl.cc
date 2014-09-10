@@ -24,7 +24,7 @@
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
 

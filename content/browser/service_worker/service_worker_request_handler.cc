@@ -17,7 +17,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 

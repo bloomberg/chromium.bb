@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
+#include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -11,9 +11,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "storage/browser/fileapi/quota/open_file_handle.h"
+#include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/quota/open_file_handle.h"
-#include "webkit/browser/fileapi/quota/quota_reservation.h"
 
 using storage::kFileSystemTypeTemporary;
 using storage::OpenFileHandle;

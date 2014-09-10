@@ -43,6 +43,7 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_util.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -54,7 +55,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;

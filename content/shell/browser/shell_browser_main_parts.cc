@@ -24,9 +24,9 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"

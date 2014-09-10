@@ -13,8 +13,8 @@
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/url_request/url_request.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
 

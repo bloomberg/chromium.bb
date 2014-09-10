@@ -51,9 +51,9 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_url.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

@@ -24,10 +24,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace chromeos {
 namespace file_system_provider {

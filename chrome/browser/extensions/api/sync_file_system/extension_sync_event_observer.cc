@@ -17,8 +17,8 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension_set.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 using sync_file_system::SyncEventObserver;
 

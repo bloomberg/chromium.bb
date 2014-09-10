@@ -20,8 +20,8 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
 namespace {

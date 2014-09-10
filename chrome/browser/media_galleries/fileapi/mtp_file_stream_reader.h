@@ -9,9 +9,9 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/blob/file_stream_reader.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/storage_browser_export.h"
+#include "storage/browser/blob/file_stream_reader.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;

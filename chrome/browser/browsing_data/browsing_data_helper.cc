@@ -10,8 +10,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/common/constants.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/special_storage_policy.h"
 
 // Static
 bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {

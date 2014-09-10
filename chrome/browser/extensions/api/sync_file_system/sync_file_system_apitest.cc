@@ -16,10 +16,10 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/test_switches.h"
+#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/quota/quota_manager.h"
 
 using ::testing::_;
 using ::testing::Eq;

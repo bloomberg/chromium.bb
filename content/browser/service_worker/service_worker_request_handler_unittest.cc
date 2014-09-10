@@ -14,8 +14,8 @@
 #include "content/common/resource_request_body.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/blob_storage_context.h"
 
 namespace content {
 

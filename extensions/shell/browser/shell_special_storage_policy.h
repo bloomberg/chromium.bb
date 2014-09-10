@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_SPECIAL_STORAGE_POLICY_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_SPECIAL_STORAGE_POLICY_H_
 
-#include "webkit/browser/quota/special_storage_policy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace extensions {
 

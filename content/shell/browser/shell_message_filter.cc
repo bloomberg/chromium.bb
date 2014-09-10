@@ -16,9 +16,9 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/fileapi/isolated_context.h"
+#include "storage/browser/quota/quota_manager.h"
 
 namespace content {
 
