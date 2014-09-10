@@ -7,7 +7,7 @@
     Exposed=(Window,Worker),
     GarbageCollected,
     Constructor(Dictionary init)
-] interface CircularRegion : GeofencingRegion {
+] interface CircularGeofencingRegion : GeofencingRegion {
     const double MIN_RADIUS = 1.0;
     const double MAX_RADIUS = 100.0;
 

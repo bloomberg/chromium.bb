@@ -4,9 +4,7 @@
 
 [
     RuntimeEnabled=Geofencing,
-    SpecialWrapFor=CircularGeofencingRegion,
-    NoInterfaceObject,
-    GarbageCollected,
-] interface GeofencingRegion {
-    readonly attribute DOMString id;
+    Exposed=Worker,
+] partial interface WorkerNavigator {
+    readonly attribute Geofencing geofencing;
 };

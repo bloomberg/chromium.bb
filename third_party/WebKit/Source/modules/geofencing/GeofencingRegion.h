@@ -21,8 +21,11 @@ public:
 
     virtual void trace(Visitor*) { }
 
+    // For SpecialWrapFor
+    virtual bool isCircularGeofencingRegion() const { return false; }
+
 protected:
-    GeofencingRegion(const String& id) : m_id(id) { }
+    explicit GeofencingRegion(const String& id) : m_id(id) { }
 
 private:
     String m_id;

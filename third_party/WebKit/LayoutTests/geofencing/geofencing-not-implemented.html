@@ -14,7 +14,7 @@ function shouldReject(promise)
         function() { testPassed("Promise rejected as expected."); });
 }
 
-shouldReject(navigator.geofencing.registerRegion(new CircularRegion({latitude: 37.421999, longitude: -122.084015})));
+shouldReject(navigator.geofencing.registerRegion(new CircularGeofencingRegion({latitude: 37.421999, longitude: -122.084015})));
 shouldReject(navigator.geofencing.unregisterRegion(""));
 shouldReject(navigator.geofencing.getRegisteredRegions());
 </script>
