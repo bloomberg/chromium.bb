@@ -263,6 +263,14 @@ class SANDBOX_EXPORT Caser {
 // templates.
 namespace internal {
 
+// Make argument-dependent lookup work.  This is necessary because although
+// BoolExpr is defined in bpf_dsl, since it's merely a typedef for
+// scoped_refptr<const internal::BoolExplImpl>, argument-dependent lookup only
+// searches the "internal" nested namespace.
+using bpf_dsl::operator!;
+using bpf_dsl::operator||;
+using bpf_dsl::operator&&;
+
 // Returns a boolean expression that represents whether system call
 // argument |num| of size |size| is equal to |val|, when masked
 // according to |mask|.  Users should use the Arg template class below

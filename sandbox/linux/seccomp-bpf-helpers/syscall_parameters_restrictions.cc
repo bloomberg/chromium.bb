@@ -88,11 +88,6 @@ using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
 
-// TODO(mdempsky): Make BoolExpr a standalone class so these operators can
-// be resolved via argument-dependent lookup.
-using sandbox::bpf_dsl::operator||;
-using sandbox::bpf_dsl::operator&&;
-
 namespace sandbox {
 
 // Allow Glibc's and Android pthread creation flags, crash on any other
