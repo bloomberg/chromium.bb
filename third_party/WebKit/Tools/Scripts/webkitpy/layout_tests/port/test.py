@@ -209,7 +209,7 @@ layer at (0,0) size 800x34
     tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html', same_image=True)
 
     # This adds a different virtual reference to ensure that that also works.
-    tests.add('virtual/passes/reftest-expected.html', actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+    tests.add('virtual/virtual_passes/passes/reftest-expected.html', actual_checksum='xxx', actual_image='XXX', is_reftest=True)
 
     tests.add_reftest('passes/mismatch.html', 'passes/mismatch-expected-mismatch.html', same_image=False)
     tests.add_reftest('passes/svgreftest.svg', 'passes/svgreftest-expected.svg', same_image=True)
@@ -262,7 +262,7 @@ layer at (0,0) size 800x34
     # For testing that virtual test suites don't expand names containing themselves
     # See webkit.org/b/97925 and base_unittest.PortTest.test_tests().
     tests.add('passes/test-virtual-passes.html')
-    tests.add('passes/passes/test-virtual-passes.html')
+    tests.add('passes/virtual_passes/test-virtual-passes.html')
 
     return tests
 
@@ -353,7 +353,7 @@ Bug(test) passes/text.html [ Pass ]
         add_file(test, '-expected.txt', test.expected_text)
         add_file(test, '-expected.png', test.expected_image)
 
-    filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
+    filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'virtual_passes', 'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
     # Clear the list of written files so that we can watch what happens during testing.
     filesystem.clear_written_files()
 
@@ -465,7 +465,7 @@ class TestPort(Port):
     def _skipped_tests_for_unsupported_features(self, test_list):
         return set(['failures/expected/skip_text.html',
                     'failures/unexpected/skip_pass.html',
-                    'virtual/skipped'])
+                    'virtual/skipped/failures/expected'])
 
     def name(self):
         return self._name
@@ -548,8 +548,8 @@ class TestPort(Port):
 
     def virtual_test_suites(self):
         return [
-            VirtualTestSuite(name='passes', base='passes', args=['--virtual-arg']),
-            VirtualTestSuite(name='skipped', base='failures/expected', args=['--virtual-arg2']),
+            VirtualTestSuite(prefix='virtual_passes', base='passes', args=['--virtual-arg']),
+            VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
         ]
 
 

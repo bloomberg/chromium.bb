@@ -38,12 +38,12 @@
              "--enable-per-tile-painting"]
   },
   {
-    "name": "gpu/compositedscrolling/overflow",
+    "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
     "args": ["--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "name": "gpu/compositedscrolling/scrollbars",
+    "prefix": "prefer_compositing_to_lcd_text",
     "base": "scrollbars",
     "args": ["--enable-prefer-compositing-to-lcd-text"]
   },
@@ -129,5 +129,3 @@
     "args": ["--enable-region-based-columns"]
   }
 ]
-
- 

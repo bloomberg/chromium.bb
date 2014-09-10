@@ -199,7 +199,7 @@ crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-fl
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
-crbug.com/396775 virtual/gpu/compositedscrolling/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
+crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
@@ -420,7 +420,7 @@ crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
-crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+crbug.com/245630 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
@@ -839,7 +839,7 @@ crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args-i
 crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
 
 crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
-crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
@@ -1205,7 +1205,7 @@ crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ P
 
 crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ Pass ImageOnlyFailure ]
 
-crbug.com/404728 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbars-paint-outside-iframe.html [ ImageOnlyFailure ]
+crbug.com/404728 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbars-paint-outside-iframe.html [ ImageOnlyFailure ]
 
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
 crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
@@ -1337,7 +1337,7 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 crbug.com/409535 [ Win Release ] http/tests/xmlhttprequest/workers/close.html [ Pass Timeout ]
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
-crbug.com/409534 virtual/gpu/compositedscrolling/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
+crbug.com/409534 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 

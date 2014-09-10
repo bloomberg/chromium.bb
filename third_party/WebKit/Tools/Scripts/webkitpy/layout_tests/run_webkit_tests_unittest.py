@@ -254,7 +254,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_child_processes_min(self):
         if self.should_test_processes:
             _, regular_output, _ = logging_run(
-                ['--debug-rwt-logging', '--child-processes', '2', '-i', 'passes/passes', 'passes'],
+                ['--debug-rwt-logging', '--child-processes', '2', '-i', 'passes/virtual_passes', 'passes'],
                 tests_included=True, shared_port=False)
             self.assertTrue(any(['Running 1 ' in line for line in regular_output.buflist]))
 
@@ -731,7 +731,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # These next tests test that we run the tests in ascending alphabetical
         # order per directory. HTTP tests are sharded separately from other tests,
         # so we have to test both.
-        tests_run = get_tests_run(['-i', 'passes/passes', 'passes'])
+        tests_run = get_tests_run(['-i', 'passes/virtual_passes', 'passes'])
         self.assertEqual(tests_run, sorted(tests_run))
 
         tests_run = get_tests_run(['http/tests/passes'])
@@ -776,8 +776,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(test_results[0].references, [])
 
     def test_reftest_with_virtual_reference(self):
-        _, err, _ = logging_run(['--details', 'virtual/passes/reftest.html'], tests_included=True)
-        self.assertTrue('ref: virtual/passes/reftest-expected.html' in err.getvalue())
+        _, err, _ = logging_run(['--details', 'virtual/virtual_passes/passes/reftest.html'], tests_included=True)
+        self.assertTrue('ref: virtual/virtual_passes/passes/reftest-expected.html' in err.getvalue())
 
     def test_additional_platform_directory(self):
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))

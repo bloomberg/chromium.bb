@@ -1693,15 +1693,11 @@ class Port(object):
         return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 class VirtualTestSuite(object):
-    def __init__(self, prefix=None, name=None, base=None, args=None):
+    def __init__(self, prefix=None, base=None, args=None):
         assert base
         assert args
-        # TODO(dpranke): Rename the legacy virtual test suites and update the expectations.
-        if name:
-            self.name = 'virtual/' + name
-        else:
-            assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
-            self.name = 'virtual/' + prefix + '/' + base
+        assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
+        self.name = 'virtual/' + prefix + '/' + base
         self.base = base
         self.args = args
         self.tests = {}
