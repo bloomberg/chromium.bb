@@ -55,7 +55,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   typedef std::string UniqueId;
   typedef base::ScopedPtrHashMap<UniqueId, UploadState> StateMap;
 
-  void DeleteUploadStateFor(const UniqueId& unique_id);
+  void OnUploadStateStopped(const UniqueId& unique_id);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
@@ -64,6 +64,10 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider_;
   StateMap state_map_;
+
+  // Must be last data member.
+  base::WeakPtrFactory<AttachmentUploaderImpl> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(AttachmentUploaderImpl);
 };
 
