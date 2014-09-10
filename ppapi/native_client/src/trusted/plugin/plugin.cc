@@ -24,7 +24,6 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
 
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
@@ -276,7 +275,6 @@ Plugin::Plugin(PP_Instance pp_instance)
   nexe_file_info_ = kInvalidNaClFileInfo;
 }
 
-
 Plugin::~Plugin() {
   int64_t shutdown_start = NaClGetTimeOfDayMicroseconds();
 
@@ -431,12 +429,6 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
                                    error_info.message().c_str());
-}
-
-bool Plugin::DocumentCanRequest(const std::string& url) {
-  CHECK(pp::Module::Get()->core()->IsMainThread());
-  CHECK(pp::URLUtil_Dev::Get() != NULL);
-  return pp::URLUtil_Dev::Get()->DocumentCanRequest(this, pp::Var(url));
 }
 
 }  // namespace plugin

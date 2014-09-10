@@ -121,11 +121,6 @@ class Plugin : public pp::Instance {
 
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
-  // A helper function that indicates if |url| can be requested by the document
-  // under the same-origin policy. Strictly speaking, it may be possible for the
-  // document to request the URL using CORS even if this function returns false.
-  bool DocumentCanRequest(const std::string& url);
-
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
   pp::UMAPrivate& uma_interface() { return uma_interface_; }
 
