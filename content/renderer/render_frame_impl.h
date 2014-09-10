@@ -437,6 +437,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,
                                     float scale_factor);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
+  virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
+                                      blink::WebAXEvent event);
 
   // WebMediaPlayerDelegate implementation:
   virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;

@@ -66,7 +66,7 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
   dict->Set(kChildrenDictAttr, children);
 
   for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
-    BrowserAccessibility* child_node = node.InternalGetChild(i);
+    BrowserAccessibility* child_node = node.PlatformGetChild(i);
     base::DictionaryValue* child_dict = new base::DictionaryValue;
     children->Append(child_dict);
     RecursiveBuildAccessibilityTree(*child_node, child_dict);

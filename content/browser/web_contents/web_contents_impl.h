@@ -687,6 +687,8 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrossSiteIframe);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessAccessibilityBrowserTest,
+                           CrossSiteIframeAccessibility);
 
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;

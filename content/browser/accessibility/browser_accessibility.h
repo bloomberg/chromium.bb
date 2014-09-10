@@ -31,12 +31,13 @@ class BrowserAccessibilityWin;
 //
 // BrowserAccessibility
 //
-// Class implementing the cross platform interface for the Browser-Renderer
-// communication of accessibility information, providing accessibility
-// to be used by screen readers and other assistive technology (AT).
+// A BrowserAccessibility object represents one node in the accessibility
+// tree on the browser side. It exactly corresponds to one WebAXObject from
+// Blink. It's owned by a BrowserAccessibilityManager.
 //
-// An implementation for each platform handles platform specific accessibility
-// APIs.
+// There are subclasses of BrowserAccessibility for each platform where
+// we implement native accessibility APIs. This base class is used occasionally
+// for tests.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT BrowserAccessibility {
@@ -245,6 +246,15 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Append the text from this node and its children.
   std::string GetTextRecursive() const;
 
+  // Identifies the given frame tree node id as the only child of this node,
+  // so any call to PlatformChildCount/PlatformGetChild will use
+  // BrowserAccessibilityDelegate::AccessibilityGetChildFrame to retrieve
+  // the BrowserAccessibilityManager of the child frame and return its root
+  // node as this node's child.
+  void SetChildFrameTreeNodeId(int64 child_frame_tree_node_id);
+
+  int64 child_frame_tree_node_id() const { return child_frame_tree_node_id_; }
+
  protected:
   BrowserAccessibility();
 
@@ -262,7 +272,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   std::string name_;
   std::string value_;
 
- private:
+  // If nonzero, the frame tree node id of the child frame of this node.
+  int64 child_frame_tree_node_id_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
 

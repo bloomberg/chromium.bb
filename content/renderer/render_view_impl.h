@@ -417,8 +417,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
-  virtual void postAccessibilityEvent(
-      const blink::WebAXObject& obj, blink::WebAXEvent event);
   virtual blink::WebSpeechRecognizer* speechRecognizer();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
