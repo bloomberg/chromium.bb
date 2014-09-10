@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -63,7 +64,10 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
 
  protected:
   // Draw the last set cursor & update the cursor plane.
-  void ResetCursor(gfx::AcceleratedWidget w);
+  void ResetCursor();
+
+  // Draw next frame in an animated cursor.
+  void OnCursorAnimationTimeout();
 
   DriWrapper* drm_;  // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
@@ -73,9 +77,12 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
   scoped_refptr<DriBuffer> cursor_buffers_[2];
   int cursor_frontbuffer_;
 
+  gfx::AcceleratedWidget cursor_widget_;
   std::vector<SkBitmap> cursor_bitmaps_;
   gfx::Point cursor_location_;
+  int cursor_frame_;
   int cursor_frame_delay_ms_;
+  base::RepeatingTimer<DriSurfaceFactory> cursor_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };

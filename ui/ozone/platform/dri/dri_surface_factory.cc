@@ -55,7 +55,10 @@ DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
       screen_manager_(screen_manager),
       window_manager_(window_manager),
       state_(UNINITIALIZED),
-      cursor_frontbuffer_(0) {
+      cursor_frontbuffer_(0),
+      cursor_widget_(0),
+      cursor_frame_(0),
+      cursor_frame_delay_ms_(0) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -96,8 +99,6 @@ void DriSurfaceFactory::ShutdownHardware() {
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(state_ == INITIALIZED);
-  // Initial cursor set.
-  ResetCursor(widget);
 
   return scoped_ptr<ui::SurfaceOzoneCanvas>(
       new DriSurface(window_manager_->GetWindowDelegate(widget), drm_));
@@ -113,17 +114,24 @@ void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget widget,
                                           const std::vector<SkBitmap>& bitmaps,
                                           const gfx::Point& location,
                                           int frame_delay_ms) {
+  cursor_widget_ = widget;
   cursor_bitmaps_ = bitmaps;
   cursor_location_ = location;
+  cursor_frame_ = 0;
   cursor_frame_delay_ms_ = frame_delay_ms;
+  cursor_timer_.Stop();
 
-  if (bitmaps.size() > 1)
-    NOTIMPLEMENTED();  // No animation of animated cursors.
+  if (cursor_frame_delay_ms_)
+    cursor_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(cursor_frame_delay_ms_),
+        this,
+        &DriSurfaceFactory::OnCursorAnimationTimeout);
 
   if (state_ != INITIALIZED)
     return;
 
-  ResetCursor(widget);
+  ResetCursor();
 }
 
 void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget widget,
@@ -142,14 +150,16 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget widget,
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 
-void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget widget) {
-  HardwareDisplayController* controller =
-      window_manager_->GetWindowDelegate(widget)->GetController();
+void DriSurfaceFactory::ResetCursor() {
+  if (!cursor_widget_)
+    return;
 
+  HardwareDisplayController* controller =
+      window_manager_->GetWindowDelegate(cursor_widget_)->GetController();
   if (cursor_bitmaps_.size()) {
     // Draw new cursor into backbuffer.
     UpdateCursorImage(cursor_buffers_[cursor_frontbuffer_ ^ 1].get(),
-                      cursor_bitmaps_[0]);
+                      cursor_bitmaps_[cursor_frame_]);
 
     // Reset location & buffer.
     if (controller) {
@@ -162,6 +172,13 @@ void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget widget) {
     if (controller)
       controller->UnsetCursor();
   }
+}
+
+void DriSurfaceFactory::OnCursorAnimationTimeout() {
+  cursor_frame_++;
+  cursor_frame_ %= cursor_bitmaps_.size();
+
+  ResetCursor();
 }
 
 }  // namespace ui

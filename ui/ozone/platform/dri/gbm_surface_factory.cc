@@ -150,8 +150,6 @@ scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
 
   DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
 
-  ResetCursor(widget);
-
   scoped_ptr<GbmSurface> surface(new GbmSurface(delegate, device_, drm_));
   if (!surface->Initialize())
     return scoped_ptr<SurfaceOzoneEGL>();
