@@ -991,8 +991,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingWithTlsChannelIdTest,
   EXPECT_EQ(expected_tls_channel_id_value, tls_channel_id);
 }
 
-// FIXME: Enable after https://codereview.chromium.org/518633002/ lands
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_MessagingUserGesture) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingUserGesture) {
   const char kManifest[] = "{"
                           "  \"name\": \"user_gesture\","
                           "  \"version\": \"1.0\","
