@@ -17,6 +17,7 @@
 #include "cc/base/tiling_data.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/trees/occlusion.h"
 #include "ui/gfx/rect.h"
 
 namespace base {
@@ -27,8 +28,6 @@ class TracedValue;
 
 namespace cc {
 
-template <typename LayerType>
-class OcclusionTracker;
 class PictureLayerTiling;
 class PicturePileImpl;
 
@@ -237,14 +236,11 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void UpdateTilePriorities(
-      WhichTree tree,
-      const gfx::Rect& visible_layer_rect,
-      float ideal_contents_scale,
-      double current_frame_time_in_seconds,
-      const OcclusionTracker<LayerImpl>* occlusion_tracker,
-      const LayerImpl* render_target,
-      const gfx::Transform& draw_transform);
+  void UpdateTilePriorities(WhichTree tree,
+                            const gfx::Rect& visible_layer_rect,
+                            float ideal_contents_scale,
+                            double current_frame_time_in_seconds,
+                            const Occlusion& occlusion_in_layer_space);
 
   // Copies the src_tree priority into the dst_tree priority for all tiles.
   // The src_tree priority is reset to the lowest priority possible.  This
