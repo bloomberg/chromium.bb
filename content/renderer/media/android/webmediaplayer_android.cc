@@ -140,6 +140,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       has_size_info_(false),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
+      has_valid_metadata_(false),
       video_frame_provider_client_(NULL),
       pending_playback_(false),
       player_type_(MEDIA_PLAYER_TYPE_URL),
@@ -427,7 +428,8 @@ bool WebMediaPlayerAndroid::seeking() const {
 double WebMediaPlayerAndroid::duration() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // HTML5 spec requires duration to be NaN if readyState is HAVE_NOTHING
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing ||
+      !has_valid_metadata_)
     return std::numeric_limits<double>::quiet_NaN();
 
   if (duration_ == media::kInfiniteDuration())
@@ -481,7 +483,8 @@ WebTimeRanges WebMediaPlayerAndroid::buffered() const {
 double WebMediaPlayerAndroid::maxTimeSeekable() const {
   // If we haven't even gotten to ReadyStateHaveMetadata yet then just
   // return 0 so that the seekable range is empty.
-  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata ||
+      !has_valid_metadata_)
     return 0.0;
 
   return duration();
@@ -731,6 +734,8 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
   if (success)
     OnVideoSizeChanged(width, height);
 
+  has_valid_metadata_ = success;
+
   if (need_to_signal_duration_changed)
     client_->durationChanged();
 }
@@ -753,7 +758,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
 }
 
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
-  buffered_[0].end = duration() * percentage / 100;
+  buffered_[0].end = has_valid_metadata_ ? duration() * percentage / 100 : 0;
   did_loading_progress_ = true;
 }
 
