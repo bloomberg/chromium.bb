@@ -564,13 +564,16 @@ void MetricsService::InitializeMetricsState() {
   log_manager_.LoadPersistedUnsentLogs();
 
   session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
-
+  bool exited_cleanly = true;
   if (!local_state_->GetBoolean(metrics::prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(metrics::prefs::kStabilityCrashCount);
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+    exited_cleanly = false;
+  }
 
+  if (!exited_cleanly || ProvidersHaveStabilityMetrics()) {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
@@ -578,8 +581,9 @@ void MetricsService::InitializeMetricsState() {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
                                 execution_phase);
 
-    // If the previous session didn't exit cleanly, then prepare an initial
-    // stability log if UMA is enabled.
+    // If the previous session didn't exit cleanly, or if any provider
+    // explicitly requests it, prepare an initial stability log -
+    // provided UMA is enabled.
     if (state_manager_->IsMetricsReportingEnabled())
       PrepareInitialStabilityLog();
   }
@@ -896,9 +900,18 @@ void MetricsService::StageNewLog() {
   DCHECK(log_manager_.has_staged_log());
 }
 
+bool MetricsService::ProvidersHaveStabilityMetrics() {
+  // Check whether any metrics provider has stability metrics.
+  for (size_t i = 0; i < metrics_providers_.size(); ++i) {
+    if (metrics_providers_[i]->HasStabilityMetrics())
+      return true;
+  }
+
+  return false;
+}
+
 void MetricsService::PrepareInitialStabilityLog() {
   DCHECK_EQ(INITIALIZED, state_);
-  DCHECK_NE(0, local_state_->GetInteger(metrics::prefs::kStabilityCrashCount));
 
   scoped_ptr<MetricsLog> initial_stability_log(
       CreateLog(MetricsLog::INITIAL_STABILITY_LOG));

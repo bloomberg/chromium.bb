@@ -315,6 +315,10 @@ class MetricsService : public base::HistogramFlattener {
   // (depending on |state_|), and stages it for upload.
   void StageNewLog();
 
+  // Returns true if any of the registered metrics providers have stability
+  // metrics to report.
+  bool ProvidersHaveStabilityMetrics();
+
   // Prepares the initial stability log, which is only logged when the previous
   // run of Chrome crashed.  This log contains any stability metrics left over
   // from that previous run, and only these stability metrics.  It uses the

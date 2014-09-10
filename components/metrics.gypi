@@ -37,6 +37,7 @@
         'metrics/metrics_log_uploader.h',
         'metrics/metrics_pref_names.cc',
         'metrics/metrics_pref_names.h',
+        'metrics/metrics_provider.cc',
         'metrics/metrics_provider.h',
         'metrics/metrics_reporting_scheduler.cc',
         'metrics/metrics_reporting_scheduler.h',

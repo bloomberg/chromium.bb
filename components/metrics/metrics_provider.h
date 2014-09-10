@@ -17,32 +17,36 @@ class SystemProfileProto_Stability;
 // be filled out by different classes.
 class MetricsProvider {
  public:
-  MetricsProvider() {}
-  virtual ~MetricsProvider() {}
+  MetricsProvider();
+  virtual ~MetricsProvider();
 
   // Called when a new MetricsLog is created.
-  virtual void OnDidCreateMetricsLog() {}
+  virtual void OnDidCreateMetricsLog();
 
   // Called when metrics recording has been enabled.
-  virtual void OnRecordingEnabled() {}
+  virtual void OnRecordingEnabled();
 
   // Called when metrics recording has been disabled.
-  virtual void OnRecordingDisabled() {}
+  virtual void OnRecordingDisabled();
 
   // Provides additional metrics into the system profile.
   virtual void ProvideSystemProfileMetrics(
-      SystemProfileProto* system_profile_proto) {}
+      SystemProfileProto* system_profile_proto);
+
+  // Called once at startup to see whether this provider has stability events
+  // to share. Default implementation always returns false.
+  virtual bool HasStabilityMetrics();
 
   // Provides additional stability metrics. Stability metrics can be provided
   // directly into |stability_proto| fields or by logging stability histograms
   // via the UMA_STABILITY_HISTOGRAM_ENUMERATION() macro.
   virtual void ProvideStabilityMetrics(
-      SystemProfileProto* system_profile_proto) {}
+      SystemProfileProto* system_profile_proto);
 
   // Provides general metrics that are neither system profile nor stability
   // metrics.
   virtual void ProvideGeneralMetrics(
-      ChromeUserMetricsExtension* uma_proto) {}
+      ChromeUserMetricsExtension* uma_proto);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsProvider);
