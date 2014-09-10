@@ -1328,7 +1328,8 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
                                                  base::TimeDelta vsync_period) {
-  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::SendBeginFrame");
+  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
+               "frame_time_us", frame_time.ToInternalValue());
   base::TimeTicks display_time = frame_time + vsync_period;
 
   // TODO(brianderson): Use adaptive draw-time estimation.
