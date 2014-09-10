@@ -28,11 +28,11 @@ async_test(function(t) {
           return registration.unregister();
         })
       .then(function(value) {
-          // FIXME: This value must be false in spec,
-          // but this is not supported now.
+          // FIXME: Uncomment after applied the first patch.
+          // https://codereview.chromium.org/554573002
           // See: https://crbug.com/390894#c16
-          assert_equals(value, true,
-                        'unregistering twice should resolve with true');
+          // assert_equals(value, false,
+          //               'unregistering twice should resolve with false');
           t.done();
         })
       .catch(unreached_rejection(t));
