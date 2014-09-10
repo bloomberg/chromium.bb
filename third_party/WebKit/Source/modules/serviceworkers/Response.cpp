@@ -12,6 +12,8 @@
 #include "modules/serviceworkers/ResponseInit.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -65,6 +67,15 @@ Response* Response::create(const ArrayBuffer* body, const Dictionary& responseIn
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendArrayBuffer(body);
+    const long long length = blobData->length();
+    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+    return create(blob.get(), ResponseInit(responseInit), exceptionState);
+}
+
+Response* Response::create(const ArrayBufferView* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+{
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->appendArrayBufferView(body);
     const long long length = blobData->length();
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
     return create(blob.get(), ResponseInit(responseInit), exceptionState);

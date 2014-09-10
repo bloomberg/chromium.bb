@@ -7,11 +7,11 @@
 enum ResponseType { "basic", "cors", "default", "error", "opaque" };
 
 [
-    // FIXME: Add ctors for ArrayBufferView, FormData and URLSearchParams
-    // response bodies.
+    // FIXME: Add ctors for FormData and URLSearchParams response bodies.
     Constructor(ScalarValueString body, optional Dictionary responseInitDict),
     Constructor(Blob? body, optional Dictionary responseInitDict),
     Constructor(ArrayBuffer input, optional Dictionary requestInitDict),
+    Constructor(ArrayBufferView input, optional Dictionary requestInitDict),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,

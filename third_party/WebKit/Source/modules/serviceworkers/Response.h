@@ -12,8 +12,7 @@
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -28,6 +27,7 @@ public:
     static Response* create(Blob*, const Dictionary&, ExceptionState&);
     static Response* create(const String&, const Dictionary&, ExceptionState&);
     static Response* create(const ArrayBuffer*, const Dictionary&, ExceptionState&);
+    static Response* create(const ArrayBufferView*, const Dictionary&, ExceptionState&);
     static Response* create(Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(FetchResponseData*);
     static Response* create(const WebServiceWorkerResponse&);
