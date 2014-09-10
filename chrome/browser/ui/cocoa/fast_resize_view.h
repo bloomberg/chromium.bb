@@ -7,22 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class CAShapeLayer;
-
 // A Cocoa view originally created to support fast re-painting to white on
 // resize. This is done by CoreAnimation now, so this view remains only as the
 // first opaque ancestor of accelerated web contents views.
-@interface FastResizeView : NSView {
- @private
-  // Whether the bottom corners should be rounded.
-  BOOL roundedBottomCorners_;
-
-  // Weak reference to the mask of the hosted layer.
-  CAShapeLayer* layerMask_;
-}
-
-// Changes whether the bottom two corners are rounded.
-- (void)setRoundedBottomCorners:(BOOL)roundedBottomCorners;
+@interface FastResizeView : NSView
 
 @end
 
