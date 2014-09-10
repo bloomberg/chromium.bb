@@ -219,7 +219,7 @@ public:
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
     void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
-    void disableAutoSizeMode() { m_autoSizeInfo = 0; }
+    void disableAutoSizeMode() { m_autoSizeInfo.clear(); }
 
     void forceLayout(bool allowSubtree = false);
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
