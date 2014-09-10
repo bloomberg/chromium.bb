@@ -37,22 +37,22 @@
 
 namespace blink {
 
-PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
-    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources));
+    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources);
 }
 
-PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
 {
-    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents));
+    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents);
 }
 
-PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+MediaStreamDescriptor* MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
 {
-    return adoptRef(new MediaStreamDescriptor(id, audioComponents, videoComponents));
+    return new MediaStreamDescriptor(id, audioComponents, videoComponents);
 }
 
-void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> component)
+void MediaStreamDescriptor::addComponent(MediaStreamComponent* component)
 {
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
@@ -66,7 +66,7 @@ void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> compon
     }
 }
 
-void MediaStreamDescriptor::removeComponent(PassRefPtr<MediaStreamComponent> component)
+void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component)
 {
     size_t pos = kNotFound;
     switch (component->source()->type()) {
@@ -100,7 +100,7 @@ void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
-    : m_client(0)
+    : m_client(nullptr)
     , m_id(id)
     , m_ended(false)
 {
@@ -112,8 +112,35 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
         m_videoComponents.append(MediaStreamComponent::create(videoSources[i]));
 }
 
+// The disposer pattern actually makes the deletion of the extra data happen
+// earlier and not later. The disposer makes sure that the extra data is
+// destructed in weak processing which is run before sweeping and therefore
+// all the objects are still alive and can be touched.
+//
+// FIXME: Oilpan: This disposer pattern is duplicated in a lot of places.
+// We should create a good abstraction class for this and remove the code duplication.
+class MediaStreamDescriptorDisposer {
+public:
+    explicit MediaStreamDescriptorDisposer(MediaStreamDescriptor& descriptor) : m_descriptor(descriptor) { }
+    ~MediaStreamDescriptorDisposer()
+    {
+        m_descriptor.dispose();
+    }
+
+private:
+    MediaStreamDescriptor& m_descriptor;
+};
+
+typedef HeapHashMap<WeakMember<MediaStreamDescriptor>, OwnPtr<MediaStreamDescriptorDisposer> > DescriptorDisposers;
+
+static DescriptorDisposers& descriptorDisposers()
+{
+    DEFINE_STATIC_LOCAL(Persistent<DescriptorDisposers>, disposers, (new DescriptorDisposers));
+    return *disposers;
+}
+
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-    : m_client(0)
+    : m_client(nullptr)
     , m_id(id)
     , m_ended(false)
 {
@@ -122,6 +149,19 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
         m_audioComponents.append((*iter));
     for (MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter)
         m_videoComponents.append((*iter));
+    descriptorDisposers().add(this, adoptPtr(new MediaStreamDescriptorDisposer(*this)));
+}
+
+void MediaStreamDescriptor::dispose()
+{
+    m_extraData = nullptr;
+}
+
+void MediaStreamDescriptor::trace(Visitor* visitor)
+{
+    visitor->trace(m_audioComponents);
+    visitor->trace(m_videoComponents);
+    visitor->trace(m_client);
 }
 
 } // namespace blink

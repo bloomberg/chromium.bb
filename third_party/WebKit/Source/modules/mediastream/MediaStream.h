@@ -45,12 +45,12 @@ class MediaStream FINAL
     , public ContextLifecycleObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
 public:
     static MediaStream* create(ExecutionContext*);
     static MediaStream* create(ExecutionContext*, MediaStream*);
     static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
-    static MediaStream* create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    static MediaStream* create(ExecutionContext*, MediaStreamDescriptor*);
     virtual ~MediaStream();
 
     // DEPRECATED
@@ -91,7 +91,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    MediaStream(ExecutionContext*, MediaStreamDescriptor*);
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 
     // ContextLifecycleObserver
@@ -108,7 +108,7 @@ private:
 
     MediaStreamTrackVector m_audioTracks;
     MediaStreamTrackVector m_videoTracks;
-    RefPtr<MediaStreamDescriptor> m_descriptor;
+    Member<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;

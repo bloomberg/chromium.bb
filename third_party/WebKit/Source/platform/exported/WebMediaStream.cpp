@@ -53,11 +53,6 @@ private:
 
 } // namespace
 
-WebMediaStream::WebMediaStream(const PassRefPtr<MediaStreamDescriptor>& mediaStreamDescriptor)
-    : m_private(mediaStreamDescriptor)
-{
-}
-
 WebMediaStream::WebMediaStream(MediaStreamDescriptor* mediaStreamDescriptor)
     : m_private(mediaStreamDescriptor)
 {
@@ -116,15 +111,10 @@ void WebMediaStream::removeTrack(const WebMediaStreamTrack& track)
     m_private->removeRemoteTrack(track);
 }
 
-WebMediaStream& WebMediaStream::operator=(const PassRefPtr<MediaStreamDescriptor>& mediaStreamDescriptor)
+WebMediaStream& WebMediaStream::operator=(MediaStreamDescriptor* mediaStreamDescriptor)
 {
     m_private = mediaStreamDescriptor;
     return *this;
-}
-
-WebMediaStream::operator PassRefPtr<MediaStreamDescriptor>() const
-{
-    return m_private.get();
 }
 
 WebMediaStream::operator MediaStreamDescriptor*() const
