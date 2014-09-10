@@ -10,12 +10,23 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_simple_job.h"
 
+class GURL;
+
 namespace net {
 
+class HttpResponseHeaders;
 class URLRequest;
 
-class URLRequestDataJob : public URLRequestSimpleJob {
+class NET_EXPORT URLRequestDataJob : public URLRequestSimpleJob {
  public:
+  // Extracts info from a data scheme URL. Returns OK if successful. Returns
+  // ERR_INVALID_URL otherwise.
+  static int BuildResponse(const GURL& url,
+                           std::string* mime_type,
+                           std::string* charset,
+                           std::string* data,
+                           HttpResponseHeaders* headers);
+
   URLRequestDataJob(URLRequest* request, NetworkDelegate* network_delegate);
 
   // URLRequestSimpleJob

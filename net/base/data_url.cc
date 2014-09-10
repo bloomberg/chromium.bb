@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/http/http_util.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -57,6 +58,10 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
     } else if (charset->empty() &&
                iter->compare(0, kCharsetTagLength, kCharsetTag) == 0) {
       charset->assign(iter->substr(kCharsetTagLength));
+      // The grammar for charset is not specially defined in RFC2045 and
+      // RFC2397. It just needs to be a token.
+      if (!net::HttpUtil::IsToken(*charset))
+        return false;
     }
   }
 
