@@ -75,6 +75,7 @@ V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLogger()
     if (!isolate->InContext())
         return 0;
 
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     if (context.IsEmpty() || !toDOMWindow(context))
         return 0;
@@ -92,6 +93,7 @@ V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld()
     if (!isolate->InContext())
         return 0;
 
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     if (context.IsEmpty() || !toDOMWindow(context))
         return 0;
