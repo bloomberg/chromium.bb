@@ -305,8 +305,10 @@ AnalysisCanvas::AnalysisCanvas(int width, int height)
       is_forced_not_solid_(false),
       is_forced_not_transparent_(false),
       is_solid_color_(true),
+      color_(SK_ColorTRANSPARENT),
       is_transparent_(true),
-      draw_op_count_(0) {}
+      draw_op_count_(0) {
+}
 
 AnalysisCanvas::~AnalysisCanvas() {}
 
