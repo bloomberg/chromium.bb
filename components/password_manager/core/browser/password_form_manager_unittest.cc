@@ -88,7 +88,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
-  MockPasswordManagerDriver driver_;
+  testing::NiceMock<MockPasswordManagerDriver> driver_;
 };
 
 class TestPasswordManager : public PasswordManager {
@@ -110,6 +110,20 @@ class TestPasswordManager : public PasswordManager {
  private:
   // Marked mutable to get around constness of Autofill().
   mutable autofill::PasswordFormMap best_matches_;
+};
+
+class MockPasswordFormManager : public PasswordFormManager {
+ public:
+  MockPasswordFormManager(PasswordManager* manager,
+                          PasswordManagerClient* client,
+                          PasswordManagerDriver* driver,
+                          const autofill::PasswordForm& observed_form,
+                          bool ssl_valid)
+      : PasswordFormManager(manager, client, driver, observed_form, ssl_valid)
+  {}
+
+  MOCK_METHOD2(UploadPasswordForm, void(const autofill::FormData&,
+                                        const autofill::ServerFieldType&));
 };
 
 }  // namespace
@@ -147,7 +161,7 @@ class PasswordFormManagerTest : public testing::Test {
 
   void InitializeMockStore() {
     if (!mock_store_.get()) {
-      mock_store_ = new MockPasswordStore();
+      mock_store_ = new testing::NiceMock<MockPasswordStore>();
       ASSERT_TRUE(mock_store_.get());
     }
   }
@@ -207,7 +221,7 @@ class PasswordFormManagerTest : public testing::Test {
  private:
   PasswordForm observed_form_;
   PasswordForm saved_match_;
-  scoped_refptr<MockPasswordStore> mock_store_;
+  scoped_refptr<testing::NiceMock<MockPasswordStore> > mock_store_;
   TestPasswordManagerClient client_;
 };
 
@@ -1086,6 +1100,125 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   EXPECT_EQ(ASCIIToUTF16("third"),
             retrieving_manager.preferred_match()->password_value);
   password_store->Shutdown();
+}
+
+TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
+  InitializeMockStore();
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  EXPECT_CALL(*client_with_store.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
+
+  PasswordForm form(*observed_form());
+
+  autofill::FormFieldData field;
+  field.label = ASCIIToUTF16("full_name");
+  field.name = ASCIIToUTF16("full_name");
+  field.form_control_type = "text";
+  form.form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("Email");
+  field.form_control_type = "text";
+  form.form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.form_data.fields.push_back(field);
+
+  // For newly saved passwords, upload a vote for autofill::PASSWORD.
+  MockPasswordFormManager form_manager(&password_manager,
+                                       &client_with_store,
+                                       client_with_store.GetDriver(),
+                                       form,
+                                       false);
+  SimulateMatchingPhase(&form_manager, RESULT_NO_MATCH);
+
+  PasswordForm form_to_save(form);
+  form_to_save.preferred = true;
+  form_to_save.username_value = ASCIIToUTF16("username");
+  form_to_save.password_value = ASCIIToUTF16("1234");
+
+  EXPECT_CALL(form_manager, UploadPasswordForm(_, autofill::PASSWORD)).Times(1);
+  form_manager.ProvisionallySave(
+      form_to_save,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+  Mock::VerifyAndClearExpectations(&form_manager);
+
+  // Do not upload a vote if the user is blacklisting the form.
+  MockPasswordFormManager blacklist_form_manager(&password_manager,
+                                                 &client_with_store,
+                                                 client_with_store.GetDriver(),
+                                                 form,
+                                                 false);
+  SimulateMatchingPhase(&blacklist_form_manager, RESULT_NO_MATCH);
+
+  EXPECT_CALL(blacklist_form_manager,
+              UploadPasswordForm(_, autofill::PASSWORD)).Times(0);
+  blacklist_form_manager.PermanentlyBlacklist();
+  Mock::VerifyAndClearExpectations(&blacklist_form_manager);
+}
+
+TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
+  InitializeMockStore();
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  EXPECT_CALL(*client_with_store.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
+
+  PasswordForm form(*observed_form());
+
+  autofill::FormFieldData field;
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("Email");
+  field.form_control_type = "text";
+  form.form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.form_data.fields.push_back(field);
+
+  MockPasswordFormManager form_manager(&password_manager,
+                                       &client_with_store,
+                                       client_with_store.GetDriver(),
+                                       form,
+                                       false);
+  std::vector<PasswordForm*> result;
+  result.push_back(CreateSavedMatch(false));
+
+  field.label = ASCIIToUTF16("full_name");
+  field.name = ASCIIToUTF16("full_name");
+  field.form_control_type = "text";
+  result[0]->form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("Email");
+  field.form_control_type = "text";
+  result[0]->form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  result[0]->form_data.fields.push_back(field);
+
+  PasswordForm form_to_save(form);
+  form_to_save.preferred = true;
+  form_to_save.username_value = result[0]->username_value;
+  form_to_save.password_value = result[0]->password_value;
+
+  SimulateFetchMatchingLoginsFromPasswordStore(&form_manager);
+  SimulateResponseFromPasswordStore(&form_manager, result);
+
+  EXPECT_CALL(form_manager,
+              UploadPasswordForm(_,
+                                 autofill::ACCOUNT_CREATION_PASSWORD)).Times(1);
+  form_manager.ProvisionallySave(
+      form_to_save,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
 }
 
 }  // namespace password_manager

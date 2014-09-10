@@ -732,9 +732,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   second_observer.Wait();
   EXPECT_FALSE(second_prompt_observer->IsShowingPrompt());
 
-  // Verify that we sent a ping to Autofill saying that the original form
-  // was likely an account creation form since it has more than 2 text input
-  // fields and was used for the first time on a different form.
+  // Verify that we sent two pings to Autofill. One vote for of PASSWORD for
+  // the current form, and one vote for ACCOUNT_CREATION_PASSWORD on the
+  // original form since it has more than 2 text input fields and was used for
+  // the first time on a different form.
   base::HistogramBase* upload_histogram =
       base::StatisticsRecorder::FindHistogram(
           "PasswordGeneration.UploadStarted");
@@ -742,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   scoped_ptr<base::HistogramSamples> snapshot =
       upload_histogram->SnapshotSamples();
   EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));
-  EXPECT_EQ(1, snapshot->GetCount(1 /* success */));
+  EXPECT_EQ(2, snapshot->GetCount(1 /* success */));
 }
 #endif
 

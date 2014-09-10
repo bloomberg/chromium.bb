@@ -138,20 +138,15 @@ void DeterminePossibleFieldTypesForUpload(
     AutofillField* field = submitted_form->field(i);
     ServerFieldTypeSet matching_types;
 
-    // If it's a password field, set the type directly.
-    if (field->form_control_type == "password") {
-      matching_types.insert(PASSWORD);
-    } else {
-      base::string16 value;
-      base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
-      for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
-           it != profiles.end(); ++it) {
-        it->GetMatchingTypes(value, app_locale, &matching_types);
-      }
-      for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
-            it != credit_cards.end(); ++it) {
-        it->GetMatchingTypes(value, app_locale, &matching_types);
-      }
+    base::string16 value;
+    base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
+    for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
+         it != profiles.end(); ++it) {
+      it->GetMatchingTypes(value, app_locale, &matching_types);
+    }
+    for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
+         it != credit_cards.end(); ++it) {
+      it->GetMatchingTypes(value, app_locale, &matching_types);
     }
 
     if (matching_types.empty())
@@ -816,17 +811,14 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  // Always add PASSWORD to |non_empty_types| so that if |submitted_form|
-  // contains a password field it will be uploaded to the server. If
-  // |submitted_form| doesn't contain a password field, there is no side
-  // effect from adding PASSWORD to |non_empty_types|.
-  non_empty_types.insert(PASSWORD);
 
   download_manager_->StartUploadRequest(submitted_form, was_autofilled,
                                         non_empty_types);
 }
 
-bool AutofillManager::UploadPasswordGenerationForm(const FormData& form) {
+bool AutofillManager::UploadPasswordForm(
+    const FormData& form,
+    const ServerFieldType& password_type) {
   FormStructure form_structure(form);
 
   if (!ShouldUploadForm(form_structure))
@@ -834,8 +826,6 @@ bool AutofillManager::UploadPasswordGenerationForm(const FormData& form) {
 
   if (!form_structure.ShouldBeCrowdsourced())
     return false;
-
-  // TODO(gcasto): Check that PasswordGeneration is enabled?
 
   // Find the first password field to label. We don't try to label anything
   // else.
@@ -845,7 +835,7 @@ bool AutofillManager::UploadPasswordGenerationForm(const FormData& form) {
 
     ServerFieldTypeSet types;
     if (!found_password_field && field->form_control_type == "password") {
-      types.insert(ACCOUNT_CREATION_PASSWORD);
+      types.insert(password_type);
       found_password_field = true;
     } else {
       types.insert(UNKNOWN_TYPE);
@@ -856,7 +846,7 @@ bool AutofillManager::UploadPasswordGenerationForm(const FormData& form) {
 
   // Only one field type should be present.
   ServerFieldTypeSet available_field_types;
-  available_field_types.insert(ACCOUNT_CREATION_PASSWORD);
+  available_field_types.insert(password_type);
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them. It also makes testing easier if these requests

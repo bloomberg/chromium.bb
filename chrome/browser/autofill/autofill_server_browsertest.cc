@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
       " formsignature=\"15916856893790176210\""
       " autofillused=\"false\""
-      " datapresent=\"1f7e0003780000080014\">"
+      " datapresent=\"1f7e0003780000080004\">"
       "<field signature=\"2594484045\" autofilltype=\"2\"/>"
       "<field signature=\"2750915947\" autofilltype=\"2\"/>"
       "<field signature=\"3494787134\" autofilltype=\"2\"/>"

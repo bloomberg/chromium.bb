@@ -540,6 +540,13 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
     return;
   }
 
+  // Upload credentials the first time they are saved. This data is used
+  // by password generation to help determine account creation sites.
+  // Blacklisted credentials will never be used, so don't upload a vote for
+  // them.
+  if (!pending_credentials_.blacklisted_by_user)
+    UploadPasswordForm(pending_credentials_.form_data, autofill::PASSWORD);
+
   pending_credentials_.date_created = Time::Now();
   SanitizePossibleUsernames(&pending_credentials_);
   password_store->AddLogin(pending_credentials_);
@@ -700,17 +707,26 @@ void PasswordFormManager::CheckForAccountCreationForm(
     if (!pending.form_data.fields.empty() &&
         pending_structure.FormSignature() !=
             observed_structure.FormSignature()) {
-      autofill::AutofillManager* autofill_manager =
-          driver_->GetAutofillManager();
-      if (autofill_manager) {
-        // Note that this doesn't guarantee that the upload succeeded, only that
-        // |pending.form_data| is considered uploadable.
-        bool success =
-            autofill_manager->UploadPasswordGenerationForm(pending.form_data);
-        UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
-      }
+      UploadPasswordForm(pending.form_data,
+                         autofill::ACCOUNT_CREATION_PASSWORD);
     }
   }
+}
+
+void PasswordFormManager::UploadPasswordForm(
+    const autofill::FormData& form_data,
+    const autofill::ServerFieldType& password_type) {
+  autofill::AutofillManager* autofill_manager =
+      driver_->GetAutofillManager();
+  if (!autofill_manager)
+    return;
+
+  // Note that this doesn't guarantee that the upload succeeded, only that
+  // |form_data| is considered uploadable.
+  bool success =
+      autofill_manager->UploadPasswordForm(
+          form_data, autofill::ACCOUNT_CREATION_PASSWORD);
+  UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
 }
 
 int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {

@@ -156,15 +156,17 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels);
 
-  // Try and upload |form|. This differs from OnFormSubmitted() in a few ways.
+  // Try to label password fields and upload |form|. This differs from
+  // OnFormSubmitted() in a few ways.
   //   - This function will only label the first <input type="password"> field
-  //     as ACCOUNT_CREATION_PASSWORD. Other fields will stay unlabeled, as they
+  //     as |password_type|. Other fields will stay unlabeled, as they
   //     should have been labeled during the upload for OnFormSubmitted().
   //   - This function does not assume that |form| is being uploaded during
   //     the same browsing session as it was originally submitted (as we may
   //     not have the necessary information to classify the form at that time)
   //     so it bypasses the cache and doesn't log the same quality UMA metrics.
-  bool UploadPasswordGenerationForm(const FormData& form);
+  bool UploadPasswordForm(const FormData& form,
+                          const ServerFieldType& pasword_type);
 
   // Resets cache.
   virtual void Reset();
