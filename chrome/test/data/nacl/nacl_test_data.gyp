@@ -612,46 +612,6 @@
       ],
     },
     {
-      'target_name': 'pm_nameservice_test',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'pm_nameservice_test',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'build_pnacl_newlib': 1,
-        'nexe_destination_dir': 'nacl_test_data',
-        'link_flags': [
-          '-lnacl_ppapi_util',
-          '-lppapi_cpp',
-          '-lppapi',
-          '-lsrpc',
-          '-lplatform',
-          '-lgio',
-          '-limc',
-          '-limc_syscalls',
-          '-lweak_ref',
-        ],
-        'sources': [
-          'nameservice/pm_nameservice_test.cc',
-        ],
-        'test_files': [
-          'nameservice/pm_nameservice_test.html',
-        ],
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-        '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
-        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc_lib',
-        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
-        '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref_lib',
-        'nacl_ppapi_util',
-      ],
-    },
-    {
       'target_name': 'ppapi_extension_mime_handler',
       'type': 'none',
       'variables': {
