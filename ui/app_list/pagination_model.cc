@@ -233,7 +233,7 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   SetTransition(transition);
 
   transition_animation_.reset(new gfx::SlideAnimation(this));
-  transition_animation_->SetTweenType(gfx::Tween::LINEAR);
+  transition_animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
   transition_animation_->Reset(transition_.progress);
 
   const int duration = is_valid_page(transition_.target_page) ?
