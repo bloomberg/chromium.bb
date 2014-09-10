@@ -975,9 +975,9 @@ class BisectPerformanceMetrics(object):
     return revision_work_list
 
   def _GetV8BleedingEdgeFromV8TrunkIfMappable(self, revision):
-    svn_revision = self.source_control.SVNFindRev(revision)
+    commit_position = self.source_control.GetCommitPosition(revision)
 
-    if bisect_utils.IsStringInt(svn_revision):
+    if bisect_utils.IsStringInt(commit_position):
       # V8 is tricky to bisect, in that there are only a few instances when
       # we can dive into bleeding_edge and get back a meaningful result.
       # Try to detect a V8 "business as usual" case, which is when:
@@ -1017,7 +1017,7 @@ class BisectPerformanceMetrics(object):
         if not git_revision:
           # Wasn't successful, try the old way of looking for "Prepare push to"
           git_revision = self.source_control.ResolveToRevision(
-              int(svn_revision) - 1, 'v8_bleeding_edge', DEPOT_DEPS_NAME, -1,
+              int(commit_position) - 1, 'v8_bleeding_edge', DEPOT_DEPS_NAME, -1,
               cwd=v8_bleeding_edge_dir)
 
           if git_revision:
@@ -1231,12 +1231,12 @@ class BisectPerformanceMetrics(object):
         revision, self.opts.target_platform, target_arch, patch_sha)
     downloaded_archive = FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     if not downloaded_archive:
-      # Get SVN revision for the given SHA.
-      svn_revision = self.source_control.SVNFindRev(revision)
-      if svn_revision:
+      # Get commit position for the given SHA.
+      commit_position = self.source_control.GetCommitPosition(revision)
+      if commit_position:
         # Source archive file path on cloud storage using SVN revision.
         source_file = GetRemoteBuildPath(
-            svn_revision, self.opts.target_platform, target_arch, patch_sha)
+            commit_position, self.opts.target_platform, target_arch, patch_sha)
         return FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     return downloaded_archive
 
@@ -1407,13 +1407,13 @@ class BisectPerformanceMetrics(object):
                                re.MULTILINE)
     new_data = None
     if re.search(deps_revision, deps_contents):
-      svn_revision = self.source_control.SVNFindRev(
+      commit_position = self.source_control.GetCommitPosition(
           git_revision, self._GetDepotDirectory(depot))
-      if not svn_revision:
-        print 'Could not determine SVN revision for %s' % git_revision
+      if not commit_position:
+        print 'Could not determine commit position for %s' % git_revision
         return None
       # Update the revision information for the given depot
-      new_data = re.sub(deps_revision, str(svn_revision), deps_contents)
+      new_data = re.sub(deps_revision, str(commit_position), deps_contents)
     else:
       # Check whether the depot and revision pattern in DEPS file vars
       # e.g. for webkit the format is "webkit_revision": "559a6d4ab7a84c539..".
@@ -1578,17 +1578,18 @@ class BisectPerformanceMetrics(object):
       if depot != 'chromium':
         revision = bisect_utils.CheckRunGit(
             ['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
-      svn_revision = self.source_control.SVNFindRev(revision, cwd=self.src_cwd)
-      if not svn_revision:
+      commit_position = self.source_control.GetCommitPosition(revision,
+                                                              cwd=self.src_cwd)
+      if not commit_position:
         return command_to_run
       cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
       matches = cmd_re.search(command_to_run)
-      if bisect_utils.IsStringInt(svn_revision) and matches:
+      if bisect_utils.IsStringInt(commit_position) and matches:
         cmd_browser = matches.group('browser_type')
-        if svn_revision <= 274857 and cmd_browser == 'android-chrome-shell':
+        if commit_position <= 274857 and cmd_browser == 'android-chrome-shell':
           return command_to_run.replace(cmd_browser,
                                         'android-chromium-testshell')
-        elif (svn_revision >= 276628 and
+        elif (commit_position >= 276628 and
               cmd_browser == 'android-chromium-testshell'):
           return command_to_run.replace(cmd_browser,
                                         'android-chrome-shell')
@@ -1765,13 +1766,13 @@ class BisectPerformanceMetrics(object):
     if (not is_base
         and DEPOT_DEPS_NAME[depot]['depends']
         and self.source_control.IsGit()):
-      svn_rev = self.source_control.SVNFindRev(revision)
+      commit_position = self.source_control.GetCommitPosition(revision)
 
       for d in DEPOT_DEPS_NAME[depot]['depends']:
         self.ChangeToDepotWorkingDirectory(d)
 
         dependant_rev = self.source_control.ResolveToRevision(
-            svn_rev, d, DEPOT_DEPS_NAME, -1000)
+            commit_position, d, DEPOT_DEPS_NAME, -1000)
 
         if dependant_rev:
           revisions_to_sync.append([d, dependant_rev])
@@ -2283,7 +2284,7 @@ class BisectPerformanceMetrics(object):
       this will contain the field "error", otherwise None.
     """
     if self.opts.target_platform == 'android':
-      revision_to_check = self.source_control.SVNFindRev(good_revision)
+      revision_to_check = self.source_control.GetCommitPosition(good_revision)
       if (bisect_utils.IsStringInt(good_revision)
           and good_revision < 265549):
         return {'error': (
@@ -2295,8 +2296,8 @@ class BisectPerformanceMetrics(object):
             'Please try bisecting revisions greater than or equal to r265549.')}
 
     if bisect_utils.IsWindowsHost():
-      good_revision = self.source_control.SVNFindRev(good_revision)
-      bad_revision = self.source_control.SVNFindRev(bad_revision)
+      good_revision = self.source_control.GetCommitPosition(good_revision)
+      bad_revision = self.source_control.GetCommitPosition(bad_revision)
       if (bisect_utils.IsStringInt(good_revision) and
           bisect_utils.IsStringInt(bad_revision)):
         if (289987 <= good_revision < 290716 or

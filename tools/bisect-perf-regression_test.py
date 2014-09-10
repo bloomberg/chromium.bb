@@ -255,16 +255,32 @@ class BisectPerfRegressionTest(unittest.TestCase):
                                   bisect_instance.opts.metric)
     bisect_instance.FormatAndPrintResults(results)
 
-  def testSVNFindRev(self):
-    """Determine numerical SVN revision or Commit Position."""
+  def testGetCommitPosition(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
-    self.assertEqual(291765,
-                     bisect_instance.source_control.SVNFindRev(cp_git_rev))
+    self.assertEqual(
+        291765, bisect_instance.source_control.GetCommitPosition(cp_git_rev))
 
     svn_git_rev = 'e6db23a037cad47299a94b155b95eebd1ee61a58'
-    self.assertEqual(291467,
-                     bisect_instance.source_control.SVNFindRev(svn_git_rev))
+    self.assertEqual(
+        291467, bisect_instance.source_control.GetCommitPosition(svn_git_rev))
+
+  def testGetCommitPositionForV8(self):
+    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    v8_rev = '21d700eedcdd6570eff22ece724b63a5eefe78cb'
+    depot_path = os.path.join(bisect_instance.src_cwd, 'src', 'v8')
+    self.assertEqual(
+        23634,
+        bisect_instance.source_control.GetCommitPosition(v8_rev, depot_path))
+
+  def testGetCommitPositionForWebKit(self):
+    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    wk_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
+    depot_path = os.path.join(bisect_instance.src_cwd, 'src', 'third_party',
+                              'WebKit')
+    self.assertEqual(
+        181660,
+        bisect_instance.source_control.GetCommitPosition(wk_rev, depot_path))
 
   def testUpdateDepsContent(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()

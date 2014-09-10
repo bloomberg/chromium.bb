@@ -5,7 +5,6 @@
 """This module contains the SourceControl class and related functions."""
 
 import os
-import re
 
 from . import bisect_utils
 
@@ -206,40 +205,25 @@ class GitSourceControl(SourceControl):
 
     return log_output == "master"
 
-  def SVNFindRev(self, git_revision, cwd=None):
-    """Finds a SVN revision OR git number for the given git hash.
+  def GetCommitPosition(self, git_revision, cwd=None):
+    """Finds git commit postion for the given git hash.
 
-    If "git svn find_rev <hash>" fails, then it runs
-    "git log --format=%b -1 origin/master <hash> and greps for
-    Cr-Commit-Position.
+    This function executes "git footer --position-num <git hash>" command to get
+    commit position the given revision.
 
     Args:
       git_revision: The git SHA1 to use.
+      cwd: Working directory to run the command from.
 
     Returns:
-      Git number (aka git commit position) OR an SVN revision as integer,
-      otherwise None.
+      Git commit position as integer or None.
     """
-
-    cmd = ['svn', 'find-rev', git_revision]
-
+    cmd = ['footers', '--position-num', git_revision]
     output = bisect_utils.CheckRunGit(cmd, cwd)
-    svn_revision = output.strip()
+    commit_position = output.strip()
 
-    if bisect_utils.IsStringInt(svn_revision):
-      return int(svn_revision)
-
-    # Retrieve commit position number from git log body for the given revision.
-    # TODO(prasadv): Use an appropriate command to find commit position instead
-    # of parsing the log. Resolve this once 407316 is fixed.
-    commit_position_pattern = 'Cr-Commit-Position: .*@\{#(?P<commit>[0-9]+)\}'
-    cmd = ['log', '--format=%b', '-1', git_revision]
-    output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-    if output:
-      version_re = re.compile(commit_position_pattern)
-      commit_reg = version_re.search(output)
-      if commit_reg and bisect_utils.IsStringInt(commit_reg.group('commit')):
-        return int(commit_reg.group('commit'))
+    if bisect_utils.IsStringInt(commit_position):
+      return int(commit_position)
 
     return None
 
