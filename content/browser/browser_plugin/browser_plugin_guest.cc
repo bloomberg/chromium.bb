@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
@@ -320,7 +321,10 @@ void BrowserPluginGuest::SwapCompositorFrame(
 
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back();
-  gfx::Size view_size(root_pass->output_rect.size());
+  gfx::Size view_size(gfx::ToFlooredSize(gfx::ScaleSize(
+      root_pass->output_rect.size(),
+      1.0f / frame->metadata.device_scale_factor)));
+
   if (last_seen_view_size_ != view_size) {
     delegate_->GuestSizeChanged(last_seen_view_size_, view_size);
     last_seen_view_size_ = view_size;
