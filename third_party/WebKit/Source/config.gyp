@@ -36,9 +36,8 @@
     # If set to 1 (default) and using clang, the Blink GC plugin will check the
     # usage of the garbage-collection infrastructure during compilation.
     'blink_gc_plugin%': 1,
-    # If set to 1 together with blink_gc_plugin, the Blink GC plugin will dump
-    # points-to graph files for each compilation unit.
-    'blink_gc_plugin_dump_graph%': 0,
+    # Additional flags for the Blink GC plugin.
+    'blink_gc_plugin_flags%': '',
     # If set to 1, the Blink will use the base allocator instead of
     # PartitionAlloc. so that the top of stack-unwinding becomes the caller
     # which requests memory allocation in blink.
@@ -103,9 +102,9 @@
         }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
-          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
+          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
           'xcode_settings': {
-            'OTHER_CFLAGS': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
+            'OTHER_CFLAGS': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
           },
         }],
         ['blink_disable_partition_allocator==1', {
