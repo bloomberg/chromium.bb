@@ -75,17 +75,9 @@ testUtf8Blob.step(function() {
         if (xhr.readyState != xhr.DONE)
             return;
 
-        assert_equals(xhr.status, 200, 'status');
-        assert_not_equals(xhr.response, null, 'response');
-        assert_equals(xhr.response.type, 'text/html', 'response.type');
-        var reader = new FileReader();
-        reader.onabort = testUtf8Blob.step_func(function() { assert_unreached('onabort'); });
-        reader.onerror = testUtf8Blob.step_func(function() { assert_unreached('onerror'); });
-        reader.onload = testUtf8Blob.step_func(function() {
-            assert_equals(reader.result, '\u6587\u5b57', 'result');
-            testUtf8Blob.done();
-        });
-        reader.readAsText(xhr.response);
+        assert_equals(xhr.status, 0, 'status');
+        assert_equals(xhr.response, null, 'response');
+        testUtf8Blob.done();
     });
     xhr.send();
 });

@@ -1139,10 +1139,6 @@ crbug.com/368946 virtual/stable/web-animations-api [ Skip ]
 crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 
 # Temporarily skipped until Chromium side change lands.
-crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Skip ]
-crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Skip ]
-crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html [ Skip ]
-crbug.com/308768 http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Skip ]
 crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
 
 crbug.com/390358 http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]

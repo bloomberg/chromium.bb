@@ -1,7 +1,0 @@
-
-PASS Test parsing a data URL. US-ASCII into DOMString 
-PASS Test parsing a data URL. Binary into ArrayBuffer 
-PASS Test parsing a data URL. UTF-8 data into DOMString. 
-PASS Test parsing a data URL. UTF-8 data into Blob. 
-PASS Test parsing a data URL. Invalid Base64 data. 
-
