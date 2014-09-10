@@ -3509,7 +3509,6 @@
         'cflags': [
           '<(werror)',  # See note above about the werror variable.
           '-pthread',
-          '-fno-exceptions',
           '-fno-strict-aliasing',  # See http://crbug.com/32204
           '-Wall',
           # TODO(evan): turn this back on once all the builds work.
@@ -3525,6 +3524,7 @@
         ],
         'cflags_cc': [
           '-fno-rtti',
+          '-fno-exceptions',
           '-fno-threadsafe-statics',
           # Make inline functions have hidden visiblity by default.
           # Surprisingly, not covered by -fvisibility=hidden.
