@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
-int _start(void) {
+#include <stdint.h>
+
+int _start(uint32_t info[]) {
   return 0xCAFEBABE;
 }

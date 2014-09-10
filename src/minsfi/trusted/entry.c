@@ -19,7 +19,7 @@ extern const char  __sfi_data_segment[];
 extern uint32_t    __sfi_data_segment_size;
 
 /* Entry point of the sandbox */
-extern uint32_t _start_minsfi(void);
+extern uint32_t _start_minsfi(uint32_t info);
 
 static inline void GetManifest(MinsfiManifest *sb) {
   sb->ptr_size = __sfi_pointer_size;
@@ -47,7 +47,7 @@ int MinsfiInvokeSandbox(void) {
   if (MinsfiGetActiveSandbox() == NULL)
     return EXIT_FAILURE;
 
-  return _start_minsfi();
+  return _start_minsfi(0);
 }
 
 bool MinsfiDestroySandbox(void) {
