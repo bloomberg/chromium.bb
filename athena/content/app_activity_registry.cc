@@ -10,6 +10,8 @@
 #include "athena/content/public/app_registry.h"
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/resource_manager/public/resource_manager.h"
+#include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -103,9 +105,10 @@ void AppActivityRegistry::RestartApplication(AppActivityProxy* proxy) {
 
 AppActivity* AppActivityRegistry::GetMruActivity() {
   DCHECK(activity_list_.size());
-  // TODO(skuhne): This should be a query into the window manager.
+  WindowListProvider* window_list_provider =
+      WindowManager::GetInstance()->GetWindowListProvider();
   const aura::Window::Windows children =
-      activity_list_[0]->GetWindow()->parent()->children();
+      window_list_provider->GetWindowList();
   // Find the first window in the container which is part of the application.
   for (aura::Window::Windows::const_iterator child_iterator = children.begin();
       child_iterator != children.end(); ++child_iterator) {

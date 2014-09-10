@@ -184,11 +184,8 @@ void WindowManagerImpl::SetInOverview(bool active) {
   if (active) {
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
 
-    // Re-stack all windows in the order defined by window_list_provider_.
-    aura::Window::Windows window_list = window_list_provider_->GetWindowList();
-    aura::Window::Windows::iterator it;
-    for (it = window_list.begin(); it != window_list.end(); ++it)
-      container_->StackChildAtTop(*it);
+    // Note: The window_list_provider_ resembles the exact window list of the
+    // container, so no re-stacking is required before showing the OverviewMode.
     overview_ = WindowOverviewMode::Create(
         container_.get(), window_list_provider_.get(),
         split_view_controller_.get(), this);
@@ -219,6 +216,10 @@ void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
 
 void WindowManagerImpl::ToggleSplitViewForTest() {
   ToggleSplitview();
+}
+
+WindowListProvider* WindowManagerImpl::GetWindowListProvider() {
+  return window_list_provider_.get();
 }
 
 void WindowManagerImpl::OnSelectWindow(aura::Window* window) {

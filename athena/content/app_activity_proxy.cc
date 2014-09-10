@@ -5,6 +5,8 @@
 #include "athena/content/app_activity_proxy.h"
 
 #include "athena/content/app_activity_registry.h"
+#include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -58,10 +60,10 @@ aura::Window* AppActivityProxy::GetWindow() {
 
 void AppActivityProxy::Init() {
   DCHECK(replaced_activity_);
-  // TODO(skuhne): This should call the WindowListProvider to re-arrange.
-  // At this point we can move the Activity to its proper Activity location.
-  aura::Window* relative_window = replaced_activity_->GetWindow();
-  relative_window->parent()->StackChildBelow(GetWindow(), relative_window);
+  WindowListProvider* window_list_provider =
+      WindowManager::GetInstance()->GetWindowListProvider();
+  window_list_provider->StackWindowBehindTo(GetWindow(),
+                                            replaced_activity_->GetWindow());
   // We moved.
   replaced_activity_ = NULL;
 }

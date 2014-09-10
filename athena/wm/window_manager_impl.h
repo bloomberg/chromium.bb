@@ -62,6 +62,7 @@ class WindowManagerImpl : public WindowManager,
   virtual void AddObserver(WindowManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(WindowManagerObserver* observer) OVERRIDE;
   virtual void ToggleSplitViewForTest() OVERRIDE;
+  virtual WindowListProvider* GetWindowListProvider() OVERRIDE;
 
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE;

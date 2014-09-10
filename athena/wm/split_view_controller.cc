@@ -97,11 +97,15 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   SetState(ACTIVE);
   if (right_window_ != right) {
     right_window_ = right;
-    container_->StackChildAtTop(right_window_);
+    // Since the |window_list_provider_| controls directly the order of windows,
+    // it needs to change the window order accordingly.
+    window_list_provider_->MoveToFront(right_window_);
   }
   if (left_window_ != left) {
     left_window_ = left;
-    container_->StackChildAtTop(left_window_);
+    // Since the |window_list_provider_| controls directly the order of windows,
+    // it needs to change the window order accordingly.
+    window_list_provider_->MoveToFront(left_window_);
   }
   UpdateLayout(true);
 }

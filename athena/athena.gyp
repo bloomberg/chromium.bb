@@ -107,6 +107,7 @@
         'wm/overview_toolbar.cc',
         'wm/overview_toolbar.h',
         'wm/public/window_list_provider.h',
+        'wm/public/window_list_provider_observer.h',
         'wm/public/window_manager.h',
         'wm/public/window_manager_observer.h',
         'wm/split_view_controller.cc',

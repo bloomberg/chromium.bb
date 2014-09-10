@@ -162,9 +162,6 @@ TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(second.get()));
   EXPECT_EQ(second.get(),
             wm_api.GetWindowListProvider()->GetWindowList().back());
-  EXPECT_FALSE(first->IsVisible());
-  EXPECT_TRUE(second->IsVisible());
-  EXPECT_FALSE(third->IsVisible());
 }
 
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {

@@ -7,6 +7,8 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/app_activity_registry.h"
 #include "athena/content/public/app_registry.h"
+#include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
@@ -87,11 +89,12 @@ void AppActivity::Init() {
   DCHECK(app_activity_registry_);
   Activity* app_proxy = app_activity_registry_->unloaded_activity_proxy();
   if (app_proxy) {
-    // TODO(skuhne): This should call the WindowListProvider to re-arrange.
     // Note: At this time the |AppActivity| did not get registered to the
     // |ResourceManager| - so we can move it around if needed.
-    aura::Window* proxy_window = app_proxy->GetWindow();
-    proxy_window->parent()->StackChildBelow(GetWindow(), proxy_window);
+    WindowListProvider* window_list_provider =
+        WindowManager::GetInstance()->GetWindowListProvider();
+    window_list_provider->StackWindowFrontOf(app_proxy->GetWindow(),
+                                             GetWindow());
     Activity::Delete(app_proxy);
     // With the removal the object, the proxy should be deleted.
     DCHECK(!app_activity_registry_->unloaded_activity_proxy());

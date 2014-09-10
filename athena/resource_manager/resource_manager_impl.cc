@@ -12,12 +12,13 @@
 #include "athena/activity/public/activity_manager_observer.h"
 #include "athena/resource_manager/memory_pressure_notifier.h"
 #include "athena/resource_manager/public/resource_manager_delegate.h"
+#include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 
 namespace athena {
 
@@ -25,7 +26,7 @@ class ResourceManagerImpl : public ResourceManager,
                             public WindowManagerObserver,
                             public ActivityManagerObserver,
                             public MemoryPressureObserver,
-                            public aura::WindowObserver {
+                            public WindowListProviderObserver {
  public:
   ResourceManagerImpl(ResourceManagerDelegate* delegate);
   virtual ~ResourceManagerImpl();
@@ -63,8 +64,8 @@ class ResourceManagerImpl : public ResourceManager,
       MemoryPressureObserver::MemoryPressure pressure) OVERRIDE;
   virtual ResourceManagerDelegate* GetDelegate() OVERRIDE;
 
-  // aura::WindowObserver:
-  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
+  // WindowListProviderObserver:
+  virtual void OnWindowStackingChanged() OVERRIDE;
 
  private:
   // Manage the resources for our activities.
@@ -128,11 +129,13 @@ ResourceManagerImpl::ResourceManagerImpl(ResourceManagerDelegate* delegate)
       in_overview_mode_(false),
       in_splitview_mode_(false) {
   WindowManager::GetInstance()->AddObserver(this);
+  WindowManager::GetInstance()->GetWindowListProvider()->AddObserver(this);
   ActivityManager::Get()->AddObserver(this);
 }
 
 ResourceManagerImpl::~ResourceManagerImpl() {
   ActivityManager::Get()->RemoveObserver(this);
+  WindowManager::GetInstance()->GetWindowListProvider()->RemoveObserver(this);
   WindowManager::GetInstance()->RemoveObserver(this);
 
   while (!activity_list_.empty())
@@ -154,12 +157,10 @@ void ResourceManagerImpl::OnActivityStarted(Activity* activity) {
   ManageResource();
   // Remember that the activity order has changed.
   activity_order_changed_ = true;
-  activity->GetWindow()->AddObserver(this);
 }
 
 void ResourceManagerImpl::OnActivityEnding(Activity* activity) {
   DCHECK(activity->GetWindow());
-  activity->GetWindow()->RemoveObserver(this);
   // Remove the activity from the list again.
   std::vector<Activity*>::iterator it =
       std::find(activity_list_.begin(), activity_list_.end(), activity);
@@ -192,9 +193,14 @@ void ResourceManagerImpl::OnSplitViewModeExit() {
   in_splitview_mode_ = false;
 }
 
-void ResourceManagerImpl::OnWindowStackingChanged(aura::Window* window) {
+void ResourceManagerImpl::OnWindowStackingChanged() {
   // TODO(skuhne): This needs to be changed to some WindowListProvider observer
   // if we decouple window order from activity order.
+  activity_order_changed_ = true;
+  if (pause_) {
+    queued_command_ = true;
+    return;
+  }
 
   // No need to do anything while being in overview mode.
   if (in_overview_mode_)

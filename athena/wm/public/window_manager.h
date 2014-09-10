@@ -9,6 +9,7 @@
 
 namespace athena {
 
+class WindowListProvider;
 class WindowManagerObserver;
 
 // Manages the application, web windows.
@@ -30,6 +31,10 @@ class ATHENA_EXPORT WindowManager {
   virtual void RemoveObserver(WindowManagerObserver* observer) = 0;
 
   virtual void ToggleSplitViewForTest() = 0;
+
+  // This returns the window list provider of the current MRU order of windows.
+  // The ownership remains with the WindowManager.
+  virtual WindowListProvider* GetWindowListProvider() = 0;
 };
 
 }  // namespace athena
