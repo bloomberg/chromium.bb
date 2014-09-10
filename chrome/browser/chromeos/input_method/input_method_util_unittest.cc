@@ -451,5 +451,34 @@ TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
   }
 }
 
+// Test the input method ID migration.
+TEST_F(InputMethodUtilTest, TestInputMethodIDMigration) {
+  const char* const migration_cases[][2] = {
+      {"ime:zh:pinyin", "zh-t-i0-pinyin"},
+      {"ime:zh-t:zhuyin", "zh-hant-t-i0-und"},
+      {"ime:zh-t:quick", "zh-hant-t-i0-cangjie-1987-x-m0-simplified"},
+      {"ime:jp:mozc_us", "nacl_mozc_us"},
+      {"ime:ko:hangul", "hangul_2set"},
+      {"m17n:deva_phone", "vkd_deva_phone"},
+      {"m17n:ar", "vkd_ar"},
+      {"t13n:hi", "hi-t-i0-und"},
+      {"unknown", "unknown"},
+  };
+  std::vector<std::string> input_method_ids;
+  for (size_t i = 0; i < arraysize(migration_cases); ++i)
+    input_method_ids.push_back(migration_cases[i][0]);
+  // Duplicated hangul_2set.
+  input_method_ids.push_back("ime:ko:hangul_2set");
+
+  util_.MigrateInputMethods(&input_method_ids);
+
+  EXPECT_EQ(arraysize(migration_cases), input_method_ids.size());
+  for (size_t i = 0; i < arraysize(migration_cases); ++i) {
+    EXPECT_EQ(
+        extension_ime_util::GetInputMethodIDByEngineID(migration_cases[i][1]),
+        input_method_ids[i]);
+  }
+}
+
 }  // namespace input_method
 }  // namespace chromeos

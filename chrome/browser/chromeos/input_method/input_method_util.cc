@@ -170,11 +170,39 @@ const char* const kExtensionIdMigrationMap[][2] = {
 // The engine ID map for migration. This migration is for input method IDs from
 // VPD so it's NOT a temporary migration.
 const char* const kEngineIdMigrationMap[][2] = {
-  {"m17n:", "vkd_"},
-  {"ime:zh-t:quick", "zh-hant-t-i0-cangjie-1987-x-m0-simplified"},
-  {"ime:zh-t:zhuyin", "zh-hant-t-i0-und"},
-  {"ime:ko:hangul", "hangul_2set"},
-  {"ime:ko:hangul_2set", "hangul_2set"},
+    {"ime:jp:mozc_jp", "nacl_mozc_jp"},
+    {"ime:jp:mozc_us", "nacl_mozc_us"},
+    {"ime:ko:hangul_2set", "hangul_2set"},
+    {"ime:ko:hangul", "hangul_2set"},
+    {"ime:zh-t:array", "zh-hant-t-i0-array-1992"},
+    {"ime:zh-t:cangjie", "zh-hant-t-i0-cangjie-1987"},
+    {"ime:zh-t:dayi", "zh-hant-t-i0-dayi-1988"},
+    {"ime:zh-t:pinyin", "zh-hant-t-i0-pinyin"},
+    {"ime:zh-t:quick", "zh-hant-t-i0-cangjie-1987-x-m0-simplified"},
+    {"ime:zh-t:zhuyin", "zh-hant-t-i0-und"},
+    {"ime:zh:pinyin", "zh-t-i0-pinyin"},
+    {"ime:zh:wubi", "zh-t-i0-wubi-1986"},
+    {"m17n:", "vkd_"},
+    {"t13n:am", "am-t-i0-und"},
+    {"t13n:ar", "ar-t-i0-und"},
+    {"t13n:bn", "bn-t-i0-und"},
+    {"t13n:el", "el-t-i0-und"},
+    {"t13n:fa", "fa-t-i0-und"},
+    {"t13n:gu", "gu-t-i0-und"},
+    {"t13n:he", "he-t-i0-und"},
+    {"t13n:hi", "hi-t-i0-und"},
+    {"t13n:kn", "kn-t-i0-und"},
+    {"t13n:ml", "ml-t-i0-und"},
+    {"t13n:mr", "mr-t-i0-und"},
+    {"t13n:ne", "ne-t-i0-und"},
+    {"t13n:or", "or-t-i0-und"},
+    {"t13n:pa", "pa-t-i0-und"},
+    {"t13n:sa", "sa-t-i0-und"},
+    {"t13n:sr", "sr-t-i0-und"},
+    {"t13n:ta", "ta-t-i0-und"},
+    {"t13n:te", "te-t-i0-und"},
+    {"t13n:ti", "ti-t-i0-und"},
+    {"t13n:ur", "ur-t-i0-und"},
 };
 
 const size_t kExtensionIdLen = 32;
@@ -586,9 +614,12 @@ bool InputMethodUtil::MigrateInputMethods(
     // Migrates some Engine IDs from VPD.
     for (size_t j = 0; j < arraysize(kEngineIdMigrationMap); ++j) {
       size_t pos = engine_id.find(kEngineIdMigrationMap[j][0]);
-      if (pos == 0)
-        engine_id.replace(pos, strlen(kEngineIdMigrationMap[j][0]),
-                          kExtensionIdMigrationMap[j][1]);
+      if (pos == 0) {
+        engine_id.replace(0,
+                          strlen(kEngineIdMigrationMap[j][0]),
+                          kEngineIdMigrationMap[j][1]);
+        break;
+      }
     }
     std::string id =
         extension_ime_util::GetInputMethodIDByEngineID(engine_id);
