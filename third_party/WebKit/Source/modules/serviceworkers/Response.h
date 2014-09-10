@@ -27,6 +27,7 @@ class Response FINAL : public GarbageCollected<Response>, public ScriptWrappable
 public:
     static Response* create(Blob*, const Dictionary&, ExceptionState&);
     static Response* create(const String&, const Dictionary&, ExceptionState&);
+    static Response* create(const ArrayBuffer*, const Dictionary&, ExceptionState&);
     static Response* create(Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(FetchResponseData*);
     static Response* create(const WebServiceWorkerResponse&);

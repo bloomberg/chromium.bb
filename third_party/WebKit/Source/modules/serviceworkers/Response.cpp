@@ -11,6 +11,7 @@
 #include "modules/serviceworkers/FetchBodyStream.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "public/platform/WebServiceWorkerResponse.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace blink {
 
@@ -55,6 +56,15 @@ Response* Response::create(const String& body, const Dictionary& responseInit, E
     blobData->appendText(body, false);
     // "Set |Content-Type| to `text/plain;charset=UTF-8`."
     blobData->setContentType("text/plain;charset=UTF-8");
+    const long long length = blobData->length();
+    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+    return create(blob.get(), ResponseInit(responseInit), exceptionState);
+}
+
+Response* Response::create(const ArrayBuffer* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+{
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->appendArrayBuffer(body);
     const long long length = blobData->length();
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
     return create(blob.get(), ResponseInit(responseInit), exceptionState);
