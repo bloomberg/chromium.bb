@@ -1000,12 +1000,12 @@ class PreCQLauncherStage(SyncStage):
       pool: ValidationPool corresponding to |plan|.
       plan: The list of patches to test in the Pre-CQ run.
     """
-    cmd = ['cbuildbot', '--remote', constants.PRE_CQ_BUILDER_NAME]
+    cmd = ['cbuildbot', '--remote', constants.PRE_CQ_BUILDER_NAME,
+           '--timeout', str(self.INFLIGHT_DELAY * 60)]
     if self._run.options.debug:
       cmd.append('--debug')
     for patch in plan:
-      cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number),
-              '--timeout', str(self.INFLIGHT_DELAY)]
+      cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
