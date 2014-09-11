@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,33 +34,31 @@ void FakeChannelAuthenticator::SecureAndAuthenticate(
   if (async_) {
     done_callback_ = done_callback;
 
-    if (result_ != net::OK) {
-      // Don't write anything if we are going to reject auth to make test
-      // ordering deterministic.
-      did_write_bytes_ = true;
-    } else {
-      scoped_refptr<net::IOBuffer> write_buf = new net::IOBuffer(1);
-      write_buf->data()[0] = 0;
-      int result = socket_->Write(
-          write_buf.get(), 1,
-          base::Bind(&FakeChannelAuthenticator::OnAuthBytesWritten,
-                     weak_factory_.GetWeakPtr()));
-      if (result != net::ERR_IO_PENDING) {
-        // This will not call the callback because |did_read_bytes_| is
-        // still set to false.
-        OnAuthBytesWritten(result);
-      }
+    scoped_refptr<net::IOBuffer> write_buf = new net::IOBuffer(1);
+    write_buf->data()[0] = 0;
+    int result =
+        socket_->Write(write_buf.get(),
+                       1,
+                       base::Bind(&FakeChannelAuthenticator::OnAuthBytesWritten,
+                                  weak_factory_.GetWeakPtr()));
+    if (result != net::ERR_IO_PENDING) {
+      // This will not call the callback because |did_read_bytes_| is
+      // still set to false.
+      OnAuthBytesWritten(result);
     }
 
     scoped_refptr<net::IOBuffer> read_buf = new net::IOBuffer(1);
-    int result =
-        socket_->Read(read_buf.get(), 1,
+    result =
+        socket_->Read(read_buf.get(),
+                      1,
                       base::Bind(&FakeChannelAuthenticator::OnAuthBytesRead,
                                  weak_factory_.GetWeakPtr()));
     if (result != net::ERR_IO_PENDING)
       OnAuthBytesRead(result);
   } else {
-    CallDoneCallback();
+    if (result_ != net::OK)
+      socket_.reset();
+    done_callback.Run(result_, socket_.Pass());
   }
 }
 
@@ -70,7 +67,7 @@ void FakeChannelAuthenticator::OnAuthBytesWritten(int result) {
   EXPECT_FALSE(did_write_bytes_);
   did_write_bytes_ = true;
   if (did_read_bytes_)
-    CallDoneCallback();
+    done_callback_.Run(result_, socket_.Pass());
 }
 
 void FakeChannelAuthenticator::OnAuthBytesRead(int result) {
@@ -78,15 +75,7 @@ void FakeChannelAuthenticator::OnAuthBytesRead(int result) {
   EXPECT_FALSE(did_read_bytes_);
   did_read_bytes_ = true;
   if (did_write_bytes_)
-    CallDoneCallback();
-}
-
-void FakeChannelAuthenticator::CallDoneCallback() {
-  DoneCallback callback = done_callback_;
-  done_callback_.Reset();
-  if (result_ != net::OK)
-    socket_.reset();
-  callback.Run(result_, socket_.Pass());
+    done_callback_.Run(result_, socket_.Pass());
 }
 
 FakeAuthenticator::FakeAuthenticator(

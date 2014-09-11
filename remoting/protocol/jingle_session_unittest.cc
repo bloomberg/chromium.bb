@@ -22,7 +22,6 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/network_settings.h"
-#include "remoting/protocol/stream_channel_factory.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +139,7 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CreateSessionManagers(int auth_round_trips, int messages_till_start,
-                             FakeAuthenticator::Action auth_action) {
+                        FakeAuthenticator::Action auth_action) {
     host_signal_strategy_.reset(new FakeSignalStrategy(kHostJid));
     client_signal_strategy_.reset(new FakeSignalStrategy(kClientJid));
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
@@ -511,12 +510,11 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
   // from the host.
   EXPECT_CALL(host_channel_callback_, OnDone(NULL))
       .WillOnce(QuitThread());
+  EXPECT_CALL(client_channel_callback_, OnDone(_))
+      .Times(AtMost(1));
   ExpectRouteChange(kChannelName);
 
   message_loop_->Run();
-
-  client_session_->GetTransportChannelFactory()->CancelChannelCreation(
-      kChannelName);
 
   EXPECT_TRUE(!host_socket_.get());
 }

@@ -320,11 +320,11 @@ void FakeSession::set_config(const SessionConfig& config) {
   config_ = config;
 }
 
-StreamChannelFactory* FakeSession::GetTransportChannelFactory() {
+ChannelFactory* FakeSession::GetTransportChannelFactory() {
   return this;
 }
 
-StreamChannelFactory* FakeSession::GetMultiplexedChannelFactory() {
+ChannelFactory* FakeSession::GetMultiplexedChannelFactory() {
   return this;
 }
 

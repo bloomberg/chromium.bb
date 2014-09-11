@@ -279,21 +279,13 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
     DCHECK(socket_.get() != NULL);
     if (callback_called)
       *callback_called = true;
-
-    CallDoneCallback(net::OK, socket_.PassAs<net::StreamSocket>());
+    done_callback_.Run(net::OK, socket_.PassAs<net::StreamSocket>());
   }
 }
 
 void SslHmacChannelAuthenticator::NotifyError(int error) {
-  CallDoneCallback(error, scoped_ptr<net::StreamSocket>());
-}
-
-void SslHmacChannelAuthenticator::CallDoneCallback(
-    int error,
-    scoped_ptr<net::StreamSocket> socket) {
-  DoneCallback callback = done_callback_;
-  done_callback_.Reset();
-  callback.Run(error, socket.Pass());
+  done_callback_.Run(static_cast<net::Error>(error),
+                     scoped_ptr<net::StreamSocket>());
 }
 
 }  // namespace protocol

@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
-#include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator.h"
@@ -158,14 +157,14 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
 }
 
 void AuthenticatorTestBase::OnHostConnected(
-    int error,
+    net::Error error,
     scoped_ptr<net::StreamSocket> socket) {
   host_callback_.OnDone(error);
   host_socket_ = socket.Pass();
 }
 
 void AuthenticatorTestBase::OnClientConnected(
-    int error,
+    net::Error error,
     scoped_ptr<net::StreamSocket> socket) {
   client_callback_.OnDone(error);
   client_socket_ = socket.Pass();

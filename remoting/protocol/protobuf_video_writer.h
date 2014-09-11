@@ -20,7 +20,7 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
-class StreamChannelFactory;
+class ChannelFactory;
 class Session;
 
 class ProtobufVideoWriter : public VideoWriter {
@@ -43,7 +43,7 @@ class ProtobufVideoWriter : public VideoWriter {
 
   InitializedCallback initialized_callback_;
 
-  StreamChannelFactory* channel_factory_;
+  ChannelFactory* channel_factory_;
   scoped_ptr<net::StreamSocket> channel_;
 
   BufferedSocketWriter buffered_writer_;

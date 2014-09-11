@@ -353,7 +353,7 @@ void ChannelMultiplexer::MuxSocket::OnPacketReceived() {
   }
 }
 
-ChannelMultiplexer::ChannelMultiplexer(StreamChannelFactory* factory,
+ChannelMultiplexer::ChannelMultiplexer(ChannelFactory* factory,
                                        const std::string& base_channel_name)
     : base_channel_factory_(factory),
       base_channel_name_(base_channel_name),

@@ -24,12 +24,14 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
       const DoneCallback& done_callback) OVERRIDE;
 
  private:
+  void CallCallback(
+      net::Error error,
+      scoped_ptr<net::StreamSocket> socket);
+
   void OnAuthBytesWritten(int result);
   void OnAuthBytesRead(int result);
 
-  void CallDoneCallback();
-
-  int result_;
+  net::Error result_;
   bool async_;
 
   scoped_ptr<net::StreamSocket> socket_;

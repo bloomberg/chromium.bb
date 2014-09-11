@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_STREAM_CHANNEL_FACTORY_H_
-#define REMOTING_PROTOCOL_STREAM_CHANNEL_FACTORY_H_
+#ifndef REMOTING_PROTOCOL_CHANNEL_FACTORY_H_
+#define REMOTING_PROTOCOL_CHANNEL_FACTORY_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,20 +17,22 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
-class StreamChannelFactory : public base::NonThreadSafe {
+class ChannelFactory : public base::NonThreadSafe {
  public:
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
   typedef base::Callback<void(scoped_ptr<net::StreamSocket>)>
       ChannelCreatedCallback;
 
-  StreamChannelFactory() {}
+  ChannelFactory() {}
 
-  // Creates new channels and calls the |callback| when then new channel is
-  // created and connected. The |callback| is called with NULL if connection
-  // failed for any reason. Callback may be called synchronously, before the
-  // call returns. All channels must be destroyed, and CancelChannelCreation()
-  // called for any pending channels, before the factory is destroyed.
+  // Creates new channels for this connection. The specified callback is called
+  // when then new channel is created and connected. The callback is called with
+  // NULL if connection failed for any reason. Callback may be called
+  // synchronously, before the call returns. All channels must be destroyed
+  // before the factory is destroyed and CancelChannelCreation() must be called
+  // to cancel creation of channels for which the |callback| hasn't been called
+  // yet.
   virtual void CreateChannel(const std::string& name,
                              const ChannelCreatedCallback& callback) = 0;
 
@@ -40,13 +42,13 @@ class StreamChannelFactory : public base::NonThreadSafe {
   virtual void CancelChannelCreation(const std::string& name) = 0;
 
  protected:
-  virtual ~StreamChannelFactory() {}
+  virtual ~ChannelFactory() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StreamChannelFactory);
+  DISALLOW_COPY_AND_ASSIGN(ChannelFactory);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_STREAM_CHANNEL_FACTORY_H_
+#endif  // REMOTING_PROTOCOL_CHANNEL_FACTORY_H_

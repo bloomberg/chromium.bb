@@ -14,8 +14,8 @@
 #include "net/base/completion_callback.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
-#include "remoting/protocol/stream_channel_factory.h"
 
 namespace base {
 class MessageLoop;
@@ -148,7 +148,7 @@ class FakeUdpSocket : public net::Socket {
 // FakeSession is a dummy protocol::Session that uses FakeSocket for all
 // channels.
 class FakeSession : public Session,
-                    public StreamChannelFactory {
+                    public ChannelFactory {
  public:
   FakeSession();
   virtual ~FakeSession();
@@ -173,11 +173,11 @@ class FakeSession : public Session,
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
   virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual StreamChannelFactory* GetTransportChannelFactory() OVERRIDE;
-  virtual StreamChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
+  virtual ChannelFactory* GetTransportChannelFactory() OVERRIDE;
+  virtual ChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  // StreamChannelFactory interface.
+  // ChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
                              const ChannelCreatedCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
