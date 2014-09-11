@@ -9,6 +9,9 @@
     {
       'target_name': 'ipclist',
       'type': 'executable',
+      'defines': [
+        'FULL_SAFE_BROWSING',
+      ],
       'dependencies': [
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],

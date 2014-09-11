@@ -16,6 +16,7 @@
 #include "chrome/common/all_messages.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/nacl/common/nacl_host_messages.h"
+#include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/pdf/common/pdf_messages.h"
 #include "components/tracing/tracing_messages.h"
 #include "components/translate/content/common/translate_messages.h"
