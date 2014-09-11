@@ -37,6 +37,20 @@ _kind_to_type = {
   mojom.NULLABLE_SHAREDBUFFER: "_descriptor.TYPE_NULLABLE_HANDLE",
 }
 
+# int64 integers are not handled by array.array. int64/uint64 array are
+# supported but storage is not optimized (ie. they are plain python list, not
+# array.array)
+_kind_to_typecode = {
+  mojom.INT8:   "'b'",
+  mojom.UINT8:  "'B'",
+  mojom.INT16:  "'h'",
+  mojom.UINT16: "'H'",
+  mojom.INT32:  "'i'",
+  mojom.UINT32: "'I'",
+  mojom.FLOAT:  "'f'",
+  mojom.DOUBLE: "'d'",
+}
+
 
 def NameToComponent(name):
   # insert '_' between anything and a Title name (e.g, HTTPEntry2FooBar ->
@@ -99,12 +113,18 @@ def GetStructClass(kind):
 
 def GetFieldType(kind, field=None):
   if mojom.IsAnyArrayKind(kind):
-    arguments = [ GetFieldType(kind.kind) ]
+    if kind.kind in _kind_to_typecode:
+      arguments = [ _kind_to_typecode[kind.kind] ]
+    else:
+      arguments = [ GetFieldType(kind.kind) ]
     if mojom.IsNullableKind(kind):
       arguments.append("nullable=True")
     if mojom.IsFixedArrayKind(kind):
       arguments.append("length=%d" % kind.length)
-    return "_descriptor.ArrayType(%s)" % ", ".join(arguments)
+    if kind.kind in _kind_to_typecode:
+      return "_descriptor.NativeArrayType(%s)" % ", ".join(arguments)
+    else:
+      return "_descriptor.PointerArrayType(%s)" % ", ".join(arguments)
 
   if mojom.IsStructKind(kind):
     arguments = [ GetStructClass(kind) ]

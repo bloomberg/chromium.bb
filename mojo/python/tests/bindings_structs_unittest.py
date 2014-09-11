@@ -84,13 +84,13 @@ class StructBindingsTest(unittest.TestCase):
       max_value = (1 << bits) - 1
     entity.__setattr__(field_name, min_value)
     entity.__setattr__(field_name, max_value)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       entity.__setattr__(field_name, None)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(OverflowError):
       entity.__setattr__(field_name, min_value - 1)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(OverflowError):
       entity.__setattr__(field_name, max_value + 1)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       entity.__setattr__(field_name, 'hello world')
 
   def testTypes(self):
@@ -120,9 +120,9 @@ class StructBindingsTest(unittest.TestCase):
     self.assertEquals(defaults_test.a12, True)
 
     # Floating point types
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a13 = 'hello'
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a14 = 'hello'
 
     # Array type
@@ -131,39 +131,39 @@ class StructBindingsTest(unittest.TestCase):
     defaults_test.a18 = [ 0 ]
     defaults_test.a18 = [ 255 ]
     defaults_test.a18 = [ 0, 255 ]
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a18 = [[]]
-    with self.assertRaises(ValueError):
+    with self.assertRaises(OverflowError):
       defaults_test.a18 = [ -1 ]
-    with self.assertRaises(ValueError):
+    with self.assertRaises(OverflowError):
       defaults_test.a18 = [ 256 ]
 
     # String type
     defaults_test.a19 = None
     defaults_test.a19 = ''
     defaults_test.a19 = 'hello world'
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a19 = [[]]
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a19 = [ -1 ]
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a19 = [ 256 ]
 
     # Structs
     defaults_test.a21 = None
     defaults_test.a21 = sample_import_mojom.Point()
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a21 = 1
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       defaults_test.a21 = sample_import2_mojom.Thing()
 
     # Handles
     foo_instance = sample_service_mojom.Foo()
     foo_instance.source = None
     foo_instance.source = mojo.system.Handle()
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       foo_instance.source = 1
-    with self.assertRaises(ValueError):
+    with self.assertRaises(TypeError):
       foo_instance.source = object()
 
   def testConstructor(self):

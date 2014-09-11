@@ -6,6 +6,8 @@
 The descriptors used to define generated elements of the mojo python bindings.
 """
 
+import array
+
 # pylint: disable=F0401
 from mojo.system import Handle
 
@@ -59,12 +61,12 @@ class IntegerType(NumericType):
 
   def Convert(self, value):
     if value is None:
-      raise ValueError('None is not an integer.')
+      raise TypeError('None is not an integer.')
     if not isinstance(value, (int, long)):
-      raise ValueError('%r is not an integer type' % value)
+      raise TypeError('%r is not an integer type' % value)
     if value < self._min_value or value > self._max_value:
-      raise ValueError('%r is not in the range [%d, %d]' %
-                       (value, self._min_value, self._max_value))
+      raise OverflowError('%r is not in the range [%d, %d]' %
+                          (value, self._min_value, self._max_value))
     return value
 
 
@@ -77,9 +79,9 @@ class FloatType(NumericType):
 
   def Convert(self, value):
     if value is None:
-      raise ValueError('None is not an floating point number.')
+      raise TypeError('None is not an floating point number.')
     if not isinstance(value, (int, long, float)):
-      raise ValueError('%r is not a numeric type' % value)
+      raise TypeError('%r is not a numeric type' % value)
     return float(value)
 
 
@@ -100,7 +102,7 @@ class StringType(Type):
       return value
     if isinstance(value, str):
       return unicode(value)
-    raise ValueError('%r is not a string' % value)
+    raise TypeError('%r is not a string' % value)
 
 
 class HandleType(Type):
@@ -114,23 +116,45 @@ class HandleType(Type):
     if value is None:
       return Handle()
     if not isinstance(value, Handle):
-      raise ValueError('%r is not a handle' % value)
+      raise TypeError('%r is not a handle' % value)
     return value
 
 
-class ArrayType(Type):
-  """Type object for arrays."""
+class GenericArrayType(Type):
+  """Abstract Type object for arrays."""
 
-  def __init__(self, sub_type, nullable=False, length=0):
+  def __init__(self, nullable=False, length=0):
     Type.__init__(self)
-    self.sub_type = sub_type
     self.nullable = nullable
     self.length = length
+
+
+class PointerArrayType(GenericArrayType):
+  """Type object for arrays of pointers."""
+
+  def __init__(self, sub_type, nullable=False, length=0):
+    GenericArrayType.__init__(self, nullable, length)
+    self.sub_type = sub_type
 
   def Convert(self, value):
     if value is None:
       return value
     return [self.sub_type.Convert(x) for x in value]
+
+
+class NativeArrayType(GenericArrayType):
+  """Type object for arrays of native types."""
+
+  def __init__(self, typecode, nullable=False, length=0):
+    GenericArrayType.__init__(self, nullable, length)
+    self.typecode = typecode
+
+  def Convert(self, value):
+    if value is None:
+      return value
+    if isinstance(value, array.array) and value.typecode == self.typecode:
+      return value
+    return array.array(self.typecode, value)
 
 
 class StructType(Type):
@@ -144,7 +168,7 @@ class StructType(Type):
   def Convert(self, value):
     if value is None or isinstance(value, self.struct_type):
       return value
-    raise ValueError('%r is not an instance of %r' % (value, self.struct_type))
+    raise TypeError('%r is not an instance of %r' % (value, self.struct_type))
 
   def GetDefaultValue(self, value):
     if value:
