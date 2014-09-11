@@ -311,11 +311,6 @@ void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
   if (new_pos.IsEmpty())
     return;
 
-  // Make sure the window edges are clipped to just the visible region. We need
-  // to do this before changing position, so that when we animate the closure
-  // of it it doesn't look like the window crumbles into the toolbar.
-  UpdateWindowEdges(new_pos);
-
   SetWidgetPositionNative(new_pos, no_redraw);
 
   // Tell the immersive mode controller about the find bar's new bounds. The

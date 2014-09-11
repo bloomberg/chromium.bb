@@ -12,14 +12,10 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/path.h"
-#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
-
-using gfx::Path;
 
 // static
 bool DropdownBarHost::disable_animations_during_testing_ = false;
@@ -212,115 +208,6 @@ void DropdownBarHost::OnVisibilityChanged() {
 void DropdownBarHost::GetWidgetBounds(gfx::Rect* bounds) {
   DCHECK(bounds);
   *bounds = browser_view_->bounds();
-}
-
-void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
-  // |w| is used to make it easier to create the part of the polygon that curves
-  // the right side of the Find window. It essentially keeps track of the
-  // x-pixel position of the right-most background image inside the view.
-  // TODO(finnur): Let the view tell us how to draw the curves or convert
-  // this to a CustomFrameWindow.
-  int w = new_pos.width() - 6;  // -6 positions us at the left edge of the
-                                // rightmost background image of the view.
-  int h = new_pos.height();
-
-  // This polygon array represents the outline of the background image for the
-  // window. Basically, it encompasses only the visible pixels of the
-  // concatenated find_dlg_LMR_bg images (where LMR = [left | middle | right]).
-  const Path::Point polygon[] = {
-      {2, 0}, {3, 1}, {3, h - 2}, {4, h - 1},
-        {4, h}, {w+0, h},
-      {w+2, h - 1}, {w+3, h - 2}, {w+3, 1}, {w+4, 0}
-  };
-
-  // Find the largest x and y value in the polygon.
-  int max_x = 0, max_y = 0;
-  for (size_t i = 0; i < arraysize(polygon); i++) {
-    max_x = std::max(max_x, static_cast<int>(polygon[i].x));
-    max_y = std::max(max_y, static_cast<int>(polygon[i].y));
-  }
-
-  // We then create the polygon and use SetWindowRgn to force the window to draw
-  // only within that area. This region may get reduced in size below.
-  Path path(polygon, arraysize(polygon));
-  gfx::ScopedSkRegion region(path.CreateNativeRegion());
-  // Are we animating?
-  if (animation_offset() > 0) {
-    // The animation happens in two steps: First, we clip the window and then in
-    // GetWidgetPosition we offset the window position so that it still looks
-    // attached to the toolbar as it grows. We clip the window by creating a
-    // rectangle region (that gradually increases as the animation progresses)
-    // and find the intersection between the two regions using CombineRgn.
-
-    // |y| shrinks as the animation progresses from the height of the view down
-    // to 0 (and reverses when closing).
-    int y = animation_offset();
-    // |y| shrinking means the animation (visible) region gets larger. In other
-    // words: the rectangle grows upward (when the widget is opening).
-    Path animation_path;
-    SkRect animation_rect = { SkIntToScalar(0), SkIntToScalar(y),
-                              SkIntToScalar(max_x), SkIntToScalar(max_y) };
-    animation_path.addRect(animation_rect);
-    gfx::ScopedSkRegion animation_region(
-        animation_path.CreateNativeRegion());
-    region.Set(Path::IntersectRegions(animation_region.Get(), region.Get()));
-
-    // Next, we need to increase the region a little bit to account for the
-    // curved edges that the view will draw to make it look like grows out of
-    // the toolbar.
-    Path::Point left_curve[] = {
-      {2, y+0}, {3, y+1}, {3, y+0}, {2, y+0}
-    };
-    Path::Point right_curve[] = {
-      {w+3, y+1}, {w+4, y+0}, {w+3, y+0}, {w+3, y+1}
-    };
-
-    // Combine the region for the curve on the left with our main region.
-    Path left_path(left_curve, arraysize(left_curve));
-    gfx::ScopedSkRegion r(left_path.CreateNativeRegion());
-    region.Set(Path::CombineRegions(r.Get(), region.Get()));
-
-    // Combine the region for the curve on the right with our main region.
-    Path right_path(right_curve, arraysize(right_curve));
-    region.Set(Path::CombineRegions(r.Get(), region.Get()));
-  }
-
-  // Now see if we need to truncate the region because parts of it obscures
-  // the main window border.
-  gfx::Rect widget_bounds;
-  GetWidgetBounds(&widget_bounds);
-
-  // Calculate how much our current position overlaps our boundaries. If we
-  // overlap, it means we have too little space to draw the whole widget and
-  // we allow overwriting the scrollbar before we start truncating our widget.
-  //
-  // TODO(brettw) this constant is evil. This is the amount of room we've added
-  // to the window size, when we set the region, it can change the size.
-  static const int kAddedWidth = 7;
-  int difference = new_pos.right() - kAddedWidth - widget_bounds.right() -
-      gfx::scrollbar_size() + 1;
-  if (difference > 0) {
-    Path::Point exclude[4];
-    exclude[0].x = max_x - difference;  // Top left corner.
-    exclude[0].y = 0;
-
-    exclude[1].x = max_x;               // Top right corner.
-    exclude[1].y = 0;
-
-    exclude[2].x = max_x;               // Bottom right corner.
-    exclude[2].y = max_y;
-
-    exclude[3].x = max_x - difference;  // Bottom left corner.
-    exclude[3].y = max_y;
-
-    // Subtract this region from the original region.
-    gfx::Path exclude_path(exclude, arraysize(exclude));
-    gfx::ScopedSkRegion exclude_region(exclude_path.CreateNativeRegion());
-    region.Set(Path::SubtractRegion(region.Get(), exclude_region.Get()));
-  }
-
-  // Window takes ownership of the region.
-  host()->SetShape(region.release());
 }
 
 void DropdownBarHost::RegisterAccelerators() {
