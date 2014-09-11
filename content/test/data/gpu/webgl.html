@@ -100,12 +100,27 @@ function testQuantityLoss() {
   createAndDiscardContext();
 }
 
+function getLoseContextExtension()
+{
+    return gl.getExtension("WEBKIT_WEBGL_lose_context") ||
+           gl.getExtension("WEBGL_lose_context");
+}
+
+function loseContextUsingExtension()
+{
+    getLoseContextExtension().loseContext();
+    // Report success at the next frame to give the compositor a chance to draw
+    // using the lost context.
+    window.requestAnimationFrame(function() {
+        window.domAutomationController.send("SUCCESS");
+    });
+}
+
 function contextLostTest(kind)
 {
   switch (kind) {
     case "WEBGL_lose_context": {
-      extension = gl.getExtension("WEBKIT_WEBGL_lose_context") ||
-                  gl.getExtension("WEBGL_lose_context");
+      extension = getLoseContextExtension();
       extension.loseContext();
       break;
     }

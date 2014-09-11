@@ -66,6 +66,15 @@ class _ContextLostValidator(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    def WaitForPageToFinish():
+      print "Waiting for page to finish."
+      try:
+        util.WaitFor(lambda: tab.EvaluateJavaScript(
+            'window.domAutomationController._finished'), wait_timeout)
+        return True
+      except util.TimeoutException:
+        return False
+
     if page.kill_gpu_process:
       # Doing the GPU process kill operation cooperatively -- in the
       # same page's context -- is much more stressful than restarting
@@ -97,13 +106,7 @@ class _ContextLostValidator(page_test.PageTest):
           print 'Tab crashed while navigating to chrome://gpucrash'
         # Activate the original tab and wait for completion.
         tab.Activate()
-        completed = False
-        try:
-          util.WaitFor(lambda: tab.EvaluateJavaScript(
-              'window.domAutomationController._finished'), wait_timeout)
-          completed = True
-        except util.TimeoutException:
-          pass
+        completed = WaitForPageToFinish()
 
         if page.check_crash_count:
           if not tab.browser.supports_system_info:
@@ -160,14 +163,7 @@ class _ContextLostValidator(page_test.PageTest):
       # This method seem unreliable, so the page will also attempt to force
       # GC through excessive allocations.
       tab.CollectGarbage()
-      completed = False
-      try:
-        print "Waiting for page to finish."
-        util.WaitFor(lambda: tab.EvaluateJavaScript(
-            'window.domAutomationController._finished'), wait_timeout)
-        completed = True
-      except util.TimeoutException:
-        pass
+      completed = WaitForPageToFinish()
 
       if not completed:
         raise page_test.Failure(
@@ -176,15 +172,25 @@ class _ContextLostValidator(page_test.PageTest):
         'window.domAutomationController._succeeded'):
         raise page_test.Failure(
           'Test failed (context not restored properly?)')
+    elif page.hide_tab_and_lose_context:
+      if not tab.browser.supports_tab_control:
+        raise page_test.Failure('Browser must support tab control')
+
+      # Test losing a context in a hidden tab. This test passes if the tab
+      # doesn't crash.
+      dummy_tab = tab.browser.tabs.New()
+      tab.EvaluateJavaScript('loseContextUsingExtension()')
+      tab.Activate()
+
+      completed = WaitForPageToFinish()
+
+      if not completed:
+        raise page_test.Failure('Test didn\'t complete')
+      if not tab.EvaluateJavaScript(
+        'window.domAutomationController._succeeded'):
+        raise page_test.Failure('Test failed')
     else:
-      completed = False
-      try:
-        print "Waiting for page to finish."
-        util.WaitFor(lambda: tab.EvaluateJavaScript(
-            'window.domAutomationController._finished'), wait_timeout)
-        completed = True
-      except util.TimeoutException:
-        pass
+      completed = WaitForPageToFinish()
 
       if not completed:
         raise page_test.Failure('Test didn\'t complete')
@@ -206,6 +212,7 @@ class GPUProcessCrashesExactlyOnce(page.Page):
     self.number_of_gpu_process_kills = 2
     self.check_crash_count = True
     self.force_garbage_collection = False
+    self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -224,6 +231,7 @@ class WebGLContextLostFromGPUProcessExitPage(page.Page):
     self.check_crash_count = False
     self.number_of_gpu_process_kills = 1
     self.force_garbage_collection = False
+    self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -242,11 +250,32 @@ class WebGLContextLostFromLoseContextExtensionPage(page.Page):
     self.kill_gpu_process = False
     self.check_crash_count = False
     self.force_garbage_collection = False
+    self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._finished')
+
+
+class WebGLContextLostInHiddenTabPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(WebGLContextLostInHiddenTabPage, self).__init__(
+      url='file://webgl.html?query=kill_after_notification',
+      page_set=page_set,
+      base_dir=base_dir,
+      name='ContextLost.WebGLContextLostInHiddenTab')
+    self.script_to_evaluate_on_commit = harness_script
+    self.kill_gpu_process = False
+    self.check_crash_count = False
+    self.force_garbage_collection = False
+    self.hide_tab_and_lose_context = True
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.NavigateToPage(self)
+    action_runner.WaitForJavaScriptCondition(
+        'window.domAutomationController._loaded')
+
 
 class WebGLContextLostFromQuantityPage(page.Page):
   def __init__(self, page_set, base_dir):
@@ -259,6 +288,7 @@ class WebGLContextLostFromQuantityPage(page.Page):
     self.kill_gpu_process = False
     self.check_crash_count = False
     self.force_garbage_collection = True
+    self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -276,6 +306,7 @@ class WebGLContextLostFromSelectElementPage(page.Page):
     self.kill_gpu_process = False
     self.check_crash_count = False
     self.force_garbage_collection = False
+    self.hide_tab_and_lose_context = False
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -302,4 +333,5 @@ class ContextLost(benchmark_module.Benchmark):
     ps.AddPage(WebGLContextLostFromLoseContextExtensionPage(ps, ps.base_dir))
     ps.AddPage(WebGLContextLostFromQuantityPage(ps, ps.base_dir))
     ps.AddPage(WebGLContextLostFromSelectElementPage(ps, ps.base_dir))
+    ps.AddPage(WebGLContextLostInHiddenTabPage(ps, ps.base_dir))
     return ps
