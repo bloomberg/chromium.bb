@@ -8,6 +8,7 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=W0613
 
+import pipes
 import sys
 import time
 
@@ -633,6 +634,31 @@ class DeviceUtils(object):
       self.old_interface.SetProtectedFileContents(device_path, contents)
     else:
       self.old_interface.SetFileContents(device_path, contents)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def WriteTextFile(self, device_path, text, as_root=False, timeout=None,
+                    retries=None):
+    """Writes |text| to a file on the device.
+
+    Assuming that |text| is a small string, this is typically more efficient
+    than |WriteFile|, as no files are pushed into the device.
+
+    Args:
+      device_path: A string containing the absolute path to the file to write
+                   on the device.
+      text: A short string of text to write to the file on the device.
+      as_root: A boolean indicating whether the write should be executed with
+               root privileges.
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Raises:
+      CommandFailedError if the file could not be written on the device.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    self._RunShellCommandImpl('echo {1} > {0}'.format(device_path,
+        pipes.quote(text)), check_return=True, as_root=as_root)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Ls(self, device_path, timeout=None, retries=None):

@@ -1196,6 +1196,44 @@ class DeviceUtilsWriteFileTest(DeviceUtilsOldImplTest):
       self.device.WriteFile('/test/file/no.permissions.to.write',
                             'new test file contents', as_root=True)
 
+class DeviceUtilsWriteTextFileTest(DeviceUtilsOldImplTest):
+
+  def testWriteTextFileTest_basic(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo some.string"
+        " > /test/file/to.write; echo %$?'", '%0\r\n'):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string')
+
+  def testWriteTextFileTest_stringWithSpaces(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo '\\''some other string'\\''"
+        " > /test/file/to.write; echo %$?'", '%0\r\n'):
+      self.device.WriteTextFile('/test/file/to.write', 'some other string')
+
+  def testWriteTextFileTest_asRoot_withSu(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+        ("adb -s 0123456789abcdef shell 'su -c echo some.string"
+          " > /test/file/to.write; echo %$?'", '%0\r\n')]):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                as_root=True)
+
+  def testWriteTextFileTest_asRoot_withRoot(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'hello\r\nworld\r\n'),
+        ("adb -s 0123456789abcdef shell 'echo some.string"
+          " > /test/file/to.write; echo %$?'", '%0\r\n')]):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                as_root=True)
+
+  def testWriteTextFileTest_asRoot_rejected(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+        ("adb -s 0123456789abcdef shell 'su -c echo some.string"
+          " > /test/file/to.write; echo %$?'", '%1\r\n')]):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                  as_root=True)
 
 class DeviceUtilsLsTest(DeviceUtilsOldImplTest):
 

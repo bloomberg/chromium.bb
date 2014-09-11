@@ -701,8 +701,7 @@ class AndroidCommands(object):
     """Send a command to the adb shell and return the result.
 
     Args:
-      command: String containing the shell command to send. Must not include
-               the single quotes as we use them to escape the whole command.
+      command: String containing the shell command to send.
       timeout_time: Number of seconds to wait for command to respond before
         retrying, used by AdbInterface.SendShellCommand.
       log_result: Boolean to indicate whether we should log the result of the
