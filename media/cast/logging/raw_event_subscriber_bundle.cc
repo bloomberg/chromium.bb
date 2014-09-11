@@ -53,8 +53,7 @@ RawEventSubscriberBundle::~RawEventSubscriberBundle() {
 
 void RawEventSubscriberBundle::AddEventSubscribers(bool is_audio) {
   if (!receiver_offset_estimator_.get()) {
-    receiver_offset_estimator_.reset(
-        new ReceiverTimeOffsetEstimatorImpl(cast_environment_->Clock()));
+    receiver_offset_estimator_.reset(new ReceiverTimeOffsetEstimatorImpl);
     cast_environment_->Logging()->AddRawEventSubscriber(
         receiver_offset_estimator_.get());
   }

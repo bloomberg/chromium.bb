@@ -5,30 +5,36 @@
 #ifndef MEDIA_CAST_LOGGING_RECEIVER_TIME_OFFSET_ESTIMATOR_IMPL_H_
 #define MEDIA_CAST_LOGGING_RECEIVER_TIME_OFFSET_ESTIMATOR_IMPL_H_
 
+#include <map>
+
 #include "base/time/time.h"
 #include "base/threading/thread_checker.h"
+#include "media/cast/common/mod_util.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/receiver_time_offset_estimator.h"
-
-namespace base {
-class TickClock;
-}
 
 namespace media {
 namespace cast {
 
-// This implementation listens to three types of video events:
-// 1. FRAME_ENCODED (sender side)
-// 2. FRAME_ACK_SENT (receiver side)
-// 3. FRAME_ACK_RECEIVED (sender side)
+
+// This should be large enough so that we can collect all 3 events before
+// the entry gets removed from the map.
+const size_t kMaxEventTimesMapSize = 500;
+
+// The lower, this is, the faster we adjust to clock drift.
+// (But with more jitter.)
+const size_t kClockDriftSpeed = 500;
+
+
+// This implementation listens to two pair of events
+// 1. FRAME_ACK_SENT / FRAME_ACK_RECEIVED  (receiver->sender)
+// 2. PACKET_SENT_TO_NETWORK / PACKET_RECEIVED (sender->receiver)
 // There is a causal relationship between these events in that these events
 // must happen in order. This class obtains the lower and upper bounds for
-// the offset by taking the difference of timestamps (2) - (1) and (2) - (3),
-// respectively.
-// The bound will become better as the latency between the events decreases.
+// the offset by taking the difference of timestamps.
 class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
  public:
-  ReceiverTimeOffsetEstimatorImpl(base::TickClock* clock);
+  ReceiverTimeOffsetEstimatorImpl();
 
   virtual ~ReceiverTimeOffsetEstimatorImpl();
 
@@ -41,28 +47,47 @@ class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
                                        base::TimeDelta* upper_bound) OVERRIDE;
 
  private:
-  struct EventTimes {
-    base::TimeTicks event_a_time;
-    base::TimeTicks event_b_time;
-    base::TimeTicks event_c_time;
+  // This helper uses the difference between sent and recived event
+  // to calculate an upper bound on the difference between the clocks
+  // on the sender and receiver. Note that this difference can take
+  // very large positive or negative values, but the smaller value is
+  // always the better estimate, since a receive event cannot possibly
+  // happen before a send event.  Note that we use this to calculate
+  // both upper and lower bounds by reversing the sender/receiver
+  // relationship.
+  class BoundCalculator {
+   public:
+    typedef std::pair<base::TimeTicks, base::TimeTicks> TimeTickPair;
+    typedef std::map<uint64, TimeTickPair> EventMap;
+
+    BoundCalculator();
+    ~BoundCalculator();
+    bool has_bound() const { return has_bound_; }
+    base::TimeDelta bound() const { return bound_; }
+
+    void SetSent(uint32 rtp,
+                 uint32 packet_id,
+                 bool audio,
+                 base::TimeTicks t);
+
+    void SetReceived(uint32 rtp,
+                     uint16 packet_id,
+                     bool audio,
+                     base::TimeTicks t);
+
+   private:
+    void UpdateBound(base::TimeTicks a, base::TimeTicks b);
+    void CheckUpdate(uint64 key);
+
+   private:
+    EventMap events_;
+    bool has_bound_;
+    base::TimeDelta bound_;
   };
 
-  typedef std::map<RtpTimestamp, EventTimes> EventTimesMap;
-
-  void UpdateOffsetBounds(const EventTimes& event);
-
   // Fixed size storage to store event times for recent frames.
-  EventTimesMap event_times_map_;
-
-  bool bounded_;
-  base::TickClock* clock_;  // Not owned by this class.
-
-  bool offset_bounds_valid_;
-  base::TimeDelta offset_lower_bound_;
-  base::TimeDelta offset_upper_bound_;
-  base::TimeDelta prev_offset_lower_bound_;
-  base::TimeDelta prev_offset_upper_bound_;
-  base::TimeTicks last_reset_time_;
+  BoundCalculator upper_bound_;
+  BoundCalculator lower_bound_;
 
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(ReceiverTimeOffsetEstimatorImpl);

@@ -356,8 +356,7 @@ int main(int argc, char** argv) {
 
   // Subscribers for stats.
   scoped_ptr<media::cast::ReceiverTimeOffsetEstimatorImpl> offset_estimator(
-      new media::cast::ReceiverTimeOffsetEstimatorImpl(
-          cast_environment->Clock()));
+      new media::cast::ReceiverTimeOffsetEstimatorImpl());
   cast_environment->Logging()->AddRawEventSubscriber(offset_estimator.get());
   scoped_ptr<media::cast::StatsEventSubscriber> video_stats_subscriber(
       new media::cast::StatsEventSubscriber(media::cast::VIDEO_EVENT,
