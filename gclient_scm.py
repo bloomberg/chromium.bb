@@ -612,10 +612,9 @@ class GitWrapper(SCMWrapper):
               return
             else:
               self.Print('Input not recognized')
-        elif re.match("error: Your local changes to (')?.*(')? would be "
-                      "overwritten by merge(.  Aborting)?[:.]\n(.*\n)?Please, "
-                      "commit your changes or stash them before you can "
-                      "merge.\n",
+        elif re.match("error: Your local changes to '.*' would be "
+                      "overwritten by merge.  Aborting.\nPlease, commit your "
+                      "changes or stash them before you can merge.\n",
                       e.stderr):
           if not printed_path:
             self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
@@ -1022,7 +1021,7 @@ class GitWrapper(SCMWrapper):
                                   % (self.relpath, rev_str))
     try:
       scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
-                       '--ignore-submodules', '--exit-code', 'HEAD', '--'],
+                       '--ignore-submodules', 'HEAD', '--'],
                        cwd=self.checkout_path)
     except subprocess2.CalledProcessError:
       raise gclient_utils.Error('\n____ %s%s\n'

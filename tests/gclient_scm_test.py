@@ -919,14 +919,6 @@ from :3
       return return_value
     return AskForData
 
-  def getCurrentBranch(self):
-    # Returns name of current branch or HEAD for detached HEAD
-    branch = gclient_scm.scm.GIT.Capture(['rev-parse', '--abbrev-ref', 'HEAD'],
-                                          cwd=self.base_path)
-    if branch == 'HEAD':
-      return None
-    return branch
-
   def setUp(self):
     TestCaseUtils.setUp(self)
     unittest.TestCase.setUp(self)
@@ -1208,40 +1200,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  'Fix the conflict and run gclient again.\n'
                  'See \'man git-rebase\' for details.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    # The merge conflict creates a detached head with local changes, so another
-    # scm.update attempt should fail (in a different way) because of that (a
-    # rather roundabout way to test that condition).
     exception = ('\n____ . at refs/remotes/origin/master\n'
                  '\tYou have unstaged changes.\n'
-                 '\tPlease commit, stash, or reset.\n')
-    self.assertRaisesError(exception, scm.update, options, (), [])
-    sys.stdout.close()
-
-  def testUpdateDetachedConflict(self):
-    # Detached head mode should refuse to update when there are local changes
-    # (staged or unstaged).
-    if not self.enabled:
-      return
-    options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    scm._Run(['checkout', '-q', 'a7142dc9f0009350b96a11f372b6ea658592aa95'],
-             options)
-    # Make sure it checked out a detached HEAD
-    self.assertEquals(self.getCurrentBranch(), None)
-    file_path = join(self.base_path, 'b')
-    open(file_path, 'w').writelines('conflict\n')
-    # Unstaged
-    # TODO(all): Ick. Gclient should really have exception subclasses or
-    # something, so we can avoid this fragile exception message matching.
-    exception = ('\n____ . at refs/remotes/origin/master\n'
-                 '\tYou have unstaged changes.\n'
-                 '\tPlease commit, stash, or reset.\n')
-    self.assertRaisesError(exception, scm.update, options, (), [])
-    # Staged
-    scm._Run(['add', 'b'], options)
-    exception = ('\n____ . at refs/remotes/origin/master\n'
-                 '\tYour index contains uncommitted changes\n'
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
     sys.stdout.close()
@@ -1468,6 +1428,14 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     sys.stdout.close()
     # pylint: disable=E1101
     self.assertNotIn(expected, value)
+
+  def getCurrentBranch(self):
+    # Returns name of current branch or HEAD for detached HEAD
+    branch = gclient_scm.scm.GIT.Capture(['rev-parse', '--abbrev-ref', 'HEAD'],
+                                          cwd=self.base_path)
+    if branch == 'HEAD':
+      return None
+    return branch
 
   def testUpdateClone(self):
     if not self.enabled:
