@@ -107,7 +107,8 @@ class NET_EXPORT NSSCertDatabase {
   // as doing so requires making opinionated decisions about where to store
   // data, and instead prefer to be passed an existing NSSCertDatabase
   // instance.
-  // Both slots must not be NULL but can be identical.
+  // |public_slot| must not be NULL, |private_slot| can be NULL. Both slots can
+  // be identical.
   NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
                   crypto::ScopedPK11Slot private_slot);
   virtual ~NSSCertDatabase();
@@ -144,6 +145,7 @@ class NET_EXPORT NSSCertDatabase {
   crypto::ScopedPK11Slot GetPublicSlot() const;
 
   // Get the default slot for private key or mixed private/public key data.
+  // Can return NULL.
   crypto::ScopedPK11Slot GetPrivateSlot() const;
 
   // Get the default module for public key data.

@@ -90,7 +90,8 @@ bool CertLoader::IsHardwareBacked() const {
   if (!database_)
     return false;
   crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
-  DCHECK(slot);
+  if (!slot)
+    return false;
   return PK11_IsHW(slot.get());
 }
 
