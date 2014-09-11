@@ -2192,14 +2192,6 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
             } else
                 return false;
         } else if (val->unit == CSSPrimitiveValue::CSS_IDENT) {
-            // open-quote
-            // close-quote
-            // no-open-quote
-            // no-close-quote
-            // inherit
-            // FIXME: These are not yet implemented (http://bugs.webkit.org/show_bug.cgi?id=6503).
-            // none
-            // normal
             switch (val->id) {
             case CSSValueOpenQuote:
             case CSSValueCloseQuote:
