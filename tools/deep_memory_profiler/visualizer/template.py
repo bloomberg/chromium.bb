@@ -39,7 +39,7 @@ _TEMPLATE = """<!DOCTYPE html>
 </script>
 
 <body>
-  <h2>Deep Memory Profiler Visulaizer</h2>
+  <h2>Deep Memory Profiler Visualizer</h2>
   <div id="graph-div"></div>
   <div id="info-div">
     <div id="category-menu"></div>
