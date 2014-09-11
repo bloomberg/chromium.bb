@@ -100,6 +100,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -107,7 +108,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -120,7 +120,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "policy/policy_constants.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -408,8 +407,12 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_CONSUMER_MANAGEMENT_DESCRIPTION },
     { "consumerManagementEnrollButton",
       IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON },
+    { "consumerManagementEnrollingButton",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLLING_BUTTON },
     { "consumerManagementUnenrollButton",
       IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLL_BUTTON },
+    { "consumerManagementUnenrollingButton",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLLING_BUTTON },
     { "deviceControlTitle", IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
@@ -627,14 +630,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableConsumerManagement));
 
-  const enterprise_management::PolicyData* policy_data =
-      chromeos::DeviceSettingsService::Get()->policy_data();
-  values->SetBoolean(
-      "consumerManagementEnrolled",
-      policy_data &&
-      policy_data->management_mode() ==
-          enterprise_management::PolicyData::CONSUMER_MANAGED);
-
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
 #endif
@@ -767,6 +762,13 @@ void BrowserOptionsHandler::Uninitialize() {
   registrar_.RemoveAll();
 #if defined(OS_WIN)
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
+#endif
+#if defined(OS_CHROMEOS)
+  policy::ConsumerManagementService* consumer_management =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetConsumerManagementService();
+  if (consumer_management)
+    consumer_management->RemoveObserver(this);
 #endif
 }
 
@@ -954,6 +956,14 @@ void BrowserOptionsHandler::InitializePage() {
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
           user_manager::UserManager::Get()->GetActiveUser()->email()));
+
+  policy::ConsumerManagementService* consumer_management =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetConsumerManagementService();
+  if (consumer_management) {
+    OnConsumerManagementStatusChanged();
+    consumer_management->AddObserver(this);
+  }
 #endif
 }
 
@@ -1458,6 +1468,14 @@ void BrowserOptionsHandler::OnPowerwashDialogShow(
       "Reset.ChromeOS.PowerwashDialogShown",
       chromeos::reset::DIALOG_FROM_OPTIONS,
       chromeos::reset::DIALOG_VIEW_TYPE_SIZE);
+}
+
+void BrowserOptionsHandler::OnConsumerManagementStatusChanged() {
+  const std::string& status = g_browser_process->platform_part()->
+      browser_policy_connector_chromeos()->GetConsumerManagementService()->
+          GetStatusString();
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setConsumerManagementStatus", base::StringValue(status));
 }
 
 #endif  // defined(OS_CHROMEOS)

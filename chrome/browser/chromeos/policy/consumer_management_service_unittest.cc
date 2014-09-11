@@ -18,8 +18,10 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -39,6 +42,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +50,8 @@ using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
 using testing::_;
+
+namespace em = enterprise_management;
 
 namespace {
 const char* kAttributeOwnerId = "consumer_management.owner_id";
@@ -79,7 +85,8 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
         TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(testing_profile_manager_->SetUp());
 
-    service_.reset(new ConsumerManagementService(&mock_cryptohome_client_));
+    service_.reset(new ConsumerManagementService(&mock_cryptohome_client_,
+                                                 NULL));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -90,16 +97,15 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  ConsumerManagementService::ConsumerEnrollmentState GetEnrollmentState() {
-    return static_cast<ConsumerManagementService::ConsumerEnrollmentState>(
+  ConsumerManagementService::EnrollmentStage GetEnrollmentStage() {
+    return static_cast<ConsumerManagementService::EnrollmentStage>(
         g_browser_process->local_state()->GetInteger(
-            prefs::kConsumerManagementEnrollmentState));
+            prefs::kConsumerManagementEnrollmentStage));
   }
 
-  void SetEnrollmentState(
-      ConsumerManagementService::ConsumerEnrollmentState state) {
+  void SetEnrollmentStage(ConsumerManagementService::EnrollmentStage stage) {
     g_browser_process->local_state()->SetInteger(
-        prefs::kConsumerManagementEnrollmentState, state);
+        prefs::kConsumerManagementEnrollmentStage, stage);
   }
 
   void MockGetBootAttribute(
@@ -130,37 +136,42 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
     set_owner_status_ = status;
   }
 
+  // Variables for building the service.
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<ConsumerManagementService> service_;
 
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
+
+  // Variables for setting the return value or catching the arguments of mock
+  // functions.
   chromeos::DBusMethodCallStatus cryptohome_status_;
   bool cryptohome_result_;
   cryptohome::BaseReply cryptohome_reply_;
   cryptohome::GetBootAttributeRequest get_boot_attribute_request_;
   cryptohome::SetBootAttributeRequest set_boot_attribute_request_;
-
   std::string owner_;
   bool set_owner_status_;
 };
 
-TEST_F(ConsumerManagementServiceTest, CanGetEnrollmentState) {
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_NONE,
-            service_->GetEnrollmentState());
+TEST_F(ConsumerManagementServiceTest, CanGetEnrollmentStage) {
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
+            service_->GetEnrollmentStage());
 
-  SetEnrollmentState(ConsumerManagementService::ENROLLMENT_REQUESTED);
+  SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED);
 
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_REQUESTED,
-            service_->GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED,
+            service_->GetEnrollmentStage());
 }
 
-TEST_F(ConsumerManagementServiceTest, CanSetEnrollmentState) {
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_NONE, GetEnrollmentState());
+TEST_F(ConsumerManagementServiceTest, CanSetEnrollmentStage) {
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
+            GetEnrollmentStage());
 
-  service_->SetEnrollmentState(ConsumerManagementService::ENROLLMENT_REQUESTED);
+  service_->SetEnrollmentStage(
+      ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED);
 
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_REQUESTED,
-            GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED,
+            GetEnrollmentStage());
 }
 
 TEST_F(ConsumerManagementServiceTest, CanGetOwner) {
@@ -224,7 +235,7 @@ class ConsumerManagementServiceEnrollmentTest
     // Set up MockUserManager. The first user will be the owner.
     mock_user_manager_->AddUser(kTestOwner);
 
-    // Return false for IsCurrentUserOwner() so that the enrollment state is not
+    // Return false for IsCurrentUserOwner() so that the enrollment stage is not
     // reset.
     ON_CALL(*mock_user_manager_, IsCurrentUserOwner())
         .WillByDefault(Return(false));
@@ -252,9 +263,10 @@ class ConsumerManagementServiceEnrollmentTest
     SigninManagerFactory::GetForProfile(profile())->
         SetAuthenticatedUsername(kTestOwner);
 
-    // The service should continue the enrollment process if the state is
-    // ENROLLMENT_OWNER_STORED.
-    SetEnrollmentState(ConsumerManagementService::ENROLLMENT_OWNER_STORED);
+    // The service should continue the enrollment process if the stage is
+    // ENROLLMENT_STAGE_OWNER_STORED.
+    SetEnrollmentStage(
+        ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -293,22 +305,23 @@ TEST_F(ConsumerManagementServiceEnrollmentTest, EnrollsSuccessfully) {
   RunEnrollmentTest();
 
   EXPECT_TRUE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_SUCCESS,
-            GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS,
+            GetEnrollmentStage());
   EXPECT_FALSE(HasEnrollmentNotification());
 }
 
 TEST_F(ConsumerManagementServiceEnrollmentTest,
-       ShowsDesktopNotificationAndResetsEnrollmentStateIfCurrentUserIsOwner) {
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_OWNER_STORED,
-            GetEnrollmentState());
+       ShowsDesktopNotificationAndResetsEnrollmentStageIfCurrentUserIsOwner) {
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED,
+            GetEnrollmentStage());
   EXPECT_FALSE(HasEnrollmentNotification());
   EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
       .WillOnce(Return(true));
 
   RunEnrollmentTest();
 
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_NONE, GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
+            GetEnrollmentStage());
   EXPECT_TRUE(HasEnrollmentNotification());
 }
 
@@ -332,8 +345,8 @@ TEST_F(ConsumerManagementServiceEnrollmentTest, FailsToGetAccessToken) {
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
 
   EXPECT_FALSE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_GET_TOKEN_FAILED,
-            GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_GET_TOKEN_FAILED,
+            GetEnrollmentStage());
 }
 
 TEST_F(ConsumerManagementServiceEnrollmentTest, FailsToRegister) {
@@ -344,20 +357,70 @@ TEST_F(ConsumerManagementServiceEnrollmentTest, FailsToRegister) {
   RunEnrollmentTest();
 
   EXPECT_TRUE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_DM_SERVER_FAILED,
-            GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_DM_SERVER_FAILED,
+            GetEnrollmentStage());
 }
 
 TEST_F(ConsumerManagementServiceEnrollmentTest,
        ShowsDesktopNotificationOnlyIfEnrollmentIsAlreadyCompleted) {
-  SetEnrollmentState(ConsumerManagementService::ENROLLMENT_CANCELED);
+  SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_CANCELED);
   EXPECT_FALSE(HasEnrollmentNotification());
 
   RunEnrollmentTest();
 
   EXPECT_FALSE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_NONE, GetEnrollmentState());
+  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
+            GetEnrollmentStage());
   EXPECT_TRUE(HasEnrollmentNotification());
+}
+
+class ConsumerManagementServiceStatusTest
+    : public chromeos::DeviceSettingsTestBase {
+ public:
+  ConsumerManagementServiceStatusTest()
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        service_(NULL, &device_settings_service_) {
+  }
+
+  void SetEnrollmentStage(ConsumerManagementService::EnrollmentStage stage) {
+    testing_local_state_.Get()->SetInteger(
+        prefs::kConsumerManagementEnrollmentStage, stage);
+  }
+
+  void SetManagementMode(em::PolicyData::ManagementMode mode) {
+    device_policy_.policy_data().set_management_mode(mode);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+  }
+
+  ScopedTestingLocalState testing_local_state_;
+  ConsumerManagementService service_;
+};
+
+TEST_F(ConsumerManagementServiceStatusTest, GetStatusAndGetStatusStringWork) {
+  EXPECT_EQ(ConsumerManagementService::STATUS_UNKNOWN, service_.GetStatus());
+  EXPECT_EQ("StatusUnknown", service_.GetStatusString());
+
+  SetManagementMode(em::PolicyData::NOT_MANAGED);
+  SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_NONE);
+
+  EXPECT_EQ(ConsumerManagementService::STATUS_UNENROLLED, service_.GetStatus());
+  EXPECT_EQ("StatusUnenrolled", service_.GetStatusString());
+
+  SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED);
+
+  EXPECT_EQ(ConsumerManagementService::STATUS_ENROLLING, service_.GetStatus());
+  EXPECT_EQ("StatusEnrolling", service_.GetStatusString());
+
+  SetManagementMode(em::PolicyData::CONSUMER_MANAGED);
+  SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS);
+
+  EXPECT_EQ(ConsumerManagementService::STATUS_ENROLLED, service_.GetStatus());
+  EXPECT_EQ("StatusEnrolled", service_.GetStatusString());
+
+  // TODO(davidyu): Test for STATUS_UNENROLLING when it is implemented.
+  // http://crbug.com/353050.
 }
 
 }  // namespace policy

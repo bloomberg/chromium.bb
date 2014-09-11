@@ -309,8 +309,8 @@ SigninScreenHandler::SigninScreenHandler(
           GetConsumerManagementService();
   is_enrolling_consumer_management_ =
       consumer_management &&
-      consumer_management->GetEnrollmentState() ==
-          policy::ConsumerManagementService::ENROLLMENT_REQUESTED;
+      consumer_management->GetEnrollmentStage() ==
+          policy::ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED;
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -1381,8 +1381,8 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetConsumerManagementService();
   CHECK(consumer_management);
-  consumer_management->SetEnrollmentState(
-      policy::ConsumerManagementService::ENROLLMENT_CANCELED);
+  consumer_management->SetEnrollmentStage(
+      policy::ConsumerManagementService::ENROLLMENT_STAGE_CANCELED);
   is_enrolling_consumer_management_ = false;
   ShowImpl();
 }

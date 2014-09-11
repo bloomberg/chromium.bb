@@ -17,10 +17,6 @@ cr.define('options', function() {
               loadTimeData.getString('consumerManagementOverlayTabTitle'),
               'consumer-management-overlay');
 
-    var isEnrolled = loadTimeData.getBoolean('consumerManagementEnrolled');
-    $('enroll-content').hidden = isEnrolled;
-    $('unenroll-content').hidden = !isEnrolled;
-
     $('consumer-management-overlay-enroll').onclick = function(event) {
       chrome.send('enrollConsumerManagement');
       PageManager.closeOverlay();
@@ -41,6 +37,32 @@ cr.define('options', function() {
 
   ConsumerManagementOverlay.prototype = {
     __proto__: Page.prototype,
+  };
+
+  /**
+   * Consumer management status.
+   * See chrome/browser/chromeos/policy/consumer_management_service.h.
+   * @enum {string}
+   */
+  ConsumerManagementOverlay.Status = {
+    STATUS_UNKNOWN: 'StatusUnknown',
+    STATUS_ENROLLED: 'StatusEnrolled',
+    STATUS_ENROLLING: 'StatusEnrolling',
+    STATUS_UNENROLLED: 'StatusUnenrolled',
+    STATUS_UNENROLLING: 'StatusUnenrolling'
+  };
+
+  /**
+   * Shows enrollment or unenrollment content based on the status.
+   * @enum {string} status Consumer management service status string.
+   */
+  ConsumerManagementOverlay.setStatus = function(status) {
+    // Status should only be enrolled or unenrolled.
+    assert(status == this.Status.STATUS_ENROLLED ||
+           status == this.Status.STATUS_UNENROLLED);
+    var enrolled = status == this.Status.STATUS_ENROLLED;
+    $('enroll-content').hidden = enrolled;
+    $('unenroll-content').hidden = !enrolled;
   };
 
   // Export

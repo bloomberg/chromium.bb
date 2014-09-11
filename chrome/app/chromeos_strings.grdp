@@ -5745,14 +5745,20 @@ All users must sign out to continue.
   <message name="IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE" desc="The title of the device control section in the settings page.">
     Device control
   </message>
-  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_DESCRIPTION" desc="Description of the consumer management enroll button in the settings page.">
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_DESCRIPTION" desc="Description of the consumer management service in the settings page.">
     Let Google help you remotely lock, erase, and locate your device.
   </message>
-  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON" desc="The text of the consumer management enroll button in the settings page.">
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON" desc="The text of the consumer management button in the settings page when the device is not enrolled.">
     Enroll
   </message>
-  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLL_BUTTON" desc="The text of the consumer management unenroll button in the settings page.">
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLLING_BUTTON" desc="The text of the consumer management button in the settings page when enrollment is in progress.">
+    Enrolling...
+  </message>
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLL_BUTTON" desc="The text of the consumer management button in the settings page when the device is enrolled.">
     Unenroll
+  </message>
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLLING_BUTTON" desc="The text of the consumer management button in the settings page when unenrollment is in progress.">
+    Unenrolling...
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY" desc="The title of the consumer management overlay in the settings page used for both enrollment and unenrollment.">
     Consumer management

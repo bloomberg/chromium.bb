@@ -678,7 +678,7 @@ extern const char kUsedPolicyCertificates[];
 extern const char kServerBackedDeviceState[];
 extern const char kCustomizationDefaultWallpaperURL[];
 extern const char kLogoutStartedLast[];
-extern const char kConsumerManagementEnrollmentState[];
+extern const char kConsumerManagementEnrollmentStage[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

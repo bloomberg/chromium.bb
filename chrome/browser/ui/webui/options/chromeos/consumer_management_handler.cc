@@ -64,7 +64,6 @@ void ConsumerManagementHandler::GetLocalizedValues(
 }
 
 void ConsumerManagementHandler::RegisterMessages() {
-  // Callback to show keyboard overlay.
   web_ui()->RegisterMessageCallback(
       "enrollConsumerManagement",
       base::Bind(&ConsumerManagementHandler::HandleEnrollConsumerManagement,
@@ -84,8 +83,8 @@ void ConsumerManagementHandler::HandleEnrollConsumerManagement(
   }
 
   CHECK(management_service_);
-  management_service_->SetEnrollmentState(
-      policy::ConsumerManagementService::ENROLLMENT_REQUESTED);
+  management_service_->SetEnrollmentStage(
+      policy::ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 

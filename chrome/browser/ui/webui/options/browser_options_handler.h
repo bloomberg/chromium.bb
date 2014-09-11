@@ -29,6 +29,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -56,6 +57,7 @@ class BrowserOptionsHandler
       public ShellIntegration::DefaultWebClientObserver,
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
+      public policy::ConsumerManagementService::Observer,
 #endif
       public TemplateURLServiceObserver,
       public extensions::ExtensionRegistryObserver,
@@ -129,6 +131,9 @@ class BrowserOptionsHandler
 
   // Will be called when powerwash dialog is shown.
   void OnPowerwashDialogShow(const base::ListValue* args);
+
+  // ConsumerManagementService::Observer:
+  virtual void OnConsumerManagementStatusChanged() OVERRIDE;
 #endif
 
   void UpdateSyncState();

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -129,52 +130,110 @@ void DesktopNotificationDelegate::Close(bool by_user) {
 void DesktopNotificationDelegate::Click() {
 }
 
+// The string of Status enum.
+const char* kStatusString[] = {
+  "StatusUnknown",
+  "StatusEnrolled",
+  "StatusEnrolling",
+  "StatusUnenrolled",
+  "StatusUnenrolling",
+};
+
+COMPILE_ASSERT(
+    arraysize(kStatusString) == policy::ConsumerManagementService::STATUS_LAST,
+    "invalid kStatusString array size.");
+
 }  // namespace
+
+namespace em = enterprise_management;
 
 namespace policy {
 
 ConsumerManagementService::ConsumerManagementService(
-    chromeos::CryptohomeClient* client)
+    chromeos::CryptohomeClient* client,
+    chromeos::DeviceSettingsService* device_settings_service)
     : Consumer("consumer_management_service"),
       client_(client),
+      device_settings_service_(device_settings_service),
       enrolling_profile_(NULL),
       weak_ptr_factory_(this) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
+  // A NULL value may be passed in tests.
+  if (device_settings_service_)
+    device_settings_service_->AddObserver(this);
 }
 
 ConsumerManagementService::~ConsumerManagementService() {
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                    content::NotificationService::AllSources());
   if (enrolling_profile_) {
     ProfileOAuth2TokenServiceFactory::GetForProfile(enrolling_profile_)->
         RemoveObserver(this);
   }
+  if (device_settings_service_)
+    device_settings_service_->RemoveObserver(this);
+  registrar_.Remove(this,
+                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                    content::NotificationService::AllSources());
 }
 
 // static
 void ConsumerManagementService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
-      prefs::kConsumerManagementEnrollmentState, ENROLLMENT_NONE);
+      prefs::kConsumerManagementEnrollmentStage, ENROLLMENT_STAGE_NONE);
 }
 
-ConsumerManagementService::ConsumerEnrollmentState
-ConsumerManagementService::GetEnrollmentState() const {
-  const PrefService* prefs = g_browser_process->local_state();
-  int state = prefs->GetInteger(prefs::kConsumerManagementEnrollmentState);
-  if (state < 0 || state >= ENROLLMENT_LAST) {
-    LOG(ERROR) << "Unknown enrollment state: " << state;
-    state = 0;
+void ConsumerManagementService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ConsumerManagementService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+ConsumerManagementService::Status
+ConsumerManagementService::GetStatus() const {
+  if (!device_settings_service_)
+    return STATUS_UNKNOWN;
+
+  const enterprise_management::PolicyData* policy_data =
+      device_settings_service_->policy_data();
+  if (!policy_data)
+    return STATUS_UNKNOWN;
+
+  if (policy_data->management_mode() == em::PolicyData::CONSUMER_MANAGED) {
+    // TODO(davidyu): Check if unenrollment is in progress.
+    // http://crbug.com/353050.
+    return STATUS_ENROLLED;
   }
-  return static_cast<ConsumerEnrollmentState>(state);
+
+  EnrollmentStage stage = GetEnrollmentStage();
+  if (stage > ENROLLMENT_STAGE_NONE && stage < ENROLLMENT_STAGE_SUCCESS)
+    return STATUS_ENROLLING;
+
+  return STATUS_UNENROLLED;
 }
 
-void ConsumerManagementService::SetEnrollmentState(
-    ConsumerEnrollmentState state) {
+std::string ConsumerManagementService::GetStatusString() const {
+  return kStatusString[GetStatus()];
+}
+
+ConsumerManagementService::EnrollmentStage
+ConsumerManagementService::GetEnrollmentStage() const {
+  const PrefService* prefs = g_browser_process->local_state();
+  int stage = prefs->GetInteger(prefs::kConsumerManagementEnrollmentStage);
+  if (stage < 0 || stage >= ENROLLMENT_STAGE_LAST) {
+    LOG(ERROR) << "Unknown enrollment stage: " << stage;
+    stage = 0;
+  }
+  return static_cast<EnrollmentStage>(stage);
+}
+
+void ConsumerManagementService::SetEnrollmentStage(EnrollmentStage stage) {
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetInteger(prefs::kConsumerManagementEnrollmentState, state);
+  prefs->SetInteger(prefs::kConsumerManagementEnrollmentStage, stage);
+
+  NotifyStatusChanged();
 }
 
 void ConsumerManagementService::GetOwner(const GetOwnerCallback& callback) {
@@ -197,6 +256,13 @@ void ConsumerManagementService::SetOwner(const std::string& user_id,
       base::Bind(&ConsumerManagementService::OnSetBootAttributeDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
+}
+
+void ConsumerManagementService::OwnershipStatusChanged() {
+}
+
+void ConsumerManagementService::DeviceSettingsUpdated() {
+  NotifyStatusChanged();
 }
 
 void ConsumerManagementService::Observe(
@@ -241,7 +307,7 @@ void ConsumerManagementService::OnGetTokenFailure(
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
 
   LOG(ERROR) << "Failed to get the access token: " << error.ToString();
-  EndEnrollment(ENROLLMENT_GET_TOKEN_FAILED);
+  EndEnrollment(ENROLLMENT_STAGE_GET_TOKEN_FAILED);
 }
 
 void ConsumerManagementService::OnGetBootAttributeDone(
@@ -293,28 +359,28 @@ void ConsumerManagementService::OnFlushAndSignBootAttributesDone(
 }
 
 void ConsumerManagementService::OnOwnerSignin(Profile* profile) {
-  const ConsumerEnrollmentState state = GetEnrollmentState();
-  switch (state) {
-    case ENROLLMENT_NONE:
+  const EnrollmentStage stage = GetEnrollmentStage();
+  switch (stage) {
+    case ENROLLMENT_STAGE_NONE:
       // Do nothing.
       return;
 
-    case ENROLLMENT_OWNER_STORED:
+    case ENROLLMENT_STAGE_OWNER_STORED:
       // Continue the enrollment process after the owner signs in.
       ContinueEnrollmentProcess(profile);
       return;
 
-    case ENROLLMENT_SUCCESS:
-    case ENROLLMENT_CANCELED:
-    case ENROLLMENT_BOOT_LOCKBOX_FAILED:
-    case ENROLLMENT_DM_SERVER_FAILED:
-    case ENROLLMENT_GET_TOKEN_FAILED:
-      ShowDesktopNotificationAndResetState(state, profile);
+    case ENROLLMENT_STAGE_SUCCESS:
+    case ENROLLMENT_STAGE_CANCELED:
+    case ENROLLMENT_STAGE_BOOT_LOCKBOX_FAILED:
+    case ENROLLMENT_STAGE_DM_SERVER_FAILED:
+    case ENROLLMENT_STAGE_GET_TOKEN_FAILED:
+      ShowDesktopNotificationAndResetStage(stage, profile);
       return;
 
-    case ENROLLMENT_REQUESTED:
-    case ENROLLMENT_LAST:
-      NOTREACHED() << "Unexpected enrollment state " << state;
+    case ENROLLMENT_STAGE_REQUESTED:
+    case ENROLLMENT_STAGE_LAST:
+      NOTREACHED() << "Unexpected enrollment stage " << stage;
       return;
   }
 }
@@ -376,30 +442,30 @@ void ConsumerManagementService::OnEnrollmentCompleted(EnrollmentStatus status) {
                << " http_status=" << status.http_status()
                << " store_status=" << status.store_status()
                << " validation_status=" << status.validation_status();
-    EndEnrollment(ENROLLMENT_DM_SERVER_FAILED);
+    EndEnrollment(ENROLLMENT_STAGE_DM_SERVER_FAILED);
     return;
   }
 
-  EndEnrollment(ENROLLMENT_SUCCESS);
+  EndEnrollment(ENROLLMENT_STAGE_SUCCESS);
 }
 
-void ConsumerManagementService::EndEnrollment(ConsumerEnrollmentState state) {
+void ConsumerManagementService::EndEnrollment(EnrollmentStage stage) {
   Profile* profile = enrolling_profile_;
   enrolling_profile_ = NULL;
 
-  SetEnrollmentState(state);
+  SetEnrollmentStage(stage);
   if (user_manager::UserManager::Get()->IsCurrentUserOwner())
-    ShowDesktopNotificationAndResetState(state, profile);
+    ShowDesktopNotificationAndResetStage(stage, profile);
 }
 
-void ConsumerManagementService::ShowDesktopNotificationAndResetState(
-    ConsumerEnrollmentState state, Profile* profile) {
+void ConsumerManagementService::ShowDesktopNotificationAndResetStage(
+    EnrollmentStage stage, Profile* profile) {
   base::string16 title;
   base::string16 body;
   base::string16 button_label;
   base::Closure button_click_callback;
 
-  if (state == ENROLLMENT_SUCCESS) {
+  if (stage == ENROLLMENT_STAGE_SUCCESS) {
     title = l10n_util::GetStringUTF16(
         IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_TITLE);
     body = l10n_util::GetStringUTF16(
@@ -443,7 +509,7 @@ void ConsumerManagementService::ShowDesktopNotificationAndResetState(
   notification.SetSystemPriority();
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 
-  SetEnrollmentState(ENROLLMENT_NONE);
+  SetEnrollmentStage(ENROLLMENT_STAGE_NONE);
 }
 
 void ConsumerManagementService::OpenSettingsPage(Profile* profile) const {
@@ -460,6 +526,10 @@ void ConsumerManagementService::TryEnrollmentAgain(Profile* profile) const {
   chrome::NavigateParams params(profile, url, content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+}
+
+void ConsumerManagementService::NotifyStatusChanged() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnConsumerManagementStatusChanged());
 }
 
 }  // namespace policy

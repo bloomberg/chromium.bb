@@ -470,15 +470,8 @@ cr.define('options', function() {
           UIAccountTweaks.currentUserIsOwner() &&
           loadTimeData.getBoolean('consumerManagementEnabled')) {
         $('device-control-section').hidden = false;
-
-        var isEnrolled = loadTimeData.getBoolean('consumerManagementEnrolled');
-        $('consumer-management-enroll').hidden = isEnrolled;
-        $('consumer-management-unenroll').hidden = !isEnrolled;
-
-        $('consumer-management-section').onclick = function(event) {
-          // If either button is clicked.
-          if (event.target.tagName == 'BUTTON')
-            PageManager.showPageByName('consumer-management-overlay');
+        $('consumer-management-button').onclick = function(event) {
+          PageManager.showPageByName('consumer-management-overlay');
         };
       }
 
@@ -1963,6 +1956,43 @@ cr.define('options', function() {
     // TODO(jhawkins): Investigate the use case for this method.
     BrowserOptions.getLoggedInUsername = function() {
       return BrowserOptions.getInstance().username_;
+    };
+
+    /**
+     * Shows different button text for each consumer management enrollment
+     * status.
+     * @enum {string} status Consumer management service status string.
+     */
+    BrowserOptions.setConsumerManagementStatus = function(status) {
+      var button = $('consumer-management-button');
+      if (status == 'StatusUnknown') {
+        button.hidden = true;
+        return;
+      }
+
+      button.hidden = false;
+      var strId;
+      switch (status) {
+        case ConsumerManagementOverlay.Status.STATUS_UNENROLLED:
+          strId = 'consumerManagementEnrollButton';
+          button.disabled = false;
+          ConsumerManagementOverlay.setStatus(status);
+          break;
+        case ConsumerManagementOverlay.Status.STATUS_ENROLLING:
+          strId = 'consumerManagementEnrollingButton';
+          button.disabled = true;
+          break;
+        case ConsumerManagementOverlay.Status.STATUS_ENROLLED:
+          strId = 'consumerManagementUnenrollButton';
+          button.disabled = false;
+          ConsumerManagementOverlay.setStatus(status);
+          break;
+        case ConsumerManagementOverlay.Status.STATUS_UNENROLLING:
+          strId = 'consumerManagementUnenrollingButton';
+          button.disabled = true;
+          break;
+      }
+      button.textContent = loadTimeData.getString(strId);
     };
   }
 

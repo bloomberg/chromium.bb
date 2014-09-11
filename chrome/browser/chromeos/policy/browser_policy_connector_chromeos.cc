@@ -155,7 +155,8 @@ void BrowserPolicyConnectorChromeOS::Init(
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     consumer_management_service_.reset(
-        new ConsumerManagementService(cryptohome_client));
+        new ConsumerManagementService(cryptohome_client,
+                                      chromeos::DeviceSettingsService::Get()));
   }
 
   if (device_cloud_policy_manager_) {

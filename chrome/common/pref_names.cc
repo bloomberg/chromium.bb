@@ -1917,11 +1917,11 @@ const char kCustomizationDefaultWallpaperURL[] =
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
 
-// An integer pref of the current consumer management enrollment state. The
-// meaning of the value is defined in the enum EnrollmentState in:
+// An integer pref of the current consumer management enrollment stage. The
+// meaning of the value is defined in the enum EnrollmentStage in:
 //   chrome/browser/chromeos/policy/consumer_management_service.h
-const char kConsumerManagementEnrollmentState[] =
-    "consumer_management.enrollment_state";
+const char kConsumerManagementEnrollmentStage[] =
+    "consumer_management.enrollment_stage";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
