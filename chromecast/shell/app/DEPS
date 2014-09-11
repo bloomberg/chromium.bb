@@ -1,3 +1,4 @@
 include_rules = [
   "+content/public/app",
+  "+content/public/browser",
 ]

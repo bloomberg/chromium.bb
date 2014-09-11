@@ -5,6 +5,7 @@ include_rules = [
   "+crypto",
   "+grit/chromecast_settings.h",
   "+grit/shell_resources.h",
+  "+jni",
   "+net",
   "+ui",
 ]

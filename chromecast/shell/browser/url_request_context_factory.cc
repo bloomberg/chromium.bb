@@ -63,8 +63,10 @@ class URLRequestContextFactory::URLRequestContextGetter
         request_context_.reset(factory_->CreateMediaRequestContext());
       } else {
         request_context_.reset(factory_->CreateSystemRequestContext());
+#if defined(USE_NSS)
         // Set request context used by NSS for Crl requests.
         net::SetURLRequestContextForNSSHttpIO(request_context_.get());
+#endif  // defined(USE_NSS)
       }
     }
     return request_context_.get();
@@ -144,6 +146,14 @@ void URLRequestContextFactory::InitializeOnUIThread() {
   // because it registers itself to pref notification observer which is not
   // thread safe.
   http_user_agent_settings_.reset(new CastHttpUserAgentSettings());
+
+  // Proxy config service should be initialized in UI thread, since
+  // ProxyConfigServiceDelegate on Android expects UI thread.
+  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE)));
 }
 
 net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
@@ -202,13 +212,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   proxy_service_.reset(net::ProxyService::CreateUsingSystemProxyResolver(
-      net::ProxyService::CreateSystemProxyConfigService(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO),
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::FILE)),
-      0,
-      NULL));
+      proxy_config_service_.release(), 0, NULL));
   system_dependencies_initialized_ = true;
 }
 

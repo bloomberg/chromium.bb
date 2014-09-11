@@ -10,6 +10,10 @@
 #include "chromecast/shell/common/cast_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
+namespace content {
+class BrowserMainRunner;
+}  // namespace content
+
 namespace chromecast {
 
 class CastResourceDelegate;
@@ -27,7 +31,12 @@ class CastMainDelegate : public content::ContentMainDelegate {
   // content::ContentMainDelegate implementation:
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
   virtual void PreSandboxStartup() OVERRIDE;
+  virtual int RunProcess(
+      const std::string& process_type,
+      const content::MainFunctionParams& main_function_params) OVERRIDE;
+#if !defined(OS_ANDROID)
   virtual void ZygoteForked() OVERRIDE;
+#endif  // !defined(OS_ANDROID)
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual content::ContentRendererClient*
       CreateContentRendererClient() OVERRIDE;
@@ -39,6 +48,10 @@ class CastMainDelegate : public content::ContentMainDelegate {
   scoped_ptr<CastContentRendererClient> renderer_client_;
   scoped_ptr<CastResourceDelegate> resource_delegate_;
   CastContentClient content_client_;
+
+#if defined(OS_ANDROID)
+  scoped_ptr<content::BrowserMainRunner> browser_runner_;
+#endif  // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(CastMainDelegate);
 };

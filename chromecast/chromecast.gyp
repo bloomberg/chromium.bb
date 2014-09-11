@@ -87,6 +87,16 @@
       ],
     },  # end of target 'cast_metrics_unittests'
     {
+      'target_name': 'cast_net',
+      'type': '<(component)',
+      'sources': [
+        'net/network_change_notifier_cast.cc',
+        'net/network_change_notifier_cast.h',
+        'net/network_change_notifier_factory_cast.cc',
+        'net/network_change_notifier_factory_cast.h',
+      ],
+    },
+    {
       'target_name': 'cast_service',
       'type': '<(component)',
       'dependencies': [
@@ -106,9 +116,18 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content',
           ],
-          'sources': [
-            'service/cast_service_simple.cc',
-            'service/cast_service_simple.h',
+          'conditions': [
+            ['OS=="android"', {
+              'sources': [
+                'service/cast_service_android.cc',
+                'service/cast_service_android.h',
+              ],
+            }, {
+              'sources': [
+                'service/cast_service_simple.cc',
+                'service/cast_service_simple.h',
+              ],
+            }],
           ],
         }],
       ],
@@ -167,9 +186,11 @@
         },
       ],
     },
+    # This target contains all content-embedder implementation that is
+    # non-platform-specific.
     {
-      'target_name': 'cast_shell',
-      'type': 'executable',
+      'target_name': 'cast_shell_common',
+      'type': '<(component)',
       'dependencies': [
         'cast_common',
         'cast_metrics',
@@ -179,19 +200,12 @@
         'cast_version_header',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
-        'media/media.gyp:cast_media',
         '../components/components.gyp:component_metrics_proto',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
         '../skia/skia.gyp:skia',
-        '../ui/aura/aura.gyp:aura_test_support',
       ],
       'sources': [
-        'net/network_change_notifier_cast.cc',
-        'net/network_change_notifier_cast.h',
-        'net/network_change_notifier_factory_cast.cc',
-        'net/network_change_notifier_factory_cast.h',
-        'shell/app/cast_main.cc',
         'shell/app/cast_main_delegate.cc',
         'shell/app/cast_main_delegate.h',
         'shell/browser/cast_browser_context.cc',
@@ -221,13 +235,9 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            'internal/chromecast_internal.gyp:cast_gfx_internal',
             'internal/chromecast_internal.gyp:cast_shell_internal',
           ],
         }, {
-          'dependencies': [
-            '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
-          ],
           'sources': [
             'shell/browser/devtools/remote_debugging_server_simple.cc',
             'shell/browser/webui/webui_cast_simple.cc',
@@ -275,4 +285,141 @@
       ],
     },
   ],  # end of targets
+
+  # Targets for Android receiver.
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'libcast_shell_android',
+          'type': 'shared_library',
+          'dependencies': [
+            'cast_common',
+            'cast_jni_headers',
+            'cast_shell_common',
+            'cast_shell_pak',
+            'cast_version_header',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_app_browser',
+            '../content/content.gyp:content',
+            '../skia/skia.gyp:skia',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gl/gl.gyp:gl',
+          ],
+          'sources': [
+            'android/cast_jni_registrar.cc',
+            'android/cast_jni_registrar.h',
+            'android/chromecast_config_android.cc',
+            'android/chromecast_config_android.h',
+            'android/platform_jni_loader.h',
+            'shell/app/android/cast_jni_loader.cc',
+            'shell/browser/android/cast_window_manager.cc',
+            'shell/browser/android/cast_window_manager.h',
+            'shell/browser/android/cast_window_android.cc',
+            'shell/browser/android/cast_window_android.h',
+          ],
+          'conditions': [
+            ['chromecast_branding=="Chrome"', {
+              'dependencies': [
+                '<(cast_internal_gyp):cast_shell_android_internal'
+              ],
+            }, {
+              'sources': [
+                'android/platform_jni_loader_stub.cc',
+              ],
+            }]
+          ],
+        },  # end of target 'libcast_shell_android'
+        {
+          'target_name': 'cast_shell_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../content/content.gyp:content_java',
+            '../media/media.gyp:media_java',
+            '../net/net.gyp:net_java',
+            '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
+            '../ui/android/ui_android.gyp:ui_java',
+          ],
+          'variables': {
+            'has_java_resources': 1,
+            'java_in_dir': 'shell/android/apk',
+            'resource_dir': 'shell/android/apk/res',
+            'R_package': 'org.chromium.chromecast.shell',
+          },
+          'includes': ['../build/java.gypi'],
+        },  # end of target 'cast_shell_java'
+        {
+          'target_name': 'cast_shell_apk',
+          'type': 'none',
+          'dependencies': [
+            'cast_shell_java',
+            'libcast_shell_android',
+          ],
+          'variables': {
+            'apk_name': 'CastShell',
+            'manifest_package_name': 'org.chromium.chromecast.shell',
+            # Note(gunsch): there are no Java files in the android/ directory.
+            # Unfortunately, the java_apk.gypi target rigidly insists on having
+            # a java_in_dir directory, but complains about duplicate classes
+            # from the common cast_shell_java target (shared with internal APK)
+            # if the actual Java path is used.
+            # This will hopefully be removable after the great GN migration.
+            'java_in_dir': 'android',
+            'android_manifest_path': 'shell/android/apk/AndroidManifest.xml',
+            'package_name': 'org.chromium.chromecast.shell',
+            'native_lib_target': 'libcast_shell_android',
+            'asset_location': '<(PRODUCT_DIR)/assets',
+            'additional_input_paths': ['<(PRODUCT_DIR)/assets/cast_shell.pak'],
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
+          'target_name': 'cast_jni_headers',
+          'type': 'none',
+          'sources': [
+            'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
+            'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/chromecast',
+            ],
+          },
+          'variables': {
+            'jni_gen_package': 'chromecast',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],  # end of targets
+    }, {  # OS != "android"
+      'targets': [
+        # This target includes all dependencies that cannot be built on Android.
+        {
+          'target_name': 'cast_shell',
+          'type': 'executable',
+          'dependencies': [
+            'cast_net',
+            'cast_shell_common',
+            'media/media.gyp:cast_media',
+            '../ui/aura/aura.gyp:aura_test_support',
+          ],
+          'sources': [
+            'shell/app/cast_main.cc',
+          ],
+          'conditions': [
+            ['chromecast_branding=="Chrome"', {
+              'dependencies': [
+                'internal/chromecast_internal.gyp:cast_gfx_internal',
+              ],
+            }, {
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
+              ],
+            }],
+          ],
+        },
+      ],  # end of targets
+    }],
+  ],  # end of conditions
 }

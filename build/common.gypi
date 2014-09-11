@@ -96,7 +96,7 @@
               'use_aura%': 1,
             }],
 
-            ['chromecast==1', {
+            ['chromecast==1 and OS!="android"', {
               'embedded%': 1,
               'use_ozone%': 1,
             }],

@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_COMMON_CAST_PATHS_H_
 #define CHROMECAST_COMMON_CAST_PATHS_H_
 
+#include "build/build_config.h"
+
 // This file declares path keys for the chromecast module.  These can be used
 // with the PathService to access various special directories and files.
 
@@ -16,6 +18,9 @@ enum {
   DIR_CAST_HOME,    // Return a modified $HOME which works for both
                     // development use and the actual device.
 
+#if defined(OS_ANDROID)
+  FILE_CAST_ANDROID_LOG, // Log file location for Android.
+#endif  // defined(OS_ANDROID)
   FILE_CAST_CONFIG, // Config/preferences file path.
   FILE_CAST_PAK,    // cast_shell.pak file path.
   PATH_END

@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 
@@ -27,10 +28,18 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       return true;
     }
+#if defined(OS_ANDROID)
+    case FILE_CAST_ANDROID_LOG: {
+      base::FilePath base_dir;
+      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
+      *result = base_dir.AppendASCII("cast_shell.log");
+      return true;
+    }
+#endif  // defined(OS_ANDROID)
     case FILE_CAST_CONFIG: {
       base::FilePath data_dir;
 #if defined(OS_ANDROID)
-      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir);
+      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.conf");
 #else
       CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));

@@ -5,6 +5,7 @@
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/metrics/cast_metrics_service_client.h"
@@ -17,6 +18,10 @@
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "chromecast/shell/browser/webui/webui_cast.h"
 #include "content/public/common/content_switches.h"
+
+#if defined(OS_ANDROID)
+#include "net/android/network_change_notifier_factory_android.h"
+#endif  // defined(OS_ANDROID)
 
 namespace chromecast {
 namespace shell {
@@ -60,12 +65,19 @@ CastBrowserMainParts::~CastBrowserMainParts() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
+#if defined(OS_ANDROID)
+  net::NetworkChangeNotifier::SetFactory(
+      new net::NetworkChangeNotifierFactoryAndroid());
+#else
   net::NetworkChangeNotifier::SetFactory(
       new NetworkChangeNotifierFactoryCast());
+#endif  // defined(OS_ANDROID)
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
-  NOTIMPLEMENTED();
+#if defined(OS_ANDROID)
+  base::MessageLoopForUI::current()->Start();
+#endif  // defined(OS_ANDROID)
 }
 
 int CastBrowserMainParts::PreCreateThreads() {
