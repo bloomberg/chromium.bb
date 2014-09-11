@@ -2146,7 +2146,7 @@ function YearListCell(shortMonthLabels) {
         var buttonsRow = createElement("div", YearListCell.ClassNameMonthButtonsRow);
         for (var c = 0; c < YearListCell.ButtonColumns; ++c) {
             var month = c + r * YearListCell.ButtonColumns;
-            var button = createElement("button", YearListCell.ClassNameMonthButton, shortMonthLabels[month]);
+            var button = createElement("div", YearListCell.ClassNameMonthButton, shortMonthLabels[month]);
             button.dataset.month = month;
             buttonsRow.appendChild(button);
             this.monthButtons.push(button);
@@ -2409,7 +2409,7 @@ YearListView.prototype.onClick = function(event) {
         this.scrollView.scrollTo(this.selectedRow * YearListCell.Height, true);
     } else {
         var monthButton = enclosingNodeOrSelfWithClass(event.target, YearListCell.ClassNameMonthButton);
-        if (!monthButton)
+        if (!monthButton || monthButton.getAttribute("aria-disabled") == "true")
             return;
         var month = parseInt(monthButton.dataset.month, 10);
         this.dispatchEvent(YearListView.EventTypeYearListViewDidSelectMonth, this, new Month(year, month));
@@ -2480,7 +2480,7 @@ YearListView.prototype.prepareNewCell = function(row) {
     }
     for (var i = 0; i < cell.monthButtons.length; ++i) {
         var month = new Month(row + 1, i);
-        cell.monthButtons[i].disabled = this._minimumMonth > month || this._maximumMonth < month;
+        cell.monthButtons[i].setAttribute("aria-disabled", this._minimumMonth > month || this._maximumMonth < month ? "true" : "false");
     }
     var animator = this._runningAnimators[row];
     if (animator)
@@ -2586,7 +2586,7 @@ YearListView.prototype.selectWithoutAnimating = function(row) {
 
 /**
  * @param {!Month} month
- * @return {?HTMLButtonElement}
+ * @return {?HTMLDivElement}
  */
 YearListView.prototype.buttonForMonth = function(month) {
     if (!month)

@@ -244,16 +244,22 @@ body {
 .month-button {
     flex: 1;
     height: 32px;
+    line-height: 32px;
     padding: 0 !important;
     margin: 0 !important;
     background-image: none !important;
     background-color: #ffffff;
     border-width: 0 !important;
     box-shadow: none !important;
+    text-align: center;
 }
 
 .month-button.highlighted {
     background-color: #e5ecf8;
+}
+
+.month-button[aria-disabled="true"] {
+    color: GrayText;
 }
 
 .scrubby-scroll-bar {

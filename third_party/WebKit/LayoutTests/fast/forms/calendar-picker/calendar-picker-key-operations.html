@@ -186,6 +186,15 @@ function test2() {
     shouldBeTrue('popupWindow.global.picker.monthPopupView.isVisible');
     shouldBeEqualToString('highlightedMonthButton()', '1999-12');
 
+    debug('TAB shouldn\'t change focus');
+    shouldBeEqualToString('focusedElement()', '.list-view year-list-view');
+    eventSender.keyDown('\t');
+    // With the MockPagePopup, an elemenet not in the popup is focused.
+    shouldBeTrue('focusedElement().indexOf("month-button") < 0');
+    shouldBeTrue('focusedElement().indexOf("list-cell") < 0');
+    eventSender.keyDown('\t', ['shiftKey']);
+    shouldBeEqualToString('focusedElement()', '.list-view year-list-view');
+
     debug("press down");
     eventSender.keyDown('downArrow');
     shouldBeEqualToString('highlightedMonthButton()', '2000-04');
@@ -278,6 +287,18 @@ function focusedElement() {
     if (!element)
         return null;
     var identifier = "." + element.className;
+    if (element.value)
+        identifier += "[value=" + element.value + "]";
+    if (identifier == ".")
+        return elementIdentifier(element);
+    return identifier;
+}
+
+function elementIdentifier(element) {
+    var identifier = element.parentElement ? (elementIdentifier(element.parentElement) + " ") : "";
+    identifier += element.tagName;
+    if (element.className)
+        identifier += "." + element.className.replace(/ +/g, ".");
     if (element.value)
         identifier += "[value=" + element.value + "]";
     return identifier;

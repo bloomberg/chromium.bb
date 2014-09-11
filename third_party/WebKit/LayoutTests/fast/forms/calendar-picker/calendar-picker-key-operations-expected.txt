@@ -124,6 +124,11 @@ PASS focusedElement() is ".month-popup-button"
 open the month popup
 PASS popupWindow.global.picker.monthPopupView.isVisible is true
 PASS highlightedMonthButton() is "1999-12"
+TAB shouldn't change focus
+PASS focusedElement() is ".list-view year-list-view"
+PASS focusedElement().indexOf("month-button") < 0 is true
+PASS focusedElement().indexOf("list-cell") < 0 is true
+PASS focusedElement() is ".list-view year-list-view"
 press down
 PASS highlightedMonthButton() is "2000-04"
 press right
