@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 ContentSetting IntToContentSetting(int content_setting) {
   return ((content_setting < 0) ||

@@ -13,17 +13,11 @@
 #include "components/omnibox/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_parse.h"
-#include "url/url_util.h"
 
 using base::ASCIIToUTF16;
 using metrics::OmniboxEventProto;
 
 TEST(AutocompleteInputTest, InputType) {
-  // TODO(mukai): Fix this scheme setup.
-  url::AddStandardScheme("chrome");
-  url::AddStandardScheme("chrome-devtools");
-  url::AddStandardScheme("chrome-search");
-
   struct test_data {
     const base::string16 input;
     const metrics::OmniboxInputType::Type type;

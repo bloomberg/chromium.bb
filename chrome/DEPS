@@ -16,6 +16,7 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
+  "+components/content_settings/core/common",
   "+components/url_fixer",
   "+components/variations",
   "+content/public/common",

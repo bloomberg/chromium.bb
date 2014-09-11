@@ -19,6 +19,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'content_settings/core/common/content_settings.cc',
+        'content_settings/core/common/content_settings.h',
         'content_settings/core/common/content_settings_pattern.cc',
         'content_settings/core/common/content_settings_pattern.h',
         'content_settings/core/common/content_settings_pattern_parser.cc',

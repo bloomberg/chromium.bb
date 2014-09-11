@@ -1,4 +1,6 @@
 include_rules = [
+  # To initialize the global data of content_settings.
+  "+components/content_settings/core/common",
   "+content/public/test",
   "+ui/base/android/ui_base_jni_registrar.h",
   "+ui/base/resource/resource_bundle.h",

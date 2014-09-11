@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CONTENT_SETTINGS_H_
-#define CHROME_COMMON_CONTENT_SETTINGS_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_H_
 
 #include <string>
 #include <vector>
@@ -73,4 +73,4 @@ struct SettingInfo {
 
 }  // namespace content_settings
 
-#endif  // CHROME_COMMON_CONTENT_SETTINGS_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_H_

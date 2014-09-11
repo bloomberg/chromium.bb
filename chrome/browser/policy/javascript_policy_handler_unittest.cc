@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/javascript_policy_handler.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/browser/policy_error_map.h"

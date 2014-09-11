@@ -8,7 +8,7 @@
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ipc/ipc_message_macros.h"
 

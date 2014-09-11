@@ -1787,8 +1787,6 @@
         'common/chrome_paths_unittest.cc',
         'common/chrome_content_client_unittest.cc',
         'common/cloud_print/cloud_print_helpers_unittest.cc',
-        'common/content_settings_pattern_parser_unittest.cc',
-        'common/content_settings_pattern_unittest.cc',
         'common/crash_keys_unittest.cc',
         'common/extensions/api/commands/commands_manifest_unittest.cc',
         'common/extensions/api/extension_action/browser_action_manifest_unittest.cc',

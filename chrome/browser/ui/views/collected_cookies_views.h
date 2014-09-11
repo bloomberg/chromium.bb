@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/button.h"

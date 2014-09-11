@@ -46,8 +46,6 @@
       'common/common_param_traits.h',
       'common/common_param_traits_macros.h',
       'common/content_restriction.h',
-      'common/content_settings.cc',
-      'common/content_settings.h',
       'common/content_settings_pattern_serializer.cc',
       'common/content_settings_pattern_serializer.h',
       'common/crash_keys.cc',

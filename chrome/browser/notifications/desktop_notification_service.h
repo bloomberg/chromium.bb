@@ -20,7 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/permission_context_base.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"

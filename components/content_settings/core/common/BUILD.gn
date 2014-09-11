@@ -2,12 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
+static_library("common") {
   sources = [
+    "content_settings.cc",
+    "content_settings.h",
     "content_settings_pattern.cc",
     "content_settings_pattern.h",
     "content_settings_pattern_parser.cc",
     "content_settings_pattern_parser.h",
     "content_settings_types.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "content_settings_pattern_unittest.cc",
+    "content_settings_pattern_parser_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

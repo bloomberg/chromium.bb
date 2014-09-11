@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_PROFILE_UTIL_H_
 
 #include "base/macros.h"
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 class Profile;
 

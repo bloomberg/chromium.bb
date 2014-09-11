@@ -13,6 +13,10 @@ per-file bookmarks.gypi=sky@chromium.org
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=vitalybuka@chromium.org
 
+per-file content_settings*=markusheintz@chromium.org
+per-file content_settings*=bauerb@chromium.org
+per-file content_settings*=jochen@chromium.org
+
 per-file copresence.gypi=rkc@chromium.org
 per-file copresence.gypi=ckehoe@chromium.org
 per-file copresence.gypi=xiyuan@chromium.org

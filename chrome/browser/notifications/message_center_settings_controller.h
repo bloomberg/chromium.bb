@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"

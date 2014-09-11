@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/test/base/chrome_render_view_test.h"

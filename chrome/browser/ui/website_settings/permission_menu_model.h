@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
-#include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "url/gurl.h"

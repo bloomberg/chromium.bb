@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/media_stream_request.h"
