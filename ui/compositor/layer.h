@@ -203,6 +203,7 @@ class COMPOSITOR_EXPORT Layer
   void SetBackgroundZoom(float zoom, int inset);
 
   // Set the shape of this layer.
+  SkRegion* alpha_shape() const { return alpha_shape_.get(); }
   void SetAlphaShape(scoped_ptr<SkRegion> region);
 
   // Invert the layer.
