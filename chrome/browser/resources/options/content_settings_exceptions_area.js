@@ -579,13 +579,10 @@ cr.define('options.contentSettings', function() {
         return;
 
       var dataItem = listItem.dataItem;
-      var args = [listItem.contentType];
-      if (listItem.contentType == 'notifications')
-        args.push(dataItem.origin, dataItem.setting);
-      else
-        args.push(listItem.mode, dataItem.origin, dataItem.embeddingOrigin);
-
-      chrome.send('removeException', args);
+      chrome.send('removeException', [listItem.contentType,
+                                      listItem.mode,
+                                      dataItem.origin,
+                                      dataItem.embeddingOrigin]);
     },
   };
 

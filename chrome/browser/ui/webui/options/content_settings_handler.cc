@@ -174,12 +174,18 @@ base::DictionaryValue* GetGeolocationExceptionForPage(
 // in the desktop notifications exceptions table. Ownership of the pointer is
 // passed to the caller.
 base::DictionaryValue* GetNotificationExceptionForPage(
-    const ContentSettingsPattern& pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting,
     const std::string& provider_name) {
+  std::string embedding_origin;
+  if (secondary_pattern != ContentSettingsPattern::Wildcard())
+    embedding_origin = secondary_pattern.ToString();
+
   base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kSetting, ContentSettingToString(setting));
-  exception->SetString(kOrigin, pattern.ToString());
+  exception->SetString(kOrigin, primary_pattern.ToString());
+  exception->SetString(kEmbeddingOrigin, embedding_origin);
   exception->SetString(kSource, provider_name);
   return exception;
 }
@@ -841,7 +847,9 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
     }
 
     exceptions.Append(
-        GetNotificationExceptionForPage(i->primary_pattern, i->setting,
+        GetNotificationExceptionForPage(i->primary_pattern,
+                                        i->secondary_pattern,
+                                        i->setting,
                                         i->source));
   }
 
@@ -1127,24 +1135,6 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
   }
 }
 
-void ContentSettingsHandler::RemoveNotificationException(
-    const base::ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  std::string origin;
-  std::string setting;
-  bool rv = args->GetString(1, &origin);
-  DCHECK(rv);
-  rv = args->GetString(2, &setting);
-  DCHECK(rv);
-  ContentSetting content_setting = ContentSettingFromString(setting);
-
-  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-         content_setting == CONTENT_SETTING_BLOCK);
-  DesktopNotificationProfileUtil::ClearSetting(profile,
-      ContentSettingsPattern::FromString(origin));
-}
-
 void ContentSettingsHandler::RemoveMediaException(const base::ListValue* args) {
   std::string mode;
   bool rv = args->GetString(1, &mode);
@@ -1327,17 +1317,10 @@ void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
   }
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      RemoveNotificationException(args);
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      RemoveMediaException(args);
-      break;
-    default:
-      RemoveExceptionFromHostContentSettingsMap(args, type);
-      break;
-  }
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+    RemoveMediaException(args);
+  else
+    RemoveExceptionFromHostContentSettingsMap(args, type);
 }
 
 void ContentSettingsHandler::SetException(const base::ListValue* args) {
