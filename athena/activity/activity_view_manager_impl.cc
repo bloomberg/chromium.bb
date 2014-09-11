@@ -55,7 +55,6 @@ class ActivityViewManagerImpl : public ActivityViewManager,
     views::Widget* container = CreateWidget(activity);
     container->AddObserver(this);
     activity_widgets_[activity] = container;
-    container->UpdateWindowTitle();
     container->Show();
     container->Activate();
     // Call the Activity model's initializer. It might re-order the activity

@@ -76,6 +76,10 @@ base::string16 AppActivityProxy::GetTitle() const {
   return title_;
 }
 
+gfx::ImageSkia AppActivityProxy::GetIcon() const {
+  return gfx::ImageSkia();
+}
+
 bool AppActivityProxy::UsesFrame() const {
   return true;
 }

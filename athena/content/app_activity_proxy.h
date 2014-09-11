@@ -41,6 +41,7 @@ class AppActivityProxy : public Activity,
   virtual void Init() OVERRIDE;
   virtual SkColor GetRepresentativeColor() const OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* CreateWidget() OVERRIDE;

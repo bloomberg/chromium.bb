@@ -5,15 +5,24 @@
 #ifndef ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
 #define ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
 
+#include <vector>
+
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
+class SkBitmap;
+
 namespace content {
 class BrowserContext;
 class WebContents;
+}
+
+namespace gfx {
+class Size;
 }
 
 namespace views {
@@ -49,6 +58,7 @@ class WebActivity : public Activity,
   virtual void Init() OVERRIDE;
   virtual SkColor GetRepresentativeColor() const OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* CreateWidget() OVERRIDE;
@@ -58,6 +68,9 @@ class WebActivity : public Activity,
   virtual void ResetContentsView() OVERRIDE;
 
   // content::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void TitleWasSet(content::NavigationEntry* entry,
                            bool explicit_set) OVERRIDE;
   virtual void DidUpdateFaviconURL(
@@ -65,6 +78,15 @@ class WebActivity : public Activity,
   virtual void DidChangeThemeColor(SkColor theme_color) OVERRIDE;
 
  private:
+  // Called when a favicon download initiated in DidUpdateFaviconURL()
+  // has completed.
+  void OnDidDownloadFavicon(
+      int id,
+      int http_status_code,
+      const GURL& url,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes);
+
   // Make the content visible. This call should only be paired with
   // MakeInvisible. Note: Upon object creation the content is visible.
   void MakeVisible();
@@ -78,6 +100,7 @@ class WebActivity : public Activity,
 
   content::BrowserContext* browser_context_;
   const base::string16 title_;
+  gfx::ImageSkia icon_;
   const GURL url_;
   AthenaWebView* web_view_;
   SkColor title_color_;
@@ -87,6 +110,8 @@ class WebActivity : public Activity,
 
   // The image which will be used in overview mode.
   gfx::ImageSkia overview_mode_image_;
+
+  base::WeakPtrFactory<WebActivity> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebActivity);
 };

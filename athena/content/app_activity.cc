@@ -110,6 +110,10 @@ base::string16 AppActivity::GetTitle() const {
   return web_view_->GetWebContents()->GetTitle();
 }
 
+gfx::ImageSkia AppActivity::GetIcon() const {
+  return gfx::ImageSkia();
+}
+
 bool AppActivity::UsesFrame() const {
   return false;
 }

@@ -11,11 +11,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/favicon_url.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -146,6 +148,7 @@ class WebActivityController : public AcceleratorHandler {
 
 const SkColor kDefaultTitleColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
 const SkColor kDefaultUnavailableColor = SkColorSetRGB(0xbb, 0x77, 0x77);
+const int kIconSize = 32;
 
 }  // namespace
 
@@ -347,14 +350,16 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
       url_(url),
       web_view_(NULL),
       title_color_(kDefaultTitleColor),
-      current_state_(ACTIVITY_UNLOADED) {
+      current_state_(ACTIVITY_UNLOADED),
+      weak_ptr_factory_(this) {
 }
 
 WebActivity::WebActivity(AthenaWebView* web_view)
     : browser_context_(web_view->browser_context()),
       url_(web_view->GetWebContents()->GetURL()),
       web_view_(web_view),
-      current_state_(ACTIVITY_UNLOADED) {
+      current_state_(ACTIVITY_UNLOADED),
+      weak_ptr_factory_(this) {
   // Transition to state ACTIVITY_INVISIBLE to perform the same setup steps
   // as on new activities (namely adding a WebContentsObserver).
   SetCurrentState(ACTIVITY_INVISIBLE);
@@ -436,7 +441,6 @@ void WebActivity::Init() {
 }
 
 SkColor WebActivity::GetRepresentativeColor() const {
-  // TODO(sad): Compute the color from the favicon.
   return web_view_ ? title_color_ : kDefaultUnavailableColor;
 }
 
@@ -447,6 +451,10 @@ base::string16 WebActivity::GetTitle() const {
   return web_view_ ? base::UTF8ToUTF16(
                          web_view_->GetWebContents()->GetVisibleURL().host())
                    : base::string16();
+}
+
+gfx::ImageSkia WebActivity::GetIcon() const {
+  return icon_;
 }
 
 bool WebActivity::UsesFrame() const {
@@ -500,8 +508,43 @@ void WebActivity::TitleWasSet(content::NavigationEntry* entry,
   ActivityManager::Get()->UpdateActivity(this);
 }
 
+void WebActivity::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // Prevent old image requests from calling back to OnDidDownloadFavicon().
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  icon_ = gfx::ImageSkia();
+  ActivityManager::Get()->UpdateActivity(this);
+}
+
 void WebActivity::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
+  // Pick an arbitrary favicon of type FAVICON to use.
+  // TODO(pkotwicz): Do something better once the favicon code is componentized.
+  // (crbug.com/401997)
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  for (size_t i = 0; i < candidates.size(); ++i) {
+    if (candidates[i].icon_type == content::FaviconURL::FAVICON) {
+      web_view_->GetWebContents()->DownloadImage(
+          candidates[i].icon_url,
+          true,
+          0,
+          base::Bind(&WebActivity::OnDidDownloadFavicon,
+                     weak_ptr_factory_.GetWeakPtr()));
+      break;
+    }
+  }
+}
+
+void WebActivity::OnDidDownloadFavicon(
+    int id,
+    int http_status_code,
+    const GURL& url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
+  icon_ = CreateFaviconImageSkia(
+      bitmaps, original_bitmap_sizes, kIconSize, NULL);
   ActivityManager::Get()->UpdateActivity(this);
 }
 

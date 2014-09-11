@@ -6,7 +6,6 @@
 
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/wm/public/window_manager.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -25,7 +24,7 @@ namespace {
 const int kIconSize = 32;
 
 // The distance between the icon and the title when the icon is visible.
-const int kIconTitleSpacing = 5;
+const int kIconTitleSpacing = 10;
 
 // The height of the top border necessary to display the title without the icon.
 const int kDefaultTitleHeight = 25;
@@ -54,17 +53,11 @@ ActivityFrameView::ActivityFrameView(views::Widget* frame,
       in_overview_(false) {
   title_->SetEnabledColor(SkColorSetA(SK_ColorBLACK, 0xe5));
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(kIconSize, kIconSize);
-  bitmap.eraseARGB(255, 0, 255, 0);
-  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-
   AddChildView(title_);
   AddChildView(icon_);
 
-  SkColor bgcolor = view_model_->GetRepresentativeColor();
-  set_background(views::Background::CreateSolidBackground(bgcolor));
   UpdateWindowTitle();
+  UpdateWindowIcon();
 
   WindowManager::GetInstance()->AddObserver(this);
 }
@@ -105,12 +98,14 @@ void ActivityFrameView::ResetWindowControls() {
 }
 
 void ActivityFrameView::UpdateWindowIcon() {
-  if (!view_model_->UsesFrame())
-    return;
-
+  // The activity has a frame in overview mode regardless of the value of
+  // ActivityViewModel::UsesFrame().
   SkColor bgcolor = view_model_->GetRepresentativeColor();
   set_background(views::Background::CreateSolidBackground(bgcolor));
   title_->SetBackgroundColor(bgcolor);
+
+  if (view_model_->UsesFrame())
+    icon_->SetImage(view_model_->GetIcon());
   SchedulePaint();
 }
 

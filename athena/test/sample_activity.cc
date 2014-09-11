@@ -60,6 +60,10 @@ base::string16 SampleActivity::GetTitle() const {
   return title_;
 }
 
+gfx::ImageSkia SampleActivity::GetIcon() const {
+  return gfx::ImageSkia();
+}
+
 bool SampleActivity::UsesFrame() const {
   return true;
 }

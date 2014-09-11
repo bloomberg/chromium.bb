@@ -51,6 +51,7 @@ class TestActivity : public Activity,
   virtual void Init() OVERRIDE {}
   virtual SkColor GetRepresentativeColor() const OVERRIDE { return 0; }
   virtual base::string16 GetTitle() const OVERRIDE { return title_; }
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }
   virtual bool UsesFrame() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
   virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }

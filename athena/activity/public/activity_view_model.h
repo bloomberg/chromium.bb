@@ -38,6 +38,9 @@ class ATHENA_EXPORT ActivityViewModel {
   // Returns a title for the activity.
   virtual base::string16 GetTitle() const = 0;
 
+  // Returns an icon for the activity.
+  virtual gfx::ImageSkia GetIcon() const = 0;
+
   // True if the activity wants to use Widget's frame, or false if the activity
   // draws its own frame.
   virtual bool UsesFrame() const = 0;
