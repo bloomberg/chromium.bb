@@ -50,6 +50,29 @@
       ],
     },
     {
+      'target_name': 'cma_ipc_streamer',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../media/media.gyp:media',
+        'cma_base',
+      ],
+      'sources': [
+        'cma/ipc_streamer/audio_decoder_config_marshaller.cc',
+        'cma/ipc_streamer/audio_decoder_config_marshaller.h',
+        'cma/ipc_streamer/av_streamer_proxy.cc',
+        'cma/ipc_streamer/av_streamer_proxy.h',
+        'cma/ipc_streamer/coded_frame_provider_host.cc',
+        'cma/ipc_streamer/coded_frame_provider_host.h',
+        'cma/ipc_streamer/decoder_buffer_base_marshaller.cc',
+        'cma/ipc_streamer/decoder_buffer_base_marshaller.h',
+        'cma/ipc_streamer/decrypt_config_marshaller.cc',
+        'cma/ipc_streamer/decrypt_config_marshaller.h',
+        'cma/ipc_streamer/video_decoder_config_marshaller.cc',
+        'cma/ipc_streamer/video_decoder_config_marshaller.h',
+      ],
+    },
+    {
       'target_name': 'cma_filters',
       'type': '<(component)',
       'dependencies': [
@@ -69,6 +92,7 @@
         'cma_base',
         'cma_filters',
         'cma_ipc',
+        'cma_ipc_streamer',
       ],
     },
     {
@@ -97,6 +121,7 @@
         'cma/filters/demuxer_stream_adapter_unittest.cc',
         'cma/ipc/media_message_fifo_unittest.cc',
         'cma/ipc/media_message_unittest.cc',
+        'cma/ipc_streamer/av_streamer_unittest.cc',
       ],
     },
   ],
