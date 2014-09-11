@@ -70,6 +70,14 @@ cr.define('options', function() {
       Page.prototype.initializePage.call(this);
 
       var self = this;
+
+      // If 'profilesInfo' doesn't exist, it's forbidden to delete profile.
+      // So don't display the delete-profile checkbox.
+      if (!loadTimeData.valueExists('profilesInfo') &&
+          $('sync-setup-delete-profile')) {
+        $('sync-setup-delete-profile').hidden = true;
+      }
+
       $('basic-encryption-option').onchange =
           $('full-encryption-option').onchange = function() {
         self.onEncryptionRadioChanged_();
