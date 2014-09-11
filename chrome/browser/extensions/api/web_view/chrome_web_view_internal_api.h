@@ -83,34 +83,6 @@ class ChromeWebViewInternalContextMenusRemoveAllFunction
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalContextMenusRemoveAllFunction);
 };
 
-class ChromeWebViewInternalClearDataFunction
-    : public WebViewInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.clearData",
-                             WEBVIEWINTERNAL_CLEARDATA);
-
-  ChromeWebViewInternalClearDataFunction();
-
- protected:
-  virtual ~ChromeWebViewInternalClearDataFunction();
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
-
-  uint32 GetRemovalMask();
-  void ClearDataDone();
-
-  // Removal start time.
-  base::Time remove_since_;
-  // Removal mask, corresponds to StoragePartition::RemoveDataMask enum.
-  uint32 remove_mask_;
-  // Tracks any data related or parse errors.
-  bool bad_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalClearDataFunction);
-};
-
 class ChromeWebViewInternalShowContextMenuFunction
     : public WebViewInternalExtensionFunction {
  public:

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "extensions/common/api/web_view_internal.h"
@@ -16,6 +17,34 @@ using content::WebContents;
 using extensions::core_api::web_view_internal::SetPermission::Params;
 using extensions::core_api::extension_types::InjectDetails;
 namespace webview = extensions::core_api::web_view_internal;
+
+namespace {
+
+const char kAppCacheKey[] = "appcache";
+const char kCookiesKey[] = "cookies";
+const char kFileSystemsKey[] = "fileSystems";
+const char kIndexedDBKey[] = "indexedDB";
+const char kLocalStorageKey[] = "localStorage";
+const char kWebSQLKey[] = "webSQL";
+const char kSinceKey[] = "since";
+
+int MaskForKey(const char* key) {
+  if (strcmp(key, kAppCacheKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+  if (strcmp(key, kCookiesKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
+  if (strcmp(key, kFileSystemsKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
+  if (strcmp(key, kIndexedDBKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+  if (strcmp(key, kLocalStorageKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
+  if (strcmp(key, kWebSQLKey) == 0)
+    return content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+  return 0;
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -362,6 +391,88 @@ WebViewInternalTerminateFunction::~WebViewInternalTerminateFunction() {
 bool WebViewInternalTerminateFunction::RunAsyncSafe(WebViewGuest* guest) {
   guest->Terminate();
   return true;
+}
+
+WebViewInternalClearDataFunction::WebViewInternalClearDataFunction()
+    : remove_mask_(0), bad_message_(false) {
+}
+
+WebViewInternalClearDataFunction::~WebViewInternalClearDataFunction() {
+}
+
+// Parses the |dataToRemove| argument to generate the remove mask. Sets
+// |bad_message_| (like EXTENSION_FUNCTION_VALIDATE would if this were a bool
+// method) if 'dataToRemove' is not present.
+uint32 WebViewInternalClearDataFunction::GetRemovalMask() {
+  base::DictionaryValue* data_to_remove;
+  if (!args_->GetDictionary(2, &data_to_remove)) {
+    bad_message_ = true;
+    return 0;
+  }
+
+  uint32 remove_mask = 0;
+  for (base::DictionaryValue::Iterator i(*data_to_remove); !i.IsAtEnd();
+       i.Advance()) {
+    bool selected = false;
+    if (!i.value().GetAsBoolean(&selected)) {
+      bad_message_ = true;
+      return 0;
+    }
+    if (selected)
+      remove_mask |= MaskForKey(i.key().c_str());
+  }
+
+  return remove_mask;
+}
+
+// TODO(lazyboy): Parameters in this extension function are similar (or a
+// sub-set) to BrowsingDataRemoverFunction. How can we share this code?
+bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
+  // Grab the initial |options| parameter, and parse out the arguments.
+  base::DictionaryValue* options;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
+  DCHECK(options);
+
+  // If |ms_since_epoch| isn't set, default it to 0.
+  double ms_since_epoch;
+  if (!options->GetDouble(kSinceKey, &ms_since_epoch)) {
+    ms_since_epoch = 0;
+  }
+
+  // base::Time takes a double that represents seconds since epoch. JavaScript
+  // gives developers milliseconds, so do a quick conversion before populating
+  // the object. Also, Time::FromDoubleT converts double time 0 to empty Time
+  // object. So we need to do special handling here.
+  remove_since_ = (ms_since_epoch == 0)
+                      ? base::Time::UnixEpoch()
+                      : base::Time::FromDoubleT(ms_since_epoch / 1000.0);
+
+  remove_mask_ = GetRemovalMask();
+  if (bad_message_)
+    return false;
+
+  AddRef();  // Balanced below or in WebViewInternalClearDataFunction::Done().
+
+  bool scheduled = false;
+  if (remove_mask_) {
+    scheduled = guest->ClearData(
+        remove_since_,
+        remove_mask_,
+        base::Bind(&WebViewInternalClearDataFunction::ClearDataDone, this));
+  }
+  if (!remove_mask_ || !scheduled) {
+    SendResponse(false);
+    Release();  // Balanced above.
+    return false;
+  }
+
+  // Will finish asynchronously.
+  return true;
+}
+
+void WebViewInternalClearDataFunction::ClearDataDone() {
+  Release();  // Balanced in RunAsync().
+  SendResponse(true);
 }
 
 }  // namespace extensions

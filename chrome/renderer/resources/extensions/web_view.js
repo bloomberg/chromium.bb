@@ -239,7 +239,7 @@ WebViewInternal.prototype.clearData = function() {
     return;
   }
   var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
-  $Function.apply(ChromeWebView.clearData, null, args);
+  $Function.apply(WebView.clearData, null, args);
 };
 
 /**

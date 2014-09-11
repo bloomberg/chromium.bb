@@ -321,6 +321,34 @@ class WebViewInternalTerminateFunction
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalTerminateFunction);
 };
 
+class WebViewInternalClearDataFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.clearData",
+                             WEBVIEWINTERNAL_CLEARDATA);
+
+  WebViewInternalClearDataFunction();
+
+ protected:
+  virtual ~WebViewInternalClearDataFunction();
+
+ private:
+  // WebViewInternalExtensionFunction implementation.
+  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
+
+  uint32 GetRemovalMask();
+  void ClearDataDone();
+
+  // Removal start time.
+  base::Time remove_since_;
+  // Removal mask, corresponds to StoragePartition::RemoveDataMask enum.
+  uint32 remove_mask_;
+  // Tracks any data related or parse errors.
+  bool bad_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalClearDataFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
