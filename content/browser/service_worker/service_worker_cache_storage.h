@@ -105,13 +105,6 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   void LazyInitDidLoadIndex(
       const base::Closure& callback,
       scoped_ptr<std::vector<std::string> > indexed_cache_names);
-  void LazyInitIterateAndLoadCacheName(
-      const base::Closure& callback,
-      scoped_ptr<std::vector<std::string> > indexed_cache_names,
-      const std::vector<std::string>::const_iterator& iter,
-      const std::string& cache_name,
-      scoped_ptr<ServiceWorkerCache> cache);
-  void LazyInitDone();
 
   CacheContext* AddCacheToMaps(const std::string& cache_name,
                                scoped_ptr<ServiceWorkerCache> cache);
