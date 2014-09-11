@@ -78,6 +78,12 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // Deletes the local storage and repopulates the page.
   void HandleDeleteLocalStorage(const base::ListValue* args);
 
+  // Populates the default setting drop down on the single site edit page.
+  void HandleUpdateDefaultSetting(const base::ListValue* args);
+
+  // Sets the default setting for the lat used content setting to |args|.
+  void HandleSetDefaultSetting(const base::ListValue* args);
+
   // Closes all tabs and app windows which have the same origin as the selected
   // page.
   void HandleStopOrigin(const base::ListValue* args);
@@ -110,6 +116,11 @@ class WebsiteSettingsHandler : public content_settings::Observer,
 
   // Updates the page with the last settings used.
   void Update();
+
+  // Gets the default setting in string form. If |provider_id| is not NULL, the
+  // id of the provider which provided the default setting is assigned to it.
+  std::string GetSettingDefaultFromModel(ContentSettingsType type,
+                                         std::string* provider_id);
 
   // Returns the base URL for websites, or the app name for Chrome App URLs.
   const std::string& GetReadableName(const GURL& site_url);

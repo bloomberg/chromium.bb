@@ -155,6 +155,10 @@ cr.define('options.WebsiteSettings', function() {
                                                         showPage);
   };
 
+  WebsiteSettingsEditor.showEditPage = function(url) {
+    WebsiteSettingsEditor.getInstance().populatePage(url);
+  };
+
   // Export
   return {
     WebsiteSettingsEditor: WebsiteSettingsEditor

@@ -7,6 +7,19 @@ cr.define('options', function() {
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
+  // Lookup table to generate the i18n strings.
+  /** @const */ var permissionsLookup = {
+    'geolocation': 'location',
+    'notifications': 'notifications',
+    'media-stream': 'mediaStream',
+    'cookies': 'cookies',
+    'multiple-automatic-downloads': 'multipleAutomaticDownloads',
+    'images': 'images',
+    'plugins': 'plugins',
+    'popups': 'popups',
+    'javascript': 'javascript'
+  };
+
   /////////////////////////////////////////////////////////////////////////////
   // WebsiteSettingsManager class:
 
@@ -50,6 +63,10 @@ cr.define('options', function() {
         var target = event.target;
         assert(target.tagName == 'SELECT');
         WebsiteSettingsManager.getInstance().updatePage_(target.value);
+      };
+
+      $('global-setting').onchange = function(event) {
+        chrome.send('setDefaultContentSetting', [this.value]);
       };
 
       var searchBox = $('website-settings-search-box');
@@ -170,6 +187,28 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets the default content setting dropdown on the page to the current
+     * default.
+     * @param {!Object} dict A dictionary with the management and value of the
+     *     default setting for the last selected content setting..
+     */
+    updateDefault: function(dict) {
+      // TODO(dhnishi): Remove duplicate default handling in the Content
+      //     Settings page and here.
+      var managedBy = dict.managedBy;
+      var controlledBy = managedBy == 'policy' || managedBy == 'extension' ?
+                managedBy : null;
+      $('global-setting').disabled = (managedBy != 'default');
+
+      var options = $('global-setting').options;
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].value == dict.value) {
+          options.selectedIndex = i;
+        }
+      }
+    },
+
+    /**
      * Updates the page with the given content setting or resource name's
      * information.
      * @param {string} typeName The name of the content setting or resource.
@@ -181,6 +220,24 @@ cr.define('options', function() {
         chrome.send('updateBatteryUsage');
       else
         chrome.send('updateOrigins', [typeName]);
+
+      var options = $('global-setting').options;
+      options.length = 0;
+      var permissionString = permissionsLookup[typeName];
+      var permissions = ['Allow', 'Ask', 'Block'];
+      for (var i = 0; i < permissions.length; i++) {
+        var valueId = permissionString + permissions[i];
+        if (loadTimeData.valueExists(valueId)) {
+          options.add(new Option(loadTimeData.getString(valueId),
+              permissions[i].toLowerCase()));
+        }
+      }
+      if (options.length == 0) {
+        $('website-settings-global-controls').hidden = true;
+      } else {
+        $('website-settings-global-controls').hidden = false;
+        chrome.send('updateDefaultSetting');
+      }
     }
   };
 
@@ -189,8 +246,8 @@ cr.define('options', function() {
         blockedDict);
   };
 
-  WebsiteSettingsManager.showEditPage = function(url) {
-    WebsiteSettingsEditor.getInstance().populatePage(url);
+  WebsiteSettingsManager.updateDefault = function(dict) {
+    WebsiteSettingsManager.getInstance().updateDefault(dict);
   };
 
   // Export

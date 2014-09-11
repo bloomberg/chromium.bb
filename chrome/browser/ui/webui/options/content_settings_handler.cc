@@ -279,6 +279,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  // TODO(dhnishi): Standardize to lowerCamelCase.
   static OptionsStringResource resources[] = {
     { "allowException", IDS_EXCEPTIONS_ALLOW_BUTTON },
     { "blockException", IDS_EXCEPTIONS_BLOCK_BUTTON },
@@ -295,8 +296,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Cookies filter.
     { "cookies_tab_label", IDS_COOKIES_TAB_LABEL },
     { "cookies_header", IDS_COOKIES_HEADER },
-    { "cookies_allow", IDS_COOKIES_ALLOW_RADIO },
-    { "cookies_block", IDS_COOKIES_BLOCK_RADIO },
+    { "cookiesAllow", IDS_COOKIES_ALLOW_RADIO },
+    { "cookiesBlock", IDS_COOKIES_BLOCK_RADIO },
     { "cookies_session_only", IDS_COOKIES_SESSION_ONLY_RADIO },
     { "cookies_block_3rd_party", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX },
     { "cookies_clear_when_close", IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX },
@@ -311,47 +312,47 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Image filter.
     { "images_tab_label", IDS_IMAGES_TAB_LABEL },
     { "images_header", IDS_IMAGES_HEADER },
-    { "images_allow", IDS_IMAGES_LOAD_RADIO },
-    { "images_block", IDS_IMAGES_NOLOAD_RADIO },
+    { "imagesAllow", IDS_IMAGES_LOAD_RADIO },
+    { "imagesBlock", IDS_IMAGES_NOLOAD_RADIO },
     // JavaScript filter.
     { "javascript_tab_label", IDS_JAVASCRIPT_TAB_LABEL },
     { "javascript_header", IDS_JAVASCRIPT_HEADER },
-    { "javascript_allow", IDS_JS_ALLOW_RADIO },
-    { "javascript_block", IDS_JS_DONOTALLOW_RADIO },
+    { "javascriptAllow", IDS_JS_ALLOW_RADIO },
+    { "javascriptBlock", IDS_JS_DONOTALLOW_RADIO },
     // Plug-ins filter.
     { "plugins_tab_label", IDS_PLUGIN_TAB_LABEL },
     { "plugins_header", IDS_PLUGIN_HEADER },
-    { "plugins_ask", IDS_PLUGIN_ASK_RADIO },
-    { "plugins_allow", IDS_PLUGIN_LOAD_RADIO },
-    { "plugins_block", IDS_PLUGIN_NOLOAD_RADIO },
+    { "pluginsAsk", IDS_PLUGIN_ASK_RADIO },
+    { "pluginsAllow", IDS_PLUGIN_LOAD_RADIO },
+    { "pluginsBlock", IDS_PLUGIN_NOLOAD_RADIO },
     { "disableIndividualPlugins", IDS_PLUGIN_SELECTIVE_DISABLE },
     // Pop-ups filter.
     { "popups_tab_label", IDS_POPUP_TAB_LABEL },
     { "popups_header", IDS_POPUP_HEADER },
-    { "popups_allow", IDS_POPUP_ALLOW_RADIO },
-    { "popups_block", IDS_POPUP_BLOCK_RADIO },
+    { "popupsAllow", IDS_POPUP_ALLOW_RADIO },
+    { "popupsBlock", IDS_POPUP_BLOCK_RADIO },
     // Location filter.
     { "location_tab_label", IDS_GEOLOCATION_TAB_LABEL },
     { "location_header", IDS_GEOLOCATION_HEADER },
-    { "location_allow", IDS_GEOLOCATION_ALLOW_RADIO },
-    { "location_ask", IDS_GEOLOCATION_ASK_RADIO },
-    { "location_block", IDS_GEOLOCATION_BLOCK_RADIO },
+    { "locationAllow", IDS_GEOLOCATION_ALLOW_RADIO },
+    { "locationAsk", IDS_GEOLOCATION_ASK_RADIO },
+    { "locationBlock", IDS_GEOLOCATION_BLOCK_RADIO },
     { "set_by", IDS_GEOLOCATION_SET_BY_HOVER },
     // Notifications filter.
     { "notifications_tab_label", IDS_NOTIFICATIONS_TAB_LABEL },
     { "notifications_header", IDS_NOTIFICATIONS_HEADER },
-    { "notifications_allow", IDS_NOTIFICATIONS_ALLOW_RADIO },
-    { "notifications_ask", IDS_NOTIFICATIONS_ASK_RADIO },
-    { "notifications_block", IDS_NOTIFICATIONS_BLOCK_RADIO },
+    { "notificationsAllow", IDS_NOTIFICATIONS_ALLOW_RADIO },
+    { "notificationsAsk", IDS_NOTIFICATIONS_ASK_RADIO },
+    { "notificationsBlock", IDS_NOTIFICATIONS_BLOCK_RADIO },
     // Fullscreen filter.
     { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
     { "fullscreen_header", IDS_FULLSCREEN_HEADER },
     // Mouse Lock filter.
     { "mouselock_tab_label", IDS_MOUSE_LOCK_TAB_LABEL },
     { "mouselock_header", IDS_MOUSE_LOCK_HEADER },
-    { "mouselock_allow", IDS_MOUSE_LOCK_ALLOW_RADIO },
-    { "mouselock_ask", IDS_MOUSE_LOCK_ASK_RADIO },
-    { "mouselock_block", IDS_MOUSE_LOCK_BLOCK_RADIO },
+    { "mouselockAllow", IDS_MOUSE_LOCK_ALLOW_RADIO },
+    { "mouselockAsk", IDS_MOUSE_LOCK_ASK_RADIO },
+    { "mouselockBlock", IDS_MOUSE_LOCK_BLOCK_RADIO },
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
     // Protected Content filter
     { "protectedContentTabLabel", IDS_PROTECTED_CONTENT_TAB_LABEL },
@@ -382,17 +383,17 @@ void ContentSettingsHandler::GetLocalizedValues(
     // PPAPI broker filter.
     { "ppapi-broker_header", IDS_PPAPI_BROKER_HEADER },
     { "ppapiBrokerTabLabel", IDS_PPAPI_BROKER_TAB_LABEL },
-    { "ppapi_broker_allow", IDS_PPAPI_BROKER_ALLOW_RADIO },
-    { "ppapi_broker_ask", IDS_PPAPI_BROKER_ASK_RADIO },
-    { "ppapi_broker_block", IDS_PPAPI_BROKER_BLOCK_RADIO },
+    { "ppapiBrokerAllow", IDS_PPAPI_BROKER_ALLOW_RADIO },
+    { "ppapiBrokerAsk", IDS_PPAPI_BROKER_ASK_RADIO },
+    { "ppapiBrokerBlock", IDS_PPAPI_BROKER_BLOCK_RADIO },
     // Multiple automatic downloads
     { "multiple-automatic-downloads_header",
       IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL },
-    { "multiple-automatic-downloads_allow",
+    { "multipleAutomaticDownloadsAllow",
       IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO },
-    { "multiple-automatic-downloads_ask",
+    { "multipleAutomaticDownloadsAsk",
       IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO },
-    { "multiple-automatic-downloads_block",
+    { "multipleAutomaticDownloadsBlock",
       IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO },
     // MIDI system exclusive messages
     { "midi-sysex_header", IDS_MIDI_SYSEX_TAB_LABEL },

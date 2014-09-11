@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 #website-settings-page {
+  min-height: 445px;
   min-width: 540px;
 }
 
@@ -109,6 +110,16 @@
 
 #website-settings-edit-page .website-property-controls {
   min-width: 165px;
+}
+
+#website-settings-global-controls {
+  -webkit-margin-after: 8px;
+  align-items: center;
+  display: flex;
+}
+
+#global-setting {
+  flex: 1;
 }
 
 /* Styles for the origin list elements in the website settings page. */

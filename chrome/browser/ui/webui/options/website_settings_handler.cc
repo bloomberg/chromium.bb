@@ -16,6 +16,7 @@
 #include "components/power/origin_power_map_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -27,6 +28,11 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/user_manager.h"
+#endif
+
+using base::UserMetricsAction;
 using power::OriginPowerMap;
 using power::OriginPowerMapFactory;
 
@@ -158,6 +164,16 @@ void WebsiteSettingsHandler::RegisterMessages() {
       "stopOrigin",
       base::Bind(&WebsiteSettingsHandler::HandleStopOrigin,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "updateDefaultSetting",
+      base::Bind(&WebsiteSettingsHandler::HandleUpdateDefaultSetting,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setDefaultContentSetting",
+      base::Bind(&WebsiteSettingsHandler::HandleSetDefaultSetting,
+                 base::Unretained(this)));
 }
 
 // content_settings::Observer implementation.
@@ -226,7 +242,7 @@ void WebsiteSettingsHandler::HandleMaybeShowEditPage(
 
   last_site_ = last_site;
   base::StringValue site_value(site);
-  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.showEditPage",
+  web_ui()->CallJavascriptFunction("WebsiteSettingsEditor.showEditPage",
                                    site_value);
 }
 
@@ -426,6 +442,91 @@ void WebsiteSettingsHandler::HandleStopOrigin(const base::ListValue* args) {
   StopOrigin(last_site_);
 }
 
+// TODO(dhnishi): Remove default settings duplication from the
+//                WebsiteSettingsHandler and the ContentSettingsHandler.
+void WebsiteSettingsHandler::HandleUpdateDefaultSetting(
+    const base::ListValue* args) {
+  ContentSettingsType last_setting;
+  content_settings::GetTypeFromName(last_setting_, &last_setting);
+
+  base::DictionaryValue filter_settings;
+  std::string provider_id;
+  filter_settings.SetString(
+      "value", GetSettingDefaultFromModel(last_setting, &provider_id));
+  filter_settings.SetString("managedBy", provider_id);
+
+  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.updateDefault",
+                                   filter_settings);
+}
+
+void WebsiteSettingsHandler::HandleSetDefaultSetting(
+    const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  std::string setting;
+  if (!args->GetString(0, &setting)) {
+    NOTREACHED();
+    return;
+  }
+  ContentSetting new_default =
+      content_settings::ContentSettingFromString(setting);
+
+  ContentSettingsType last_setting;
+  content_settings::GetTypeFromName(last_setting_, &last_setting);
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS special case : in Guest mode settings are opened in Incognito
+  // mode, so we need original profile to actually modify settings.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOriginalProfile();
+#endif
+
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  map->SetDefaultContentSetting(last_setting, new_default);
+
+  switch (last_setting) {
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMultipleAutomaticDLSettingChange"));
+      break;
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultCookieSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultGeolocationSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultImagesSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultJavaScriptSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultNotificationsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultPluginsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultPopupsSettingChanged"));
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+}
+
 void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
                                               bool show_page) {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -565,6 +666,17 @@ void WebsiteSettingsHandler::UpdateBatteryUsage() {
   }
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    power_map);
+}
+
+std::string WebsiteSettingsHandler::GetSettingDefaultFromModel(
+    ContentSettingsType type,
+    std::string* provider_id) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ContentSetting default_setting =
+      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          type, provider_id);
+
+  return content_settings::ContentSettingToString(default_setting);
 }
 
 void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {
