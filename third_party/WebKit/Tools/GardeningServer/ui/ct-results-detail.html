@@ -46,6 +46,10 @@ found in the LICENSE file.
         builder: '_update',
       },
 
+      _isStdioStep: function(result, step) {
+        return result.actual == 'UNKNOWN' || step == 'compile';
+      },
+
       _update: function() {
         if (!this.failure || !this.builder)
           return;
@@ -56,7 +60,7 @@ found in the LICENSE file.
 
         var result = this.failure.resultNodesByBuilder[this.builder];
         // FIXME: There's probably a less hacky way to check this.
-        if (result.actual == 'FAIL' || result.actual == 'UNKNOWN')
+        if (result.actual == 'FAIL' || this._isStdioStep(result, this.failure.step))
           this._updateUrls();
         else
           this._updateWebkitTestUrls();
@@ -94,7 +98,7 @@ found in the LICENSE file.
 
         // FIXME: We only store build logs by the test name, not the testsuite.testname,
         // which means that two failing tests from different test suites conflict!
-        var testPart = result.actual == 'UNKNOWN' ? 'stdio' : this.failure.testName.split('.')[1];
+        var testPart = this._isStdioStep(result, this.failure.step) ? 'stdio' : this.failure.testName.split('.')[1];
         var url = result.masterUrl +
             '/builders/' + encodeURIComponent(this.builder);
 
