@@ -99,7 +99,7 @@ private:
 
     double computeNormalizedFractionBreadth(Vector<GridTrack>&, const GridSpan& tracksSpan, GridTrackSizingDirection, LayoutUnit availableLogicalSpace) const;
 
-    const GridTrackSize& gridTrackSize(GridTrackSizingDirection, size_t) const;
+    GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
 
     LayoutUnit logicalHeightForChild(RenderBox&, Vector<GridTrack>&);
     LayoutUnit minContentForChild(RenderBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);

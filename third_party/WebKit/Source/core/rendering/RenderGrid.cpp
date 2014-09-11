@@ -424,7 +424,7 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     // 1. Initialize per Grid track variables.
     for (size_t i = 0; i < tracks.size(); ++i) {
         GridTrack& track = tracks[i];
-        const GridTrackSize& trackSize = gridTrackSize(direction, i);
+        GridTrackSize trackSize = gridTrackSize(direction, i);
         const GridLength& minTrackBreadth = trackSize.minTrackBreadth();
         const GridLength& maxTrackBreadth = trackSize.maxTrackBreadth();
 
@@ -478,7 +478,7 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     } else {
         for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
             const size_t trackIndex = flexibleSizedTracksIndex[i];
-            const GridTrackSize& trackSize = gridTrackSize(direction, trackIndex);
+            GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
             normalizedFractionBreadth = std::max(normalizedFractionBreadth, tracks[trackIndex].m_usedBreadth / trackSize.maxTrackBreadth().flex());
         }
 
@@ -500,7 +500,7 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
 
     for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
         const size_t trackIndex = flexibleSizedTracksIndex[i];
-        const GridTrackSize& trackSize = gridTrackSize(direction, trackIndex);
+        GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
 
         tracks[trackIndex].m_usedBreadth = std::max<LayoutUnit>(tracks[trackIndex].m_usedBreadth, normalizedFractionBreadth * trackSize.maxTrackBreadth().flex());
     }
@@ -555,7 +555,7 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, c
 
     Vector<GridTrackForNormalization> tracksForNormalization;
     for (GridSpan::iterator resolvedPosition = tracksSpan.begin(); resolvedPosition != tracksSpan.end(); ++resolvedPosition) {
-        const GridTrackSize& trackSize = gridTrackSize(direction, resolvedPosition.toInt());
+        GridTrackSize trackSize = gridTrackSize(direction, resolvedPosition.toInt());
         if (!trackSize.maxTrackBreadth().isFlex())
             continue;
 
@@ -593,20 +593,21 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, c
     return availableLogicalSpaceIgnoringFractionTracks / accumulatedFractions;
 }
 
-const GridTrackSize& RenderGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
+GridTrackSize RenderGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
 {
-    const Vector<GridTrackSize>& trackStyles = (direction == ForColumns) ? style()->gridTemplateColumns() : style()->gridTemplateRows();
-    if (i >= trackStyles.size())
-        return (direction == ForColumns) ? style()->gridAutoColumns() : style()->gridAutoRows();
+    bool isForColumns = direction == ForColumns;
+    const Vector<GridTrackSize>& trackStyles = isForColumns ? style()->gridTemplateColumns() : style()->gridTemplateRows();
+    const GridTrackSize& trackSize = (i >= trackStyles.size()) ? (isForColumns ? style()->gridAutoColumns() : style()->gridAutoRows()) : trackStyles[i];
 
-    const GridTrackSize& trackSize = trackStyles[i];
-    // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto>.
-    if (trackSize.isPercentage()) {
-        Length logicalSize = direction == ForColumns ? style()->logicalWidth() : style()->logicalHeight();
-        if (logicalSize.isIntrinsicOrAuto()) {
-            DEFINE_STATIC_LOCAL(GridTrackSize, autoTrackSize, (Length(Auto)));
-            return autoTrackSize;
-        }
+    // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto> (or in
+    // the case of minmax() as min-content for the first position and max-content for the second).
+    Length logicalSize = isForColumns ? style()->logicalWidth() : style()->logicalHeight();
+    // FIXME: isIntrinsicOrAuto() does not fulfil the 'indefinite size' description as it does not include <percentage>
+    // of indefinite sizes. This is a broather issue as Length does not have the required context to support it.
+    if (logicalSize.isIntrinsicOrAuto()) {
+        const GridLength& oldMinTrackBreadth = trackSize.minTrackBreadth();
+        const GridLength& oldMaxTrackBreadth = trackSize.maxTrackBreadth();
+        return GridTrackSize(oldMinTrackBreadth.isPercentage() ? Length(MinContent) : oldMinTrackBreadth, oldMaxTrackBreadth.isPercentage() ? Length(MaxContent) : oldMaxTrackBreadth);
     }
 
     return trackSize;
@@ -721,7 +722,7 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
 
     sizingData.filteredTracks.shrink(0);
     for (GridResolvedPosition trackPosition = initialTrackPosition; trackPosition <= finalTrackPosition; ++trackPosition) {
-        const GridTrackSize& trackSize = gridTrackSize(direction, trackPosition.toInt());
+        GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
         if (!(trackSize.*filterFunction)())
             continue;
 
@@ -801,7 +802,7 @@ void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
 bool RenderGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection direction, const Vector<GridTrack>& tracks)
 {
     for (size_t i = 0; i < tracks.size(); ++i) {
-        const GridTrackSize& trackSize = gridTrackSize(direction, i);
+        GridTrackSize trackSize = gridTrackSize(direction, i);
         const GridLength& minTrackBreadth = trackSize.minTrackBreadth();
         if (computeUsedBreadthOfMinLength(direction, minTrackBreadth) > tracks[i].m_usedBreadth)
             return false;
