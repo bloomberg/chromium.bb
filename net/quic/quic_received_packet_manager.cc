@@ -4,6 +4,9 @@
 
 #include "net/quic/quic_received_packet_manager.h"
 
+#include <limits>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/linked_hash_map.h"
@@ -201,6 +204,20 @@ bool QuicReceivedPacketManager::IsAwaitingPacket(
   return ::net::IsAwaitingPacket(ack_frame_, sequence_number);
 }
 
+namespace {
+struct isTooLarge {
+  explicit isTooLarge(QuicPacketSequenceNumber n) : largest_observed_(n) {}
+  QuicPacketSequenceNumber largest_observed_;
+
+  // Return true if the packet in p is too different from largest_observed_
+  // to express.
+  bool operator() (
+      const std::pair<QuicPacketSequenceNumber, QuicTime>& p) const {
+    return largest_observed_ - p.first >= numeric_limits<uint8>::max();
+  }
+};
+}  // namespace
+
 void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
     QuicAckFrame* ack_frame, QuicTime approximate_now) {
   *ack_frame = ack_frame_;
@@ -222,10 +239,7 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
       approximate_now.Subtract(time_largest_observed_);
 
   // Remove all packets that are too far from largest_observed to express.
-  received_packet_times_.remove_if(
-      [this] (std::pair<QuicPacketSequenceNumber, QuicTime> p)
-      { return ack_frame_.largest_observed - p.first >=
-        numeric_limits<uint8>::max();});
+  received_packet_times_.remove_if(isTooLarge(ack_frame_.largest_observed));
 
   ack_frame->received_packet_times = received_packet_times_;
   received_packet_times_.clear();
