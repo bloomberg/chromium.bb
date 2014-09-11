@@ -119,18 +119,17 @@ PepperTryCatchVar::PepperTryCatchVar(PepperPluginInstanceImpl* instance,
                                      PP_Var* exception)
     : PepperTryCatch(instance, V8VarConverter::kAllowObjectVars),
       handle_scope_(instance_->GetIsolate()),
+      context_(GetContext()),
       exception_(exception),
       exception_is_set_(false) {
-  // We switch to the plugin context.
-  v8::Handle<v8::Context> context = GetContext();
-  if (!context.IsEmpty())
-    context->Enter();
+  // We switch to the plugin context if it's not empty.
+  if (!context_.IsEmpty())
+    context_->Enter();
 }
 
 PepperTryCatchVar::~PepperTryCatchVar() {
-  v8::Handle<v8::Context> context = GetContext();
-  if (!context.IsEmpty())
-    context->Exit();
+  if (!context_.IsEmpty())
+    context_->Exit();
 }
 
 bool PepperTryCatchVar::HasException() {

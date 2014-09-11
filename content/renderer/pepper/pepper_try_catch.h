@@ -83,6 +83,8 @@ class PepperTryCatchVar : public PepperTryCatch {
   // make one for them. Note that this class is always allocated on the stack.
   v8::HandleScope handle_scope_;
 
+  v8::Handle<v8::Context> context_;
+
   v8::TryCatch try_catch_;
 
   PP_Var* exception_;
