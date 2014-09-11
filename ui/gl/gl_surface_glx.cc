@@ -56,6 +56,19 @@ bool g_glx_get_msc_rate_oml_supported = false;
 
 bool g_glx_sgi_video_sync_supported = false;
 
+static const base::TimeDelta kGetVSyncParametersMinPeriod =
+#if defined(OS_LINUX)
+    // See crbug.com/373489
+    // On Linux, querying the vsync parameters might burn CPU for up to an
+    // entire vsync, so we only query periodically to reduce CPU usage.
+    // 5 seconds is chosen somewhat abitrarily as a balance between:
+    //  a) Drift in the phase of our signal.
+    //  b) Potential janks from periodically pegging the CPU.
+    base::TimeDelta::FromSeconds(5);
+#else
+    base::TimeDelta::FromSeconds(0);
+#endif
+
 class OMLSyncControlVSyncProvider
     : public gfx::SyncControlVSyncProvider {
  public:
@@ -257,6 +270,14 @@ class SGIVideoSyncVSyncProvider
 
   virtual void GetVSyncParameters(
       const VSyncProvider::UpdateVSyncCallback& callback) OVERRIDE {
+    if (kGetVSyncParametersMinPeriod > base::TimeDelta()) {
+      base::TimeTicks now = base::TimeTicks::Now();
+      base::TimeDelta delta = now - last_get_vsync_parameters_time_;
+      if (delta < kGetVSyncParametersMinPeriod)
+        return;
+      last_get_vsync_parameters_time_ = now;
+    }
+
     // Only one outstanding request per surface.
     if (!pending_callback_) {
       pending_callback_.reset(
@@ -291,6 +312,8 @@ class SGIVideoSyncVSyncProvider
   // the shim_, so they are safe to access.
   base::CancellationFlag* cancel_vsync_flag_;
   base::Lock* vsync_lock_;
+
+  base::TimeTicks last_get_vsync_parameters_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncVSyncProvider);
 };
