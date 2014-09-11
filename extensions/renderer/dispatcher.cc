@@ -32,6 +32,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -349,13 +350,14 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
   // are hosted in the extension process.
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), true /* match_about_blank */);
+
   const Extension* extension =
       extensions_.GetExtensionOrAppByURL(effective_document_url);
 
   if (extension &&
       (extension->is_extension() || extension->is_platform_app())) {
-    int resource_id =
-        extension->is_platform_app() ? IDR_PLATFORM_APP_CSS : IDR_EXTENSION_CSS;
+    int resource_id = extension->is_platform_app() ? IDR_PLATFORM_APP_CSS
+                                                   : IDR_EXTENSION_FONTS_CSS;
     std::string stylesheet = ResourceBundle::GetSharedInstance()
                                  .GetRawDataResource(resource_id)
                                  .as_string();
@@ -369,6 +371,23 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
     // documents that are loaded in each app or extension.
     frame->document().insertStyleSheet(WebString::fromUTF8(stylesheet));
   }
+
+  // This preprocessor directive is because this file is still built in Android
+  // builds, but OptionsPageInfo is not. For Android builds, exclude this block
+  // of code to prevent link errors.
+#if defined(ENABLE_EXTENSIONS)
+  // If this is an extension options page, and the extension has opted into
+  // using Chrome styles, then insert the Chrome extension stylesheet.
+  if (extension && extension->is_extension() &&
+      OptionsPageInfo::ShouldUseChromeStyle(extension) &&
+      effective_document_url == OptionsPageInfo::GetOptionsPage(extension)) {
+    frame->document().insertStyleSheet(
+        WebString::fromUTF8(ResourceBundle::GetSharedInstance()
+                                .GetRawDataResource(IDR_EXTENSION_CSS)
+                                .as_string()));
+  }
+#endif
+
   content_watcher_->DidCreateDocumentElement(frame);
 }
 

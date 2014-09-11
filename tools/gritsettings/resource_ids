@@ -179,6 +179,7 @@
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
     "includes": [26850],
+    "structures": [26950],
   },
   "extensions/extensions_strings.grd": {
     "messages": [27000],

@@ -53,8 +53,12 @@
       <include name="IDR_PLATFORM_APP_CSS" file="platform_app.css" type="BINDATA" />
       <include name="IDR_PLATFORM_APP_JS" file="platform_app.js" type="BINDATA" />
 
-      <!-- Extension styles -->
-      <include name="IDR_EXTENSION_CSS" file="extension.css" type="BINDATA"/>
+      <!-- Extension styles. -->
+      <include name="IDR_EXTENSION_FONTS_CSS" file="extension_fonts.css" type="BINDATA"/>
     </includes>
+    <structures>
+      <!-- Extension styles. -->
+      <structure name="IDR_EXTENSION_CSS" file="extension.css" type="chrome_html" flattenhtml="true" />
+    </structures>
   </release>
 </grit>
