@@ -30,6 +30,9 @@
     // Whether experimental hotwording functionality is enabled. Mirrors the
     // "enable-experimental-hotwording" flag.
     boolean experimentalHotwordEnabled;
+
+    // Whether always-on hotwording is enabled.
+    boolean alwaysOnEnabled;
   };
 
   // The type of the recognized hotword. Right now it only has 'search' but

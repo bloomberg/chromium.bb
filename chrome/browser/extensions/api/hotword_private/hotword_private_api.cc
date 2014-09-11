@@ -32,6 +32,10 @@ HotwordPrivateEventService::HotwordPrivateEventService(
       prefs::kHotwordSearchEnabled,
       base::Bind(&HotwordPrivateEventService::OnEnabledChanged,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kHotwordAlwaysOnSearchEnabled,
+      base::Bind(&HotwordPrivateEventService::OnEnabledChanged,
+                 base::Unretained(this)));
 }
 
 HotwordPrivateEventService::~HotwordPrivateEventService() {
@@ -53,7 +57,8 @@ const char* HotwordPrivateEventService::service_name() {
 
 void HotwordPrivateEventService::OnEnabledChanged(
     const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kHotwordSearchEnabled));
+  DCHECK(pref_name == std::string(prefs::kHotwordSearchEnabled) ||
+         pref_name == std::string(prefs::kHotwordAlwaysOnSearchEnabled));
   SignalEvent(OnEnabledChanged::kEventName);
 }
 
@@ -107,6 +112,8 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
   result.enabled = prefs->GetBoolean(prefs::kHotwordSearchEnabled);
+  result.always_on_enabled =
+      prefs->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled);
   result.audio_logging_enabled = false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   result.experimental_hotword_enabled = command_line->HasSwitch(

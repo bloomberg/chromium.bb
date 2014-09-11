@@ -165,6 +165,25 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableFalse) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, AlwaysOnEnabled) {
+  {
+    ExtensionTestMessageListener listener("alwaysOnEnabled: false",
+                                          false);
+    ASSERT_TRUE(RunComponentExtensionTest("alwaysOnEnabled"))
+        << message_;
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
+  {
+    ExtensionTestMessageListener listener("alwaysOnEnabled: true",
+                                          false);
+    ASSERT_TRUE(RunComponentExtensionTest("alwaysOnEnabled"))
+        << message_;
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
   // Disabled by default.
   ExtensionTestMessageListener listener("experimentalHotwordEnabled: false",
@@ -195,6 +214,11 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {
 
   ExtensionTestMessageListener listenerNotification("notification", false);
   profile()->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, true);
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+
+  listenerNotification.Reset();
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                    true);
   EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
 }
 
