@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "ui/display/chromeos/touchscreen_delegate_impl.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
@@ -199,7 +200,7 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   }
 
   if (!touchscreen_delegate_)
-    touchscreen_delegate_ = CreatePlatformTouchscreenDelegate();
+    touchscreen_delegate_.reset(new TouchscreenDelegateImpl());
 }
 
 void DisplayConfigurator::ForceInitialConfigure(

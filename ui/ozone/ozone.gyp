@@ -91,8 +91,6 @@
         'common/chromeos/display_util.h',
         'common/chromeos/native_display_delegate_ozone.cc',
         'common/chromeos/native_display_delegate_ozone.h',
-        'common/chromeos/touchscreen_device_manager_ozone.cc',
-        'common/chromeos/touchscreen_device_manager_ozone.h',
         'common/gpu/ozone_gpu_message_generator.cc',
         'common/gpu/ozone_gpu_message_generator.h',
         'common/gpu/ozone_gpu_message_params.cc',

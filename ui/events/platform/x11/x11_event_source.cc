@@ -13,6 +13,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/x/hotplug_event_handler_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -85,8 +86,13 @@ X11EventSource::X11EventSource(XDisplay* display)
       continue_stream_(true) {
   CHECK(display_);
   DeviceDataManagerX11::CreateInstance();
+  hotplug_event_handler_.reset(
+      new HotplugEventHandlerX11(DeviceDataManager::GetInstance()));
   InitializeXInput2(display_);
   InitializeXkb(display_);
+
+  // Force the initial device query to have an update list of active devices.
+  hotplug_event_handler_->OnHotplugEvent();
 }
 
 X11EventSource::~X11EventSource() {
@@ -137,6 +143,7 @@ uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
   if (xevent->type == GenericEvent &&
       xevent->xgeneric.evtype == XI_HierarchyChanged) {
     ui::UpdateDeviceList();
+    hotplug_event_handler_->OnHotplugEvent();
   }
 
   if (have_cookie)

@@ -22,8 +22,6 @@ component("display") {
     "chromeos/x11/native_display_delegate_x11.h",
     "chromeos/x11/native_display_event_dispatcher_x11.cc",
     "chromeos/x11/native_display_event_dispatcher_x11.h",
-    "chromeos/x11/touchscreen_device_manager_x11.cc",
-    "chromeos/x11/touchscreen_device_manager_x11.h",
     "display_export.h",
     "display_switches.cc",
     "display_switches.h",
@@ -46,6 +44,7 @@ component("display") {
       "//build/config/linux:xrandr",
     ]
     deps += [
+      "//ui/events:events_base",
       "//ui/events/platform",
     ]
   }

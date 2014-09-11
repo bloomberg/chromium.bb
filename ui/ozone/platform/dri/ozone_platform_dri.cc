@@ -21,7 +21,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
 #endif
 
@@ -81,11 +80,6 @@ class OzonePlatformDri : public OzonePlatform {
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
         dri_.get(), screen_manager_.get(), device_manager_.get()));
-  }
-  virtual scoped_ptr<TouchscreenDeviceManager>
-      CreateTouchscreenDeviceManager() OVERRIDE {
-    return scoped_ptr<TouchscreenDeviceManager>(
-        new TouchscreenDeviceManagerOzone());
   }
 #endif
   virtual void InitializeUI() OVERRIDE {

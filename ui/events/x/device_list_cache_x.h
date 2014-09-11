@@ -24,6 +24,7 @@ struct DeviceList {
   T& operator[] (int x) {
     return devices[x];
   }
+  const T& operator[](int x) const { return devices[x]; }
   T* devices;
   int count;
 };

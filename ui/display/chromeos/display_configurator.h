@@ -257,7 +257,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Performs platform specific delegate initialization.
   scoped_ptr<NativeDisplayDelegate> CreatePlatformNativeDisplayDelegate();
-  scoped_ptr<TouchscreenDelegate> CreatePlatformTouchscreenDelegate();
 
   // Updates |cached_displays_| to contain currently-connected displays. Calls
   // |delegate_->GetDisplays()| and then does additional work, like finding the

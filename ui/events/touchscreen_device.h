@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_TYPES_CHROMEOS_TOUCHSCREEN_DEVICE_H_
-#define UI_DISPLAY_TYPES_CHROMEOS_TOUCHSCREEN_DEVICE_H_
+#ifndef UI_EVENTS_TOUCHSCREEN_DEVICE_H_
+#define UI_EVENTS_TOUCHSCREEN_DEVICE_H_
 
-#include "ui/display/types/display_types_export.h"
+#include "ui/events/events_base_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
 // Represents a Touchscreen device state.
-struct DISPLAY_TYPES_EXPORT TouchscreenDevice {
+struct EVENTS_BASE_EXPORT TouchscreenDevice {
   static const int kInvalidId;
 
   TouchscreenDevice(int id, const gfx::Size& size, bool is_internal);
@@ -28,4 +28,4 @@ struct DISPLAY_TYPES_EXPORT TouchscreenDevice {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_TYPES_CHROMEOS_TOUCHSCREEN_DEVICE_H_
+#endif  // UI_EVENTS_TOUCHSCREEN_DEVICE_H_

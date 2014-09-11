@@ -10,43 +10,21 @@
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/touchscreen_delegate_impl.h"
-#include "ui/display/types/chromeos/touchscreen_device_manager.h"
+#include "ui/events/device_data_manager.h"
+#include "ui/events/device_hotplug_event_observer.h"
 
 namespace ui {
 
-namespace {
-
-class MockTouchscreenDeviceManager : public TouchscreenDeviceManager {
- public:
-  MockTouchscreenDeviceManager() {}
-  virtual ~MockTouchscreenDeviceManager() {}
-
-  void AddDevice(const TouchscreenDevice& device) {
-    devices_.push_back(device);
-  }
-
-  // TouchscreenDeviceManager overrides:
-  virtual std::vector<TouchscreenDevice> GetDevices() OVERRIDE {
-    return devices_;
-  }
-
- private:
-  std::vector<TouchscreenDevice> devices_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTouchscreenDeviceManager);
-};
-
-}  // namespace
-
 class TouchscreenDelegateImplTest : public testing::Test {
  public:
-  TouchscreenDelegateImplTest() {}
+  TouchscreenDelegateImplTest() {
+    DeviceDataManager::CreateInstance();
+    device_delegate_ = DeviceDataManager::GetInstance();
+  }
   virtual ~TouchscreenDelegateImplTest() {}
 
   virtual void SetUp() OVERRIDE {
-    device_manager_ = new MockTouchscreenDeviceManager();
-    delegate_.reset(new TouchscreenDelegateImpl(
-        scoped_ptr<TouchscreenDeviceManager>(device_manager_)));
+    touchscreen_delegate_.reset(new TouchscreenDelegateImpl());
 
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen
@@ -82,6 +60,8 @@ class TouchscreenDelegateImplTest : public testing::Test {
     }
 
     displays_.clear();
+    device_delegate_->OnTouchscreenDevicesUpdated(
+        std::vector<TouchscreenDevice>());
   }
 
   std::vector<DisplayConfigurator::DisplayState> GetDisplayStates() {
@@ -93,9 +73,9 @@ class TouchscreenDelegateImplTest : public testing::Test {
   }
 
  protected:
-  MockTouchscreenDeviceManager* device_manager_;  // Not owned.
-  scoped_ptr<TouchscreenDelegateImpl> delegate_;
+  scoped_ptr<TouchscreenDelegateImpl> touchscreen_delegate_;
   ScopedVector<DisplaySnapshot> displays_;
+  DeviceHotplugEventObserver* device_delegate_;  // Not owned.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchscreenDelegateImplTest);
@@ -104,19 +84,21 @@ class TouchscreenDelegateImplTest : public testing::Test {
 TEST_F(TouchscreenDelegateImplTest, NoTouchscreens) {
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   for (size_t i = 0; i < display_states.size(); ++i)
     EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[i].touch_device_id);
 }
 
 TEST_F(TouchscreenDelegateImplTest, OneToOneMapping) {
-  device_manager_->AddDevice(TouchscreenDevice(1, gfx::Size(800, 600), false));
-  device_manager_->AddDevice(TouchscreenDevice(2, gfx::Size(1024, 768), false));
+  std::vector<TouchscreenDevice> devices;
+  devices.push_back(TouchscreenDevice(1, gfx::Size(800, 600), false));
+  devices.push_back(TouchscreenDevice(2, gfx::Size(1024, 768), false));
+  device_delegate_->OnTouchscreenDevicesUpdated(devices);
 
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[0].touch_device_id);
   EXPECT_EQ(1, display_states[1].touch_device_id);
@@ -125,11 +107,13 @@ TEST_F(TouchscreenDelegateImplTest, OneToOneMapping) {
 }
 
 TEST_F(TouchscreenDelegateImplTest, MapToCorrectDisplaySize) {
-  device_manager_->AddDevice(TouchscreenDevice(2, gfx::Size(1024, 768), false));
+  std::vector<TouchscreenDevice> devices;
+  devices.push_back(TouchscreenDevice(2, gfx::Size(1024, 768), false));
+  device_delegate_->OnTouchscreenDevicesUpdated(devices);
 
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[0].touch_device_id);
   EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[1].touch_device_id);
@@ -138,12 +122,14 @@ TEST_F(TouchscreenDelegateImplTest, MapToCorrectDisplaySize) {
 }
 
 TEST_F(TouchscreenDelegateImplTest, MapWhenSizeDiffersByOne) {
-  device_manager_->AddDevice(TouchscreenDevice(1, gfx::Size(801, 600), false));
-  device_manager_->AddDevice(TouchscreenDevice(2, gfx::Size(1023, 768), false));
+  std::vector<TouchscreenDevice> devices;
+  devices.push_back(TouchscreenDevice(1, gfx::Size(801, 600), false));
+  devices.push_back(TouchscreenDevice(2, gfx::Size(1023, 768), false));
+  device_delegate_->OnTouchscreenDevicesUpdated(devices);
 
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[0].touch_device_id);
   EXPECT_EQ(1, display_states[1].touch_device_id);
@@ -152,12 +138,14 @@ TEST_F(TouchscreenDelegateImplTest, MapWhenSizeDiffersByOne) {
 }
 
 TEST_F(TouchscreenDelegateImplTest, MapWhenSizesDoNotMatch) {
-  device_manager_->AddDevice(TouchscreenDevice(1, gfx::Size(1022, 768), false));
-  device_manager_->AddDevice(TouchscreenDevice(2, gfx::Size(802, 600), false));
+  std::vector<TouchscreenDevice> devices;
+  devices.push_back(TouchscreenDevice(1, gfx::Size(1022, 768), false));
+  devices.push_back(TouchscreenDevice(2, gfx::Size(802, 600), false));
+  device_delegate_->OnTouchscreenDevicesUpdated(devices);
 
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   EXPECT_EQ(TouchscreenDevice::kInvalidId, display_states[0].touch_device_id);
   EXPECT_EQ(1, display_states[1].touch_device_id);
@@ -166,13 +154,14 @@ TEST_F(TouchscreenDelegateImplTest, MapWhenSizesDoNotMatch) {
 }
 
 TEST_F(TouchscreenDelegateImplTest, MapInternalTouchscreen) {
-  device_manager_->AddDevice(
-      TouchscreenDevice(1, gfx::Size(1920, 1080), false));
-  device_manager_->AddDevice(TouchscreenDevice(2, gfx::Size(9999, 888), true));
+  std::vector<TouchscreenDevice> devices;
+  devices.push_back(TouchscreenDevice(1, gfx::Size(1920, 1080), false));
+  devices.push_back(TouchscreenDevice(2, gfx::Size(9999, 888), true));
+  device_delegate_->OnTouchscreenDevicesUpdated(devices);
 
   std::vector<DisplayConfigurator::DisplayState> display_states =
       GetDisplayStates();
-  delegate_->AssociateTouchscreens(&display_states);
+  touchscreen_delegate_->AssociateTouchscreens(&display_states);
 
   // Internal touchscreen is always mapped to internal display.
   EXPECT_EQ(2, display_states[0].touch_device_id);

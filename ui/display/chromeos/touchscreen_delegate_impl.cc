@@ -9,20 +9,20 @@
 
 #include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
-#include "ui/display/types/chromeos/touchscreen_device_manager.h"
+#include "ui/events/device_data_manager.h"
 
 namespace ui {
 
-TouchscreenDelegateImpl::TouchscreenDelegateImpl(
-    scoped_ptr<TouchscreenDeviceManager> touch_device_manager)
-    : touch_device_manager_(touch_device_manager.Pass()) {}
+TouchscreenDelegateImpl::TouchscreenDelegateImpl() {
+}
 
 TouchscreenDelegateImpl::~TouchscreenDelegateImpl() {}
 
 void TouchscreenDelegateImpl::AssociateTouchscreens(
     std::vector<DisplayConfigurator::DisplayState>* displays) {
   std::set<int> no_match_touchscreen;
-  std::vector<TouchscreenDevice> devices = touch_device_manager_->GetDevices();
+  const std::vector<TouchscreenDevice>& devices =
+      DeviceDataManager::GetInstance()->touchscreen_devices();
 
   int internal_touchscreen = -1;
   for (size_t i = 0; i < devices.size(); ++i) {

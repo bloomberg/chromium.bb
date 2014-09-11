@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/chromeos/x11/touchscreen_device_manager_x11.h"
+#include "ui/events/x/hotplug_event_handler_x11.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -18,7 +18,11 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "ui/events/device_hotplug_event_observer.h"
+#include "ui/events/touchscreen_device.h"
 #include "ui/gfx/x/x11_types.h"
+
+namespace ui {
 
 namespace {
 
@@ -30,8 +34,12 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
   using base::FileEnumerator;
   using base::FilePath;
 
+#if !defined(CHROMEOS)
+  return false;
+#else
   if (!base::SysInfo::IsRunningOnChromeOS())
     return false;
+#endif
 
   // Input device has a property "Device Node" pointing to its dev input node,
   // e.g.   Device Node (250): "/dev/input/event8"
@@ -47,9 +55,18 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
   if (!dev)
     return false;
 
-  if (XGetDeviceProperty(dpy, dev, device_node, 0, 1000, False,
-                         AnyPropertyType, &actual_type, &actual_format,
-                         &nitems, &bytes_after, &data) != Success) {
+  if (XGetDeviceProperty(dpy,
+                         dev,
+                         device_node,
+                         0,
+                         1000,
+                         False,
+                         AnyPropertyType,
+                         &actual_type,
+                         &actual_format,
+                         &nitems,
+                         &bytes_after,
+                         &data) != Success) {
     XCloseDevice(dpy, dev);
     return false;
   }
@@ -58,10 +75,8 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
   XCloseDevice(dpy, dev);
 
   std::string event_node = dev_node_path.BaseName().value();
-  if (event_node.empty() ||
-      !StartsWithASCII(event_node, "event", false)) {
+  if (event_node.empty() || !StartsWithASCII(event_node, "event", false))
     return false;
-  }
 
   // Extract id "XXX" from "eventXXX"
   std::string event_node_id = event_node.substr(5);
@@ -71,15 +86,13 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
   FileEnumerator i2c_enum(FilePath(FILE_PATH_LITERAL("/sys/bus/i2c/devices/")),
                           false,
                           base::FileEnumerator::DIRECTORIES);
-  for (FilePath i2c_name = i2c_enum.Next();
-       !i2c_name.empty();
+  for (FilePath i2c_name = i2c_enum.Next(); !i2c_name.empty();
        i2c_name = i2c_enum.Next()) {
     FileEnumerator input_enum(i2c_name.Append(FILE_PATH_LITERAL("input")),
                               false,
                               base::FileEnumerator::DIRECTORIES,
                               FILE_PATH_LITERAL("input*"));
-    for (base::FilePath input = input_enum.Next();
-         !input.empty();
+    for (base::FilePath input = input_enum.Next(); !input.empty();
          input = input_enum.Next()) {
       if (input.BaseName().value().substr(5) == event_node_id)
         return true;
@@ -91,33 +104,40 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
 
 }  // namespace
 
-namespace ui {
+HotplugEventHandlerX11::HotplugEventHandlerX11(
+    DeviceHotplugEventObserver* delegate)
+    : delegate_(delegate) {
+}
 
-TouchscreenDeviceManagerX11::TouchscreenDeviceManagerX11()
-    : display_(gfx::GetXDisplay()) {}
+HotplugEventHandlerX11::~HotplugEventHandlerX11() {
+}
 
-TouchscreenDeviceManagerX11::~TouchscreenDeviceManagerX11() {}
+void HotplugEventHandlerX11::OnHotplugEvent() {
+  const XIDeviceList& device_list =
+      DeviceListCacheX::GetInstance()->GetXI2DeviceList(gfx::GetXDisplay());
+  HandleTouchscreenDevices(device_list);
+}
 
-std::vector<TouchscreenDevice> TouchscreenDeviceManagerX11::GetDevices() {
+void HotplugEventHandlerX11::HandleTouchscreenDevices(
+    const XIDeviceList& x11_devices) {
   std::vector<TouchscreenDevice> devices;
-  int num_devices = 0;
-  Atom valuator_x = XInternAtom(display_, "Abs MT Position X", False);
-  Atom valuator_y = XInternAtom(display_, "Abs MT Position Y", False);
+  Display* display = gfx::GetXDisplay();
+  Atom valuator_x = XInternAtom(display, "Abs MT Position X", False);
+  Atom valuator_y = XInternAtom(display, "Abs MT Position Y", False);
   if (valuator_x == None || valuator_y == None)
-    return devices;
+    return;
 
   std::set<int> no_match_touchscreen;
-  XIDeviceInfo* info = XIQueryDevice(display_, XIAllDevices, &num_devices);
-  for (int i = 0; i < num_devices; i++) {
-    if (!info[i].enabled || info[i].use != XIFloatingSlave)
+  for (int i = 0; i < x11_devices.count; i++) {
+    if (!x11_devices[i].enabled || x11_devices[i].use != XIFloatingSlave)
       continue;  // Assume all touchscreens are floating slaves
 
     double width = -1.0;
     double height = -1.0;
     bool is_direct_touch = false;
 
-    for (int j = 0; j < info[i].num_classes; j++) {
-      XIAnyClassInfo* class_info = info[i].classes[j];
+    for (int j = 0; j < x11_devices[i].num_classes; j++) {
+      XIAnyClassInfo* class_info = x11_devices[i].classes[j];
 
       if (class_info->type == XIValuatorClass) {
         XIValuatorClassInfo* valuator_info =
@@ -149,15 +169,14 @@ std::vector<TouchscreenDevice> TouchscreenDeviceManagerX11::GetDevices() {
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
     if (width > 0.0 && height > 0.0 && is_direct_touch) {
-      bool is_internal = IsTouchscreenInternal(display_, info[i].deviceid);
-      devices.push_back(TouchscreenDevice(info[i].deviceid,
-                                          gfx::Size(width, height),
-                                          is_internal));
+      bool is_internal =
+          IsTouchscreenInternal(display, x11_devices[i].deviceid);
+      devices.push_back(TouchscreenDevice(
+          x11_devices[i].deviceid, gfx::Size(width, height), is_internal));
     }
   }
 
-  XIFreeDeviceInfo(info);
-  return devices;
+  delegate_->OnTouchscreenDevicesUpdated(devices);
 }
 
 }  // namespace ui

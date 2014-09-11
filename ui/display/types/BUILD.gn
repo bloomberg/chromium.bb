@@ -11,9 +11,6 @@ component("types") {
     "chromeos/display_snapshot.h",
     "chromeos/native_display_delegate.h",
     "chromeos/native_display_observer.h",
-    "chromeos/touchscreen_device.cc",
-    "chromeos/touchscreen_device.h",
-    "chromeos/touchscreen_device_manager.h",
     "display_constants.h",
     "display_types_export.h",
   ]

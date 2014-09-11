@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ui/events/input_device_event_observer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -106,6 +107,23 @@ int64_t DeviceDataManager::GetDisplayForTouchDevice(int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
     return touch_device_to_display_map_[touch_device_id];
   return gfx::Display::kInvalidDisplayID;
+}
+
+void DeviceDataManager::OnTouchscreenDevicesUpdated(
+    const std::vector<TouchscreenDevice>& devices) {
+  touchscreen_devices_ = devices;
+
+  FOR_EACH_OBSERVER(InputDeviceEventObserver,
+                    observers_,
+                    OnInputDeviceConfigurationChanged());
+}
+
+void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DeviceDataManager::RemoveObserver(InputDeviceEventObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ui

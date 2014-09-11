@@ -17,6 +17,8 @@ typedef unsigned long XID;
 
 namespace ui {
 
+class HotplugEventHandlerX11;
+
 // A PlatformEventSource implementation for reading events from X11 server and
 // dispatching the events to the appropriate dispatcher.
 class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
@@ -55,6 +57,8 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // Keeps track of whether this source should continue to dispatch all the
   // available events.
   bool continue_stream_;
+
+  scoped_ptr<HotplugEventHandlerX11> hotplug_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

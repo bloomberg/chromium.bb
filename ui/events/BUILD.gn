@@ -18,6 +18,7 @@ component("events_base") {
   sources = [
     "device_data_manager.cc",
     "device_data_manager.h",
+    "device_hotplug_event_observer.h",
     "event_constants.h",
     "event_switches.cc",
     "event_switches.h",
@@ -37,6 +38,8 @@ component("events_base") {
     "keycodes/keyboard_codes.h",
     "latency_info.cc",
     "latency_info.h",
+    "touchscreen_device.cc",
+    "touchscreen_device.h",
   ]
 
   defines = [ "EVENTS_BASE_IMPLEMENTATION" ]
@@ -63,6 +66,8 @@ component("events_base") {
       "x/device_data_manager_x11.h",
       "x/device_list_cache_x.cc",
       "x/device_list_cache_x.h",
+      "x/hotplug_event_handler_x11.cc",
+      "x/hotplug_event_handler_x11.h",
       "x/keysym_to_unicode.cc",
       "x/keysym_to_unicode.h",
       "x/touch_factory_x11.cc",

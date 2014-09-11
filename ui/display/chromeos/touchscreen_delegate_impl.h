@@ -8,17 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display_export.h"
-#include "ui/display/types/chromeos/touchscreen_device.h"
 
 namespace ui {
-
-class TouchscreenDeviceManager;
 
 class DISPLAY_EXPORT TouchscreenDelegateImpl
     : public DisplayConfigurator::TouchscreenDelegate {
  public:
-  explicit TouchscreenDelegateImpl(
-      scoped_ptr<TouchscreenDeviceManager> touch_device_manager);
+  TouchscreenDelegateImpl();
   virtual ~TouchscreenDelegateImpl();
 
   // DisplayConfigurator::TouchscreenDelegate overrides:
@@ -26,8 +22,6 @@ class DISPLAY_EXPORT TouchscreenDelegateImpl
       std::vector<DisplayConfigurator::DisplayState>* displays) OVERRIDE;
 
  private:
-  scoped_ptr<TouchscreenDeviceManager> touch_device_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchscreenDelegateImpl);
 };
 

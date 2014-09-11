@@ -17,7 +17,6 @@ namespace ui {
 class CursorFactoryOzone;
 class NativeDisplayDelegate;
 class SurfaceFactoryOzone;
-class TouchscreenDeviceManager;
 class GpuPlatformSupport;
 class GpuPlatformSupportHost;
 class PlatformWindow;
@@ -64,8 +63,6 @@ class OZONE_EXPORT OzonePlatform {
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate>
       CreateNativeDisplayDelegate() = 0;
-  virtual scoped_ptr<ui::TouchscreenDeviceManager>
-      CreateTouchscreenDeviceManager() = 0;
 #endif
 
  private:

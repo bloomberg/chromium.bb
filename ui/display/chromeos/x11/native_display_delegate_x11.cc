@@ -20,7 +20,8 @@
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 #include "ui/display/types/chromeos/native_display_observer.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
-#include "ui/events/platform/platform_event_observer.h"
+#include "ui/events/device_data_manager.h"
+#include "ui/events/input_device_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -71,6 +72,24 @@ XRRCrtcGamma* ResampleGammaRamp(XRRCrtcGamma* gamma_ramp, int gamma_ramp_size) {
   return resampled;
 }
 
+class InputHotplugEventObserver : public InputDeviceEventObserver {
+ public:
+  explicit InputHotplugEventObserver(
+      NativeDisplayDelegateX11::HelperDelegate* delegate)
+      : delegate_(delegate) {}
+  virtual ~InputHotplugEventObserver() {}
+
+  // InputDeviceEventObserver:
+  virtual void OnInputDeviceConfigurationChanged() OVERRIDE {
+    delegate_->NotifyDisplayObservers();
+  }
+
+ private:
+  NativeDisplayDelegateX11::HelperDelegate* delegate_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(InputHotplugEventObserver);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,48 +122,6 @@ class NativeDisplayDelegateX11::HelperDelegateX11
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeDisplayDelegateX11::PlatformEventObserverX11
-
-class NativeDisplayDelegateX11::PlatformEventObserverX11
-    : public PlatformEventObserver {
- public:
-  PlatformEventObserverX11(HelperDelegate* delegate);
-  virtual ~PlatformEventObserverX11();
-
-  // PlatformEventObserverX11:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-
- private:
-  HelperDelegate* delegate_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformEventObserverX11);
-};
-
-NativeDisplayDelegateX11::PlatformEventObserverX11::PlatformEventObserverX11(
-    HelperDelegate* delegate)
-    : delegate_(delegate) {}
-
-NativeDisplayDelegateX11::PlatformEventObserverX11::
-    ~PlatformEventObserverX11() {}
-
-void NativeDisplayDelegateX11::PlatformEventObserverX11::WillProcessEvent(
-    const ui::PlatformEvent& event) {
-  // XI_HierarchyChanged events are special. There is no window associated with
-  // these events. So process them directly from here.
-  if (event->type == GenericEvent &&
-      event->xgeneric.evtype == XI_HierarchyChanged) {
-    VLOG(1) << "Received XI_HierarchyChanged event";
-    // Defer configuring outputs to not stall event processing.
-    // This also takes care of same event being received twice.
-    delegate_->NotifyDisplayObservers();
-  }
-}
-
-void NativeDisplayDelegateX11::PlatformEventObserverX11::DidProcessEvent(
-    const ui::PlatformEvent& event) {}
-
-////////////////////////////////////////////////////////////////////////////////
 // NativeDisplayDelegateX11 implementation:
 
 NativeDisplayDelegateX11::NativeDisplayDelegateX11()
@@ -157,8 +134,11 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
   if (ui::PlatformEventSource::GetInstance()) {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
         platform_event_dispatcher_.get());
-    ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(
-        platform_event_observer_.get());
+  }
+
+  if (input_hotplug_observer_) {
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(
+        input_hotplug_observer_.get());
   }
 
   STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
@@ -172,17 +152,14 @@ void NativeDisplayDelegateX11::Initialize() {
   helper_delegate_.reset(new HelperDelegateX11(this));
   platform_event_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
       helper_delegate_.get(), xrandr_event_base));
-  platform_event_observer_.reset(
-      new PlatformEventObserverX11(helper_delegate_.get()));
+  input_hotplug_observer_.reset(
+      new InputHotplugEventObserver(helper_delegate_.get()));
+  ui::DeviceDataManager::GetInstance()->AddObserver(
+      input_hotplug_observer_.get());
 
   if (ui::PlatformEventSource::GetInstance()) {
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(
         platform_event_dispatcher_.get());
-
-    // We can't do this with a root window listener because XI_HierarchyChanged
-    // messages don't have a target window.
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(
-        platform_event_observer_.get());
   }
 }
 

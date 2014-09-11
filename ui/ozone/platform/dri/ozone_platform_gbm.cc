@@ -33,7 +33,6 @@
 #include "ui/ozone/public/ozone_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
 #include "ui/ozone/platform/dri/chromeos/display_message_handler.h"
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_proxy.h"
@@ -119,11 +118,6 @@ class OzonePlatformGbm : public OzonePlatform {
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get()));
-  }
-  virtual scoped_ptr<TouchscreenDeviceManager>
-      CreateTouchscreenDeviceManager() OVERRIDE {
-    return scoped_ptr<TouchscreenDeviceManager>(
-        new TouchscreenDeviceManagerOzone());
   }
 #endif
   virtual void InitializeUI() OVERRIDE {

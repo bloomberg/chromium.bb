@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/types/chromeos/touchscreen_device.h"
+#include "ui/events/touchscreen_device.h"
 
 namespace ui {
 
@@ -12,8 +12,7 @@ const int TouchscreenDevice::kInvalidId = 0;
 TouchscreenDevice::TouchscreenDevice(int id,
                                      const gfx::Size& size,
                                      bool is_internal)
-    : id(id),
-      size(size),
-      is_internal(is_internal) {}
+    : id(id), size(size), is_internal(is_internal) {
+}
 
 }  // namespace ui
