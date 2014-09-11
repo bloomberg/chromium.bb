@@ -26,9 +26,9 @@ Portable Native Client lets developers run native compiled code on the web.
   :class: note
 
   This site uses several examples of Native Client. For the best experience,
-  consider downloading the `latest version of Chrome <http://www.google.com/chrome/>`_.
-  When you come back, be sure to `check out our demos 
-  <https://gonativeclient.appspot.com/demo>`_.
+  consider downloading the `latest version of Chrome 
+  <http://www.google.com/chrome/>`_. When you come back, be sure to `check out
+  our demos <https://gonativeclient.appspot.com/demo>`_.
 
 .. raw:: html
 
@@ -43,20 +43,22 @@ Two Types of Modules
 
 Native Client comes in two flavors.
 
-* **Portable Native Client (PNaCl)**: Pronounced 'pinnacle', PNaCl runs single, portable (**pexe**) executables and is available
-  in most implementations of Chrome. A translator built into Chrome
-  translates the pexe into native code for the client hardware. The entire
-  module is translated before any code is executed rather than as the code is
-  executed. PNaCl modules can be hosted from any web server.
+* **Portable Native Client (PNaCl)**: Pronounced 'pinnacle', PNaCl runs single,
+  portable (**pexe**) executables and is available in most implementations of
+  Chrome. A translator built into Chrome translates the pexe into native code
+  for the client hardware. The entire module is translated before any code is
+  executed rather than as the code is executed. PNaCl modules can be hosted from
+  any web server.
 * **Native Client (NaCl)**: Also called traditional or non-portable Native
-  Client, NaCl runs  
-  architecture-dependent (**nexe**) modules, which are packaged into an
-  application. At runtime, the browser decides which nexe to load based on the
-  architecture of the client machine. NaCl modules must be run from the `Chrome
-  Web Store (CWS) <https://chrome.google.com/webstore/category/apps>`_.
-  Fortunately, work from PNaCl modules can be used to create NaCl modules. 
+  Client, NaCl runs architecture-dependent (**nexe**) modules, which are
+  packaged into an application. At runtime, the browser decides which nexe to
+  load based on the architecture of the client machine. NaCl modules must be run
+  from the `Chrome Web Store (CWS) 
+  <https://chrome.google.com/webstore/category/apps>`_. Fortunately, work from
+  PNaCl modules can be used to create NaCl modules. 
   
-These flavors are described in more depth in `PNaCl and NaCl <nacl-and-pnacl>`_
+These flavors are described in more depth in :doc:`PNaCl and NaCl 
+<nacl-and-pnacl>`
 
 .. raw:: html
 
@@ -65,9 +67,10 @@ These flavors are described in more depth in `PNaCl and NaCl <nacl-and-pnacl>`_
   <h2>Hello World</h2>
   <div class="big-intro">
 
-To jump right in `take the tutorial <devguide/tutorial/tutorial-part1>`_ that walks you through a basic web 
-application for Portable Native Client (PNaCl). This is a client-side 
-application that uses HTML, JavaScript, and a Native Client module written in C++.
+To jump right in :doc:`take the tutorial <devguide/tutorial/tutorial-part1>`
+that walks you through a basic web application for Portable Native Client
+(PNaCl). This is a client-side application that uses HTML, JavaScript, and a
+Native Client module written in C++.
 
 .. raw:: html
 
@@ -77,7 +80,10 @@ application that uses HTML, JavaScript, and a Native Client module written in C+
   <h2>A Little More Advanced</h2>
   <div class="big-intro">
 
-If you've already got the basics down, you're probably trying to get a real application ready for production. You're `building </devguide/devcycle/building>`_, `debugging </devguide/devcycle/debugging>`_ or `ready to distribute </devguide/distributing>`_.
+If you've already got the basics down, you're probably trying to get a real
+application ready for production. You're :doc:`building 
+<devguide/devcycle/building>`, :doc:`debugging <devguide/devcycle/debugging>`
+or :doc:`ready to distribute <devguide/distributing>`.
 
 .. raw:: html
 
@@ -88,7 +94,10 @@ If you've already got the basics down, you're probably trying to get a real appl
   <h2>Nuts and Bolts</h2>
   <div class="big-intro">
   
-You've been working on a Native Client module for a while now and you've run into an arcane problem. You may need to refer to the `PNaCl Bitcode Reference </reference/pnacl-bitcode-abi>`_ or the `Sandbox internals </sandbox_internals/index>`_.
+You've been working on a Native Client module for a while now and you've run
+into an arcane problem. You may need to refer to the :doc:`PNaCl Bitcode
+Reference <reference/pnacl-bitcode-abi>` or the :doc:`Sandbox internals 
+<reference/sandbox_internals/index>`.
 
 .. raw:: html
 
@@ -99,14 +108,15 @@ You've been working on a Native Client module for a while now and you've run int
 I Want to Know Everything
 =========================
 
-So, you like to read now and try later. Start with our `Technical Overview </overview>`_
+So, you like to read now and try later. Start with our :doc:`Technical Overview
+<overview>`
 
 .. raw:: html
 
   <div class="big-intro" style="clear: both;">
 
-Send us questions, comments, and feedback:
-`native-client-discuss <https://groups.google.com/forum/#!forum/native-client-discuss>`_.
+Send us questions, comments, and feedback: `native-client-discuss 
+<https://groups.google.com/forum/#!forum/native-client-discuss>`_.
 
 .. raw:: html
 
