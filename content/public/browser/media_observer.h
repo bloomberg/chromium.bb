@@ -34,27 +34,6 @@ class MediaObserver {
   virtual void OnCreatingAudioStream(int render_process_id,
                                      int render_frame_id) = 0;
 
-  // Called when an audio stream transitions into a playing state.
-  // |power_read_callback| is a thread-safe callback, provided for polling the
-  // current audio signal power level, and any copies/references to it must be
-  // destroyed when OnAudioStreamStopped() is called.
-  //
-  // The callback returns the current power level (in dBFS units) and the clip
-  // status (true if any part of the audio signal has clipped since the last
-  // callback run).  See media/audio/audio_power_monitor.h for more info.
-  typedef base::Callback<std::pair<float, bool>()> ReadPowerAndClipCallback;
-  virtual void OnAudioStreamPlaying(
-      int render_process_id,
-      int render_frame_id,
-      int stream_id,
-      const ReadPowerAndClipCallback& power_read_callback) = 0;
-
-  // Called when an audio stream has stopped.
-  virtual void OnAudioStreamStopped(
-      int render_process_id,
-      int render_frame_id,
-      int stream_id) = 0;
-
  protected:
   virtual ~MediaObserver() {}
 };

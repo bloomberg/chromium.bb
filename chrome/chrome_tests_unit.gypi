@@ -1026,7 +1026,6 @@
         'browser/io_thread_unittest.cc',
         'browser/logging_chrome_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
-        'browser/media/audio_stream_monitor_unittest.cc',
         'browser/media/cast_transport_host_filter_unittest.cc',
         'browser/media/desktop_media_list_ash_unittest.cc',
         'browser/media/native_desktop_media_list_unittest.cc',

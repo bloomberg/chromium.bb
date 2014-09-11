@@ -576,6 +576,9 @@ class WebContents : public PageNavigator,
   // Requests the renderer to insert CSS into the main frame's document.
   virtual void InsertCSS(const std::string& css) = 0;
 
+  // Returns true if audio has recently been audible from the WebContents.
+  virtual bool WasRecentlyAudible() = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

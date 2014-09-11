@@ -517,6 +517,7 @@
         'browser/loader/temporary_file_stream_unittest.cc',
         'browser/loader/upload_data_stream_builder_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
+        'browser/media/audio_stream_monitor_unittest.cc',
         'browser/media/capture/audio_mirroring_manager_unittest.cc',
         'browser/media/capture/video_capture_oracle_unittest.cc',
         'browser/media/capture/web_contents_audio_input_stream_unittest.cc',
