@@ -11,7 +11,12 @@
 
 #include <errno.h>
 #include <sys/types.h>
-/* We would #include <sys/socket.h> if newlib had this header. */
+
+/*
+ * We would #include <sys/socket.h> if newlib had this header.
+ * Instead, we use socket.h defined in this repository.
+ */
+#include "native_client/src/public/linux_syscalls/sys/socket.h"
 
 ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
   errno = ENOSYS;

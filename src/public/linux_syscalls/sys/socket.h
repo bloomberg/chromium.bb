@@ -56,6 +56,8 @@ struct cmsghdr {
   int cmsg_type;
 };
 
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
 ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags);
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags);
 int shutdown(int sockfd, int how);
