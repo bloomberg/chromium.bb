@@ -88,6 +88,10 @@ bool WebThreadImpl::isCurrentThread() const {
   return thread_->thread_id() == base::PlatformThread::CurrentId();
 }
 
+blink::PlatformThreadId WebThreadImpl::threadId() const {
+  return thread_->thread_id();
+}
+
 WebThreadImpl::~WebThreadImpl() {
   thread_->Stop();
 }
@@ -124,6 +128,10 @@ void WebThreadImplForMessageLoop::exitRunLoop() {
 
 bool WebThreadImplForMessageLoop::isCurrentThread() const {
   return message_loop_->BelongsToCurrentThread();
+}
+
+blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {
+  return thread_id_;
 }
 
 WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {}

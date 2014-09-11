@@ -22,6 +22,7 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
   virtual void removeTaskObserver(TaskObserver* observer);
 
   virtual bool isCurrentThread() const = 0;
+  virtual blink::PlatformThreadId threadId() const = 0;
 
  protected:
   WebThreadBase();
@@ -47,6 +48,7 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
   base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
   virtual bool isCurrentThread() const OVERRIDE;
+  virtual blink::PlatformThreadId threadId() const OVERRIDE;
 
  private:
   scoped_ptr<base::Thread> thread_;
@@ -66,7 +68,10 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
 
  private:
   virtual bool isCurrentThread() const OVERRIDE;
+  virtual blink::PlatformThreadId threadId() const OVERRIDE;
+
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  blink::PlatformThreadId thread_id_;
 };
 
 } // namespace content
