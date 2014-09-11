@@ -7,6 +7,8 @@
 {
   'product_name': 'ui_unittests Framework',
   'variables': {
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui',
+
     # There is no executable in the mock framework, and so nothing to strip.
     'mac_strip': 0,
   },
@@ -23,10 +25,7 @@
   'mac_bundle_resources': [
     'test/framework-Info.plist',
     '<(PRODUCT_DIR)/ui_test.pak',
-
-    # Just include the English-US locale made by ui_resources.gyp:ui_test_pak.
-    # Note that the file is just a copy of ui_test.pak, with a different path.
-    '<(PRODUCT_DIR)/ui/en.lproj/locale.pak',
+    '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
   ],
   'mac_bundle_resources!': [
     'test/framework-Info.plist',

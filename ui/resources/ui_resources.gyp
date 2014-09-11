@@ -74,7 +74,7 @@
             },
           ],
         }],
-        ['OS == "ios" or OS == "mac"', {
+        ['OS == "ios"', {
           'actions': [
             {
               # GN version: //ui/resources:copy_ui_test_pak
