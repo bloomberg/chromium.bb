@@ -28,6 +28,8 @@
       'sources': [
         'ipc_channel_mojo.cc',
         'ipc_channel_mojo.h',
+        'ipc_channel_mojo_readers.cc',
+        'ipc_channel_mojo_readers.h',
         'ipc_message_pipe_reader.cc',
         'ipc_message_pipe_reader.h',
       ],
