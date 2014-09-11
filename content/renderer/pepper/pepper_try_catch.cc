@@ -70,8 +70,11 @@ PepperTryCatchV8::PepperTryCatchV8(
   // Typically when using PepperTryCatchV8 we are passed an isolate. We verify
   // that this isolate is the same as the plugin isolate.
   DCHECK(isolate == instance_->GetIsolate());
-  // We assume we are already in the plugin context for PepperTryCatchV8.
-  DCHECK(GetContext() == isolate->GetCurrentContext());
+
+  // We assume that a handle scope and context has been setup by the user of
+  // this class. This is typically true because this class is used when calling
+  // into the plugin from JavaScript. We want to use whatever v8 context the
+  // caller is in.
 }
 
 PepperTryCatchV8::~PepperTryCatchV8() {
