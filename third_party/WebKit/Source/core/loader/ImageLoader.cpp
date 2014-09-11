@@ -256,7 +256,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
             resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
             resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
         }
-        FetchRequest request(ResourceRequest(url), element()->localName(), resourceLoaderOptions);
+        FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
         configureRequest(request, bypassBehavior, *m_element);
 
         if (m_loadingImageDocument)

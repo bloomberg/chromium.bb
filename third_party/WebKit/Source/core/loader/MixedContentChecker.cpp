@@ -44,6 +44,9 @@
 
 namespace blink {
 
+namespace {
+} // namespace
+
 MixedContentChecker::MixedContentChecker(LocalFrame* frame)
     : m_frame(frame)
 {
@@ -62,6 +65,127 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
 
     // We're in a secure context, so |url| is mixed content if it's insecure.
     return !SecurityOrigin::isSecure(url);
+}
+
+// static
+MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(WebURLRequest::RequestContext context)
+{
+    switch (context) {
+    // "Optionally-blockable" mixed content
+    case WebURLRequest::RequestContextAudio:
+    case WebURLRequest::RequestContextFavicon:
+    case WebURLRequest::RequestContextImage:
+    case WebURLRequest::RequestContextVideo:
+        return ContextTypeOptionallyBlockable;
+
+    // "Blockable" mixed content
+    case WebURLRequest::RequestContextBeacon:
+    case WebURLRequest::RequestContextCSPReport:
+    case WebURLRequest::RequestContextEmbed:
+    case WebURLRequest::RequestContextFetch:
+    case WebURLRequest::RequestContextFont:
+    case WebURLRequest::RequestContextForm:
+    case WebURLRequest::RequestContextFrame:
+    case WebURLRequest::RequestContextHyperlink:
+    case WebURLRequest::RequestContextIframe:
+    case WebURLRequest::RequestContextImageSet:
+    case WebURLRequest::RequestContextImport:
+    case WebURLRequest::RequestContextLocation:
+    case WebURLRequest::RequestContextManifest:
+    case WebURLRequest::RequestContextObject:
+    case WebURLRequest::RequestContextPing:
+    case WebURLRequest::RequestContextScript:
+    case WebURLRequest::RequestContextServiceWorker:
+    case WebURLRequest::RequestContextSharedWorker:
+    case WebURLRequest::RequestContextStyle:
+    case WebURLRequest::RequestContextSubresource:
+    case WebURLRequest::RequestContextTrack:
+    case WebURLRequest::RequestContextWorker:
+    case WebURLRequest::RequestContextXSLT:
+        return ContextTypeBlockable;
+
+    // "Blockable" mixed content whose behavior changed recently, and which is thus guarded behind the "lax" flag
+    case WebURLRequest::RequestContextEventSource:
+    case WebURLRequest::RequestContextXMLHttpRequest:
+        return ContextTypeBlockableUnlessLax;
+
+    // Contexts that we should block, but don't currently.
+    case WebURLRequest::RequestContextDownload:
+    case WebURLRequest::RequestContextInternal:
+    case WebURLRequest::RequestContextPlugin:
+    case WebURLRequest::RequestContextPrefetch:
+        return ContextTypeShouldBeBlockable;
+
+    case WebURLRequest::RequestContextUnspecified:
+        ASSERT_NOT_REACHED();
+    }
+    ASSERT_NOT_REACHED();
+    return ContextTypeBlockable;
+}
+
+// static
+bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url)
+{
+    // No frame, no mixed content:
+    if (!frame)
+        return false;
+
+    // Check the top frame first.
+    if (Frame* top = frame->tree().top()) {
+        // FIXME: We need a way to access the top-level frame's SecurityOrigin when that frame
+        // is in a different process from the current frame. Until that is done, we bail out
+        // early and allow the load.
+        if (!top->isLocalFrame())
+            return false;
+
+        LocalFrame* localTop = toLocalFrame(top);
+        if (frame != localTop && shouldBlockFetch(localTop, resourceRequest, url))
+            return true;
+    }
+
+    // We only care about subresource loads; top-level navigations cannot be mixed content.
+    if (resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel)
+        return false;
+
+    // No mixed content, no problem.
+    if (!isMixedContent(frame->document()->securityOrigin(), url))
+        return false;
+
+    Settings* settings = frame->settings();
+    FrameLoaderClient* client = frame->loader().client();
+    SecurityOrigin* securityOrigin = frame->document()->securityOrigin();
+    bool allowed = false;
+
+    switch (contextTypeFromContext(resourceRequest.requestContext())) {
+    case ContextTypeOptionallyBlockable:
+        allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
+        if (allowed)
+            client->didDisplayInsecureContent();
+        return !allowed;
+
+    case ContextTypeBlockable:
+        allowed = client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+        if (allowed)
+            client->didRunInsecureContent(securityOrigin, url);
+        return !allowed;
+
+    case ContextTypeBlockableUnlessLax:
+        if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled()) {
+            allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
+            if (allowed)
+                client->didDisplayInsecureContent();
+        } else {
+            allowed = client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+            if (allowed)
+                client->didRunInsecureContent(securityOrigin, url);
+        }
+        return !allowed;
+
+    case ContextTypeShouldBeBlockable:
+        return false;
+    };
+    ASSERT_NOT_REACHED();
+    return true;
 }
 
 bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const

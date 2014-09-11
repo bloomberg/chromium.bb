@@ -31,6 +31,7 @@
 #ifndef MixedContentChecker_h
 #define MixedContentChecker_h
 
+#include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -39,11 +40,14 @@ class LocalFrame;
 class FrameLoaderClient;
 class KURL;
 class SecurityOrigin;
+class ResourceRequest;
 
 class MixedContentChecker {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
 public:
-    MixedContentChecker(LocalFrame*);
+    explicit MixedContentChecker(LocalFrame*);
+
+    static bool shouldBlockFetch(LocalFrame*, const ResourceRequest&, const KURL&);
 
     bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
@@ -67,6 +71,15 @@ private:
         WebSocket,
         Submission
     };
+
+    enum ContextType {
+        ContextTypeBlockable,
+        ContextTypeOptionallyBlockable,
+        ContextTypeShouldBeBlockable,
+        ContextTypeBlockableUnlessLax
+    };
+
+    static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
 
     // FIXME: This should probably have a separate client from FrameLoader.
     FrameLoaderClient* client() const;

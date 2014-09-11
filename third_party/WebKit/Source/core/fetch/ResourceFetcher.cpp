@@ -299,6 +299,8 @@ ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
 
 ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
 {
+    if (request.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
+        request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
     if (LocalFrame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
@@ -637,9 +639,12 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     }
 
     // FIXME: Should we consider forPreload here?
-    if (!checkInsecureContent(type, url, effectiveFrame, effectiveTreatment))
+    if (!checkInsecureContent(type, url, effectiveFrame, effectiveTreatment)) {
+        ASSERT(MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url));
         return false;
+    }
 
+    ASSERT(!MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url));
     return true;
 }
 
