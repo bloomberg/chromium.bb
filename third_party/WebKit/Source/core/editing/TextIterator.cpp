@@ -1733,7 +1733,7 @@ PassRefPtrWillBeRawPtr<Range> BackwardsCharacterIterator::range() const
 Position BackwardsCharacterIterator::endPosition() const
 {
     Node* n = m_textIterator.startContainer();
-    if (m_textIterator.atEnd()) {
+    if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
             return createLegacyEditingPosition(n, m_textIterator.endOffset() - m_runOffset);
         ASSERT(!m_runOffset);
