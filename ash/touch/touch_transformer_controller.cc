@@ -197,7 +197,6 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     return;
   } else if (display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
              display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED) {
-    // TODO(miletus) : Handle DUAL_EXTENDED with software mirroring.
     DisplayIdPair id_pair = GetDisplayManager()->GetCurrentDisplayIdPair();
     display1_id = id_pair.first;
     display2_id = id_pair.second;
@@ -236,29 +235,48 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   }
 
   if (display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED) {
-    // TODO(miletus) : Handle the case the state is DUAL_EXTENDED but it
-    // is actually doing software mirroring.
-    if (GetDisplayManager()->software_mirroring_enabled())
-      return;
-    // In extended mode, each display is associated with one root window.
-    aura::Window* root1 =
-        display_controller->GetRootWindowForDisplayId(display1_id);
-    aura::Window* root2 =
-        display_controller->GetRootWindowForDisplayId(display2_id);
-    RootWindowController::ForWindow(root1)->ash_host()->UpdateDisplayID(
-        display1_id, gfx::Display::kInvalidDisplayID);
-    RootWindowController::ForWindow(root2)->ash_host()->UpdateDisplayID(
-        display2_id, gfx::Display::kInvalidDisplayID);
     gfx::Size fb_size =
         Shell::GetInstance()->display_configurator()->framebuffer_size();
-    device_manager->UpdateTouchInfoForDisplay(
-        display1_id,
-        display1.touch_device_id(),
-        GetExtendedModeTouchTransformer(display1, fb_size));
-    device_manager->UpdateTouchInfoForDisplay(
-        display2_id,
-        display2.touch_device_id(),
-        GetExtendedModeTouchTransformer(display2, fb_size));
+    // In extended but software mirroring mode, ther is only one X root window
+    // that associates with both displays.
+    if (GetDisplayManager()->software_mirroring_enabled())  {
+      aura::Window* root = display_controller->GetPrimaryRootWindow();
+      RootWindowController::ForWindow(root)->ash_host()->UpdateDisplayID(
+          display1_id, display2_id);
+      DisplayInfo source_display =
+          gfx::Display::InternalDisplayId() == display1_id ?
+          display1 : display2;
+      // Mapping from framebuffer size to the source display's native
+      // resolution.
+      device_manager->UpdateTouchInfoForDisplay(
+          display1_id,
+          display1.touch_device_id(),
+          GetExtendedModeTouchTransformer(source_display, fb_size));
+      device_manager->UpdateTouchInfoForDisplay(
+          display2_id,
+          display2.touch_device_id(),
+          GetExtendedModeTouchTransformer(source_display, fb_size));
+    } else {
+      // In actual extended mode, each display is associated with one root
+      // window.
+      aura::Window* root1 =
+          display_controller->GetRootWindowForDisplayId(display1_id);
+      aura::Window* root2 =
+          display_controller->GetRootWindowForDisplayId(display2_id);
+      RootWindowController::ForWindow(root1)->ash_host()->UpdateDisplayID(
+          display1_id, gfx::Display::kInvalidDisplayID);
+      RootWindowController::ForWindow(root2)->ash_host()->UpdateDisplayID(
+          display2_id, gfx::Display::kInvalidDisplayID);
+      // Mapping from framebuffer size to each display's native resolution.
+      device_manager->UpdateTouchInfoForDisplay(
+          display1_id,
+          display1.touch_device_id(),
+          GetExtendedModeTouchTransformer(display1, fb_size));
+      device_manager->UpdateTouchInfoForDisplay(
+          display2_id,
+          display2.touch_device_id(),
+          GetExtendedModeTouchTransformer(display2, fb_size));
+    }
     return;
   }
 
