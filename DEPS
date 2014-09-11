@@ -471,7 +471,7 @@ deps_os = {
     # Whenever you roll this please also change frameworks/webview in
     # src/android_webview/buildbot/aosp_manifest.xml to point to the same revision.
     'src/third_party/android_webview_glue/src':
-     Var('chromium_git') + '/external/android_webview_glue.git' + '@' + 'e73e669ac73b2ddc042e380cd784ba8bd39ebb95',
+     Var('chromium_git') + '/external/android_webview_glue.git' + '@' + '8dc9a9d1217f84a7f9b0554f22a826394eabc856',
 
     'src/third_party/android_tools':
      Var('chromium_git') + '/android_tools.git' + '@' + '7fc902d157a9aed7a2b68adc9c69181b3a43cd58',
