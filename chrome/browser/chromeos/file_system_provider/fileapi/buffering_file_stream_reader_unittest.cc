@@ -98,8 +98,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
   {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -115,8 +115,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
     inner_read_log.clear();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(kChunkSize, result);
@@ -131,8 +131,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
     inner_read_log.clear();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(kBufferSize - 2 * kChunkSize, result);
@@ -147,8 +147,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
     inner_read_log.clear();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -170,8 +170,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_Directly) {
   {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -190,8 +190,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_Directly) {
     inner_read_log.clear();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read_bytes));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, read_bytes, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), read_bytes, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(kBufferSize - kChunkSize, result);
@@ -206,8 +206,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_Directly) {
     inner_read_log.clear();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read_bytes));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, read_bytes, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), read_bytes, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -229,8 +229,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
   {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -248,8 +248,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
     ASSERT_LT(kBufferSize, chunk_size);
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(chunk_size));
     std::vector<int> read_log;
-    const int result =
-        reader.Read(buffer, chunk_size, base::Bind(&LogValue<int>, &read_log));
+    const int result = reader.Read(
+        buffer.get(), chunk_size, base::Bind(&LogValue<int>, &read_log));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(5, result);
@@ -267,8 +267,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_WithError) {
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kChunkSize));
   std::vector<int> read_log;
-  const int result =
-      reader.Read(buffer, kChunkSize, base::Bind(&LogValue<int>, &read_log));
+  const int result = reader.Read(
+      buffer.get(), kChunkSize, base::Bind(&LogValue<int>, &read_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);

@@ -166,7 +166,7 @@ bool FileSystemBackend::IsAccessAllowed(
   }
 
   // Check first to make sure this extension has fileBrowserHander permissions.
-  if (!special_storage_policy_ ||
+  if (!special_storage_policy_.get() ||
       !special_storage_policy_->IsFileHandler(extension_id))
     return false;
 
@@ -176,7 +176,7 @@ bool FileSystemBackend::IsAccessAllowed(
 
 void FileSystemBackend::GrantFullAccessToExtension(
     const std::string& extension_id) {
-  if (!special_storage_policy_)
+  if (!special_storage_policy_.get())
     return;
   if (!special_storage_policy_->IsFileHandler(extension_id)) {
     NOTREACHED();
@@ -187,7 +187,7 @@ void FileSystemBackend::GrantFullAccessToExtension(
 
 void FileSystemBackend::GrantFileAccessToExtension(
     const std::string& extension_id, const base::FilePath& virtual_path) {
-  if (!special_storage_policy_)
+  if (!special_storage_policy_.get())
     return;
   // All we care about here is access from extensions for now.
   if (!special_storage_policy_->IsFileHandler(extension_id)) {

@@ -96,7 +96,7 @@ class FileStreamReader::OperationRunner
 
     abort_callback_ = file_system_->ReadFile(
         file_handle_,
-        buffer,
+        buffer.get(),
         offset,
         length,
         base::Bind(

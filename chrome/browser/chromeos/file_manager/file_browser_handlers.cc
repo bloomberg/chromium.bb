@@ -407,8 +407,8 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
     FileDefinitionList* file_definition_list,
     const Extension* extension,
     int handler_pid) {
-  const FileBrowserHandler* action = FindFileBrowserHandlerForActionId(
-      extension_, action_id_);
+  const FileBrowserHandler* action =
+      FindFileBrowserHandlerForActionId(extension_.get(), action_id_);
   for (FileDefinitionList::const_iterator iter = file_definition_list->begin();
        iter != file_definition_list->end();
        ++iter) {

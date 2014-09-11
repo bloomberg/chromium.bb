@@ -84,8 +84,8 @@ void BufferingFileStreamReader::Preload(
   // when reading just small chunks, instead of the entire file.
   const int preload_bytes = buffer_size_;
 
-  const int result =
-      file_stream_reader_->Read(preloading_buffer_, preload_bytes, callback);
+  const int result = file_stream_reader_->Read(
+      preloading_buffer_.get(), preload_bytes, callback);
   DCHECK_EQ(result, net::ERR_IO_PENDING);
 }
 

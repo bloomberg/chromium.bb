@@ -85,7 +85,7 @@ class FileStreamWriter::OperationRunner
 
     abort_callback_ = file_system_->WriteFile(
         file_handle_,
-        buffer,
+        buffer.get(),
         offset,
         length,
         base::Bind(

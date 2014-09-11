@@ -128,7 +128,7 @@ void SnapshotManager::CreateManagedSnapshot(
     const LocalPathCallback& callback) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
-  DCHECK(context);
+  DCHECK(context.get());
 
   GURL url;
   if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
@@ -151,7 +151,7 @@ void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
     int64 needed_space) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
-  DCHECK(context);
+  DCHECK(context.get());
 
   if (needed_space < 0) {
     callback.Run(base::FilePath());
