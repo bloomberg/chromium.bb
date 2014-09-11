@@ -54,8 +54,7 @@ source_set("browser_sources") {
   allow_circular_includes_from = [
     # This target is a pair with content/browser. They always go together and
     # include headers from each other.
-    # TODO(brettw) enable this when this permits non-dependent targets.
-    #"//content/browser",
+    "//content/browser",
   ]
 
   # We expose skia headers in the public API.
