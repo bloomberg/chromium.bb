@@ -468,42 +468,12 @@ void
 evdev_notify_keyboard_focus(struct weston_seat *seat,
 			    struct wl_list *evdev_devices)
 {
-	struct evdev_device *device;
 	struct wl_array keys;
-	unsigned int i, set;
-	char evdev_keys[(KEY_CNT + 7) / 8];
-	char all_keys[(KEY_CNT + 7) / 8];
-	uint32_t *k;
-	int ret;
 
 	if (!seat->keyboard_device_count > 0)
 		return;
 
-	memset(all_keys, 0, sizeof all_keys);
-	wl_list_for_each(device, evdev_devices, link) {
-		memset(evdev_keys, 0, sizeof evdev_keys);
-		ret = libinput_device_get_keys(device->device,
-					       evdev_keys,
-					       sizeof evdev_keys);
-		if (ret < 0) {
-			weston_log("failed to get keys for device %s\n",
-				device->devnode);
-			continue;
-		}
-		for (i = 0; i < ARRAY_LENGTH(evdev_keys); i++)
-			all_keys[i] |= evdev_keys[i];
-	}
-
 	wl_array_init(&keys);
-	for (i = 0; i < KEY_CNT; i++) {
-		set = all_keys[i >> 3] & (1 << (i & 7));
-		if (set) {
-			k = wl_array_add(&keys, sizeof *k);
-			*k = i;
-		}
-	}
-
 	notify_keyboard_focus_in(seat, &keys, STATE_UPDATE_AUTOMATIC);
-
 	wl_array_release(&keys);
 }
