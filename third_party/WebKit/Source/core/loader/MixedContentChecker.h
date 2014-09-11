@@ -80,6 +80,8 @@ private:
     };
 
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
+    static const char* typeNameFromContext(WebURLRequest::RequestContext);
+    static void logToConsole(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
 
     // FIXME: This should probably have a separate client from FrameLoader.
     FrameLoaderClient* client() const;

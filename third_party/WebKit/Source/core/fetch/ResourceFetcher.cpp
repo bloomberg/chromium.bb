@@ -433,78 +433,6 @@ void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& 
     memoryCache()->add(resource.get());
 }
 
-bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, LocalFrame* frame, MixedContentBlockingTreatment treatment) const
-{
-    if (treatment == TreatAsDefaultForType) {
-        switch (type) {
-        case Resource::XSLStyleSheet:
-            ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        case Resource::Script:
-        case Resource::SVGDocument:
-        case Resource::CSSStyleSheet:
-        case Resource::ImportResource:
-            // These resource can inject script into the current document (Script,
-            // XSL) or exfiltrate the content of the current document (CSS).
-            treatment = TreatAsActiveContent;
-            break;
-
-        case Resource::Font:
-        case Resource::TextTrack:
-            // These resources are passive, but mixed usage is low enough that we
-            // can block them in a mixed context.
-            treatment = TreatAsActiveContent;
-            break;
-
-        case Resource::Raw:
-        case Resource::Image:
-        case Resource::Media:
-            // These resources can corrupt only the frame's pixels.
-            treatment = TreatAsPassiveContent;
-            break;
-
-        case Resource::MainResource:
-        case Resource::LinkPrefetch:
-        case Resource::LinkSubresource:
-            // These cannot affect the current document.
-            treatment = TreatAsAlwaysAllowedContent;
-            break;
-        }
-    }
-
-    // No frame, no mixed content.
-    if (!frame)
-        return true;
-
-    if (treatment == TreatAsActiveContent) {
-        if (!frame->loader().mixedContentChecker()->canRunInsecureContent(frame->document()->securityOrigin(), url))
-            return false;
-    } else if (treatment == TreatAsPassiveContent) {
-        if (!frame->loader().mixedContentChecker()->canDisplayInsecureContent(frame->document()->securityOrigin(), url))
-            return false;
-        if (MixedContentChecker::isMixedContent(frame->document()->securityOrigin(), url) || MixedContentChecker::isMixedContent(toLocalFrame(frame->tree().top())->document()->securityOrigin(), url)) {
-            switch (type) {
-            case Resource::Raw:
-                UseCounter::count(frame->document(), UseCounter::MixedContentRaw);
-                break;
-
-            case Resource::Image:
-                UseCounter::count(frame->document(), UseCounter::MixedContentImage);
-                break;
-
-            case Resource::Media:
-                UseCounter::count(frame->document(), UseCounter::MixedContentMedia);
-                break;
-
-            default:
-                ASSERT_NOT_REACHED();
-            }
-        }
-    } else {
-        ASSERT(treatment == TreatAsAlwaysAllowedContent);
-    }
-    return true;
-}
-
 bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
@@ -622,30 +550,20 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
             return false;
     }
 
-    // Last of all, check for insecure content. We do this last so that when
-    // folks block insecure content with a CSP policy, they don't get a warning.
+    // Last of all, check for mixed content. We do this last so that when
+    // folks block mixed content with a CSP policy, they don't get a warning.
     // They'll still get a warning in the console about CSP blocking the load.
 
-    // If we're loading the main resource of a subframe, ensure that we treat the resource as active
-    // content for the purposes of mixed content checks, and that we check against the parent of the
-    // active frame, rather than the frame itself.
+    // If we're loading the main resource of a subframe, ensure that we check
+    // against the parent of the active frame, rather than the frame itself.
     LocalFrame* effectiveFrame = frame();
-    MixedContentBlockingTreatment effectiveTreatment = options.mixedContentBlockingTreatment;
     if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
-        effectiveTreatment = TreatAsActiveContent;
         // FIXME: Deal with RemoteFrames.
         if (frame()->tree().parent()->isLocalFrame())
             effectiveFrame = toLocalFrame(frame()->tree().parent());
     }
 
-    // FIXME: Should we consider forPreload here?
-    if (!checkInsecureContent(type, url, effectiveFrame, effectiveTreatment)) {
-        ASSERT(MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url));
-        return false;
-    }
-
-    ASSERT(!MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url));
-    return true;
+    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url);
 }
 
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const

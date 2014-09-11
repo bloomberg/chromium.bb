@@ -188,7 +188,6 @@ private:
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
     bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const;
-    bool checkInsecureContent(Resource::Type, const KURL&, LocalFrame*, MixedContentBlockingTreatment) const;
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 

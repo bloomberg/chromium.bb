@@ -109,7 +109,7 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     case WebURLRequest::RequestContextXMLHttpRequest:
         return ContextTypeBlockableUnlessLax;
 
-    // Contexts that we should block, but don't currently.
+    // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextInternal:
     case WebURLRequest::RequestContextPlugin:
@@ -121,6 +121,94 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     }
     ASSERT_NOT_REACHED();
     return ContextTypeBlockable;
+}
+
+// static
+const char* MixedContentChecker::typeNameFromContext(WebURLRequest::RequestContext context)
+{
+    switch (context) {
+    case WebURLRequest::RequestContextAudio:
+        return "audio file";
+    case WebURLRequest::RequestContextBeacon:
+        return "Beacon endpoint";
+    case WebURLRequest::RequestContextCSPReport:
+        return "Content Security Policy reporting endpoint";
+    case WebURLRequest::RequestContextDownload:
+        return "download";
+    case WebURLRequest::RequestContextEmbed:
+        return "plugin resource";
+    case WebURLRequest::RequestContextEventSource:
+        return "EventSource endpoint";
+    case WebURLRequest::RequestContextFavicon:
+        return "favicon";
+    case WebURLRequest::RequestContextFetch:
+        return "resource";
+    case WebURLRequest::RequestContextFont:
+        return "font";
+    case WebURLRequest::RequestContextForm:
+        return "form action";
+    case WebURLRequest::RequestContextFrame:
+        return "frame";
+    case WebURLRequest::RequestContextHyperlink:
+        return "resource";
+    case WebURLRequest::RequestContextIframe:
+        return "frame";
+    case WebURLRequest::RequestContextImage:
+        return "image";
+    case WebURLRequest::RequestContextImageSet:
+        return "image";
+    case WebURLRequest::RequestContextImport:
+        return "HTML Import";
+    case WebURLRequest::RequestContextInternal:
+        return "resource";
+    case WebURLRequest::RequestContextLocation:
+        return "resource";
+    case WebURLRequest::RequestContextManifest:
+        return "manifest";
+    case WebURLRequest::RequestContextObject:
+        return "plugin resource";
+    case WebURLRequest::RequestContextPing:
+        return "hyperlink auditing endpoint";
+    case WebURLRequest::RequestContextPlugin:
+        return "plugin data";
+    case WebURLRequest::RequestContextPrefetch:
+        return "prefetch resource";
+    case WebURLRequest::RequestContextScript:
+        return "script";
+    case WebURLRequest::RequestContextServiceWorker:
+        return "Service Worker script";
+    case WebURLRequest::RequestContextSharedWorker:
+        return "Shared Worker script";
+    case WebURLRequest::RequestContextStyle:
+        return "stylesheet";
+    case WebURLRequest::RequestContextSubresource:
+        return "resource";
+    case WebURLRequest::RequestContextTrack:
+        return "Text Track";
+    case WebURLRequest::RequestContextUnspecified:
+        return "resource";
+    case WebURLRequest::RequestContextVideo:
+        return "video";
+    case WebURLRequest::RequestContextWorker:
+        return "Worker script";
+    case WebURLRequest::RequestContextXMLHttpRequest:
+        return "XMLHttpRequest endpoint";
+    case WebURLRequest::RequestContextXSLT:
+        return "XSLT";
+    }
+    ASSERT_NOT_REACHED();
+    return "resource";
+}
+
+// static
+void MixedContentChecker::logToConsole(LocalFrame* frame, const KURL& url, WebURLRequest::RequestContext requestContext, bool allowed)
+{
+    String message = String::format(
+        "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an insecure %s '%s'. %s",
+        frame->document()->url().elidedString().utf8().data(), typeNameFromContext(requestContext), url.elidedString().utf8().data(),
+        allowed ? "This content should also be served over HTTPS." : "This request has been blocked; the content must be served over HTTPS.");
+    MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+    frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
 }
 
 // static
@@ -156,36 +244,34 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     SecurityOrigin* securityOrigin = frame->document()->securityOrigin();
     bool allowed = false;
 
-    switch (contextTypeFromContext(resourceRequest.requestContext())) {
+    ContextType contextType = contextTypeFromContext(resourceRequest.requestContext());
+    if (contextType == ContextTypeBlockableUnlessLax)
+        contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
+
+    switch (contextType) {
     case ContextTypeOptionallyBlockable:
         allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
         if (allowed)
             client->didDisplayInsecureContent();
-        return !allowed;
+        break;
 
     case ContextTypeBlockable:
         allowed = client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
         if (allowed)
             client->didRunInsecureContent(securityOrigin, url);
-        return !allowed;
-
-    case ContextTypeBlockableUnlessLax:
-        if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled()) {
-            allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
-            if (allowed)
-                client->didDisplayInsecureContent();
-        } else {
-            allowed = client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
-            if (allowed)
-                client->didRunInsecureContent(securityOrigin, url);
-        }
-        return !allowed;
+        break;
 
     case ContextTypeShouldBeBlockable:
         return false;
+
+    case ContextTypeBlockableUnlessLax:
+        // We map this to either OptionallyBlockable or Blockable above.
+        ASSERT_NOT_REACHED();
+        return true;
     };
-    ASSERT_NOT_REACHED();
-    return true;
+
+    logToConsole(frame, url, resourceRequest.requestContext(), allowed);
+    return !allowed;
 }
 
 bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const

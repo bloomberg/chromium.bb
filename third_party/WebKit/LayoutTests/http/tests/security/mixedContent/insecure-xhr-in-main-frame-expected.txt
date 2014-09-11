@@ -1,5 +1,3 @@
-CONSOLE WARNING: The page at 'https://127.0.0.1:8443/xmlhttprequest/access-control-response-with-body.html' was loaded over HTTPS, but ran insecure content from 'http://localhost:8000/xmlhttprequest/resources/access-control-allow-with-body.php': this content should also be loaded over HTTPS.
-
-CONSOLE WARNING: The page at 'https://127.0.0.1:8443/xmlhttprequest/access-control-response-with-body.html' was loaded over HTTPS, but ran insecure content from 'http://localhost:8000/xmlhttprequest/resources/access-control-allow-with-body.php': this content should also be loaded over HTTPS.
-
+CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/xmlhttprequest/access-control-response-with-body.html' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://localhost:8000/xmlhttprequest/resources/access-control-allow-with-body.php'. This content should also be served over HTTPS.
+CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/xmlhttprequest/access-control-response-with-body.html' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://localhost:8000/xmlhttprequest/resources/access-control-allow-with-body.php'. This content should also be served over HTTPS.
 This test opens a HTTPS window that loads insecure data via XHR. We should trigger a mixed content callback because the main frame in the window is HTTPS but now has insecure data.
