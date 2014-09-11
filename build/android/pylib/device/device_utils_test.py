@@ -557,20 +557,13 @@ class DeviceUtilsKillAllTest(DeviceUtilsOldImplTest):
          'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
          'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
               'this.is.a.test.process\r\n'),
-        ("adb -s 0123456789abcdef shell 'ps'",
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-              'this.is.a.test.process\r\n'),
         ("adb -s 0123456789abcdef shell 'kill -9 1234'", '')]):
-      self.device.KillAll('this.is.a.test.process', blocking=False)
+      self.assertEquals(1,
+          self.device.KillAll('this.is.a.test.process', blocking=False))
 
   def testKillAll_blocking(self):
     with mock.patch('time.sleep'):
       with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'ps'",
-           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-                'this.is.a.test.process\r\n'),
           ("adb -s 0123456789abcdef shell 'ps'",
            'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
            'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
@@ -582,7 +575,8 @@ class DeviceUtilsKillAllTest(DeviceUtilsOldImplTest):
                 'this.is.a.test.process\r\n'),
           ("adb -s 0123456789abcdef shell 'ps'",
            'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n')]):
-        self.device.KillAll('this.is.a.test.process', blocking=True)
+        self.assertEquals(1,
+            self.device.KillAll('this.is.a.test.process', blocking=True))
 
   def testKillAll_root(self):
     with self.assertCallsSequence([
@@ -590,12 +584,10 @@ class DeviceUtilsKillAllTest(DeviceUtilsOldImplTest):
            'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
            'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
                 'this.is.a.test.process\r\n'),
-          ("adb -s 0123456789abcdef shell 'ps'",
-           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
           ("adb -s 0123456789abcdef shell 'su -c kill -9 1234'", '')]):
-      self.device.KillAll('this.is.a.test.process', as_root=True)
+      self.assertEquals(1,
+          self.device.KillAll('this.is.a.test.process', as_root=True))
 
   def testKillAll_sigterm(self):
     with self.assertCallsSequence([
@@ -603,12 +595,9 @@ class DeviceUtilsKillAllTest(DeviceUtilsOldImplTest):
          'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
          'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
               'this.is.a.test.process\r\n'),
-        ("adb -s 0123456789abcdef shell 'ps'",
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-              'this.is.a.test.process\r\n'),
         ("adb -s 0123456789abcdef shell 'kill -15 1234'", '')]):
-      self.device.KillAll('this.is.a.test.process', signum=signal.SIGTERM)
+      self.assertEquals(1,
+          self.device.KillAll('this.is.a.test.process', signum=signal.SIGTERM))
 
 
 class DeviceUtilsStartActivityTest(DeviceUtilsOldImplTest):

@@ -364,20 +364,20 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    pids = self.old_interface.ExtractPid(process_name)
-    if len(pids) == 0:
+    pids = self._GetPidsImpl(process_name)
+    if not pids:
       raise device_errors.CommandFailedError(
           'No process "%s"' % process_name, device=str(self))
 
+    cmd = 'kill -%d %s' % (signum, ' '.join(pids.values()))
+    self._RunShellCommandImpl(cmd, as_root=as_root)
+
     if blocking:
-      total_killed = self.old_interface.KillAllBlocking(
-          process_name, signum=signum, with_su=as_root, timeout_sec=timeout)
-    else:
-      total_killed = self.old_interface.KillAll(
-          process_name, signum=signum, with_su=as_root)
-    if total_killed == 0:
-      raise device_errors.CommandFailedError(
-          'Failed to kill "%s"' % process_name, device=str(self))
+      wait_period = 0.1
+      while self._GetPidsImpl(process_name):
+        time.sleep(wait_period)
+
+    return len(pids)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def StartActivity(self, intent, blocking=False, trace_file_name=None,
@@ -720,6 +720,24 @@ class DeviceUtils(object):
 
     Raises:
       CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    return self._GetPidsImpl(process_name)
+
+  def _GetPidsImpl(self, process_name):
+    """Implementation of GetPids.
+
+    This is split from GetPids to allow other DeviceUtils methods to call
+    GetPids without spawning a new timeout thread.
+
+    Args:
+      process_name: A string containing the process name to get the PIDs for.
+
+    Returns:
+      A dict mapping process name to PID for each process that contained the
+      provided |process_name|.
+
+    Raises:
       DeviceUnreachableError on missing device.
     """
     procs_pids = {}
