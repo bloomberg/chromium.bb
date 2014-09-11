@@ -26,6 +26,10 @@ namespace athena {
 
 namespace {
 
+// This constant was copied from HistoryURLProvider.
+// TODO(hashimoto): Componentize HistoryURLProvider and delete this.
+const int kScoreForWhatYouTypedResult = 1203;
+
 // The SearchTermsData implementation for Athena.
 class AthenaSearchTermsData : public SearchTermsData {
  public:
@@ -265,6 +269,17 @@ void UrlSearchProvider::OnProviderUpdate(bool updated_matches) {
     return;
 
   ClearResults();
+
+  if (input_.type() == metrics::OmniboxInputType::URL) {
+    // TODO(hashimoto): Componentize HistoryURLProvider and remove this code.
+    AutocompleteMatch what_you_typed_match(
+        NULL, 0, false, AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    what_you_typed_match.destination_url = input_.canonicalized_url();
+    what_you_typed_match.contents = input_.text();
+    what_you_typed_match.relevance = kScoreForWhatYouTypedResult;
+    Add(scoped_ptr<app_list::SearchResult>(new UrlSearchResult(
+        browser_context_, what_you_typed_match)));
+  }
 
   const ACMatches& matches = provider_->matches();
   for (ACMatches::const_iterator it = matches.begin(); it != matches.end();
