@@ -37,7 +37,6 @@ class VIEWS_EXPORT StatusIconLinux {
   virtual ~StatusIconLinux();
 
   virtual void SetImage(const gfx::ImageSkia& image) = 0;
-  virtual void SetPressedImage(const gfx::ImageSkia& image) = 0;
   virtual void SetToolTip(const base::string16& tool_tip) = 0;
 
   // Invoked after a call to SetContextMenu() to let the platform-specific

@@ -24,8 +24,6 @@ TEST_F(StatusIconMacTest, Create) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   icon->SetImage(*image);
-  gfx::ImageSkia* pressed = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON_PRESSED);
-  icon->SetPressedImage(*pressed);
   icon->SetToolTip(base::ASCIIToUTF16("tool tip"));
 }
 

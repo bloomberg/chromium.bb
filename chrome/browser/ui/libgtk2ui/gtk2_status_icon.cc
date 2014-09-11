@@ -37,11 +37,6 @@ void Gtk2StatusIcon::SetImage(const gfx::ImageSkia& image) {
   g_object_unref(pixbuf);
 }
 
-void Gtk2StatusIcon::SetPressedImage(const gfx::ImageSkia& image) {
-  // Ignore pressed images, since the standard on Linux is to not highlight
-  // pressed status icons.
-}
-
 void Gtk2StatusIcon::SetToolTip(const base::string16& tool_tip) {
   gtk_status_icon_set_tooltip_text(gtk_status_icon_,
                                    base::UTF16ToUTF8(tool_tip).c_str());

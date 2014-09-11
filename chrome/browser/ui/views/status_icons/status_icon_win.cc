@@ -104,11 +104,6 @@ void StatusIconWin::SetImage(const gfx::ImageSkia& image) {
     LOG(WARNING) << "Error setting status tray icon image";
 }
 
-void StatusIconWin::SetPressedImage(const gfx::ImageSkia& image) {
-  // Ignore pressed images, since the standard on Windows is to not highlight
-  // pressed status icons.
-}
-
 void StatusIconWin::SetToolTip(const base::string16& tool_tip) {
   // Create the icon.
   NOTIFYICONDATA icon_data;

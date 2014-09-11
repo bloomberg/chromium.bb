@@ -71,7 +71,6 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   StatusIcon* icon = tray.CreateStatusIcon(
       StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip"));
-  icon->SetPressedImage(*image);
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   menu->AddItem(0, L"foo");
   icon->SetContextMenu(menu.Pass());

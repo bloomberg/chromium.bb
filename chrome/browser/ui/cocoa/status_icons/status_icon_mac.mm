@@ -71,14 +71,6 @@ void StatusIconMac::SetImage(const gfx::ImageSkia& image) {
   }
 }
 
-void StatusIconMac::SetPressedImage(const gfx::ImageSkia& image) {
-  if (!image.isNull()) {
-    NSImage* ns_image = gfx::SkBitmapToNSImage(*image.bitmap());
-    if (ns_image)
-      [item() setAlternateImage:ns_image];
-  }
-}
-
 void StatusIconMac::SetToolTip(const base::string16& tool_tip) {
   // If we have a status icon menu, make the tool tip part of the menu instead
   // of a pop-up tool tip when hovering the mouse over the image.

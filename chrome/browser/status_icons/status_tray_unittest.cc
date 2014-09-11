@@ -14,7 +14,6 @@
 
 class MockStatusIcon : public StatusIcon {
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE {}
-  virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE {}
   virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE {}
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const base::string16& title,

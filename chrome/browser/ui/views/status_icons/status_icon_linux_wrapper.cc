@@ -22,10 +22,6 @@ void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
   status_icon_->SetImage(image);
 }
 
-void StatusIconLinuxWrapper::SetPressedImage(const gfx::ImageSkia& image) {
-  status_icon_->SetPressedImage(image);
-}
-
 void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {
   status_icon_->SetToolTip(tool_tip);
 }

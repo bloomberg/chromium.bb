@@ -76,7 +76,6 @@ TEST_F(StatusIconMenuModelTest, SetProperties) {
   ui::Accelerator test_accel(ui::VKEY_A, ui::EF_NONE);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image test_image1(*rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON));
-  gfx::Image test_image2(*rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON_PRESSED));
   ui::Accelerator accel_arg;
   gfx::Image image_arg;
 
@@ -105,9 +104,6 @@ TEST_F(StatusIconMenuModelTest, SetProperties) {
   menu_model()->ChangeIconForCommandId(1, test_image1);
   EXPECT_TRUE(menu_model()->GetIconForCommandId(1, &image_arg));
   EXPECT_EQ(image_arg.ToImageSkia(), test_image1.ToImageSkia());
-  menu_model()->ChangeIconForCommandId(1, test_image2);
-  EXPECT_TRUE(menu_model()->GetIconForCommandId(1, &image_arg));
-  EXPECT_EQ(image_arg.ToImageSkia(), test_image2.ToImageSkia());
 
   // Ensure changes to one menu item does not affect the other menu item.
   EXPECT_FALSE(menu_model()->GetAcceleratorForCommandId(1, &accel_arg));
@@ -115,6 +111,6 @@ TEST_F(StatusIconMenuModelTest, SetProperties) {
   EXPECT_EQ(base::string16(), menu_model()->GetSublabelForCommandId(0));
   EXPECT_FALSE(menu_model()->GetIconForCommandId(0, &image_arg));
 
-  // Menu state should have changed 8 times in this test.
-  EXPECT_EQ(8, changed_count());
+  // Menu state should have changed 7 times in this test.
+  EXPECT_EQ(7, changed_count());
 }

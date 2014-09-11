@@ -289,11 +289,6 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
                  weak_factory_.GetWeakPtr()));
 }
 
-void AppIndicatorIcon::SetPressedImage(const gfx::ImageSkia& image) {
-  // Ignore pressed images, since the standard on Linux is to not highlight
-  // pressed status icons.
-}
-
 void AppIndicatorIcon::SetToolTip(const base::string16& tool_tip) {
   DCHECK(!tool_tip_.empty());
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
