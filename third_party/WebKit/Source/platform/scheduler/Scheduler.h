@@ -43,6 +43,10 @@ public:
     void postTask(const TraceLocation&, const Task&); // For generic (low priority) tasks.
     void postIdleTask(const TraceLocation&, const IdleTask&); // For non-critical tasks which may be reordered relative to other task types.
 
+    // Tells the scheduler that the system received an input event. This causes the scheduler to go into
+    // Compositor Priority mode for a short duration.
+    void didReceiveInputEvent();
+
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.
     // Can be called on any thread.

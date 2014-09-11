@@ -176,6 +176,13 @@ public:
         m_scheduler->enterSchedulerPolicy(SchedulerForTest::Normal);
     }
 
+    virtual void TearDown() OVERRIDE
+    {
+        // If the Scheduler hasn't been shut down then explicitly flush the tasks.
+        if (Scheduler::shared())
+            runPendingTasks();
+    }
+
     void runPendingTasks()
     {
         m_platformSupport.runPendingTasks();
@@ -467,6 +474,13 @@ TEST_F(SchedulerTest, TestInputEventDoesNotTriggerShouldYield_InNormalMode)
     EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
+TEST_F(SchedulerTest, TestDidReceiveInputEventDoesNotTriggerShouldYield)
+{
+    m_scheduler->didReceiveInputEvent();
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
 TEST_F(SchedulerTest, TestCompositorEventDoesNotTriggerShouldYield_InNormalMode)
 {
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
@@ -474,7 +488,17 @@ TEST_F(SchedulerTest, TestCompositorEventDoesNotTriggerShouldYield_InNormalMode)
     EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InLowSchedulerPolicy)
+TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYieldAfterDidReceiveInputEvent)
+{
+    m_scheduler->didReceiveInputEvent();
+
+    ASSERT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InCompositorPriorityMode)
 {
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
@@ -482,7 +506,7 @@ TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InLowSchedulerPolicy)
     EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYield_InLowSchedulerPolicy)
+TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYield_InCompositorPriorityMode)
 {
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
@@ -496,6 +520,23 @@ TEST_F(SchedulerTest, TestCompositorEvent_LowSchedulerPolicyDoesntLastLong)
 
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+    m_platformSupport.setMonotonicTimeForTest(1000.5);
+    runPendingTasks();
+
+    ASSERT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, testDidReceiveInputEvent_DoesntTriggerLowLatencyModeForLong)
+{
+    m_platformSupport.setMonotonicTimeForTest(1000.0);
+
+    // Note the latency mode gets reset by executeHighPriorityTasks, so we need a dummy task here
+    // to make sure runPendingTasks triggers executeHighPriorityTasks.
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+    m_scheduler->didReceiveInputEvent();
     m_platformSupport.setMonotonicTimeForTest(1000.5);
     runPendingTasks();
 

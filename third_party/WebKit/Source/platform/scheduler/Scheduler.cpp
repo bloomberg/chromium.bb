@@ -163,6 +163,11 @@ void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "PendingHighPriorityTasks", m_highPriorityTaskCount);
 }
 
+void Scheduler::didReceiveInputEvent()
+{
+    enterSchedulerPolicy(CompositorPriority);
+}
+
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
     Locker<Mutex> lock(m_pendingTasksMutex);
