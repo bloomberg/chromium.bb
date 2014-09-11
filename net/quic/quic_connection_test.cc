@@ -1277,6 +1277,24 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
   ProcessAckPacket(&frame2);
 }
 
+TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+
+  QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
+  // But an ack with no missing packets will not send an ack.
+  QuicAckFrame frame = InitAckFrame(1);
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillRepeatedly(Return(SequenceNumberSet()));
+  for (int i = 0; i < 20; ++i) {
+    EXPECT_FALSE(ack_alarm->IsSet());
+    ProcessAckPacket(&frame);
+  }
+  EXPECT_TRUE(ack_alarm->IsSet());
+}
+
 TEST_P(QuicConnectionTest, LeastUnackedLower) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
@@ -3013,6 +3031,7 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, false));
   connection_.CloseConnection(QUIC_PEER_GOING_AWAY, false);
   EXPECT_FALSE(connection_.connected());
+  EXPECT_FALSE(connection_.CanWriteStreamData());
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
   connection_.SendPacket(

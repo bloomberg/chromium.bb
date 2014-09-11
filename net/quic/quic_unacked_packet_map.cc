@@ -52,7 +52,7 @@ void QuicUnackedPacketMap::AddPacket(
 
 void QuicUnackedPacketMap::RemoveObsoletePackets() {
   while (!unacked_packets_.empty()) {
-    if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
+    if (!IsPacketRemovable(least_unacked_, unacked_packets_.front())) {
       break;
     }
     delete unacked_packets_.front().all_transmissions;
@@ -107,8 +107,8 @@ void QuicUnackedPacketMap::OnRetransmittedPacket(
                        transmission_info->all_transmissions));
 }
 
-void QuicUnackedPacketMap::ClearPreviousRetransmissions(size_t num_to_clear) {
-  while (!unacked_packets_.empty() && num_to_clear > 0) {
+void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {
+  while (!unacked_packets_.empty() && least_unacked_ < largest_observed_) {
     // If this packet is in flight, or has retransmittable data, then there is
     // no point in clearing out any further packets, because they would not
     // affect the high water mark.
@@ -117,12 +117,26 @@ void QuicUnackedPacketMap::ClearPreviousRetransmissions(size_t num_to_clear) {
       break;
     }
 
-    info->all_transmissions->pop_front();
-    LOG_IF(DFATAL, info->all_transmissions->empty())
-        << "Previous retransmissions must have a newer transmission.";
+    if (info->all_transmissions != NULL) {
+      if (info->all_transmissions->size() < 2) {
+        LOG(DFATAL) << "all_transmissions must be NULL or have multiple "
+                    << "elements.  size:" << info->all_transmissions->size();
+        delete info->all_transmissions;
+      } else {
+        info->all_transmissions->pop_front();
+        if (info->all_transmissions->size() == 1) {
+          // Set the newer transmission's 'all_transmissions' entry to NULL.
+          QuicPacketSequenceNumber new_transmission =
+              info->all_transmissions->front();
+          TransmissionInfo* new_info =
+              &unacked_packets_.at(new_transmission - least_unacked_);
+          delete new_info->all_transmissions;
+          new_info->all_transmissions = NULL;
+        }
+      }
+    }
     unacked_packets_.pop_front();
     ++least_unacked_;
-    --num_to_clear;
   }
 }
 
@@ -187,6 +201,16 @@ bool QuicUnackedPacketMap::IsPacketUseless(
     QuicPacketSequenceNumber sequence_number,
     const TransmissionInfo& info) const {
   return sequence_number <= largest_observed_ &&
+      !info.in_flight &&
+      info.retransmittable_frames == NULL &&
+      info.all_transmissions == NULL;
+}
+
+bool QuicUnackedPacketMap::IsPacketRemovable(
+    QuicPacketSequenceNumber sequence_number,
+    const TransmissionInfo& info) const {
+  return (sequence_number <= largest_observed_ ||
+          unacked_packets_.size() > kMaxTcpCongestionWindow) &&
       !info.in_flight &&
       info.retransmittable_frames == NULL &&
       info.all_transmissions == NULL;

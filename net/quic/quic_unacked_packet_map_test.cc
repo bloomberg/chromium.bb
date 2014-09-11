@@ -7,6 +7,8 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::min;
+
 namespace net {
 namespace test {
 namespace {
@@ -111,6 +113,18 @@ TEST_F(QuicUnackedPacketMapTest, RttOnly) {
   VerifyUnackedPackets(NULL, 0);
   VerifyInFlightPackets(NULL, 0);
   VerifyRetransmittablePackets(NULL, 0);
+}
+
+TEST_F(QuicUnackedPacketMapTest, DiscardOldRttOnly) {
+  // Acks are only tracked for RTT measurement purposes, and are discarded
+  // when more than 200 accumulate.
+  for (int i = 1; i < 400; ++i) {
+    unacked_packets_.AddPacket(CreateNonRetransmittablePacket(i));
+    unacked_packets_.SetSent(i, now_, kDefaultAckLength, false);
+    unacked_packets_.RemoveObsoletePackets();
+    EXPECT_EQ(static_cast<size_t>(min(i, 200)),
+              unacked_packets_.GetNumUnackedPacketsDebugOnly());
+  }
 }
 
 TEST_F(QuicUnackedPacketMapTest, RetransmittableInflightAndRtt) {
@@ -234,6 +248,43 @@ TEST_F(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   VerifyInFlightPackets(pending4, arraysize(pending4));
   QuicPacketSequenceNumber retransmittable4[] = { 7 };
   VerifyRetransmittablePackets(retransmittable4, arraysize(retransmittable4));
+
+  // Remove the older two transmissions from in flight.
+  unacked_packets_.RemoveFromInFlight(3);
+  unacked_packets_.RemoveFromInFlight(5);
+  QuicPacketSequenceNumber pending5[] = { 7 };
+  VerifyInFlightPackets(pending5, arraysize(pending5));
+
+  // Now test ClearAllPreviousTransmissions, leaving one packet.
+  unacked_packets_.ClearAllPreviousRetransmissions();
+  QuicPacketSequenceNumber unacked5[] = { 7 };
+  VerifyUnackedPackets(unacked5, arraysize(unacked5));
+  QuicPacketSequenceNumber retransmittable5[] = { 7 };
+  VerifyRetransmittablePackets(retransmittable5, arraysize(retransmittable5));
+}
+
+TEST_F(QuicUnackedPacketMapTest, RestoreInflight) {
+  // Simulate a retransmittable packet being sent, retransmitted, and the first
+  // transmission being acked.
+  unacked_packets_.AddPacket(CreateRetransmittablePacket(1));
+  unacked_packets_.SetSent(1, now_, kDefaultLength, true);
+  unacked_packets_.OnRetransmittedPacket(1, 2, RTO_RETRANSMISSION);
+  unacked_packets_.RemoveFromInFlight(1);
+  unacked_packets_.SetSent(2, now_, kDefaultLength, true);
+
+  QuicPacketSequenceNumber unacked[] = { 1, 2 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  QuicPacketSequenceNumber retransmittable[] = { 2 };
+  VerifyInFlightPackets(retransmittable, arraysize(retransmittable));
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+  EXPECT_EQ(kDefaultLength, unacked_packets_.bytes_in_flight());
+
+  // Simulate an F-RTO, and restore 1 to flight.
+  unacked_packets_.RestoreInFlight(1);
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+  EXPECT_EQ(2 * kDefaultLength, unacked_packets_.bytes_in_flight());
 }
 
 }  // namespace

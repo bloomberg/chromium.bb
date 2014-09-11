@@ -86,9 +86,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Restores the in flight status for a packet that was previously sent.
   void RestoreInFlight(QuicPacketSequenceNumber sequence_number);
 
-  // Clears up to |num_to_clear| previous transmissions in order to make room
-  // in the ack frame for new acks.
-  void ClearPreviousRetransmissions(size_t num_to_clear);
+  // Clears all previous transmissions in order to make room in the ack frame
+  // for newly acked packets.
+  void ClearAllPreviousRetransmissions();
 
   typedef std::deque<TransmissionInfo> UnackedPacketMap;
 
@@ -139,6 +139,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet no longer has a purpose in the map.
   bool IsPacketUseless(QuicPacketSequenceNumber sequence_number,
                        const TransmissionInfo& info) const;
+  // Returns true if the packet is useless or it's only purpose is RTT
+  // measurement, and it's old enough that is unlikely to ever happen.
+  bool IsPacketRemovable(QuicPacketSequenceNumber sequence_number,
+                         const TransmissionInfo& info) const;
 
   QuicPacketSequenceNumber largest_sent_packet_;
   QuicPacketSequenceNumber largest_observed_;

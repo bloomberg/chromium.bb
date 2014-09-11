@@ -56,6 +56,9 @@ const size_t kMaxFecGroups = 2;
 // expectation of the CHLO/SHLO arriving.
 const size_t kMaxUndecryptablePackets = 10;
 
+// Maximum number of acks received before sending an ack in response.
+const size_t kMaxPacketsReceivedBeforeAckSend = 20;
+
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
@@ -192,6 +195,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       pending_version_negotiation_packet_(false),
       received_packet_manager_(&stats_),
       ack_queued_(false),
+      num_packets_received_since_last_ack_sent_(0),
       stop_waiting_count_(0),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
@@ -781,6 +785,8 @@ void QuicConnection::OnPacketComplete() {
            << last_close_frames_.size() << " closes, "
            << "for " << last_header_.public_header.connection_id;
 
+  ++num_packets_received_since_last_ack_sent_;
+
   // Call MaybeQueueAck() before recording the received packet, since we want
   // to trigger an ack if the newly received packet was previously missing.
   MaybeQueueAck();
@@ -912,6 +918,12 @@ bool QuicConnection::ShouldLastPacketInstigateAck() const {
   }
 
   if (!last_ack_frames_.empty() && last_ack_frames_.back().is_truncated) {
+    return true;
+  }
+  // Always send an ack every 20 packets in order to allow the peer to discard
+  // information from the SentPacketManager and provide an RTT measurement.
+  if (num_packets_received_since_last_ack_sent_ >=
+          kMaxPacketsReceivedBeforeAckSend) {
     return true;
   }
   return false;
@@ -1278,6 +1290,10 @@ bool QuicConnection::ShouldGeneratePacket(
 }
 
 bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
+  if (!connected_) {
+    return false;
+  }
+
   if (writer_->IsWriteBlocked()) {
     visitor_->OnWriteBlocked();
     return false;
@@ -1554,6 +1570,7 @@ void QuicConnection::SendPing() {
 void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
   stop_waiting_count_ = 0;
+  num_packets_received_since_last_ack_sent_ = 0;
   bool send_feedback = false;
 
   // Deprecating the Congestion Feedback Frame after QUIC_VERSION_22.
