@@ -83,16 +83,6 @@ class PersonalDataManagerTest : public testing::Test {
     ResetPersonalDataManager(USER_MODE_NORMAL);
   }
 
-  virtual void TearDown() {
-    // Destruction order is imposed explicitly here.
-    personal_data_.reset(NULL);
-
-    autofill_database_service_->ShutdownOnUIThread();
-    web_database_->ShutdownDatabase();
-    autofill_database_service_ = NULL;
-    web_database_ = NULL;
-  }
-
   void ResetPersonalDataManager(UserMode user_mode) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
     personal_data_.reset(new PersonalDataManager("en-US"));
@@ -108,13 +98,15 @@ class PersonalDataManagerTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
+  // The temporary directory should be deleted at the end to ensure that
+  // files are not used anymore and deletion succeeds.
+  base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
-  base::ScopedTempDir temp_dir_;
-  scoped_ptr<PersonalDataManager> personal_data_;
   PersonalDataLoadedObserverMock personal_data_observer_;
+  scoped_ptr<PersonalDataManager> personal_data_;
 };
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
