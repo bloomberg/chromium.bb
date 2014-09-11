@@ -138,6 +138,7 @@
       'webapp/browser_test/bump_scroll_browser_test.js',
       'webapp/browser_test/cancel_pin_browser_test.js',
       'webapp/browser_test/invalid_pin_browser_test.js',
+      'webapp/browser_test/scrollbar_browser_test.js',
       'webapp/browser_test/update_pin_browser_test.js',
     ],
     # These product files are excluded from our JavaScript unittest

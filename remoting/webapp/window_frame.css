@@ -81,7 +81,7 @@ html.apps-v2 body:not(.fullscreen) {
   position: relative;
 }
 
-html.apps-v2 #scroller {
+html.apps-v2 .window-body {
   height: calc(100% - 32px);  /* Allow space for the title-bar */
 }
 
@@ -144,8 +144,11 @@ body:not(.connected) .window-options {
  */
 
 html.apps-v2 body.fullscreen #scroller {
-  height: 100%;
   overflow: hidden;
+}
+
+html.apps-v2 body.fullscreen .window-body {
+  height: 100%;
 }
 
 body.fullscreen .title-bar {

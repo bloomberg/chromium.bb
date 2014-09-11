@@ -1645,6 +1645,7 @@
         'test/remoting/qunit_browser_test_runner.cc',
         'test/remoting/remote_desktop_browsertest.cc',
         'test/remoting/remote_desktop_browsertest.h',
+        'test/remoting/scrollbar_browsertest.cc',
         'test/remoting/waiter.cc',
         'test/remoting/waiter.h',
         'test/remoting/webapp_javascript_unittest.cc',

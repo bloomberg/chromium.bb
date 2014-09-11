@@ -44,12 +44,18 @@ found in the LICENSE file.
            hidden></div>
 
       <div id="scroller">
-        <div class="inset home-screen" data-ui-mode="home" hidden>
+        <div class="inset home-screen full-height"
+             data-ui-mode="home"
+             hidden>
 
           <meta-include src="webapp/html/ui_header.html"/>
           <meta-include src="webapp/html/butterbar.html"/>
           <meta-include src="webapp/html/ui_it2me.html"/>
           <meta-include src="webapp/html/ui_me2me.html"/>
+
+          <!-- The bottom-marker div is used to verify scroll-bar correctness
+               in browser tests; it is not rendered. -->
+          <div id="bottom-marker"></div>
 
         </div>  <!-- inset -->
 
@@ -75,7 +81,6 @@ found in the LICENSE file.
             <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
             <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
             <meta-include src="webapp/html/dialog_client_session_finished.html"/>
-
           </div>
 
           <meta-include src="webapp/html/dialog_connection_history.html"/>
