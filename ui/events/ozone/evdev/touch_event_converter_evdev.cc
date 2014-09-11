@@ -77,12 +77,11 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::FilePath path,
     const EventDeviceInfo& info,
     const EventDispatchCallback& callback)
-    : EventConverterEvdev(callback),
+    : EventConverterEvdev(fd, path),
+      callback_(callback),
       syn_dropped_(false),
       is_type_a_(false),
-      current_slot_(0),
-      fd_(fd),
-      path_(path) {
+      current_slot_(0) {
   Init(info);
 }
 
@@ -134,15 +133,6 @@ void TouchEventConverterEvdev::Init(const EventDeviceInfo& info) {
                                 cal.bezel_bottom);
 }
 
-void TouchEventConverterEvdev::Start() {
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
-      fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
-}
-
-void TouchEventConverterEvdev::Stop() {
-  controller_.StopWatchingFileDescriptor();
-}
-
 bool TouchEventConverterEvdev::Reinitialize() {
   EventDeviceInfo info;
   if (info.Initialize(fd_)) {
@@ -150,11 +140,6 @@ bool TouchEventConverterEvdev::Reinitialize() {
     return true;
   }
   return false;
-}
-
-void TouchEventConverterEvdev::OnFileCanWriteWithoutBlocking(int /* fd */) {
-  // Read-only file-descriptors.
-  NOTREACHED();
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
@@ -298,7 +283,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
                      /* radius_y */ events_[i].radius_y_,
                      /* angle */ 0.,
                      events_[i].pressure_);
-      DispatchEventToCallback(&evt);
+      callback_.Run(&evt);
 
       // Subsequent events for this finger will be touch-move until it
       // is released.

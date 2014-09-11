@@ -28,7 +28,7 @@ std::string FormatLog(const char* fmt, va_list args) {
 EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
                                                  const base::FilePath& path,
                                                  scoped_ptr<Delegate> delegate)
-    : path_(path), delegate_(delegate.Pass()) {
+    : EventConverterEvdev(fd, path), delegate_(delegate.Pass()) {
   memset(&evdev_, 0, sizeof(evdev_));
   evdev_.log = OnLogMessage;
   evdev_.log_udata = this;
@@ -52,19 +52,6 @@ EventReaderLibevdevCros::~EventReaderLibevdevCros() {
 
 EventReaderLibevdevCros::Delegate::~Delegate() {}
 
-void EventReaderLibevdevCros::Start() {
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
-      evdev_.fd,
-      true,
-      base::MessagePumpLibevent::WATCH_READ,
-      &controller_,
-      this);
-}
-
-void EventReaderLibevdevCros::Stop() {
-  controller_.StopWatchingFileDescriptor();
-}
-
 void EventReaderLibevdevCros::OnFileCanReadWithoutBlocking(int fd) {
   if (EvdevRead(&evdev_)) {
     if (errno == EINTR || errno == EAGAIN)
@@ -74,10 +61,6 @@ void EventReaderLibevdevCros::OnFileCanReadWithoutBlocking(int fd) {
     Stop();
     return;
   }
-}
-
-void EventReaderLibevdevCros::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
 }
 
 // static

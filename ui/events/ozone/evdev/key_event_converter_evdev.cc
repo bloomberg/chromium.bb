@@ -194,9 +194,8 @@ KeyEventConverterEvdev::KeyEventConverterEvdev(
     base::FilePath path,
     EventModifiersEvdev* modifiers,
     const EventDispatchCallback& callback)
-    : EventConverterEvdev(callback),
-      fd_(fd),
-      path_(path),
+    : EventConverterEvdev(fd, path),
+      callback_(callback),
       modifiers_(modifiers) {
   // TODO(spang): Initialize modifiers using EVIOCGKEY.
 }
@@ -204,15 +203,6 @@ KeyEventConverterEvdev::KeyEventConverterEvdev(
 KeyEventConverterEvdev::~KeyEventConverterEvdev() {
   Stop();
   close(fd_);
-}
-
-void KeyEventConverterEvdev::Start() {
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
-      fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
-}
-
-void KeyEventConverterEvdev::Stop() {
-  controller_.StopWatchingFileDescriptor();
 }
 
 void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
@@ -229,10 +219,6 @@ void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
 
   CHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
-}
-
-void KeyEventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
 }
 
 void KeyEventConverterEvdev::ProcessEvents(const input_event* inputs,
@@ -270,7 +256,7 @@ void KeyEventConverterEvdev::ConvertKeyEvent(int key, int value) {
       code,
       KeycodeConverter::NativeKeycodeToCode(key + kXkbKeycodeOffset),
       flags);
-  DispatchEventToCallback(&key_event);
+  callback_.Run(&key_event);
 }
 
 }  // namespace ui

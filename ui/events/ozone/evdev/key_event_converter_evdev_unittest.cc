@@ -4,6 +4,7 @@
 
 #include <linux/input.h>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -19,10 +20,12 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
   MockKeyEventConverterEvdev(int fd, EventModifiersEvdev* modifiers)
-      : KeyEventConverterEvdev(fd,
-                               base::FilePath(kTestDevicePath),
-                               modifiers,
-                               EventDispatchCallback()) {
+      : KeyEventConverterEvdev(
+            fd,
+            base::FilePath(kTestDevicePath),
+            modifiers,
+            base::Bind(&MockKeyEventConverterEvdev::DispatchEventForTest,
+                       base::Unretained(this))) {
     Start();
   }
   virtual ~MockKeyEventConverterEvdev() {};
@@ -33,7 +36,7 @@ class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
     return dispatched_events_[index];
   }
 
-  virtual void DispatchEventToCallback(Event* event) OVERRIDE;
+  void DispatchEventForTest(Event* event);
 
  private:
   ScopedVector<KeyEvent> dispatched_events_;
@@ -41,7 +44,7 @@ class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
   DISALLOW_COPY_AND_ASSIGN(MockKeyEventConverterEvdev);
 };
 
-void MockKeyEventConverterEvdev::DispatchEventToCallback(Event* event) {
+void MockKeyEventConverterEvdev::DispatchEventForTest(Event* event) {
   dispatched_events_.push_back(new KeyEvent(*static_cast<KeyEvent*>(event)));
 }
 

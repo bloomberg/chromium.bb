@@ -20,8 +20,7 @@ namespace ui {
 class TouchEvent;
 
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
-    : public EventConverterEvdev,
-      public base::MessagePumpLibevent::Watcher {
+    : public EventConverterEvdev {
  public:
   enum {
     MAX_FINGERS = 11
@@ -32,10 +31,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            const EventDispatchCallback& dispatch);
   virtual ~TouchEventConverterEvdev();
 
-  // Start & stop watching for events.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-
  private:
   friend class MockTouchEventConverterEvdev;
 
@@ -44,7 +39,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
   virtual bool Reinitialize();
 
@@ -53,6 +47,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void ProcessSyn(const input_event& input);
 
   void ReportEvents(base::TimeDelta delta);
+
+  // Callback for dispatching events.
+  EventDispatchCallback callback_;
 
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;
@@ -83,12 +80,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Touch point currently being updated from the /dev/input/event* stream.
   int current_slot_;
 
-  // File descriptor for the /dev/input/event* instance.
-  int fd_;
-
-  // Path to input device.
-  base::FilePath path_;
-
   // Bit field tracking which in-progress touch points have been modified
   // without a syn event.
   std::bitset<MAX_FINGERS> altered_slots_;
@@ -107,9 +98,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];
-
-  // Controller for watching the input fd.
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };

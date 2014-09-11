@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"

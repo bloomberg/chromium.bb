@@ -5,39 +5,43 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 
-#include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
 class Event;
-class EventModifiersEvdev;
 
 typedef base::Callback<void(Event*)> EventDispatchCallback;
 
-// Base class for device-specific evdev event conversion.
-class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
+    : public base::MessagePumpLibevent::Watcher {
  public:
-  EventConverterEvdev();
-  explicit EventConverterEvdev(const EventDispatchCallback& callback);
+  EventConverterEvdev(int fd, const base::FilePath& path);
   virtual ~EventConverterEvdev();
 
-  // Start converting events.
-  virtual void Start() = 0;
+  // Start reading events.
+  void Start();
 
-  // Stop converting events.
-  virtual void Stop() = 0;
+  // Stop reading events.
+  void Stop();
 
  protected:
-  // Dispatches an event using the dispatch-callback set using
-  // |SetDispatchCalback()|.
-  virtual void DispatchEventToCallback(ui::Event* event);
+  // base::MessagePumpLibevent::Watcher:
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+
+  // File descriptor to read.
+  int fd_;
+
+  // Path to input device.
+  base::FilePath path_;
+
+  // Controller for watching the input fd.
+  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
  private:
-  EventDispatchCallback dispatch_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdev);
 };
 

@@ -17,8 +17,7 @@ struct input_event;
 namespace ui {
 
 class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
-    : public EventConverterEvdev,
-      public base::MessagePumpLibevent::Watcher {
+    : public EventConverterEvdev {
  public:
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,
@@ -26,22 +25,14 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
                          const EventDispatchCallback& dispatch);
   virtual ~KeyEventConverterEvdev();
 
-  // Start & stop watching for events.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-
-  // Overidden from base::MessagePumpLibevent::Watcher.
+  // EventConverterEvdev:
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 
  private:
-  // File descriptor for the /dev/input/event* instance.
-  int fd_;
-
-  // Path to input device.
-  base::FilePath path_;
+  // Callback for dispatching events.
+  EventDispatchCallback callback_;
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
