@@ -7,9 +7,9 @@
 /**
  * @class FunctionSequence to invoke steps in sequence
  *
- * @param {string} name  // TODO(JSDOC).
+ * @param {string} name Name of the function.
  * @param {Array.<function>} steps Array of functions to invoke in parallel.
- * @param {Object} logger  // TODO(JSDOC).
+ * @param {Object} logger Logger object.
  * @param {function()} callback Callback to invoke on success.
  * @param {function(string)} failureCallback Callback to invoke on failure.
  * @constructor
@@ -61,7 +61,7 @@ FunctionParallel.prototype.nextStep_ = function() {
 /**
  * This function should be called only once on start, so start all the children
  * at once
- * @param {...} var_args  // TODO(JSDOC).
+ * @param {...} var_args Arguments to be passed to all the steps.
  */
 FunctionParallel.prototype.start = function(var_args) {
   this.logger.vlog('Starting [' + this.steps_.length + '] parallel tasks ' +

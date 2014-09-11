@@ -7,11 +7,11 @@
 /**
  * @class FunctionSequence to invoke steps in sequence
  *
- * @param {string} name                // TODO(JSDOC).
- * @param {Array} steps                array of functions to invoke in sequence.
- * @param {Object} logger              logger.
- * @param {function} callback          callback to invoke on success.
- * @param {function} failureCallback   callback to invoke on failure.
+ * @param {string} name Name of the function.
+ * @param {Array} steps Array of functions to invoke in sequence.
+ * @param {Object} logger Logger object.
+ * @param {function} callback Callback to invoke on success.
+ * @param {function} failureCallback Callback to invoke on failure.
  * @constructor
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
@@ -33,7 +33,7 @@ function FunctionSequence(name, steps, logger, callback, failureCallback) {
 /**
  * Sets new callback
  *
- * @param {function} callback new callback to call on succeed.
+ * @param {function} callback New callback to call on succeed.
  */
 FunctionSequence.prototype.setCallback = function(callback) {
     this.callback_ = callback;
@@ -42,7 +42,7 @@ FunctionSequence.prototype.setCallback = function(callback) {
 /**
  * Sets new error callback
  *
- * @param {function} failureCallback new callback to call on failure.
+ * @param {function} failureCallback New callback to call on failure.
  */
 FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
     this.failureCallback_ = failureCallback;
@@ -84,8 +84,8 @@ FunctionSequence.prototype.finish_ = function() {
  * This method should not be used externally. In external
  * cases should be used nextStep function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
+ * @param {...} var_args Arguments to be passed to the next step.
  * @private
- * @param {...} var_args  // TODO(JSDOC).
  */
 FunctionSequence.prototype.nextStep_ = function(var_args) {
   if (this.failed_) {
@@ -109,7 +109,7 @@ FunctionSequence.prototype.nextStep_ = function(var_args) {
 
 /**
  * This function should be called only once on start, so start sequence pipeline
- * @param {...} var_args  // TODO(JSDOC).
+ * @param {...} var_args Arguments to be passed to the first step.
  */
 FunctionSequence.prototype.start = function(var_args) {
   if (this.started) {
@@ -125,8 +125,8 @@ FunctionSequence.prototype.start = function(var_args) {
 /**
  * Add Function object mimics to FunctionSequence
  * @private
- * @param {*} obj  // TODO(JSDOC).
- * @param {Array.*} args  // TODO(JSDOC).
+ * @param {*} obj Object.
+ * @param {Array.*} args Arguments.
  */
 FunctionSequence.prototype.apply_ = function(obj, args) {
   this.start.apply(this, args);

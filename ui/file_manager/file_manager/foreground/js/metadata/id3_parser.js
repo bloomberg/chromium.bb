@@ -26,9 +26,9 @@ Id3Parser.prototype = {__proto__: MetadataParser.prototype};
  * Reads synchsafe integer.
  * 'SynchSafe' term is taken from id3 documentation.
  *
- * @param {ByteReader} reader - reader to use.
- * @param {number} length - bytes to read.
- * @return {number}  // TODO(JSDOC).
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} length Rytes to read.
+ * @return {number} Synchsafe value.
  * @private
  */
 Id3Parser.readSynchSafe_ = function(reader, length) {
@@ -51,8 +51,8 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
 /**
  * Reads 3bytes integer.
  *
- * @param {ByteReader} reader - reader to use.
- * @return {number}  // TODO(JSDOC).
+ * @param {ByteReader} reader Reader to use.
+ * @return {number} Uint24 value.
  * @private
  */
 Id3Parser.readUInt24_ = function(reader) {
@@ -62,10 +62,10 @@ Id3Parser.readUInt24_ = function(reader) {
 /**
  * Reads string from reader with specified encoding
  *
- * @param {ByteReader} reader reader to use.
- * @param {number} encoding string encoding.
- * @param {number} size maximum string size. Actual result may be shorter.
- * @return {string}  // TODO(JSDOC).
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} encoding String encoding.
+ * @param {number} size Maximum string size. Actual result may be shorter.
+ * @return {string} String value.
  * @private
  */
 Id3Parser.prototype.readString_ = function(reader, encoding, size) {
@@ -94,10 +94,10 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
 /**
  * Reads text frame from reader.
  *
- * @param {ByteReader} reader reader to use.
- * @param {number} majorVersion major id3 version to use.
- * @param {Object} frame frame so store data at.
- * @param {number} end frame end position in reader.
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} majorVersion Major id3 version to use.
+ * @param {Object} frame Frame so store data at.
+ * @param {number} end Frame end position in reader.
  * @private
  */
 Id3Parser.prototype.readTextFrame_ = function(reader,
@@ -111,10 +111,10 @@ Id3Parser.prototype.readTextFrame_ = function(reader,
 /**
  * Reads user defined text frame from reader.
  *
- * @param {ByteReader} reader reader to use.
- * @param {number} majorVersion major id3 version to use.
- * @param {Object} frame frame so store data at.
- * @param {number} end frame end position in reader.
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} majorVersion Major id3 version to use.
+ * @param {Object} frame Frame so store data at.
+ * @param {number} end Frame end position in reader.
  * @private
  */
 Id3Parser.prototype.readUserDefinedTextFrame_ = function(reader,
@@ -184,9 +184,9 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
 /**
  * Reads string from reader with specified encoding
  *
- * @param {ByteReader} reader  reader to use.
- * @param {number} majorVersion  // TODO(JSDOC).
- * @return {Object} frame read.
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} majorVersion Major id3 version to use.
+ * @return {Object} Frame read.
  * @private
  */
 Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
@@ -249,10 +249,10 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
 };
 
 /**
- * @param {File} file  // TODO(JSDOC).
- * @param {Object} metadata  // TODO(JSDOC).
- * @param {function(Object)} callback  // TODO(JSDOC).
- * @param {function(etring)} onError  // TODO(JSDOC).
+ * @param {File} file File object to parse.
+ * @param {Object} metadata Metadata object of the file.
+ * @param {function(Object)} callback Success callback.
+ * @param {function(etring)} onError Error callback.
  */
 Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
   var self = this;
@@ -442,6 +442,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
 /**
  * Metadata order to use for metadata generation
+ * @type {Array.<string>}
+ * @const
  */
 Id3Parser.METADATA_ORDER = [
   'ID3_TITLE',
@@ -468,7 +470,8 @@ Id3Parser.METADATA_ORDER = [
 
 
 /**
- * id3v1 constants
+ * Id3v1 constants.
+ * @type {Object.<*>}
  */
 Id3Parser.v1 = {
   /**
@@ -630,7 +633,8 @@ Id3Parser.v1 = {
 };
 
 /**
- * id3v2 constants
+ * Id3v2 constants.
+ * @type {Object.<*>}
  */
 Id3Parser.v2 = {
   FLAG_EXTENDED_HEADER: 1 << 5,
