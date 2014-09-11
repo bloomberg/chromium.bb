@@ -49,8 +49,9 @@ AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
 }
 
 ExtensionOptionsGuestDelegate*
-ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate() const {
-  return new ChromeExtensionOptionsGuestDelegate();
+ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
+    ExtensionOptionsGuest* guest) const {
+  return new ChromeExtensionOptionsGuestDelegate(guest);
 }
 
 scoped_ptr<MimeHandlerViewGuestDelegate>

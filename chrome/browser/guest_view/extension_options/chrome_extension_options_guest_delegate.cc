@@ -9,39 +9,39 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 
 namespace extensions {
 
-ChromeExtensionOptionsGuestDelegate::ChromeExtensionOptionsGuestDelegate() {
+ChromeExtensionOptionsGuestDelegate::ChromeExtensionOptionsGuestDelegate(
+    ExtensionOptionsGuest* guest)
+    : ExtensionOptionsGuestDelegate(guest) {
 }
 
 ChromeExtensionOptionsGuestDelegate::~ChromeExtensionOptionsGuestDelegate() {
 }
 
-void
-ChromeExtensionOptionsGuestDelegate::CreateChromeExtensionWebContentsObserver(
-    content::WebContents* web_contents) {
+void ChromeExtensionOptionsGuestDelegate::DidInitialize() {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
+      extension_options_guest()->web_contents());
 }
 
 bool ChromeExtensionOptionsGuestDelegate::HandleContextMenu(
-    content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  ContextMenuDelegate* menu_delegate =
-      ContextMenuDelegate::FromWebContents(web_contents);
+  ContextMenuDelegate* menu_delegate = ContextMenuDelegate::FromWebContents(
+      extension_options_guest()->web_contents());
   DCHECK(menu_delegate);
 
-  scoped_ptr<RenderViewContextMenu> menu =
-      menu_delegate->BuildMenu(web_contents, params);
+  scoped_ptr<RenderViewContextMenu> menu = menu_delegate->BuildMenu(
+      extension_options_guest()->web_contents(), params);
   menu_delegate->ShowMenu(menu.Pass());
   return true;
 }
 
 content::WebContents* ChromeExtensionOptionsGuestDelegate::OpenURLInNewTab(
-    content::WebContents* embedder_web_contents,
     const content::OpenURLParams& params) {
-  Browser* browser = chrome::FindBrowserWithWebContents(embedder_web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      extension_options_guest()->embedder_web_contents());
   return browser->OpenURL(params);
 }
 

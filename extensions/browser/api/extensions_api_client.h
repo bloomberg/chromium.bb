@@ -24,6 +24,7 @@ class BrowserContext;
 namespace extensions {
 
 class AppViewGuestDelegate;
+class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
@@ -64,8 +65,8 @@ class ExtensionsAPIClient {
 
   // Returns a delegate for ExtensionOptionsGuest. The caller owns the returned
   // ExtensionOptionsGuestDelegate.
-  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate()
-      const;
+  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
+      ExtensionOptionsGuest* guest) const;
 
   // Creates a delegate for MimeHandlerViewGuest.
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>

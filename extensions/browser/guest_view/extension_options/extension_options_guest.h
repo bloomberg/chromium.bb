@@ -15,6 +15,8 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+
 class ExtensionOptionsGuest
     : public extensions::GuestView<ExtensionOptionsGuest>,
       public extensions::ExtensionFunctionDispatcher::Delegate {
@@ -77,5 +79,7 @@ class ExtensionOptionsGuest
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuest);
 };
+
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_

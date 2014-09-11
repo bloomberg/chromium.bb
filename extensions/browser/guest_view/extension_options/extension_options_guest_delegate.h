@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_DELEGATE_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_DELEGATE_H_
 
+#include "base/macros.h"
+
 namespace content {
 struct ContextMenuParams;
 struct OpenURLParams;
@@ -12,23 +14,32 @@ class WebContents;
 }
 
 namespace extensions {
+
+class ExtensionOptionsGuest;
+
 // Interface to handle communication between ExtensionOptionsGuest (in
 // extensions) with the browser.
 class ExtensionOptionsGuestDelegate {
  public:
+  explicit ExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
   virtual ~ExtensionOptionsGuestDelegate();
 
-  virtual void CreateChromeExtensionWebContentsObserver(
-      content::WebContents* web_contents) = 0;
+  // Called from ExtensionOptionsGuest::DidInitialize().
+  virtual void DidInitialize() = 0;
 
   // Shows the context menu for the guest.
   // Returns true if the context menu was handled.
-  virtual bool HandleContextMenu(content::WebContents* web_contents,
-                                 const content::ContextMenuParams& params) = 0;
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;
 
   virtual content::WebContents* OpenURLInNewTab(
-      content::WebContents* embedder_web_contents,
       const content::OpenURLParams& params) = 0;
+
+  ExtensionOptionsGuest* extension_options_guest() const { return guest_; }
+
+ private:
+  ExtensionOptionsGuest* const guest_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuestDelegate);
 };
 
 }  // namespace extensions

@@ -24,8 +24,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
       OVERRIDE;
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const OVERRIDE;
-  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate()
-      const OVERRIDE;
+  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
+      ExtensionOptionsGuest* guest) const OVERRIDE;
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>
       CreateMimeHandlerViewGuestDelegate(
           MimeHandlerViewGuest* guest) const OVERRIDE;

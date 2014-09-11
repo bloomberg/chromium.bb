@@ -32,7 +32,8 @@ AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
 }
 
 ExtensionOptionsGuestDelegate*
-ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate() const {
+ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
+    ExtensionOptionsGuest* guest) const {
   return NULL;
 }
 

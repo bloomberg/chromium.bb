@@ -29,6 +29,8 @@
 using content::WebContents;
 using namespace extensions::core_api;
 
+namespace extensions {
+
 // static
 const char ExtensionOptionsGuest::Type[] = "extensionoptions";
 
@@ -38,7 +40,7 @@ ExtensionOptionsGuest::ExtensionOptionsGuest(
     : GuestView<ExtensionOptionsGuest>(browser_context, guest_instance_id),
       extension_options_guest_delegate_(
           extensions::ExtensionsAPIClient::Get()
-              ->CreateExtensionOptionsGuestDelegate()) {
+              ->CreateExtensionOptionsGuestDelegate(this)) {
 }
 
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
@@ -115,8 +117,7 @@ void ExtensionOptionsGuest::DidInitialize() {
   extension_function_dispatcher_.reset(
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
   if (extension_options_guest_delegate_) {
-    extension_options_guest_delegate_->CreateChromeExtensionWebContentsObserver(
-        web_contents());
+    extension_options_guest_delegate_->DidInitialize();
   }
 }
 
@@ -166,7 +167,6 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
        params.url.host() != options_page_.host()) &&
       params.disposition == CURRENT_TAB) {
     return extension_options_guest_delegate_->OpenURLInNewTab(
-        embedder_web_contents(),
         content::OpenURLParams(params.url,
                                params.referrer,
                                params.frame_tree_node_id,
@@ -174,8 +174,7 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
                                params.transition,
                                params.is_renderer_initiated));
   }
-  return extension_options_guest_delegate_->OpenURLInNewTab(
-      embedder_web_contents(), params);
+  return extension_options_guest_delegate_->OpenURLInNewTab(params);
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
@@ -189,8 +188,7 @@ bool ExtensionOptionsGuest::HandleContextMenu(
   if (!extension_options_guest_delegate_)
     return false;
 
-  return extension_options_guest_delegate_->HandleContextMenu(web_contents(),
-                                                              params);
+  return extension_options_guest_delegate_->HandleContextMenu(params);
 }
 
 bool ExtensionOptionsGuest::ShouldCreateWebContents(
@@ -210,7 +208,6 @@ bool ExtensionOptionsGuest::ShouldCreateWebContents(
   //   ctrl-click or middle mouse button click
   if (extension_options_guest_delegate_) {
     extension_options_guest_delegate_->OpenURLInNewTab(
-        embedder_web_contents(),
         content::OpenURLParams(target_url,
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
@@ -259,3 +256,5 @@ void ExtensionOptionsGuest::SetUpAutoSize() {
               gfx::Size(min_width, min_height),
               gfx::Size(max_width, max_height));
 }
+
+}  // namespace extensions

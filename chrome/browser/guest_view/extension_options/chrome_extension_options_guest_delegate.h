@@ -11,21 +11,20 @@
 
 namespace extensions {
 
+class ExtensionOptionsGuest;
+
 class ChromeExtensionOptionsGuestDelegate
     : public ExtensionOptionsGuestDelegate {
  public:
-  ChromeExtensionOptionsGuestDelegate();
+  explicit ChromeExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
   virtual ~ChromeExtensionOptionsGuestDelegate();
 
-  virtual void CreateChromeExtensionWebContentsObserver(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void DidInitialize() OVERRIDE;
 
   virtual bool HandleContextMenu(
-      content::WebContents* web_contents,
       const content::ContextMenuParams& params) OVERRIDE;
 
   virtual content::WebContents* OpenURLInNewTab(
-      content::WebContents* embedder_web_contents,
       const content::OpenURLParams& params) OVERRIDE;
 
  private:

@@ -6,6 +6,11 @@
 
 namespace extensions {
 
+ExtensionOptionsGuestDelegate::ExtensionOptionsGuestDelegate(
+    ExtensionOptionsGuest* guest)
+    : guest_(guest) {
+}
+
 ExtensionOptionsGuestDelegate::~ExtensionOptionsGuestDelegate() {
 }
 
