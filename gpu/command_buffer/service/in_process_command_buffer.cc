@@ -522,7 +522,7 @@ void InProcessCommandBuffer::PerformIdleWork() {
   CheckSequencedThread();
   idle_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
-  if (gpu_scheduler_->HasMoreWork()) {
+  if (MakeCurrent() && gpu_scheduler_->HasMoreWork()) {
     gpu_scheduler_->PerformIdleWork();
     ScheduleIdleWorkOnGpuThread();
   }
