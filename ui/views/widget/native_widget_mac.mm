@@ -507,6 +507,10 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
   return false;
 }
 
+void NativeWidgetMac::OnSizeConstraintsChanged() {
+  NOTIMPLEMENTED();
+}
+
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
   NOTIMPLEMENTED();
 }

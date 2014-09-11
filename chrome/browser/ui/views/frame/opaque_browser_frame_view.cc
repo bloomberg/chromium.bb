@@ -285,6 +285,9 @@ void OpaqueBrowserFrameView::UpdateWindowTitle() {
     window_title_->SchedulePaint();
 }
 
+void OpaqueBrowserFrameView::SizeConstraintsChanged() {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 

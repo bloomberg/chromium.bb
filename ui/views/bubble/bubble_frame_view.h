@@ -46,6 +46,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // Set the FontList to be used for the title of the bubble.
   // Caller must arrange to update the layout to have the call take effect.

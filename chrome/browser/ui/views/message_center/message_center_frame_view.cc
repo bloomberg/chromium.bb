@@ -63,6 +63,9 @@ void MessageCenterFrameView::UpdateWindowIcon() {
 void MessageCenterFrameView::UpdateWindowTitle() {
 }
 
+void MessageCenterFrameView::SizeConstraintsChanged() {
+}
+
 gfx::Insets MessageCenterFrameView::GetInsets() const {
   return border()->GetInsets();
 }

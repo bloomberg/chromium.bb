@@ -288,6 +288,9 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
     header_painter_->SchedulePaintForTitle();
 }
 
+void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::View:
 

@@ -991,6 +991,11 @@ bool Widget::IsTranslucentWindowOpacitySupported() const {
   return native_widget_->IsTranslucentWindowOpacitySupported();
 }
 
+void Widget::OnSizeConstraintsChanged() {
+  native_widget_->OnSizeConstraintsChanged();
+  non_client_view_->SizeConstraintsChanged();
+}
+
 void Widget::OnOwnerClosing() {
 }
 

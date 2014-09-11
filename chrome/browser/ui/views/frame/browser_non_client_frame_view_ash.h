@@ -55,6 +55,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

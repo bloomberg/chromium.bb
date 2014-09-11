@@ -151,6 +151,8 @@ class CustomFrameViewAsh::HeaderView
 
   void UpdateAvatarIcon();
 
+  void SizeConstraintsChanged();
+
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -267,6 +269,12 @@ void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
     avatar_icon_->SetImage(image);
   }
   header_painter_->UpdateLeftHeaderView(avatar_icon_);
+  Layout();
+}
+
+void CustomFrameViewAsh::HeaderView::SizeConstraintsChanged() {
+  caption_button_container_->ResetWindowControls();
+  caption_button_container_->UpdateSizeButtonVisibility();
   Layout();
 }
 
@@ -487,6 +495,10 @@ void CustomFrameViewAsh::UpdateWindowIcon() {
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
   header_view_->SchedulePaintForTitle();
+}
+
+void CustomFrameViewAsh::SizeConstraintsChanged() {
+  header_view_->SizeConstraintsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

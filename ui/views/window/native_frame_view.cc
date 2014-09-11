@@ -70,6 +70,10 @@ void NativeFrameView::UpdateWindowTitle() {
   // Nothing to do.
 }
 
+void NativeFrameView::SizeConstraintsChanged() {
+  // Nothing to do.
+}
+
 gfx::Size NativeFrameView::GetPreferredSize() const {
   gfx::Size client_preferred_size = frame_->client_view()->GetPreferredSize();
 #if defined(OS_WIN)

@@ -532,10 +532,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   shadow_controller_.reset(new wm::ShadowController(
       aura::client::GetActivationClient(host_->window())));
 
-  content_window_->SetProperty(aura::client::kCanMaximizeKey,
-                               GetWidget()->widget_delegate()->CanMaximize());
-  content_window_->SetProperty(aura::client::kCanResizeKey,
-                               GetWidget()->widget_delegate()->CanResize());
+  OnSizeConstraintsChanged();
 
   window_reorderer_.reset(new WindowReorderer(content_window_,
       GetWidget()->GetRootView()));
@@ -934,6 +931,13 @@ void DesktopNativeWidgetAura::OnRootViewLayout() {
 bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
   return content_window_ &&
       desktop_window_tree_host_->IsTranslucentWindowOpacitySupported();
+}
+
+void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
+  content_window_->SetProperty(aura::client::kCanMaximizeKey,
+                               GetWidget()->widget_delegate()->CanMaximize());
+  content_window_->SetProperty(aura::client::kCanResizeKey,
+                               GetWidget()->widget_delegate()->CanResize());
 }
 
 void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {

@@ -86,6 +86,7 @@ class MaxSizeNCFV : public views::NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
   virtual void UpdateWindowTitle() OVERRIDE {}
+  virtual void SizeConstraintsChanged() OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(MaxSizeNCFV);
 };

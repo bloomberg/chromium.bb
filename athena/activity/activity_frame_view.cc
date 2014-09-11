@@ -121,6 +121,9 @@ void ActivityFrameView::UpdateWindowTitle() {
   Layout();
 }
 
+void ActivityFrameView::SizeConstraintsChanged() {
+}
+
 gfx::Size ActivityFrameView::GetPreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());

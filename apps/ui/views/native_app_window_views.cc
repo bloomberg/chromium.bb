@@ -395,6 +395,7 @@ void NativeAppWindowViews::SetContentSizeConstraints(
     const gfx::Size& min_size, const gfx::Size& max_size) {
   size_constraints_.set_minimum_size(min_size);
   size_constraints_.set_maximum_size(max_size);
+  widget_->OnSizeConstraintsChanged();
 }
 
 bool NativeAppWindowViews::CanHaveAlphaEnabled() const {

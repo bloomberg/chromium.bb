@@ -48,6 +48,7 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -145,9 +146,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   ImageButton* maximize_button_;
   ImageButton* restore_button_;
   ImageButton* close_button_;
-
-  // Should maximize button be shown?
-  bool should_show_maximize_button_;
 
   // Background painter for the window frame.
   scoped_ptr<FrameBackground> frame_background_;

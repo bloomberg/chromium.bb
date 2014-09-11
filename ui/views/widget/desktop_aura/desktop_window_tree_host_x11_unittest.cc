@@ -116,6 +116,8 @@ class ShapedNonClientFrameView : public NonClientFrameView {
   }
   virtual void UpdateWindowTitle() OVERRIDE {
   }
+  virtual void SizeConstraintsChanged() OVERRIDE {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShapedNonClientFrameView);

@@ -179,6 +179,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual void OnRootViewLayout() OVERRIDE;
   virtual bool IsTranslucentWindowOpacitySupported() const OVERRIDE;
+  virtual void OnSizeConstraintsChanged() OVERRIDE;
   virtual void RepostNativeEvent(gfx::NativeEvent native_event) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:

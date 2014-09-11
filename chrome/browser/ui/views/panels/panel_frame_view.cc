@@ -489,6 +489,9 @@ void PanelFrameView::UpdateWindowTitle() {
   title_label_->SetText(panel_view_->panel()->GetWindowTitle());
 }
 
+void PanelFrameView::SizeConstraintsChanged() {
+}
+
 gfx::Size PanelFrameView::GetPreferredSize() const {
   gfx::Size pref_size =
       panel_view_->window()->client_view()->GetPreferredSize();

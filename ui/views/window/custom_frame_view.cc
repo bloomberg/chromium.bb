@@ -89,7 +89,6 @@ CustomFrameView::CustomFrameView()
       maximize_button_(NULL),
       restore_button_(NULL),
       close_button_(NULL),
-      should_show_maximize_button_(false),
       frame_background_(new FrameBackground()),
       minimum_title_bar_x_(0),
       maximum_title_bar_x_(-1) {
@@ -109,8 +108,6 @@ void CustomFrameView::Init(Widget* frame) {
       IDR_MAXIMIZE, IDR_MAXIMIZE_H, IDR_MAXIMIZE_P);
   restore_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_RESTORE,
       IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P);
-
-  should_show_maximize_button_ = frame_->widget_delegate()->CanMaximize();
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new ImageButton(this);
@@ -199,6 +196,11 @@ void CustomFrameView::UpdateWindowIcon() {
 void CustomFrameView::UpdateWindowTitle() {
   if (frame_->widget_delegate()->ShouldShowWindowTitle())
     SchedulePaintInRect(title_bounds_);
+}
+
+void CustomFrameView::SizeConstraintsChanged() {
+  ResetWindowControls();
+  LayoutWindowControls();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -602,13 +604,14 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
     case views::FRAME_BUTTON_MAXIMIZE: {
       bool is_restored = !frame_->IsMaximized() && !frame_->IsMinimized();
       button = is_restored ? maximize_button_ : restore_button_;
-      if (!should_show_maximize_button_) {
-        // If we should not show the maximize/restore button, then we return
-        // NULL as we don't want this button to become visible and to be laid
-        // out.
-        button->SetVisible(false);
+      // If we should not show the maximize/restore button, then we return
+      // NULL as we don't want this button to become visible and to be laid
+      // out.
+      bool should_show = frame_->widget_delegate()->CanMaximize();
+      button->SetVisible(should_show);
+      if (!should_show)
         return NULL;
-      }
+
       break;
     }
     case views::FRAME_BUTTON_CLOSE: {

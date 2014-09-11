@@ -143,12 +143,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     }
   }
 
-  // Set properties before addeing to the parent so that its layout manager
-  // sees the correct values.
-  window_->SetProperty(aura::client::kCanMaximizeKey,
-                       GetWidget()->widget_delegate()->CanMaximize());
-  window_->SetProperty(aura::client::kCanResizeKey,
-                       GetWidget()->widget_delegate()->CanResize());
+  // Set properties before adding to the parent so that its layout manager sees
+  // the correct values.
+  OnSizeConstraintsChanged();
 
   if (parent) {
     parent->AddChild(window_);
@@ -698,6 +695,13 @@ void NativeWidgetAura::OnRootViewLayout() {
 
 bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
   return true;
+}
+
+void NativeWidgetAura::OnSizeConstraintsChanged() {
+  window_->SetProperty(aura::client::kCanMaximizeKey,
+                       GetWidget()->widget_delegate()->CanMaximize());
+  window_->SetProperty(aura::client::kCanResizeKey,
+                       GetWidget()->widget_delegate()->CanResize());
 }
 
 void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {

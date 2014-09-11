@@ -163,6 +163,8 @@ void BubbleFrameView::UpdateWindowTitle() {
   ResetWindowControls();
 }
 
+void BubbleFrameView::SizeConstraintsChanged() {}
+
 void BubbleFrameView::SetTitleFontList(const gfx::FontList& font_list) {
   title_->SetFontList(font_list);
 }

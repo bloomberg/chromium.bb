@@ -97,6 +97,9 @@ void PanelFrameView::UpdateWindowTitle() {
   header_painter_->SchedulePaintForTitle();
 }
 
+void PanelFrameView::SizeConstraintsChanged() {
+}
+
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!header_painter_)
     return HTNOWHERE;

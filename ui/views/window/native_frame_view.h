@@ -28,6 +28,7 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;

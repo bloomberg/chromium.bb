@@ -34,6 +34,7 @@ class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
   virtual void UpdateWindowTitle() OVERRIDE {}
+  virtual void SizeConstraintsChanged() OVERRIDE {}
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() const OVERRIDE;

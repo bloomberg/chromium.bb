@@ -39,6 +39,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
   virtual void UpdateWindowTitle() OVERRIDE {}
+  virtual void SizeConstraintsChanged() OVERRIDE {}
 
  protected:
   // views::View:

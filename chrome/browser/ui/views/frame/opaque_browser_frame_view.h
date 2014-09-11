@@ -57,6 +57,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;

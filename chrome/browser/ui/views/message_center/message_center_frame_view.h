@@ -31,6 +31,7 @@ class MessageCenterFrameView : public views::NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SizeConstraintsChanged() OVERRIDE;
 
   // View overrides:
   virtual gfx::Insets GetInsets() const OVERRIDE;

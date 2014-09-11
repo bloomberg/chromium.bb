@@ -115,6 +115,10 @@ void NonClientView::UpdateWindowTitle() {
   frame_view_->UpdateWindowTitle();
 }
 
+void NonClientView::SizeConstraintsChanged() {
+  frame_view_->SizeConstraintsChanged();
+}
+
 void NonClientView::LayoutFrameView() {
   // First layout the NonClientFrameView, which determines the size of the
   // ClientView...
