@@ -19,11 +19,16 @@ $(grep LIBRARYNAME "$THIS_ABS_DIR"/../blink_gc_plugin/Makefile \
     | cut -d ' ' -f 3)
 
 FLAGS=""
+PREFIX="-Xclang -plugin-arg-blink-gc-plugin -Xclang"
 for arg in "$@"; do
   if [[ "$arg" = "enable-oilpan=1" ]]; then
-    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang enable-oilpan"
+    FLAGS="$FLAGS $PREFIX enable-oilpan"
   elif [[ "$arg" = "dump-graph=1" ]]; then
-    FLAGS="$FLAGS -Xclang -plugin-arg-blink-gc-plugin -Xclang dump-graph"
+    FLAGS="$FLAGS $PREFIX dump-graph"
+  elif [[ "$arg" = "warn-raw-ptr=1" ]]; then
+    FLAGS="$FLAGS $PREFIX warn-raw-ptr"
+  elif [[ "$arg" = "warn-unneeded-finalizer=1" ]]; then
+    FLAGS="$FLAGS $PREFIX warn-unneeded-finalizer"
   fi
 done
 

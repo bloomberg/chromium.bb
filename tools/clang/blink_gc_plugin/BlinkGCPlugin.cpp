@@ -50,6 +50,9 @@ const char kClassContainsGCRoot[] =
 const char kClassRequiresFinalization[] =
     "[blink-gc] Class %0 requires finalization.";
 
+const char kClassDoesNotRequireFinalization[] =
+    "[blink-gc] Class %0 may not require finalization.";
+
 const char kFinalizerAccessesFinalizedField[] =
     "[blink-gc] Finalizer %0 accesses potentially finalized field %1.";
 
@@ -138,9 +141,15 @@ const char kBaseClassMustDeclareVirtualTrace[] =
     " must define a virtual trace method.";
 
 struct BlinkGCPluginOptions {
-  BlinkGCPluginOptions() : enable_oilpan(false), dump_graph(false) {}
+  BlinkGCPluginOptions()
+    : enable_oilpan(false)
+    , dump_graph(false)
+    , warn_raw_ptr(false)
+    , warn_unneeded_finalizer(false) {}
   bool enable_oilpan;
   bool dump_graph;
+  bool warn_raw_ptr;
+  bool warn_unneeded_finalizer;
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;
@@ -619,6 +628,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
 
   enum Error {
     kRawPtrToGCManaged,
+    kRawPtrToGCManagedWarning,
     kRefPtrToGCManaged,
     kOwnPtrToGCManaged,
     kMemberInUnmanaged,
@@ -692,7 +702,10 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
             current_, InvalidSmartPtr(Parent())));
         return;
       }
-
+      if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
+        invalid_fields_.push_back(std::make_pair(
+            current_, kRawPtrToGCManagedWarning));
+      }
       return;
     }
 
@@ -726,6 +739,28 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
   Errors invalid_fields_;
 };
 
+class EmptyStmtVisitor
+    : public RecursiveASTVisitor<EmptyStmtVisitor> {
+public:
+  static bool isEmpty(Stmt* stmt) {
+    EmptyStmtVisitor visitor;
+    visitor.TraverseStmt(stmt);
+    return visitor.empty_;
+  }
+
+  bool WalkUpFromCompoundStmt(CompoundStmt* stmt) {
+    empty_ = stmt->body_empty();
+    return false;
+  }
+  bool VisitStmt(Stmt*) {
+    empty_ = false;
+    return false;
+  }
+private:
+  EmptyStmtVisitor() : empty_(true) {}
+  bool empty_;
+};
+
 // Main class containing checks for various invariants of the Blink
 // garbage collection infrastructure.
 class BlinkGCPluginConsumer : public ASTConsumer {
@@ -755,10 +790,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
     diag_class_contains_invalid_fields_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kClassContainsInvalidFields);
+    diag_class_contains_invalid_fields_warning_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Warning, kClassContainsInvalidFields);
     diag_class_contains_gc_root_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
     diag_class_requires_finalization_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kClassRequiresFinalization);
+    diag_class_does_not_require_finalization_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Warning, kClassDoesNotRequireFinalization);
     diag_finalizer_accesses_finalized_field_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kFinalizerAccessesFinalizedField);
     diag_overridden_non_virtual_trace_ = diagnostic_.getCustomDiagID(
@@ -941,6 +980,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
       if (info->NeedsFinalization())
         CheckFinalization(info);
+
+      if (options_.warn_unneeded_finalizer && info->IsGCFinalized())
+        CheckUnneededFinalization(info);
     }
 
     DumpClass(info);
@@ -1163,6 +1205,32 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       if (it->second.edge()->NeedsFinalization())
         NoteField(&it->second, diag_field_requires_finalization_note_);
     }
+  }
+
+  void CheckUnneededFinalization(RecordInfo* info) {
+    if (!HasNonEmptyFinalizer(info))
+      ReportClassDoesNotRequireFinalization(info);
+  }
+
+  bool HasNonEmptyFinalizer(RecordInfo* info) {
+    CXXDestructorDecl* dtor = info->record()->getDestructor();
+    if (dtor && dtor->isUserProvided()) {
+      if (!dtor->hasBody() || !EmptyStmtVisitor::isEmpty(dtor->getBody()))
+        return true;
+    }
+    for (RecordInfo::Bases::iterator it = info->GetBases().begin();
+         it != info->GetBases().end();
+         ++it) {
+      if (HasNonEmptyFinalizer(it->second.info()))
+        return true;
+    }
+    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
+         it != info->GetFields().end();
+         ++it) {
+      if (it->second.edge()->NeedsFinalization())
+        return true;
+    }
+    return false;
   }
 
   // This is the main entry for tracing method definitions.
@@ -1462,13 +1530,23 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     SourceLocation loc = info->record()->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_class_contains_invalid_fields_)
+    bool only_warnings = options_.warn_raw_ptr;
+    for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
+         only_warnings && it != errors->end();
+         ++it) {
+      if (it->second != CheckFieldsVisitor::kRawPtrToGCManagedWarning)
+        only_warnings = false;
+    }
+    diagnostic_.Report(full_loc, only_warnings ?
+                       diag_class_contains_invalid_fields_warning_ :
+                       diag_class_contains_invalid_fields_)
         << info->record();
     for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
          it != errors->end();
          ++it) {
       unsigned error;
-      if (it->second == CheckFieldsVisitor::kRawPtrToGCManaged) {
+      if (it->second == CheckFieldsVisitor::kRawPtrToGCManaged ||
+          it->second == CheckFieldsVisitor::kRawPtrToGCManagedWarning) {
         error = diag_raw_ptr_to_gc_managed_class_note_;
       } else if (it->second == CheckFieldsVisitor::kRefPtrToGCManaged) {
         error = diag_ref_ptr_to_gc_managed_class_note_;
@@ -1527,6 +1605,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, diag_class_requires_finalization_)
+        << info->record();
+  }
+
+  void ReportClassDoesNotRequireFinalization(RecordInfo* info) {
+    SourceLocation loc = info->record()->getInnerLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_does_not_require_finalization_)
         << info->record();
   }
 
@@ -1705,8 +1791,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_base_requires_tracing_;
   unsigned diag_fields_require_tracing_;
   unsigned diag_class_contains_invalid_fields_;
+  unsigned diag_class_contains_invalid_fields_warning_;
   unsigned diag_class_contains_gc_root_;
   unsigned diag_class_requires_finalization_;
+  unsigned diag_class_does_not_require_finalization_;
   unsigned diag_finalizer_accesses_finalized_field_;
   unsigned diag_overridden_non_virtual_trace_;
   unsigned diag_missing_trace_dispatch_method_;
@@ -1765,6 +1853,10 @@ class BlinkGCPluginAction : public PluginASTAction {
         options_.enable_oilpan = true;
       } else if (args[i] == "dump-graph") {
         options_.dump_graph = true;
+      } else if (args[i] == "warn-raw-ptr") {
+        options_.warn_raw_ptr = true;
+      } else if (args[i] == "warn-unneeded-finalizer") {
+        options_.warn_unneeded_finalizer = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";
