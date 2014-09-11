@@ -26,6 +26,8 @@ class NativeAppWindow;
 // AppWindowClient.
 class AppsClient {
  public:
+  virtual ~AppsClient() {}
+
   // Get all loaded browser contexts.
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts() = 0;
 

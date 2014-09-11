@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace extensions {
+class AppWindow;
 class ShellAppWindow;
 }
 
@@ -17,6 +18,8 @@ namespace athena {
 
 class ShellAppActivity : public AppActivity {
  public:
+  explicit ShellAppActivity(extensions::AppWindow* app_window);
+  // TODO(hashimoto) Remove this.
   ShellAppActivity(extensions::ShellAppWindow* app_window,
                    const std::string& app_id);
   virtual ~ShellAppActivity();
@@ -28,6 +31,7 @@ class ShellAppActivity : public AppActivity {
   // AppActivity:
   virtual views::WebView* GetWebView() OVERRIDE;
 
+  extensions::AppWindow* app_window_;
   scoped_ptr<extensions::ShellAppWindow> shell_app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellAppActivity);

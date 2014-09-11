@@ -22,6 +22,7 @@ class DefaultShellBrowserMainDelegate : public ShellBrowserMainDelegate {
   virtual void Start(content::BrowserContext* context) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual DesktopController* CreateDesktopController() OVERRIDE;
+  virtual AppsClient* CreateAppsClient() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultShellBrowserMainDelegate);

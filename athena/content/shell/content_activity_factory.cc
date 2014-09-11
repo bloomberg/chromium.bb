@@ -17,7 +17,7 @@ Activity* ContentActivityFactory::CreateAppActivity(
 Activity* ContentActivityFactory::CreateAppActivity(
     extensions::AppWindow* app_window,
     views::WebView* web_view) {
-  return NULL;
+  return new ShellAppActivity(app_window);
 }
 
 }  // namespace athena

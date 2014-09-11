@@ -17,12 +17,16 @@
 #include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/shell/app/shell_main_delegate.h"
 #include "extensions/shell/browser/desktop_controller.h"
+#include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "extensions/shell/browser/shell_native_app_window.h"
 #include "extensions/shell/common/shell_content_client.h"
 #include "extensions/shell/common/switches.h"
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
@@ -84,6 +88,50 @@ class AthenaDesktopController : public extensions::DesktopController {
   DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
 };
 
+class AthenaAppsClient : public extensions::AppsClient {
+ public:
+  AthenaAppsClient() {}
+  virtual ~AthenaAppsClient() {}
+
+  // extensions::AppsClient:
+  virtual std::vector<content::BrowserContext*>
+  GetLoadedBrowserContexts() OVERRIDE {
+    NOTIMPLEMENTED();
+    return std::vector<content::BrowserContext*>();
+  }
+
+  virtual extensions::AppWindow* CreateAppWindow(
+      content::BrowserContext* context,
+      const extensions::Extension* extension) OVERRIDE {
+    return new extensions::AppWindow(
+        context, new extensions::ShellAppDelegate, extension);
+  }
+
+  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
+      extensions::AppWindow* window,
+      const extensions::AppWindow::CreateParams& params) OVERRIDE {
+    athena::ActivityManager::Get()->AddActivity(
+        athena::ActivityFactory::Get()->CreateAppActivity(window, NULL));
+    return new extensions::ShellNativeAppWindow(window, params);
+  }
+
+  virtual void IncrementKeepAliveCount() OVERRIDE {}
+
+  virtual void DecrementKeepAliveCount() OVERRIDE {}
+
+  virtual void OpenDevToolsWindow(content::WebContents* web_contents,
+                                  const base::Closure& callback) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual bool IsCurrentChannelOlderThanDev() OVERRIDE {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AthenaAppsClient);
+};
+
 class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
  public:
   AthenaBrowserMainDelegate() {}
@@ -120,6 +168,10 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
 
   virtual extensions::DesktopController* CreateDesktopController() OVERRIDE {
     return new AthenaDesktopController();
+  }
+
+  virtual extensions::AppsClient* CreateAppsClient() OVERRIDE {
+    return new AthenaAppsClient();
   }
 
  private:

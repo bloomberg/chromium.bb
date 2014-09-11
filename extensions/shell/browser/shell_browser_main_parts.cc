@@ -12,9 +12,9 @@
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/shell/browser/shell_apps_client.h"
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
@@ -118,7 +118,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   device_client_.reset(new ShellDeviceClient);
 
-  apps_client_.reset(new ShellAppsClient());
+  apps_client_.reset(browser_main_delegate_->CreateAppsClient());
   extensions::AppsClient::Set(apps_client_.get());
 
   extensions_client_.reset(new ShellExtensionsClient());

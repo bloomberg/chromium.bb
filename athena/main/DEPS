@@ -34,6 +34,7 @@ include_rules = [
 specific_include_rules = {
   "athena_main\.cc": [
     "+content/public/app",
+    "+extensions/browser/app_window",
     "+extensions/shell/app",
     "+extensions/shell/browser",
     "+extensions/shell/common",
