@@ -1343,3 +1343,4 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413098 plugins/touch-events-details.html [ Failure ]
 crbug.com/413098 plugins/transformed-events.html [ Failure ]
 
+crbug.com/24182 http/tests/perf/large-inlined-script.html [ Failure Pass ]
