@@ -26,7 +26,6 @@ crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
 crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
-crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Slow ]
 crbug.com/24182 html5lib/generated/run-tests16-data.html [ Slow ]
 crbug.com/24182 html5lib/webkit-resumer.html [ Slow ]
 crbug.com/24182 http/tests/accessibility/slow-document-load.html [ Slow ]

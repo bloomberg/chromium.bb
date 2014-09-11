@@ -13,7 +13,6 @@
             'V8DeviceOrientationEventCustom.cpp',
             'V8SQLResultSetRowListCustom.cpp',
             'V8SQLTransactionCustom.cpp',
-            'V8SQLTransactionSyncCustom.cpp',
             'V8ServiceWorkerClientCustom.cpp',
             'V8ServiceWorkerCustom.cpp',
             'V8SubtleCryptoCustom.cpp',

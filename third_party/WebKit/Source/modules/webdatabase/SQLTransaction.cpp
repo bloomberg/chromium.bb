@@ -288,7 +288,7 @@ bool SQLTransaction::computeNextStateAndCleanupIfNeeded()
 {
     // Only honor the requested state transition if we're not supposed to be
     // cleaning up and shutting down:
-    if (m_database->opened() && !m_database->isInterrupted()) {
+    if (m_database->opened()) {
         setStateToRequestedState();
         ASSERT(m_nextState == SQLTransactionState::End
             || m_nextState == SQLTransactionState::DeliverTransactionCallback

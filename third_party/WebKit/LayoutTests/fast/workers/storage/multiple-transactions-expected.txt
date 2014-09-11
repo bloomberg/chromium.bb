@@ -1,7 +1,0 @@
-CONSOLE WARNING: 'openDatabase' in Workers is deprecated. Please switch to Indexed Database API.
-This is a test to see if the database API allows multiple transactions to be queued on the same database at once:
-Transaction 1 Started
-Transaction 1 Succeeded
-Transaction 2 Started
-Transaction 2 Succeeded
-

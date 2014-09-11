@@ -36,14 +36,12 @@
 namespace blink {
 
 class Database;
-class DatabaseSync;
 
 class DatabaseCallback : public NoBaseWillBeGarbageCollectedFinalized<DatabaseCallback> {
 public:
     virtual ~DatabaseCallback() { }
     virtual void trace(Visitor*) { }
     virtual bool handleEvent(Database*) = 0;
-    virtual bool handleEvent(DatabaseSync*) = 0;
 };
 
 }

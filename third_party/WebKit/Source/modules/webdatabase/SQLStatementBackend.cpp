@@ -145,7 +145,7 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
     // If this is the case, they might be trying to do something fishy or malicious
     if (statement.bindParameterCount() != m_arguments.size()) {
         WTF_LOG(StorageAPI, "Bind parameter count doesn't match number of question marks");
-        m_error = SQLErrorData::create(db->isInterrupted() ? SQLError::DATABASE_ERR : SQLError::SYNTAX_ERR, "number of '?'s in statement string does not match argument count");
+        m_error = SQLErrorData::create(SQLError::SYNTAX_ERR, "number of '?'s in statement string does not match argument count");
         db->reportExecuteStatementResult(2, m_error->code(), 0);
         return false;
     }

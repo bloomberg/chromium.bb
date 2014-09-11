@@ -62,7 +62,6 @@ public:
 
     unsigned long long getMaxSizeForDatabase(const DatabaseBackendBase*);
 
-    void interruptAllDatabasesForContext(const DatabaseContext*);
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
     void prepareToOpenDatabase(DatabaseBackendBase*);

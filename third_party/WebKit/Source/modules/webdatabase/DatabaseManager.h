@@ -43,7 +43,6 @@ class Database;
 class DatabaseBackendBase;
 class DatabaseCallback;
 class DatabaseContext;
-class DatabaseSync;
 class TaskSynchronizer;
 class ExceptionState;
 class SecurityOrigin;
@@ -72,13 +71,10 @@ public:
     static void throwExceptionForDatabaseError(DatabaseError, const String& errorMessage, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
-    PassRefPtrWillBeRawPtr<DatabaseSync> openDatabaseSync(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
-
-    void interruptAllDatabasesForContext(DatabaseContext*);
 
 private:
     DatabaseManager();
@@ -92,13 +88,15 @@ private:
     DatabaseContext* existingDatabaseContextFor(ExecutionContext*);
 
     PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabaseBackend(ExecutionContext*,
-        DatabaseType, const String& name, const String& expectedVersion, const String& displayName,
+        const String& name, const String& expectedVersion, const String& displayName,
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     static void logErrorMessage(ExecutionContext*, const String& message);
 
     AbstractDatabaseServer* m_server;
 
+    // FIXME: Only one DatabaseContext object can be created. We can remove the
+    // following map, and don't need to worry about locking.
     // Access to the following fields require locking m_contextMapLock:
 #if ENABLE(OILPAN)
     // We can't use PersistentHeapHashMap because multiple threads update the map.

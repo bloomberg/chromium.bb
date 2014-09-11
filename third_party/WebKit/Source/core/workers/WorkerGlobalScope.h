@@ -86,16 +86,6 @@ public:
     void clearScript() { m_script.clear(); }
     void clearInspector();
 
-    // FIXME: We can remove this interface when we remove openDatabaseSync.
-    class TerminationObserver {
-    public:
-        virtual ~TerminationObserver() { }
-        // The function is probably called in the main thread.
-        virtual void wasRequestedToTerminate() = 0;
-    };
-    void registerTerminationObserver(TerminationObserver*);
-    void wasRequestedToTerminate();
-
     void dispose();
 
     WorkerThread* thread() const { return m_thread; }
@@ -182,7 +172,6 @@ private:
     OwnPtrWillBeMember<WorkerClients> m_workerClients;
 
     double m_timeOrigin;
-    TerminationObserver* m_terminationObserver;
 
     OwnPtrWillBeMember<ConsoleMessageStorage> m_messageStorage;
 };

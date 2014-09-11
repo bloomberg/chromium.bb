@@ -419,8 +419,6 @@ crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 
-crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
-
 crbug.com/245630 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
@@ -644,7 +642,6 @@ crbug.com/369008 [ Mac ] fast/writing-mode/flipped-blocks-inline-map-local-to-co
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
-crbug.com/323858 fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
@@ -793,7 +790,6 @@ crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Fa
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Pass Slow Timeout ]
-crbug.com/357427 http/tests/workers/terminate-during-sync-operation-websql.html [ Pass Slow Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]

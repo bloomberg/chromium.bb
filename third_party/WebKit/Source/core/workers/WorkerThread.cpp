@@ -403,7 +403,6 @@ void WorkerThread::stopInternal()
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     m_workerGlobalScope->script()->scheduleExecutionTermination();
-    m_workerGlobalScope->wasRequestedToTerminate();
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());

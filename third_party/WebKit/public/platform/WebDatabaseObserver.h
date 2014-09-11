@@ -37,6 +37,8 @@ class WebString;
 
 class WebDatabaseObserver {
 public:
+    // FIXME: |isSyncDatabse| arguments are alwyas |false|. We should remove them.
+
     virtual void databaseOpened(
         const WebString& databaseIdentifier,
         const WebString& databaseName,

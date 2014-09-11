@@ -105,8 +105,6 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
     // For debug accounting only. We must do this before we register the
     // instance. The assertions assume this.
     DatabaseManager::manager().didConstructDatabaseContext();
-    if (context->isWorkerGlobalScope())
-        toWorkerGlobalScope(context)->registerTerminationObserver(this);
 }
 
 DatabaseContext::~DatabaseContext()
@@ -120,7 +118,6 @@ void DatabaseContext::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_databaseThread);
-    visitor->trace(m_openSyncDatabases);
 #endif
 }
 
@@ -135,11 +132,6 @@ void DatabaseContext::contextDestroyed()
     stopDatabases();
     DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();
-}
-
-void DatabaseContext::wasRequestedToTerminate()
-{
-    DatabaseManager::manager().interruptAllDatabasesForContext(this);
 }
 
 // stop() is from stopActiveDOMObjects() which indicates that the owner LocalFrame
@@ -173,61 +165,8 @@ DatabaseThread* DatabaseContext::databaseThread()
     return m_databaseThread.get();
 }
 
-void DatabaseContext::didOpenDatabase(DatabaseBackendBase& database)
-{
-    if (!database.isSyncDatabase())
-        return;
-    ASSERT(isContextThread());
-#if ENABLE(OILPAN)
-    m_openSyncDatabases.add(&database, adoptPtr(new DatabaseCloser(database)));
-#else
-    m_openSyncDatabases.add(&database);
-#endif
-}
-
-void DatabaseContext::didCloseDatabase(DatabaseBackendBase& database)
-{
-#if !ENABLE(OILPAN)
-    if (!database.isSyncDatabase())
-        return;
-    ASSERT(isContextThread());
-    m_openSyncDatabases.remove(&database);
-#endif
-}
-
-#if ENABLE(OILPAN)
-DatabaseContext::DatabaseCloser::~DatabaseCloser()
-{
-    if (m_database.opened())
-        m_database.closeDatabase();
-}
-#endif
-
-void DatabaseContext::stopSyncDatabases()
-{
-    // SQLite is "multi-thread safe", but each database handle can only be used
-    // on a single thread at a time.
-    //
-    // For DatabaseBackendSync, we open the SQLite database on the script
-    // context thread. And hence we should also close it on that same
-    // thread. This means that the SQLite database need to be closed here in the
-    // destructor.
-    ASSERT(isContextThread());
-#if ENABLE(OILPAN)
-    m_openSyncDatabases.clear();
-#else
-    Vector<DatabaseBackendBase*> syncDatabases;
-    copyToVector(m_openSyncDatabases, syncDatabases);
-    m_openSyncDatabases.clear();
-    for (size_t i = 0; i < syncDatabases.size(); ++i)
-        syncDatabases[i]->closeImmediately();
-#endif
-}
-
 void DatabaseContext::stopDatabases()
 {
-    stopSyncDatabases();
-
     // Though we initiate termination of the DatabaseThread here in
     // stopDatabases(), we can't clear the m_databaseThread ref till we get to
     // the destructor. This is because the Databases that are managed by

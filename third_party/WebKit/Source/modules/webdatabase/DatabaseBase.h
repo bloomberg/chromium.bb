@@ -30,6 +30,7 @@ namespace blink {
 
 class ExecutionContext;
 
+// FIXME: This abstraction is unnecessary because DatabaseSync was removed.
 class DatabaseBase {
 protected:
     DatabaseBase(ExecutionContext*);

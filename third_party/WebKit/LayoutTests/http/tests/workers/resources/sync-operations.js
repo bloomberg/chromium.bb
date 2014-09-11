@@ -20,9 +20,7 @@ onmessage = function(evt)
         // Increase the change of getting caught doing a sync operation
         // by repeating the opration multiple times.
         for (var i = 0; i < 10; ++i) {
-            if (evt.data == 'openDatabaseSync')
-                openDatabaseSync('', '', '', 1);
-            else if (evt.data == 'requestFileSystemSync') {
+            if (evt.data == 'requestFileSystemSync') {
                 if (!this.webkitRequestFileSystemSync)
                     return;
                 webkitRequestFileSystemSync(this.TEMPORARY, 100);

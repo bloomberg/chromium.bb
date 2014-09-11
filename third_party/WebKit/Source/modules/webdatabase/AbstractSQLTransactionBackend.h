@@ -38,6 +38,8 @@
 
 namespace blink {
 
+// FIXME: This abstraction is unnecessary because SQLTransactionBackendSync was
+// removed.
 class AbstractSQLTransactionBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransactionBackend> {
 public:
     virtual ~AbstractSQLTransactionBackend() { }

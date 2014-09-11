@@ -67,8 +67,7 @@ WebSecurityOrigin WebDatabase::securityOrigin() const
 
 bool WebDatabase::isSyncDatabase() const
 {
-    ASSERT(m_database);
-    return m_database->isSyncDatabase();
+    return false;
 }
 
 void WebDatabase::updateDatabaseSize(const WebString& originIdentifier, const WebString& name, long long size)

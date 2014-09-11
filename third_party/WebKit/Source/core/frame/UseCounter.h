@@ -301,8 +301,6 @@ public:
         NamedNodeMapGetNamedItemNS = 310,
         NamedNodeMapSetNamedItemNS = 311,
         NamedNodeMapRemoveNamedItemNS = 312,
-        OpenWebDatabaseInWorker = 313, // This didn't work because of crbug.com/376039. Available since M37.
-        OpenWebDatabaseSyncInWorker = 314, // This didn't work because of crbug.com/376039. Available since M37.
         XHRProgressEventPosition = 316,
         XHRProgressEventTotalSize = 317,
         PrefixedDocumentIsFullscreen = 318,

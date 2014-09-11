@@ -45,6 +45,7 @@ public:
     BLINK_EXPORT WebString displayName() const;
     BLINK_EXPORT unsigned long estimatedSize() const;
     BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    // Deprecated: This always returns false.
     BLINK_EXPORT bool isSyncDatabase() const;
 
     BLINK_EXPORT static void updateDatabaseSize(

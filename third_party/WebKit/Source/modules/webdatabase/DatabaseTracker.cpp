@@ -197,28 +197,6 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendB
     return databaseSize + spaceAvailable;
 }
 
-void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseContext* context)
-{
-    MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-
-    if (!m_openDatabaseMap)
-        return;
-
-    DatabaseNameMap* nameMap = m_openDatabaseMap->get(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
-    if (!nameMap)
-        return;
-
-    DatabaseNameMap::const_iterator dbNameMapEndIt = nameMap->end();
-    for (DatabaseNameMap::const_iterator dbNameMapIt = nameMap->begin(); dbNameMapIt != dbNameMapEndIt; ++dbNameMapIt) {
-        DatabaseSet* databaseSet = dbNameMapIt->value;
-        DatabaseSet::const_iterator end = databaseSet->end();
-        for (DatabaseSet::const_iterator it = databaseSet->begin(); it != end; ++it) {
-            if ((*it)->databaseContext() == context)
-                (*it)->interrupt();
-        }
-    }
-}
-
 class DatabaseTracker::CloseOneDatabaseImmediatelyTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, DatabaseBackendBase* database)

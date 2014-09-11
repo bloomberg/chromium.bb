@@ -38,16 +38,14 @@ public:
 
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist) OVERRIDE;
 
-    virtual PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabase(DatabaseContext*, DatabaseType,
+    virtual PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabase(DatabaseContext*,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE;
 
     virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name) OVERRIDE;
 
-    virtual void interruptAllDatabasesForContext(const DatabaseContext*) OVERRIDE;
-
 protected:
-    PassRefPtrWillBeRawPtr<DatabaseBackendBase> createDatabase(DatabaseContext*, DatabaseType,
+    PassRefPtrWillBeRawPtr<DatabaseBackendBase> createDatabase(DatabaseContext*,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 };

@@ -89,7 +89,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
     , m_timeOrigin(timeOrigin)
-    , m_terminationObserver(0)
     , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
 {
     setClient(this);
@@ -194,19 +193,6 @@ void WorkerGlobalScope::clearInspector()
     thread()->setWorkerInspectorController(nullptr);
     m_workerInspectorController->dispose();
     m_workerInspectorController.clear();
-}
-
-void WorkerGlobalScope::registerTerminationObserver(TerminationObserver* observer)
-{
-    ASSERT(!m_terminationObserver);
-    ASSERT(observer);
-    m_terminationObserver = observer;
-}
-
-void WorkerGlobalScope::wasRequestedToTerminate()
-{
-    if (m_terminationObserver)
-        m_terminationObserver->wasRequestedToTerminate();
 }
 
 void WorkerGlobalScope::dispose()

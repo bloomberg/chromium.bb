@@ -1,4 +1,0 @@
-CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
-Test that trying to run a transaction inside another transaction throws an exception.
-PASS: Exception thrown while trying to run a nested transaction (unable to start a transaction from within a transaction).
-

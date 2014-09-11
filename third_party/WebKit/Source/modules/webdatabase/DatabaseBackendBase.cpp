@@ -202,7 +202,7 @@ const char* DatabaseBackendBase::databaseInfoTableName()
 }
 
 DatabaseBackendBase::DatabaseBackendBase(DatabaseContext* databaseContext, const String& name,
-    const String& expectedVersion, const String& displayName, unsigned long estimatedSize, DatabaseType databaseType)
+    const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : m_databaseContext(databaseContext)
     , m_name(name.isolatedCopy())
     , m_expectedVersion(expectedVersion.isolatedCopy())
@@ -211,7 +211,6 @@ DatabaseBackendBase::DatabaseBackendBase(DatabaseContext* databaseContext, const
     , m_guid(0)
     , m_opened(false)
     , m_new(false)
-    , m_isSyncDatabase(databaseType == DatabaseType::Sync)
 {
     m_contextThreadSecurityOrigin = m_databaseContext->securityOrigin()->isolatedCopy();
 
@@ -263,7 +262,6 @@ void DatabaseBackendBase::closeDatabase()
 
     m_sqliteDatabase.close();
     m_opened = false;
-    databaseContext()->didCloseDatabase(*this);
     // See comment at the top this file regarding calling removeOpenDatabase().
     DatabaseTracker::tracker().removeOpenDatabase(this);
     {
@@ -418,7 +416,6 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
     ASSERT(m_databaseAuthorizer);
     m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer.get());
 
-    databaseContext()->didOpenDatabase(*this);
     // See comment at the top this file regarding calling addOpenDatabase().
     DatabaseTracker::tracker().addOpenDatabase(this);
     m_opened = true;
@@ -591,17 +588,6 @@ void DatabaseBackendBase::incrementalVacuumIfNeeded()
     }
 }
 
-void DatabaseBackendBase::interrupt()
-{
-    m_sqliteDatabase.interrupt();
-}
-
-bool DatabaseBackendBase::isInterrupted()
-{
-    MutexLocker locker(m_sqliteDatabase.databaseMutex());
-    return m_sqliteDatabase.isInterrupted();
-}
-
 // These are used to generate histograms of errors seen with websql.
 // See about:histograms in chromium.
 void DatabaseBackendBase::reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
@@ -609,7 +595,7 @@ void DatabaseBackendBase::reportOpenDatabaseResult(int errorSite, int webSqlErro
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportOpenDatabaseResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(),
+            stringIdentifier(), false,
             errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
@@ -619,7 +605,7 @@ void DatabaseBackendBase::reportChangeVersionResult(int errorSite, int webSqlErr
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportChangeVersionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(),
+            stringIdentifier(), false,
             errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
@@ -629,7 +615,7 @@ void DatabaseBackendBase::reportStartTransactionResult(int errorSite, int webSql
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportStartTransactionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(),
+            stringIdentifier(), false,
             errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
@@ -639,7 +625,7 @@ void DatabaseBackendBase::reportCommitTransactionResult(int errorSite, int webSq
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportCommitTransactionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(),
+            stringIdentifier(), false,
             errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
@@ -649,7 +635,7 @@ void DatabaseBackendBase::reportExecuteStatementResult(int errorSite, int webSql
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportExecuteStatementResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(),
+            stringIdentifier(), false,
             errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
@@ -659,7 +645,7 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportVacuumDatabaseResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), isSyncDatabase(), sqliteErrorCode);
+            stringIdentifier(), false, sqliteErrorCode);
     }
 }
 

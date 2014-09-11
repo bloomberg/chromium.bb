@@ -1,4 +1,0 @@
-CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
-Test that no exception is thrown when the database is opened with an empty version.
-PASS
-

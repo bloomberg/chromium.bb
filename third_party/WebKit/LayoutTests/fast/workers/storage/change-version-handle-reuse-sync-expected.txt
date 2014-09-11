@@ -1,6 +1,0 @@
-CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
-Test that the database can be accessed after changing its version.
-PASS: changeVersion() transaction callback was called.
-PASS: No exception thrown while executing statements.
-PASS: No exception thrown while running a transaction.
-

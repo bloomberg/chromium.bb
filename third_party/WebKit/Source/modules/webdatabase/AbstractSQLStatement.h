@@ -32,6 +32,7 @@ namespace blink {
 
 class AbstractSQLStatementBackend;
 
+// FIXME: This abstraction is unnecessary because SQLStatementSync was removed.
 class AbstractSQLStatement : public NoBaseWillBeGarbageCollectedFinalized<AbstractSQLStatement> {
 public:
     virtual ~AbstractSQLStatement() { }

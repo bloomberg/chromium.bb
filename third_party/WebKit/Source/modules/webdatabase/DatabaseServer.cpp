@@ -28,9 +28,7 @@
 
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 
 namespace blink {
@@ -45,34 +43,21 @@ void DatabaseServer::closeDatabasesImmediately(const String& originIdentifier, c
     DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, name);
 }
 
-void DatabaseServer::interruptAllDatabasesForContext(const DatabaseContext* context)
-{
-    DatabaseTracker::tracker().interruptAllDatabasesForContext(context);
-}
-
 PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(DatabaseContext* backendContext,
-    DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
+    const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
     RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error))
-        database = createDatabase(backendContext, type, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
+        database = createDatabase(backendContext, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
 }
 
 PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(DatabaseContext* backendContext,
-    DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
+    const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
-    switch (type) {
-    case DatabaseType::Async:
-        database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
-        break;
-    case DatabaseType::Sync:
-        database = adoptRefWillBeNoop(new DatabaseSync(backendContext, name, expectedVersion, displayName, estimatedSize));
-    }
-
+    RefPtrWillBeRawPtr<DatabaseBackendBase> database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
     if (!database->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
         return nullptr;
     return database.release();

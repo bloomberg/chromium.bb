@@ -51,6 +51,8 @@ class DatabaseBase;
 class ExecutionContext;
 class SecurityOrigin;
 
+// FIXME: This abstraction is unnecessary because DatabaseBackendSync was
+// removed.
 class DatabaseBackendBase : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackendBase> {
 public:
     virtual ~DatabaseBackendBase();
@@ -60,7 +62,6 @@ public:
 
     bool opened() const { return m_opened; }
     bool isNew() const { return m_new; }
-    bool isSyncDatabase() const { return m_isSyncDatabase; }
 
     virtual SecurityOrigin* securityOrigin() const;
     virtual String stringIdentifier() const;
@@ -71,8 +72,6 @@ public:
 
     unsigned long long maximumSize() const;
     void incrementalVacuumIfNeeded();
-    void interrupt();
-    bool isInterrupted();
 
     void disableAuthorizer();
     void enableAuthorizer();
@@ -93,12 +92,10 @@ public:
 protected:
     friend class ChangeVersionWrapper;
     friend class SQLStatementBackend;
-    friend class SQLStatementSync;
     friend class SQLTransactionBackend;
-    friend class SQLTransactionBackendSync;
 
     DatabaseBackendBase(DatabaseContext*, const String& name, const String& expectedVersion,
-        const String& displayName, unsigned long estimatedSize, DatabaseType);
+        const String& displayName, unsigned long estimatedSize);
 
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) = 0;
     virtual bool performOpenAndVerify(bool shouldSetVersionInNewDatabase, DatabaseError&, String& errorMessage);
@@ -139,7 +136,6 @@ private:
     DatabaseGuid m_guid;
     bool m_opened;
     bool m_new;
-    const bool m_isSyncDatabase;
 
     SQLiteDatabase m_sqliteDatabase;
 

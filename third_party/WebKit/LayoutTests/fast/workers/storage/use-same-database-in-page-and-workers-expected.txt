@@ -1,4 +1,0 @@
-CONSOLE WARNING: 'openDatabase' in Workers is deprecated. Please switch to Indexed Database API.
-Test that we can successfully use the same database in the page and in multiple workers at the same time.
-PASS
-
