@@ -75,12 +75,13 @@ public:
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 #if OS(MACOSX)
+    FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
 #else
+    FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic);
     FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
     FontPlatformData(const FontPlatformData& src, float textSize);
 #endif
@@ -119,7 +120,6 @@ public:
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     bool operator==(const FontPlatformData&) const;
     const FontPlatformData& operator=(const FontPlatformData&);
-
     bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
 #if OS(WIN)
     void setMinSizeForAntiAlias(unsigned size) { m_minSizeForAntiAlias = size; }
@@ -167,9 +167,10 @@ private:
     // The caller is responsible for calling CFRelease() on this parameter when done with it.
     // * cgFont - CGFontRef representing the input font at the specified point size.
     void loadFont(NSFont*, float fontSize, NSFont*& outNSFont, CGFontRef&);
+
+    bool platformIsEqual(const FontPlatformData&) const;
     void platformDataInit(const FontPlatformData&);
     const FontPlatformData& platformDataAssign(const FontPlatformData&);
-    bool isAATFont(CTFontRef) const;
 #endif
 
     mutable RefPtr<SkTypeface> m_typeface;
@@ -185,8 +186,8 @@ public:
 #if OS(MACOSX)
     bool m_isColorBitmapFont;
     bool m_isCompositeFontReference;
-#endif
     FontWidthVariant m_widthVariant;
+#endif
 private:
 #if OS(MACOSX)
     NSFont* m_font;

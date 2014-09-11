@@ -28,8 +28,10 @@
 #import <AvailabilityMacros.h>
 #import <wtf/text/WTFString.h>
 
+#if OS(MACOSX)
 #import "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
+#endif
 
 namespace blink {
 
@@ -77,16 +79,24 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBol
     m_cgFont.adoptCF(cgFont);
 }
 
+FontPlatformData:: ~FontPlatformData()
+{
+    if (m_font && m_font != reinterpret_cast<NSFont *>(-1))
+        CFRelease(m_font);
+}
+
 void FontPlatformData::platformDataInit(const FontPlatformData& f)
 {
-    m_font = f.m_font ? [f.m_font retain] : f.m_font;
+    m_font = f.m_font && f.m_font != reinterpret_cast<NSFont *>(-1) ? [f.m_font retain] : f.m_font;
 
     m_cgFont = f.m_cgFont;
     m_CTFont = f.m_CTFont;
 
+#if OS(MACOSX)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
     m_typeface = f.m_typeface;
+#endif
 }
 
 const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformData& f)
@@ -94,24 +104,31 @@ const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformD
     m_cgFont = f.m_cgFont;
     if (m_font == f.m_font)
         return *this;
-    if (f.m_font)
+    if (f.m_font && f.m_font != reinterpret_cast<NSFont *>(-1))
         CFRetain(f.m_font);
-    if (m_font)
+    if (m_font && m_font != reinterpret_cast<NSFont *>(-1))
         CFRelease(m_font);
     m_font = f.m_font;
     m_CTFont = f.m_CTFont;
-
+#if OS(MACOSX)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
     m_typeface = f.m_typeface;
-
+#endif
     return *this;
 }
 
+bool FontPlatformData::platformIsEqual(const FontPlatformData& other) const
+{
+    if (m_font || other.m_font)
+        return m_font == other.m_font;
+    return m_cgFont == other.m_cgFont;
+}
 
 void FontPlatformData::setFont(NSFont *font)
 {
     ASSERT_ARG(font, font);
+    ASSERT(m_font != reinterpret_cast<NSFont *>(-1));
 
     if (m_font == font)
         return;
@@ -126,6 +143,7 @@ void FontPlatformData::setFont(NSFont *font)
     NSFont* loadedFont = 0;
     loadFont(m_font, m_textSize, loadedFont, cgFont);
 
+#if OS(MACOSX)
     // If loadFont replaced m_font with a fallback font, then release the
     // previous font to counter the retain above. Then retain the new font.
     if (loadedFont != m_font) {
@@ -133,6 +151,7 @@ void FontPlatformData::setFont(NSFont *font)
         CFRetain(loadedFont);
         m_font = loadedFont;
     }
+#endif
 
     m_cgFont.adoptCF(cgFont);
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
@@ -225,6 +244,11 @@ static CTFontDescriptorRef cascadeToLastResortAndDisableSwashesFontDescriptor()
     return descriptor;
 }
 
+String FontPlatformData::fontFamilyName() const
+{
+    return String(CTFontCopyDisplayName(ctFont()));
+}
+
 CTFontRef FontPlatformData::ctFont() const
 {
     if (m_CTFont)
@@ -264,7 +288,16 @@ CTFontRef FontPlatformData::ctFont() const
     return m_CTFont.get();
 }
 
-bool FontPlatformData::isAATFont(CTFontRef ctFont) const
+SkTypeface* FontPlatformData::typeface() const {
+    if (m_typeface)
+        return m_typeface.get();
+
+    m_typeface = adoptRef(SkCreateTypefaceFromCTFont(ctFont()));
+    return m_typeface.get();
+}
+
+#if OS(MACOSX)
+static bool isAATFont(CTFontRef ctFont)
 {
     CFDataRef table = CTFontCopyTable(ctFont, kCTFontTableMort, 0);
     if (table) {
@@ -278,5 +311,21 @@ bool FontPlatformData::isAATFont(CTFontRef ctFont) const
     }
     return false;
 }
+#endif
+
+HarfBuzzFace* FontPlatformData::harfBuzzFace() const
+{
+    CTFontRef font = ctFont();
+    // HarfBuzz can't handle AAT font
+    if (isAATFont(font))
+        return 0;
+
+    if (!m_harfBuzzFace) {
+        uint64_t uniqueID = reinterpret_cast<uintptr_t>(font);
+        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID);
+    }
+    return m_harfBuzzFace.get();
+}
+
 
 } // namespace blink
