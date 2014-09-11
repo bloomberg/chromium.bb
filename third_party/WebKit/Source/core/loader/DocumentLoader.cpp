@@ -448,7 +448,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
             RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
             consoleMessage->setRequestIdentifier(identifier);
-            frame()->document()->addMessage(consoleMessage.release());
+            frame()->document()->addConsoleMessage(consoleMessage.release());
             frame()->document()->enforceSandboxFlags(SandboxOrigin);
             if (FrameOwner* owner = frame()->owner())
                 owner->dispatchLoad();

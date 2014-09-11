@@ -214,7 +214,7 @@ private:
     RawPtrWillBeMember<Document> m_document;
 };
 
-class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient
+class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
     , public DocumentSupplementable, public LifecycleContext<Document> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);
@@ -235,7 +235,6 @@ public:
 #endif
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
-    using ExecutionContextClient::addConsoleMessage;
     using TreeScope::getElementById;
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return true; }
@@ -1004,7 +1003,7 @@ public:
 
     void didAssociateFormControl(Element*);
 
-    virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
+    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
 
     virtual LocalDOMWindow* executingWindow() OVERRIDE FINAL;
     LocalFrame* executingFrame();
@@ -1393,7 +1392,6 @@ inline void Document::scheduleRenderTreeUpdateIfNeeded()
         scheduleRenderTreeUpdate();
 }
 
-DEFINE_TYPE_CASTS(Document, ExecutionContextClient, client, client->isDocument(), client.isDocument());
 DEFINE_TYPE_CASTS(Document, ExecutionContext, context, context->isDocument(), context.isDocument());
 DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 

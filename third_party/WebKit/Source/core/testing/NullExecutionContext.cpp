@@ -5,7 +5,9 @@
 #include "config.h"
 #include "core/testing/NullExecutionContext.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
+#include "core/frame/DOMTimer.h"
 
 namespace blink {
 
@@ -26,6 +28,15 @@ NullExecutionContext::NullExecutionContext()
     : m_tasksNeedSuspension(false)
     , m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
 {
+}
+
+void NullExecutionContext::postTask(PassOwnPtr<ExecutionContextTask>)
+{
+}
+
+double NullExecutionContext::timerAlignmentInterval() const
+{
+    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 } // namespace blink

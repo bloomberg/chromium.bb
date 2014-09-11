@@ -40,7 +40,7 @@ class KURL;
 class SecurityContext {
 public:
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
-    ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
+    ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
 
     bool isSecureTransitionTo(const KURL&) const;
 

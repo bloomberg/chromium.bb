@@ -67,8 +67,7 @@ public:
 };
 
 ExecutionContext::ExecutionContext()
-    : m_client(0)
-    , m_sandboxFlags(SandboxNone)
+    : m_sandboxFlags(SandboxNone)
     , m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
@@ -111,15 +110,13 @@ unsigned ExecutionContext::activeDOMObjectCount()
 void ExecutionContext::suspendScheduledTasks()
 {
     suspendActiveDOMObjects();
-    if (m_client)
-        m_client->tasksWereSuspended();
+    tasksWereSuspended();
 }
 
 void ExecutionContext::resumeScheduledTasks()
 {
     resumeActiveDOMObjects();
-    if (m_client)
-        m_client->tasksWereResumed();
+    tasksWereResumed();
 }
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
@@ -146,32 +143,22 @@ void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event,
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorEvent, corsStatus) && m_client)
-        m_client->logExceptionToConsole(errorEvent->messageForConsole(), scriptId, errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+    if (!dispatchErrorEvent(errorEvent, corsStatus))
+        logExceptionToConsole(errorEvent->messageForConsole(), scriptId, errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        if (m_client)
-            m_client->logExceptionToConsole(e->m_errorMessage, e->m_scriptId, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+        logExceptionToConsole(e->m_errorMessage, e->m_scriptId, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
     m_pendingExceptions.clear();
 }
 
-void ExecutionContext::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
-{
-    if (!m_client)
-        return;
-    m_client->addMessage(consoleMessage);
-}
-
 bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
-    if (!m_client)
-        return false;
-    EventTarget* target = m_client->errorEventTarget();
+    EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
@@ -231,71 +218,24 @@ void ExecutionContext::didChangeTimerAlignmentInterval()
         iter->value->didChangeAlignmentInterval();
 }
 
-SecurityOrigin* ExecutionContext::securityOrigin() const
+SecurityOrigin* ExecutionContext::securityOrigin()
 {
-    RELEASE_ASSERT(m_client);
-    return m_client->securityContext().securityOrigin();
+    return securityContext().securityOrigin();
 }
 
-ContentSecurityPolicy* ExecutionContext::contentSecurityPolicy() const
+ContentSecurityPolicy* ExecutionContext::contentSecurityPolicy()
 {
-    RELEASE_ASSERT(m_client);
-    return m_client->securityContext().contentSecurityPolicy();
+    return securityContext().contentSecurityPolicy();
 }
 
 const KURL& ExecutionContext::url() const
 {
-    if (!m_client) {
-        DEFINE_STATIC_LOCAL(KURL, emptyURL, ());
-        return emptyURL;
-    }
-
     return virtualURL();
 }
 
 KURL ExecutionContext::completeURL(const String& url) const
 {
-
-    if (!m_client) {
-        DEFINE_STATIC_LOCAL(KURL, emptyURL, ());
-        return emptyURL;
-    }
-
     return virtualCompleteURL(url);
-}
-
-void ExecutionContext::disableEval(const String& errorMessage)
-{
-    if (!m_client)
-        return;
-    return m_client->disableEval(errorMessage);
-}
-
-LocalDOMWindow* ExecutionContext::executingWindow() const
-{
-    RELEASE_ASSERT(m_client);
-    return m_client->executingWindow();
-}
-
-String ExecutionContext::userAgent(const KURL& url) const
-{
-    if (!m_client)
-        return String();
-    return m_client->userAgent(url);
-}
-
-double ExecutionContext::timerAlignmentInterval() const
-{
-    if (!m_client)
-        return DOMTimer::visiblePageAlignmentInterval();
-    return m_client->timerAlignmentInterval();
-}
-
-void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
-{
-    if (!m_client)
-        return;
-    m_client->postTask(task);
 }
 
 PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
@@ -317,11 +257,10 @@ void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
 {
     m_sandboxFlags |= mask;
 
-    RELEASE_ASSERT(m_client);
     // The SandboxOrigin is stored redundantly in the security origin.
-    if (isSandboxed(SandboxOrigin) && m_client->securityContext().securityOrigin() && !m_client->securityContext().securityOrigin()->isUnique()) {
-        m_client->securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
-        m_client->didUpdateSecurityOrigin();
+    if (isSandboxed(SandboxOrigin) && securityContext().securityOrigin() && !securityContext().securityOrigin()->isUnique()) {
+        securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
+        didUpdateSecurityOrigin();
     }
 }
 

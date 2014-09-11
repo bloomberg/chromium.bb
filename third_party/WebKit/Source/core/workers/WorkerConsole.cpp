@@ -54,7 +54,7 @@ void WorkerConsole::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage
     const ScriptCallFrame& lastCaller = consoleMessage->callStack()->at(0);
     consoleMessage->setURL(lastCaller.sourceURL());
     consoleMessage->setLineNumber(lastCaller.lineNumber());
-    m_scope->addMessage(consoleMessage);
+    m_scope->addConsoleMessage(consoleMessage);
 }
 
 ExecutionContext* WorkerConsole::context()

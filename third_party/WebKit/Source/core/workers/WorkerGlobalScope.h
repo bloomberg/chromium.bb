@@ -59,7 +59,7 @@ class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
 
-class WorkerGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkerGlobalScope>, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData, public DOMWindowBase64 {
+class WorkerGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkerGlobalScope>, public SecurityContext, public ExecutionContext, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
@@ -67,9 +67,6 @@ public:
     virtual ~WorkerGlobalScope();
 
     virtual bool isWorkerGlobalScope() const OVERRIDE FINAL { return true; }
-    virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return false; }
-    virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return false; }
-    virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return false; }
 
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
@@ -128,7 +125,7 @@ public:
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
-    virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
+    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
     ConsoleMessageStorage* messageStorage();
 
     virtual void trace(Visitor*) OVERRIDE;

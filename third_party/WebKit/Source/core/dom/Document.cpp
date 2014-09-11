@@ -511,8 +511,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
 {
-    setClient(this);
-
     if (m_frame) {
         ASSERT(m_frame->page());
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
@@ -627,8 +625,6 @@ Document::~Document()
     liveDocumentSet().remove(this);
 #endif
 #endif
-
-    setClient(0);
 
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
 }
@@ -2782,7 +2778,7 @@ void Document::logExceptionToConsole(const String& errorMessage, int scriptId, c
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
     consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
-    addMessage(consoleMessage.release());
+    addConsoleMessage(consoleMessage.release());
 }
 
 void Document::setURL(const KURL& url)
@@ -3116,7 +3112,7 @@ void Document::processHttpEquivXFrameOptions(const AtomicString& content)
         frame->navigationScheduler().scheduleLocationChange(this, SecurityOrigin::urlWithUniqueSecurityOrigin(), Referrer());
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
         consoleMessage->setRequestIdentifier(requestIdentifier);
-        addMessage(consoleMessage.release());
+        addConsoleMessage(consoleMessage.release());
     }
 }
 
@@ -4999,7 +4995,7 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void Document::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     if (!isContextThread()) {
         m_taskRunner->postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));

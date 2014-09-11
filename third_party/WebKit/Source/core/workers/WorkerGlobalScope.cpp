@@ -91,7 +91,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_timeOrigin(timeOrigin)
     , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
 {
-    setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();
     m_thread->setWorkerInspectorController(m_workerInspectorController.get());
@@ -202,8 +201,6 @@ void WorkerGlobalScope::dispose()
     m_eventQueue->close();
     clearScript();
     clearInspector();
-    setClient(0);
-
     // We do not clear the thread field of the
     // WorkerGlobalScope. Other objects keep the worker global scope
     // alive because they need its thread field to check that work is
@@ -272,7 +269,7 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
+void WorkerGlobalScope::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     if (!isContextThread()) {
