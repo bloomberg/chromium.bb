@@ -42,8 +42,6 @@ public:
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE;
 
-    virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name) OVERRIDE;
-
 protected:
     PassRefPtrWillBeRawPtr<DatabaseBackendBase> createDatabase(DatabaseContext*,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,

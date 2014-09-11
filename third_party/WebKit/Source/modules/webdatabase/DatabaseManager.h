@@ -26,15 +26,13 @@
 #ifndef DatabaseManager_h
 #define DatabaseManager_h
 
-#include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
+#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -43,12 +41,9 @@ class Database;
 class DatabaseBackendBase;
 class DatabaseCallback;
 class DatabaseContext;
-class TaskSynchronizer;
 class ExceptionState;
 class SecurityOrigin;
 class ExecutionContext;
-
-typedef int ExceptionCode;
 
 class DatabaseManager {
     WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED;
@@ -74,8 +69,6 @@ public:
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
-    void closeDatabasesImmediately(const String& originIdentifier, const String& name);
-
 private:
     DatabaseManager();
     ~DatabaseManager();
@@ -95,21 +88,12 @@ private:
 
     AbstractDatabaseServer* m_server;
 
-    // FIXME: Only one DatabaseContext object can be created. We can remove the
-    // following map, and don't need to worry about locking.
-    // Access to the following fields require locking m_contextMapLock:
-#if ENABLE(OILPAN)
-    // We can't use PersistentHeapHashMap because multiple threads update the map.
-    typedef HashMap<ExecutionContext*, OwnPtr<Persistent<DatabaseContext> > > ContextMap;
-#else
-    typedef HashMap<ExecutionContext*, RefPtr<DatabaseContext> > ContextMap;
-#endif
+    typedef WillBePersistentHeapHashMap<ExecutionContext*, RefPtrWillBeMember<DatabaseContext> > ContextMap;
     ContextMap m_contextMap;
 #if ENABLE(ASSERT)
     int m_databaseContextRegisteredCount;
     int m_databaseContextInstanceCount;
 #endif
-    Mutex m_contextMapLock;
 };
 
 } // namespace blink

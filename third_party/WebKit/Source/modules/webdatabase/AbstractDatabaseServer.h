@@ -46,8 +46,6 @@ public:
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) = 0;
 
-    virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name) = 0;
-
 protected:
     AbstractDatabaseServer() { }
     virtual ~AbstractDatabaseServer() { }

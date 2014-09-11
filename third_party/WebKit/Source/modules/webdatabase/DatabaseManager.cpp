@@ -48,8 +48,9 @@ namespace blink {
 
 DatabaseManager& DatabaseManager::manager()
 {
-    AtomicallyInitializedStatic(DatabaseManager*, dbManager = new DatabaseManager);
-    return *dbManager;
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(DatabaseManager, dbManager, ());
+    return dbManager;
 }
 
 DatabaseManager::DatabaseManager()
@@ -91,17 +92,10 @@ private:
 
 DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
 {
-    MutexLocker locker(m_contextMapLock);
-
     ASSERT(m_databaseContextRegisteredCount >= 0);
     ASSERT(m_databaseContextInstanceCount >= 0);
     ASSERT(m_databaseContextRegisteredCount <= m_databaseContextInstanceCount);
-#if ENABLE(OILPAN)
-    const Persistent<DatabaseContext>* databaseContext = m_contextMap.get(context);
-    return databaseContext ? databaseContext->get() : 0;
-#else
     return m_contextMap.get(context);
-#endif
 }
 
 DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
@@ -116,13 +110,8 @@ DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
 
 void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 {
-    MutexLocker locker(m_contextMapLock);
     ExecutionContext* context = databaseContext->executionContext();
-#if ENABLE(OILPAN)
-    m_contextMap.set(context, adoptPtr(new Persistent<DatabaseContext>(databaseContext)));
-#else
     m_contextMap.set(context, databaseContext);
-#endif
 #if ENABLE(ASSERT)
     m_databaseContextRegisteredCount++;
 #endif
@@ -130,7 +119,6 @@ void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 
 void DatabaseManager::unregisterDatabaseContext(DatabaseContext* databaseContext)
 {
-    MutexLocker locker(m_contextMapLock);
     ExecutionContext* context = databaseContext->executionContext();
     ASSERT(m_contextMap.get(context));
 #if ENABLE(ASSERT)
@@ -142,13 +130,11 @@ void DatabaseManager::unregisterDatabaseContext(DatabaseContext* databaseContext
 #if ENABLE(ASSERT)
 void DatabaseManager::didConstructDatabaseContext()
 {
-    MutexLocker lock(m_contextMapLock);
     m_databaseContextInstanceCount++;
 }
 
 void DatabaseManager::didDestructDatabaseContext()
 {
-    MutexLocker lock(m_contextMapLock);
     m_databaseContextInstanceCount--;
     ASSERT(m_databaseContextRegisteredCount <= m_databaseContextInstanceCount);
 }
@@ -236,11 +222,6 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
 String DatabaseManager::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)
 {
     return m_server->fullPathForDatabase(origin, name, createIfDoesNotExist);
-}
-
-void DatabaseManager::closeDatabasesImmediately(const String& originIdentifier, const String& name)
-{
-    m_server->closeDatabasesImmediately(originIdentifier, name);
 }
 
 void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)

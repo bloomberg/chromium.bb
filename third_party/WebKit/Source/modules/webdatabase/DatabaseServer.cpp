@@ -38,11 +38,6 @@ String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String&
     return DatabaseTracker::tracker().fullPathForDatabase(origin, name, createIfDoesNotExist);
 }
 
-void DatabaseServer::closeDatabasesImmediately(const String& originIdentifier, const String& name)
-{
-    DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, name);
-}
-
 PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(DatabaseContext* backendContext,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)

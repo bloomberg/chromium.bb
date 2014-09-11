@@ -32,7 +32,7 @@
 #include "public/web/WebDatabase.h"
 
 #include "modules/webdatabase/DatabaseBackendBase.h"
-#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebString.h"
@@ -87,7 +87,7 @@ void WebDatabase::resetSpaceAvailable(const WebString& originIdentifier)
 
 void WebDatabase::closeDatabaseImmediately(const WebString& originIdentifier, const WebString& databaseName)
 {
-    DatabaseManager::manager().closeDatabasesImmediately(originIdentifier, databaseName);
+    DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, databaseName);
 }
 
 WebDatabase::WebDatabase(const DatabaseBackendBase* database)
