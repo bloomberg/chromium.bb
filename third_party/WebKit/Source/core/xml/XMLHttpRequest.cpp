@@ -146,7 +146,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_timeoutMilliseconds(0)
     , m_loaderIdentifier(0)
     , m_state(UNSENT)
-    , m_downloadedBlobLength(0)
+    , m_lengthDownloadedToFile(0)
     , m_receivedLength(0)
     , m_lastSendLineNumber(0)
     , m_exceptionCode(0)
@@ -160,6 +160,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_uploadEventsAllowed(true)
     , m_uploadComplete(false)
     , m_sameOriginRequest(true)
+    , m_downloadingToFile(false)
 {
 #ifndef NDEBUG
     xmlHttpRequestCounter.increment();
@@ -261,29 +262,43 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
 Blob* XMLHttpRequest::responseBlob()
 {
     ASSERT(m_responseTypeCode == ResponseTypeBlob);
-    ASSERT(!m_binaryResponseBuilder.get());
 
     // We always return null before DONE.
     if (m_error || m_state != DONE)
         return 0;
 
     if (!m_responseBlob) {
-        // When responseType is set to "blob", we redirect the downloaded data
-        // to a file-handle directly in the browser process. We get the
-        // file-path from the ResourceResponse directly instead of copying the
-        // bytes between the browser and the renderer.
         OwnPtr<BlobData> blobData = BlobData::create();
-        String filePath = m_response.downloadedFilePath();
-        // If we errored out or got no data, we still return a blob, just an
-        // empty one.
-        if (!filePath.isEmpty() && m_downloadedBlobLength) {
-            blobData->appendFile(filePath);
-            // FIXME: finalResponseMIMETypeWithFallback() defaults to text/xml
-            // which may be incorrect. Replace it with finalResponseMIMEType()
-            // after compatibility investigation.
-            blobData->setContentType(finalResponseMIMETypeWithFallback());
+        if (m_downloadingToFile) {
+            ASSERT(!m_binaryResponseBuilder.get());
+
+            // When responseType is set to "blob", we redirect the downloaded
+            // data to a file-handle directly in the browser process. We get
+            // the file-path from the ResourceResponse directly instead of
+            // copying the bytes between the browser and the renderer.
+            String filePath = m_response.downloadedFilePath();
+            // If we errored out or got no data, we still return a blob, just
+            // an empty one.
+            if (!filePath.isEmpty() && m_lengthDownloadedToFile) {
+                blobData->appendFile(filePath);
+                // FIXME: finalResponseMIMETypeWithFallback() defaults to
+                // text/xml which may be incorrect. Replace it with
+                // finalResponseMIMEType() after compatibility investigation.
+                blobData->setContentType(finalResponseMIMETypeWithFallback());
+            }
+            m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), m_lengthDownloadedToFile));
+        } else {
+            size_t size = 0;
+            if (m_binaryResponseBuilder.get() && m_binaryResponseBuilder->size()) {
+                RefPtr<RawData> rawData = RawData::create();
+                size = m_binaryResponseBuilder->size();
+                rawData->mutableData()->append(m_binaryResponseBuilder->data(), size);
+                blobData->appendData(rawData, 0, BlobDataItem::toEndOfFile);
+                blobData->setContentType(finalResponseMIMETypeWithFallback());
+                m_binaryResponseBuilder.clear();
+            }
+            m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), size));
         }
-        m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), m_downloadedBlobLength));
     }
 
     return m_responseBlob.get();
@@ -847,7 +862,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
 
     // When responseType is set to "blob", we redirect the downloaded data to a
     // file-handle directly.
-    if (responseTypeCode() == ResponseTypeBlob) {
+    m_downloadingToFile = responseTypeCode() == ResponseTypeBlob;
+    if (m_downloadingToFile) {
         request.setDownloadToFile(true);
         resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     }
@@ -974,7 +990,9 @@ void XMLHttpRequest::clearResponse()
     m_responseDocument = nullptr;
 
     m_responseBlob = nullptr;
-    m_downloadedBlobLength = 0;
+
+    m_downloadingToFile = false;
+    m_lengthDownloadedToFile = 0;
 
     m_responseLegacyStream = nullptr;
     m_responseStream = nullptr;
@@ -1404,7 +1422,7 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
 
 void XMLHttpRequest::didReceiveData(const char* data, int len)
 {
-    ASSERT(m_responseTypeCode != ResponseTypeBlob);
+    ASSERT(!m_downloadingToFile);
 
     if (m_error)
         return;
@@ -1425,7 +1443,7 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
             m_decoder = createDecoder();
 
         m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, len));
-    } else if (m_responseTypeCode == ResponseTypeArrayBuffer) {
+    } else if (m_responseTypeCode == ResponseTypeArrayBuffer || m_responseTypeCode == ResponseTypeBlob) {
         // Buffer binary data.
         if (!m_binaryResponseBuilder)
             m_binaryResponseBuilder = SharedBuffer::create();
@@ -1450,10 +1468,10 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
 
 void XMLHttpRequest::didDownloadData(int dataLength)
 {
-    ASSERT(m_responseTypeCode == ResponseTypeBlob);
-
     if (m_error)
         return;
+
+    ASSERT(m_downloadingToFile);
 
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
@@ -1466,7 +1484,7 @@ void XMLHttpRequest::didDownloadData(int dataLength)
     if (m_error)
         return;
 
-    m_downloadedBlobLength += dataLength;
+    m_lengthDownloadedToFile += dataLength;
 
     trackProgress(dataLength);
 }

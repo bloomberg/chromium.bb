@@ -262,7 +262,7 @@ private:
     RefPtrWillBeMember<DocumentParser> m_responseDocumentParser;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
-    long long m_downloadedBlobLength;
+    long long m_lengthDownloadedToFile;
 
     RefPtr<ArrayBuffer> m_responseArrayBuffer;
 
@@ -291,6 +291,9 @@ private:
     bool m_uploadEventsAllowed;
     bool m_uploadComplete;
     bool m_sameOriginRequest;
+    // True iff the ongoing resource loading is using the downloadToFile
+    // option.
+    bool m_downloadingToFile;
 };
 
 } // namespace blink
