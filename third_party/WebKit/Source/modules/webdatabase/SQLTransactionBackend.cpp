@@ -32,7 +32,6 @@
 #include "platform/Logging.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/Database.h" // FIXME: Should only be used in the frontend.
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBackend.h"
@@ -41,6 +40,7 @@
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementBackend.h"
+#include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "wtf/StdLibExtras.h"
@@ -341,7 +341,7 @@
 namespace blink {
 
 PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
-    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend,
+    PassRefPtrWillBeRawPtr<SQLTransaction> frontend,
     PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
     bool readOnly)
 {
@@ -349,7 +349,7 @@ PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(Data
 }
 
 SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
-    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend,
+    PassRefPtrWillBeRawPtr<SQLTransaction> frontend,
     PassRefPtrWillBeRawPtr<SQLTransactionWrapper> wrapper,
     bool readOnly)
     : m_frontend(frontend)
@@ -381,7 +381,6 @@ void SQLTransactionBackend::trace(Visitor* visitor)
     visitor->trace(m_database);
     visitor->trace(m_wrapper);
     visitor->trace(m_statementQueue);
-    AbstractSQLTransactionBackend::trace(visitor);
 }
 
 void SQLTransactionBackend::doCleanup()
@@ -434,7 +433,7 @@ void SQLTransactionBackend::doCleanup()
     m_wrapper = nullptr;
 }
 
-AbstractSQLStatement* SQLTransactionBackend::currentStatement()
+SQLStatement* SQLTransactionBackend::currentStatement()
 {
     return m_currentStatementBackend->frontend();
 }
@@ -526,7 +525,7 @@ void SQLTransactionBackend::performNextStep()
     runStateMachine();
 }
 
-void SQLTransactionBackend::executeSQL(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> statement,
+void SQLTransactionBackend::executeSQL(PassOwnPtrWillBeRawPtr<SQLStatement> statement,
     const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions)
 {
     enqueueStatementBackend(SQLStatementBackend::create(statement, sqlStatement, arguments, permissions));

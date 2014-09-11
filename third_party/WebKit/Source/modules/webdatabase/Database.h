@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "wtf/text/WTFString.h"
@@ -48,7 +47,7 @@ class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-class Database FINAL : public DatabaseBackend, public DatabaseBase, public ScriptWrappable {
+class Database FINAL : public DatabaseBackend, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Database();

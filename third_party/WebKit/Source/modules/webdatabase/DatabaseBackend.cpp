@@ -29,6 +29,7 @@
 #include "platform/Logging.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
+#include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseThread.h"

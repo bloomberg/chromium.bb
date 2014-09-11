@@ -68,13 +68,13 @@ PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrW
 Database::Database(DatabaseContext* databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize)
-    , DatabaseBase(databaseContext->executionContext())
     , m_databaseContext(DatabaseBackend::databaseContext())
 {
     m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
     setFrontend(this);
 
     ASSERT(m_databaseContext->databaseThread());
+    ASSERT(databaseContext->isContextThread());
 }
 
 Database::~Database()

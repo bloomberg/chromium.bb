@@ -30,7 +30,6 @@
 #define SQLTransaction_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
@@ -40,24 +39,28 @@
 
 namespace blink {
 
-class AbstractSQLTransactionBackend;
 class Database;
 class ExceptionState;
 class SQLErrorData;
 class SQLStatementCallback;
 class SQLStatementErrorCallback;
+class SQLTransactionBackend;
 class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class SQLValue;
 class VoidCallback;
 
-class SQLTransaction FINAL : public AbstractSQLTransaction, public SQLTransactionStateMachine<SQLTransaction>, public ScriptWrappable {
+class SQLTransaction FINAL
+    : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLTransaction>
+    , public SQLTransactionStateMachine<SQLTransaction>
+    , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
         PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
         bool readOnly);
-    virtual void trace(Visitor*) OVERRIDE;
+    ~SQLTransaction();
+    void trace(Visitor*);
 
     void performPendingCallback();
 
@@ -68,19 +71,19 @@ public:
 
     PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> releaseErrorCallback();
 
+    // APIs called from the backend published:
+    void requestTransitToState(SQLTransactionState);
+    bool hasCallback() const;
+    bool hasSuccessCallback() const;
+    bool hasErrorCallback() const;
+    void setBackend(SQLTransactionBackend*);
+
 private:
     SQLTransaction(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
         PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
         bool readOnly);
 
     void clearCallbackWrappers();
-
-    // APIs called from the backend published via AbstractSQLTransaction:
-    virtual void requestTransitToState(SQLTransactionState) OVERRIDE;
-    virtual bool hasCallback() const OVERRIDE;
-    virtual bool hasSuccessCallback() const OVERRIDE;
-    virtual bool hasErrorCallback() const OVERRIDE;
-    virtual void setBackend(AbstractSQLTransactionBackend*) OVERRIDE;
 
     // State Machine functions:
     virtual StateFunction stateFunctionFor(SQLTransactionState) OVERRIDE;
@@ -99,7 +102,7 @@ private:
     SQLTransactionState nextStateForTransactionError();
 
     RefPtrWillBeMember<Database> m_database;
-    RefPtrWillBeMember<AbstractSQLTransactionBackend> m_backend;
+    RefPtrWillBeMember<SQLTransactionBackend> m_backend;
     SQLCallbackWrapper<SQLTransactionCallback> m_callbackWrapper;
     SQLCallbackWrapper<VoidCallback> m_successCallbackWrapper;
     SQLCallbackWrapper<SQLTransactionErrorCallback> m_errorCallbackWrapper;

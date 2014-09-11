@@ -29,7 +29,6 @@
 #define SQLStatement_h
 
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "wtf/Forward.h"
@@ -37,33 +36,34 @@
 
 namespace blink {
 
-class AbstractSQLStatementBackend;
 class Database;
 class SQLError;
+class SQLStatementBackend;
 class SQLStatementCallback;
 class SQLStatementErrorCallback;
 class SQLTransaction;
 
-class SQLStatement FINAL : public AbstractSQLStatement {
+class SQLStatement FINAL : public NoBaseWillBeGarbageCollectedFinalized<SQLStatement> {
 public:
     static PassOwnPtrWillBeRawPtr<SQLStatement> create(Database*,
         PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>);
-    virtual void trace(Visitor*) OVERRIDE;
+    ~SQLStatement();
+    void trace(Visitor*);
 
     bool performCallback(SQLTransaction*);
 
-    virtual void setBackend(AbstractSQLStatementBackend*) OVERRIDE;
+    void setBackend(SQLStatementBackend*);
 
-    virtual bool hasCallback() OVERRIDE;
-    virtual bool hasErrorCallback() OVERRIDE;
+    bool hasCallback();
+    bool hasErrorCallback();
 
 private:
     SQLStatement(Database*, PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>);
 
-    // The AbstractSQLStatementBackend owns the SQLStatement. Hence, the backend is
+    // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
     // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
     // to the backend using a raw pointer here.
-    RawPtrWillBeMember<AbstractSQLStatementBackend> m_backend;
+    RawPtrWillBeMember<SQLStatementBackend> m_backend;
 
     SQLCallbackWrapper<SQLStatementCallback> m_statementCallbackWrapper;
     SQLCallbackWrapper<SQLStatementErrorCallback> m_statementErrorCallbackWrapper;

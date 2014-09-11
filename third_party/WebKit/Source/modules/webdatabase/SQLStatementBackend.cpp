@@ -31,9 +31,9 @@
 #include "platform/Logging.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLStatement.h"
 #include "wtf/text/CString.h"
 
 
@@ -71,13 +71,13 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> frontend,
+PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtrWillBeRawPtr<SQLStatement> frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
 {
     return adoptRefWillBeNoop(new SQLStatementBackend(frontend, statement, arguments, permissions));
 }
 
-SQLStatementBackend::SQLStatementBackend(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> frontend,
+SQLStatementBackend::SQLStatementBackend(PassOwnPtrWillBeRawPtr<SQLStatement> frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
     : m_frontend(frontend)
     , m_statement(statement.isolatedCopy())
@@ -94,10 +94,9 @@ void SQLStatementBackend::trace(Visitor* visitor)
 {
     visitor->trace(m_frontend);
     visitor->trace(m_resultSet);
-    AbstractSQLStatementBackend::trace(visitor);
 }
 
-AbstractSQLStatement* SQLStatementBackend::frontend()
+SQLStatement* SQLStatementBackend::frontend()
 {
     return m_frontend.get();
 }

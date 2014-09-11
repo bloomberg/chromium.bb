@@ -45,9 +45,9 @@
 
 namespace blink {
 
+class Database;
 class DatabaseAuthorizer;
 class DatabaseContext;
-class DatabaseBase;
 class ExecutionContext;
 class SecurityOrigin;
 
@@ -87,7 +87,7 @@ public:
 
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
     ExecutionContext* executionContext() const;
-    void setFrontend(DatabaseBase* frontend) { m_frontend = frontend; }
+    void setFrontend(Database* frontend) { m_frontend = frontend; }
 
 protected:
     friend class ChangeVersionWrapper;
@@ -126,7 +126,7 @@ protected:
     unsigned long m_estimatedSize;
     String m_filename;
 
-    DatabaseBase* m_frontend;
+    Database* m_frontend;
 
 #if !LOG_DISABLED || !ERROR_DISABLED
     String databaseDebugName() const { return m_contextThreadSecurityOrigin->toString() + "::" + m_name; }

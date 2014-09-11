@@ -33,13 +33,13 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
 #include "platform/Logging.h"
-#include "modules/webdatabase/AbstractSQLTransactionBackend.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementCallback.h"
 #include "modules/webdatabase/SQLStatementErrorCallback.h"
+#include "modules/webdatabase/SQLTransactionBackend.h"
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
@@ -68,6 +68,10 @@ SQLTransaction::SQLTransaction(Database* db, PassOwnPtrWillBeRawPtr<SQLTransacti
     ASSERT(m_database);
 }
 
+SQLTransaction::~SQLTransaction()
+{
+}
+
 void SQLTransaction::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
@@ -75,7 +79,6 @@ void SQLTransaction::trace(Visitor* visitor)
     visitor->trace(m_callbackWrapper);
     visitor->trace(m_successCallbackWrapper);
     visitor->trace(m_errorCallbackWrapper);
-    AbstractSQLTransaction::trace(visitor);
 }
 
 bool SQLTransaction::hasCallback() const
@@ -93,7 +96,7 @@ bool SQLTransaction::hasErrorCallback() const
     return m_errorCallbackWrapper.hasCallback();
 }
 
-void SQLTransaction::setBackend(AbstractSQLTransactionBackend* backend)
+void SQLTransaction::setBackend(SQLTransactionBackend* backend)
 {
     ASSERT(!m_backend);
     m_backend = backend;
@@ -200,8 +203,7 @@ SQLTransactionState SQLTransaction::deliverStatementCallback()
     // Otherwise, continue to loop through the statement queue
     m_executeSqlAllowed = true;
 
-    AbstractSQLStatement* currentAbstractStatement = m_backend->currentStatement();
-    SQLStatement* currentStatement = static_cast<SQLStatement*>(currentAbstractStatement);
+    SQLStatement* currentStatement = m_backend->currentStatement();
     ASSERT(currentStatement);
 
     bool result = currentStatement->performCallback(this);

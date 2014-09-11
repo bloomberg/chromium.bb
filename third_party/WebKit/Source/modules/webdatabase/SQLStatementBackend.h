@@ -29,7 +29,7 @@
 #define SQLStatementBackend_h
 
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "modules/webdatabase/AbstractSQLStatementBackend.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -37,16 +37,17 @@
 
 namespace blink {
 
-class AbstractSQLStatement;
 class DatabaseBackend;
 class SQLErrorData;
+class SQLResultSet;
+class SQLStatement;
 class SQLTransactionBackend;
 
-class SQLStatementBackend FINAL : public AbstractSQLStatementBackend {
+class SQLStatementBackend FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLStatementBackend> {
 public:
-    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>,
+    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtrWillBeRawPtr<SQLStatement>,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
-    virtual void trace(Visitor*) OVERRIDE;
+    void trace(Visitor*);
 
     bool execute(DatabaseBackend*);
     bool lastExecutionFailedDueToQuota() const;
@@ -56,18 +57,18 @@ public:
 
     void setVersionMismatchedError(DatabaseBackend*);
 
-    AbstractSQLStatement* frontend();
-    virtual SQLErrorData* sqlError() const OVERRIDE;
-    virtual SQLResultSet* sqlResultSet() const OVERRIDE;
+    SQLStatement* frontend();
+    SQLErrorData* sqlError() const;
+    SQLResultSet* sqlResultSet() const;
 
 private:
-    SQLStatementBackend(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>, const String& statement,
+    SQLStatementBackend(PassOwnPtrWillBeRawPtr<SQLStatement>, const String& statement,
         const Vector<SQLValue>& arguments, int permissions);
 
     void setFailureDueToQuota(DatabaseBackend*);
     void clearFailureDueToQuota();
 
-    OwnPtrWillBeMember<AbstractSQLStatement> m_frontend;
+    OwnPtrWillBeMember<SQLStatement> m_frontend;
     String m_statement;
     Vector<SQLValue> m_arguments;
     bool m_hasCallback;

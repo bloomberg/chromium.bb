@@ -35,7 +35,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
-#include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTracker.h"

@@ -32,9 +32,10 @@
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
-#include "modules/webdatabase/AbstractSQLStatementBackend.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLStatementBackend.h"
 #include "modules/webdatabase/SQLStatementCallback.h"
 #include "modules/webdatabase/SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLTransaction.h"
@@ -55,15 +56,18 @@ SQLStatement::SQLStatement(Database* database, PassOwnPtrWillBeRawPtr<SQLStateme
 {
 }
 
+SQLStatement::~SQLStatement()
+{
+}
+
 void SQLStatement::trace(Visitor* visitor)
 {
     visitor->trace(m_backend);
     visitor->trace(m_statementCallbackWrapper);
     visitor->trace(m_statementErrorCallbackWrapper);
-    AbstractSQLStatement::trace(visitor);
 }
 
-void SQLStatement::setBackend(AbstractSQLStatementBackend* backend)
+void SQLStatement::setBackend(SQLStatementBackend* backend)
 {
     m_backend = backend;
 }
