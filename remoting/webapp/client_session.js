@@ -1330,9 +1330,6 @@ remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
  * @private
  */
 remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
-  var plugin = this.plugin_.element();
-  var style = plugin.style;
-
   /**
    * Helper function for x- and y-scrolling
    * @param {number|string} curr The current margin, eg. "10px".
@@ -1352,6 +1349,9 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
     return result + 'px';
   };
 
+  var plugin = this.plugin_.element();
+  var style = this.container_.style;
+
   var stopX = { stop: false };
   var clientArea = this.getClientArea_();
   style.marginLeft = adjustMargin(style.marginLeft, dx, clientArea.width,
@@ -1365,11 +1365,8 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
 };
 
 remoting.ClientSession.prototype.resetScroll_ = function() {
-  if (this.plugin_) {
-    var plugin = this.plugin_.element();
-    plugin.style.marginTop = '0px';
-    plugin.style.marginLeft = '0px';
-  }
+  this.container_.style.marginTop = '0px';
+  this.container_.style.marginLeft = '0px';
 };
 
 /**
@@ -1532,8 +1529,7 @@ remoting.ClientSession.prototype.updateMouseCursorImage_ =
  * @return {{top: number, left:number}} The top-left corner of the plugin.
  */
 remoting.ClientSession.prototype.getPluginPositionForTesting = function() {
-  var plugin = this.plugin_.element();
-  var style = plugin.style;
+  var style = this.container_.style;
   return {
     top: parseFloat(style.marginTop),
     left: parseFloat(style.marginLeft)
