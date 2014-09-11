@@ -15,3 +15,5 @@ Local modifications:
   Removed closure_linter/testdata/
   Added Apache License notice to closure_linter/common/tokens_test.py
   Added OWNERS file
+  Added @suppress {suspiciousCode} to closure_linter/statetracker.py while we
+  wait for the external release.
