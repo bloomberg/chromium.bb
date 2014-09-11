@@ -35,7 +35,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/drop_data.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(OS_MACOSX)
@@ -106,6 +105,24 @@ void BrowserPluginGuest::WillDestroy() {
 
 base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh, bool focused) {
+  focused_ = focused;
+  rwh->Send(new InputMsg_SetFocus(rwh->GetRoutingID(), focused));
+  if (!focused && mouse_locked_)
+    OnUnlockMouse();
+
+  // Restore the last seen state of text input to the view.
+  RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
+      web_contents()->GetRenderWidgetHostView());
+  if (rwhv) {
+    ViewHostMsg_TextInputState_Params params;
+    params.type = last_text_input_type_;
+    params.mode = last_input_mode_;
+    params.can_compose_inline = last_can_compose_inline_;
+    rwhv->TextInputStateChanged(params);
+  }
 }
 
 bool BrowserPluginGuest::LockMouse(bool allowed) {
@@ -495,7 +512,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -702,21 +718,10 @@ void BrowserPluginGuest::OnResizeGuest(
 
 void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
                                     bool focused) {
-  focused_ = focused;
-  Send(new InputMsg_SetFocus(routing_id(), focused));
-  if (!focused && mouse_locked_)
-    OnUnlockMouse();
 
-  // Restore the last seen state of text input to the view.
-  RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
-      web_contents()->GetRenderWidgetHostView());
-  if (rwhv) {
-    ViewHostMsg_TextInputState_Params params;
-    params.type = last_text_input_type_;
-    params.mode = last_input_mode_;
-    params.can_compose_inline = last_can_compose_inline_;
-    rwhv->TextInputStateChanged(params);
-  }
+  RenderWidgetHost* rwh = web_contents()->GetRenderWidgetHostView()->
+      GetRenderWidgetHost();
+  SetFocus(rwh, focused);
 }
 
 void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
@@ -782,11 +787,6 @@ void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_ShouldAcceptTouchEvents(
           browser_plugin_instance_id(), accept));
-}
-
-void BrowserPluginGuest::OnSetCursor(const WebCursor& cursor) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_SetCursor(browser_plugin_instance_id(), cursor));
 }
 
 #if defined(OS_MACOSX)

@@ -86,6 +86,12 @@ void RenderWidgetHostViewGuest::WasShown() {
   // |guest_| is NULL during test.
   if ((guest_ && guest_->is_in_destruction()) || !host_->is_hidden())
     return;
+  // Make sure the size of this view matches the size of the WebContentsView.
+  // The two sizes may fall out of sync if we switch RenderWidgetHostViews,
+  // resize, and then switch page, as is the case with interstitial pages.
+  // NOTE: |guest_| is NULL in unit tests.
+  if (guest_)
+    SetSize(guest_->web_contents()->GetViewBounds().size());
   host_->WasShown(ui::LatencyInfo());
 }
 
@@ -103,6 +109,20 @@ void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
 
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
+}
+
+void RenderWidgetHostViewGuest::Focus() {
+  // InterstitialPageImpl focuses views directly, so we place focus logic here.
+  // InterstitialPages are not WebContents, and so BrowserPluginGuest does not
+  // have direct access to the interstitial page's RenderWidgetHost.
+  if (guest_)
+    guest_->SetFocus(host_, true);
+}
+
+bool RenderWidgetHostViewGuest::HasFocus() const {
+  if (!guest_)
+    return false;
+  return guest_->focused();
 }
 
 #if defined(USE_AURA)
@@ -266,7 +286,16 @@ void RenderWidgetHostViewGuest::MovePluginWindows(
 }
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
-  platform_view_->UpdateCursor(cursor);
+  // InterstitialPages are not WebContents so we cannot intercept
+  // ViewHostMsg_SetCursor for interstitial pages in BrowserPluginGuest.
+  // All guest RenderViewHosts have RenderWidgetHostViewGuests however,
+  // and so we will always hit this code path.
+  if (!guest_)
+    return;
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_SetCursor(guest_->browser_plugin_instance_id(),
+                                     cursor));
+
 }
 
 void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
@@ -563,8 +592,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     if (!embedder->GetLastKeyboardEvent())
       return;
-    NativeWebKeyboardEvent keyboard_event(
-        *embedder->GetLastKeyboardEvent());
+    NativeWebKeyboardEvent keyboard_event(*embedder->GetLastKeyboardEvent());
     host_->ForwardKeyboardEvent(keyboard_event);
     return;
   }

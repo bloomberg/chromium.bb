@@ -46,7 +46,6 @@ struct FrameHostMsg_ReclaimCompositorResources_Params;
 struct FrameHostMsg_ShowPopup_Params;
 #endif
 struct ViewHostMsg_TextInputState_Params;
-struct ViewHostMsg_UpdateRect_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -64,9 +63,9 @@ namespace content {
 
 class BrowserPluginGuestManager;
 class RenderViewHostImpl;
+class RenderWidgetHost;
 class RenderWidgetHostView;
 class SiteInstance;
-class WebCursor;
 struct DropData;
 
 // A browser plugin guest provides functionality for WebContents to operate in
@@ -101,6 +100,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Returns a WeakPtr to this BrowserPluginGuest.
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
+
+  // Sets the focus state of the current RenderWidgetHostView.
+  void SetFocus(RenderWidgetHost* rwh, bool focused);
 
   // Sets the lock state of the pointer. Returns true if |allowed| is true and
   // the mouse has been successfully locked.
@@ -304,13 +306,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 #endif
 
   // Message handlers for messages from guest.
-
-  void OnDragStopped();
   void OnHandleInputEventAck(
       blink::WebInputEvent::Type event_type,
       InputEventAckState ack_result);
   void OnHasTouchEventHandlers(bool accept);
-  void OnSetCursor(const WebCursor& cursor);
 #if defined(OS_MACOSX)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.
