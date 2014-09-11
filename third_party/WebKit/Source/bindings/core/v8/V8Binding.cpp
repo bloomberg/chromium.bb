@@ -482,12 +482,21 @@ uint64_t toUInt64(v8::Handle<v8::Value> value)
 
 float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
+    return static_cast<float>(toDouble(value, exceptionState));
+}
+
+double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    if (value->IsNumber())
+        return value->NumberValue();
+
     v8::TryCatch block;
     v8::Local<v8::Number> numberObject(value->ToNumber());
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
+
     return numberObject->NumberValue();
 }
 

@@ -382,8 +382,9 @@ static void doubleAttributeAttributeGetterCallback(v8::Local<v8::String>, const 
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(double, cppValue, static_cast<double>(v8Value->NumberValue()));
+    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
     impl->setDoubleAttribute(cppValue);
 }
 
@@ -411,8 +412,9 @@ static void floatAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(float, cppValue, static_cast<float>(v8Value->NumberValue()));
+    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
     impl->setFloatAttribute(cppValue);
 }
 
@@ -560,8 +562,9 @@ static void unrestrictedDoubleAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(double, cppValue, static_cast<double>(v8Value->NumberValue()));
+    TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
@@ -589,8 +592,9 @@ static void unrestrictedFloatAttributeAttributeGetterCallback(v8::Local<v8::Stri
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(float, cppValue, static_cast<float>(v8Value->NumberValue()));
+    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
@@ -4401,8 +4405,9 @@ static void typeCheckingInterfaceFloatAttributeAttributeGetterCallback(v8::Local
 static void typeCheckingInterfaceFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceFloatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(float, cppValue, static_cast<float>(v8Value->NumberValue()));
+    TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
     impl->setTypeCheckingInterfaceFloatAttribute(cppValue);
 }
 
@@ -5329,16 +5334,16 @@ static void voidMethodByteArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodDoubleArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodDoubleArg(doubleArg);
 }
@@ -5352,16 +5357,16 @@ static void voidMethodDoubleArgMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodFloatArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodFloatArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     float floatArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodFloatArg(floatArg);
 }
@@ -7277,13 +7282,12 @@ static void voidMethodDefaultIntegerArgsMethodCallback(const v8::FunctionCallbac
 
 static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double defaultDoubleArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(defaultDoubleArg, static_cast<double>(info[0]->NumberValue()));
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultDoubleArg, toDouble(info[0], exceptionState), exceptionState);
         } else {
             defaultDoubleArg = 0.5;
         }
@@ -7857,12 +7861,11 @@ static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodF(doubleArg);
 }
@@ -8048,12 +8051,11 @@ static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double doubleArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodI(doubleArg);
 }
@@ -9774,24 +9776,26 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCa
 
 static void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", 2, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     float floatArg;
     double doubleArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[0], exceptionState), exceptionState);
         if (!std::isfinite(floatArg)) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "float parameter 1 is non-finite."), info.GetIsolate());
+            exceptionState.throwTypeError("float parameter 1 is non-finite.");
+            exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[1]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[1], exceptionState), exceptionState);
         if (!std::isfinite(doubleArg)) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "double parameter 2 is non-finite."), info.GetIsolate());
+            exceptionState.throwTypeError("double parameter 2 is non-finite.");
+            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -10035,7 +10039,7 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
         TONATIVE_VOID_INTERNAL(document, V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]));
         TONATIVE_VOID_INTERNAL(node, V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]));
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value1, toInt16(info[2], exceptionState), exceptionState);
-        TONATIVE_VOID_INTERNAL(value2, static_cast<double>(info[3]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value2, toDouble(info[3], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(string, info[4]);
     }
     RefPtrWillBeRawPtr<Node> result = nullptr;

@@ -1025,8 +1025,8 @@ def property_setter(setter):
             idl_type.is_wrapper_type,
         'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,
-        'has_exception_state': is_raises_exception or
-                               idl_type.is_integer_type,
+        'has_exception_state': (is_raises_exception or
+                                idl_type.v8_conversion_needs_exception_state),
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(

@@ -111,17 +111,17 @@ static void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodFloatArgStringArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodFloatArgStringArg", "TestTypedefs", 2, info.Length(), info.GetIsolate()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     float floatArg;
     V8StringResource<> stringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(floatArg, toFloat(info[0], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
     }
     impl->voidMethodFloatArgStringArg(floatArg, stringArg);

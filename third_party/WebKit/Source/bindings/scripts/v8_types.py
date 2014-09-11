@@ -448,10 +448,10 @@ V8_VALUE_TO_CPP_VALUE = {
     'ByteString': 'toByteString({arguments})',
     'ScalarValueString': 'toScalarValueString({arguments})',
     'boolean': '{v8_value}->BooleanValue()',
-    'float': 'static_cast<float>({v8_value}->NumberValue())',
-    'unrestricted float': 'static_cast<float>({v8_value}->NumberValue())',
-    'double': 'static_cast<double>({v8_value}->NumberValue())',
-    'unrestricted double': 'static_cast<double>({v8_value}->NumberValue())',
+    'float': 'toFloat({arguments})',
+    'unrestricted float': 'toFloat({arguments})',
+    'double': 'toDouble({arguments})',
+    'unrestricted double': 'toDouble({arguments})',
     'byte': 'toInt8({arguments})',
     'octet': 'toUInt8({arguments})',
     'short': 'toInt16({arguments})',
@@ -474,7 +474,7 @@ V8_VALUE_TO_CPP_VALUE = {
 
 
 def v8_conversion_needs_exception_state(idl_type):
-    return (idl_type.is_integer_type or
+    return (idl_type.is_numeric_type or
             idl_type.is_dictionary or
             idl_type.name in ('ByteString', 'ScalarValueString'))
 

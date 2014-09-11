@@ -281,14 +281,14 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     {% endif %}
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
-    TOSTRING_VOID(V8StringResource<>, propertyName, name);
-    {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
+    {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
+    {{setter.v8_value_to_local_cpp_value}};
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
     {% set setter_arguments =
            ['propertyName', 'propertyValue', 'exceptionState']

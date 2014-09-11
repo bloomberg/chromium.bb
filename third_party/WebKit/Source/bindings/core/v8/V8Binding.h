@@ -535,6 +535,9 @@ inline float toFloat(v8::Local<v8::Value> value)
     return static_cast<float>(value->NumberValue());
 }
 
+// Convert a value to a double precision float, which might fail.
+double toDouble(v8::Handle<v8::Value>, ExceptionState&);
+
 // Converts a value to a String, throwing if any code unit is outside 0-255.
 String toByteString(v8::Handle<v8::Value>, ExceptionState&);
 
