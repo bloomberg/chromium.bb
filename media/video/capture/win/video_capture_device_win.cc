@@ -21,9 +21,39 @@ using base::win::ScopedVariant;
 
 namespace media {
 
-// Finds and creates a DirectShow Video Capture filter matching the device_name.
+// Check if a Pin matches a category.
+bool PinMatchesCategory(IPin* pin, REFGUID category) {
+  DCHECK(pin);
+  bool found = false;
+  ScopedComPtr<IKsPropertySet> ks_property;
+  HRESULT hr = ks_property.QueryFrom(pin);
+  if (SUCCEEDED(hr)) {
+    GUID pin_category;
+    DWORD return_value;
+    hr = ks_property->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY, NULL, 0,
+                          &pin_category, sizeof(pin_category), &return_value);
+    if (SUCCEEDED(hr) && (return_value == sizeof(pin_category))) {
+      found = (pin_category == category);
+    }
+  }
+  return found;
+}
+
+// Check if a Pin's MediaType matches a given |major_type|.
+bool PinMatchesMajorType(IPin* pin, REFGUID major_type) {
+  DCHECK(pin);
+  AM_MEDIA_TYPE connection_media_type;
+  HRESULT hr = pin->ConnectionMediaType(&connection_media_type);
+  return SUCCEEDED(hr) && connection_media_type.majortype == major_type;
+}
+
+// Finds and creates a DirectShow Video Capture filter matching the |device_id|.
+// |class_id| is usually CLSID_VideoInputDeviceCategory for standard DirectShow
+// devices but might also be AM_KSCATEGORY_CAPTURE or AM_KSCATEGORY_CROSSBAR, to
+// enumerate WDM capture devices or WDM crossbars, respectively.
 // static
 HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
+                                               const CLSID device_class_id,
                                                IBaseFilter** filter) {
   DCHECK(filter);
 
@@ -34,8 +64,8 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
     return hr;
 
   ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.Receive(), 0);
+  hr = dev_enum->CreateClassEnumerator(device_class_id, enum_moniker.Receive(),
+                                       0);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
@@ -83,30 +113,13 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
   return hr;
 }
 
-// Check if a Pin matches a category.
-// static
-bool VideoCaptureDeviceWin::PinMatchesCategory(IPin* pin, REFGUID category) {
-  DCHECK(pin);
-  bool found = false;
-  ScopedComPtr<IKsPropertySet> ks_property;
-  HRESULT hr = ks_property.QueryFrom(pin);
-  if (SUCCEEDED(hr)) {
-    GUID pin_category;
-    DWORD return_value;
-    hr = ks_property->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY, NULL, 0,
-                          &pin_category, sizeof(pin_category), &return_value);
-    if (SUCCEEDED(hr) && (return_value == sizeof(pin_category))) {
-      found = (pin_category == category);
-    }
-  }
-  return found;
-}
-
-// Finds an IPin on an IBaseFilter given the direction and category.
+// Finds an IPin on an IBaseFilter given the direction, Category and/or Major
+// Type. If either |category| or |major_type| are GUID_NULL, they are ignored.
 // static
 ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
                                                  PIN_DIRECTION pin_dir,
-                                                 REFGUID category) {
+                                                 REFGUID category,
+                                                 REFGUID major_type) {
   ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_enum;
   HRESULT hr = filter->EnumPins(pin_enum.Receive());
@@ -119,8 +132,10 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
-      if (category == GUID_NULL || PinMatchesCategory(pin, category))
+      if ((category == GUID_NULL || PinMatchesCategory(pin, category)) &&
+          (major_type == GUID_NULL || PinMatchesMajorType(pin, major_type))) {
         return pin;
+      }
     }
     pin.Release();
   }
@@ -218,12 +233,22 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
 
     if (mjpg_filter_)
       graph_builder_->RemoveFilter(mjpg_filter_);
+
+    if (crossbar_filter_)
+      graph_builder_->RemoveFilter(crossbar_filter_);
   }
 }
 
 bool VideoCaptureDeviceWin::Init() {
   DCHECK(CalledOnValidThread());
-  HRESULT hr = GetDeviceFilter(device_name_.id(), capture_filter_.Receive());
+  HRESULT hr;
+
+  if (device_name_.capture_api_type() == Name::DIRECT_SHOW_WDM_CROSSBAR) {
+    hr = InstantiateWDMFiltersAndPins();
+  } else {
+    hr = GetDeviceFilter(device_name_.id(), CLSID_VideoInputDeviceCategory,
+                         capture_filter_.Receive());
+  }
   if (!capture_filter_) {
     DLOG(ERROR) << "Failed to create capture filter: "
                 << logging::SystemErrorCodeToString(hr);
@@ -231,7 +256,7 @@ bool VideoCaptureDeviceWin::Init() {
   }
 
   output_capture_pin_ =
-      GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE);
+      GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE, GUID_NULL);
   if (!output_capture_pin_) {
     DLOG(ERROR) << "Failed to get capture output pin";
     return false;
@@ -265,6 +290,12 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to add the capture device to the graph: "
                 << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  if (device_name_.capture_api_type() == Name::DIRECT_SHOW_WDM_CROSSBAR &&
+      FAILED(AddWDMCrossbarFilterToGraphAndConnect())) {
+    DLOG(ERROR) << "Failed to add the WDM Crossbar filter to the graph.";
     return false;
   }
 
@@ -348,8 +379,10 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
 
     if (SUCCEEDED(hr)) {
-      input_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_INPUT, GUID_NULL);
-      output_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_OUTPUT, GUID_NULL);
+      input_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_INPUT, GUID_NULL,
+                               GUID_NULL);
+      output_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_OUTPUT, GUID_NULL,
+                                GUID_NULL);
       hr = graph_builder_->AddFilter(mjpg_filter_, NULL);
     }
 
@@ -422,6 +455,10 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
   if (mjpg_filter_) {
     graph_builder_->Disconnect(input_mjpg_pin_);
     graph_builder_->Disconnect(output_mjpg_pin_);
+  }
+  if (crossbar_filter_) {
+    graph_builder_->Disconnect(analog_video_input_pin_);
+    graph_builder_->Disconnect(crossbar_video_output_pin_);
   }
 
   if (FAILED(hr)) {
@@ -559,6 +596,62 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
   } else {
     DVLOG(2) << "Anti-flicker setting not supported.";
   }
+}
+
+// Instantiate a WDM Crossbar Filter and the associated WDM Capture Filter,
+// extract the correct pins from each. The necessary pins are device specific
+// and usually the first Crossbar output pin, with a name similar to "Video
+// Decoder Out" and the first Capture input pin, with a name like "Analog Video
+// In". These pins have no special Category.
+HRESULT VideoCaptureDeviceWin::InstantiateWDMFiltersAndPins() {
+  HRESULT hr = VideoCaptureDeviceWin::GetDeviceFilter(
+      device_name_.id(),
+      AM_KSCATEGORY_CROSSBAR,
+      crossbar_filter_.Receive());
+  DPLOG_IF(ERROR, FAILED(hr)) << "Failed to bind WDM Crossbar filter";
+  if (FAILED(hr) || !crossbar_filter_)
+    return E_FAIL;
+
+  // Find Crossbar Video Output Pin: This is usually the first output pin.
+  crossbar_video_output_pin_ = GetPin(crossbar_filter_, PINDIR_OUTPUT,
+                                      GUID_NULL, MEDIATYPE_AnalogVideo);
+  DLOG_IF(ERROR, !crossbar_video_output_pin_)
+      << "Failed to find Crossbar Video Output pin";
+  if (!crossbar_video_output_pin_)
+    return E_FAIL;
+
+  // Use the WDM capture filter associated to the WDM Crossbar filter.
+  hr = VideoCaptureDeviceWin::GetDeviceFilter(device_name_.capabilities_id(),
+                                              AM_KSCATEGORY_CAPTURE,
+                                              capture_filter_.Receive());
+  DPLOG_IF(ERROR, FAILED(hr)) << "Failed to bind WDM Capture filter";
+  if (FAILED(hr) || !capture_filter_)
+    return E_FAIL;
+
+  // Find the WDM Capture Filter's Analog Video input Pin: usually the first
+  // input pin.
+  analog_video_input_pin_ = GetPin(capture_filter_, PINDIR_INPUT, GUID_NULL,
+                                   MEDIATYPE_AnalogVideo);
+  DLOG_IF(ERROR, !analog_video_input_pin_) << "Failed to find WDM Video Input";
+  if (!analog_video_input_pin_)
+    return E_FAIL;
+  return S_OK;
+}
+
+// Add the WDM Crossbar filter to the Graph and connect the pins previously
+// found.
+HRESULT VideoCaptureDeviceWin::AddWDMCrossbarFilterToGraphAndConnect() {
+  HRESULT hr = graph_builder_->AddFilter(crossbar_filter_, NULL);
+  DPLOG_IF(ERROR, FAILED(hr)) << "Failed to add Crossbar filter to the graph";
+  if (FAILED(hr))
+    return E_FAIL;
+
+  hr = graph_builder_->ConnectDirect(
+      crossbar_video_output_pin_, analog_video_input_pin_, NULL);
+  DPLOG_IF(ERROR, FAILED(hr)) << "Failed to plug WDM filters to each other";
+  if (FAILED(hr))
+    return E_FAIL;
+  return S_OK;
 }
 
 void VideoCaptureDeviceWin::SetErrorState(const std::string& reason) {

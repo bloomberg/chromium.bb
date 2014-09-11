@@ -209,6 +209,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
   // VFW devices are already skipped previously in GetDeviceNames() enumeration.
   base::win::ScopedComPtr<IBaseFilter> capture_filter;
   hr = VideoCaptureDeviceWin::GetDeviceFilter(device.capabilities_id(),
+                                              CLSID_VideoInputDeviceCategory,
                                               capture_filter.Receive());
   if (!capture_filter) {
     DLOG(ERROR) << "Failed to create capture filter: "
@@ -219,7 +220,8 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
   base::win::ScopedComPtr<IPin> output_capture_pin(
       VideoCaptureDeviceWin::GetPin(capture_filter,
                                     PINDIR_OUTPUT,
-                                    PIN_CATEGORY_CAPTURE));
+                                    PIN_CATEGORY_CAPTURE,
+                                    GUID_NULL));
   if (!output_capture_pin) {
     DLOG(ERROR) << "Failed to get capture output pin";
     return;
