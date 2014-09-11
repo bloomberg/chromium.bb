@@ -46,13 +46,18 @@ class MockCanvas : public SkCanvas {
   std::vector<SkRect> rects_;
 };
 
+class NoLowResTilingsSettings : public ImplSidePaintingSettings {};
+
+class LowResTilingsSettings : public ImplSidePaintingSettings {
+ public:
+  LowResTilingsSettings() { create_low_res_tiling = true; }
+};
+
 class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(ImplSidePaintingSettings(),
-                   &proxy_,
-                   &shared_bitmap_manager_),
+        host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_),
         id_(7),
         pending_layer_(NULL),
         old_pending_layer_(NULL),
@@ -2992,11 +2997,6 @@ TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
   EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 }
 
-class NoLowResTilingsSettings : public ImplSidePaintingSettings {
- public:
-  NoLowResTilingsSettings() { create_low_res_tiling = false; }
-};
-
 class NoLowResPictureLayerImplTest : public PictureLayerImplTest {
  public:
   NoLowResPictureLayerImplTest()
@@ -3582,7 +3582,7 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
             render_pass->quad_list.back()->material);
 }
 
-class OcclusionTrackingSettings : public ImplSidePaintingSettings {
+class OcclusionTrackingSettings : public LowResTilingsSettings {
  public:
   OcclusionTrackingSettings() { use_occlusion_for_tile_prioritization = true; }
 };

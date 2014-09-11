@@ -482,6 +482,11 @@ INSTANTIATE_TEST_CASE_P(TileManagerTests,
                         TileManagerTest,
                         ::testing::Values(true, false));
 
+class LowResTilingsSettings : public ImplSidePaintingSettings {
+ public:
+  LowResTilingsSettings() { create_low_res_tiling = true; }
+};
+
 class TileManagerTilePriorityQueueTest : public testing::Test {
  public:
   TileManagerTilePriorityQueueTest()
@@ -490,9 +495,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         ready_to_activate_(false),
         id_(7),
         proxy_(base::MessageLoopProxy::current()),
-        host_impl_(ImplSidePaintingSettings(),
-                   &proxy_,
-                   &shared_bitmap_manager_) {}
+        host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_) {}
 
   void SetTreePriority(TreePriority tree_priority) {
     GlobalStateThatImpactsTilePriority state;
