@@ -8,9 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/error_utils.h"
@@ -141,7 +139,10 @@ void CheckRestrictedUrls(const Extension* extension,
 
 }  // namespace
 
-TEST(ExtensionPermissionsTest, EffectiveHostPermissions) {
+// NOTE: These tests run in Chrome's unit_tests suite because they depend on
+// extension manifest keys (like "content_scripts") that do not exist yet in the
+// src/extensions module.
+TEST(PermissionsDataTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
   URLPatternSet hosts;
 
@@ -216,9 +217,7 @@ TEST(ExtensionPermissionsTest, EffectiveHostPermissions) {
   EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
 }
 
-TEST(ExtensionPermissionsTest, SocketPermissions) {
-  // Set feature current channel to appropriate value.
-  ScopedCurrentChannel scoped_channel(chrome::VersionInfo::CHANNEL_DEV);
+TEST(PermissionsDataTest, SocketPermissions) {
   scoped_refptr<Extension> extension;
   std::string error;
 
@@ -253,7 +252,7 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
         "239.255.255.250", 1900));
 }
 
-TEST(ExtensionPermissionsTest, IsRestrictedUrl) {
+TEST(PermissionsDataTest, IsRestrictedUrl) {
   scoped_refptr<const Extension> extension =
       GetExtensionWithHostPermission("normal_extension",
                                      kAllHostsPermission,
@@ -274,7 +273,7 @@ TEST(ExtensionPermissionsTest, IsRestrictedUrl) {
   CheckRestrictedUrls(extension.get(), false);
 }
 
-TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
+TEST(PermissionsDataTest, GetPermissionMessages_ManyAPIPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");
   std::vector<base::string16> warnings =
@@ -290,7 +289,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
             UTF16ToUTF8(warnings[4]));
 }
 
-TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
+TEST(PermissionsDataTest, GetPermissionMessages_ManyHostsPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "more-than-3-hosts.json");
   std::vector<base::string16> warnings =
@@ -305,7 +304,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
             UTF16ToUTF8(warnings_details[0]));
 }
 
-TEST(ExtensionPermissionsTest, GetPermissionMessages_LocationApiPermission) {
+TEST(PermissionsDataTest, GetPermissionMessages_LocationApiPermission) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions",
                            "location-api.json",
@@ -317,7 +316,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_LocationApiPermission) {
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[0]));
 }
 
-TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
+TEST(PermissionsDataTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<base::string16> warnings =
@@ -328,7 +327,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
       UTF16ToUTF8(warnings[0]));
 }
 
-TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
+TEST(PermissionsDataTest, GetPermissionMessages_Plugins) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<base::string16> warnings =

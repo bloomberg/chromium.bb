@@ -264,7 +264,7 @@ TEST(SocketPermissionTest, Match) {
 
 TEST(SocketPermissionTest, IPC) {
   const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
+      PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   {
     IPC::Message m;
@@ -306,12 +306,10 @@ TEST(SocketPermissionTest, IPC) {
 
 TEST(SocketPermissionTest, Value) {
   const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
+      PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
-  scoped_ptr<APIPermission> permission1(
-      permission_info->CreateAPIPermission());
-  scoped_ptr<APIPermission> permission2(
-      permission_info->CreateAPIPermission());
+  scoped_ptr<APIPermission> permission1(permission_info->CreateAPIPermission());
+  scoped_ptr<APIPermission> permission2(permission_info->CreateAPIPermission());
 
   scoped_ptr<base::ListValue> value(new base::ListValue());
   value->AppendString("tcp-connect:*.example.com:80");
@@ -330,4 +328,3 @@ TEST(SocketPermissionTest, Value) {
 }  // namespace
 
 }  // namespace extensions
-

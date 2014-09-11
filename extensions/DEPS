@@ -40,16 +40,10 @@ specific_include_rules = {
     "+chrome/common/chrome_paths.h",
     "+chrome/common/extensions/features/feature_channel.h",
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
-    "+chrome/test/base/browser_with_test_window_test.h",
     "+chrome/test/base/testing_profile.h",
     "+chrome/test/base/ui_test_utils.h",
   ],
   "(simple|complex)_feature_unittest\.cc|base_feature_provider_unittest\.cc": [
     "+chrome/common/extensions/features/chrome_channel_feature_filter.h",
-  ],
-  "permissions_data_unittest\.cc": [
-    "+chrome/common/chrome_version_info.h",
-    "+chrome/common/extensions/extension_test_util.h",
-    "+chrome/common/extensions/features/feature_channel.h",
   ],
 }
