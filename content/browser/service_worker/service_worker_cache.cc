@@ -605,7 +605,7 @@ struct ServiceWorkerCache::KeysContext {
       entries[i]->Close();
     if (enumerated_entry)
       enumerated_entry->Close();
-    if (cache && backend_iterator)
+    if (cache && backend_iterator && cache->backend_)
       cache->backend_->EndEnumeration(&backend_iterator);
   }
 
@@ -627,19 +627,19 @@ struct ServiceWorkerCache::KeysContext {
 };
 
 // static
-scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
+scoped_refptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_ptr(
+  return make_scoped_refptr(
       new ServiceWorkerCache(base::FilePath(), request_context, blob_context));
 }
 
 // static
-scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreatePersistentCache(
+scoped_refptr<ServiceWorkerCache> ServiceWorkerCache::CreatePersistentCache(
     const base::FilePath& path,
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_ptr(
+  return make_scoped_refptr(
       new ServiceWorkerCache(path, request_context, blob_context));
 }
 
@@ -787,6 +787,10 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
     open_entry_callback.Run(rv);
 }
 
+void ServiceWorkerCache::Close() {
+  backend_.reset();
+}
+
 ServiceWorkerCache::ServiceWorkerCache(
     const base::FilePath& path,
     net::URLRequestContext* request_context,
@@ -845,6 +849,12 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
   base::WeakPtr<ServiceWorkerCache> cache = keys_context->cache;
   if (rv < 0 || !cache) {
     keys_context->original_callback.Run(ErrorTypeStorage,
+                                        scoped_ptr<Requests>());
+    return;
+  }
+
+  if (!cache->backend_) {
+    keys_context->original_callback.Run(ErrorTypeNotFound,
                                         scoped_ptr<Requests>());
     return;
   }

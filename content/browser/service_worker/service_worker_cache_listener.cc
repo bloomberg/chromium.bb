@@ -49,7 +49,10 @@ WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
 ServiceWorkerCacheListener::ServiceWorkerCacheListener(
     ServiceWorkerVersion* version,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : version_(version), context_(context), weak_factory_(this) {
+    : version_(version),
+      context_(context),
+      next_cache_id_(0),
+      weak_factory_(this) {
 }
 
 ServiceWorkerCacheListener::~ServiceWorkerCacheListener() {
@@ -143,13 +146,15 @@ void ServiceWorkerCacheListener::Send(const IPC::Message& message) {
 
 void ServiceWorkerCacheListener::OnCacheStorageGetCallback(
     int request_id,
-    int cache_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
     Send(ServiceWorkerMsg_CacheStorageGetError(
         request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
+
+  CacheID cache_id = StoreCacheReference(cache);
   Send(ServiceWorkerMsg_CacheStorageGetSuccess(request_id, cache_id));
 }
 
@@ -173,13 +178,14 @@ void ServiceWorkerCacheListener::OnCacheStorageHasCallback(
 
 void ServiceWorkerCacheListener::OnCacheStorageCreateCallback(
     int request_id,
-    int cache_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
     Send(ServiceWorkerMsg_CacheStorageCreateError(
         request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
+  CacheID cache_id = StoreCacheReference(cache);
   Send(ServiceWorkerMsg_CacheStorageCreateSuccess(request_id, cache_id));
 }
 
@@ -211,6 +217,30 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
     string16s.push_back(base::UTF8ToUTF16(strings[i]));
   }
   Send(ServiceWorkerMsg_CacheStorageKeysSuccess(request_id, string16s));
+}
+
+ServiceWorkerCacheListener::CacheID
+ServiceWorkerCacheListener::StoreCacheReference(
+    const scoped_refptr<ServiceWorkerCache>& cache) {
+  CacheToIDMap::iterator it = cache_to_id_map_.find(cache.get());
+  if (it == cache_to_id_map_.end()) {
+    CacheID cache_id = next_cache_id_++;
+    cache_to_id_map_.insert(std::make_pair(cache.get(), cache_id));
+    id_to_cache_map_.insert(std::make_pair(cache_id, cache));
+    return cache_id;
+  }
+
+  return it->second;
+}
+
+void ServiceWorkerCacheListener::DropCacheReference(CacheID cache_id) {
+  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
+  if (it != id_to_cache_map_.end())
+    return;
+
+  size_t deleted = cache_to_id_map_.erase(it->second.get());
+  DCHECK(deleted == 1u);
+  id_to_cache_map_.erase(it);
 }
 
 }  // namespace content

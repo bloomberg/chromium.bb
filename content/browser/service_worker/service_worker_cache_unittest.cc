@@ -82,7 +82,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
     base::RunLoop().RunUntilIdle();
-    cache_.reset();
+    cache_ = NULL;
     base::RunLoop().RunUntilIdle();
     disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
     base::RunLoop().RunUntilIdle();
@@ -255,7 +255,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   storage::BlobStorageContext* blob_storage_context_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<ServiceWorkerCache> cache_;
+  scoped_refptr<ServiceWorkerCache> cache_;
 
   ServiceWorkerFetchRequest body_request_;
   ServiceWorkerResponse body_response_;

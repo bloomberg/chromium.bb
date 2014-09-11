@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/completion_callback.h"
@@ -33,7 +34,8 @@ class ServiceWorkerRequestResponseHeaders;
 // Represents a ServiceWorker Cache as seen in
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html.
 // InitializeIfNeeded must be called before calling the other public members.
-class CONTENT_EXPORT ServiceWorkerCache {
+class CONTENT_EXPORT ServiceWorkerCache
+    : public base::RefCounted<ServiceWorkerCache> {
  public:
   enum ErrorType {
     ErrorTypeOK = 0,
@@ -51,34 +53,27 @@ class CONTENT_EXPORT ServiceWorkerCache {
   typedef base::Callback<void(ErrorType, scoped_ptr<Requests>)>
       RequestsCallback;
 
-  static scoped_ptr<ServiceWorkerCache> CreateMemoryCache(
+  static scoped_refptr<ServiceWorkerCache> CreateMemoryCache(
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
-  static scoped_ptr<ServiceWorkerCache> CreatePersistentCache(
+  static scoped_refptr<ServiceWorkerCache> CreatePersistentCache(
       const base::FilePath& path,
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  // Operations in progress will complete after the cache is deleted but pending
-  // operations (those operations waiting for init to finish) won't.
-  virtual ~ServiceWorkerCache();
-
   // Returns ErrorTypeNotFound if not found. The callback will always be called.
-  // |request| must remain valid until the callback is called.
   void Match(scoped_ptr<ServiceWorkerFetchRequest> request,
              const ResponseCallback& callback);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns
-  // ErrorTypeOK on success. The callback will always be called. |request| and
-  // |response| must remain valid until the callback is called.
+  // ErrorTypeOK on success. The callback will always be called.
   void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
            scoped_ptr<ServiceWorkerResponse> response,
            const ErrorCallback& callback);
 
   // Returns ErrorNotFound if not found. Otherwise deletes and returns
-  // ErrorTypeOK. The callback will always be called. |request| must remain
-  // valid until the callback is called.
+  // ErrorTypeOK. The callback will always be called.
   void Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
               const ErrorCallback& callback);
 
@@ -87,6 +82,9 @@ class CONTENT_EXPORT ServiceWorkerCache {
   // callback will always be called.
   void Keys(const RequestsCallback& callback);
 
+  // Prevent further operations on this object and delete the backend.
+  void Close();
+
   void set_backend(scoped_ptr<disk_cache::Backend> backend) {
     backend_ = backend.Pass();
   }
@@ -94,12 +92,18 @@ class CONTENT_EXPORT ServiceWorkerCache {
   base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
 
  private:
+  friend class base::RefCounted<ServiceWorkerCache>;
+
   struct KeysContext;
   typedef std::vector<disk_cache::Entry*> Entries;
 
   ServiceWorkerCache(const base::FilePath& path,
                      net::URLRequestContext* request_context,
                      base::WeakPtr<storage::BlobStorageContext> blob_context);
+
+  // Operations in progress will complete after the cache is deleted but pending
+  // operations (those operations waiting for init to finish) won't.
+  virtual ~ServiceWorkerCache();
 
   void PutImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                scoped_ptr<ServiceWorkerResponse> response,
@@ -123,6 +127,8 @@ class CONTENT_EXPORT ServiceWorkerCache {
   void Init(const base::Closure& callback);
   void InitDone(ErrorType error);
 
+  // The backend can be deleted via the Close function at any time so always
+  // check for its existence before use.
   scoped_ptr<disk_cache::Backend> backend_;
   base::FilePath path_;
   net::URLRequestContext* request_context_;

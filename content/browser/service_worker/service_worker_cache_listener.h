@@ -35,12 +35,19 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
                            const base::string16& cache_name);
   void OnCacheStorageKeys(int request_id);
 
+  // TODO(gavinp,jkarlin): Plumb a message up from the renderer saying that the
+  // renderer is done with a cache id.
+
  private:
+  typedef int32_t CacheID;  // TODO(jkarlin): Bump to 64 bit.
+  typedef std::map<ServiceWorkerCache*, CacheID> CacheToIDMap;
+  typedef std::map<CacheID, scoped_refptr<ServiceWorkerCache> > IDToCacheMap;
+
   void Send(const IPC::Message& message);
 
   void OnCacheStorageGetCallback(
       int request_id,
-      int cache_id,
+      const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageHasCallback(
       int request_id,
@@ -48,7 +55,7 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageCreateCallback(
       int request_id,
-      int cache_id,
+      const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageDeleteCallback(
       int request_id,
@@ -59,11 +66,21 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       const std::vector<std::string>& strings,
       ServiceWorkerCacheStorage::CacheStorageError error);
 
+  // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
+  // Returns a unique cache_id. Call DropCacheReference when the client is done
+  // with this cache.
+  CacheID StoreCacheReference(const scoped_refptr<ServiceWorkerCache>& cache);
+  void DropCacheReference(CacheID cache_id);
+
   // The ServiceWorkerVersion to use for messaging back to the renderer thread.
   ServiceWorkerVersion* version_;
 
   // The ServiceWorkerContextCore should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
+
+  IDToCacheMap id_to_cache_map_;
+  CacheToIDMap cache_to_id_map_;
+  CacheID next_cache_id_;
 
   base::WeakPtrFactory<ServiceWorkerCacheListener> weak_factory_;
 
