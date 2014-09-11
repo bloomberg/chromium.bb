@@ -22,7 +22,6 @@
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
-#include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/window_manager/window_manager_app.h"
 #include "mojo/views/views_init.h"
@@ -74,9 +73,7 @@ class NavigatorHostImpl : public InterfaceImpl<NavigatorHost> {
 
  private:
   virtual void DidNavigateLocally(const mojo::String& url) OVERRIDE;
-  virtual void RequestNavigate(
-      Target target,
-      NavigationDetailsPtr nav_details) OVERRIDE;
+  virtual void RequestNavigate(Target target, URLRequestPtr request) OVERRIDE;
 
   WindowManager* window_manager_;
   Id view_id_;
@@ -342,11 +339,10 @@ class WindowManager
       CloseWindow(windows_.back()->view()->id());
   }
 
-  virtual void RequestNavigate(
-    uint32 source_view_id,
-    Target target,
-    NavigationDetailsPtr nav_details) OVERRIDE {
-    OnLaunch(source_view_id, target, nav_details->request->url);
+  virtual void RequestNavigate(uint32 source_view_id,
+                               Target target,
+                               URLRequestPtr request) OVERRIDE {
+    OnLaunch(source_view_id, target, request->url);
   }
 
  private:
@@ -452,8 +448,6 @@ class WindowManager
 
   // TODO(beng): proper layout manager!!
   Id CreateLauncherUI() {
-    NavigationDetailsPtr nav_details;
-    ResponseDetailsPtr response;
     View* view = view_manager_->GetViewById(content_view_id_);
     gfx::Rect bounds = view->bounds();
     bounds.Inset(kBorderInset, kBorderInset);
@@ -557,9 +551,8 @@ void NavigatorHostImpl::DidNavigateLocally(const mojo::String& url) {
   window_manager_->DidNavigateLocally(view_id_, url);
 }
 
-void NavigatorHostImpl::RequestNavigate(Target target,
-                                        NavigationDetailsPtr nav_details) {
-  window_manager_->RequestNavigate(view_id_, target, nav_details.Pass());
+void NavigatorHostImpl::RequestNavigate(Target target, URLRequestPtr request) {
+  window_manager_->RequestNavigate(view_id_, target, request.Pass());
 }
 
 }  // namespace examples

@@ -11,7 +11,6 @@ group("services") {
     "//mojo/services/public/interfaces/content_handler",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/input_events",
-    "//mojo/services/public/interfaces/launcher",
     "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/navigation",
     "//mojo/services/public/interfaces/network",

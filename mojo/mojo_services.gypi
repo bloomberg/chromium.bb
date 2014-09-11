@@ -20,7 +20,6 @@
         'mojo_content_handler_bindings',
         'mojo_navigation_bindings',
         'mojo_network_bindings',
-        'mojo_launcher_bindings',
         'mojo_view_manager_lib',
         '<(mojo_system_for_loadable_module)',
       ],
@@ -459,38 +458,6 @@
       'type': 'static_library',
       'sources': [
         'services/public/cpp/view_manager/types.h',
-      ],
-    },
-    {
-      # GN version: //mojo/services/public/interfaces/launcher
-      'target_name': 'mojo_launcher_bindings',
-      'type': 'static_library',
-      'sources': [
-        'services/public/interfaces/launcher/launcher.mojom',
-      ],
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
-      'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_navigation_bindings',
-      ],
-    },
-    {
-      'target_name': 'mojo_launcher',
-      'type': 'loadable_module',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../url/url.gyp:url_lib',
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_base.gyp:mojo_application_chromium',
-        'mojo_launcher_bindings',
-        'mojo_network_bindings',
-        '<(mojo_system_for_loadable_module)',
-      ],
-      'sources': [
-        'services/launcher/launcher.cc',
       ],
     },
     {

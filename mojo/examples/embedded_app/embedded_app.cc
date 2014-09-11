@@ -81,13 +81,12 @@ class EmbeddedApp
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
-        NavigationDetailsPtr nav_details(NavigationDetails::New());
-        nav_details->request->url =
-            "http://www.aaronboodman.com/z_dropbox/test.html";
+        URLRequestPtr request(URLRequest::New());
+        request->url = "http://www.aaronboodman.com/z_dropbox/test.html";
         NavigatorHostPtr navigator_host;
         ConnectToService(windows_[view->id()]->embedder_service_provider.get(),
                          &navigator_host);
-        navigator_host->RequestNavigate(TARGET_SOURCE_NODE, nav_details.Pass());
+        navigator_host->RequestNavigate(TARGET_SOURCE_NODE, request.Pass());
       }
     }
   }

@@ -191,12 +191,9 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   if (CanNavigateLocally(frame, request))
     return default_policy;
 
-  NavigationDetailsPtr nav_details(NavigationDetails::New());
-  nav_details->request = URLRequest::From(request);
-
   navigator_host_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(default_policy),
-      nav_details.Pass());
+      URLRequest::From(request).Pass());
 
   return blink::WebNavigationPolicyIgnore;
 }

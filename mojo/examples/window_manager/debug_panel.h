@@ -33,9 +33,10 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   class Delegate {
    public:
     virtual void CloseTopWindow() = 0;
-    virtual void RequestNavigate(
-        uint32 source_view_id, Target target,
-        NavigationDetailsPtr nav_details) = 0;
+    virtual void RequestNavigate(uint32 source_view_id,
+                                 Target target,
+                                 URLRequestPtr url_request) = 0;
+
    protected:
     virtual ~Delegate(){}
   };

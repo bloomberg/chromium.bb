@@ -37,7 +37,6 @@
         'mojo_geometry_lib',
         'mojo_html_viewer',
         'mojo_js',
-        'mojo_launcher',
         'mojo_native_viewport_service_lib',
         'mojo_network_service',
         'mojo_pepper_container_app',

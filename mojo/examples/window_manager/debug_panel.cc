@@ -125,9 +125,9 @@ void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
 }
 
 void DebugPanel::Navigate(const std::string& url) {
-  NavigationDetailsPtr details(NavigationDetails::New());
-  details->request->url = url;
-  delegate_->RequestNavigate(view_->id(), TARGET_NEW_NODE, details.Pass());
+  URLRequestPtr request(URLRequest::New());
+  request->url = url;
+  delegate_->RequestNavigate(view_->id(), TARGET_NEW_NODE, request.Pass());
 }
 
 }  // namespace examples

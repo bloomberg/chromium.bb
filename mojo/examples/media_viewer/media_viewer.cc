@@ -210,12 +210,6 @@ class MediaViewer
  private:
   typedef std::map<std::string, std::string> HandlerMap;
 
-  struct PendingNavigateRequest {
-    uint32_t view_id;
-    NavigationDetailsPtr navigation_details;
-    ResponseDetailsPtr response_details;
-  };
-
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {

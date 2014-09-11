@@ -18,30 +18,13 @@ enum Target {
   NEW_NODE
 };
 
-struct NavigationDetails {
-  // TODO(mpcomplete): will we ever need more than the URLRequest? Can
-  // we pass that around directly?
-  URLRequest? request = default;
-};
-
-struct ResponseDetails {
-  // TODO(beng): consider providing access to URLRequest too. Currently it is
-  //             not possible to obtain from the URLLoader.
-
-  URLResponse? response;
-
-  // The URLLoader instance that generated the response. This must be kept
-  // alive until the response body has been completely consumed.
-  URLLoader? loader;
-};
-
 // Embedders that support navigation of implement this interface.
 interface NavigatorHost {
-  RequestNavigate(Target target, NavigationDetails? details);
+  RequestNavigate(Target target, URLRequest request);
 
   // Applications call this to inform hosts of navigations they performed
   // locally. For example, pushState() navigations in an HTML application.
-  DidNavigateLocally(string? url);
+  DidNavigateLocally(string url);
 };
 
 }

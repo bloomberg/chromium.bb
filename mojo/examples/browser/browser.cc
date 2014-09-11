@@ -229,9 +229,9 @@ class Browser : public ApplicationDelegate,
     if (key_event.key_code() == ui::VKEY_RETURN) {
       GURL url(sender->text());
       printf("User entered this URL: %s\n", url.spec().c_str());
-      NavigationDetailsPtr nav_details(NavigationDetails::New());
-      nav_details->request->url = String::From(url);
-      navigator_host_->RequestNavigate(TARGET_NEW_NODE, nav_details.Pass());
+      URLRequestPtr request(URLRequest::New());
+      request->url = String::From(url);
+      navigator_host_->RequestNavigate(TARGET_NEW_NODE, request.Pass());
     }
     return false;
   }
