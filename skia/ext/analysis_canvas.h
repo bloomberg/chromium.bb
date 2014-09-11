@@ -106,6 +106,10 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                                 const SkPath& path,
                                 const SkMatrix* matrix,
                                 const SkPaint&) OVERRIDE;
+  virtual void onDrawTextBlob(const SkTextBlob* blob,
+                              SkScalar x,
+                              SkScalar y,
+                              const SkPaint& paint) OVERRIDE;
   virtual void onDrawDRRect(const SkRRect& outer,
                             const SkRRect& inner,
                             const SkPaint&) OVERRIDE;

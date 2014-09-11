@@ -267,6 +267,15 @@ void AnalysisCanvas::onDrawTextOnPath(const void* text,
   ++draw_op_count_;
 }
 
+void AnalysisCanvas::onDrawTextBlob(const SkTextBlob* blob,
+                                    SkScalar x,
+                                    SkScalar y,
+                                    const SkPaint &paint) {
+  is_solid_color_ = false;
+  is_transparent_ = false;
+  ++draw_op_count_;
+}
+
 void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
                                   const SkRRect& inner,
                                   const SkPaint& paint) {
