@@ -22,7 +22,6 @@
 #define StyleSheet_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/css/parser/CSSParserMode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"

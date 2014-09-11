@@ -38,7 +38,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/events/EventTarget.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"

@@ -30,8 +30,8 @@
 #include "core/html/canvas/CanvasStyle.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
@@ -47,9 +47,9 @@ static ColorParseResult parseColor(RGBA32& parsedColor, const String& colorStrin
     if (equalIgnoringCase(colorString, "currentcolor"))
         return ParsedCurrentColor;
     const bool useStrictParsing = true;
-    if (BisonCSSParser::parseColor(parsedColor, colorString, useStrictParsing))
+    if (CSSParser::parseColor(parsedColor, colorString, useStrictParsing))
         return ParsedRGBA;
-    if (BisonCSSParser::parseSystemColor(parsedColor, colorString))
+    if (CSSParser::parseSystemColor(parsedColor, colorString))
         return ParsedSystemColor;
     return ParseFailed;
 }
@@ -59,7 +59,7 @@ RGBA32 currentColor(HTMLCanvasElement* canvas)
     if (!canvas || !canvas->inDocument() || !canvas->inlineStyle())
         return Color::black;
     RGBA32 rgba = Color::black;
-    BisonCSSParser::parseColor(rgba, canvas->inlineStyle()->getPropertyValue(CSSPropertyColor));
+    CSSParser::parseColor(rgba, canvas->inlineStyle()->getPropertyValue(CSSPropertyColor));
     return rgba;
 }
 

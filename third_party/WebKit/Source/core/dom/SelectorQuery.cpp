@@ -28,9 +28,9 @@
 #include "core/dom/SelectorQuery.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
@@ -498,7 +498,7 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     if (it != m_entries.end())
         return it->value.get();
 
-    BisonCSSParser parser(CSSParserContext(document, 0));
+    CSSParser parser(CSSParserContext(document, 0));
     CSSSelectorList selectorList;
     parser.parseSelector(selectors, selectorList);
 
