@@ -33,8 +33,8 @@ public:
 
     static bool parseSupportsCondition(const String&);
 
-    static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
-    static PassRefPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
+    static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
+    static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
 
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&);
@@ -49,4 +49,3 @@ CSSPropertyID cssPropertyID(const String&);
 } // namespace blink
 
 #endif // CSSParser_h
-

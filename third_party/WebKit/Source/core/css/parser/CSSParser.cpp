@@ -66,12 +66,12 @@ bool CSSParser::parseSupportsCondition(const String& condition)
     return BisonCSSParser(CSSParserContext(HTMLStandardMode, 0)).parseSupportsCondition(condition);
 }
 
-PassRefPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& fontFace)
+PassRefPtrWillBeRawPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& fontFace)
 {
     return BisonCSSParser::parseFontFaceValue(fontFace);
 }
 
-PassRefPtr<CSSValue> CSSParser::parseAnimationTimingFunctionValue(const String& timingFunction)
+PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseAnimationTimingFunctionValue(const String& timingFunction)
 {
     return BisonCSSParser::parseAnimationTimingFunctionValue(timingFunction);
 }
