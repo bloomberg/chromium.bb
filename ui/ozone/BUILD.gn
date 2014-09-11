@@ -121,7 +121,7 @@ component("ozone") {
   ] + ozone_platform_deps
 
   if (is_chromeos) {
-    deps += [ "//ui/dusplay/types" ]
+    deps += [ "//ui/display/types" ]
   }
 }
 

@@ -19,6 +19,12 @@ config("sdk") {
           sysroot ],
         "value") ]
   }
+
+  # Set here because OS_CHROMEOS cannot be autodetected in build_config.h like
+  # OS_LINUX and the like.
+  if (is_chromeos) {
+    defines = [ "OS_CHROMEOS" ]
+  }
 }
 
 config("fontconfig") {

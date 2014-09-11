@@ -253,10 +253,37 @@ source_set("browser") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
   } else {
-    sources -= [
-      "power_save_blocker_x11.cc",
-      "renderer_host/web_input_event_aurax11.cc",
-    ]
+    sources -= [ "renderer_host/web_input_event_aurax11.cc" ]
+  }
+
+  # Dealing with power_save_blocker_{x11,ozone}.cc is a little complicated
+  # given the interaction between os_chromeos and the feature flags for X11 and
+  # ozone, so do it all in one spot.
+  if (is_chromeos || !use_ozone) {
+    sources -= [ "power_save_blocker_ozone.cc", ]
+  }
+  if (is_chromeos || !use_x11) {
+    sources -= [ "power_save_blocker_x11.cc", ]
+  }
+
+  # Dealing with battery_status_manager_*.cc and *wifi_data_provider_*.cc
+  # is also a bit complicated given android, chromeos, linux and use_dbus.
+  if (is_android || is_chromeos || (is_linux && use_dbus)) {
+    sources -= [ "battery_status/battery_status_manager_default.cc" ]
+  }
+  if (is_linux && !use_dbus) {
+    # This will already have gotten removed for all non-Linux cases.
+    sources -= [ "battery_status/battery_status_manager_linux.cc" ]
+  }
+
+  if (is_android) {
+    sources -= [ "geolocation/wifi_data_provider_common.cc" ]
+  }
+  if (is_chromeos || (is_linux && !use_dbus)) {
+    sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
+  }
+  if (is_linux && use_dbus) {
+    sources -= [ "geolocation/empty_wifi_data_provider.cc" ]
   }
 
   if (use_pango) {
@@ -267,7 +294,6 @@ source_set("browser") {
     sources += rebase_path(content_browser_gypi_values.android_browser_sources,
                            ".", "//content")
     sources -= [
-      "battery_status/battery_status_manager_default.cc",
       "browser_ipc_logging.cc",
       "device_sensors/data_fetcher_shared_memory_default.cc",
       "font_list_async.cc",
@@ -275,7 +301,6 @@ source_set("browser") {
       "geolocation/network_location_provider.h",
       "geolocation/network_location_request.cc",
       "geolocation/network_location_request.h",
-      "geolocation/wifi_data_provider_common.cc",
       "renderer_host/native_web_keyboard_event.cc",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
@@ -319,18 +344,7 @@ source_set("browser") {
   }
 
   if (is_chromeos) {
-    sources -= [
-      "battery_status/battery_status_manager_default.cc",
-      "geolocation/wifi_data_provider_linux.cc",
-      "power_save_blocker_x11.cc",
-    ]
     deps += [ "//chromeos:power_manager_proto" ]
-  }
-
-  if (!use_ozone || is_chromeos) {
-    sources -= [
-      "power_save_blocker_ozone.cc",
-    ]
   }
 
   if (use_aura) {
@@ -396,19 +410,7 @@ source_set("browser") {
     ]
   }
 
-  if (is_linux) {
-    if (use_dbus) {
-      sources -= [
-        "battery_status/battery_status_manager_default.cc",
-        "geolocation/empty_wifi_data_provider.cc",
-      ]
+  if (is_linux && use_dbus) {
       deps += [ "//dbus" ]
-    } else {
-      # This will already have gotten removed for all non-Linux cases.
-       sources -= [
-         "battery_status/battery_status_manager_linux.cc",
-         "geolocation/wifi_data_provider_linux.cc",
-       ]
-    }
   }
 }
