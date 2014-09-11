@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="IDS_STANDARD_FONT_FAMILY">Noto Sans CJK Japanese</translation>
-<translation id="IDS_SANS_SERIF_FONT_FAMILY">Noto Sans CJK Japanese</translation>
+<translation id="IDS_STANDARD_FONT_FAMILY">Noto Sans CJK JP</translation>
+<translation id="IDS_SANS_SERIF_FONT_FAMILY">Noto Sans CJK JP</translation>
 <if expr="_google_chrome">
   <translation id="IDS_FIXED_FONT_FAMILY">MotoyaG04GothicMono</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">MotoyaG04Mincho</translation>

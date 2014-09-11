@@ -208,7 +208,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Noto Sans CJK Japanese
+        Noto Sans CJK JP
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -226,13 +226,13 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Japanese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Noto Sans CJK Japanese
+        Noto Sans CJK JP
       </message>
 
      <!-- The default value for |WebPreference::standard_font_family_map| for
            Korean script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        Noto Sans CJK Korean
+        Noto Sans CJK KR
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -250,19 +250,19 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Korean script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        Noto Sans CJK Korean
+        Noto Sans CJK KR
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Noto Sans CJK Simplified Chinese
+        Noto Sans CJK SC
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Noto Sans CJK Simplified Chinese
+        Noto Sans CJK SC
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -274,19 +274,19 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Simplified Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Noto Sans CJK Simplified Chinese
+        Noto Sans CJK SC
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        Noto Sans CJK Traditional  Chinese
+        Noto Sans CJK TC
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        Noto Sans CJK Traditional  Chinese
+        Noto Sans CJK TC
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -298,7 +298,7 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Traditional Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        Noto Sans CJK Traditional  Chinese
+        Noto Sans CJK TC
       </message>
 
       <!-- The default value for |WebPreference::default_font_size| -->

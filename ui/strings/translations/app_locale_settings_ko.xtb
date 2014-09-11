@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="IDS_MINIMUM_UI_FONT_SIZE">10</translation>
-<translation id="IDS_UI_FONT_FAMILY_CROS">Noto Sans UI,Noto Sans CJK Korean,ui-sans, 13px</translation>
+<translation id="IDS_UI_FONT_FAMILY_CROS">Noto Sans UI,Noto Sans CJK KR,ui-sans, 13px</translation>
 <if expr="is_win">
   <translation id="IDS_WEB_FONT_FAMILY">'Segoe UI',Arial,'Malgun Gothic',Gulim,sans-serif</translation>
   <translation id="IDS_WEB_FONT_FAMILY_XP">Arial,'Malgun Gothic',Gulim,sans-serif</translation>
@@ -14,6 +14,6 @@
   <translation id="IDS_WEB_FONT_FAMILY">NanumGothic,UnDotum,Baekmuk Gulim,sans-serif</translation>
 </if>
 <if expr="chromeos">
-  <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, Noto Sans CJK Korean, sans-serif</translation>
+  <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, Noto Sans CJK KR, sans-serif</translation>
 </if>
 </translationbundle>
