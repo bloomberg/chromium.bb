@@ -49,6 +49,7 @@ namespace cc {
 class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
+class Occlusion;
 template <typename LayerType>
 class OcclusionTracker;
 class RenderPass;
@@ -204,8 +205,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual RenderPassId FirstContributingRenderPassId() const;
   virtual RenderPassId NextContributingRenderPassId(RenderPassId id) const;
 
-  virtual void UpdateTiles(
-      const OcclusionTracker<LayerImpl>* occlusion_tracker) {}
+  virtual void UpdateTiles(const Occlusion& occlusion_in_layer_space) {}
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
   virtual ScrollbarLayerImplBase* ToScrollbarLayer();

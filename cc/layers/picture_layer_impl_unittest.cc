@@ -160,7 +160,7 @@ class PictureLayerImplTest : public testing::Test {
         maximum_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
-    layer->UpdateTiles(NULL);
+    layer->UpdateTiles(Occlusion());
   }
   static void VerifyAllTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
@@ -348,7 +348,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   gfx::Rect viewport_rect_for_tile_priority_in_view_space =
       viewport_rect_for_tile_priority;
@@ -386,7 +386,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
   bool success = transform_for_tile_priority.GetInverse(&screen_to_view);
@@ -447,7 +447,7 @@ TEST_F(PictureLayerImplTest,
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -475,7 +475,7 @@ TEST_F(PictureLayerImplTest,
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   visible_rect_for_tile_priority =
       gfx::ScaleToEnclosingRect(visible_rect_for_tile_priority, 2);
@@ -1508,7 +1508,7 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(time_ticks));
-  pending_layer_->UpdateTiles(NULL);
+  pending_layer_->UpdateTiles(Occlusion());
 
   pending_layer_->MarkVisibleResourcesAsRequired();
 
@@ -2575,7 +2575,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(1100, 1100, 500, 500);
-  pending_layer_->UpdateTiles(NULL);
+  pending_layer_->UpdateTiles(Occlusion());
 
   unique_tiles.clear();
   high_res_tile_count = 0u;
@@ -2605,7 +2605,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(0, 0, 500, 500);
-  pending_layer_->UpdateTiles(NULL);
+  pending_layer_->UpdateTiles(Occlusion());
 
   std::vector<Tile*> high_res_tiles = high_res_tiling->AllTilesForTesting();
   for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();
@@ -3169,7 +3169,7 @@ TEST_F(NoLowResPictureLayerImplTest,
                                         resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -3197,7 +3197,7 @@ TEST_F(NoLowResPictureLayerImplTest,
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->UpdateTiles(NULL);
+  active_layer_->UpdateTiles(Occlusion());
 
   visible_rect_for_tile_priority =
       gfx::ScaleToEnclosingRect(visible_rect_for_tile_priority, 2);
