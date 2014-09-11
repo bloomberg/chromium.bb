@@ -135,9 +135,6 @@ public:
     // Collapse the rect-based test result into a single target at the specified location.
     void resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame);
 
-    // FIXME: Remove this.
-    Node* targetNode() const { return innerNode(); }
-
 private:
     KURL absoluteImageURLInternal(bool allowCanvas) const;
     NodeSet& mutableRectBasedTestResult(); // See above.

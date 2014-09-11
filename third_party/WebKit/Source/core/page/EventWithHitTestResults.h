@@ -47,7 +47,7 @@ public:
     Scrollbar* scrollbar() const { return m_hitTestResult.scrollbar(); }
     bool isOverLink() const { return m_hitTestResult.isOverLink(); }
     bool isOverWidget() const { return m_hitTestResult.isOverWidget(); }
-    Node* targetNode() const { return m_hitTestResult.targetNode(); }
+    Node* innerNode() const { return m_hitTestResult.innerNode(); }
 
 private:
     EventType m_event;

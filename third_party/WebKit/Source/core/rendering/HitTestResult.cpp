@@ -350,9 +350,9 @@ bool HitTestResult::isLiveLink() const
 
 bool HitTestResult::isMisspelled() const
 {
-    if (!targetNode() || !targetNode()->renderer())
+    if (!innerNode() || !innerNode()->renderer())
         return false;
-    VisiblePosition pos(targetNode()->renderer()->positionForPoint(localPoint()));
+    VisiblePosition pos(innerNode()->renderer()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
     return m_innerNonSharedNode->document().markers().markersInRange(

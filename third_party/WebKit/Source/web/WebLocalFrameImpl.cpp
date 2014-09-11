@@ -1238,7 +1238,7 @@ VisiblePosition WebLocalFrameImpl::visiblePositionForWindowPoint(const WebPoint&
     HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));
     frame()->document()->renderView()->layer()->hitTest(request, result);
 
-    if (Node* node = result.targetNode())
+    if (Node* node = result.innerNode())
         return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
     return VisiblePosition();
 }

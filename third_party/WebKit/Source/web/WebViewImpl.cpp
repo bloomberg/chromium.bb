@@ -1215,7 +1215,7 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     // FIXME: Rely on earlier hit test instead of hit testing again.
     GestureEventWithHitTestResults targetedEvent =
         m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(tapEvent, true);
-    Node* bestTouchNode = targetedEvent.hitTestResult().targetNode();
+    Node* bestTouchNode = targetedEvent.hitTestResult().innerNode();
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
