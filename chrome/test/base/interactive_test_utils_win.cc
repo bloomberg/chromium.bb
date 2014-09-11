@@ -46,7 +46,15 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // ShowWindow does not necessarily activate the window. In particular if a
   // window from another app is the foreground window then the request to
   // activate the window fails. See SetForegroundWindow for details.
-  return GetForegroundWindow() == hwnd;
+  HWND foreground_window = GetForegroundWindow();
+  if (foreground_window == hwnd)
+    return true;
+
+  wchar_t window_title[256];
+  GetWindowText(foreground_window, window_title, arraysize(window_title));
+  LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window text: " <<
+      window_title;
+  return false;
 }
 
 }  // namespace ui_test_utils
