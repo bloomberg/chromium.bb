@@ -16452,6 +16452,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ClosedDuringInitializeSession">
+  <owner>rch@chromium.org</owner>
+  <summary>
+     True if the QUIC session is closed during the call to InitializeSession,
+    logged for each session just after InitializeSession is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
   <owner>rch@chromium.org</owner>
   <summary>

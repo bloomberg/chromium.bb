@@ -893,9 +893,17 @@ int QuicStreamFactory::CreateSession(
       server_info.Pass(), config,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
+  all_sessions_[*session] = server_id;  // owning pointer
   (*session)->InitializeSession(server_id,  &crypto_config_,
                                 quic_crypto_client_stream_factory_);
-  all_sessions_[*session] = server_id;  // owning pointer
+  bool closed_during_initialize = !ContainsKey(all_sessions_, *session);
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedDuringInitializeSession",
+                        closed_during_initialize);
+  if (closed_during_initialize) {
+    DLOG(DFATAL) << "Session closed during initialize";
+    *session = NULL;
+    return ERR_CONNECTION_CLOSED;
+  }
   return OK;
 }
 
