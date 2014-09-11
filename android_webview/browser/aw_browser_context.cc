@@ -181,6 +181,10 @@ DataReductionProxySettings* AwBrowserContext::GetDataReductionProxySettings() {
   return data_reduction_proxy_settings_.get();
 }
 
+AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
+  return url_request_context_getter_.get();
+}
+
 // Create user pref service for autofill functionality.
 void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
   if (user_pref_service_)

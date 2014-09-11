@@ -17,6 +17,7 @@
 namespace net {
 class CookieStore;
 class HttpTransactionFactory;
+class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
 class URLRequestJobFactory;
@@ -39,8 +40,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
       scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
           config_service);
 
-  void InitializeOnNetworkThread();
-
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -48,6 +47,10 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   data_reduction_proxy::DataReductionProxyAuthRequestHandler*
       GetDataReductionProxyAuthRequestHandler() const;
+
+  // NetLog is thread-safe, so clients can call this method from arbitrary
+  // threads (UI and IO).
+  net::NetLog* GetNetLog();
 
  private:
   friend class AwBrowserContext;
@@ -67,6 +70,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   const base::FilePath partition_path_;
   scoped_refptr<net::CookieStore> cookie_store_;
+  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
       data_reduction_proxy_config_service_;

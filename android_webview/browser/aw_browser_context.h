@@ -87,6 +87,8 @@ class AwBrowserContext : public content::BrowserContext,
   data_reduction_proxy::DataReductionProxySettings*
       GetDataReductionProxySettings();
 
+  AwURLRequestContextGetter* GetAwURLRequestContext();
+
   void CreateUserPrefServiceIfNecessary();
 
   // content::BrowserContext implementation.

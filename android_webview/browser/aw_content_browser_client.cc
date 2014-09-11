@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_web_preferences_populater.h"
 #include "android_webview/browser/jni_dependency_factory.h"
+#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/render_view_messages.h"
@@ -508,8 +509,7 @@ void AwContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
 net::NetLog* AwContentBrowserClient::GetNetLog() {
-  // TODO(boliu): Implement AwNetLog.
-  return NULL;
+  return browser_context_->GetAwURLRequestContext()->GetNetLog();
 }
 
 content::AccessTokenStore* AwContentBrowserClient::CreateAccessTokenStore() {
