@@ -9,7 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 
 #include <gtest/gtest.h>
 
@@ -23,7 +23,7 @@ protected:
         if (propertyID == CSSPropertyFloodColor)
             parserMode = SVGAttributeMode;
         RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-        bool parseSuccess = CSSParser::parseValue(dummyStyle.get(), propertyID, string, false, parserMode, 0);
+        bool parseSuccess = BisonCSSParser::parseValue(dummyStyle.get(), propertyID, string, false, parserMode, 0);
         ASSERT_UNUSED(parseSuccess, parseSuccess);
         return DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*dummyStyle->getPropertyCSSValue(propertyID));
     }

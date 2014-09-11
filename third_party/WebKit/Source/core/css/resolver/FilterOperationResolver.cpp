@@ -30,6 +30,7 @@
 #include "core/css/resolver/FilterOperationResolver.h"
 
 #include "core/css/CSSFilterValue.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"

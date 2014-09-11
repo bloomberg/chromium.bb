@@ -5,7 +5,7 @@
 #ifndef AnimationHelpers_h
 #define AnimationHelpers_h
 
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

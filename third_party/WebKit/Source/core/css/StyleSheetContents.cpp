@@ -21,12 +21,12 @@
 #include "config.h"
 #include "core/css/StyleSheetContents.h"
 
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
-#include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
@@ -327,7 +327,8 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
 
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, TextPosition::minimumPosition(), 0, true);
+    BisonCSSParser p(context);
+    p.parseSheet(this, sheetText, TextPosition::minimumPosition(), 0, true);
 
     // If we're loading a stylesheet cross-origin, and the MIME type is not standard, require the CSS
     // to at least start with a syntactically valid CSS rule.
@@ -349,7 +350,8 @@ bool StyleSheetContents::parseString(const String& sheetText)
 bool StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
 {
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, startPosition, 0, createdByParser);
+    BisonCSSParser p(context);
+    p.parseSheet(this, sheetText, startPosition, 0, createdByParser);
 
     return true;
 }

@@ -32,7 +32,7 @@
 
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -63,7 +63,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
         return false;
     ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
 
-    // CSSParser::parseValue() won't work correctly if !important is present,
+    // BisonCSSParser::parseValue() won't work correctly if !important is present,
     // so just get rid of it. It doesn't matter to supports() if it's actually
     // there or not, provided how it's specified in the value is correct.
     String normalizedValue = value.stripWhiteSpace().simplifyWhiteSpace();
@@ -73,12 +73,14 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
         return false;
 
     RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-    return CSSParser::parseValue(dummyStyle.get(), propertyID, normalizedValue, false, HTMLStandardMode, 0);
+    return BisonCSSParser::parseValue(dummyStyle.get(), propertyID, normalizedValue, false, HTMLStandardMode, 0);
 }
 
 bool DOMWindowCSS::supports(const String& conditionText) const
 {
-    return CSSParser::parseSupportsCondition(conditionText);
+    CSSParserContext context(HTMLStandardMode, 0);
+    BisonCSSParser parser(context);
+    return parser.parseSupportsCondition(conditionText);
 }
 
 }

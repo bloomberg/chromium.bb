@@ -923,8 +923,6 @@
             'css/invalidation/StyleSheetInvalidationAnalysis.cpp',
             'css/invalidation/StyleSheetInvalidationAnalysis.h',
             'css/parser/BisonCSSParser.h',
-            'css/parser/CSSParser.cpp',
-            'css/parser/CSSParser.h',
             'css/parser/CSSParserMode.cpp',
             'css/parser/CSSParserMode.h',
             'css/parser/CSSParserValues.cpp',

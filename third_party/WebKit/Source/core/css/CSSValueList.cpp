@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/CSSValueList.h"
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/parser/CSSParserValues.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

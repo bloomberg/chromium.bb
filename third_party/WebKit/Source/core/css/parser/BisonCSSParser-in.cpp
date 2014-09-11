@@ -877,7 +877,6 @@ static bool parseSimpleTransform(MutableStylePropertySet* properties, CSSPropert
     return true;
 }
 
-// FIXME: Push this logic up into CSSParser
 PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const AtomicString& string)
 {
     if (string.isEmpty())
@@ -893,7 +892,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const At
     return toCSSValueList(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily).get());
 }
 
-// FIXME: Push this logic up into CSSParser
 PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionValue(const String& string)
 {
     if (string.isEmpty())

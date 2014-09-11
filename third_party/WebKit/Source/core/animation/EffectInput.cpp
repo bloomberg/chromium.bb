@@ -35,7 +35,7 @@
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -92,7 +92,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
         String timingFunctionString;
         if (DictionaryHelper::get(keyframeDictionaryVector[i], "easing", timingFunctionString)) {
-            if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = CSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
+            if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
                 keyframe->setEasing(CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true));
         }
 

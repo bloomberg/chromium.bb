@@ -6,7 +6,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ void TimingInput::setPlaybackDirection(Timing& timing, const String& direction)
 
 void TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString)
 {
-    if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = CSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
+    if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
         timing.timingFunction = CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true);
     else
         timing.timingFunction = Timing::defaults().timingFunction;
