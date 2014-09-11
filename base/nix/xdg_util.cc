@@ -57,10 +57,18 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
   std::string xdg_current_desktop;
   if (env->GetVar("XDG_CURRENT_DESKTOP", &xdg_current_desktop)) {
     // Not all desktop environments set this env var as of this writing.
-    if (xdg_current_desktop == "Unity")
+    if (xdg_current_desktop == "Unity") {
+      // gnome-fallback sessions set XDG_CURRENT_DESKTOP to Unity
+      // DESKTOP_SESSION can be gnome-fallback or gnome-fallback-compiz
+      std::string desktop_session;
+      if (env->GetVar("DESKTOP_SESSION", &desktop_session) &&
+          desktop_session.find("gnome-fallback") != std::string::npos) {
+        return DESKTOP_ENVIRONMENT_GNOME;
+      }
       return DESKTOP_ENVIRONMENT_UNITY;
-    else if (xdg_current_desktop == "GNOME")
+    } else if (xdg_current_desktop == "GNOME") {
       return DESKTOP_ENVIRONMENT_GNOME;
+    }
   }
 
   // DESKTOP_SESSION was what everyone used in 2010.
