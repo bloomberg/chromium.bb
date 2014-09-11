@@ -8,15 +8,7 @@ self.addEventListener('fetch', function(event) {
         event.request.headers.forEach(function(value, key) {
             headers.push([key, value]);
           });
-        if (!event.request.body) {
-          resolve(new Response(JSON.stringify({
-              method: event.request.method,
-              headers: headers,
-              body: null
-            })));
-          return;
-        }
-        event.request.body.asText()
+        event.request.text()
           .then(function(result) {
               resolve(new Response(JSON.stringify({
                   method: event.request.method,

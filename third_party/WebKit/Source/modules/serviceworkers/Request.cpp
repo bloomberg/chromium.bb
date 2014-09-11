@@ -44,7 +44,7 @@ private:
     WebServiceWorkerRequest* m_webRequest;
 };
 
-Request* createRequestWithRequestData(FetchRequestData* request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
+Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestData* request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
     // "6. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
@@ -94,8 +94,8 @@ Request* createRequestWithRequestData(FetchRequestData* request, const RequestIn
         request->setMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(AtomicString(init.method)));
     }
     // "11. Let |r| be a new Request object associated with |request|, Headers
-    // object, and FetchBodyStream object."
-    Request* r = Request::create(request);
+    // object."
+    Request* r = Request::create(context, request);
 
     // "12. Let |headers| be a copy of |r|'s Headers object."
     // "13. If |init|'s headers member is present, set |headers| to |init|'s
@@ -149,9 +149,9 @@ Request* createRequestWithRequestData(FetchRequestData* request, const RequestIn
         if (exceptionState.hadException())
             return 0;
     }
-    // "18. Set |r|'s FetchBodyStream object's MIME type to the result of
-    // extracting a MIME type from |r|'s request's header list."
-    // FIXME: We don't have MIME type in FetchBodyStream object yet.
+    // "18. Set |r|'s MIME type to the result of extracting a MIME type from
+    // |r|'s request's header list."
+    // FIXME: We don't have MIME type in Request object yet.
 
     // "19. Return |r|."
     return r;
@@ -184,7 +184,7 @@ Request* Request::create(ExecutionContext* context, const String& input, const D
     request->setURL(parsedURL);
     // "4. Set |fallbackMode| to CORS."
     // "5. Set |fallbackCredentials| to omit."
-    return createRequestWithRequestData(request, RequestInit(context, init, exceptionState), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
+    return createRequestWithRequestData(context, request, RequestInit(context, init, exceptionState), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
 }
 
 Request* Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
@@ -204,28 +204,34 @@ Request* Request::create(ExecutionContext* context, Request* input, const Dictio
     // mode and credentials; it has the same effect.
     const FetchRequestData::Mode currentMode = request->mode();
     const FetchRequestData::Credentials currentCredentials = request->credentials();
-    return createRequestWithRequestData(request, RequestInit(context, init, exceptionState), currentMode, currentCredentials, exceptionState);
+    return createRequestWithRequestData(context, request, RequestInit(context, init, exceptionState), currentMode, currentCredentials, exceptionState);
 }
 
-Request* Request::create(FetchRequestData* request)
+Request* Request::create(ExecutionContext* context, FetchRequestData* request)
 {
-    return new Request(request);
+    Request* r = new Request(context, request);
+    r->suspendIfNeeded();
+    return r;
 }
 
-Request::Request(FetchRequestData* request)
-    : m_request(request)
+Request::Request(ExecutionContext* context, FetchRequestData* request)
+    : Body(context)
+    , m_request(request)
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
 }
 
-Request* Request::create(const WebServiceWorkerRequest& webRequest)
+Request* Request::create(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
 {
-    return new Request(webRequest);
+    Request* r = new Request(context, webRequest);
+    r->suspendIfNeeded();
+    return r;
 }
 
-Request::Request(const WebServiceWorkerRequest& webRequest)
-    : m_request(FetchRequestData::create(webRequest))
+Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
+    : Body(context)
+    , m_request(FetchRequestData::create(webRequest))
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
@@ -246,16 +252,6 @@ String Request::url() const
     url.removeFragmentIdentifier();
     return url;
 }
-
-FetchBodyStream* Request::body(ExecutionContext* context)
-{
-    if (!m_request->blobDataHandle())
-        return 0;
-    if (!m_fetchBodyStream)
-        m_fetchBodyStream = FetchBodyStream::create(context, m_request->blobDataHandle());
-    return m_fetchBodyStream;
-}
-
 
 String Request::referrer() const
 {
@@ -309,16 +305,21 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
     // to plumb this information in to here.
 }
 
-void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle>blobHandle)
+void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    m_request->setBlobDataHandle(blobHandle);
+    m_request->setBlobDataHandle(blobDataHandle);
+}
+
+PassRefPtr<BlobDataHandle> Request::blobDataHandle()
+{
+    return m_request->blobDataHandle();
 }
 
 void Request::trace(Visitor* visitor)
 {
+    Body::trace(visitor);
     visitor->trace(m_request);
     visitor->trace(m_headers);
-    visitor->trace(m_fetchBodyStream);
 }
 
 } // namespace blink

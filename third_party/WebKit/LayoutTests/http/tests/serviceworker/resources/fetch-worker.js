@@ -48,7 +48,7 @@ async_test(function(t) {
                     body: new Blob(['Test Blob'], {type: 'test/type'})
                   });
     fetch(request)
-      .then(function(response) { return response.body.asText(); })
+      .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
@@ -62,7 +62,7 @@ async_test(function(t) {
     var request = new Request('fetch-access-control.php',
                               {method: 'POST', body: 'Test String'});
     fetch(request)
-      .then(function(response) { return response.body.asText(); })
+      .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
@@ -80,7 +80,7 @@ async_test(function(t) {
     var request = new Request('fetch-access-control.php',
                               {method: 'POST', body: array.buffer});
     fetch(request)
-      .then(function(response) { return response.body.asText(); })
+      .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
@@ -98,7 +98,7 @@ async_test(function(t) {
     var request = new Request('fetch-access-control.php',
                               {method: 'POST', body: array});
     fetch(request)
-      .then(function(response) { return response.body.asText(); })
+      .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
@@ -118,7 +118,7 @@ async_test(function(t) {
     var request = new Request('fetch-access-control.php',
                           {method: 'POST', body: formData});
     fetch(request)
-      .then(function(response) { return response.body.asText(); })
+      .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');

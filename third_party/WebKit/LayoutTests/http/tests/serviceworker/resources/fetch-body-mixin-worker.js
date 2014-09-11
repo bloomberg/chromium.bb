@@ -15,8 +15,8 @@ function doFetchTwiceTest(port) {
 
   fetch('doctype.html')
   .then(function(response) {
-      var p1 = response.body.asText();
-      var p2 = response.body.asText();
+      var p1 = response.text();
+      var p2 = response.text();
 
       p1.then(function(obj) {
           p1Out = obj;
@@ -41,7 +41,7 @@ function doFetchTwiceTest(port) {
 function doArrayBufferTest(port) {
     fetch('doctype.html')
     .then(function(response) {
-        response.body.asArrayBuffer()
+        response.arrayBuffer()
         .then(function(b) {
             port.postMessage('ArrayBuffer: ' + b.byteLength);
             doFetchTwiceTest(port);
@@ -52,7 +52,7 @@ function doArrayBufferTest(port) {
 function doBlobTest(port) {
     fetch('doctype.html')
     .then(function(response) {
-        response.body.asBlob()
+        response.blob()
         .then(function(blob) {
             port.postMessage('Blob: ' + blob.size + " : " + blob.type);
             doArrayBufferTest(port);
@@ -63,7 +63,7 @@ function doBlobTest(port) {
 function doJSONFailedTest(port) {
   fetch('doctype.html')
   .then(function(response) {
-      response.body.asJSON()
+      response.json()
       .catch(function(e) {
           port.postMessage('JSON: ' + e.name);
           doBlobTest(port);
@@ -74,7 +74,7 @@ function doJSONFailedTest(port) {
 function doJSONTest(port) {
     fetch('simple.json')
     .then(function(response) {
-        response.body.asJSON()
+        response.json()
         .then(function(json) {
             port.postMessage('JSON: ' + json['a'] + ' ' + json['b']);
             doJSONFailedTest(port);
@@ -85,7 +85,7 @@ function doJSONTest(port) {
 function doTextTest(port) {
   fetch('doctype.html')
   .then(function(response) {
-      response.body.asText()
+      response.text()
       .then(function(txt) {
           port.postMessage('Text: ' + txt);
           doJSONTest(port);

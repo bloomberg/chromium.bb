@@ -112,7 +112,7 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
         response = response->createOpaqueFilteredResponse();
         break;
     }
-    m_resolver->resolve(Response::create(response));
+    m_resolver->resolve(Response::create(m_resolver->executionContext(), response));
     notifyFinished();
 }
 

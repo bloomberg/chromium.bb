@@ -5,6 +5,10 @@
 #include "config.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/Document.h"
+#include "core/frame/Frame.h"
+#include "core/testing/DummyPageHolder.h"
 #include "modules/serviceworkers/Response.h"
 #include "modules/serviceworkers/FetchResponseData.h"
 #include "public/platform/WebServiceWorkerResponse.h"
@@ -13,19 +17,32 @@
 namespace blink {
 namespace {
 
-TEST(ServiceWorkerResponseTest, FromFetchResponseData)
+class ServiceWorkerResponseTest : public ::testing::Test {
+public:
+    ServiceWorkerResponseTest()
+        : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
+
+    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    ExecutionContext* executionContext() { return scriptState()->executionContext(); }
+
+private:
+    OwnPtr<DummyPageHolder> m_page;
+};
+
+
+TEST_F(ServiceWorkerResponseTest, FromFetchResponseData)
 {
     const KURL url(ParsedURLString, "http://www.response.com");
 
     FetchResponseData* fetchResponseData = FetchResponseData::create();
     fetchResponseData->setURL(url);
 
-    Response* response = Response::create(fetchResponseData);
+    Response* response = Response::create(executionContext(), fetchResponseData);
     ASSERT(response);
     EXPECT_EQ(url, response->url());
 }
 
-TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
+TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
 {
     const KURL url(ParsedURLString, "http://www.webresponse.com/");
     const unsigned short status = 200;
@@ -39,7 +56,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
     for (int i = 0; headers[i].key; ++i)
         webResponse.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
 
-    Response* response = Response::create(webResponse);
+    Response* response = Response::create(executionContext(), webResponse);
     ASSERT(response);
     EXPECT_EQ(url, response->url());
     EXPECT_EQ(status, response->status());

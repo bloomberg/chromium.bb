@@ -85,7 +85,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
 {
     ASSERT(m_workerGlobalScope);
     RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
-    Request* request = Request::create(webRequest);
+    Request* request = Request::create(m_workerGlobalScope, webRequest);
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(observer, request));
     fetchEvent->setIsReload(webRequest.isReload());
     m_workerGlobalScope->dispatchEvent(fetchEvent.release());

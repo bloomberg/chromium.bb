@@ -21,9 +21,13 @@ var checkFetchResponseBody = function (hasBody, url, data) {
   assert_equals(data.fetchResult,
                 'resolved',
                 'fetchResult must be resolved. url: ' + url);
-  assert_equals(data.hasBody,
-                hasBody,
-                'hasBody must match. url: ' + url);
+  if (hasBody) {
+    assert_not_equals(data.body, '',
+                      'response must have body. url: ' + url);
+  } else {
+    assert_equals(data.body, '',
+                  'response must not have body. url: ' + url);
+  }
 };
 var checkFetchResponseHeader = function (name, expected, url, data) {
   assert_equals(data.fetchResult,

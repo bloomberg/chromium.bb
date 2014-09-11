@@ -5,7 +5,7 @@ self.addEventListener('fetch', function(event) {
             headers.push([key, value]);
           });
         if (event.request.url.indexOf('asText') != -1) {
-          event.request.body.asText()
+          event.request.text()
             .then(function(result) {
                 resolve(new Response(JSON.stringify({
                     method: event.request.method,
@@ -14,7 +14,7 @@ self.addEventListener('fetch', function(event) {
                   })));
               })
         } else if (event.request.url.indexOf('asBlob') != -1) {
-          event.request.body.asBlob()
+          event.request.blob()
             .then(function(result) {
                 resolve(new Response(JSON.stringify({
                     method: event.request.method,

@@ -6,7 +6,7 @@ promise_test(function() {
       response.headers.get('Content-Type'),
       'text/plain;charset=UTF-8',
       'A Response constructed with a string should have a Content-Type.');
-    return response.body.asText()
+    return response.text()
       .then(function(text) {
           assert_equals(text, 'test string',
             'Response body text should match the string on construction.');
@@ -20,7 +20,7 @@ promise_test(function() {
     var response = new Response(buffer);
     assert_false(response.headers.has('Content-Type'),
       'A Response constructed with ArrayBuffer should not have a content type.');
-    return response.body.asArrayBuffer()
+    return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
           assert_array_equals(
@@ -37,7 +37,7 @@ promise_test(function() {
     assert_false(response.headers.has('Content-Type'),
       'A Response constructed with ArrayBufferView ' +
       'should not have a content type.');
-    return response.body.asArrayBuffer()
+    return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
           assert_array_equals(
@@ -54,7 +54,7 @@ promise_test(function() {
     assert_false(response.headers.has('Content-Type'),
       'A Response constructed with ArrayBufferView ' +
       'should not have a content type.');
-    return response.body.asArrayBuffer()
+    return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
           assert_array_equals(

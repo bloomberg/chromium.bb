@@ -27,7 +27,7 @@ function handleFetch(event) {
 
 function handleFormPost(event) {
   event.respondWith(new Promise(function(resolve) {
-      event.request.body.asText()
+      event.request.text()
         .then(function(result) {
             resolve(new Response(event.request.method + ':' + result));
           })

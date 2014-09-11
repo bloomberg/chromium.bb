@@ -303,7 +303,9 @@ async_test(function(t) {
     assert_equals(
       getContentType(request.headers), 'test/type',
       'ContentType header of Request created with Blob body must be set.');
-    request.body.asText()
+    assert_false(request.bodyUsed,
+                 'bodyUsed must be true before calling text()');
+    request.text()
       .then(function(result) {
           assert_equals(result, 'Test Blob',
                         'Creating a Request with Blob body should success.');
@@ -312,7 +314,7 @@ async_test(function(t) {
           assert_equals(
             getContentType(request.headers), 'text/plain;charset=UTF-8',
             'ContentType header of Request created with string must be set.');
-          return request.body.asText();
+          return request.text();
         })
       .then(function(result) {
           assert_equals(result, 'Test String',
@@ -323,7 +325,7 @@ async_test(function(t) {
           for (var i = 0; i < text.length; ++i)
             array[i] = text.charCodeAt(i);
           request = new Request(URL, {method: 'POST', body: array.buffer});
-          return request.body.asText();
+          return request.text();
         })
       .then(function(result) {
           assert_equals(
@@ -335,7 +337,7 @@ async_test(function(t) {
           for (var i = 0; i < text.length; ++i)
             array[i] = text.charCodeAt(i);
           request = new Request(URL, {method: 'POST', body: array});
-          return request.body.asText();
+          return request.text();
         })
       .then(function(result) {
           assert_equals(
@@ -348,7 +350,7 @@ async_test(function(t) {
           formData.append('sample file',
                           new File(['file content'], 'file.dat'));
           request = new Request(URL, {method: 'POST', body: formData});
-          return request.body.asText();
+          return request.text();
         })
       .then(function(result) {
           var reg = new RegExp('multipart\/form-data; boundary=(.*)');
@@ -380,4 +382,6 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
+    assert_true(request.bodyUsed,
+                'bodyUsed must be true after calling text()');
   }, 'Request body test in ServiceWorkerGlobalScope');

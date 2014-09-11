@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/FetchBodyStream.h"
+#include "modules/serviceworkers/Body.h"
 #include "modules/serviceworkers/FetchRequestData.h"
 #include "modules/serviceworkers/Headers.h"
 #include "platform/heap/Handle.h"
@@ -23,22 +23,22 @@ class ResourceRequest;
 struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
-class Request FINAL : public GarbageCollected<Request>, public ScriptWrappable {
+class Request FINAL : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    virtual ~Request() { }
     static Request* create(ExecutionContext*, const String&, ExceptionState&);
     static Request* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
     static Request* create(ExecutionContext*, Request*, ExceptionState&);
     static Request* create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
-    static Request* create(FetchRequestData*);
-    static Request* create(const WebServiceWorkerRequest&);
+    static Request* create(ExecutionContext*, FetchRequestData*);
+    static Request* create(ExecutionContext*, const WebServiceWorkerRequest&);
 
     FetchRequestData* request() { return m_request; }
 
     String method() const;
     String url() const;
     Headers* headers() const { return m_headers; }
-    FetchBodyStream* body(ExecutionContext*);
     String referrer() const;
     String mode() const;
     String credentials() const;
@@ -47,15 +47,16 @@ public:
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*)  OVERRIDE;
 
 private:
-    explicit Request(FetchRequestData*);
-    explicit Request(const WebServiceWorkerRequest&);
+    Request(ExecutionContext*, FetchRequestData*);
+    Request(ExecutionContext*, const WebServiceWorkerRequest&);
+
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
 
     Member<FetchRequestData> m_request;
     Member<Headers> m_headers;
-    Member<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace blink

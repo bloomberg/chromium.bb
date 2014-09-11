@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchBodyStream_h
-#define FetchBodyStream_h
+#ifndef Body_h
+#define Body_h
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -19,13 +19,15 @@ namespace blink {
 
 class ScriptState;
 
-class FetchBodyStream FINAL
-    : public GarbageCollectedFinalized<FetchBodyStream>
+class Body
+    : public GarbageCollectedFinalized<Body>
     , public ScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    explicit Body(ExecutionContext*);
+    virtual ~Body() { }
     enum ResponseType {
         ResponseAsArrayBuffer,
         ResponseAsBlob,
@@ -34,22 +36,21 @@ public:
         ResponseAsText
     };
 
-    static FetchBodyStream* create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+    ScriptPromise arrayBuffer(ScriptState*);
+    ScriptPromise blob(ScriptState*);
+    ScriptPromise formData(ScriptState*);
+    ScriptPromise json(ScriptState*);
+    ScriptPromise text(ScriptState*);
 
-    ScriptPromise asArrayBuffer(ScriptState*);
-    ScriptPromise asBlob(ScriptState*);
-    ScriptPromise asFormData(ScriptState*);
-    ScriptPromise asJSON(ScriptState*);
-    ScriptPromise asText(ScriptState*);
+    bool bodyUsed() const;
 
     // ActiveDOMObject override.
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) { }
 
 private:
-    FetchBodyStream(ExecutionContext*, PassRefPtr<BlobDataHandle>);
     ScriptPromise readAsync(ScriptState*, ResponseType);
     void resolveJSON();
 
@@ -59,13 +60,14 @@ private:
     virtual void didFinishLoading() OVERRIDE;
     virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
-    RefPtr<BlobDataHandle> m_blobDataHandle;
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() = 0;
+
     OwnPtr<FileReaderLoader> m_loader;
-    bool m_hasRead;
+    bool m_bodyUsed;
     ResponseType m_responseType;
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink
 
-#endif // FetchBodyStream_h
+#endif // Body_h

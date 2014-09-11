@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/FetchBodyStream.h"
+#include "modules/serviceworkers/Body.h"
 #include "modules/serviceworkers/FetchResponseData.h"
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
@@ -21,16 +21,17 @@ class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;
 
-class Response FINAL : public GarbageCollected<Response>, public ScriptWrappable {
+class Response FINAL : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Response* create(Blob*, const Dictionary&, ExceptionState&);
-    static Response* create(const String&, const Dictionary&, ExceptionState&);
-    static Response* create(const ArrayBuffer*, const Dictionary&, ExceptionState&);
-    static Response* create(const ArrayBufferView*, const Dictionary&, ExceptionState&);
-    static Response* create(Blob*, const ResponseInit&, ExceptionState&);
-    static Response* create(FetchResponseData*);
-    static Response* create(const WebServiceWorkerResponse&);
+    virtual ~Response() { }
+    static Response* create(ExecutionContext*, Blob*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const ArrayBuffer*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const ArrayBufferView*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
+    static Response* create(ExecutionContext*, FetchResponseData*);
+    static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
 
     String type() const;
     String url() const;
@@ -38,20 +39,19 @@ public:
     String statusText() const;
     Headers* headers() const;
 
-    FetchBodyStream* body(ExecutionContext*);
-
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    Response();
-    explicit Response(FetchResponseData*);
-    explicit Response(const WebServiceWorkerResponse&);
+    explicit Response(ExecutionContext*);
+    Response(ExecutionContext*, FetchResponseData*);
+    Response(ExecutionContext*, const WebServiceWorkerResponse&);
+
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
 
     Member<FetchResponseData> m_response;
     Member<Headers> m_headers;
-    Member<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace blink
