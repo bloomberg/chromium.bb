@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_
 
 #include <map>
 #include <set>
@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/browser/api/declarative/declarative_rule.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {
@@ -116,4 +116,4 @@ typedef DeclarativeConditionSet<WebRequestCondition> WebRequestConditionSet;
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONDITION_H_

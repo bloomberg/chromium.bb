@@ -843,8 +843,6 @@
         'browser/extensions/api/declarative_content/content_condition_unittest.cc',
         'browser/extensions/api/declarative_content/content_rules_registry_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
-        'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
-        'browser/extensions/api/declarative_webrequest/webrequest_condition_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
         'browser/extensions/api/dial/dial_device_data_unittest.cc',
         'browser/extensions/api/dial/dial_registry_unittest.cc',

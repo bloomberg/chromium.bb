@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_condition_attribute.h"
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/base/request_priority.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"

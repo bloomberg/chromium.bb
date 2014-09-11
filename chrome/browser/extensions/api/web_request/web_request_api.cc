@@ -42,6 +42,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs.h"
@@ -87,6 +88,7 @@ using extensions::WarningService;
 using extensions::WarningSet;
 
 namespace helpers = extension_web_request_api_helpers;
+namespace utils = extension_web_request_api_utils;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::api::web_request;
 namespace declarative_keys = extensions::declarative_webrequest_constants;
@@ -220,7 +222,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   *routing_id = info->GetRouteID();
 
   // Restrict the resource type to the values we care about.
-  if (helpers::IsRelevantResourceType(info->GetResourceType()))
+  if (utils::IsRelevantResourceType(info->GetResourceType()))
     *resource_type = info->GetResourceType();
   else
     *resource_type = content::RESOURCE_TYPE_LAST_TYPE;
@@ -256,7 +258,7 @@ void ExtractRequestInfo(net::URLRequest* request, base::DictionaryValue* out) {
   out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
   out->SetInteger(keys::kParentFrameIdKey, parent_frame_id_for_extension);
   out->SetInteger(keys::kTabIdKey, tab_id);
-  out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
+  out->SetString(keys::kTypeKey, utils::ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 }
 
@@ -627,7 +629,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         std::string type_str;
         ResourceType type;
         if (!types_value->GetString(i, &type_str) ||
-            !helpers::ParseResourceType(type_str, &type))
+            !utils::ParseResourceType(type_str, &type))
           return false;
         types.push_back(type);
       }

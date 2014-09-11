@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_condition_attribute.h"
 
 #include <algorithm>
 
@@ -11,12 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative/deduping_factory.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_utils.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -32,7 +32,7 @@ using base::StringValue;
 using base::Value;
 using content::ResourceType;
 
-namespace helpers = extension_web_request_api_helpers;
+namespace utils = extension_web_request_api_utils;
 namespace keys = extensions::declarative_webrequest_constants;
 
 namespace extensions {
@@ -154,7 +154,7 @@ WebRequestConditionAttributeResourceType::Create(
     std::string resource_type_string;
     ResourceType type = content::RESOURCE_TYPE_LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
-        !helpers::ParseResourceType(resource_type_string, &type)) {
+        !utils::ParseResourceType(resource_type_string, &type)) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                               keys::kResourceTypeKey);
       return scoped_refptr<const WebRequestConditionAttribute>(NULL);
