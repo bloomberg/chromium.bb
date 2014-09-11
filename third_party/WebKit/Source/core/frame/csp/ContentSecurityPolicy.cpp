@@ -151,7 +151,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
     ASSERT(m_executionContext);
     // Ensure that 'self' processes correctly.
-    m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), false, false));
+    m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 
     // If we're in a Document, set the referrer policy and sandbox flags, then dump all the
     // parsing error messages, then poke at histograms.
@@ -262,7 +262,7 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     // an execution context (for 'frame-ancestor' resolution, for example). This CSPSource will
     // be overwritten when we bind this object to an execution context.
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
-    m_selfSource = adoptPtr(new CSPSource(this, origin->protocol(), origin->host(), origin->port(), String(), false, false));
+    m_selfSource = adoptPtr(new CSPSource(this, origin->protocol(), origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 }
 
 const String& ContentSecurityPolicy::deprecatedHeader() const

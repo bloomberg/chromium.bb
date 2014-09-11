@@ -13,14 +13,14 @@
 
 namespace blink {
 
-CSPSource::CSPSource(ContentSecurityPolicy* policy, const String& scheme, const String& host, int port, const String& path, bool hostHasWildcard, bool portHasWildcard)
+CSPSource::CSPSource(ContentSecurityPolicy* policy, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard)
     : m_policy(policy)
     , m_scheme(scheme)
     , m_host(host)
     , m_port(port)
     , m_path(path)
-    , m_hostHasWildcard(hostHasWildcard)
-    , m_portHasWildcard(portHasWildcard)
+    , m_hostWildcard(hostWildcard)
+    , m_portWildcard(portWildcard)
 {
 }
 
@@ -45,7 +45,7 @@ bool CSPSource::hostMatches(const KURL& url) const
     const String& host = url.host();
     if (equalIgnoringCase(host, m_host))
         return true;
-    return m_hostHasWildcard && host.endsWith("." + m_host, false);
+    return m_hostWildcard == HasWildcard && host.endsWith("." + m_host, false);
 
 }
 
@@ -64,7 +64,7 @@ bool CSPSource::pathMatches(const KURL& url) const
 
 bool CSPSource::portMatches(const KURL& url) const
 {
-    if (m_portHasWildcard)
+    if (m_portWildcard == HasWildcard)
         return true;
 
     int port = url.port();
