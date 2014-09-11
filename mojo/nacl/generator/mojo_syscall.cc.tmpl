@@ -1,0 +1,66 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{{generator_warning}}
+
+#include "mojo/nacl/mojo_syscall.h"
+
+#include <stdio.h>
+
+#include "mojo/nacl/mojo_syscall_internal.h"
+#include "mojo/public/c/system/core.h"
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/public/nacl_app.h"
+#include "native_client/src/trusted/desc/nacl_desc_custom.h"
+
+namespace {
+
+void MojoDescDestroy(void* handle) {
+}
+
+ssize_t MojoDescSendMsg(void* handle,
+                        const struct NaClImcTypedMsgHdr* msg,
+                        int flags) {
+  struct NaClApp* nap = static_cast<struct NaClApp*>(handle);
+
+  if (msg->iov_length != 1 || msg->ndesc_length != 0) {
+    return -1;
+  }
+
+  uint32_t volatile* params = static_cast<uint32_t volatile*>(msg->iov[0].base);
+  size_t num_params = msg->iov[0].length / sizeof(*params);
+
+  if (num_params < 1) {
+    return -1;
+  }
+
+  uint32_t msg_type = params[0];
+  switch (msg_type) {
+{{body}}
+  }
+
+  return -1;
+}
+
+ssize_t MojoDescRecvMsg(void* handle,
+                        struct NaClImcTypedMsgHdr* msg,
+                        int flags) {
+  return -1;
+}
+
+struct NaClDesc* MakeMojoDesc(struct NaClApp* nap) {
+  struct NaClDescCustomFuncs funcs = NACL_DESC_CUSTOM_FUNCS_INITIALIZER;
+  funcs.Destroy = MojoDescDestroy;
+  funcs.SendMsg = MojoDescSendMsg;
+  funcs.RecvMsg = MojoDescRecvMsg;
+  return NaClDescMakeCustomDesc(nap, &funcs);
+}
+
+} // namespace
+
+#define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 2)
+
+void InjectMojo(struct NaClApp* nap) {
+  NaClAppSetDesc(nap, NACL_MOJO_DESC, MakeMojoDesc(nap));
+}

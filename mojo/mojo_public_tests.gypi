@@ -139,11 +139,7 @@
       ],
       'include_dirs': [ '..' ],
       'sources': [
-        'public/c/system/tests/core_unittest.cc',
-        'public/c/system/tests/core_unittest_pure_c.c',
-        'public/c/system/tests/macros_unittest.cc',
-        'public/cpp/system/tests/core_unittest.cc',
-        'public/cpp/system/tests/macros_unittest.cc',
+        '<@(mojo_public_system_unittest_sources)',
       ],
     },
     {

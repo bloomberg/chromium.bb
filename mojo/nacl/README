@@ -1,0 +1,24 @@
+This is a prototype for plumbing Mojo into the NaCl sandbox.  It is
+currently insecure (see below), does not provide a stable ABI (IRT
+support must be added), and does not support Mojo functions that
+return pointers (for example, MojoMapBuffer).
+
+generator/interface.py contains a programmatic description of the
+stable Mojo interface.  This will need to be updated as the interface
+changes.  Run generator/generate_nacl_bindings.py to generate the
+bindings that plumb this interface into the NaCl sandbox.
+
+To test: Build "monacl_shell" and "monacl_test".  Run monacl_shell
+with the IRT as the first argument and the monacl_test as the second
+argument.  For example, to run a Debug 32-bit Intel build:
+
+  cd out/Debug
+  ./monacl_shell irt_core_newlib_x32.nexe monacl_test_newlib_x32.nexe
+
+Security TODO list:
+  Separate trusted and untrusted Mojo handles.
+  Validate and copy option structures.
+  Protect untrusted buffers passed into Mojo:
+    NaClVmIoWillStart/HasEnded.
+    volatile accesses to untrusted memory (untrusted code could race).
+  Overflow checking in array bounds validation.

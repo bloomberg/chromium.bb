@@ -1,0 +1,25 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{{generator_warning}}
+
+#include "mojo/public/c/system/core.h"
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
+
+#define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 2)
+
+static void DoMojoCall(uint32_t params[], int num_params) {
+  NaClAbiNaClImcMsgIoVec iov[1] = {
+    {params, num_params}
+  };
+  NaClAbiNaClImcMsgHdr msgh = {iov, 1, NULL, 0};
+  // Note: return value unchecked.  We're relying on the result parameter being
+  // unmodified - if the syscall fails, the Mojo function will return whatever
+  // the result parameter was initialized to before this function was called.
+  imc_sendmsg(NACL_MOJO_DESC, &msgh, 0);
+}
+
+{{body}}

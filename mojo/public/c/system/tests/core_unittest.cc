@@ -140,7 +140,16 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }
 
-TEST(CoreTest, BasicDataPipe) {
+// TODO(ncbray): enable these tests once NaCl supports the corresponding APIs.
+#ifdef __native_client__
+#define MAYBE_BasicDataPipe DISABLED_BasicDataPipe
+#define MAYBE_BasicSharedBuffer DISABLED_BasicSharedBuffer
+#else
+#define MAYBE_BasicDataPipe BasicDataPipe
+#define MAYBE_BasicSharedBuffer BasicSharedBuffer
+#endif
+
+TEST(CoreTest, MAYBE_BasicDataPipe) {
   MojoHandle hp, hc;
   MojoHandleSignals sig;
   char buffer[20] = {0};
@@ -228,7 +237,7 @@ TEST(CoreTest, BasicDataPipe) {
   // the producer never-writable?
 }
 
-TEST(CoreTest, BasicSharedBuffer) {
+TEST(CoreTest, MAYBE_BasicSharedBuffer) {
   MojoHandle h0, h1;
   void* pointer;
 

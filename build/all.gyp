@@ -416,6 +416,7 @@
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
+            '../mojo/mojo_nacl.gyp:*',
             '../testing/gtest_nacl.gyp:*',
           ],
         }],

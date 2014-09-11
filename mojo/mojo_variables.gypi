@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 #
-# A set of GYP variables that are shared between mojo.gyp and mojo_base.gyp
+# A set of GYP variables that are shared between various mojo .gyp files.
 #
 {
   'variables': {
@@ -40,6 +40,13 @@
         'mojo_system_for_loadable_module': "../mojo/mojo_base.gyp:mojo_system",
         'mojo_gles2_for_component': "../mojo/mojo_base.gyp:mojo_none",
       }],
+    ],
+    'mojo_public_system_unittest_sources': [
+      'public/c/system/tests/core_unittest.cc',
+      'public/c/system/tests/core_unittest_pure_c.c',
+      'public/c/system/tests/macros_unittest.cc',
+      'public/cpp/system/tests/core_unittest.cc',
+      'public/cpp/system/tests/macros_unittest.cc',
     ],
   },
 }
