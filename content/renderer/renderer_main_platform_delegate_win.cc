@@ -25,6 +25,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/win/dpi.h"
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
 #include "v8/src/third_party/vtune/v8-vtune.h"
@@ -106,6 +107,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     }
   }
   blink::WebFontRendering::setUseDirectWrite(use_direct_write);
+  blink::WebFontRendering::setDeviceScaleFactor(gfx::GetDPIScale());
   if (use_direct_write) {
     blink::WebRuntimeFeatures::enableSubpixelFontScaling(true);
   }
