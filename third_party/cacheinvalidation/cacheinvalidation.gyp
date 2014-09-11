@@ -199,7 +199,6 @@
           'target_name': 'cacheinvalidation_proto_java',
           'type': 'none',
           'variables': {
-            'proto_runtime': 'nano',
             'proto_in_dir': '../../third_party/cacheinvalidation/src/proto',
           },
           'sources': [
