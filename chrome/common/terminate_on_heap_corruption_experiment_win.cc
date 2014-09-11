@@ -10,16 +10,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-#define PRODUCT_STRING_PATH L"Google\\Chrome"
-#elif defined(CHROMIUM_BUILD)
-#define PRODUCT_STRING_PATH L"Chromium"
-#else
-#error Unknown branding
-#endif
-#endif  // defined(OS_WIN)
-
 namespace {
 
 const wchar_t* GetBeaconKeyPath() {

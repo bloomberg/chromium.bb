@@ -19,16 +19,6 @@
 #endif
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-#define PRODUCT_STRING_PATH L"Google\\Chrome"
-#elif defined(CHROMIUM_BUILD)
-#define PRODUCT_STRING_PATH L"Chromium"
-#else
-#error Unknown branding
-#endif
-#endif  // defined(OS_WIN)
-
 namespace chrome {
 
 const char kChromeVersionEnvVar[] = "CHROME_VERSION";
