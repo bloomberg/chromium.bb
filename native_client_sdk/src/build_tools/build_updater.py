@@ -142,8 +142,6 @@ def BuildUpdater(out_dir, revision_number=None):
     out_dir: The output directory.
     revision_number: The revision number of this updater, as an integer. Or
         None, to use the current Chrome revision."""
-  buildbot_common.BuildStep('Create Updater')
-
   out_dir = os.path.abspath(out_dir)
 
   # Build SDK directory
@@ -181,7 +179,10 @@ def main(args):
       dest='out_dir', default=os.path.join(SRC_DIR, 'out'))
   parser.add_option('-r', '--revision', help='revision number of this updater',
       dest='revision', default=None)
+  parser.add_option('-v', '--verbose', help='verbose output')
   options, args = parser.parse_args(args[1:])
+
+  buildbot_common.verbose = options.verbose
 
   if options.revision:
     options.revision = int(options.revision)
