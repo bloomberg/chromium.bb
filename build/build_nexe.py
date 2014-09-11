@@ -243,7 +243,7 @@ class Builder(object):
     self.goma_burst = goma_config.get('burst', False)
     self.goma_threads = goma_config.get('threads', 1)
 
-    # Setup debugging info flags.
+    # Set up debugging info flags.
     if options.build_type == 'Official':
       self.compile_options.append('-g')
     elif options.fast_build != '0':
@@ -251,8 +251,8 @@ class Builder(object):
     elif options.build_type == 'Debug':
       self.compile_options.append('-g')
 
-    # Setup optimization level.
-    if options.build_config == 'Debug' or options.fast_build != '0':
+    # Set up optimization level.
+    if options.build_config.startswith('Debug') or options.fast_build != '0':
       self.compile_options.append('-O0')
       if (self.is_pnacl_toolchain
           and (self.outtype == 'nlib'
@@ -266,7 +266,7 @@ class Builder(object):
         # Also use fast translation because we are still translating
         # libc/libc++
         self.link_options.append('-Wt,-O0')
-    elif options.build_config == 'Release':
+    elif options.build_config.startswith('Release'):
       self.compile_options.append('-O2')
       # Turn on LTO for pnacl.
       if (self.is_pnacl_toolchain and self.arch == 'pnacl'):
@@ -275,7 +275,7 @@ class Builder(object):
       raise Error('Unknown build config: ' + options.build_config)
 
     # Define NDEBUG for Release builds.
-    if options.build_config == 'Release':
+    if options.build_config.startswith('Release'):
       self.compile_options.append('-DNDEBUG')
 
     self.irt_layout = options.irt_layout
