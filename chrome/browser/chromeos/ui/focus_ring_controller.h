@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
@@ -18,12 +19,11 @@ class Widget;
 
 namespace chromeos {
 
-class FocusRingLayer;
-
 // FocusRingController manages the focus ring around the focused view. It
 // follows widget focus change and update the focus ring layer when the focused
 // view of the widget changes.
-class FocusRingController : public views::WidgetObserver,
+class FocusRingController : public FocusRingLayerDelegate,
+                            public views::WidgetObserver,
                             public views::WidgetFocusChangeListener,
                             public views::FocusChangeListener {
  public:
@@ -34,6 +34,9 @@ class FocusRingController : public views::WidgetObserver,
   void SetVisible(bool visible);
 
  private:
+  // FocusRingLayerDelegate.
+  virtual void OnDeviceScaleFactorChanged() OVERRIDE;
+
   // Sets the focused |widget|.
   void SetWidget(views::Widget* widget);
 

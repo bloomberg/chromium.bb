@@ -4,8 +4,14 @@
 
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 
+#include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
+#include "ui/aura/window.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -37,23 +43,59 @@ void FocusRingController::SetVisible(bool visible) {
 }
 
 void FocusRingController::UpdateFocusRing() {
-  views::View* focused_view = NULL;
+  views::View* view = NULL;
   if (widget_ && widget_->GetFocusManager())
-    focused_view = widget_->GetFocusManager()->GetFocusedView();
+    view = widget_->GetFocusManager()->GetFocusedView();
 
   // No focus ring if no focused view or the focused view covers the whole
   // widget content area (such as RenderWidgetHostWidgetAura).
-  if (!focused_view ||
-      focused_view->ConvertRectToWidget(focused_view->bounds()) ==
+  if (!view ||
+      view->ConvertRectToWidget(view->bounds()) ==
           widget_->GetContentsView()->bounds()) {
     focus_ring_layer_.reset();
     return;
   }
 
-  if (!focus_ring_layer_)
-    focus_ring_layer_.reset(new FocusRingLayer);
+  gfx::Rect view_bounds = view->GetContentsBounds();
 
-  focus_ring_layer_->SetForView(focused_view);
+  // Workarounds that attempts to pick a better bounds.
+  if (view->GetClassName() == views::LabelButton::kViewClassName) {
+    view_bounds = view->GetLocalBounds();
+    view_bounds.Inset(2, 2, 2, 2);
+  }
+
+  // Workarounds for system tray items that have customized focus borders.  The
+  // insets here must be consistent with the ones used by those classes.
+  if (view->GetClassName() == ash::ActionableView::kViewClassName) {
+    view_bounds = view->GetLocalBounds();
+    view_bounds.Inset(1, 1, 3, 3);
+  } else if (view->GetClassName() == ash::TrayBackgroundView::kViewClassName) {
+    view_bounds.Inset(1, 1, 3, 3);
+  } else if (view->GetClassName() ==
+             ash::TrayPopupHeaderButton::kViewClassName) {
+    view_bounds = view->GetLocalBounds();
+    view_bounds.Inset(2, 1, 2, 2);
+  }
+
+  // Convert view bounds to widget/window coordinates.
+  view_bounds = view->ConvertRectToWidget(view_bounds);
+
+  // Translate window coordinates to root window coordinates.
+  DCHECK(view->GetWidget());
+  aura::Window* window = view->GetWidget()->GetNativeWindow();
+  aura::Window* root_window = window->GetRootWindow();
+  gfx::Point origin = view_bounds.origin();
+  aura::Window::ConvertPointToTarget(window, root_window, &origin);
+  view_bounds.set_origin(origin);
+
+  // Update the focus ring layer.
+  if (!focus_ring_layer_)
+    focus_ring_layer_.reset(new FocusRingLayer(this));
+  focus_ring_layer_->Set(root_window, view_bounds);
+}
+
+void FocusRingController::OnDeviceScaleFactorChanged() {
+  UpdateFocusRing();
 }
 
 void FocusRingController::SetWidget(views::Widget* widget) {

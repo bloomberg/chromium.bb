@@ -18,23 +18,26 @@ namespace ui {
 class Layer;
 }
 
-namespace views {
-class View;
-}
-
 namespace chromeos {
 
-// FocusRingLayer draws a focus ring for a given view.
+// A delegate interface implemented by the object that owns a FocusRingLayer.
+class FocusRingLayerDelegate {
+ public:
+  virtual void OnDeviceScaleFactorChanged() = 0;
+
+ protected:
+  virtual ~FocusRingLayerDelegate();
+};
+
+// FocusRingLayer draws a focus ring at a given global rectangle.
 class FocusRingLayer : public ui::LayerDelegate {
  public:
-  FocusRingLayer();
+  explicit FocusRingLayer(FocusRingLayerDelegate* delegate);
   virtual ~FocusRingLayer();
 
-  // Create the layer and update its bounds and position in the hierarchy.
-  void Update();
-
-  // Updates the focus ring layer for the view or clears it if |view| is NULL.
-  void SetForView(views::View* view);
+  // Move the focus ring layer to the given bounds in the coordinates of
+  // the given root window.
+  void Set(aura::Window* root_window, const gfx::Rect& bounds);
 
  private:
   // ui::LayerDelegate overrides:
@@ -44,13 +47,14 @@ class FocusRingLayer : public ui::LayerDelegate {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
-  // The window containing focus.
-  aura::Window* window_;
+  // The object that owns this layer.
+  FocusRingLayerDelegate* delegate_;
 
   // The current root window containing the focused object.
   aura::Window* root_window_;
 
-  // The bounding rectangle of the focused object, in |window_| coordinates.
+  // The bounding rectangle of the focused object, in |root_window_|
+  // coordinates.
   gfx::Rect focus_ring_;
 
   // The current layer.
