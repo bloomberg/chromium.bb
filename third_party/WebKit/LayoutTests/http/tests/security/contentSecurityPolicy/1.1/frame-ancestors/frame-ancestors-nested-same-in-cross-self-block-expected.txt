@@ -1,4 +1,3 @@
-CONSOLE ERROR: Refused to display 'http://localhost:8080/security/contentSecurityPolicy/resources/frame-ancestors.pl?policy=%27self%27 in a frame because an ancestor violates the following Content Security Policy directive: "frame-ancestors 'self'".
 A 'frame-ancestors' CSP directive with a value 'same' should block render in same-origin nested frames.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -21,4 +20,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 IFrame load event fired: the IFrame is cross-origin (or was blocked).
 PASS The IFrame should have been blocked (or cross-origin). It was.
 
+
+--------
+Frame: '<!--framePath //<!--frame0-->/<!--frame0-->-->'
+--------
 

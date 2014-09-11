@@ -6,9 +6,9 @@
 </head>
 <body>
     <script>
-        description("A 'frame-ancestors' CSP directive with a URL matching this origin should allow rendering.");
+        description("A 'frame-ancestors' CSP directive with a URL which doesn't match this origin should be blocked.");
 
-        crossOriginFrameShouldBeBlocked(window.location.origin);
+        crossOriginFrameShouldBeBlocked("http://example.com/");
     </script>
 </body>
 </html>

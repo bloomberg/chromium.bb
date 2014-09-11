@@ -1,4 +1,3 @@
-CONSOLE ERROR: Refused to display 'http://localhost:8080/security/contentSecurityPolicy/resources/frame-ancestors.pl?policy=%27self%27 in a frame because an ancestor violates the following Content Security Policy directive: "frame-ancestors 'self'".
 A 'frame-ancestors' CSP directive with a value 'self' should allow rendering.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -10,4 +9,8 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
 

@@ -56,6 +56,7 @@
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -423,6 +424,20 @@ bool DocumentLoader::shouldContinueForResponse() const
     return true;
 }
 
+void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse& response)
+{
+    InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, mainResourceIdentifier(), response);
+
+    frame()->document()->enforceSandboxFlags(SandboxOrigin);
+    if (FrameOwner* owner = frame()->owner())
+        owner->dispatchLoad();
+
+    // The load event might have detached this frame. In that case, the load will already have been cancelled during detach.
+    if (frameLoader())
+        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    return;
+}
+
 void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
@@ -440,24 +455,23 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(xFrameOptionHeader);
     if (it != response.httpHeaderFields().end()) {
         String content = it->value;
-        ASSERT(m_mainResource);
-        unsigned long identifier = mainResourceIdentifier();
-        ASSERT(identifier);
-        if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), identifier)) {
-            InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, identifier, response);
+        if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
             String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
             RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
-            consoleMessage->setRequestIdentifier(identifier);
+            consoleMessage->setRequestIdentifier(mainResourceIdentifier());
             frame()->document()->addConsoleMessage(consoleMessage.release());
-            frame()->document()->enforceSandboxFlags(SandboxOrigin);
-            if (FrameOwner* owner = frame()->owner())
-                owner->dispatchLoad();
 
-            // The load event might have detached this frame. In that case, the load will already have been cancelled during detach.
-            if (frameLoader())
-                cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+            cancelLoadAfterXFrameOptionsOrCSPDenied(response);
             return;
         }
+    }
+
+    m_contentSecurityPolicy = ContentSecurityPolicy::create();
+    m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
+    m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
+    if (!m_contentSecurityPolicy->allowAncestors(m_frame)) {
+        cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+        return;
     }
 
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());

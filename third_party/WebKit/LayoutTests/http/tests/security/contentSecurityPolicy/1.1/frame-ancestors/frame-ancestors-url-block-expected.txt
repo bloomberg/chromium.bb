@@ -1,4 +1,4 @@
-A 'frame-ancestors' CSP directive with a URL matching this origin should allow rendering.
+A 'frame-ancestors' CSP directive with a URL which doesn't match this origin should be blocked.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -13,4 +13,4 @@ TEST COMPLETE
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-This is an IFrame sending a Content Security Policy header containing "frame-ancestors http://127.0.0.1:8000".
+

@@ -256,6 +256,15 @@ void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value)
     m_overrideInlineStyleAllowed = value;
 }
 
+void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
+{
+    // Create a temporary CSPSource so that 'self' expressions can be resolved before we bind to
+    // an execution context (for 'frame-ancestor' resolution, for example). This CSPSource will
+    // be overwritten when we bind this object to an execution context.
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
+    m_selfSource = adoptPtr(new CSPSource(this, origin->protocol(), origin->host(), origin->port(), String(), false, false));
+}
+
 const String& ContentSecurityPolicy::deprecatedHeader() const
 {
     return m_policies.isEmpty() ? emptyString() : m_policies[0]->header();
@@ -624,6 +633,10 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 
 void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header)
 {
+    // FIXME: Support sending 'frame-ancestor' reports (which occur before we're bound to an execution context)
+    if (!m_executionContext)
+        return;
+
     // FIXME: Support sending reports from worker.
     Document* document = this->document();
     if (!document)

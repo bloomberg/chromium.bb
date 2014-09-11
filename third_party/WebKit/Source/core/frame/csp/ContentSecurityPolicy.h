@@ -149,6 +149,7 @@ public:
     bool didSetReferrerPolicy() const;
 
     void setOverrideAllowInlineStyle(bool);
+    void setOverrideURLForSelf(const KURL&);
 
     bool isActive() const;
 

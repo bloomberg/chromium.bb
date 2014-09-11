@@ -84,7 +84,6 @@
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/scroll/ScrollAnimator.h"
@@ -354,22 +353,6 @@ void FrameLoader::receivedFirstData()
     dispatchDidClearDocumentOfWindowObject();
 }
 
-static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
-{
-    // load event and stopAllLoaders can detach the LocalFrame, so protect it.
-    RefPtr<LocalFrame> frame(loader->frame());
-
-    // Move the page to a unique origin, and cancel the load.
-    frame->document()->enforceSandboxFlags(SandboxOrigin);
-    loader->stopAllLoaders();
-
-    // Fire a load event, as timing attacks would otherwise reveal that the
-    // frame was blocked. This way, it looks like every other cross-origin
-    // page.
-    if (FrameOwner* frameOwner = frame->owner())
-        frameOwner->dispatchLoad();
-}
-
 void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_frame->document()->setReadyState(Document::Loading);
@@ -380,16 +363,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
     if (dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
-    // FIXME: Move this to DocumentLoader::responseReceived, next to the X-Frame-Options checks.
-    RefPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
-    if (m_documentLoader)
-        csp->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(m_documentLoader->response()));
-    m_frame->document()->initContentSecurityPolicy(csp);
-
-    if (!m_frame->document()->contentSecurityPolicy()->allowAncestors(m_frame)) {
-        didFailContentSecurityPolicyCheck(this);
-        return;
-    }
+    m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {
