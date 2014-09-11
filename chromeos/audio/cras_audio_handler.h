@@ -255,7 +255,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   AudioDevice GetSanitizedAudioDevice(const AudioNode& node);
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
-  base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
   ObserverList<AudioObserver> observers_;
 
   // Audio data and state.
@@ -278,6 +277,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Failures are not logged at startup, since CRAS may not be running yet.
   bool log_errors_;
+
+  base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrasAudioHandler);
 };

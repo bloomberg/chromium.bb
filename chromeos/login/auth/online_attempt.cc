@@ -34,8 +34,8 @@ OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
     : message_loop_(base::MessageLoopProxy::current()),
       attempt_(current_attempt),
       resolver_(callback),
-      weak_factory_(this),
-      try_again_(true) {
+      try_again_(true),
+      weak_factory_(this) {
   DCHECK(attempt_->user_type == user_manager::USER_TYPE_REGULAR);
 }
 

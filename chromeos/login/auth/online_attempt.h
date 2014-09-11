@@ -68,11 +68,11 @@ class CHROMEOS_EXPORT OnlineAttempt : public GaiaAuthConsumer {
   // Handles ClientLogin communications with Gaia.
   scoped_ptr<GaiaAuthFetcher> client_fetcher_;
 
-  // Used to cancel the CancelClientLogin closure.
-  base::WeakPtrFactory<OnlineAttempt> weak_factory_;
-
   // Whether we're willing to re-try the ClientLogin attempt.
   bool try_again_;
+
+  // Used to cancel the CancelClientLogin closure.
+  base::WeakPtrFactory<OnlineAttempt> weak_factory_;
 
   friend class OnlineAttemptTest;
   DISALLOW_COPY_AND_ASSIGN(OnlineAttempt);

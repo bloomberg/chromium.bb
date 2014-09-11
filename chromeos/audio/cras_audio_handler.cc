@@ -327,7 +327,6 @@ void CrasAudioHandler::LogErrors() {
 CrasAudioHandler::CrasAudioHandler(
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
     : audio_pref_handler_(audio_pref_handler),
-      weak_ptr_factory_(this),
       output_mute_on_(false),
       input_mute_on_(false),
       output_volume_(0),
@@ -338,7 +337,8 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_output_(false),
       output_mute_locked_(false),
       input_mute_locked_(false),
-      log_errors_(false) {
+      log_errors_(false),
+      weak_ptr_factory_(this) {
   if (!audio_pref_handler.get())
     return;
   // If the DBusThreadManager or the CrasAudioClient aren't available, there

@@ -45,8 +45,9 @@ class CHROMEOS_EXPORT TpmPasswordFetcher {
   // Posts a task to call Fetch() later.
   void RescheduleFetch();
 
-  base::WeakPtrFactory<TpmPasswordFetcher> weak_factory_;
   TpmPasswordFetcherDelegate* delegate_;
+
+  base::WeakPtrFactory<TpmPasswordFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TpmPasswordFetcher);
 };

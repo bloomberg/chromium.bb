@@ -20,7 +20,7 @@ const int kTpmCheckIntervalMs = 500;
 }  // namespace
 
 TpmPasswordFetcher::TpmPasswordFetcher(TpmPasswordFetcherDelegate* delegate)
-    : weak_factory_(this), delegate_(delegate) {
+    : delegate_(delegate), weak_factory_(this) {
   DCHECK(delegate_);
 }
 
