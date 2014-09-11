@@ -516,7 +516,7 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForNonOwner) {
             device_settings_service_.GetOwnershipStatus());
   EXPECT_FALSE(is_owner_set_);
 
-  service->OnTPMTokenReady();
+  service->OnTPMTokenReady(true /* is ready */);
   FlushDeviceSettings();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
@@ -560,7 +560,7 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
   EXPECT_FALSE(is_owner_set_);
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  service->OnTPMTokenReady();
+  service->OnTPMTokenReady(true /* is ready */);
   FlushDeviceSettings();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());

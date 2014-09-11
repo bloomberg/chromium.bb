@@ -213,7 +213,7 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
 
 TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
-  service_->OnTPMTokenReady();
+  service_->OnTPMTokenReady(true /* is ready */);
 
   scoped_ptr<em::PolicyData> policy(new em::PolicyData(policy_.policy_data()));
   SignAndStoreSettingsOperation op(

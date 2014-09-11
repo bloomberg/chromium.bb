@@ -263,7 +263,7 @@ void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
       OwnerSettingsServiceFactory::GetForProfile(profile_.get());
   CHECK(service);
   if (tpm_is_ready)
-    service->OnTPMTokenReady();
+    service->OnTPMTokenReady(true /* token is enabled */);
 }
 
 }  // namespace chromeos

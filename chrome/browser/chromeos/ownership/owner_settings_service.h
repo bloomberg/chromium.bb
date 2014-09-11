@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/tpm_token_loader.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/owner_key_util.h"
 #include "content/public/browser/notification_observer.h"
@@ -34,7 +33,6 @@ class SessionManagerOperation;
 class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
                              public KeyedService,
                              public content::NotificationObserver,
-                             public TPMTokenLoader::Observer,
                              public SessionManagerClient::Observer {
  public:
   virtual ~OwnerSettingsService();
@@ -42,6 +40,8 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   base::WeakPtr<OwnerSettingsService> as_weak_ptr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  void OnTPMTokenReady(bool tpm_token_enabled);
 
   // DeviceSettingsService::PrivateKeyDelegate implementation:
   virtual bool IsOwner() OVERRIDE;
@@ -62,9 +62,6 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // TPMTokenLoader::Observer:
-  virtual void OnTPMTokenReady() OVERRIDE;
 
   // SessionManagerClient::Observer:
   virtual void OwnerKeySet(bool success) OVERRIDE;

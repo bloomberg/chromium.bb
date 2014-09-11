@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm_token_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -241,8 +242,11 @@ OwnerSettingsService::OwnerSettingsService(
       waiting_for_tpm_token_(true),
       weak_factory_(this) {
   if (TPMTokenLoader::IsInitialized()) {
-    waiting_for_tpm_token_ = !TPMTokenLoader::Get()->IsTPMTokenReady();
-    TPMTokenLoader::Get()->AddObserver(this);
+    TPMTokenLoader::TPMTokenStatus tpm_token_status =
+        TPMTokenLoader::Get()->IsTPMTokenEnabled(
+            base::Bind(&OwnerSettingsService::OnTPMTokenReady, as_weak_ptr()));
+    waiting_for_tpm_token_ =
+        tpm_token_status == TPMTokenLoader::TPM_TOKEN_STATUS_UNDETERMINED;
   }
 
   if (DBusThreadManager::IsInitialized() &&
@@ -257,9 +261,6 @@ OwnerSettingsService::OwnerSettingsService(
 
 OwnerSettingsService::~OwnerSettingsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (TPMTokenLoader::IsInitialized())
-    TPMTokenLoader::Get()->RemoveObserver(this);
-
   if (DBusThreadManager::IsInitialized() &&
       DBusThreadManager::Get()->GetSessionManagerClient()) {
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
@@ -359,7 +360,7 @@ void OwnerSettingsService::Observe(
   ReloadPrivateKey();
 }
 
-void OwnerSettingsService::OnTPMTokenReady() {
+void OwnerSettingsService::OnTPMTokenReady(bool /* unused token_enabled */) {
   DCHECK(thread_checker_.CalledOnValidThread());
   waiting_for_tpm_token_ = false;
 

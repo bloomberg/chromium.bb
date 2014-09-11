@@ -106,17 +106,24 @@ TPMTokenLoader::~TPMTokenLoader() {
     LoginState::Get()->RemoveObserver(this);
 }
 
-void TPMTokenLoader::AddObserver(TPMTokenLoader::Observer* observer) {
-  observers_.AddObserver(observer);
+TPMTokenLoader::TPMTokenStatus TPMTokenLoader::IsTPMTokenEnabled(
+    const TPMReadyCallback& callback) {
+  if (tpm_token_state_ == TPM_TOKEN_INITIALIZED)
+    return TPM_TOKEN_STATUS_ENABLED;
+  if (!IsTPMLoadingEnabled() || tpm_token_state_ == TPM_DISABLED)
+    return TPM_TOKEN_STATUS_DISABLED;
+  // Status is not known yet.
+  if (!callback.is_null())
+    tpm_ready_callback_list_.push_back(callback);
+  return TPM_TOKEN_STATUS_UNDETERMINED;
 }
 
-void TPMTokenLoader::RemoveObserver(TPMTokenLoader::Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-bool TPMTokenLoader::IsTPMTokenReady() const {
-  return tpm_token_state_ == TPM_DISABLED ||
-         tpm_token_state_ == TPM_TOKEN_INITIALIZED;
+bool TPMTokenLoader::IsTPMLoadingEnabled() const {
+  // TPM loading is enabled on non-ChromeOS environments, e.g. when running
+  // tests on Linux.
+  // Treat TPM as disabled for guest users since they do not store certs.
+  return initialized_for_test_ || (base::SysInfo::IsRunningOnChromeOS() &&
+                                   LoginState::Get()->IsGuestSessionUser());
 }
 
 void TPMTokenLoader::MaybeStartTokenInitialization() {
@@ -136,11 +143,7 @@ void TPMTokenLoader::MaybeStartTokenInitialization() {
   if (!start_initialization)
     return;
 
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    tpm_token_state_ = TPM_DISABLED;
-
-  // Treat TPM as disabled for guest users since they do not store certs.
-  if (LoginState::Get()->IsGuestSessionUser())
+  if (!IsTPMLoadingEnabled())
     tpm_token_state_ = TPM_DISABLED;
 
   ContinueTokenInitialization();
@@ -240,7 +243,7 @@ void TPMTokenLoader::OnTpmIsEnabled(DBusMethodCallStatus call_status,
 }
 
 void TPMTokenLoader::OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
-                                         bool is_tpm_token_ready) {
+                                             bool is_tpm_token_ready) {
   VLOG(1) << "OnPkcs11IsTpmTokenReady: " << is_tpm_token_ready;
 
   if (call_status == DBUS_METHOD_CALL_FAILURE || !is_tpm_token_ready) {
@@ -281,7 +284,15 @@ void TPMTokenLoader::OnTPMTokenInitialized(bool success) {
 }
 
 void TPMTokenLoader::NotifyTPMTokenReady() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnTPMTokenReady());
+  DCHECK(tpm_token_state_ == TPM_DISABLED ||
+         tpm_token_state_ == TPM_TOKEN_INITIALIZED);
+  bool tpm_status = tpm_token_state_ == TPM_TOKEN_INITIALIZED;
+  for (TPMReadyCallbackList::iterator i = tpm_ready_callback_list_.begin();
+       i != tpm_ready_callback_list_.end();
+       ++i) {
+    i->Run(tpm_status);
+  }
+  tpm_ready_callback_list_.clear();
 }
 
 void TPMTokenLoader::LoggedInStateChanged() {

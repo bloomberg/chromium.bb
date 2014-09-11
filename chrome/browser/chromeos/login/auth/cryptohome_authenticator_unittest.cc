@@ -42,6 +42,7 @@
 #include "chromeos/login/auth/mock_url_fetchers.h"
 #include "chromeos/login/auth/test_attempt_state.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/nss_util_internal.h"
