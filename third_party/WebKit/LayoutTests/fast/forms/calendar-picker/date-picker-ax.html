@@ -13,11 +13,11 @@ description('Tests if typing an arrow key dispatches |Focus| and |ActiveDescenda
 
 window.accessibilityController.setNotificationListener(function(axnode, type) {
     if (type == 'Focus') {
-        debug('Focused: ' + accessibilityController.focusedElement.description);
+        debug('Focused: ' + escapeHTML(accessibilityController.focusedElement.description));
     } else if (type == 'ActiveDescendantChanged') {
         testPassed('Received ActiveDescendantChanged');
-        if (++activeDescendantCounter >= 2)
-            finishJSTest();
+        if (++activeDescendantCounter == 2)
+            testButtonDescription();
     }
 });
 var activeDescendantCounter = 0;
@@ -26,6 +26,18 @@ openPicker(date1, test1);
 
 function test1() {
     eventSender.keyDown('rightArrow');
+}
+
+function testButtonDescription() {
+    // Focus on 'next month' button.
+    eventSender.keyDown('\t', ['shiftKey']);
+    // Focus on the today button.
+    eventSender.keyDown('\t', ['shiftKey']);
+    // Focus on 'previous month' button.
+    eventSender.keyDown('\t', ['shiftKey']);
+    // Focus on the month selector button.
+    eventSender.keyDown('\t', ['shiftKey']);
+    setTimeout(finishJSTest, 0);
 }
 </script>
 </body>

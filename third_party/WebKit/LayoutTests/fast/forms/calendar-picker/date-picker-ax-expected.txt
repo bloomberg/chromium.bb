@@ -8,6 +8,10 @@ Focused: AXDescription: Sunday, January 2, 2000
 PASS Received ActiveDescendantChanged
 Focused: AXDescription: Monday, January 3, 2000
 PASS Received ActiveDescendantChanged
+Focused: AXDescription: Show next month
+Focused: AXDescription: <<CalendarToday>>
+Focused: AXDescription: Show previous month
+Focused: AXDescription: Show month selection panel
 PASS successfullyParsed is true
 
 TEST COMPLETE
