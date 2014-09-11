@@ -158,6 +158,7 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::FILE));
     athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
+    athena::CreateVirtualKeyboardWithContext(context);
     athena::StartAthenaSessionWithContext(context);
   }
 
