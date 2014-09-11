@@ -374,6 +374,17 @@ public class Linker {
     }
 
     /**
+     * Call this method to determine if the linker will try to use shared RELROs
+     * for the browser process.
+     */
+    public static boolean isUsingBrowserSharedRelros() {
+        synchronized (Linker.class) {
+            ensureInitializedLocked();
+            return sBrowserUsesSharedRelro;
+        }
+    }
+
+    /**
      * Call this method to determine if the chromium project must load
      * the library directly from the zip file.
      */

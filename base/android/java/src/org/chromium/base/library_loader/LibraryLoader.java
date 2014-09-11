@@ -148,19 +148,47 @@ public class LibraryLoader {
                 long startTime = SystemClock.uptimeMillis();
                 boolean useChromiumLinker = Linker.isUsed();
 
-                if (useChromiumLinker) Linker.prepareLibraryLoad();
+                if (useChromiumLinker) {
+                    // Load libraries using the Chromium linker.
+                    Linker.prepareLibraryLoad();
 
-                for (String library : NativeLibraries.LIBRARIES) {
-                    if (useChromiumLinker) {
+                    for (String library : NativeLibraries.LIBRARIES) {
+                        String zipfile = null;
                         if (Linker.isInZipFile()) {
-                            String zipfile = context.getApplicationInfo().sourceDir;
+                            zipfile = context.getApplicationInfo().sourceDir;
                             Log.i(TAG, "Loading " + library + " from within " + zipfile);
-                            Linker.loadLibraryInZipFile(zipfile, library);
                         } else {
                             Log.i(TAG, "Loading: " + library);
-                            Linker.loadLibrary(library);
                         }
-                    } else {
+
+                        boolean isLoaded = false;
+                        if (Linker.isUsingBrowserSharedRelros()) {
+                            try {
+                                if (zipfile != null) {
+                                    Linker.loadLibraryInZipFile(zipfile, library);
+                                } else {
+                                    Linker.loadLibrary(library);
+                                }
+                                isLoaded = true;
+                            } catch (UnsatisfiedLinkError e) {
+                                Log.w(TAG, "Failed to load native library with shared RELRO, " +
+                                      "retrying without");
+                                Linker.disableSharedRelros();
+                            }
+                        }
+                        if (!isLoaded) {
+                            if (zipfile != null) {
+                                Linker.loadLibraryInZipFile(zipfile, library);
+                            } else {
+                                Linker.loadLibrary(library);
+                            }
+                        }
+                    }
+
+                    Linker.finishLibraryLoad();
+                } else {
+                    // Load libraries using the system linker.
+                    for (String library : NativeLibraries.LIBRARIES) {
                         try {
                             System.loadLibrary(library);
                         } catch (UnsatisfiedLinkError e) {
@@ -174,7 +202,6 @@ public class LibraryLoader {
                         }
                     }
                 }
-                if (useChromiumLinker) Linker.finishLibraryLoad();
 
                 if (context != null
                     && shouldDeleteOldWorkaroundLibraries
