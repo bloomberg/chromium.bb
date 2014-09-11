@@ -85,11 +85,137 @@ TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
     EXPECT_FALSE(modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
 }
 
-TEST(WebInputEventConversionTest, WebTouchEventBuilder)
+TEST(WebInputEventConversionTest, WebMouseEventBuilder)
 {
     RefPtrWillBeRawPtr<TouchEvent> event = TouchEvent::create();
     WebMouseEventBuilder mouse(0, 0, *event);
     EXPECT_EQ(WebInputEvent::Undefined, mouse.type);
+}
+
+TEST(WebInputEventConversionTest, WebTouchEventBuilder)
+{
+    const std::string baseURL("http://www.test0.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+    RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
+    LocalDOMWindow* domWindow = document->domWindow();
+    RenderView* documentRenderView = document->renderView();
+
+    WebTouchPoint p0, p1;
+    p0.id = 1;
+    p1.id = 2;
+    p0.screenPosition = WebFloatPoint(100.f, 50.f);
+    p1.screenPosition = WebFloatPoint(150.f, 25.f);
+    p0.position = WebFloatPoint(10.f, 10.f);
+    p1.position = WebFloatPoint(5.f, 5.f);
+    p0.radiusX = p1.radiusY = 10.f;
+    p0.radiusY = p1.radiusX = 5.f;
+    p0.rotationAngle = p1.rotationAngle = 1.f;
+    p0.force = p1.force = 25.f;
+
+    RefPtrWillBeRawPtr<Touch> touch0 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p0.id, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force);
+    RefPtrWillBeRawPtr<Touch> touch1 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p1.id, p1.screenPosition, p1.position, FloatSize(p1.radiusX, p1.radiusY), p1.rotationAngle, p1.force);
+
+    // Test touchstart.
+    {
+        RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
+        touchList->append(touch0);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        ASSERT_EQ(1u, webTouchBuilder.touchesLength);
+        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
+        EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type);
+        EXPECT_EQ(WebTouchPoint::StatePressed, webTouchBuilder.touches[0].state);
+        EXPECT_FLOAT_EQ(p0.screenPosition.x, webTouchBuilder.touches[0].screenPosition.x);
+        EXPECT_FLOAT_EQ(p0.screenPosition.y, webTouchBuilder.touches[0].screenPosition.y);
+        EXPECT_FLOAT_EQ(p0.position.x, webTouchBuilder.touches[0].position.x);
+        EXPECT_FLOAT_EQ(p0.position.y, webTouchBuilder.touches[0].position.y);
+        EXPECT_FLOAT_EQ(p0.radiusX, webTouchBuilder.touches[0].radiusX);
+        EXPECT_FLOAT_EQ(p0.radiusY, webTouchBuilder.touches[0].radiusY);
+        EXPECT_FLOAT_EQ(p0.rotationAngle, webTouchBuilder.touches[0].rotationAngle);
+        EXPECT_FLOAT_EQ(p0.force, webTouchBuilder.touches[0].force);
+    }
+
+    // Test touchmove.
+    {
+        RefPtrWillBeRawPtr<TouchList> activeTouchList = TouchList::create();
+        RefPtrWillBeRawPtr<TouchList> movedTouchList = TouchList::create();
+        activeTouchList->append(touch0);
+        activeTouchList->append(touch1);
+        movedTouchList->append(touch0);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        ASSERT_EQ(2u, webTouchBuilder.touchesLength);
+        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
+        EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
+        EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[0].state);
+        EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
+        EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
+        EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+    }
+
+    // Test touchend.
+    {
+        RefPtrWillBeRawPtr<TouchList> activeTouchList = TouchList::create();
+        RefPtrWillBeRawPtr<TouchList> releasedTouchList = TouchList::create();
+        activeTouchList->append(touch0);
+        releasedTouchList->append(touch1);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), releasedTouchList.get(), EventTypeNames::touchend, domWindow, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        ASSERT_EQ(2u, webTouchBuilder.touchesLength);
+        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
+        EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
+        EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[0].state);
+        EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
+        EXPECT_EQ(p1.id, webTouchBuilder.touches[0].id);
+        EXPECT_EQ(p0.id, webTouchBuilder.touches[1].id);
+    }
+
+    // Test touchcancel.
+    {
+        RefPtrWillBeRawPtr<TouchList> activeTouchList = TouchList::create();
+        RefPtrWillBeRawPtr<TouchList> cancelledTouchList = TouchList::create();
+        cancelledTouchList->append(touch0);
+        cancelledTouchList->append(touch1);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), cancelledTouchList.get(), EventTypeNames::touchcancel, domWindow, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        ASSERT_EQ(2u, webTouchBuilder.touchesLength);
+        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
+        EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type);
+        EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[0].state);
+        EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[1].state);
+        EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
+        EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+    }
+
+    // Test max point limit.
+    {
+        RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
+        RefPtrWillBeRawPtr<TouchList> changedTouchList = TouchList::create();
+        for (unsigned i = 0; i <= static_cast<unsigned>(WebTouchEvent::touchesLengthCap) * 2; ++i) {
+            RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), i, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force);
+            touchList->append(touch);
+            changedTouchList->append(touch);
+        }
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
+        ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
+        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
+    }
 }
 
 TEST(WebInputEventConversionTest, InputEventsScaling)

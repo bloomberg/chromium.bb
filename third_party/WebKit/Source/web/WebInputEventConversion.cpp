@@ -741,25 +741,44 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const PlatformKeyboardEvent& ev
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), std::min(static_cast<unsigned>(keyIdentifierLengthCap), event.keyIdentifier().length()));
 }
 
-static void addTouchPoints(const Widget* widget, const AtomicString& touchType, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const RenderObject* renderObject)
+static WebTouchPoint toWebTouchPoint(const Touch* touch, const RenderObject* renderObject, WebTouchPoint::State state)
 {
-    unsigned numberOfTouches = std::min(touches->length(), static_cast<unsigned>(WebTouchEvent::touchesLengthCap));
-    for (unsigned i = 0; i < numberOfTouches; ++i) {
-        const Touch* touch = touches->item(i);
+    WebTouchPoint point;
+    point.id = touch->identifier();
+    point.screenPosition = touch->screenLocation();
+    point.position = convertAbsoluteLocationForRenderObjectFloat(touch->absoluteLocation(), *renderObject);
+    point.radiusX = touch->radiusX();
+    point.radiusY = touch->radiusY();
+    point.rotationAngle = touch->webkitRotationAngle();
+    point.force = touch->force();
+    point.state = state;
+    return point;
+}
 
-        WebTouchPoint point;
-        point.id = touch->identifier();
-        point.screenPosition = touch->screenLocation();
-        point.position = convertAbsoluteLocationForRenderObjectFloat(touch->absoluteLocation(), *renderObject);
-        point.radiusX = touch->radiusX();
-        point.radiusY = touch->radiusY();
-        point.rotationAngle = touch->webkitRotationAngle();
-        point.force = touch->force();
-        point.state = toWebTouchPointState(touchType);
-
-        touchPoints[i] = point;
+static bool hasTouchPointWithId(const WebTouchPoint* touchPoints, unsigned touchPointsLength, unsigned id)
+{
+    for (unsigned i = 0; i < touchPointsLength; ++i) {
+        if (touchPoints[i].id == static_cast<int>(id))
+            return true;
     }
-    *touchPointsLength = numberOfTouches;
+    return false;
+}
+
+static void addTouchPointsIfNotYetAdded(const Widget* widget, WebTouchPoint::State state, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const RenderObject* renderObject)
+{
+    unsigned initialTouchPointsLength = *touchPointsLength;
+    for (unsigned i = 0; i < touches->length(); ++i) {
+        const unsigned pointIndex = *touchPointsLength;
+        if (pointIndex >= static_cast<unsigned>(WebTouchEvent::touchesLengthCap))
+            return;
+
+        const Touch* touch = touches->item(i);
+        if (hasTouchPointWithId(touchPoints, initialTouchPointsLength, touch->identifier()))
+            continue;
+
+        touchPoints[pointIndex] = toWebTouchPoint(touch, renderObject, state);
+        ++(*touchPointsLength);
+    }
 }
 
 WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const RenderObject* renderObject, const TouchEvent& event)
@@ -782,9 +801,8 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const RenderObj
     timeStampSeconds = event.timeStamp() / millisPerSecond;
     cancelable = event.cancelable();
 
-    addTouchPoints(widget, event.type(), event.touches(), touches, &touchesLength, renderObject);
-    addTouchPoints(widget, event.type(), event.changedTouches(), changedTouches, &changedTouchesLength, renderObject);
-    addTouchPoints(widget, event.type(), event.targetTouches(), targetTouches, &targetTouchesLength, renderObject);
+    addTouchPointsIfNotYetAdded(widget, toWebTouchPointState(event.type()), event.changedTouches(), touches, &touchesLength, renderObject);
+    addTouchPointsIfNotYetAdded(widget, WebTouchPoint::StateStationary, event.touches(), touches, &touchesLength, renderObject);
 }
 
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const RenderObject* renderObject, const GestureEvent& event)
