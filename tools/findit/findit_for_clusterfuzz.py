@@ -114,7 +114,7 @@ def FindCulpritCLs(stacktrace_string,
         print ('Failed to get component regression ranges for chromium '
                'regression range %s:%s'
                % (chrome_regression_start, chrome_regression_end))
-        sys.exit(1)
+        sys.exit(0)
 
   # Parse crash revision.
   if chrome_crash_revision:
@@ -123,7 +123,7 @@ def FindCulpritCLs(stacktrace_string,
     if not component_to_crash_revision_dict:
       print ('Failed to get component dependencies for chromium revision "%s".'
              % chrome_crash_revision)
-      sys.exit(1)
+      sys.exit(0)
 
   # Check if component regression information is available.
   component_regression = crash_utils.SplitRange(component_regression)

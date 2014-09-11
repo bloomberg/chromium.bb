@@ -218,6 +218,9 @@ def _SendRequest(url, timeout=None):
   except urllib2.HTTPError as e:
     status_code = e.code
     content = None
+  except (ssl.SSLError, httplib.BadStatusLine, IOError):
+    status_code = -1
+    content = None
 
   return status_code, content
 
@@ -226,7 +229,7 @@ class HttpClientLocal(http_client.HttpClient):
   """This http client is used locally in a workstation, GCE VMs, etc."""
 
   @staticmethod
-  def Get(url, params={}, timeout=60, retries=5, retry_interval=0.5,
+  def Get(url, params={}, timeout=120, retries=5, retry_interval=0.5,
           retry_if_not=None):
     if params:
       url = '%s?%s' % (url, urllib.urlencode(params))

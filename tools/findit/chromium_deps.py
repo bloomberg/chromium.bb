@@ -117,7 +117,7 @@ def GetChromiumComponents(chromium_revision,
     cr_rev_url_template = CONFIG['cr_rev_url']
     url = cr_rev_url_template % chromium_revision
     status_code, content = utils.GetHttpClient().Get(
-        url, timeout=60, retries=5, retry_if_not=404)
+        url, timeout=120, retries=5, retry_if_not=404)
     if status_code != 200 or not content:
       if status_code == 404:
         print 'Chromium commit position %s is not found.' % chromium_revision

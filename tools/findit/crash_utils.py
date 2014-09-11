@@ -293,39 +293,22 @@ def LoadJSON(json_string):
   return data
 
 
-def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
+def GetDataFromURL(url):
   """Retrieves raw data from URL, tries 10 times.
 
   Args:
     url: URL to get data from.
     retries: Number of times to retry connection.
-    sleep_time: Time in seconds to wait before retrying connection.
-    timeout: Time in seconds to wait before time out.
 
   Returns:
     None if the data retrieval fails, or the raw data.
   """
-  count = 0
-  while True:
-    count += 1
-    # Retrieves data from URL.
-    try:
-      status_code, data = utils.GetHttpClient().Get(url, timeout=timeout)
-    except IOError as e:
-      status_code = -1
-      data = None
-
-    if status_code == 200:
-      return data
-
-    if count < retries:
-      # If retrieval fails, try after sleep_time second.
-      time.sleep(sleep_time)
-    else:
-      break
-
-  # Return None if it fails to read data from URL 'retries' times.
-  return None
+  status_code, data = utils.GetHttpClient().Get(url, retries=10)
+  if status_code == 200:
+    return data
+  else:
+    # Return None if it fails to read data.
+    return None
 
 
 def FindMinLineDistance(crashed_line_list, changed_line_numbers,
