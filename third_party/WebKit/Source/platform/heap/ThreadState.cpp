@@ -478,6 +478,7 @@ void ThreadState::detach()
 
 void ThreadState::visitPersistentRoots(Visitor* visitor)
 {
+    TRACE_EVENT0("blink_gc", "ThreadState::visitPersistentRoots");
     {
         // All threads are at safepoints so this is not strictly necessary.
         // However we acquire the mutex to make mutation and traversal of this
@@ -493,6 +494,7 @@ void ThreadState::visitPersistentRoots(Visitor* visitor)
 
 void ThreadState::visitStackRoots(Visitor* visitor)
 {
+    TRACE_EVENT0("blink_gc", "ThreadState::visitStackRoots");
     AttachedThreadStateSet& threads = attachedThreads();
     for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->visitStack(visitor);
@@ -1096,8 +1098,11 @@ void ThreadState::performPendingSweep()
 
         // Disallow allocation during weak processing.
         enterNoAllocationScope();
-        // Perform thread-specific weak processing.
-        while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+        {
+            TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+            // Perform thread-specific weak processing.
+            while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+        }
         leaveNoAllocationScope();
 
         // Perform sweeping and finalization.
@@ -1142,19 +1147,25 @@ void ThreadState::performPendingSweep()
             }
         }
 
-        // Sweep the remainder of the non-finalized pages (or all of them
-        // if there is no sweeper thread).
-        for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
-            HeapStats stats;
-            m_heaps[FirstNonFinalizedHeap + i]->sweep(&stats);
-            m_stats.add(&stats);
+        {
+            // Sweep the remainder of the non-finalized pages (or all of them
+            // if there is no sweeper thread).
+            TRACE_EVENT0("blink_gc", "ThreadState::sweepNonFinalizedHeaps");
+            for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
+                HeapStats stats;
+                m_heaps[FirstNonFinalizedHeap + i]->sweep(&stats);
+                m_stats.add(&stats);
+            }
         }
 
-        // Sweep the finalized pages.
-        for (int i = 0; i < NumberOfFinalizedHeaps; i++) {
-            HeapStats stats;
-            m_heaps[FirstFinalizedHeap + i]->sweep(&stats);
-            m_stats.add(&stats);
+        {
+            // Sweep the finalized pages.
+            TRACE_EVENT0("blink_gc", "ThreadState::sweepFinalizedHeaps");
+            for (int i = 0; i < NumberOfFinalizedHeaps; i++) {
+                HeapStats stats;
+                m_heaps[FirstFinalizedHeap + i]->sweep(&stats);
+                m_stats.add(&stats);
+            }
         }
 
         // Wait for the sweeper threads and update the heap stats with the

@@ -279,6 +279,12 @@ public:
         HeapPointersOnStack
     };
 
+    // When profiling we would like to identify forced GC requests.
+    enum CauseOfGC {
+        NormalGC,
+        ForcedGC
+    };
+
     class NoSweepScope {
     public:
         explicit NoSweepScope(ThreadState* state) : m_state(state)

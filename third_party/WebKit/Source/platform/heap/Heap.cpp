@@ -1246,6 +1246,7 @@ void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
 template<typename Header>
 void ThreadHeap<Header>::sweepNormalPages(HeapStats* stats)
 {
+    TRACE_EVENT0("blink_gc", "ThreadHeap::sweepNormalPages");
     HeapPage<Header>* page = m_firstPage;
     HeapPage<Header>** previousNext = &m_firstPage;
     HeapPage<Header>* previous = 0;
@@ -1270,6 +1271,7 @@ void ThreadHeap<Header>::sweepNormalPages(HeapStats* stats)
 template<typename Header>
 void ThreadHeap<Header>::sweepLargePages(HeapStats* stats)
 {
+    TRACE_EVENT0("blink_gc", "ThreadHeap::sweepLargePages");
     LargeHeapObject<Header>** previousNext = &m_firstLargeHeapObject;
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
         if (current->isMarked()) {
@@ -2461,7 +2463,7 @@ void Heap::prepareForGC()
         (*it)->prepareForGC();
 }
 
-void Heap::collectGarbage(ThreadState::StackState stackState)
+void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::CauseOfGC cause)
 {
     ThreadState* state = ThreadState::current();
     state->clearGCRequested();
@@ -2478,7 +2480,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     s_lastGCWasConservative = false;
 
-    TRACE_EVENT0("blink_gc", "Heap::collectGarbage");
+    TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
+        "precise", stackState == ThreadState::NoHeapPointersOnStack,
+        "forced", cause == ThreadState::ForcedGC);
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILE_MARKING)
@@ -2575,6 +2579,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 
 void Heap::processMarkingStackEntries(int* runningMarkingThreads)
 {
+    TRACE_EVENT0("blink_gc", "Heap::processMarkingStackEntries");
     CallbackStack* stack = 0;
     MarkingVisitor visitor(&stack);
     {
@@ -2622,11 +2627,13 @@ void Heap::processMarkingStackInParallel()
         if (s_markingStack->numberOfBlocksExceeds(numberOfBlocksForParallelMarking)) {
             processMarkingStackOnMultipleThreads();
         } else {
+            TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
             while (popAndInvokeTraceCallback<GlobalMarking>(s_markingVisitor)) { }
         }
 
         // Mark any strong pointers that have now become reachable in ephemeron
         // maps.
+        TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
         CallbackStack::invokeCallbacks(&s_ephemeronStack, s_markingVisitor);
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
@@ -2642,10 +2649,12 @@ void Heap::processMarkingStack()
         // currently pushed onto the marking stack. If Mode is ThreadLocalMarking
         // don't continue tracing if the trace hits an object on another thread's
         // heap.
+        TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
         while (popAndInvokeTraceCallback<Mode>(s_markingVisitor)) { }
 
         // Mark any strong pointers that have now become reachable in ephemeron
         // maps.
+        TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
         CallbackStack::invokeCallbacks(&s_ephemeronStack, s_markingVisitor);
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
@@ -2654,6 +2663,7 @@ void Heap::processMarkingStack()
 
 void Heap::postMarkingProcessing()
 {
+    TRACE_EVENT0("blink_gc", "Heap::postMarkingProcessing");
     // Call post-marking callbacks including:
     // 1. the ephemeronIterationDone callbacks on weak tables to do cleanup
     //    (specifically to clear the queued bits for weak hash tables), and
@@ -2671,6 +2681,7 @@ void Heap::postMarkingProcessing()
 
 void Heap::globalWeakProcessing()
 {
+    TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
     // Call weak callbacks on objects that may now be pointing to dead
     // objects.
     while (popAndInvokeWeakPointerCallback(s_markingVisitor)) { }
@@ -2688,7 +2699,7 @@ void Heap::collectAllGarbage()
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
     for (int i = 0; i < 5; i++)
-        collectGarbage(ThreadState::NoHeapPointersOnStack);
+        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::ForcedGC);
 }
 
 void Heap::setForcePreciseGCForTesting()
