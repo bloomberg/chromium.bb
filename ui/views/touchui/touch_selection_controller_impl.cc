@@ -327,8 +327,9 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
                      client_view->GetNativeView())),
       context_menu_(NULL),
       dragging_handle_(NULL) {
-  client_widget_ = Widget::GetTopLevelWidgetForNativeView(
-      client_view_->GetNativeView());
+  aura::Window* client_window = client_view_->GetNativeView();
+  client_window->AddObserver(this);
+  client_widget_ = Widget::GetTopLevelWidgetForNativeView(client_window);
   if (client_widget_)
     client_widget_->AddObserver(this);
   aura::Env::GetInstance()->AddPreTargetHandler(this);
@@ -339,6 +340,7 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
+  client_view_->GetNativeView()->RemoveObserver(this);
 }
 
 void TouchSelectionControllerImpl::SelectionChanged() {
@@ -507,6 +509,12 @@ void TouchSelectionControllerImpl::OpenContextMenu() {
 void TouchSelectionControllerImpl::OnMenuClosed(TouchEditingMenuView* menu) {
   if (menu == context_menu_)
     context_menu_ = NULL;
+}
+
+void TouchSelectionControllerImpl::OnAncestorWindowTransformed(
+    aura::Window* window,
+    aura::Window* ancestor) {
+  client_view_->DestroyTouchSelection();
 }
 
 void TouchSelectionControllerImpl::OnWidgetClosing(Widget* widget) {

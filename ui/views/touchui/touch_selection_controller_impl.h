@@ -6,6 +6,7 @@
 #define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/point.h"
 #include "ui/views/touchui/touch_editing_menu.h"
@@ -23,6 +24,7 @@ class WidgetTestInteractive;
 class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchSelectionController,
       public TouchEditingMenuController,
+      public aura::WindowObserver,
       public WidgetObserver,
       public ui::EventHandler {
  public:
@@ -67,6 +69,10 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual void OpenContextMenu() OVERRIDE;
   virtual void OnMenuClosed(TouchEditingMenuView* menu) OVERRIDE;
+
+  // Overriden from aura::WindowObserver.
+  virtual void OnAncestorWindowTransformed(aura::Window* source,
+                                           aura::Window* window) OVERRIDE;
 
   // Overridden from WidgetObserver. We will observe the widget backing the
   // |client_view_| so that when its moved/resized, we can update the selection
