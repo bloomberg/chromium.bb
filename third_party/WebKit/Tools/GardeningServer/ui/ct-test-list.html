@@ -19,6 +19,10 @@ found in the LICENSE file.
         min-height: 24px;
       }
 
+      .test-failures {
+        margin-left: 15px;
+      }
+
       paper-icon-button {
         vertical-align: middle;
       }
@@ -28,25 +32,23 @@ found in the LICENSE file.
       }
     </style>
     <template repeat="{{ groups in testGroups_ }}">
-      <!-- FIXME: Find a less redundant UI than repeating the step on each line. -->
+      <template if="{{ groups.tests.length }}">
+        <div><span style="font-weight: bold">Step:</span> {{ groups.step }}</div>
+      </template>
+
       <template repeat="{{ group in groups.tests }}">
-        <!-- Case 1: entire step failed -->
-        <template if="{{ !group.name }}">
-          <div>{{ groups.step }} <b>whole step failed</b></div>
-        </template>
-        <!-- Case 2: single test failure -->
+        <!-- Case 1: single test failure -->
         <template if="{{ group.name && (group.tests.length == 1 || group.expanded) }}">
           <template repeat="{{ test in group.tests }}">
-            <div>
-              {{ groups.step }}
+            <div class="test-failures">
               <a href="{{ test | flakinessDashboardURL }}">{{ test.testName }}</a>
             </div>
           </template>
         </template>
-        <!-- Case 3: group of tests failed -->
+        <!-- Case 2: group of tests failed -->
         <template if="{{ group.name && group.tests.length > 1 && !group.expanded }}">
-          <div>
-            {{ groups.step }} {{ group.name }} ({{ group.tests.length }} Tests)
+          <div class="test-failures">
+            {{ group.name }} ({{ group.tests.length }} Tests)
             <paper-icon-button id="expand" icon="unfold-more" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _expand }}"></paper-icon-button>
           </div>
         </template>

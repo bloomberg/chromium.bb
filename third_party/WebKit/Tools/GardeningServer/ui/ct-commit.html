@@ -8,30 +8,26 @@ found in the LICENSE file.
   <template>
     <style>
       :host {
-        display: block;
+        display: flex;
+        align-items: center;
+      }
+      :host > * {
+        flex-shrink: 0;
       }
       a {
-        padding: 5px 10px;
+        padding: 5px;
         margin-right: 5px;
         border-radius: 4px;
-        display: inline-block;
+      }
+      div {
+        flex: 1;
       }
       :host(:hover) a {
         background-color: #555;
         color: white;
       }
-      :host(:hover) a::after {
-        content: '';
-        width: 0;
-        height: 0;
-        margin-top: 5px;
-        position: absolute;
-        margin-left: 10px;
-        border-top: 5px solid white;
-        border-left: 5px solid #555;
-        border-bottom: 5px solid white;
-      }
     </style>
-    <a href="{{ data.url }}">{{ data.repository }}:{{ data.revision }}</a> {{ data.summary }} <em>{{ data.author }}</em>
+    <a href="{{ data.url }}">{{ data.revision }}</a>
+    <div>{{ data.summary }} <em>{{ data.author }}</em></div>
   </template>
 </polymer-element>

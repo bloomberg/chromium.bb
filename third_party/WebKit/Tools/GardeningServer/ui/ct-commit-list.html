@@ -16,13 +16,20 @@ found in the LICENSE file.
       paper-icon-button {
         vertical-align: middle;
       }
+      paper-icon-button::shadow #icon {
+        margin: 0px;
+      }
       .repository-info {
         display: block;
+        margin-top: 10px;
+      }
+      ct-commit {
+        margin-left: 10px;
       }
     </style>
     <template repeat="{{ repository in commitList.repositories }}">
       <div class="repository-info">
-        {{ repository.name }} {{ repository.range }}
+        <span style="font-weight: bold">{{ repository.name }}</span> {{ repository.range }}
         <paper-icon-button icon="unfold-more"
             on-click="{{ _toggle }}" repository="{{ repository.name }}"></paper-icon-button>
         <template if="{{ repository.expanded }}">
