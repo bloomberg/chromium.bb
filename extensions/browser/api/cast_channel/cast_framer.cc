@@ -113,7 +113,6 @@ size_t MessageFramer::BytesRequested() {
 scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
                                               size_t* message_length,
                                               ChannelError* error) {
-  LOG(ERROR) << "Ingest1";
   DCHECK(error);
   DCHECK(message_length);
   if (error_) {
@@ -127,10 +126,8 @@ scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
   message_bytes_received_ += num_bytes;
   *error = CHANNEL_ERROR_NONE;
   *message_length = 0;
-  LOG(ERROR) << "Ingest2";
   switch (current_element_) {
     case HEADER:
-      LOG(ERROR) << "IngestHeader";
       if (BytesRequested() == 0) {
         MessageHeader header;
         MessageHeader::Deserialize(input_buffer_.get()->StartOfBuffer(),
@@ -146,14 +143,11 @@ scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
       }
       break;
     case BODY:
-      LOG(ERROR) << "IngestBody";
       if (BytesRequested() == 0) {
-        LOG(ERROR) << "IngestBodyBytesRequestedIsZero";
         scoped_ptr<CastMessage> parsed_message(new CastMessage);
         if (!parsed_message->ParseFromArray(
                 input_buffer_->StartOfBuffer() + MessageHeader::header_size(),
                 body_size_)) {
-          LOG(ERROR) << "Couldn't parse packet body";
           VLOG(1) << "Error parsing packet body.";
           *error = CHANNEL_ERROR_INVALID_MESSAGE;
           error_ = true;
@@ -161,7 +155,6 @@ scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
         }
         *message_length = body_size_;
         Reset();
-        LOG(ERROR) << "Returning message";
         return parsed_message.Pass();
       }
       break;
