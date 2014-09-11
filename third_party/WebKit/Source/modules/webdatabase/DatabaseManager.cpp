@@ -43,6 +43,7 @@
 #include "modules/webdatabase/DatabaseServer.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/MainThread.h"
 
 namespace blink {
 

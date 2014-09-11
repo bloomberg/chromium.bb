@@ -31,7 +31,7 @@
 #ifndef DatabaseClient_h
 #define DatabaseClient_h
 
-#include "core/workers/WorkerClients.h"
+#include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -41,9 +41,8 @@ class Database;
 class ExecutionContext;
 class InspectorDatabaseAgent;
 class Page;
-class WorkerClients;
 
-class DatabaseClient : public WillBeHeapSupplement<Page>, public WillBeHeapSupplement<WorkerClients> {
+class DatabaseClient : public WillBeHeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
     DatabaseClient();
@@ -58,18 +57,11 @@ public:
 
     void createInspectorAgentFor(Page*);
 
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        WillBeHeapSupplement<Page>::trace(visitor);
-        WillBeHeapSupplement<WorkerClients>::trace(visitor);
-    }
-
 private:
     InspectorDatabaseAgent* m_inspectorAgent;
 };
 
 void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
-void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<DatabaseClient>);
 
 } // namespace blink
 

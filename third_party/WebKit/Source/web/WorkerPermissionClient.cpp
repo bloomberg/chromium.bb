@@ -48,13 +48,6 @@ WorkerPermissionClient::~WorkerPermissionClient()
 {
 }
 
-bool WorkerPermissionClient::allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize)
-{
-    if (!m_proxy)
-        return true;
-    return m_proxy->allowDatabase(name, displayName, estimatedSize);
-}
-
 bool WorkerPermissionClient::requestFileSystemAccessSync()
 {
     if (!m_proxy)

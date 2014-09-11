@@ -33,10 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "public/web/WebPermissionClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerPermissionClient.h"
 
 namespace blink {
 
@@ -52,18 +50,12 @@ DatabaseClientImpl::~DatabaseClientImpl()
 bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
 {
     ASSERT(executionContext->isContextThread());
-    ASSERT(executionContext->isDocument() || executionContext->isWorkerGlobalScope());
-    if (executionContext->isDocument()) {
-        Document* document = toDocument(executionContext);
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        if (!webFrame)
-            return false;
-        if (webFrame->permissionClient())
-            return webFrame->permissionClient()->allowDatabase(name, displayName, estimatedSize);
-    } else {
-        WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(executionContext);
-        return WorkerPermissionClient::from(workerGlobalScope)->allowDatabase(name, displayName, estimatedSize);
-    }
+    Document* document = toDocument(executionContext);
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
+    if (!webFrame)
+        return false;
+    if (webFrame->permissionClient())
+        return webFrame->permissionClient()->allowDatabase(name, displayName, estimatedSize);
     return true;
 }
 

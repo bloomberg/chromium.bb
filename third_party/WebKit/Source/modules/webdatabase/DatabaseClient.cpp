@@ -29,12 +29,11 @@
  */
 
 #include "config.h"
-#include "DatabaseClient.h"
+#include "modules/webdatabase/DatabaseClient.h"
 
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 
@@ -46,11 +45,7 @@ DatabaseClient::DatabaseClient()
 
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)
 {
-    if (context->isDocument()) {
-        return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
-    }
-    ASSERT(context->isWorkerGlobalScope());
-    return static_cast<DatabaseClient*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+    return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
 const char* DatabaseClient::supplementName()
@@ -77,11 +72,6 @@ void provideDatabaseClientTo(Page& page, PassOwnPtrWillBeRawPtr<DatabaseClient> 
     DatabaseClient* clientPtr = client.get();
     page.provideSupplement(DatabaseClient::supplementName(), client);
     clientPtr->createInspectorAgentFor(&page);
-}
-
-void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtrWillBeRawPtr<DatabaseClient> client)
-{
-    workerClients->provideSupplement(DatabaseClient::supplementName(), client);
 }
 
 } // namespace blink

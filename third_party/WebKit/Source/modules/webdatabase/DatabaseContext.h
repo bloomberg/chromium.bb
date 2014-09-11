@@ -29,7 +29,6 @@
 #define DatabaseContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"

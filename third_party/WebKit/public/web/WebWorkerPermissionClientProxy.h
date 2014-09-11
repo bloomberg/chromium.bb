@@ -46,6 +46,7 @@ class WebWorkerPermissionClientProxy {
 public:
     virtual ~WebWorkerPermissionClientProxy() { }
 
+    // Deprecated: This function should be removed.
     virtual bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize)
     {
         return true;

@@ -134,9 +134,9 @@ void DatabaseContext::contextDestroyed()
     ActiveDOMObject::contextDestroyed();
 }
 
-// stop() is from stopActiveDOMObjects() which indicates that the owner LocalFrame
-// or WorkerThread is shutting down. Initiate the orderly shutdown by stopping
-// the associated databases.
+// stop() is from stopActiveDOMObjects() which indicates that the owner
+// LocalFrame is shutting down. Initiate the orderly shutdown by stopping the
+// associated databases.
 void DatabaseContext::stop()
 {
     stopDatabases();
@@ -187,11 +187,7 @@ void DatabaseContext::stopDatabases()
 
 bool DatabaseContext::allowDatabaseAccess() const
 {
-    if (executionContext()->isDocument())
-        return toDocument(executionContext())->isActive();
-    ASSERT(executionContext()->isWorkerGlobalScope());
-    // allowDatabaseAccess is not yet implemented for workers.
-    return true;
+    return toDocument(executionContext())->isActive();
 }
 
 SecurityOrigin* DatabaseContext::securityOrigin() const

@@ -48,7 +48,6 @@ public:
     static PassOwnPtrWillBeRawPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
     virtual ~WorkerPermissionClient();
 
-    bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize);
     bool requestFileSystemAccessSync();
     bool allowIndexedDB(const WebString& name);
 
