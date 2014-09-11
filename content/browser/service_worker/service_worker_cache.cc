@@ -162,14 +162,14 @@ class BlobReader : public net::URLRequest::Delegate {
 };
 
 // Put callbacks
-void PutDidCreateEntry(ServiceWorkerFetchRequest* request,
-                       ServiceWorkerResponse* response,
+void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
+                       scoped_ptr<ServiceWorkerResponse> response,
                        const ServiceWorkerCache::ErrorCallback& callback,
                        scoped_ptr<disk_cache::Entry*> entryptr,
                        scoped_ptr<storage::BlobDataHandle> blob_data_handle,
                        net::URLRequestContext* request_context,
                        int rv);
-void PutDidWriteHeaders(ServiceWorkerResponse* response,
+void PutDidWriteHeaders(scoped_ptr<ServiceWorkerResponse> response,
                         const ServiceWorkerCache::ErrorCallback& callback,
                         disk_cache::ScopedEntryPtr entry,
                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
@@ -182,33 +182,33 @@ void PutDidWriteBlobToCache(const ServiceWorkerCache::ErrorCallback& callback,
                             bool success);
 
 // Match callbacks
-void MatchDidOpenEntry(ServiceWorkerFetchRequest* request,
+void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
                        const ServiceWorkerCache::ResponseCallback& callback,
                        base::WeakPtr<storage::BlobStorageContext> blob_storage,
                        scoped_ptr<disk_cache::Entry*> entryptr,
                        int rv);
 void MatchDidReadHeaderData(
-    ServiceWorkerFetchRequest* request,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
     scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
 void MatchDidReadResponseBodyData(
-    ServiceWorkerFetchRequest* request,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<ResponseReadContext> response_context,
     int rv);
-void MatchDoneWithBody(ServiceWorkerFetchRequest* request,
+void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
                        const ServiceWorkerCache::ResponseCallback& callback,
                        base::WeakPtr<storage::BlobStorageContext> blob_storage,
                        scoped_ptr<ServiceWorkerResponse> response,
                        scoped_ptr<ResponseReadContext> response_context);
 
 // Delete callbacks
-void DeleteDidOpenEntry(ServiceWorkerFetchRequest* request,
+void DeleteDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
                         const ServiceWorkerCache::ErrorCallback& callback,
                         scoped_ptr<disk_cache::Entry*> entryptr,
                         int rv);
@@ -228,8 +228,8 @@ void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
                             base::WeakPtr<ServiceWorkerCache> cache,
                             int rv);
 
-void PutDidCreateEntry(ServiceWorkerFetchRequest* request,
-                       ServiceWorkerResponse* response,
+void PutDidCreateEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
+                       scoped_ptr<ServiceWorkerResponse> response,
                        const ServiceWorkerCache::ErrorCallback& callback,
                        scoped_ptr<disk_cache::Entry*> entryptr,
                        scoped_ptr<storage::BlobDataHandle> blob_data_handle,
@@ -282,7 +282,7 @@ void PutDidCreateEntry(ServiceWorkerFetchRequest* request,
 
   net::CompletionCallback write_headers_callback =
       base::Bind(PutDidWriteHeaders,
-                 response,
+                 base::Passed(response.Pass()),
                  callback,
                  base::Passed(entry.Pass()),
                  base::Passed(blob_data_handle.Pass()),
@@ -300,7 +300,7 @@ void PutDidCreateEntry(ServiceWorkerFetchRequest* request,
     write_headers_callback.Run(rv);
 }
 
-void PutDidWriteHeaders(ServiceWorkerResponse* response,
+void PutDidWriteHeaders(scoped_ptr<ServiceWorkerResponse> response,
                         const ServiceWorkerCache::ErrorCallback& callback,
                         disk_cache::ScopedEntryPtr entry,
                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
@@ -346,7 +346,7 @@ void PutDidWriteBlobToCache(const ServiceWorkerCache::ErrorCallback& callback,
   callback.Run(ServiceWorkerCache::ErrorTypeOK);
 }
 
-void MatchDidOpenEntry(ServiceWorkerFetchRequest* request,
+void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
                        const ServiceWorkerCache::ResponseCallback& callback,
                        base::WeakPtr<storage::BlobStorageContext> blob_storage,
                        scoped_ptr<disk_cache::Entry*> entryptr,
@@ -365,7 +365,7 @@ void MatchDidOpenEntry(ServiceWorkerFetchRequest* request,
   disk_cache::Entry* tmp_entry_ptr = entry.get();
 
   HeadersCallback headers_callback = base::Bind(MatchDidReadHeaderData,
-                                                request,
+                                                base::Passed(request.Pass()),
                                                 callback,
                                                 blob_storage,
                                                 base::Passed(entry.Pass()));
@@ -374,7 +374,7 @@ void MatchDidOpenEntry(ServiceWorkerFetchRequest* request,
 }
 
 void MatchDidReadHeaderData(
-    ServiceWorkerFetchRequest* request,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
@@ -431,7 +431,7 @@ void MatchDidReadHeaderData(
 
   net::CompletionCallback read_callback =
       base::Bind(MatchDidReadResponseBodyData,
-                 request,
+                 base::Passed(request.Pass()),
                  callback,
                  blob_storage,
                  base::Passed(entry.Pass()),
@@ -449,7 +449,7 @@ void MatchDidReadHeaderData(
 }
 
 void MatchDidReadResponseBodyData(
-    ServiceWorkerFetchRequest* request,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
@@ -464,7 +464,7 @@ void MatchDidReadResponseBodyData(
   }
 
   if (rv == 0) {
-    MatchDoneWithBody(request,
+    MatchDoneWithBody(request.Pass(),
                       callback,
                       blob_storage,
                       response.Pass(),
@@ -485,7 +485,7 @@ void MatchDidReadResponseBodyData(
 
   net::CompletionCallback read_callback =
       base::Bind(MatchDidReadResponseBodyData,
-                 request,
+                 base::Passed(request.Pass()),
                  callback,
                  blob_storage,
                  base::Passed(entry.Pass()),
@@ -502,7 +502,7 @@ void MatchDidReadResponseBodyData(
     read_callback.Run(read_rv);
 }
 
-void MatchDoneWithBody(ServiceWorkerFetchRequest* request,
+void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
                        const ServiceWorkerCache::ResponseCallback& callback,
                        base::WeakPtr<storage::BlobStorageContext> blob_storage,
                        scoped_ptr<ServiceWorkerResponse> response,
@@ -522,7 +522,7 @@ void MatchDoneWithBody(ServiceWorkerFetchRequest* request,
                blob_data_handle.Pass());
 }
 
-void DeleteDidOpenEntry(ServiceWorkerFetchRequest* request,
+void DeleteDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
                         const ServiceWorkerCache::ErrorCallback& callback,
                         scoped_ptr<disk_cache::Entry*> entryptr,
                         int rv) {
@@ -686,8 +686,8 @@ void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
     create_cache_callback.Run(rv);
 }
 
-void ServiceWorkerCache::Put(ServiceWorkerFetchRequest* request,
-                             ServiceWorkerResponse* response,
+void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
+                             scoped_ptr<ServiceWorkerResponse> response,
                              const ErrorCallback& callback) {
   DCHECK(backend_);
 
@@ -710,23 +710,25 @@ void ServiceWorkerCache::Put(ServiceWorkerFetchRequest* request,
     }
   }
 
+  ServiceWorkerFetchRequest* request_ptr = request.get();
+
   net::CompletionCallback create_entry_callback =
       base::Bind(PutDidCreateEntry,
-                 request,
-                 response,
+                 base::Passed(request.Pass()),
+                 base::Passed(response.Pass()),
                  callback,
                  base::Passed(entry.Pass()),
                  base::Passed(blob_data_handle.Pass()),
                  request_context_);
 
   int rv = backend_->CreateEntry(
-      request->url.spec(), entry_ptr, create_entry_callback);
+      request_ptr->url.spec(), entry_ptr, create_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
     create_entry_callback.Run(rv);
 }
 
-void ServiceWorkerCache::Match(ServiceWorkerFetchRequest* request,
+void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                                const ResponseCallback& callback) {
   DCHECK(backend_);
 
@@ -734,20 +736,22 @@ void ServiceWorkerCache::Match(ServiceWorkerFetchRequest* request,
 
   disk_cache::Entry** entry_ptr = entry.get();
 
+  ServiceWorkerFetchRequest* request_ptr = request.get();
+
   net::CompletionCallback open_entry_callback =
       base::Bind(MatchDidOpenEntry,
-                 request,
+                 base::Passed(request.Pass()),
                  callback,
                  blob_storage_context_,
                  base::Passed(entry.Pass()));
 
-  int rv =
-      backend_->OpenEntry(request->url.spec(), entry_ptr, open_entry_callback);
+  int rv = backend_->OpenEntry(
+      request_ptr->url.spec(), entry_ptr, open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
     open_entry_callback.Run(rv);
 }
 
-void ServiceWorkerCache::Delete(ServiceWorkerFetchRequest* request,
+void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
                                 const ErrorCallback& callback) {
   DCHECK(backend_);
 
@@ -755,11 +759,16 @@ void ServiceWorkerCache::Delete(ServiceWorkerFetchRequest* request,
 
   disk_cache::Entry** entry_ptr = entry.get();
 
-  net::CompletionCallback open_entry_callback = base::Bind(
-      DeleteDidOpenEntry, request, callback, base::Passed(entry.Pass()));
+  ServiceWorkerFetchRequest* request_ptr = request.get();
 
-  int rv =
-      backend_->OpenEntry(request->url.spec(), entry_ptr, open_entry_callback);
+  net::CompletionCallback open_entry_callback =
+      base::Bind(DeleteDidOpenEntry,
+                 base::Passed(request.Pass()),
+                 callback,
+                 base::Passed(entry.Pass()));
+
+  int rv = backend_->OpenEntry(
+      request_ptr->url.spec(), entry_ptr, open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
     open_entry_callback.Run(rv);
 }

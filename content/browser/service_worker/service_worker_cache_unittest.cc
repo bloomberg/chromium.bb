@@ -93,14 +93,14 @@ class ServiceWorkerCacheTest : public testing::Test {
     std::map<std::string, std::string> headers;
     headers.insert(std::make_pair("a", "a"));
     headers.insert(std::make_pair("b", "b"));
-    body_request_.reset(new ServiceWorkerFetchRequest(
-        GURL("http://example.com/body.html"), "GET", headers, GURL(""), false));
-    no_body_request_.reset(
-        new ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
-                                      "GET",
-                                      headers,
-                                      GURL(""),
-                                      false));
+    body_request_ = ServiceWorkerFetchRequest(
+        GURL("http://example.com/body.html"), "GET", headers, GURL(""), false);
+    no_body_request_ =
+        ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
+                                  "GET",
+                                  headers,
+                                  GURL(""),
+                                  false);
 
     std::string expected_response;
     for (int i = 0; i < 100; ++i)
@@ -113,15 +113,14 @@ class ServiceWorkerCacheTest : public testing::Test {
     blob_handle_ =
         blob_storage_context->context()->AddFinishedBlob(blob_data.get());
 
-    body_response_.reset(
-        new ServiceWorkerResponse(GURL("http://example.com/body.html"),
-                                  200,
-                                  "OK",
-                                  headers,
-                                  blob_handle_->uuid()));
+    body_response_ = ServiceWorkerResponse(GURL("http://example.com/body.html"),
+                                           200,
+                                           "OK",
+                                           headers,
+                                           blob_handle_->uuid());
 
-    no_body_response_.reset(new ServiceWorkerResponse(
-        GURL("http://example.com/no_body.html"), 200, "OK", headers, ""));
+    no_body_response_ = ServiceWorkerResponse(
+        GURL("http://example.com/no_body.html"), 200, "OK", headers, "");
   }
 
   void CreateBackend() {
@@ -133,12 +132,30 @@ class ServiceWorkerCacheTest : public testing::Test {
     EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
   }
 
-  bool Put(ServiceWorkerFetchRequest* request,
-           ServiceWorkerResponse* response) {
+  scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
+      const ServiceWorkerFetchRequest& request) {
+    return make_scoped_ptr(new ServiceWorkerFetchRequest(request.url,
+                                                         request.method,
+                                                         request.headers,
+                                                         request.referrer,
+                                                         request.is_reload));
+  }
+
+  scoped_ptr<ServiceWorkerResponse> CopyFetchResponse(
+      const ServiceWorkerResponse& response) {
+    return make_scoped_ptr(new ServiceWorkerResponse(response.url,
+                                                     response.status_code,
+                                                     response.status_text,
+                                                     response.headers,
+                                                     response.blob_uuid));
+  }
+
+  bool Put(const ServiceWorkerFetchRequest& request,
+           const ServiceWorkerResponse& response) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Put(request,
-                response,
+    cache_->Put(CopyFetchRequest(request),
+                CopyFetchResponse(response),
                 base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
                            base::Unretained(this),
                            base::Unretained(loop.get())));
@@ -150,10 +167,10 @@ class ServiceWorkerCacheTest : public testing::Test {
     return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
   }
 
-  bool Match(ServiceWorkerFetchRequest* request) {
+  bool Match(const ServiceWorkerFetchRequest& request) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Match(request,
+    cache_->Match(CopyFetchRequest(request),
                   base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
                              base::Unretained(this),
                              base::Unretained(loop.get())));
@@ -162,10 +179,10 @@ class ServiceWorkerCacheTest : public testing::Test {
     return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
   }
 
-  bool Delete(ServiceWorkerFetchRequest* request) {
+  bool Delete(const ServiceWorkerFetchRequest& request) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Delete(request,
+    cache_->Delete(CopyFetchRequest(request),
                    base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
                               base::Unretained(this),
                               base::Unretained(loop.get())));
@@ -250,10 +267,10 @@ class ServiceWorkerCacheTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ServiceWorkerCache> cache_;
 
-  scoped_ptr<ServiceWorkerFetchRequest> body_request_;
-  scoped_ptr<ServiceWorkerResponse> body_response_;
-  scoped_ptr<ServiceWorkerFetchRequest> no_body_request_;
-  scoped_ptr<ServiceWorkerResponse> no_body_response_;
+  ServiceWorkerFetchRequest body_request_;
+  ServiceWorkerResponse body_response_;
+  ServiceWorkerFetchRequest no_body_request_;
+  ServiceWorkerResponse no_body_response_;
   scoped_ptr<storage::BlobDataHandle> blob_handle_;
   std::string expected_blob_data_;
 
@@ -269,17 +286,17 @@ class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
 };
 
 TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
 }
 
 TEST_P(ServiceWorkerCacheTestP, PutBody) {
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
+  EXPECT_TRUE(Put(body_request_, body_response_));
 }
 
 TEST_P(ServiceWorkerCacheTestP, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-  cache_->Put(body_request_.get(),
-              body_response_.get(),
+  cache_->Put(CopyFetchRequest(body_request_),
+              CopyFetchResponse(body_response_),
               base::Bind(&ServiceWorkerCacheTestP::ErrorTypeCallback,
                          base::Unretained(this),
                          base::Unretained(loop.get())));
@@ -292,8 +309,8 @@ TEST_P(ServiceWorkerCacheTestP, PutBodyDropBlobRef) {
 }
 
 TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Match(no_body_request_.get()));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
   EXPECT_EQ(200, callback_response_->status_code);
   EXPECT_STREQ("OK", callback_response_->status_text.c_str());
   EXPECT_STREQ("http://example.com/no_body.html",
@@ -301,8 +318,8 @@ TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
 }
 
 TEST_P(ServiceWorkerCacheTestP, MatchBody) {
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Match(body_request_.get()));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
   EXPECT_EQ(200, callback_response_->status_code);
   EXPECT_STREQ("OK", callback_response_->status_text.c_str());
   EXPECT_STREQ("http://example.com/body.html",
@@ -318,31 +335,31 @@ TEST_P(ServiceWorkerCacheTestP, EmptyKeys) {
 }
 
 TEST_P(ServiceWorkerCacheTestP, TwoKeys) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
   EXPECT_EQ(2u, callback_strings_.size());
   std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_->url.spec());
-  expected_keys.push_back(body_request_->url.spec());
+  expected_keys.push_back(no_body_request_.url.spec());
+  expected_keys.push_back(body_request_.url.spec());
   EXPECT_TRUE(VerifyKeys(expected_keys));
 }
 
 TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
   EXPECT_EQ(2u, callback_strings_.size());
   std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_->url.spec());
-  expected_keys.push_back(body_request_->url.spec());
+  expected_keys.push_back(no_body_request_.url.spec());
+  expected_keys.push_back(body_request_.url.spec());
   EXPECT_TRUE(VerifyKeys(expected_keys));
 
-  EXPECT_TRUE(Delete(body_request_.get()));
+  EXPECT_TRUE(Delete(body_request_));
   EXPECT_TRUE(Keys());
   EXPECT_EQ(1u, callback_strings_.size());
   std::vector<std::string> expected_key;
-  expected_key.push_back(no_body_request_->url.spec());
+  expected_key.push_back(no_body_request_.url.spec());
   EXPECT_TRUE(VerifyKeys(expected_key));
 }
 
@@ -351,42 +368,42 @@ TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
 // flaky (though not crashy). See https://crbug.com/409109
 #ifndef OS_WIN
 TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Match(no_body_request_.get()));
-  EXPECT_TRUE(Delete(no_body_request_.get()));
-  EXPECT_FALSE(Match(no_body_request_.get()));
-  EXPECT_FALSE(Delete(no_body_request_.get()));
-  EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-  EXPECT_TRUE(Match(no_body_request_.get()));
-  EXPECT_TRUE(Delete(no_body_request_.get()));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
+  EXPECT_TRUE(Delete(no_body_request_));
+  EXPECT_FALSE(Match(no_body_request_));
+  EXPECT_FALSE(Delete(no_body_request_));
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
+  EXPECT_TRUE(Delete(no_body_request_));
 }
 
 TEST_P(ServiceWorkerCacheTestP, DeleteBody) {
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Match(body_request_.get()));
-  EXPECT_TRUE(Delete(body_request_.get()));
-  EXPECT_FALSE(Match(body_request_.get()));
-  EXPECT_FALSE(Delete(body_request_.get()));
-  EXPECT_TRUE(Put(body_request_.get(), body_response_.get()));
-  EXPECT_TRUE(Match(body_request_.get()));
-  EXPECT_TRUE(Delete(body_request_.get()));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(Delete(body_request_));
+  EXPECT_FALSE(Match(body_request_));
+  EXPECT_FALSE(Delete(body_request_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(Delete(body_request_));
 }
 
 TEST_P(ServiceWorkerCacheTestP, QuickStressNoBody) {
   for (int i = 0; i < 100; ++i) {
-    EXPECT_FALSE(Match(no_body_request_.get()));
-    EXPECT_TRUE(Put(no_body_request_.get(), no_body_response_.get()));
-    EXPECT_TRUE(Match(no_body_request_.get()));
-    EXPECT_TRUE(Delete(no_body_request_.get()));
+    EXPECT_FALSE(Match(no_body_request_));
+    EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+    EXPECT_TRUE(Match(no_body_request_));
+    EXPECT_TRUE(Delete(no_body_request_));
   }
 }
 
 TEST_P(ServiceWorkerCacheTestP, QuickStressBody) {
   for (int i = 0; i < 100; ++i) {
-    ASSERT_FALSE(Match(body_request_.get()));
-    ASSERT_TRUE(Put(body_request_.get(), body_response_.get()));
-    ASSERT_TRUE(Match(body_request_.get()));
-    ASSERT_TRUE(Delete(body_request_.get()));
+    ASSERT_FALSE(Match(body_request_));
+    ASSERT_TRUE(Put(body_request_, body_response_));
+    ASSERT_TRUE(Match(body_request_));
+    ASSERT_TRUE(Delete(body_request_));
   }
 }
 #endif  // OS_WIN

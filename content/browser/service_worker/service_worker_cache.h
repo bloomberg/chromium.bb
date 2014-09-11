@@ -68,21 +68,21 @@ class CONTENT_EXPORT ServiceWorkerCache {
 
   // Returns ErrorTypeNotFound if not found. The callback will always be called.
   // |request| must remain valid until the callback is called.
-  void Match(ServiceWorkerFetchRequest* request,
+  void Match(scoped_ptr<ServiceWorkerFetchRequest> request,
              const ResponseCallback& callback);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns
   // ErrorTypeOK on success. The callback will always be called. |request| and
   // |response| must remain valid until the callback is called.
-  void Put(ServiceWorkerFetchRequest* request,
-           ServiceWorkerResponse* response,
+  void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
+           scoped_ptr<ServiceWorkerResponse> response,
            const ErrorCallback& callback);
 
   // Returns ErrorNotFound if not found. Otherwise deletes and returns
   // ErrorTypeOK. The callback will always be called. |request| must remain
   // valid until the callback is called.
-  void Delete(ServiceWorkerFetchRequest* request,
+  void Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
               const ErrorCallback& callback);
 
   // TODO(jkarlin): Have keys take an optional ServiceWorkerFetchRequest.
