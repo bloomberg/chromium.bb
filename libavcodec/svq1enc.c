@@ -360,8 +360,8 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
 
         s->m.mb_y = y;
         for (x = 0; x < block_width; x++) {
-            uint8_t reorder_buffer[3][6][7 * 32];
-            int count[3][6];
+            uint8_t reorder_buffer[2][6][7 * 32];
+            int count[2][6];
             int offset       = y * 16 * stride + x * 16;
             uint8_t *decoded = decoded_plane + offset;
             uint8_t *ref     = ref_plane + offset;
@@ -443,8 +443,6 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
                     if (score[2] < score[best] && mx == 0 && my == 0) {
                         best = 2;
                         s->hdsp.put_pixels_tab[0][0](decoded, ref, stride, 16);
-                        for (i = 0; i < 6; i++)
-                            count[2][i] = 0;
                         put_bits(&s->pb, vlc[1], vlc[0]);
                     }
                 }
@@ -468,6 +466,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
 
             s->rd_total += score[best];
 
+            if (best != 2)
             for (i = 5; i >= 0; i--)
                 avpriv_copy_bits(&s->pb, reorder_buffer[best][i],
                                  count[best][i]);
@@ -489,7 +488,7 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
                                   avctx->frame_number));
 
     s->m.mb_type = NULL;
-    ff_MPV_common_end(&s->m);
+    ff_mpv_common_end(&s->m);
 
     av_freep(&s->m.me.scratchpad);
     av_freep(&s->m.me.map);
@@ -539,7 +538,7 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     s->avctx               = avctx;
     s->m.avctx             = avctx;
 
-    if ((ret = ff_MPV_common_init(&s->m)) < 0) {
+    if ((ret = ff_mpv_common_init(&s->m)) < 0) {
         svq1_encode_end(avctx);
         return ret;
     }

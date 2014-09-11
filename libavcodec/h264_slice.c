@@ -537,7 +537,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
         h->pps = h1->pps;
 
         if ((err = h264_slice_header_init(h, 1)) < 0) {
-            av_log(h->avctx, AV_LOG_ERROR, "h264_slice_header_init() failed");
+            av_log(h->avctx, AV_LOG_ERROR, "h264_slice_header_init() failed\n");
             return err;
         }
         context_reinitialized = 1;
@@ -549,7 +549,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
 #endif
     }
     /* update linesize on resize for h264. The h264 decoder doesn't
-     * necessarily call ff_MPV_frame_start in the new thread */
+     * necessarily call ff_mpv_frame_start in the new thread */
     h->linesize   = h1->linesize;
     h->uvlinesize = h1->uvlinesize;
 
@@ -783,7 +783,7 @@ static int h264_frame_start(H264Context *h)
 
     /* We mark the current picture as non-reference after allocating it, so
      * that if we break out due to an error it can be released automatically
-     * in the next ff_MPV_frame_start().
+     * in the next ff_mpv_frame_start().
      */
     h->cur_pic_ptr->reference = 0;
 
@@ -1109,11 +1109,13 @@ static int init_dimensions(H264Context *h)
 {
     int width  = h->width  - (h->sps.crop_right + h->sps.crop_left);
     int height = h->height - (h->sps.crop_top   + h->sps.crop_bottom);
+    int crop_present = h->sps.crop_left  || h->sps.crop_top ||
+                       h->sps.crop_right || h->sps.crop_bottom;
     av_assert0(h->sps.crop_right + h->sps.crop_left < (unsigned)h->width);
     av_assert0(h->sps.crop_top + h->sps.crop_bottom < (unsigned)h->height);
 
     /* handle container cropping */
-    if (!h->sps.crop &&
+    if (!crop_present &&
         FFALIGN(h->avctx->width,  16) == h->width &&
         FFALIGN(h->avctx->height, 16) == h->height) {
         width  = h->avctx->width;
@@ -1173,7 +1175,7 @@ static int h264_slice_header_init(H264Context *h, int reinit)
     ret = ff_h264_alloc_tables(h);
     if (ret < 0) {
         av_log(h->avctx, AV_LOG_ERROR, "Could not allocate memory\n");
-        return ret;
+        goto fail;
     }
 
     if (nb_slices > H264_MAX_THREADS || (nb_slices > h->mb_height && h->mb_height)) {
@@ -1192,14 +1194,16 @@ static int h264_slice_header_init(H264Context *h, int reinit)
         ret = ff_h264_context_init(h);
         if (ret < 0) {
             av_log(h->avctx, AV_LOG_ERROR, "context_init() failed.\n");
-            return ret;
+            goto fail;
         }
     } else {
         for (i = 1; i < h->slice_context_count; i++) {
             H264Context *c;
             c                    = h->thread_context[i] = av_mallocz(sizeof(H264Context));
-            if (!c)
-                return AVERROR(ENOMEM);
+            if (!c) {
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
             c->avctx             = h->avctx;
             if (CONFIG_ERROR_RESILIENCE) {
                 c->mecc              = h->mecc;
@@ -1238,13 +1242,17 @@ static int h264_slice_header_init(H264Context *h, int reinit)
         for (i = 0; i < h->slice_context_count; i++)
             if ((ret = ff_h264_context_init(h->thread_context[i])) < 0) {
                 av_log(h->avctx, AV_LOG_ERROR, "context_init() failed.\n");
-                return ret;
+                goto fail;
             }
     }
 
     h->context_initialized = 1;
 
     return 0;
+fail:
+    ff_h264_free_tables(h, 0);
+    h->context_initialized = 0;
+    return ret;
 }
 
 static enum AVPixelFormat non_j_pixfmt(enum AVPixelFormat a)

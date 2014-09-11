@@ -3,7 +3,7 @@
  * Copyright (c) 2002 Steve O'Hara-Smith
  * based on
  *           Linux video grab interface
- *           Copyright (c) 2000,2001 Gerard Lantau
+ *           Copyright (c) 2000, 2001 Fabrice Bellard
  * and
  *           simple_grab.c Copyright (c) 1999 Roger Hardiman
  *
@@ -80,7 +80,7 @@ typedef struct VideoData {
 #define VIDEO_FORMAT NTSC
 #endif
 
-static int bktr_dev[] = { METEOR_DEV0, METEOR_DEV1, METEOR_DEV2,
+static const int bktr_dev[] = { METEOR_DEV0, METEOR_DEV1, METEOR_DEV2,
     METEOR_DEV3, METEOR_DEV_SVIDEO };
 
 uint8_t *video_buf;

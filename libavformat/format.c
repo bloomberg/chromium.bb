@@ -144,8 +144,10 @@ enum AVCodecID av_guess_codec(AVOutputFormat *fmt, const char *short_name,
                               const char *filename, const char *mime_type,
                               enum AVMediaType type)
 {
-    if (!strcmp(fmt->name, "segment") || !strcmp(fmt->name, "ssegment")) {
-        fmt = av_guess_format(NULL, filename, NULL);
+    if (av_match_name("segment", fmt->name) || av_match_name("ssegment", fmt->name)) {
+        AVOutputFormat *fmt2 = av_guess_format(NULL, filename, NULL);
+        if (fmt2)
+            fmt = fmt2;
     }
 
     if (type == AVMEDIA_TYPE_VIDEO) {
@@ -214,10 +216,8 @@ AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened,
             if (av_match_ext(lpd.filename, fmt1->extensions))
                 score = AVPROBE_SCORE_EXTENSION;
         }
-#if FF_API_PROBE_MIME
         if (av_match_name(lpd.mime_type, fmt1->mime_type))
             score = FFMAX(score, AVPROBE_SCORE_EXTENSION);
-#endif
         if (score > score_max) {
             score_max = score;
             fmt       = fmt1;
@@ -254,7 +254,6 @@ int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
 {
     AVProbeData pd = { filename ? filename : "" };
     uint8_t *buf = NULL;
-    uint8_t *mime_type;
     int ret = 0, probe_size, buf_offset = 0;
     int score = 0;
     int ret2;
@@ -270,10 +269,9 @@ int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
     if (offset >= max_probe_size)
         return AVERROR(EINVAL);
 
-#if FF_API_PROBE_MIME
     if (pb->av_class)
         av_opt_get(pb, "mime_type", AV_OPT_SEARCH_CHILDREN, &pd.mime_type);
-#else
+#if 0
     if (!*fmt && pb->av_class && av_opt_get(pb, "mime_type", AV_OPT_SEARCH_CHILDREN, &mime_type) >= 0 && mime_type) {
         if (!av_strcasecmp(mime_type, "audio/aacp")) {
             *fmt = av_find_input_format("aac");
@@ -336,9 +334,7 @@ fail:
     if (ret >= 0)
         ret = ret2;
 
-#if FF_API_PROBE_MIME
     av_free(pd.mime_type);
-#endif
     return ret < 0 ? ret : score;
 }
 

@@ -425,6 +425,8 @@ int avformat_write_header(AVFormatContext *s, AVDictionary **options)
             ret = s->pb->error;
         if (ret < 0)
             return ret;
+        if (s->flush_packets && s->pb && s->pb->error >= 0 && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
+            avio_flush(s->pb);
     }
 
     if ((ret = init_pts(s)) < 0)
@@ -531,7 +533,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     case AVMEDIA_TYPE_AUDIO:
         frame_size = (pkt->flags & AV_PKT_FLAG_UNCODED_FRAME) ?
                      ((AVFrame *)pkt->data)->nb_samples :
-                     ff_get_audio_frame_size(st->codec, pkt->size, 1);
+                     av_get_audio_frame_duration(st->codec, pkt->size);
 
         /* HACK/FIXME, we skip the initial 0 size packets as they are most
          * likely equal to the encoder delay, but it would be better if we
