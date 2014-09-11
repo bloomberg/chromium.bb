@@ -4765,13 +4765,6 @@ void Document::initSecurityContext()
     initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_importsController));
 }
 
-static PassRefPtr<ContentSecurityPolicy> contentSecurityPolicyFor(Document* document)
-{
-    if (document->importsController())
-        return document->importsController()->master()->contentSecurityPolicy();
-    return ContentSecurityPolicy::create(document);
-}
-
 void Document::initSecurityContext(const DocumentInit& initializer)
 {
     if (haveInitializedSecurityOrigin()) {
@@ -4784,7 +4777,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         // This can occur via document.implementation.createDocument().
         m_cookieURL = KURL(ParsedURLString, emptyString());
         setSecurityOrigin(SecurityOrigin::createUnique());
-        setContentSecurityPolicy(ContentSecurityPolicy::create(this));
+        initContentSecurityPolicy();
         return;
     }
 
@@ -4793,7 +4786,16 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     m_cookieURL = m_url;
     enforceSandboxFlags(initializer.sandboxFlags());
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
-    setContentSecurityPolicy(contentSecurityPolicyFor(this));
+
+    if (importsController()) {
+        // If this document is an HTML import, grab a reference to it's master document's Content
+        // Security Policy. We don't call 'initContentSecurityPolicy' in this case, as we can't
+        // rebind the master document's policy object: its ExecutionContext needs to remain tied
+        // to the master document.
+        setContentSecurityPolicy(importsController()->master()->contentSecurityPolicy());
+    } else {
+        initContentSecurityPolicy();
+    }
 
     if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {
@@ -4845,11 +4847,14 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     setSecurityOrigin(initializer.owner()->securityOrigin());
 }
 
-void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders& headers)
+void Document::initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> csp)
 {
+    setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
     if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
         contentSecurityPolicy()->copyStateFrom(toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy());
-    contentSecurityPolicy()->didReceiveHeaders(headers);
+    if (transformSourceDocument())
+        contentSecurityPolicy()->copyStateFrom(transformSourceDocument()->contentSecurityPolicy());
+    contentSecurityPolicy()->bindToExecutionContext(this);
 }
 
 bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)

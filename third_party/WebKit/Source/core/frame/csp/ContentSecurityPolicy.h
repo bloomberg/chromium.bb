@@ -91,21 +91,17 @@ public:
         SuppressReport
     };
 
-    enum SideEffectDisposition {
-        ApplySideEffectsToExecutionContext,
-        DoNotApplySideEffectsToExecutionContext
-    };
-
-    static PassRefPtr<ContentSecurityPolicy> create(ExecutionContext* executionContext)
+    static PassRefPtr<ContentSecurityPolicy> create()
     {
-        return adoptRef(new ContentSecurityPolicy(executionContext));
+        return adoptRef(new ContentSecurityPolicy());
     }
     ~ContentSecurityPolicy();
 
+    void bindToExecutionContext(ExecutionContext*);
     void copyStateFrom(const ContentSecurityPolicy*);
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
-    void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource, SideEffectDisposition = ApplySideEffectsToExecutionContext);
+    void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     // These functions are wrong because they assume that there is only one header.
     // FIXME: Replace them with functions that return vectors.
@@ -189,10 +185,8 @@ public:
 
     static bool isDirectiveName(const String&);
 
-    ExecutionContext* executionContext() const { return m_executionContext; }
-
 private:
-    explicit ContentSecurityPolicy(ExecutionContext*);
+    ContentSecurityPolicy();
 
     void applyPolicySideEffectsToExecutionContext();
 

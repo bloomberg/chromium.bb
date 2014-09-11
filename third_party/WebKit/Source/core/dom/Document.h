@@ -71,7 +71,6 @@ class CanvasRenderingContext2D;
 class Chrome;
 class Comment;
 class ConsoleMessage;
-class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
 class CustomElementMicrotaskRunQueue;
 class CustomElementRegistrationContext;
@@ -880,7 +879,7 @@ public:
 
     void initSecurityContext();
     void initSecurityContext(const DocumentInit&);
-    void initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders&);
+    void initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> = nullptr);
 
     bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
     bool allowExecutingScripts(Node*);

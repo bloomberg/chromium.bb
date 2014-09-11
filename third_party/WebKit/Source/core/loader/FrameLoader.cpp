@@ -380,7 +380,11 @@ void FrameLoader::didBeginDocument(bool dispatch)
     if (dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
-    m_frame->document()->initContentSecurityPolicy(m_documentLoader ? ContentSecurityPolicyResponseHeaders(m_documentLoader->response()) : ContentSecurityPolicyResponseHeaders());
+    // FIXME: Move this to DocumentLoader::responseReceived, next to the X-Frame-Options checks.
+    RefPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+    if (m_documentLoader)
+        csp->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(m_documentLoader->response()));
+    m_frame->document()->initContentSecurityPolicy(csp);
 
     if (!m_frame->document()->contentSecurityPolicy()->allowAncestors(m_frame)) {
         didFailContentSecurityPolicyCheck(this);

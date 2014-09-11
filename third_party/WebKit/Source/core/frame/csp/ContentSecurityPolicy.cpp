@@ -131,8 +131,8 @@ static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
     return a;
 }
 
-ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
-    : m_executionContext(executionContext)
+ContentSecurityPolicy::ContentSecurityPolicy()
+    : m_executionContext(0)
     , m_overrideInlineStyleAllowed(false)
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
@@ -141,8 +141,15 @@ ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
 {
 }
 
+void ContentSecurityPolicy::bindToExecutionContext(ExecutionContext* executionContext)
+{
+    m_executionContext = executionContext;
+    applyPolicySideEffectsToExecutionContext();
+}
+
 void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
+    ASSERT(m_executionContext);
     // Ensure that 'self' processes correctly.
     m_selfSource = adoptPtr(new CSPSource(this, securityOrigin()->protocol(), securityOrigin()->host(), securityOrigin()->port(), String(), false, false));
 
@@ -154,7 +161,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->setReferrerPolicy(m_referrerPolicy);
 
         for (ConsoleMessageVector::const_iterator iter = m_consoleMessages.begin(); iter != m_consoleMessages.end(); ++iter)
-            executionContext()->addConsoleMessage(*iter);
+            m_executionContext->addConsoleMessage(*iter);
         m_consoleMessages.clear();
 
         for (CSPDirectiveListVector::const_iterator iter = m_policies.begin(); iter != m_policies.end(); ++iter)
@@ -165,7 +172,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     // V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the
     // call should execute or not.
     if (!m_disableEvalErrorMessage.isNull())
-        executionContext()->disableEval(m_disableEvalErrorMessage);
+        m_executionContext->disableEval(m_disableEvalErrorMessage);
 }
 
 ContentSecurityPolicy::~ContentSecurityPolicy()
@@ -182,33 +189,29 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
     ASSERT(m_policies.isEmpty());
     for (CSPDirectiveListVector::const_iterator iter = other->m_policies.begin(); iter != other->m_policies.end(); ++iter)
         addPolicyFromHeaderValue((*iter)->header(), (*iter)->headerType(), (*iter)->headerSource());
-
-    // FIXME: This ought to be a step distinct from copyStateFrom(). https://crbug.com/411889
-    applyPolicySideEffectsToExecutionContext();
 }
 
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (!headers.contentSecurityPolicy().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP, DoNotApplySideEffectsToExecutionContext);
+        addPolicyFromHeaderValue(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     if (!headers.contentSecurityPolicyReportOnly().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP, DoNotApplySideEffectsToExecutionContext);
-
-    // FIXME: This ought to be a step distinct from didReceiveHeaders(). https://crbug.com/411889
-    applyPolicySideEffectsToExecutionContext();
+        addPolicyFromHeaderValue(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
 }
 
-void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source, SideEffectDisposition sideEffectDisposition)
+void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
     addPolicyFromHeaderValue(header, type, source);
 
-    // FIXME: This ought to be a step distinct from didReceiveHeader(). https://crbug.com/411889
-    if (sideEffectDisposition == ApplySideEffectsToExecutionContext)
+    // This might be called after we've been bound to an execution context. For example, a <meta>
+    // element might be injected after page load.
+    if (m_executionContext)
         applyPolicySideEffectsToExecutionContext();
 }
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
+    // If this is a report-only header inside a <meta> element, bail out.
     if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport && experimentalFeaturesEnabled()) {
         reportReportOnlyInMeta(header);
         return;

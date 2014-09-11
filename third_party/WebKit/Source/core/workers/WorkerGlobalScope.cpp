@@ -102,8 +102,11 @@ WorkerGlobalScope::~WorkerGlobalScope()
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicyHeaderType contentSecurityPolicyType)
 {
-    setContentSecurityPolicy(ContentSecurityPolicy::create(this));
-    contentSecurityPolicy()->didReceiveHeader(policy, contentSecurityPolicyType, ContentSecurityPolicyHeaderSourceHTTP);
+    // FIXME: This doesn't match the CSP2 spec's Worker behavior (see https://w3c.github.io/webappsec/specs/content-security-policy/#processing-model-workers)
+    RefPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+    csp->didReceiveHeader(policy, contentSecurityPolicyType, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->bindToExecutionContext(executionContext());
+    setContentSecurityPolicy(csp);
 }
 
 ExecutionContext* WorkerGlobalScope::executionContext() const

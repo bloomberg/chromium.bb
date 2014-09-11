@@ -86,7 +86,7 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
             result->setTransformSourceDocument(oldDocument.get());
             result->updateSecurityOrigin(oldDocument->securityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
-            result->contentSecurityPolicy()->copyStateFrom(oldDocument->contentSecurityPolicy());
+            result->initContentSecurityPolicy();
         }
     } else {
         result = LocalDOMWindow::createDocument(sourceMIMEType, init, forceXHTML);
