@@ -63,6 +63,30 @@ jobject ProfileAndroid::GetLastUsedProfile(JNIEnv* env, jclass clazz) {
   return profile_android->obj_.obj();
 }
 
+base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOriginalProfile(
+    JNIEnv* env, jobject obj) {
+  ProfileAndroid* original_profile = ProfileAndroid::FromProfile(
+      profile_->GetOriginalProfile());
+  DCHECK(original_profile);
+  return original_profile->GetJavaObject();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+ProfileAndroid::GetOffTheRecordProfile(JNIEnv* env, jobject obj) {
+  ProfileAndroid* otr_profile = ProfileAndroid::FromProfile(
+      profile_->GetOffTheRecordProfile());
+  DCHECK(otr_profile);
+  return otr_profile->GetJavaObject();
+}
+
+jboolean ProfileAndroid::HasOffTheRecordProfile(JNIEnv* env, jobject obj) {
+  return profile_->HasOffTheRecordProfile();
+}
+
+jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env, jobject obj) {
+  return profile_->IsOffTheRecord();
+}
+
 // static
 jobject GetLastUsedProfile(JNIEnv* env, jclass clazz) {
   return ProfileAndroid::GetLastUsedProfile(env, clazz);
@@ -74,7 +98,6 @@ ProfileAndroid::ProfileAndroid(Profile* profile)
   base::android::ScopedJavaLocalRef<jobject> jprofile =
       Java_Profile_create(env, reinterpret_cast<intptr_t>(this));
   obj_.Reset(env, jprofile.obj());
-
 }
 
 ProfileAndroid::~ProfileAndroid() {
