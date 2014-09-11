@@ -3006,6 +3006,20 @@
                 'telemetry_gpu_test.isolate',
               ],
             },
+            {
+              'target_name': 'gpu_unittests_run',
+              'type': 'none',
+              'dependencies': [
+                '../gpu/gpu.gyp:gpu_unittests',
+              ],
+              'includes': [
+                '../build/isolate.gypi',
+                'gpu_unittests.isolate',
+              ],
+              'sources': [
+                'gpu_unittests.isolate',
+              ],
+            },
           ],
           'conditions': [
             ['internal_gles2_conform_tests==1', {
