@@ -577,52 +577,6 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
   if (event.type == blink::WebInputEvent::ContextMenu)
     return true;
 
-  const blink::WebInputEvent* modified_event = &event;
-  scoped_ptr<blink::WebTouchEvent> touch_event;
-  // TODO(jdduke): Remove this branch when Blink starts forwarding
-  // WebTouchEvents with a fully populated |touches| field.
-  if (blink::WebInputEvent::isTouchEventType(event.type) &&
-      static_cast<const blink::WebTouchEvent*>(&event)->changedTouchesLength) {
-    const blink::WebTouchEvent* orig_touch_event =
-        static_cast<const blink::WebTouchEvent*>(&event);
-
-    touch_event.reset(new blink::WebTouchEvent());
-    memcpy(touch_event.get(), orig_touch_event, sizeof(blink::WebTouchEvent));
-
-    // TODO(bokan): Blink passes back a WebGestureEvent with a touches,
-    // changedTouches, and targetTouches lists; however, it doesn't set
-    // the state field on the touches which is what the RenderWidget uses
-    // to create a WebCore::TouchEvent. crbug.com/358132 tracks removing
-    // these multiple lists from WebTouchEvent since they lead to misuse
-    // like this and are functionally unused. In the mean time we'll setup
-    // the state field here manually to fix multi-touch BrowserPlugins.
-    for (size_t i = 0; i < touch_event->touchesLength; ++i) {
-      blink::WebTouchPoint& touch = touch_event->touches[i];
-      touch.state = blink::WebTouchPoint::StateStationary;
-      for (size_t j = 0; j < touch_event->changedTouchesLength; ++j) {
-        blink::WebTouchPoint& changed_touch = touch_event->changedTouches[j];
-        if (touch.id == changed_touch.id) {
-          touch.state = changed_touch.state;
-          break;
-        }
-      }
-    }
-
-    // For End and Cancel, Blink gives BrowserPlugin a list of touches that
-    // are down, but the browser process expects a list of all touches. We
-    // modify these events here to match these expectations.
-    if (event.type == blink::WebInputEvent::TouchEnd ||
-        event.type == blink::WebInputEvent::TouchCancel) {
-      if (touch_event->changedTouchesLength > 0) {
-        memcpy(&touch_event->touches[touch_event->touchesLength],
-               &touch_event->changedTouches,
-              touch_event->changedTouchesLength * sizeof(blink::WebTouchPoint));
-        touch_event->touchesLength += touch_event->changedTouchesLength;
-      }
-    }
-    modified_event = touch_event.get();
-  }
-
   if (blink::WebInputEvent::isKeyboardEventType(event.type) &&
       !edit_commands_.empty()) {
     browser_plugin_manager()->Send(
@@ -637,7 +591,7 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
                                                 browser_plugin_instance_id_,
                                                 plugin_rect_,
-                                                modified_event));
+                                                &event));
   GetWebKitCursorInfo(cursor_, &cursor_info);
   return true;
 }
