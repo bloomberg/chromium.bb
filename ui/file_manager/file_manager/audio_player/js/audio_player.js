@@ -198,13 +198,15 @@ AudioPlayer.prototype.onUnload = function() {
 /**
  * Selects a new track to play.
  * @param {number} newTrack New track number.
+ * @param {number} time New playback position (in second).
  * @private
  */
-AudioPlayer.prototype.select_ = function(newTrack) {
+AudioPlayer.prototype.select_ = function(newTrack, time) {
   if (this.currentTrackIndex_ == newTrack) return;
 
   this.currentTrackIndex_ = newTrack;
   this.player_.currentTrackIndex = this.currentTrackIndex_;
+  this.player_.audioController.time = time;
   Platform.performMicrotaskCheckpoint();
 
   if (!window.appReopen)
