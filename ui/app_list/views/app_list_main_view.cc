@@ -186,6 +186,10 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
+  if (switches::IsExperimentalAppListEnabled()) {
+    contents_view_->SetActivePage(contents_view_->GetPageIndexForNamedPage(
+        ContentsView::NAMED_PAGE_START));
+  }
   contents_view_->apps_container_view()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
