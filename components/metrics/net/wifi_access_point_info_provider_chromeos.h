@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
-#define CHROME_BROWSER_METRICS_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
+#ifndef COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
+#define COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/metrics/wifi_access_point_info_provider.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/metrics/net/wifi_access_point_info_provider.h"
 
 // WifiAccessPointInfoProviderChromeos provides the connected wifi
 // acccess point information for chromeos.
@@ -39,4 +39,4 @@ class WifiAccessPointInfoProviderChromeos
   DISALLOW_COPY_AND_ASSIGN(WifiAccessPointInfoProviderChromeos);
 };
 
-#endif  // CHROME_BROWSER_METRICS_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
+#endif  // COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_

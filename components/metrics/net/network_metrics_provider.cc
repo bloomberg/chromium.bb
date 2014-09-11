@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/network_metrics_provider.h"
+#include "components/metrics/net/network_metrics_provider.h"
 
 #include <string>
 #include <vector>
@@ -12,17 +12,17 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/wifi_access_point_info_provider_chromeos.h"
+#include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
 #endif // OS_CHROMEOS
 
 using metrics::SystemProfileProto;
 
-NetworkMetricsProvider::NetworkMetricsProvider()
-    : connection_type_is_ambiguous_(false),
+NetworkMetricsProvider::NetworkMetricsProvider(
+    base::TaskRunner* io_task_runner)
+    : io_task_runner_(io_task_runner),
+      connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
       weak_ptr_factory_(this) {
@@ -131,7 +131,7 @@ NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
 
 void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
   PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
+      io_task_runner_,
       FROM_HERE,
       base::Bind(&net::GetWifiPHYLayerProtocol),
       base::Bind(&NetworkMetricsProvider::OnWifiPHYLayerProtocolResult,

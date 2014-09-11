@@ -52,8 +52,14 @@ source_set("metrics") {
 # GYP version: components/metrics.gypi:metrics_net
 static_library("net") {
   sources = [
+    "net/network_metrics_provider.cc",
+    "net/network_metrics_provider.h",
     "net/net_metrics_log_uploader.cc",
     "net/net_metrics_log_uploader.h",
+    "net/wifi_access_point_info_provider.cc",
+    "net/wifi_access_point_info_provider.h",
+    "net/wifi_access_point_info_provider_chromeos.cc",
+    "net/wifi_access_point_info_provider_chromeos.h",
   ]
 
   deps = [

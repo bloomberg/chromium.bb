@@ -73,11 +73,18 @@
       ],
       'dependencies': [
         '../net/net.gyp:net',
+        'component_metrics_proto',
         'metrics',
       ],
       'sources': [
+        'metrics/net/network_metrics_provider.cc',
+        'metrics/net/network_metrics_provider.h',
         'metrics/net/net_metrics_log_uploader.cc',
         'metrics/net/net_metrics_log_uploader.h',
+        'metrics/net/wifi_access_point_info_provider.cc',
+        'metrics/net/wifi_access_point_info_provider.h',
+        'metrics/net/wifi_access_point_info_provider_chromeos.cc',
+        'metrics/net/wifi_access_point_info_provider_chromeos.h',
       ],
     },
     {

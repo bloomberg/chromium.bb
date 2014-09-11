@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
+#define COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/metrics/wifi_access_point_info_provider.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/net/wifi_access_point_info_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
@@ -20,7 +20,9 @@ class NetworkMetricsProvider
     : public metrics::MetricsProvider,
       public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-  NetworkMetricsProvider();
+  // Creates a NetworkMetricsProvider, where |io_task_runner| is used to post
+  // network info collection tasks.
+  explicit NetworkMetricsProvider(base::TaskRunner* io_task_runner);
   virtual ~NetworkMetricsProvider();
 
  private:
@@ -50,6 +52,9 @@ class NetworkMetricsProvider
       const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
       metrics::SystemProfileProto::Network* network_proto);
 
+  // Task runner used for blocking file I/O.
+  base::TaskRunner* io_task_runner_;
+
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;
   // The connection type according to net::NetworkChangeNotifier.
@@ -69,4 +74,4 @@ class NetworkMetricsProvider
   DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_
+#endif  // COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
