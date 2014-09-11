@@ -111,10 +111,10 @@ void CSPSourceList::parse(const UChar* begin, const UChar* end)
 
         String scheme, host, path;
         int port = 0;
-        CSPSource::WildcardDisposition hostWildcard = CSPSource::NoWildcard;
-        CSPSource::WildcardDisposition portWildcard = CSPSource::NoWildcard;
+        bool hostHasWildcard = false;
+        bool portHasWildcard = false;
 
-        if (parseSource(beginSource, position, scheme, host, port, path, hostWildcard, portWildcard)) {
+        if (parseSource(beginSource, position, scheme, host, port, path, hostHasWildcard, portHasWildcard)) {
             // Wildcard hosts and keyword sources ('self', 'unsafe-inline',
             // etc.) aren't stored in m_list, but as attributes on the source
             // list itself.
@@ -122,7 +122,7 @@ void CSPSourceList::parse(const UChar* begin, const UChar* end)
                 continue;
             if (m_policy->isDirectiveName(host))
                 m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
-            m_list.append(CSPSource(m_policy, scheme, host, port, path, hostWildcard, portWildcard));
+            m_list.append(CSPSource(m_policy, scheme, host, port, path, hostHasWildcard, portHasWildcard));
         } else {
             m_policy->reportInvalidSourceExpression(m_directiveName, String(beginSource, position - beginSource));
         }
@@ -134,7 +134,7 @@ void CSPSourceList::parse(const UChar* begin, const UChar* end)
 // source            = scheme ":"
 //                   / ( [ scheme "://" ] host [ port ] [ path ] )
 //                   / "'self'"
-bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, CSPSource::WildcardDisposition& hostWildcard, CSPSource::WildcardDisposition& portWildcard)
+bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard)
 {
     if (begin == end)
         return false;
@@ -191,13 +191,13 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
     if (position == end) {
         // host
         //     ^
-        return parseHost(beginHost, position, host, hostWildcard);
+        return parseHost(beginHost, position, host, hostHasWildcard);
     }
 
     if (position < end && *position == '/') {
         // host/path || host/ || /
         //     ^            ^    ^
-        return parseHost(beginHost, position, host, hostWildcard) && parsePath(position, end, path);
+        return parseHost(beginHost, position, host, hostHasWildcard) && parsePath(position, end, path);
     }
 
     if (position < end && *position == ':') {
@@ -237,11 +237,11 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
         beginPath = position;
     }
 
-    if (!parseHost(beginHost, beginPort ? beginPort : beginPath, host, hostWildcard))
+    if (!parseHost(beginHost, beginPort ? beginPort : beginPath, host, hostHasWildcard))
         return false;
 
     if (beginPort) {
-        if (!parsePort(beginPort, beginPath, port, portWildcard))
+        if (!parsePort(beginPort, beginPath, port, portHasWildcard))
             return false;
     } else {
         port = 0;
@@ -366,11 +366,11 @@ bool CSPSourceList::parseScheme(const UChar* begin, const UChar* end, String& sc
 //                   / "*"
 // host-char         = ALPHA / DIGIT / "-"
 //
-bool CSPSourceList::parseHost(const UChar* begin, const UChar* end, String& host, CSPSource::WildcardDisposition& hostWildcard)
+bool CSPSourceList::parseHost(const UChar* begin, const UChar* end, String& host, bool& hostHasWildcard)
 {
     ASSERT(begin <= end);
     ASSERT(host.isEmpty());
-    ASSERT(hostWildcard == CSPSource::NoWildcard);
+    ASSERT(!hostHasWildcard);
 
     if (begin == end)
         return false;
@@ -378,7 +378,7 @@ bool CSPSourceList::parseHost(const UChar* begin, const UChar* end, String& host
     const UChar* position = begin;
 
     if (skipExactly<UChar>(position, end, '*')) {
-        hostWildcard = CSPSource::HasWildcard;
+        hostHasWildcard = true;
 
         if (position == end)
             return true;
@@ -425,11 +425,11 @@ bool CSPSourceList::parsePath(const UChar* begin, const UChar* end, String& path
 
 // port              = ":" ( 1*DIGIT / "*" )
 //
-bool CSPSourceList::parsePort(const UChar* begin, const UChar* end, int& port, CSPSource::WildcardDisposition& portWildcard)
+bool CSPSourceList::parsePort(const UChar* begin, const UChar* end, int& port, bool& portHasWildcard)
 {
     ASSERT(begin <= end);
     ASSERT(!port);
-    ASSERT(portWildcard == CSPSource::NoWildcard);
+    ASSERT(!portHasWildcard);
 
     if (!skipExactly<UChar>(begin, end, ':'))
         ASSERT_NOT_REACHED();
@@ -439,7 +439,7 @@ bool CSPSourceList::parsePort(const UChar* begin, const UChar* end, int& port, C
 
     if (end - begin == 1 && *begin == '*') {
         port = 0;
-        portWildcard = CSPSource::HasWildcard;
+        portHasWildcard = true;
         return true;
     }
 

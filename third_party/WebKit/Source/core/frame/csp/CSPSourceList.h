@@ -33,10 +33,10 @@ public:
     bool isHashOrNoncePresent() const;
 
 private:
-    bool parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, CSPSource::WildcardDisposition&, CSPSource::WildcardDisposition&);
+    bool parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard);
     bool parseScheme(const UChar* begin, const UChar* end, String& scheme);
-    bool parseHost(const UChar* begin, const UChar* end, String& host, CSPSource::WildcardDisposition&);
-    bool parsePort(const UChar* begin, const UChar* end, int& port, CSPSource::WildcardDisposition&);
+    bool parseHost(const UChar* begin, const UChar* end, String& host, bool& hostHasWildcard);
+    bool parsePort(const UChar* begin, const UChar* end, int& port, bool& portHasWildcard);
     bool parsePath(const UChar* begin, const UChar* end, String& path);
     bool parseNonce(const UChar* begin, const UChar* end, String& nonce);
     bool parseHash(const UChar* begin, const UChar* end, DigestValue& hash, ContentSecurityPolicyHashAlgorithm&);
