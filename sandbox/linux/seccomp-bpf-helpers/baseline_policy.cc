@@ -120,10 +120,9 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
   }
 
-#if defined(__aarch64__)
-  // These are needed for thread creation.
-  // TODO(leecam): Check jln's fix for this and remove these 'allows'.
-  if (sysno == __NR_sigaltstack || sysno == __NR_setpriority)
+#if defined(OS_ANDROID)
+  // Needed for thread creation.
+  if (sysno == __NR_sigaltstack)
     return Allow();
 #endif
 
