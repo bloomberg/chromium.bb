@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -79,7 +78,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
@@ -102,7 +100,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "components/password_manager/core/browser/password_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -2431,34 +2428,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                      alignment, bounds, browser());
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
-}
-
-void BrowserView::ShowPasswordGenerationBubble(
-    const gfx::Rect& rect,
-    const autofill::PasswordForm& form,
-    autofill::PasswordGenerator* password_generator) {
-  // Create a rect in the content bounds that the bubble will point to.
-  gfx::Point origin(rect.origin());
-  views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
-  gfx::Rect bounds(origin, rect.size());
-
-  // Create the bubble.
-  WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents)
-    return;
-
-  PasswordGenerationBubbleView* bubble = new PasswordGenerationBubbleView(
-      form,
-      bounds,
-      this,
-      web_contents->GetRenderViewHost(),
-      ChromePasswordManagerClient::GetManagerFromWebContents(web_contents),
-      password_generator,
-      GetWidget()->GetThemeProvider());
-
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
-  bubble->GetWidget()->Show();
 }
 
 void BrowserView::OverscrollUpdate(int delta_y) {

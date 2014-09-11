@@ -32,10 +32,6 @@ class TemplateURL;
 
 struct WebApplicationInfo;
 
-namespace autofill {
-class PasswordGenerator;
-struct PasswordForm;
-}
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
@@ -379,15 +375,6 @@ class BrowserWindow : public ui::BaseWindow {
   };
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) = 0;
-
-  // Show bubble for password generation positioned relative to |rect|. The
-  // subclasses implementing this interface do not own the |password_generator|
-  // object which is passed to generate the password. |form| is the form that
-  // contains the password field that the bubble will be associated with.
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& rect,
-      const autofill::PasswordForm& form,
-      autofill::PasswordGenerator* password_generator) = 0;
 
   // Invoked when the amount of vertical overscroll changes. |delta_y| is the
   // amount of overscroll that has occured in the y-direction.

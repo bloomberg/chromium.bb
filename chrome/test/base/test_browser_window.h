@@ -149,10 +149,6 @@ class TestBrowserWindow : public BrowserWindow {
                                 const gfx::Rect& rect) OVERRIDE {}
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) OVERRIDE {}
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& rect,
-      const autofill::PasswordForm& form,
-      autofill::PasswordGenerator* generator) OVERRIDE {}
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
   virtual void ExecuteExtensionCommand(
       const extensions::Extension* extension,

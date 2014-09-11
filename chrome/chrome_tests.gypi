@@ -1432,7 +1432,6 @@
         'browser/ui/cocoa/autofill/autofill_dialog_cocoa_browsertest.mm',
         'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.mm',
         'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.h',
-        'browser/ui/cocoa/browser_window_cocoa_browsertest.mm',
         'browser/ui/cocoa/browser_window_controller_browsertest.mm',
         'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',

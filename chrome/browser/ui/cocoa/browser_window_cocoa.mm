@@ -17,7 +17,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/fullscreen.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
-#import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -50,7 +48,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/translate/core/browser/language_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
@@ -689,29 +686,6 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   [controller showAvatarBubbleAnchoredAt:anchor
                                 withMode:mode
                          withServiceType:manage_accounts_params.service_type];
-}
-
-void BrowserWindowCocoa::ShowPasswordGenerationBubble(
-    const gfx::Rect& rect,
-    const autofill::PasswordForm& form,
-    autofill::PasswordGenerator* password_generator) {
-  WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  // We want to point to the middle of the rect instead of the right side.
-  NSPoint point = GetPointForBubble(web_contents,
-                                    rect.x() + rect.width()/2,
-                                    rect.bottom());
-
-  PasswordGenerationBubbleController* controller = [
-          [PasswordGenerationBubbleController alloc]
-       initWithWindow:browser_->window()->GetNativeWindow()
-           anchoredAt:point
-       renderViewHost:web_contents->GetRenderViewHost()
-      passwordManager:ChromePasswordManagerClient::GetManagerFromWebContents(
-                          web_contents)
-       usingGenerator:password_generator
-              forForm:form];
-  [controller showWindow:nil];
 }
 
 int
