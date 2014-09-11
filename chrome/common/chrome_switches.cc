@@ -885,15 +885,6 @@ const char kPackExtensionKey[]              = "pack-extension-key";
 // Specifies the path to the user data folder for the parent profile.
 const char kParentProfile[]                 = "parent-profile";
 
-// Launches PerformanceMonitor at startup, which will gather statistics about
-// Chrome's CPU and memory usage, page load times, startup times, and network
-// usage, and will also store information about events which may be of interest,
-// such as extension-related occurrences and crashes. Optionally, this may be
-// run with an integer value representing the interval between the timed
-// metric gatherings, measured in seconds (if invalid or not provided, the
-// default interval is used).
-const char kPerformanceMonitorGathering[]   = "performance-monitor-gathering";
-
 // Development flag for permission request API. This flag is needed until
 // the API is finalized.
 // TODO(bauerb): Remove when this flag is not needed anymore.

@@ -40,7 +40,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -634,18 +633,11 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     }
 #endif
 
-    // Pause the StartupTimer. Since the restore here is synchronous, we can
-    // keep these two metrics (browser startup time and session restore time)
-    // separate.
-    performance_monitor::StartupTimer::PauseTimer();
-
     // The startup code only executes for browsers launched in desktop mode.
     // i.e. HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
     Browser* browser = SessionRestore::RestoreSession(
         profile_, NULL, desktop_type, restore_behavior,
         urls_to_open);
-
-    performance_monitor::StartupTimer::UnpauseTimer();
 
     AddInfoBarsIfNecessary(browser, chrome::startup::IS_PROCESS_STARTUP);
     return true;

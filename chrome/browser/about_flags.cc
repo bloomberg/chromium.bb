@@ -1105,13 +1105,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableDeferredImageDecoding)
   },
   {
-    "performance-monitor-gathering",
-    IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME,
-    IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
-  },
-  {
     "wallet-service-use-sandbox",
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME,
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION,

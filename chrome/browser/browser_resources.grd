@@ -178,13 +178,6 @@
       <include name="IDR_NET_EXPORT_HTML" file="resources\net_export\net_export.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NET_EXPORT_JS" file="resources\net_export\net_export.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST" file="resources\network_speech_synthesis\manifest.json" type="BINDATA" />
-      <if expr="not is_android">
-        <include name="IDR_PERFORMANCE_MONITOR_CHART_CSS" file="resources\performance_monitor\chart.css" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_PERFORMANCE_MONITOR_CHART_JS" file="resources\performance_monitor\chart.js" type="BINDATA" />
-        <include name="IDR_PERFORMANCE_MONITOR_HTML" file="resources\performance_monitor\chart.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS" file="..\..\third_party\flot\jquery.flot.min.js" type="BINDATA" />
-        <include name="IDR_PERFORMANCE_MONITOR_JQUERY_JS" file="..\..\third_party\flot\jquery.min.js" type="BINDATA" />
-      </if>
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" />
       <if expr="not is_android">

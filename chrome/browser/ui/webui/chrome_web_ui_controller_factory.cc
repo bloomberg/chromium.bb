@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
-#include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
@@ -381,9 +380,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // extensions, etc) aren't supported.
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
-  // Performance monitoring page is not on Android for now.
-  if (url.host() == chrome::kChromeUIPerformanceMonitorHost)
-    return &NewWebUI<performance_monitor::PerformanceMonitorUI>;
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;

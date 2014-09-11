@@ -58,7 +58,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   virtual bool NavigateToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
       NavigationController::ReloadType reload_type) OVERRIDE;
-  virtual base::TimeTicks GetCurrentLoadStart() OVERRIDE;
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const GURL& url,
                               const Referrer& referrer,
@@ -104,9 +103,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Used to notify the object embedding this Navigator about navigation
   // events. Can be NULL in tests.
   NavigatorDelegate* delegate_;
-
-  // System time at which the current load was started.
-  base::TimeTicks current_load_start_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

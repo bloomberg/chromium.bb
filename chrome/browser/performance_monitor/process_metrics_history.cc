@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 
-#include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/process_metrics_history.h"
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
@@ -16,6 +15,10 @@
 #include "content/public/common/process_type.h"
 
 namespace performance_monitor {
+
+// If a process is consistently above this CPU utilization percentage over time,
+// we consider it as high and may take action.
+const float kHighCPUUtilizationThreshold = 90.0f;
 
 ProcessMetricsHistory::ProcessMetricsHistory()
     : process_handle_(0),

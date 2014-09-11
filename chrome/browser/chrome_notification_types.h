@@ -455,11 +455,6 @@ enum NotificationType {
 
   // Misc --------------------------------------------------------------------
 
-  // Sent when PerformanceMonitor has finished all the initial steps of data
-  // collection and has begun passively observing. The source is the
-  // PerformanceMonitor*. No details are expected.
-  NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
-
 #if defined(OS_CHROMEOS)
   // Sent when a chromium os user logs in.
   // The details are a chromeos::User object.

@@ -140,7 +140,6 @@ static_library("browser") {
       "//apps",
       "//cc",
       "//chrome/browser/devtools",
-      "//chrome/browser/performance_monitor",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
       "//chrome/installer/util",

@@ -24,7 +24,6 @@
         # TODO(tbarzic): Cleanup this list.
         'attestation_proto',
         'browser/extensions/api/api_registration.gyp:chrome_api_registration',
-        'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
         'browser_extensions',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',

@@ -45,10 +45,6 @@ namespace chrome_browser_metrics {
 class TrackingSynchronizer;
 }
 
-namespace performance_monitor {
-class StartupTimer;
-}
-
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   virtual ~ChromeBrowserMainParts();
@@ -134,11 +130,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.
   scoped_ptr<ShutdownWatcherHelper> shutdown_watcher_;
-
-  // A timer to hold data regarding startup and session restore times for
-  // PerformanceMonitor so that we don't have to start the entire
-  // PerformanceMonitor at browser startup.
-  scoped_ptr<performance_monitor::StartupTimer> startup_timer_;
 
   // Creating this object starts tracking the creation and deletion of Task
   // instance. This MUST be done before main_message_loop, so that it is

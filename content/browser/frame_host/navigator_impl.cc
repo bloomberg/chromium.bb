@@ -342,12 +342,6 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  // WebContents uses this to fill LoadNotificationDetails when the load
-  // completes, so that PerformanceMonitor that listens to the notification can
-  // record the load time. PerformanceMonitor is no longer maintained.
-  // TODO(ppi): make this go away.
-  current_load_start_ = base::TimeTicks::Now();
-
   // Create the navigation parameters.
   FrameMsg_Navigate_Params navigate_params;
   MakeNavigateParams(
@@ -427,10 +421,6 @@ bool NavigatorImpl::NavigateToPendingEntry(
       render_frame_host,
       *NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry()),
       reload_type);
-}
-
-base::TimeTicks NavigatorImpl::GetCurrentLoadStart() {
-  return current_load_start_;
 }
 
 void NavigatorImpl::DidNavigate(

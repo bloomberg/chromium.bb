@@ -1,8 +1,0 @@
-{
-  "version": "1",
-  "name": "Simple Extension",
-  "background": {
-    "page": "background.html"
-  },
-  "manifest_version": 2
-}

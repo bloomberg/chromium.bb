@@ -25,7 +25,6 @@
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/safe_search_util.h"
-#include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -522,9 +521,6 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
   TRACE_EVENT_ASYNC_STEP_PAST1("net", "URLRequest", &request, "DidRead",
                                "bytes_read", bytes_read);
-  performance_monitor::PerformanceMonitor::GetInstance()->BytesReadOnIOThread(
-      request, bytes_read);
-
 #if defined(ENABLE_TASK_MANAGER)
   // This is not completely accurate, but as a first approximation ignore
   // requests that are served from the cache. See bug 330931 for more info.

@@ -83,7 +83,6 @@ static_library("ui") {
                            ".", "//chrome")
     deps += [
       "//chrome/browser/devtools",
-      "//chrome/browser/performance_monitor",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",

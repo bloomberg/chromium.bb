@@ -65,7 +65,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
-#include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/power/process_power_collector.h"
 #include "chrome/browser/pref_service_flags_storage.h"
@@ -550,7 +549,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      startup_timer_(new performance_monitor::StartupTimer()),
       browser_field_trials_(parameters.command_line),
       profile_(NULL),
       run_message_loop_(true),
@@ -1557,8 +1555,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_creator_.reset();
 #endif  // !defined(OS_ANDROID)
 
-  performance_monitor::PerformanceMonitor::GetInstance()->Initialize();
-
 #if !defined(OS_ANDROID)
   process_power_collector_.reset(new ProcessPowerCollector);
   process_power_collector_->Initialize();
@@ -1567,10 +1563,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PostBrowserStart();
 
   if (parameters().ui_task) {
-    // We end the startup timer here if we have parameters to run, because we
-    // never start to run the main loop (where we normally stop the timer).
-    startup_timer_->SignalStartupComplete(
-        performance_monitor::StartupTimer::STARTUP_TEST);
     parameters().ui_task->Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
@@ -1603,8 +1595,6 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // UI thread message loop as possible to get a stable measurement
   // across versions.
   RecordBrowserStartupTime();
-  startup_timer_->SignalStartupComplete(
-      performance_monitor::StartupTimer::STARTUP_NORMAL);
 
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::RunLoop run_loop;
