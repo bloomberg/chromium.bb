@@ -6,6 +6,7 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 
 // Xlib.h defines RootWindow.
 #undef RootWindow
@@ -45,6 +46,12 @@ void DisableInput(XID window) {
   long event_mask = ExposureMask | VisibilityChangeMask |
       StructureNotifyMask | PropertyChangeMask;
   XSelectInput(gfx::GetXDisplay(), window, event_mask);
+  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
+  XIEventMask evmask;
+  evmask.deviceid = XIAllDevices;
+  evmask.mask_len = sizeof(mask);
+  evmask.mask = mask;
+  XISelectEvents(gfx::GetXDisplay(), window, &evmask, 1);
 }
 #endif
 
