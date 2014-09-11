@@ -148,14 +148,15 @@ Document* SVGUseElement::externalDocument() const
 
 void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* shadowElement, const SVGElement& originalElement)
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, hundredPercentString, ("100%", AtomicString::ConstructFromLiteral));
     ASSERT(shadowElement);
     if (isSVGSymbolElement(*shadowElement)) {
         // Spec (<use> on <symbol>): This generated 'svg' will always have explicit values for attributes width and height.
         // If attributes width and/or height are provided on the 'use' element, then these attributes
         // will be transferred to the generated 'svg'. If attributes width and/or height are not specified,
         // the generated 'svg' element will use values of 100% for these attributes.
-        shadowElement->setAttribute(SVGNames::widthAttr, use.width()->isSpecified() ? AtomicString(use.width()->currentValue()->valueAsString()) : "100%");
-        shadowElement->setAttribute(SVGNames::heightAttr, use.height()->isSpecified() ? AtomicString(use.height()->currentValue()->valueAsString()) : "100%");
+        shadowElement->setAttribute(SVGNames::widthAttr, use.width()->isSpecified() ? AtomicString(use.width()->currentValue()->valueAsString()) : hundredPercentString);
+        shadowElement->setAttribute(SVGNames::heightAttr, use.height()->isSpecified() ? AtomicString(use.height()->currentValue()->valueAsString()) : hundredPercentString);
     } else if (isSVGSVGElement(*shadowElement)) {
         // Spec (<use> on <svg>): If attributes width and/or height are provided on the 'use' element, then these
         // values will override the corresponding attributes on the 'svg' in the generated tree.
