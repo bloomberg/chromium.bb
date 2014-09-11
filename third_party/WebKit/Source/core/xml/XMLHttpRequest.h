@@ -223,8 +223,6 @@ private:
     // m_receivedLength and m_response.
     void dispatchProgressEventFromSnapshot(const AtomicString&);
 
-    // Does clean up common for all kind of didFail() call.
-    void handleDidFailGeneric();
     // Handles didFail() call not caused by cancellation or timeout.
     void handleNetworkError();
     // Handles didFail() call for cancellations. For example, the

@@ -543,12 +543,6 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
     m_error = false;
     m_uploadComplete = false;
 
-    // clear stuff from possible previous load
-    clearResponse();
-    clearRequest();
-
-    ASSERT(m_state == UNSENT);
-
     if (!isValidHTTPToken(method)) {
         exceptionState.throwDOMException(SyntaxError, "'" + method + "' is not a valid HTTP method.");
         return;
@@ -896,11 +890,6 @@ void XMLHttpRequest::abort()
     if (!internalAbort())
         return;
 
-    clearResponse();
-
-    // Clear headers as required by the spec
-    m_requestHeaders.clear();
-
     if (!((m_state <= OPENED && !sendFlag) || m_state == DONE)) {
         ASSERT(!m_loader);
         handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
@@ -943,6 +932,9 @@ bool XMLHttpRequest::internalAbort()
         // FIXME: Create a more specific error.
         m_responseStream->error(DOMException::create(!m_async && m_exceptionCode ? m_exceptionCode : AbortError, "XMLHttpRequest::abort"));
     }
+
+    clearResponse();
+    clearRequest();
 
     if (!m_loader)
         return true;
@@ -998,14 +990,6 @@ void XMLHttpRequest::clearRequest()
     m_requestHeaders.clear();
 }
 
-void XMLHttpRequest::handleDidFailGeneric()
-{
-    clearResponse();
-    clearRequest();
-
-    m_error = true;
-}
-
 void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type, long long receivedLength, long long expectedLength)
 {
     bool lengthComputable = expectedLength > 0 && receivedLength <= expectedLength;
@@ -1034,7 +1018,6 @@ void XMLHttpRequest::handleNetworkError()
     if (!internalAbort())
         return;
 
-    handleDidFailGeneric();
     handleRequestError(NetworkError, EventTypeNames::error, receivedLength, expectedLength);
 }
 
@@ -1046,7 +1029,9 @@ void XMLHttpRequest::handleDidCancel()
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
 
-    handleDidFailGeneric();
+    if (!internalAbort())
+        return;
+
     handleRequestError(AbortError, EventTypeNames::abort, receivedLength, expectedLength);
 }
 
@@ -1497,7 +1482,6 @@ void XMLHttpRequest::handleDidTimeout()
     if (!internalAbort())
         return;
 
-    handleDidFailGeneric();
     handleRequestError(TimeoutError, EventTypeNames::timeout, receivedLength, expectedLength);
 }
 
