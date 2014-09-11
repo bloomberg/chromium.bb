@@ -32,9 +32,9 @@
 #include "core/css/CSSGroupingRule.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
@@ -70,8 +70,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
-    BisonCSSParser parser(context);
-    RefPtrWillBeRawPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
+    RefPtrWillBeRawPtr<StyleRuleBase> newRule = CSSParser::parseRule(context, styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
         exceptionState.throwDOMException(SyntaxError, "the rule '" + ruleString + "' is invalid and cannot be parsed.");
         return 0;

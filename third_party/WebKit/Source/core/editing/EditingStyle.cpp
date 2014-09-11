@@ -38,7 +38,7 @@
 #include "core/css/FontSize.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -396,7 +396,8 @@ static RGBA32 cssValueToRGBA(CSSValue* colorValue)
         return primitiveColor->getRGBA32Value();
 
     RGBA32 rgba = 0;
-    BisonCSSParser::parseColor(rgba, colorValue->cssText());
+    // FIXME: Why ignore the return value?
+    CSSParser::parseColor(rgba, colorValue->cssText());
     return rgba;
 }
 

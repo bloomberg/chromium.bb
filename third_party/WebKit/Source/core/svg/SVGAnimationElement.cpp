@@ -29,7 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGElement.h"
