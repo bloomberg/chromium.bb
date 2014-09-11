@@ -267,7 +267,7 @@ int TestOpenAlternateDesktop(wchar_t *desktop_name) {
                                        DACL_SECURITY_INFORMATION, NULL, NULL,
                                        NULL, NULL);
       ::CloseHandle(test_handle);
-      if (result != ERROR_ACCESS_DENIED) {
+      if (result == ERROR_SUCCESS) {
         return SBOX_TEST_SUCCEEDED;
       }
     } else if (::GetLastError() != ERROR_ACCESS_DENIED) {
