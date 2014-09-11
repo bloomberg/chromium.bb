@@ -286,7 +286,7 @@ void FileSystem::Reset(const FileOperationCallback& callback) {
   ResetComponents();
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResetOnBlockingPool, resource_metadata_, cache_),
       callback);
@@ -510,7 +510,7 @@ void FileSystem::Pin(const base::FilePath& file_path,
 
   std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&PinInternal, resource_metadata_, cache_, file_path, local_id),
       base::Bind(&FileSystem::FinishPin,
@@ -537,13 +537,10 @@ void FileSystem::Unpin(const base::FilePath& file_path,
 
   std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&UnpinInternal,
-                 resource_metadata_,
-                 cache_,
-                 file_path,
-                 local_id),
+      base::Bind(
+          &UnpinInternal, resource_metadata_, cache_, file_path, local_id),
       base::Bind(&FileSystem::FinishUnpin,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
@@ -628,7 +625,7 @@ void FileSystem::GetResourceEntryAfterRead(
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&GetLocallyStoredResourceEntry,
                  resource_metadata_,
@@ -802,7 +799,7 @@ void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type,
                                   const std::string& local_id) {
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetFilePath,
                  base::Unretained(resource_metadata_),
@@ -874,11 +871,14 @@ void FileSystem::GetMetadata(
 
   int64* largest_changestamp = new int64(0);
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_), largest_changestamp),
-      base::Bind(&OnGetLargestChangestamp, metadata, callback,
+                 base::Unretained(resource_metadata_),
+                 largest_changestamp),
+      base::Bind(&OnGetLargestChangestamp,
+                 metadata,
+                 callback,
                  base::Owned(largest_changestamp)));
 }
 
@@ -890,16 +890,15 @@ void FileSystem::MarkCacheFileAsMounted(
 
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&MarkCacheFileAsMountedInternal,
                  resource_metadata_,
                  cache_,
                  drive_file_path,
                  cache_file_path),
-      base::Bind(&RunMarkMountedCallback,
-                 callback,
-                 base::Owned(cache_file_path)));
+      base::Bind(
+          &RunMarkMountedCallback, callback, base::Owned(cache_file_path)));
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(
@@ -914,7 +913,7 @@ void FileSystem::MarkCacheFileAsUnmounted(
   }
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::FileCache::MarkAsUnmounted,
                  base::Unretained(cache_),
@@ -983,7 +982,7 @@ void FileSystem::GetPathFromResourceId(const std::string& resource_id,
 
   base::FilePath* const file_path = new base::FilePath();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&GetPathFromResourceIdOnBlockingPool,
                  resource_metadata_,

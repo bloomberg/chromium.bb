@@ -484,7 +484,7 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
     // If user cancels download, unpin the file so that we do not sync the file
     // again.
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&FileCache::Unpin, base::Unretained(cache_), local_id),
         base::Bind(&util::EmptyFileOperationCallback));

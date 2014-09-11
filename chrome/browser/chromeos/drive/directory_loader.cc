@@ -352,7 +352,7 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
   ResourceEntry* entry = new ResourceEntry;
   int64* local_changestamp = new int64;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckLocalState,
                  resource_metadata_,

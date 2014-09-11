@@ -377,7 +377,7 @@ void ChangeListLoader::Load(const FileOperationCallback& callback) {
   // Check the current status of local metadata, and start loading if needed.
   int64* local_changestamp = new int64(0);
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetLargestChangestamp,
                  base::Unretained(resource_metadata_),

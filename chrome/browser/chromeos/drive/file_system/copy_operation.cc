@@ -373,13 +373,16 @@ void CopyOperation::CopyAfterParentSync(const CopyParams& params,
 
   ResourceEntry* parent = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetResourceEntryById,
                  base::Unretained(metadata_),
-                 params.parent_entry.local_id(), parent),
+                 params.parent_entry.local_id(),
+                 parent),
       base::Bind(&CopyOperation::CopyAfterGetParentResourceId,
-                 weak_ptr_factory_.GetWeakPtr(), params, base::Owned(parent)));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params,
+                 base::Owned(parent)));
 }
 
 void CopyOperation::CopyAfterGetParentResourceId(const CopyParams& params,
