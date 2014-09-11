@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 
 class PrefChangeRegistrar;
@@ -48,7 +49,8 @@ class DeviceEventRouter;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class EventRouter : public chromeos::NetworkStateHandlerObserver,
+class EventRouter : public KeyedService,
+                    public chromeos::NetworkStateHandlerObserver,
                     public drive::FileSystemObserver,
                     public drive::JobListObserver,
                     public drive::DriveServiceObserver,
@@ -58,10 +60,8 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
   explicit EventRouter(Profile* profile);
   virtual ~EventRouter();
 
-  void Shutdown();
-
-  // Starts observing file system change events.
-  void ObserveEvents();
+  // KeyedService overrides.
+  virtual void Shutdown() OVERRIDE;
 
   typedef base::Callback<void(bool success)> BoolCallback;
 
@@ -134,6 +134,9 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
 
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
+
+  // Starts observing file system change events.
+  void ObserveEvents();
 
   // Called when prefs related to file manager change.
   void OnFileManagerPrefsChanged();

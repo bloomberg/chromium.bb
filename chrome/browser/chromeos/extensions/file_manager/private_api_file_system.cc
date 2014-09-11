@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -83,7 +83,7 @@ file_manager::EventRouter* GetEventRouterByProfileId(void* profile_id) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return NULL;
 
-  return file_manager::FileManagerPrivateAPI::Get(profile)->event_router();
+  return file_manager::EventRouterFactory::GetForProfile(profile);
 }
 
 // Notifies the copy progress to extensions via event router.
@@ -381,7 +381,7 @@ void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileManagerPrivateAPI::Get(GetProfile())->event_router();
+      file_manager::EventRouterFactory::GetForProfile(GetProfile());
   event_router->AddFileWatch(
       local_path,
       virtual_path,
@@ -396,7 +396,7 @@ void FileManagerPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
-      file_manager::FileManagerPrivateAPI::Get(GetProfile())->event_router();
+      file_manager::EventRouterFactory::GetForProfile(GetProfile());
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
 }

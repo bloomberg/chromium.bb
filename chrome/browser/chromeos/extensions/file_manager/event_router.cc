@@ -388,6 +388,7 @@ EventRouter::EventRouter(Profile* profile)
       device_event_router_(new DeviceEventRouterImpl(profile)),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ObserveEvents();
 }
 
 EventRouter::~EventRouter() {

@@ -66,7 +66,7 @@
 #include "extensions/browser/api/usb/usb_device_resource.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
@@ -157,7 +157,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
   extensions::WebstoreAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
-  file_manager::FileManagerPrivateAPIFactory::GetInstance();
+  file_manager::EventRouterFactory::GetInstance();
 #endif
   TokenCacheServiceFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();

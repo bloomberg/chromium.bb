@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,21 +16,19 @@
 namespace file_manager {
 
 // static
-FileManagerPrivateAPI*
-FileManagerPrivateAPIFactory::GetForProfile(Profile* profile) {
-  return static_cast<FileManagerPrivateAPI*>(
+EventRouter* EventRouterFactory::GetForProfile(Profile* profile) {
+  return static_cast<EventRouter*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-FileManagerPrivateAPIFactory*
-FileManagerPrivateAPIFactory::GetInstance() {
-  return Singleton<FileManagerPrivateAPIFactory>::get();
+EventRouterFactory* EventRouterFactory::GetInstance() {
+  return Singleton<EventRouterFactory>::get();
 }
 
-FileManagerPrivateAPIFactory::FileManagerPrivateAPIFactory()
+EventRouterFactory::EventRouterFactory()
     : BrowserContextKeyedServiceFactory(
-          "FileManagerPrivateAPI",
+          "EventRouter",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
   DependsOn(
@@ -38,25 +36,25 @@ FileManagerPrivateAPIFactory::FileManagerPrivateAPIFactory()
   DependsOn(VolumeManagerFactory::GetInstance());
 }
 
-FileManagerPrivateAPIFactory::~FileManagerPrivateAPIFactory() {
+EventRouterFactory::~EventRouterFactory() {
 }
 
-KeyedService* FileManagerPrivateAPIFactory::BuildServiceInstanceFor(
+KeyedService* EventRouterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FileManagerPrivateAPI(Profile::FromBrowserContext(context));
+  return new EventRouter(Profile::FromBrowserContext(context));
 }
 
-content::BrowserContext* FileManagerPrivateAPIFactory::GetBrowserContextToUse(
+content::BrowserContext* EventRouterFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Explicitly and always allow this router in guest login mode.
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-bool FileManagerPrivateAPIFactory::ServiceIsCreatedWithBrowserContext() const {
+bool EventRouterFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-bool FileManagerPrivateAPIFactory::ServiceIsNULLWhileTesting() const {
+bool EventRouterFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
