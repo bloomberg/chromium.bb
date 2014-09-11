@@ -26,6 +26,7 @@ class ResourceRequest;
 class ResourceResponse;
 class ScriptSourceCode;
 class ScriptCallStack;
+class WorkerThread;
 class XMLHttpRequest;
 
 class InspectorLayoutEvent {
@@ -147,6 +148,11 @@ public:
 class InspectorTimeStampEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
+};
+
+class InspectorTracingSessionIdForWorkerEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, WorkerThread*);
 };
 
 } // namespace blink

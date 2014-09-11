@@ -236,6 +236,13 @@ void WorkerThread::interruptAndDispatchInspectorCommands()
         m_workerInspectorController->interruptAndDispatchInspectorCommands();
 }
 
+PlatformThreadId WorkerThread::platformThreadId() const
+{
+    if (!m_thread)
+        return 0;
+    return m_thread->threadId();
+}
+
 void WorkerThread::initialize()
 {
     KURL scriptURL = m_startupData->m_scriptURL;

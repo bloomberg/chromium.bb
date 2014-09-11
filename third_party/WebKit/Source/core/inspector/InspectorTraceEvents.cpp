@@ -17,6 +17,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
+#include "core/workers/WorkerThread.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
@@ -352,6 +353,14 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimeStampEvent::data(E
     value->setString("message", message);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
+    return value;
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTracingSessionIdForWorkerEvent::data(const String& sessionId, WorkerThread* workerThread)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("sessionId", sessionId);
+    value->setDouble("workerThreadId", workerThread->platformThreadId());
     return value;
 }
 

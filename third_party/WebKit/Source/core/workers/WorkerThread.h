@@ -95,6 +95,8 @@ namespace blink {
         // Number of active worker threads.
         static unsigned workerThreadCount();
 
+        PlatformThreadId platformThreadId() const;
+
         void interruptAndDispatchInspectorCommands();
         void setWorkerInspectorController(WorkerInspectorController*);
 

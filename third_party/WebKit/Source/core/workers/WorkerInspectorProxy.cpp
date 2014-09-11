@@ -8,6 +8,7 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"
@@ -86,16 +87,11 @@ void WorkerInspectorProxy::sendMessageToInspector(const String& message)
     m_workerThread->interruptAndDispatchInspectorCommands();
 }
 
-static void dispatchWriteTimelineStartedEvent(ExecutionContext* context, const String& sessionId)
-{
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingStartedInWorker", "sessionId", sessionId.utf8());
-}
-
 void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId)
 {
     if (!m_workerThread)
         return;
-    m_workerThread->postTask(createCrossThreadTask(dispatchWriteTimelineStartedEvent, String(sessionId)));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, m_workerThread));
 }
 
 } // namespace blink
