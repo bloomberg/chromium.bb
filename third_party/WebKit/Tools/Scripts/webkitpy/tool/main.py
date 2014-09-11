@@ -30,8 +30,6 @@
 # A tool for automating dealing with bugzilla, posting patches, committing patches, etc.
 
 from optparse import make_option
-import os
-import threading
 
 from webkitpy.common.host import Host
 from webkitpy.tool.multicommandtool import MultiCommandTool
@@ -48,7 +46,6 @@ class WebKitPatch(MultiCommandTool, Host):
         MultiCommandTool.__init__(self)
         Host.__init__(self)
         self._path = path
-        self.wakeup_event = threading.Event()
 
     def path(self):
         return self._path

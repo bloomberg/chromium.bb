@@ -26,8 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import threading
-
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot.buildbot_mock import MockBuildBot
 
@@ -63,8 +61,6 @@ class MockTool(MockHost):
         MockHost.__init__(self, *args, **kwargs)
 
         self._deprecated_port = MockPort()
-
-        self.wakeup_event = threading.Event()
 
     def deprecated_port(self):
         return self._deprecated_port
