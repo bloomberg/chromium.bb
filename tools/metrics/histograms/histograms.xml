@@ -42317,6 +42317,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="522" label="Sizes"/>
   <int value="523" label="SrcsetXDescriptor"/>
   <int value="524" label="SrcsetWDescriptor"/>
+  <int value="525" label="SelectionContainsNode"/>
+  <int value="526" label="MediaStreamEnded"/>
+  <int value="527" label="MixedContentPrivateIPInPublicWebsitePassive"/>
+  <int value="528" label="MixedContentPrivateIPInPublicWebsiteActive"/>
+  <int value="529" label="XMLExternalResourceLoad"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
