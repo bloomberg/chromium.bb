@@ -122,6 +122,10 @@ class PopupZoomer extends View {
 
     private GestureDetector mGestureDetector;
 
+    // These bounds are computed and valid for one execution of onDraw.
+    // Extracted to a member variable to save unnecessary allocations on each invocation.
+    private RectF mDrawRect;
+
     private static float getOverlayCornerRadius(Context context) {
         if (sOverlayCornerRadius == 0) {
             try {
@@ -401,6 +405,9 @@ class PopupZoomer extends View {
         // Constrain initial scroll position within allowed bounds.
         mPopupScrollX = constrain(mPopupScrollX, mMinScrollX, mMaxScrollX);
         mPopupScrollY = constrain(mPopupScrollY, mMinScrollY, mMaxScrollY);
+
+        // Compute the bounds in onDraw()
+        mDrawRect = new RectF();
     }
 
     /*
@@ -462,26 +469,25 @@ class PopupZoomer extends View {
         float unshiftX = -mShiftX * (1.0f - fractionAnimation) / mScale;
         float unshiftY = -mShiftY * (1.0f - fractionAnimation) / mScale;
 
-        // Compute the rect to show.
-        RectF rect = new RectF();
-        rect.left = mTouch.x - mLeftExtrusion * scale + unshiftX;
-        rect.top = mTouch.y - mTopExtrusion * scale + unshiftY;
-        rect.right = mTouch.x + mRightExtrusion * scale + unshiftX;
-        rect.bottom = mTouch.y + mBottomExtrusion * scale + unshiftY;
-        canvas.clipRect(rect);
+        // Compute the |mDrawRect| to show.
+        mDrawRect.left = mTouch.x - mLeftExtrusion * scale + unshiftX;
+        mDrawRect.top = mTouch.y - mTopExtrusion * scale + unshiftY;
+        mDrawRect.right = mTouch.x + mRightExtrusion * scale + unshiftX;
+        mDrawRect.bottom = mTouch.y + mBottomExtrusion * scale + unshiftY;
+        canvas.clipRect(mDrawRect);
 
         // Since the canvas transform APIs all pre-concat the transformations, this is done in
         // reverse order. The canvas is first scaled up, then shifted the appropriate amount of
         // pixels.
-        canvas.scale(scale, scale, rect.left, rect.top);
+        canvas.scale(scale, scale, mDrawRect.left, mDrawRect.top);
         canvas.translate(mPopupScrollX, mPopupScrollY);
-        canvas.drawBitmap(mZoomedBitmap, rect.left, rect.top, null);
+        canvas.drawBitmap(mZoomedBitmap, mDrawRect.left, mDrawRect.top, null);
         canvas.restore();
         Drawable overlayNineTile = getOverlayDrawable(getContext());
-        overlayNineTile.setBounds((int) rect.left - sOverlayPadding.left,
-                (int) rect.top - sOverlayPadding.top,
-                (int) rect.right + sOverlayPadding.right,
-                (int) rect.bottom + sOverlayPadding.bottom);
+        overlayNineTile.setBounds((int) mDrawRect.left - sOverlayPadding.left,
+                (int) mDrawRect.top - sOverlayPadding.top,
+                (int) mDrawRect.right + sOverlayPadding.right,
+                (int) mDrawRect.bottom + sOverlayPadding.bottom);
         // TODO(nileshagrawal): We should use time here instead of fractionAnimation
         // as fractionAnimaton is interpolated and can go over 1.
         int alpha = constrain((int) (fractionAnimation * 255), 0, 255);
