@@ -135,7 +135,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_id_(0),
       is_playing_(false),
       needs_establish_peer_(true),
-      in_fullscreen_(false),
       stream_texture_proxy_initialized_(false),
       has_size_info_(false),
       stream_texture_factory_(factory),
@@ -164,7 +163,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   if (force_use_overlay_embedded_video_ ||
     player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
     // Defer stream texture creation until we are sure it's necessary.
-    needs_external_surface_ = true;
+    needs_establish_peer_ = false;
     current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
   }
 #endif  // defined(VIDEO_HOLE)
@@ -305,11 +304,18 @@ void WebMediaPlayerAndroid::play() {
 #if defined(VIDEO_HOLE)
   if ((hasVideo() || IsHLSStream()) && needs_external_surface_ &&
       !player_manager_->IsInFullscreen(frame_)) {
+    DCHECK(!needs_establish_peer_);
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif  // defined(VIDEO_HOLE)
 
   TryCreateStreamTextureProxyIfNeeded();
+  // There is no need to establish the surface texture peer for fullscreen
+  // video.
+  if ((hasVideo() || IsHLSStream()) && needs_establish_peer_ &&
+      !player_manager_->IsInFullscreen(frame_)) {
+    EstablishSurfaceTexturePeer();
+  }
 
   if (paused())
     player_manager_->Start(player_id_);
@@ -753,6 +759,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // process are sequential, the OnSeekComplete() will only occur
   // once OnPlaybackComplete() is done. As the playback can only be executed
   // upon completion of OnSeekComplete(), the request needs to be saved.
+  is_playing_ = false;
   if (seeking_ && seek_time_ == base::TimeDelta())
     pending_playback_ = true;
 }
@@ -818,18 +825,25 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   if (force_use_overlay_embedded_video_ ||
       (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted() &&
        player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
+    needs_external_surface_ = true;
     if (!paused() && !player_manager_->IsInFullscreen(frame_))
       player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-  } else {
-    needs_external_surface_ = false;
+  } else if (stream_texture_proxy_ && !stream_id_) {
+    // Do deferred stream texture creation finally.
+    DoCreateStreamTexture();
+    SetNeedsEstablishPeer(true);
   }
 #endif  // defined(VIDEO_HOLE)
   natural_size_.width = width;
   natural_size_.height = height;
 
-  // hasVideo() might have changed since play was called, so need to possibly
-  // estlibash peer here.
-  EstablishSurfaceTexturePeerIfNeeded();
+  // When play() gets called, |natural_size_| may still be empty and
+  // EstablishSurfaceTexturePeer() will not get called. As a result, the video
+  // may play without a surface texture. When we finally get the valid video
+  // size here, we should call EstablishSurfaceTexturePeer() if it has not been
+  // previously called.
+  if (!paused() && needs_establish_peer_)
+    EstablishSurfaceTexturePeer();
 
   ReallocateVideoFrame();
 
@@ -867,15 +881,16 @@ void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
   DCHECK(!media_source_delegate_);
   DrawRemotePlaybackText(remote_playback_message);
   is_remote_ = true;
-  needs_establish_peer_ = true;
-  EstablishSurfaceTexturePeerIfNeeded();
+  SetNeedsEstablishPeer(false);
 }
 
 void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!media_source_delegate_);
+  SetNeedsEstablishPeer(true);
+  if (!paused())
+    EstablishSurfaceTexturePeer();
   is_remote_ = false;
-  EstablishSurfaceTexturePeerIfNeeded();
   ReallocateVideoFrame();
 }
 
@@ -885,8 +900,13 @@ void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
 }
 
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
-  in_fullscreen_ = false;
-  EstablishSurfaceTexturePeerIfNeeded();
+  // |needs_external_surface_| is always false on non-TV devices.
+  if (!needs_external_surface_)
+    SetNeedsEstablishPeer(true);
+  // We had the fullscreen surface connected to Android MediaPlayer,
+  // so reconnect our surface texture for embedded playback.
+  if (!paused() && needs_establish_peer_)
+    EstablishSurfaceTexturePeer();
 
 #if defined(VIDEO_HOLE)
   if (!paused() && needs_external_surface_)
@@ -948,7 +968,9 @@ void WebMediaPlayerAndroid::UpdateReadyState(
 }
 
 void WebMediaPlayerAndroid::OnPlayerReleased() {
-  needs_establish_peer_ = true;  // Established when this plays.
+  // |needs_external_surface_| is always false on non-TV devices.
+  if (!needs_external_surface_)
+    needs_establish_peer_ = true;
 
   if (is_playing_)
     OnMediaPlayerPause();
@@ -978,7 +1000,8 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
       break;
   }
   player_manager_->ReleaseResources(player_id_);
-  needs_establish_peer_ = true;  // Established when this plays.
+  if (!needs_external_surface_)
+    SetNeedsEstablishPeer(true);
 }
 
 void WebMediaPlayerAndroid::OnDestruct() {
@@ -1221,17 +1244,32 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   if (!stream_texture_factory_)
     return;
 
-  if (needs_external_surface_)
-    return;
-
   stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
-  if (stream_texture_proxy_) {
+  if (needs_establish_peer_ && stream_texture_proxy_) {
     DoCreateStreamTexture();
     ReallocateVideoFrame();
-
-    if (video_frame_provider_client_)
-      stream_texture_proxy_->SetClient(video_frame_provider_client_);
   }
+
+  if (stream_texture_proxy_ && video_frame_provider_client_)
+    stream_texture_proxy_->SetClient(video_frame_provider_client_);
+}
+
+void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (!stream_texture_proxy_)
+    return;
+
+  if (stream_texture_factory_.get() && stream_id_)
+    stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
+
+  // Set the deferred size because the size was changed in remote mode.
+  if (!is_remote_ && cached_stream_texture_size_ != natural_size_) {
+    stream_texture_factory_->SetStreamTextureSize(
+        stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
+    cached_stream_texture_size_ = natural_size_;
+  }
+
+  needs_establish_peer_ = false;
 }
 
 void WebMediaPlayerAndroid::DoCreateStreamTexture() {
@@ -1242,21 +1280,8 @@ void WebMediaPlayerAndroid::DoCreateStreamTexture() {
       kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
 }
 
-void WebMediaPlayerAndroid::EstablishSurfaceTexturePeerIfNeeded() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (!needs_establish_peer_ || in_fullscreen_ || needs_external_surface_ ||
-      is_remote_ || !is_playing_ || !stream_texture_proxy_ ||
-      (!hasVideo() && !IsHLSStream())) {
-    return;
-  }
-
-  stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
-  if (cached_stream_texture_size_ != natural_size_) {
-    stream_texture_factory_->SetStreamTextureSize(
-        stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
-    cached_stream_texture_size_ = natural_size_;
-  }
-  needs_establish_peer_ = false;
+void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
+  needs_establish_peer_ = needs_establish_peer;
 }
 
 void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
@@ -1265,7 +1290,6 @@ void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
-  EstablishSurfaceTexturePeerIfNeeded();
   if (!delegate_)
     return;
   if (is_playing)
@@ -1735,10 +1759,8 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (player_manager_->CanEnterFullscreen(frame_)) {
     player_manager_->EnterFullscreen(player_id_, frame_);
+    SetNeedsEstablishPeer(false);
   }
-  in_fullscreen_ = true;
-  needs_establish_peer_ = true;
-  EstablishSurfaceTexturePeerIfNeeded();
 }
 
 bool WebMediaPlayerAndroid::canEnterFullscreen() const {

@@ -266,9 +266,12 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void TryCreateStreamTextureProxyIfNeeded();
   void DoCreateStreamTexture();
 
-  // This method is meant to be idempotent. Should be called whenever any of
-  // conditions changes and it is ok to establish peer.
-  void EstablishSurfaceTexturePeerIfNeeded();
+  // Helper method to reestablish the surface texture peer for android
+  // media player.
+  void EstablishSurfaceTexturePeer();
+
+  // Requesting whether the surface texture peer needs to be reestablished.
+  void SetNeedsEstablishPeer(bool needs_establish_peer);
 
  private:
   void InitializePlayer(const GURL& url,
@@ -405,14 +408,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   bool is_playing_;
 
   // Whether media player needs to re-establish the surface texture peer.
-  // This should be unset in EstablishSurfaceTexturePeerIfNeeded() only, and set
-  // we believe peer is disconnected that we need to establish it again.
-  // Setting this should not be conditioned on additional state, eg playing
-  // or full screen.
   bool needs_establish_peer_;
-
-  // This is a helper state used in EstablishSurfaceTexturePeerIfNeeded().
-  bool in_fullscreen_;
 
   // Whether |stream_texture_proxy_| is initialized.
   bool stream_texture_proxy_initialized_;
