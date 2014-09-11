@@ -490,15 +490,22 @@ String HTMLTextAreaElement::validationMessage() const
 
 bool HTMLTextAreaElement::valueMissing() const
 {
-    return willValidate() && valueMissing(value());
+    // We should not call value() for performance.
+    return willValidate() && valueMissing(0);
+}
+
+bool HTMLTextAreaElement::valueMissing(const String* value) const
+{
+    return isRequiredFormControl() && !isDisabledOrReadOnly() && (value ? *value : this->value()).isEmpty();
 }
 
 bool HTMLTextAreaElement::tooLong() const
 {
-    return willValidate() && tooLong(value(), CheckDirtyFlag);
+    // We should not call value() for performance.
+    return willValidate() && tooLong(0, CheckDirtyFlag);
 }
 
-bool HTMLTextAreaElement::tooLong(const String& value, NeedsToCheckDirtyFlag check) const
+bool HTMLTextAreaElement::tooLong(const String* value, NeedsToCheckDirtyFlag check) const
 {
     // Return false for the default value or value set by script even if it is
     // longer than maxLength.
@@ -508,12 +515,12 @@ bool HTMLTextAreaElement::tooLong(const String& value, NeedsToCheckDirtyFlag che
     int max = maxLength();
     if (max < 0)
         return false;
-    return computeLengthForSubmission(value) > static_cast<unsigned>(max);
+    return computeLengthForSubmission(value ? *value : this->value()) > static_cast<unsigned>(max);
 }
 
 bool HTMLTextAreaElement::isValidValue(const String& candidate) const
 {
-    return !valueMissing(candidate) && !tooLong(candidate, IgnoreDirtyFlag);
+    return !valueMissing(&candidate) && !tooLong(&candidate, IgnoreDirtyFlag);
 }
 
 void HTMLTextAreaElement::accessKeyAction(bool)
