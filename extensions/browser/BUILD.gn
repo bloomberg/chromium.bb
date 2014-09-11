@@ -81,6 +81,8 @@ source_set("browser") {
       "api/cast_channel/cast_auth_util.h",
       "api/cast_channel/cast_channel_api.cc",
       "api/cast_channel/cast_channel_api.h",
+      "api/cast_channel/cast_framer.cc",
+      "api/cast_channel/cast_framer.h",
       "api/cast_channel/cast_message_util.cc",
       "api/cast_channel/cast_message_util.h",
       "api/cast_channel/cast_socket.cc",

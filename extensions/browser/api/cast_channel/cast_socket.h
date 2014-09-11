@@ -38,6 +38,7 @@ namespace cast_channel {
 class CastMessage;
 class Logger;
 struct LastErrors;
+class MessageFramer;
 
 // This class implements a channel between Chrome and a Cast device using a TCP
 // socket with SSL.  The channel may authenticate that the receiver is a genuine
@@ -155,30 +156,6 @@ class CastSocket : public ApiResource {
     READ_STATE_ERROR,
   };
 
- protected:
-  // Message header struct. If fields are added, be sure to update
-  // header_size().  Protected to allow use of *_size() methods in unit tests.
-  struct MessageHeader {
-    MessageHeader();
-    // Sets the message size.
-    void SetMessageSize(size_t message_size);
-    // Prepends this header to |str|.
-    void PrependToString(std::string* str);
-    // Reads |header| from the beginning of |buffer|.
-    static void ReadFromIOBuffer(net::GrowableIOBuffer* buffer,
-                                 MessageHeader* header);
-    // Size (in bytes) of the message header.
-    static uint32 header_size() { return sizeof(uint32); }
-
-    // Maximum size (in bytes) of a message payload on the wire (does not
-    // include header).
-    static uint32 max_message_size() { return 65536; }
-
-    std::string ToString();
-    // The size of the following protocol message in bytes, in host byte order.
-    uint32 message_size;
-  };
-
  private:
   friend class ApiResourceManager<CastSocket>;
   friend class CastSocketTest;
@@ -266,12 +243,6 @@ class CastSocket : public ApiResource {
   void PostTaskToStartConnectLoop(int result);
   void PostTaskToStartReadLoop();
   void StartReadLoop();
-  // Parses the contents of header_read_buffer_ and sets current_message_size_
-  // to the size of the body of the message.
-  bool ProcessHeader();
-  // Parses the contents of body_read_buffer_ and sets current_message_ to
-  // the message received.
-  bool ProcessBody();
   // Closes socket, signaling the delegate that |error| has occurred.
   void CloseWithError();
   // Frees resources and cancels pending callbacks.  |ready_state_| will be set
@@ -308,15 +279,8 @@ class CastSocket : public ApiResource {
   Delegate* delegate_;
 
   // IOBuffer for reading the message header.
-  scoped_refptr<net::GrowableIOBuffer> header_read_buffer_;
-  // IOBuffer for reading the message body.
-  scoped_refptr<net::GrowableIOBuffer> body_read_buffer_;
-  // IOBuffer to currently read into.
-  scoped_refptr<net::GrowableIOBuffer> current_read_buffer_;
-  // The number of bytes in the current message body.
-  uint32 current_message_size_;
-  // Last message received on the socket.
-  scoped_ptr<CastMessage> current_message_;
+  scoped_refptr<net::GrowableIOBuffer> read_buffer_;
+  scoped_ptr<MessageFramer> framer_;
 
   // The NetLog for this service.
   net::NetLog* net_log_;
@@ -354,6 +318,8 @@ class CastSocket : public ApiResource {
   // Set when a timeout is triggered and the connection process has
   // canceled.
   bool is_canceled_;
+
+  scoped_ptr<CastMessage> current_message_;
 
   // Connection flow state machine state.
   ConnectionState connect_state_;
@@ -400,7 +366,6 @@ class CastSocket : public ApiResource {
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestWriteErrorLargeMessage);
   DISALLOW_COPY_AND_ASSIGN(CastSocket);
 };
-
 }  // namespace cast_channel
 }  // namespace core_api
 }  // namespace extensions

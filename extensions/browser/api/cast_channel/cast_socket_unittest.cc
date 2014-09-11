@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -12,6 +14,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "net/base/address_list.h"
@@ -198,7 +201,7 @@ class TestCastSocket : public CastSocket {
 
   // Returns the size of the body (in bytes) of the given serialized message.
   static size_t ComputeBodySize(const std::string& msg) {
-    return msg.length() - CastSocket::MessageHeader::header_size();
+    return msg.length() - MessageFramer::MessageHeader::header_size();
   }
 
   virtual ~TestCastSocket() {
@@ -252,8 +255,9 @@ class TestCastSocket : public CastSocket {
   void AddReadResultForMessage(net::IoMode mode, const std::string& msg) {
     size_t body_size = ComputeBodySize(msg);
     const char* data = msg.c_str();
-    AddReadResult(mode, data, MessageHeader::header_size());
-    AddReadResult(mode, data + MessageHeader::header_size(), body_size);
+    AddReadResult(mode, data, MessageFramer::MessageHeader::header_size());
+    AddReadResult(
+        mode, data + MessageFramer::MessageHeader::header_size(), body_size);
   }
   void AddReadResultForMessage(net::IoMode mode,
                                const std::string& msg,
@@ -357,14 +361,17 @@ class CastSocketTest : public testing::Test {
                           &test_messages_[i]);
       ASSERT_TRUE(MessageInfoToCastMessage(
           test_messages_[i], &test_protos_[i]));
-      ASSERT_TRUE(CastSocket::Serialize(test_protos_[i], &test_proto_strs_[i]));
+      ASSERT_TRUE(
+          MessageFramer::Serialize(test_protos_[i], &test_proto_strs_[i]));
     }
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_CALL(handler_, OnCloseComplete(net::OK));
-    socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
-                              base::Unretained(&handler_)));
+    if (socket_.get()) {
+      EXPECT_CALL(handler_, OnCloseComplete(net::OK));
+      socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
+                                base::Unretained(&handler_)));
+    }
   }
 
   // The caller can specify non-standard namespaces by setting "auth_namespace"
@@ -374,7 +381,7 @@ class CastSocketTest : public testing::Test {
     // Create a test auth request.
     CastMessage request;
     CreateAuthChallengeMessage(&request);
-    ASSERT_TRUE(CastSocket::Serialize(request, &auth_request_));
+    ASSERT_TRUE(MessageFramer::Serialize(request, &auth_request_));
 
     // Create a test auth reply.
     MessageInfo reply;
@@ -382,7 +389,7 @@ class CastSocketTest : public testing::Test {
         auth_namespace, "sender-0", "receiver-0", "abcd", &reply);
     CastMessage reply_msg;
     ASSERT_TRUE(MessageInfoToCastMessage(reply, &reply_msg));
-    ASSERT_TRUE(CastSocket::Serialize(reply_msg, &auth_reply_));
+    ASSERT_TRUE(MessageFramer::Serialize(reply_msg, &auth_reply_));
   }
 
   void CreateCastSocket() {
@@ -945,7 +952,7 @@ TEST_F(CastSocketTest, TestWriteErrorLargeMessage) {
   SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  size_t size = CastSocket::MessageHeader::max_message_size() + 1;
+  size_t size = MessageFramer::MessageHeader::max_message_size() + 1;
   test_messages_[0].data.reset(
       new base::StringValue(std::string(size, 'a')));
   socket_->SendMessage(test_messages_[0],
@@ -1163,8 +1170,9 @@ TEST_F(CastSocketTest, TestReadErrorSync) {
 TEST_F(CastSocketTest, TestReadHeaderParseError) {
   CreateCastSocket();
   SetupAuthMessage();
-  uint32 body_size = base::HostToNet32(
-      CastSocket::MessageHeader::max_message_size() + 1);
+
+  uint32 body_size =
+      base::HostToNet32(MessageFramer::MessageHeader::max_message_size() + 1);
   // TODO(munjal): Add a method to cast_message_util.h to serialize messages
   char header[sizeof(body_size)];
   memcpy(&header, &body_size, arraysize(header));
@@ -1200,7 +1208,6 @@ TEST_F(CastSocketTest, TestReadBodyParseError) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
             socket_->error_state());
 }
-
 }  // namespace cast_channel
 }  // namespace core_api
 }  // namespace extensions
