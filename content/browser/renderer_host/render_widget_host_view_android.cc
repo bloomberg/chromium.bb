@@ -108,7 +108,14 @@ void CopyFromCompositingSurfaceFinished(
   TRACE_EVENT0(
       "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
   bitmap_pixels_lock.reset();
-  release_callback->Run(0, false);
+  uint32 sync_point = 0;
+  if (result) {
+    GLHelper* gl_helper =
+        ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+    sync_point = gl_helper->InsertSyncPoint();
+  }
+  bool lost_resource = sync_point == 0;
+  release_callback->Run(sync_point, lost_resource);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
                       base::TimeTicks::Now() - start_time);
   callback.Run(result, *bitmap);
