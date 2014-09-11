@@ -24269,7 +24269,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Precache.DownloadedNonPrecache" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
   <summary>
     The number of bytes that were downloaded over the network for HTTP/HTTPS
     fetches that were not motivated by precaching. Logged per-request.
@@ -24277,7 +24277,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Precache.DownloadedPrecacheMotivated" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
   <summary>
     The number of bytes that were downloaded because of precaching. Logged
     per-request.
@@ -24285,7 +24285,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Precache.Saved" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
   <summary>
     The number of bytes during user browsing that were served from the cache,
     but would have been downloaded over a network if precaching was disabled.
