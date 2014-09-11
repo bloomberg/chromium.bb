@@ -51,6 +51,7 @@ class WebActivity : public Activity,
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::Widget* CreateWidget() OVERRIDE;
   virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
   virtual void PrepareContentsForOverview() OVERRIDE;

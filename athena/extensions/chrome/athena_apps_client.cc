@@ -17,6 +17,24 @@
 #include "extensions/common/extension.h"
 
 namespace athena {
+namespace {
+
+// A short term hack to get WebView from ChromeNativeAppWindowViews.
+// TODO(oshima): Implement athena's NativeAppWindow.
+class AthenaNativeAppWindowViews : public ChromeNativeAppWindowViews {
+ public:
+  AthenaNativeAppWindowViews() {}
+  virtual ~AthenaNativeAppWindowViews() {}
+
+  views::WebView* GetWebView() {
+    return web_view();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AthenaNativeAppWindowViews);
+};
+
+}  // namespace
 
 AthenaAppsClient::AthenaAppsClient() {
 }
@@ -41,12 +59,12 @@ extensions::AppWindow* AthenaAppsClient::CreateAppWindow(
 extensions::NativeAppWindow* AthenaAppsClient::CreateNativeAppWindow(
     extensions::AppWindow* app_window,
     const extensions::AppWindow::CreateParams& params) {
-  // TODO(oshima): Implement athena's native appwindow.
-  ChromeNativeAppWindowViews* window = new ChromeNativeAppWindowViews;
-  window->Init(app_window, params);
-  athena::ActivityManager::Get()->AddActivity(
-      athena::ActivityFactory::Get()->CreateAppActivity(app_window));
-  return window;
+  AthenaNativeAppWindowViews* native_window = new AthenaNativeAppWindowViews;
+  native_window->Init(app_window, params);
+  Activity* app_activity = ActivityFactory::Get()->CreateAppActivity(
+      app_window, native_window->GetWebView());
+  ActivityManager::Get()->AddActivity(app_activity);
+  return native_window;
 }
 
 void AthenaAppsClient::IncrementKeepAliveCount() {

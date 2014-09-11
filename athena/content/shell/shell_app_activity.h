@@ -22,8 +22,11 @@ class ShellAppActivity : public AppActivity {
   virtual ~ShellAppActivity();
 
  private:
+  // ActivityViewModel:
+  virtual views::Widget* CreateWidget() OVERRIDE;
+
   // AppActivity:
-  virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual views::WebView* GetWebView() OVERRIDE;
 
   scoped_ptr<extensions::ShellAppWindow> shell_app_window_;
 

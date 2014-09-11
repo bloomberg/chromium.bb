@@ -68,7 +68,7 @@ class TestAppActivity : public AppActivity {
   }
 
   // AppActivity:
-  virtual content::WebContents* GetWebContents() OVERRIDE { return NULL; }
+  virtual views::WebView* GetWebView() OVERRIDE { return NULL; }
 
   // ActivityViewModel:
   virtual void Init() OVERRIDE {}
@@ -76,6 +76,7 @@ class TestAppActivity : public AppActivity {
   virtual base::string16 GetTitle() const OVERRIDE { return title_; }
   virtual bool UsesFrame() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
+  virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
   virtual void CreateOverviewModeImage() OVERRIDE {}
 
  private:

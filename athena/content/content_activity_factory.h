@@ -21,8 +21,8 @@ class ContentActivityFactory : public ActivityFactory {
                                       const GURL& url) OVERRIDE;
   virtual Activity* CreateAppActivity(extensions::ShellAppWindow* app_window,
                                       const std::string& app_id) OVERRIDE;
-  virtual Activity* CreateAppActivity(
-      extensions::AppWindow* app_window) OVERRIDE;
+  virtual Activity* CreateAppActivity(extensions::AppWindow* app_window,
+                                      views::WebView* web_view) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentActivityFactory);

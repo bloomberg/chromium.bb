@@ -73,6 +73,10 @@ views::View* SampleActivity::GetContentsView() {
   return contents_view_;
 }
 
+views::Widget* SampleActivity::CreateWidget() {
+  return NULL;
+}
+
 void SampleActivity::CreateOverviewModeImage() {
 }
 

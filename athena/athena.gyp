@@ -187,6 +187,7 @@
       'type': 'static_library',
       'dependencies': [
         '../extensions/shell/app_shell.gyp:app_shell_lib',
+        '../skia/skia.gyp:skia',
       ],
       'sources': [
         'content/shell/content_activity_factory.cc',

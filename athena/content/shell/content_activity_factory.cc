@@ -15,7 +15,8 @@ Activity* ContentActivityFactory::CreateAppActivity(
 }
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::AppWindow* app_window) {
+    extensions::AppWindow* app_window,
+    views::WebView* web_view) {
   return NULL;
 }
 

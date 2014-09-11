@@ -84,6 +84,10 @@ views::View* AppActivityProxy::GetContentsView() {
   return view_;
 }
 
+views::Widget* AppActivityProxy::CreateWidget() {
+  return NULL;
+}
+
 void AppActivityProxy::CreateOverviewModeImage() {
   // Nothing we can do here.
 }

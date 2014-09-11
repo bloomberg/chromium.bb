@@ -17,6 +17,10 @@ class AppWindow;
 class ShellAppWindow;
 }
 
+namespace views {
+class WebView;
+}
+
 namespace athena {
 class Activity;
 
@@ -46,8 +50,10 @@ class ATHENA_EXPORT ActivityFactory {
   virtual Activity* CreateAppActivity(extensions::ShellAppWindow* app_window,
                                       const std::string& id) = 0;
 
-  // Create an activity of an app with |app_window| for chrome environment.
-  virtual Activity* CreateAppActivity(extensions::AppWindow* app_window) = 0;
+  // Create an activity of an app with |app_window| for chrome environment and
+  // |web_view| that will host the content.
+  virtual Activity* CreateAppActivity(extensions::AppWindow* app_window,
+                                      views::WebView* web_view) = 0;
 };
 
 }  // namespace athena

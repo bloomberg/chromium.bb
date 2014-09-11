@@ -53,6 +53,7 @@ class TestActivity : public Activity,
   virtual base::string16 GetTitle() const OVERRIDE { return title_; }
   virtual bool UsesFrame() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
+  virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
   virtual void CreateOverviewModeImage() OVERRIDE {}
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE { return image_; }
   virtual void PrepareContentsForOverview() OVERRIDE {}

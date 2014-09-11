@@ -45,7 +45,9 @@ Activity* SampleActivityFactory::CreateAppActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    extensions::AppWindow* app_window) {
+    extensions::AppWindow* app_window,
+    views::WebView* web_view) {
+  DCHECK(!web_view);
   return new SampleActivity(
       kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
 }

@@ -472,6 +472,10 @@ views::View* WebActivity::GetContentsView() {
   return web_view_;
 }
 
+views::Widget* WebActivity::CreateWidget() {
+  return NULL;  // Use default widget.
+}
+
 void WebActivity::CreateOverviewModeImage() {
   // TODO(skuhne): Create an overview.
 }

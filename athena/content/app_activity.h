@@ -10,10 +10,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace contents {
-class WebContents;
-}
-
 namespace views {
 class WebView;
 }
@@ -57,7 +53,7 @@ class AppActivity : public Activity,
   virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
-  virtual content::WebContents* GetWebContents() = 0;
+  virtual views::WebView* GetWebView() = 0;
 
  private:
   // Register this activity with its application.

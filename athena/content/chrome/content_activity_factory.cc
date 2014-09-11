@@ -6,6 +6,7 @@
 
 #include "athena/content/app_activity.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "ui/views/controls/webview/webview.h"
 
 // TODO(oshima): Consolidate this and app shell implementation once
 // crbug.com/403726 is fixed.
@@ -14,19 +15,32 @@ namespace {
 
 class ChromeAppActivity : public AppActivity {
  public:
-  explicit ChromeAppActivity(extensions::AppWindow* app_window)
-      : AppActivity(app_window->extension_id()), app_window_(app_window) {}
+  ChromeAppActivity(extensions::AppWindow* app_window, views::WebView* web_view)
+      : AppActivity(app_window->extension_id()),
+        app_window_(app_window),
+        web_view_(web_view) {
+    DCHECK_EQ(app_window->web_contents(), web_view->GetWebContents());
+    Observe(app_window_->web_contents());
+  }
 
  private:
   virtual ~ChromeAppActivity() {}
 
-  // AppActivity:
-  virtual content::WebContents* GetWebContents() OVERRIDE {
-    return app_window_->web_contents();
+  // ActivityViewModel overrides:
+  virtual views::Widget* CreateWidget() OVERRIDE {
+    // This is necessary to register apps.
+    // TODO(oshima): This will become unnecessary once the
+    // shell_app_window is removed.
+    GetContentsView();
+    return web_view_->GetWidget();
   }
+
+  // AppActivity:
+  virtual views::WebView* GetWebView() OVERRIDE { return web_view_; }
 
   // Not owned.
   extensions::AppWindow* app_window_;
+  views::WebView* web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppActivity);
 };
@@ -34,8 +48,9 @@ class ChromeAppActivity : public AppActivity {
 }  // namespace
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::AppWindow* app_window) {
-  return new ChromeAppActivity(app_window);
+    extensions::AppWindow* app_window,
+    views::WebView* web_view) {
+  return new ChromeAppActivity(app_window, web_view);
 }
 
 Activity* ContentActivityFactory::CreateAppActivity(

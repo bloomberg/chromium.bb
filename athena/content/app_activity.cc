@@ -116,10 +116,7 @@ bool AppActivity::UsesFrame() const {
 
 views::View* AppActivity::GetContentsView() {
   if (!web_view_) {
-    // TODO(oshima): use apps::NativeAppWindowViews
-    content::WebContents* web_contents = GetWebContents();
-    web_view_ = new views::WebView(web_contents->GetBrowserContext());
-    web_view_->SetWebContents(web_contents);
+    web_view_ = GetWebView();
     // Make sure the content gets properly shown.
     if (current_state_ == ACTIVITY_VISIBLE) {
       MakeVisible();
@@ -129,7 +126,6 @@ views::View* AppActivity::GetContentsView() {
       // If not previously specified, we change the state now to invisible..
       SetCurrentState(ACTIVITY_INVISIBLE);
     }
-    Observe(web_contents);
     RegisterActivity();
   }
   return web_view_;
@@ -174,7 +170,7 @@ void AppActivity::DidUpdateFaviconURL(
 // Note: This should only get called once for an |app_window| of the
 // |activity|.
 void AppActivity::RegisterActivity() {
-  content::WebContents* web_contents = GetWebContents();
+  content::WebContents* web_contents = web_view_->GetWebContents();
   AppRegistry* app_registry = AppRegistry::Get();
   // Get the application's registry.
   app_activity_registry_ = app_registry->GetAppActivityRegistry(

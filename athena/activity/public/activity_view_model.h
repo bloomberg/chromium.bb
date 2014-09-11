@@ -16,6 +16,7 @@ class ImageSkia;
 
 namespace views {
 class View;
+class Widget;
 }
 
 namespace athena {
@@ -45,6 +46,10 @@ class ATHENA_EXPORT ActivityViewModel {
   // loaded. Note that the caller should not hold on to the view since it can
   // be deleted by the resource manager.
   virtual views::View* GetContentsView() = 0;
+
+  // Creates a custom widget for the activity. Returns NULL to use default
+  // implementation.
+  virtual views::Widget* CreateWidget() = 0;
 
   // This gets called before the Activity gets (partially) thrown out of memory
   // to create a preview image of the activity. Note that even if this function
