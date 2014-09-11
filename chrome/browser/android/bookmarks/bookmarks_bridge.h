@@ -29,6 +29,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
 
   static bool RegisterBookmarksBridge(JNIEnv* env);
 
+  bool IsDoingExtensiveChanges(JNIEnv* env, jobject obj);
+
   base::android::ScopedJavaLocalRef<jobject> GetBookmarkByID(
       JNIEnv* env,
       jobject obj,

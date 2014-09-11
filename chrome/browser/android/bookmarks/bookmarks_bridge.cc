@@ -154,6 +154,10 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetBookmarkByID(JNIEnv* env,
   return CreateJavaBookmark(GetNodeByID(id, type));
 }
 
+bool BookmarksBridge::IsDoingExtensiveChanges(JNIEnv* env, jobject obj) {
+  return bookmark_model_->IsDoingExtensiveChanges();
+}
+
 void BookmarksBridge::GetPermanentNodeIDs(JNIEnv* env,
                                           jobject obj,
                                           jobject j_result_obj) {

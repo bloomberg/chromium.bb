@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class BookmarksBridge {
     private final Profile mProfile;
+    private boolean mIsDoingExtensiveChanges;
     private long mNativeBookmarksBridge;
     private boolean mIsNativeBookmarkModelLoaded;
     private final List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
@@ -48,9 +49,13 @@ public class BookmarksBridge {
     }
 
     /**
-     * Interface that provides listeners to be notified of changes to the bookmark model.
+     * Base empty implementation observer class that provides listeners to be notified of changes
+     * to the bookmark model. It's mandatory to implement one method, bookmarkModelChanged. Other
+     * methods are optional and if they aren't overridden, the default implementation of them will
+     * eventually call bookmarkModelChanged. Unless noted otherwise, all the functions won't be
+     * called during extensive change.
      */
-    public interface BookmarkModelObserver {
+    public abstract static class BookmarkModelObserver {
         /**
          * Invoked when a node has moved.
          * @param oldParent The parent before the move.
@@ -58,61 +63,79 @@ public class BookmarksBridge {
          * @param newParent The parent after the move.
          * @param newIndex The index of the node in the new parent.
          */
-        void bookmarkNodeMoved(
-                BookmarkItem oldParent, int oldIndex, BookmarkItem newParent, int newIndex);
+        public void bookmarkNodeMoved(
+                BookmarkItem oldParent, int oldIndex, BookmarkItem newParent, int newIndex) {
+            bookmarkModelChanged();
+        }
 
         /**
          * Invoked when a node has been added.
          * @param parent The parent of the node being added.
          * @param index The index of the added node.
          */
-        void bookmarkNodeAdded(BookmarkItem parent, int index);
+        public void bookmarkNodeAdded(BookmarkItem parent, int index) {
+            bookmarkModelChanged();
+        }
+
+        /**
+         * Invoked when a node has been removed, the item may still be starred though. This can
+         * be called during extensive change, and have the flag argument indicating it.
+         * @param parent The parent of the node that was removed.
+         * @param oldIndex The index of the removed node in the parent before it was removed.
+         * @param node The node that was removed.
+         * @param isDoingExtensiveChanges whether extensive changes are happening.
+         */
+        public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
+                boolean isDoingExtensiveChanges) {
+            if (isDoingExtensiveChanges) return;
+
+            bookmarkNodeRemoved(parent, oldIndex, node);
+        }
 
         /**
          * Invoked when a node has been removed, the item may still be starred though.
+         *
          * @param parent The parent of the node that was removed.
          * @param oldIndex The index of the removed node in the parent before it was removed.
          * @param node The node that was removed.
          */
-        void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node);
+        public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node) {
+            bookmarkModelChanged();
+        }
 
         /**
          * Invoked when the title or url of a node changes.
          * @param node The node being changed.
          */
-        void bookmarkNodeChanged(BookmarkItem node);
+        public void bookmarkNodeChanged(BookmarkItem node) {
+            bookmarkModelChanged();
+        }
 
         /**
          * Invoked when the children (just direct children, not descendants) of a node have been
          * reordered in some way, such as sorted.
          * @param node The node whose children are being reordered.
          */
-        void bookmarkNodeChildrenReordered(BookmarkItem node);
-
-        /**
-         * Invoked before an extensive set of model changes is about to begin.  This tells UI
-         * intensive observers to wait until the updates finish to update themselves. These methods
-         * should only be used for imports and sync. Observers should still respond to
-         * BookmarkNodeRemoved immediately, to avoid holding onto stale node references.
-         */
-        void extensiveBookmarkChangesBeginning();
-
-        /**
-         * Invoked after an extensive set of model changes has ended.  This tells observers to
-         * update themselves if they were waiting for the update to finish.
-         */
-        void extensiveBookmarkChangesEnded();
-
-        /**
-         *  Called when there are changes to the bookmark model that don't trigger any of the other
-         *  callback methods. For example, this is called when partner bookmarks change.
-         */
-        void bookmarkModelChanged();
+        public void bookmarkNodeChildrenReordered(BookmarkItem node) {
+            bookmarkModelChanged();
+        }
 
         /**
          * Called when the native side of bookmark is loaded and now in usable state.
          */
-        void bookmarkModelLoaded();
+        public void bookmarkModelLoaded() {
+            bookmarkModelChanged();
+        }
+
+        /**
+         *  Called when there are changes to the bookmark model that don't trigger any of the other
+         *  callback methods or it wasn't handled by other callback methods.
+         *  Examples:
+         *  - On partner bookmarks change.
+         *  - On extensive change finished.
+         *  - Falling back from other methods that are not overridden in this class.
+         */
+        public abstract void bookmarkModelChanged();
     }
 
     /**
@@ -122,6 +145,7 @@ public class BookmarksBridge {
     public BookmarksBridge(Profile profile) {
         mProfile = profile;
         mNativeBookmarksBridge = nativeInit(profile);
+        mIsDoingExtensiveChanges = nativeIsDoingExtensiveChanges(mNativeBookmarksBridge);
     }
 
     /**
@@ -396,6 +420,8 @@ public class BookmarksBridge {
     @CalledByNative
     private void bookmarkNodeMoved(
             BookmarkItem oldParent, int oldIndex, BookmarkItem newParent, int newIndex) {
+        if (mIsDoingExtensiveChanges) return;
+
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkNodeMoved(oldParent, oldIndex, newParent, newIndex);
         }
@@ -403,6 +429,8 @@ public class BookmarksBridge {
 
     @CalledByNative
     private void bookmarkNodeAdded(BookmarkItem parent, int index) {
+        if (mIsDoingExtensiveChanges) return;
+
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkNodeAdded(parent, index);
         }
@@ -411,12 +439,15 @@ public class BookmarksBridge {
     @CalledByNative
     private void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node) {
         for (BookmarkModelObserver observer : mObservers) {
-            observer.bookmarkNodeRemoved(parent, oldIndex, node);
+            observer.bookmarkNodeRemoved(parent, oldIndex, node,
+                    mIsDoingExtensiveChanges);
         }
     }
 
     @CalledByNative
     private void bookmarkNodeChanged(BookmarkItem node) {
+        if (mIsDoingExtensiveChanges) return;
+
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkNodeChanged(node);
         }
@@ -424,6 +455,8 @@ public class BookmarksBridge {
 
     @CalledByNative
     private void bookmarkNodeChildrenReordered(BookmarkItem node) {
+        if (mIsDoingExtensiveChanges) return;
+
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkNodeChildrenReordered(node);
         }
@@ -431,20 +464,19 @@ public class BookmarksBridge {
 
     @CalledByNative
     private void extensiveBookmarkChangesBeginning() {
-        for (BookmarkModelObserver observer : mObservers) {
-            observer.extensiveBookmarkChangesBeginning();
-        }
+        mIsDoingExtensiveChanges = true;
     }
 
     @CalledByNative
     private void extensiveBookmarkChangesEnded() {
-        for (BookmarkModelObserver observer : mObservers) {
-            observer.extensiveBookmarkChangesEnded();
-        }
+        mIsDoingExtensiveChanges = false;
+        bookmarkModelChanged();
     }
 
     @CalledByNative
     private void bookmarkModelChanged() {
+        if (mIsDoingExtensiveChanges) return;
+
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkModelChanged();
         }
@@ -514,6 +546,7 @@ public class BookmarksBridge {
     private static native long nativeGetNativeBookmarkModel(Profile profile);
     private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
     private native long nativeInit(Profile profile);
+    private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);
     private static native boolean nativeIsEditBookmarksEnabled();
 
