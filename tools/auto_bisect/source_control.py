@@ -154,7 +154,7 @@ class GitSourceControl(SourceControl):
 
       for i in search_range:
         svn_pattern = 'git-svn-id: %s@%d' % (depot_svn, i)
-        commit_position_pattern = 'Cr-Commit-Position: .*@{#%d}' % i
+        commit_position_pattern = '^Cr-Commit-Position: .*@{#%d}' % i
         cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern,
                '--grep', commit_position_pattern, 'origin/master']
 
