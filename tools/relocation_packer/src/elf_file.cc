@@ -2,11 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Implementation notes:
+//
+// We need to remove a piece from the ELF shared library.  However, we also
+// want to ensure that code and data loads at the same addresses as before
+// packing, so that tools like breakpad can still match up addresses found
+// in any crash dumps with data extracted from the pre-packed version of
+// the shared library.
+//
+// Arranging this means that we have to split one of the LOAD segments into
+// two.  Unfortunately, the program headers are located at the very start
+// of the shared library file, so expanding the program header section
+// would cause a lot of consequent changes to files offsets that we don't
+// really want to have to handle.
+//
+// Luckily, though, there is a segment that is always present and always
+// unused on Android; the GNU_STACK segment.  What we do is to steal that
+// and repurpose it to be one of the split LOAD segments.  We then have to
+// sort LOAD segments by offset to keep the crazy linker happy.
+//
+// All of this takes place in SplitProgramHeadersForHole(), used on packing,
+// and is unraveled on unpacking in CoalesceProgramHeadersForHole().  See
+// commentary on those functions for an example of this segment stealing
+// in action.
+
 #include "elf_file.h"
 
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -75,18 +100,20 @@ void VerboseLogProgramHeader(size_t program_header_index,
     case PT_LOAD: type = "LOAD"; break;
     case PT_DYNAMIC: type = "DYNAMIC"; break;
     case PT_INTERP: type = "INTERP"; break;
-    case PT_NOTE: type = "NOTE"; break;
-    case PT_SHLIB: type = "SHLIB"; break;
     case PT_PHDR: type = "PHDR"; break;
-    case PT_TLS: type = "TLS"; break;
+    case PT_GNU_RELRO: type = "GNU_RELRO"; break;
+    case PT_GNU_STACK: type = "GNU_STACK"; break;
+    case PT_ARM_EXIDX: type = "EXIDX"; break;
     default: type = "(OTHER)"; break;
   }
-  VLOG(1) << "phdr " << program_header_index << " : " << type;
+  VLOG(1) << "phdr[" << program_header_index << "] : " << type;
   VLOG(1) << "  p_offset = " << program_header->p_offset;
   VLOG(1) << "  p_vaddr = " << program_header->p_vaddr;
   VLOG(1) << "  p_paddr = " << program_header->p_paddr;
   VLOG(1) << "  p_filesz = " << program_header->p_filesz;
   VLOG(1) << "  p_memsz = " << program_header->p_memsz;
+  VLOG(1) << "  p_flags = " << program_header->p_flags;
+  VLOG(1) << "  p_align = " << program_header->p_align;
 }
 
 // Verbose ELF section header logging.
@@ -182,13 +209,6 @@ bool ElfFile::Load() {
   bool has_rel_relocations = false;
   bool has_rela_relocations = false;
 
-  // Flag set if we encounter any .debug* section.  We do not adjust any
-  // offsets or addresses of any debug data, so if we find one of these then
-  // the resulting output shared object should still run, but might not be
-  // usable for debugging, disassembly, and so on.  Provides a warning if
-  // this occurs.
-  bool has_debug_section = false;
-
   Elf_Scn* section = NULL;
   while ((section = elf_nextscn(elf, section)) != NULL) {
     const ELF::Shdr* section_header = ELF::getshdr(section);
@@ -214,11 +234,6 @@ bool ElfFile::Load() {
     }
     if (section_header->sh_offset == dynamic_program_header->p_offset) {
       found_dynamic_section = section;
-    }
-
-    // If we find a section named .debug*, set the debug warning flag.
-    if (std::string(name).find(".debug") == 0) {
-      has_debug_section = true;
     }
 
     // Ensure we preserve alignment, repeated later for the data block(s).
@@ -258,10 +273,6 @@ bool ElfFile::Load() {
     return false;
   }
 
-  if (has_debug_section) {
-    LOG(WARNING) << "Found .debug section(s), and ignored them";
-  }
-
   elf_ = elf;
   relocations_section_ = found_relocations_section;
   dynamic_section_ = found_dynamic_section;
@@ -286,45 +297,6 @@ void AdjustElfHeaderForHole(ELF::Ehdr* elf_header,
   }
 }
 
-// Helper for ResizeSection().  Adjust all program headers for the hole.
-void AdjustProgramHeadersForHole(ELF::Phdr* elf_program_header,
-                                 size_t program_header_count,
-                                 ELF::Off hole_start,
-                                 ssize_t hole_size) {
-  for (size_t i = 0; i < program_header_count; ++i) {
-    ELF::Phdr* program_header = &elf_program_header[i];
-
-    if (program_header->p_offset > hole_start) {
-      // The hole start is past this segment, so adjust offsets and addrs.
-      program_header->p_offset += hole_size;
-      VLOG(1) << "phdr " << i
-              << " p_offset adjusted to "<< program_header->p_offset;
-
-      // Only adjust vaddr and paddr if this program header has them.
-      if (program_header->p_vaddr != 0) {
-        program_header->p_vaddr += hole_size;
-        VLOG(1) << "phdr " << i
-                << " p_vaddr adjusted to " << program_header->p_vaddr;
-      }
-      if (program_header->p_paddr != 0) {
-        program_header->p_paddr += hole_size;
-        VLOG(1) << "phdr " << i
-                << " p_paddr adjusted to " << program_header->p_paddr;
-      }
-    } else if (program_header->p_offset +
-               program_header->p_filesz > hole_start) {
-      // The hole start is within this segment, so adjust file and in-memory
-      // sizes, but leave offsets and addrs unchanged.
-      program_header->p_filesz += hole_size;
-      VLOG(1) << "phdr " << i
-              << " p_filesz adjusted to " << program_header->p_filesz;
-      program_header->p_memsz += hole_size;
-      VLOG(1) << "phdr " << i
-              << " p_memsz adjusted to " << program_header->p_memsz;
-    }
-  }
-}
-
 // Helper for ResizeSection().  Adjust all section headers for the hole.
 void AdjustSectionHeadersForHole(Elf* elf,
                                  ELF::Off hole_start,
@@ -341,20 +313,441 @@ void AdjustSectionHeadersForHole(Elf* elf,
       section_header->sh_offset += hole_size;
       VLOG(1) << "section " << name
               << " sh_offset adjusted to " << section_header->sh_offset;
-      // Only adjust section addr if this section has one.
-      if (section_header->sh_addr != 0) {
-        section_header->sh_addr += hole_size;
-        VLOG(1) << "section " << name
-                << " sh_addr adjusted to " << section_header->sh_addr;
-      }
     }
   }
+}
+
+// Helper for ResizeSection().  Adjust the offsets of any program headers
+// that have offsets currently beyond the hole start.
+void AdjustProgramHeaderOffsets(ELF::Phdr* program_headers,
+                                size_t count,
+                                ELF::Phdr* ignored_1,
+                                ELF::Phdr* ignored_2,
+                                ELF::Off hole_start,
+                                ssize_t hole_size) {
+  for (size_t i = 0; i < count; ++i) {
+    ELF::Phdr* program_header = &program_headers[i];
+
+    if (program_header == ignored_1 || program_header == ignored_2)
+      continue;
+
+    if (program_header->p_offset > hole_start) {
+      // The hole start is past this segment, so adjust offset.
+      program_header->p_offset += hole_size;
+      VLOG(1) << "phdr[" << i
+              << "] p_offset adjusted to "<< program_header->p_offset;
+    }
+  }
+}
+
+// Helper for ResizeSection().  Find the first loadable segment in the
+// file.  We expect it to map from file offset zero.
+ELF::Phdr* FindFirstLoadSegment(ELF::Phdr* program_headers,
+                                size_t count) {
+  ELF::Phdr* first_loadable_segment = NULL;
+
+  for (size_t i = 0; i < count; ++i) {
+    ELF::Phdr* program_header = &program_headers[i];
+
+    if (program_header->p_type == PT_LOAD &&
+        program_header->p_offset == 0 &&
+        program_header->p_vaddr == 0 &&
+        program_header->p_paddr == 0) {
+      first_loadable_segment = program_header;
+    }
+  }
+  LOG_IF(FATAL, !first_loadable_segment)
+      << "Cannot locate a LOAD segment with address and offset zero";
+
+  return first_loadable_segment;
+}
+
+// Helper for ResizeSection().  Find the PT_GNU_STACK segment, and check
+// that it contains what we expect so we can restore it on unpack if needed.
+ELF::Phdr* FindUnusedGnuStackSegment(ELF::Phdr* program_headers,
+                                     size_t count) {
+  ELF::Phdr* unused_segment = NULL;
+
+  for (size_t i = 0; i < count; ++i) {
+    ELF::Phdr* program_header = &program_headers[i];
+
+    if (program_header->p_type == PT_GNU_STACK &&
+        program_header->p_offset == 0 &&
+        program_header->p_vaddr == 0 &&
+        program_header->p_paddr == 0 &&
+        program_header->p_filesz == 0 &&
+        program_header->p_memsz == 0 &&
+        program_header->p_flags == (PF_R | PF_W) &&
+        program_header->p_align == ELF::kGnuStackSegmentAlignment) {
+      unused_segment = program_header;
+    }
+  }
+  LOG_IF(FATAL, !unused_segment)
+      << "Cannot locate the expected GNU_STACK segment";
+
+  return unused_segment;
+}
+
+// Helper for ResizeSection().  Find the segment that was the first loadable
+// one before we split it into two.  This is the one into which we coalesce
+// the split segments on unpacking.
+ELF::Phdr* FindOriginalFirstLoadSegment(ELF::Phdr* program_headers,
+                                        size_t count) {
+  const ELF::Phdr* first_loadable_segment =
+      FindFirstLoadSegment(program_headers, count);
+
+  ELF::Phdr* original_first_loadable_segment = NULL;
+
+  for (size_t i = 0; i < count; ++i) {
+    ELF::Phdr* program_header = &program_headers[i];
+
+    // The original first loadable segment is the one that follows on from
+    // the one we wrote on split to be the current first loadable segment.
+    if (program_header->p_type == PT_LOAD &&
+        program_header->p_offset == first_loadable_segment->p_filesz) {
+      original_first_loadable_segment = program_header;
+    }
+  }
+  LOG_IF(FATAL, !original_first_loadable_segment)
+      << "Cannot locate the LOAD segment that follows a LOAD at offset zero";
+
+  return original_first_loadable_segment;
+}
+
+// Helper for ResizeSection().  Find the segment that contains the hole.
+Elf_Scn* FindSectionContainingHole(Elf* elf,
+                                   ELF::Off hole_start,
+                                   ssize_t hole_size) {
+  Elf_Scn* section = NULL;
+  Elf_Scn* last_unholed_section = NULL;
+
+  while ((section = elf_nextscn(elf, section)) != NULL) {
+    const ELF::Shdr* section_header = ELF::getshdr(section);
+
+    // Because we get here after section headers have been adjusted for the
+    // hole, we need to 'undo' that adjustment to give a view of the original
+    // sections layout.
+    ELF::Off offset = section_header->sh_offset;
+    if (section_header->sh_offset >= hole_start) {
+      offset -= hole_size;
+    }
+
+    if (offset <= hole_start) {
+      last_unholed_section = section;
+    }
+  }
+  LOG_IF(FATAL, !last_unholed_section)
+      << "Cannot identify the section before the one containing the hole";
+
+  // The section containing the hole is the one after the last one found
+  // by the loop above.
+  Elf_Scn* holed_section = elf_nextscn(elf, last_unholed_section);
+  LOG_IF(FATAL, !holed_section)
+      << "Cannot identify the section containing the hole";
+
+  return holed_section;
+}
+
+// Helper for ResizeSection().  Find the last section contained in a segment.
+Elf_Scn* FindLastSectionInSegment(Elf* elf,
+                                  ELF::Phdr* program_header,
+                                  ELF::Off hole_start,
+                                  ssize_t hole_size) {
+  const ELF::Off segment_end =
+      program_header->p_offset + program_header->p_filesz;
+
+  Elf_Scn* section = NULL;
+  Elf_Scn* last_section = NULL;
+
+  while ((section = elf_nextscn(elf, section)) != NULL) {
+    const ELF::Shdr* section_header = ELF::getshdr(section);
+
+    // As above, 'undo' any section offset adjustment to give a view of the
+    // original sections layout.
+    ELF::Off offset = section_header->sh_offset;
+    if (section_header->sh_offset >= hole_start) {
+      offset -= hole_size;
+    }
+
+    if (offset < segment_end) {
+      last_section = section;
+    }
+  }
+  LOG_IF(FATAL, !last_section)
+      << "Cannot identify the last section in the given segment";
+
+  return last_section;
+}
+
+// Helper for ResizeSection().  Order loadable segments by their offsets.
+// The crazy linker contains assumptions about loadable segment ordering,
+// and it is better if we do not break them.
+void SortOrderSensitiveProgramHeaders(ELF::Phdr* program_headers,
+                                      size_t count) {
+  std::vector<ELF::Phdr*> orderable;
+
+  // Collect together orderable program headers.  These are all the LOAD
+  // segments, and any GNU_STACK that may be present (removed on packing,
+  // but replaced on unpacking).
+  for (size_t i = 0; i < count; ++i) {
+    ELF::Phdr* program_header = &program_headers[i];
+
+    if (program_header->p_type == PT_LOAD ||
+        program_header->p_type == PT_GNU_STACK) {
+      orderable.push_back(program_header);
+    }
+  }
+
+  // Order these program headers so that any PT_GNU_STACK is last, and
+  // the LOAD segments that precede it appear in offset order.  Uses
+  // insertion sort.
+  for (size_t i = 1; i < orderable.size(); ++i) {
+    for (size_t j = i; j > 0; --j) {
+      ELF::Phdr* first = orderable[j - 1];
+      ELF::Phdr* second = orderable[j];
+
+      if (!(first->p_type == PT_GNU_STACK ||
+            first->p_offset > second->p_offset)) {
+        break;
+      }
+      std::swap(*first, *second);
+    }
+  }
+}
+
+// Helper for ResizeSection().  The GNU_STACK program header is unused in
+// Android, so we can repurpose it here.  Before packing, the program header
+// table contains something like:
+//
+//   Type      Offset    VirtAddr   PhysAddr   FileSiz   MemSiz    Flg Align
+//   LOAD      0x000000  0x00000000 0x00000000 0x1efc818 0x1efc818 R E 0x1000
+//   LOAD      0x1efd008 0x01efe008 0x01efe008 0x17ec3c  0x1a0324  RW  0x1000
+//   DYNAMIC   0x205ec50 0x0205fc50 0x0205fc50 0x00108   0x00108   RW  0x4
+//   GNU_STACK 0x000000  0x00000000 0x00000000 0x00000   0x00000   RW  0
+//
+// The hole in the file is in the first of these.  In order to preserve all
+// load addresses, what we do is to turn the GNU_STACK into a new LOAD entry
+// that maps segments up to where we created the hole, adjust the first LOAD
+// entry so that it maps segments after that, adjust any other program
+// headers whose offset is after the hole start, and finally order the LOAD
+// segments by offset, to give:
+//
+//   Type      Offset    VirtAddr   PhysAddr   FileSiz   MemSiz    Flg Align
+//   LOAD      0x000000  0x00000000 0x00000000 0x14ea4   0x212ea4  R E 0x1000
+//   LOAD      0x014ea4  0x00212ea4 0x00212ea4 0x1cea164 0x1cea164 R E 0x1000
+//   DYNAMIC   0x1e60c50 0x0205fc50 0x0205fc50 0x00108   0x00108   RW  0x4
+//   LOAD      0x1cff008 0x01efe008 0x01efe008 0x17ec3c  0x1a0324  RW  0x1000
+//
+// We work out the split points by finding the .rel.dyn or .rela.dyn section
+// that contains the hole, and by finding the last section in a given segment.
+//
+// To unpack, we reverse the above to leave the file as it was originally.
+void SplitProgramHeadersForHole(Elf* elf,
+                                ELF::Off hole_start,
+                                ssize_t hole_size) {
+  CHECK(hole_size < 0);
+  const ELF::Ehdr* elf_header = ELF::getehdr(elf);
+  CHECK(elf_header);
+
+  ELF::Phdr* elf_program_header = ELF::getphdr(elf);
+  CHECK(elf_program_header);
+
+  const size_t program_header_count = elf_header->e_phnum;
+
+  // Locate the segment that we can overwrite to form the new LOAD entry,
+  // and the segment that we are going to split into two parts.
+  ELF::Phdr* spliced_header =
+      FindUnusedGnuStackSegment(elf_program_header, program_header_count);
+  ELF::Phdr* split_header =
+      FindFirstLoadSegment(elf_program_header, program_header_count);
+
+  VLOG(1) << "phdr[" << split_header - elf_program_header << "] split";
+  VLOG(1) << "phdr[" << spliced_header - elf_program_header << "] new LOAD";
+
+  // Find the section that contains the hole.  We split on the section that
+  // follows it.
+  Elf_Scn* holed_section =
+      FindSectionContainingHole(elf, hole_start, hole_size);
+
+  size_t string_index;
+  elf_getshdrstrndx(elf, &string_index);
+
+  ELF::Shdr* section_header = ELF::getshdr(holed_section);
+  std::string name = elf_strptr(elf, string_index, section_header->sh_name);
+  VLOG(1) << "section " << name << " split after";
+
+  // Find the last section in the segment we are splitting.
+  Elf_Scn* last_section =
+      FindLastSectionInSegment(elf, split_header, hole_start, hole_size);
+
+  section_header = ELF::getshdr(last_section);
+  name = elf_strptr(elf, string_index, section_header->sh_name);
+  VLOG(1) << "section " << name << " split end";
+
+  // Split on the section following the holed one, and up to (but not
+  // including) the section following the last one in the split segment.
+  Elf_Scn* split_section = elf_nextscn(elf, holed_section);
+  LOG_IF(FATAL, !split_section)
+      << "No section follows the section that contains the hole";
+  Elf_Scn* end_section = elf_nextscn(elf, last_section);
+  LOG_IF(FATAL, !end_section)
+      << "No section follows the last section in the segment being split";
+
+  // Split the first portion of split_header into spliced_header.  Done
+  // by copying the entire split_header into spliced_header, then changing
+  // only the fields that set the segment sizes.
+  *spliced_header = *split_header;
+  const ELF::Shdr* split_section_header = ELF::getshdr(split_section);
+  spliced_header->p_filesz = split_section_header->sh_offset;
+  spliced_header->p_memsz = split_section_header->sh_addr;
+
+  // Now rewrite split_header to remove the part we spliced from it.
+  const ELF::Shdr* end_section_header = ELF::getshdr(end_section);
+  split_header->p_offset = spliced_header->p_filesz;
+
+  CHECK(split_header->p_vaddr == split_header->p_paddr);
+  split_header->p_vaddr = spliced_header->p_memsz;
+  split_header->p_paddr = split_header->p_vaddr;
+
+  CHECK(split_header->p_filesz == split_header->p_memsz);
+  split_header->p_filesz =
+      end_section_header->sh_offset - spliced_header->p_filesz;
+  split_header->p_memsz = split_header->p_filesz;
+
+  // Adjust the offsets of all program headers that are not one of the pair
+  // we just created by splitting.
+  AdjustProgramHeaderOffsets(elf_program_header,
+                             program_header_count,
+                             spliced_header,
+                             split_header,
+                             hole_start,
+                             hole_size);
+
+  // Finally, order loadable segments by offset/address.  The crazy linker
+  // contains assumptions about loadable segment ordering.
+  SortOrderSensitiveProgramHeaders(elf_program_header,
+                                   program_header_count);
+}
+
+// Helper for ResizeSection().  Undo the work of SplitProgramHeadersForHole().
+void CoalesceProgramHeadersForHole(Elf* elf,
+                                   ELF::Off hole_start,
+                                   ssize_t hole_size) {
+  CHECK(hole_size > 0);
+  const ELF::Ehdr* elf_header = ELF::getehdr(elf);
+  CHECK(elf_header);
+
+  ELF::Phdr* elf_program_header = ELF::getphdr(elf);
+  CHECK(elf_program_header);
+
+  const size_t program_header_count = elf_header->e_phnum;
+
+  // Locate the segment that we overwrote to form the new LOAD entry, and
+  // the segment that we split into two parts on packing.
+  ELF::Phdr* spliced_header =
+      FindFirstLoadSegment(elf_program_header, program_header_count);
+  ELF::Phdr* split_header =
+      FindOriginalFirstLoadSegment(elf_program_header, program_header_count);
+
+  VLOG(1) << "phdr[" << spliced_header - elf_program_header << "] stack";
+  VLOG(1) << "phdr[" << split_header - elf_program_header << "] coalesce";
+
+  // Find the last section in the second segment we are coalescing.
+  Elf_Scn* last_section =
+      FindLastSectionInSegment(elf, split_header, hole_start, hole_size);
+
+  size_t string_index;
+  elf_getshdrstrndx(elf, &string_index);
+
+  const ELF::Shdr* section_header = ELF::getshdr(last_section);
+  std::string name = elf_strptr(elf, string_index, section_header->sh_name);
+  VLOG(1) << "section " << name << " coalesced";
+
+  // Rewrite the coalesced segment into split_header.
+  const ELF::Shdr* last_section_header = ELF::getshdr(last_section);
+  split_header->p_offset = spliced_header->p_offset;
+  split_header->p_vaddr = spliced_header->p_vaddr;
+  split_header->p_paddr = split_header->p_vaddr;
+  split_header->p_filesz =
+      last_section_header->sh_offset + last_section_header->sh_size;
+  split_header->p_memsz = split_header->p_filesz;
+
+  // Reconstruct the original GNU_STACK segment into spliced_header.
+  spliced_header->p_type = PT_GNU_STACK;
+  spliced_header->p_offset = 0;
+  spliced_header->p_vaddr = 0;
+  spliced_header->p_paddr = 0;
+  spliced_header->p_filesz = 0;
+  spliced_header->p_memsz = 0;
+  spliced_header->p_flags = PF_R | PF_W;
+  spliced_header->p_align = ELF::kGnuStackSegmentAlignment;
+
+  // Adjust the offsets of all program headers that are not one of the pair
+  // we just coalesced.
+  AdjustProgramHeaderOffsets(elf_program_header,
+                             program_header_count,
+                             spliced_header,
+                             split_header,
+                             hole_start,
+                             hole_size);
+
+  // Finally, order loadable segments by offset/address.  The crazy linker
+  // contains assumptions about loadable segment ordering.
+  SortOrderSensitiveProgramHeaders(elf_program_header,
+                                   program_header_count);
+}
+
+// Helper for ResizeSection().  Rewrite program headers.
+void RewriteProgramHeadersForHole(Elf* elf,
+                                  ELF::Off hole_start,
+                                  ssize_t hole_size) {
+  // If hole_size is negative then we are removing a piece of the file, and
+  // we want to split program headers so that we keep the same addresses
+  // for text and data.  If positive, then we are putting that piece of the
+  // file back in, so we coalesce the previously split program headers.
+  if (hole_size < 0)
+    SplitProgramHeadersForHole(elf, hole_start, hole_size);
+  else if (hole_size > 0)
+    CoalesceProgramHeadersForHole(elf, hole_start, hole_size);
+}
+
+// Helper for ResizeSection().  Locate and return the dynamic section.
+Elf_Scn* GetDynamicSection(Elf* elf) {
+  const ELF::Ehdr* elf_header = ELF::getehdr(elf);
+  CHECK(elf_header);
+
+  const ELF::Phdr* elf_program_header = ELF::getphdr(elf);
+  CHECK(elf_program_header);
+
+  // Find the program header that describes the dynamic section.
+  const ELF::Phdr* dynamic_program_header = NULL;
+  for (size_t i = 0; i < elf_header->e_phnum; ++i) {
+    const ELF::Phdr* program_header = &elf_program_header[i];
+
+    if (program_header->p_type == PT_DYNAMIC) {
+      dynamic_program_header = program_header;
+    }
+  }
+  CHECK(dynamic_program_header);
+
+  // Now find the section with the same offset as this program header.
+  Elf_Scn* dynamic_section = NULL;
+  Elf_Scn* section = NULL;
+  while ((section = elf_nextscn(elf, section)) != NULL) {
+    ELF::Shdr* section_header = ELF::getshdr(section);
+
+    if (section_header->sh_offset == dynamic_program_header->p_offset) {
+      dynamic_section = section;
+    }
+  }
+  CHECK(dynamic_section != NULL);
+
+  return dynamic_section;
 }
 
 // Helper for ResizeSection().  Adjust the .dynamic section for the hole.
 template <typename Rel>
 void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
-                                 bool is_relocations_resize,
                                  ELF::Off hole_start,
                                  ssize_t hole_size) {
   Elf_Data* data = GetSectionData(dynamic_section);
@@ -367,30 +760,6 @@ void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
   for (size_t i = 0; i < dynamics.size(); ++i) {
     ELF::Dyn* dynamic = &dynamics[i];
     const ELF::Sword tag = dynamic->d_tag;
-    // Any tags that hold offsets are adjustment candidates.
-    const bool is_adjustable = (tag == DT_PLTGOT ||
-                                tag == DT_HASH ||
-                                tag == DT_STRTAB ||
-                                tag == DT_SYMTAB ||
-                                tag == DT_RELA ||
-                                tag == DT_INIT ||
-                                tag == DT_FINI ||
-                                tag == DT_REL ||
-                                tag == DT_JMPREL ||
-                                tag == DT_INIT_ARRAY ||
-                                tag == DT_FINI_ARRAY ||
-                                tag == DT_ANDROID_REL_OFFSET);
-    if (is_adjustable && dynamic->d_un.d_ptr > hole_start) {
-      dynamic->d_un.d_ptr += hole_size;
-      VLOG(1) << "dynamic[" << i << "] " << dynamic->d_tag
-              << " d_ptr adjusted to " << dynamic->d_un.d_ptr;
-    }
-
-    // If we are specifically resizing dynamic relocations, we need to make
-    // some added adjustments to tags that indicate the counts of relative
-    // relocations in the shared object.
-    if (!is_relocations_resize)
-      continue;
 
     // DT_RELSZ or DT_RELASZ indicate the overall size of relocations.
     // Only one will be present.  Adjust by hole size.
@@ -413,7 +782,7 @@ void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
               << " d_val adjusted to " << dynamic->d_un.d_val;
     }
 
-    // DT_RELENT and DT_RELAENT don't change, but make sure they are what
+    // DT_RELENT and DT_RELAENT do not change, but make sure they are what
     // we expect.  Only one will be present.
     if (tag == DT_RELENT || tag == DT_RELAENT) {
       CHECK(dynamic->d_un.d_val == sizeof(Rel));
@@ -422,93 +791,6 @@ void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
 
   void* section_data = &dynamics[0];
   size_t bytes = dynamics.size() * sizeof(dynamics[0]);
-  RewriteSectionData(data, section_data, bytes);
-}
-
-// Helper for ResizeSection().  Adjust the .dynsym section for the hole.
-// We need to adjust the values for the symbols represented in it.
-void AdjustDynSymSectionForHole(Elf_Scn* dynsym_section,
-                                ELF::Off hole_start,
-                                ssize_t hole_size) {
-  Elf_Data* data = GetSectionData(dynsym_section);
-
-  const ELF::Sym* dynsym_base = reinterpret_cast<ELF::Sym*>(data->d_buf);
-  std::vector<ELF::Sym> dynsyms
-      (dynsym_base,
-       dynsym_base + data->d_size / sizeof(dynsyms[0]));
-
-  for (size_t i = 0; i < dynsyms.size(); ++i) {
-    ELF::Sym* dynsym = &dynsyms[i];
-    const int type = static_cast<int>(ELF_ST_TYPE(dynsym->st_info));
-    const bool is_adjustable = (type == STT_OBJECT ||
-                                type == STT_FUNC ||
-                                type == STT_SECTION ||
-                                type == STT_FILE ||
-                                type == STT_COMMON ||
-                                type == STT_TLS);
-    if (is_adjustable && dynsym->st_value > hole_start) {
-      dynsym->st_value += hole_size;
-      VLOG(1) << "dynsym[" << i << "] type=" << type
-              << " st_value adjusted to " << dynsym->st_value;
-    }
-  }
-
-  void* section_data = &dynsyms[0];
-  size_t bytes = dynsyms.size() * sizeof(dynsyms[0]);
-  RewriteSectionData(data, section_data, bytes);
-}
-
-// Helper for ResizeSection().  Adjust the plt relocations section for the
-// hole.  We need to adjust the offset of every relocation inside it that
-// falls beyond the hole start.
-template <typename Rel>
-void AdjustRelPltSectionForHole(Elf_Scn* relplt_section,
-                                ELF::Off hole_start,
-                                ssize_t hole_size) {
-  Elf_Data* data = GetSectionData(relplt_section);
-
-  const Rel* relplt_base = reinterpret_cast<Rel*>(data->d_buf);
-  std::vector<Rel> relplts(
-      relplt_base,
-      relplt_base + data->d_size / sizeof(relplts[0]));
-
-  for (size_t i = 0; i < relplts.size(); ++i) {
-    Rel* relplt = &relplts[i];
-    if (relplt->r_offset > hole_start) {
-      relplt->r_offset += hole_size;
-      VLOG(1) << "relplt[" << i
-              << "] r_offset adjusted to " << relplt->r_offset;
-    }
-  }
-
-  void* section_data = &relplts[0];
-  size_t bytes = relplts.size() * sizeof(relplts[0]);
-  RewriteSectionData(data, section_data, bytes);
-}
-
-// Helper for ResizeSection().  Adjust the .symtab section for the hole.
-// We want to adjust the value of every symbol in it that falls beyond
-// the hole start.
-void AdjustSymTabSectionForHole(Elf_Scn* symtab_section,
-                                ELF::Off hole_start,
-                                ssize_t hole_size) {
-  Elf_Data* data = GetSectionData(symtab_section);
-
-  const ELF::Sym* symtab_base = reinterpret_cast<ELF::Sym*>(data->d_buf);
-  std::vector<ELF::Sym> symtab(
-      symtab_base,
-      symtab_base + data->d_size / sizeof(symtab[0]));
-
-  for (size_t i = 0; i < symtab.size(); ++i) {
-    ELF::Sym* sym = &symtab[i];
-    if (sym->st_value > hole_start) {
-      sym->st_value += hole_size;
-      VLOG(1) << "symtab[" << i << "] value adjusted to " << sym->st_value;
-    }
-  }
-
-  void* section_data = &symtab[0];
-  size_t bytes = symtab.size() * sizeof(symtab[0]);
   RewriteSectionData(data, section_data, bytes);
 }
 
@@ -521,9 +803,7 @@ void ResizeSection(Elf* elf, Elf_Scn* section, size_t new_size) {
   if (section_header->sh_size == new_size)
     return;
 
-  // Note if we are resizing the real dyn relocations.  If yes, then we have
-  // to massage d_un.d_val in the dynamic section where d_tag is DT_RELSZ or
-  // DT_RELASZ and DT_RELCOUNT or DT_RELACOUNT.
+  // Note if we are resizing the real dyn relocations.
   size_t string_index;
   elf_getshdrstrndx(elf, &string_index);
   const std::string section_name =
@@ -550,95 +830,25 @@ void ResizeSection(Elf* elf, Elf_Scn* section, size_t new_size) {
   data->d_size += hole_size;
   section_header->sh_size += hole_size;
 
-  ELF::Ehdr* elf_header = ELF::getehdr(elf);
-  ELF::Phdr* elf_program_header = ELF::getphdr(elf);
-
   // Add the hole size to all offsets in the ELF file that are after the
   // start of the hole.  If the hole size is positive we are expanding the
   // section to create a new hole; if negative, we are closing up a hole.
 
   // Start with the main ELF header.
+  ELF::Ehdr* elf_header = ELF::getehdr(elf);
   AdjustElfHeaderForHole(elf_header, hole_start, hole_size);
-
-  // Adjust all program headers.
-  AdjustProgramHeadersForHole(elf_program_header,
-                              elf_header->e_phnum,
-                              hole_start,
-                              hole_size);
 
   // Adjust all section headers.
   AdjustSectionHeadersForHole(elf, hole_start, hole_size);
 
-  // We use the dynamic program header entry to locate the dynamic section.
-  const ELF::Phdr* dynamic_program_header = NULL;
+  // If resizing the dynamic relocations, rewrite the program headers to
+  // either split or coalesce segments, and adjust dynamic entries to match.
+  if (is_relocations_resize) {
+    RewriteProgramHeadersForHole(elf, hole_start, hole_size);
 
-  // Find the dynamic program header entry.
-  for (size_t i = 0; i < elf_header->e_phnum; ++i) {
-    ELF::Phdr* program_header = &elf_program_header[i];
-
-    if (program_header->p_type == PT_DYNAMIC) {
-      dynamic_program_header = program_header;
-    }
+    Elf_Scn* dynamic_section = GetDynamicSection(elf);
+    AdjustDynamicSectionForHole<Rel>(dynamic_section, hole_start, hole_size);
   }
-  CHECK(dynamic_program_header);
-
-  // Sections requiring special attention, and the packed android
-  // relocations offset.
-  Elf_Scn* dynamic_section = NULL;
-  Elf_Scn* dynsym_section = NULL;
-  Elf_Scn* plt_relocations_section = NULL;
-  Elf_Scn* symtab_section = NULL;
-  ELF::Off android_relocations_offset = 0;
-
-  // Find these sections, and the packed android relocations offset.
-  section = NULL;
-  while ((section = elf_nextscn(elf, section)) != NULL) {
-    ELF::Shdr* section_header = ELF::getshdr(section);
-    std::string name = elf_strptr(elf, string_index, section_header->sh_name);
-
-    if (section_header->sh_offset == dynamic_program_header->p_offset) {
-      dynamic_section = section;
-    }
-    if (name == ".dynsym") {
-      dynsym_section = section;
-    }
-    if (name == ".rel.plt" || name == ".rela.plt") {
-      plt_relocations_section = section;
-    }
-    if (name == ".symtab") {
-      symtab_section = section;
-    }
-
-    // Note packed android relocations offset.
-    if (name == ".android.rel.dyn" || name == ".android.rela.dyn") {
-      android_relocations_offset = section_header->sh_offset;
-    }
-  }
-  CHECK(dynamic_section != NULL);
-  CHECK(dynsym_section != NULL);
-  CHECK(plt_relocations_section != NULL);
-  CHECK(android_relocations_offset != 0);
-
-  // Adjust the .dynamic section for the hole.  Because we have to edit the
-  // current contents of .dynamic we disallow resizing it.
-  CHECK(section != dynamic_section);
-  AdjustDynamicSectionForHole<Rel>(dynamic_section,
-                                   is_relocations_resize,
-                                   hole_start,
-                                   hole_size);
-
-  // Adjust the .dynsym section for the hole.
-  AdjustDynSymSectionForHole(dynsym_section, hole_start, hole_size);
-
-  // Adjust the plt relocations section for the hole.
-  AdjustRelPltSectionForHole<Rel>(plt_relocations_section,
-                                  hole_start,
-                                  hole_size);
-
-  // If present, adjust the .symtab section for the hole.  If the shared
-  // library was stripped then .symtab will be absent.
-  if (symtab_section)
-    AdjustSymTabSectionForHole(symtab_section, hole_start, hole_size);
 }
 
 // Find the first slot in a dynamics array with the given tag.  The array
@@ -691,100 +901,6 @@ void RemoveDynamicEntry(ELF::Sword tag,
   CHECK(dynamics->at(dynamics->size() - 1).d_tag == DT_NULL);
 }
 
-// Adjust a relocation.  For a relocation without addend, we find its target
-// in the section and adjust that.  For a relocation with addend, the target
-// is the relocation addend, and the section data at the target is zero.
-template <typename Rel>
-void AdjustRelocation(ssize_t index,
-                      ELF::Addr hole_start,
-                      ssize_t hole_size,
-                      Rel* relocation,
-                      ELF::Off* target);
-
-template <>
-void AdjustRelocation<ELF::Rel>(ssize_t index,
-                                ELF::Addr hole_start,
-                                ssize_t hole_size,
-                                ELF::Rel* relocation,
-                                ELF::Off* target) {
-  // Adjust the target if after the hole start.
-  if (*target > hole_start) {
-    *target += hole_size;
-    VLOG(1) << "relocation[" << index << "] target adjusted to " << *target;
-  }
-}
-
-template <>
-void AdjustRelocation<ELF::Rela>(ssize_t index,
-                                 ELF::Addr hole_start,
-                                 ssize_t hole_size,
-                                 ELF::Rela* relocation,
-                                 ELF::Off* target) {
-  // The relocation's target is the addend.  Adjust if after the hole start.
-  if (relocation->r_addend > hole_start) {
-    relocation->r_addend += hole_size;
-    VLOG(1) << "relocation["
-            << index << "] addend adjusted to " << relocation->r_addend;
-  }
-}
-
-// For relative relocations without addends, adjust the file data to which
-// they refer.  For relative relocations with addends, adjust the addends.
-// This translates data into the area it will occupy after the hole in
-// the dynamic relocations is added or removed.
-template <typename Rel>
-void AdjustRelocationTargets(Elf* elf,
-                             ELF::Off hole_start,
-                             ssize_t hole_size,
-                             std::vector<Rel>* relocations) {
-  Elf_Scn* section = NULL;
-  while ((section = elf_nextscn(elf, section)) != NULL) {
-    const ELF::Shdr* section_header = ELF::getshdr(section);
-
-    // Ignore sections that do not appear in a process memory image.
-    if (section_header->sh_addr == 0)
-      continue;
-
-    Elf_Data* data = GetSectionData(section);
-
-    // Ignore sections with no effective data.
-    if (data->d_buf == NULL)
-      continue;
-
-    // Identify this section's start and end addresses.
-    const ELF::Addr section_start = section_header->sh_addr;
-    const ELF::Addr section_end = section_start + section_header->sh_size;
-
-    // Create a copy of the section's data.
-    uint8_t* area = new uint8_t[data->d_size];
-    memcpy(area, data->d_buf, data->d_size);
-
-    for (size_t i = 0; i < relocations->size(); ++i) {
-      Rel* relocation = &relocations->at(i);
-      CHECK(ELF_R_TYPE(relocation->r_info) == ELF::kRelativeRelocationCode);
-
-      // See if this relocation points into the current section.
-      if (relocation->r_offset >= section_start &&
-          relocation->r_offset < section_end) {
-        // The relocation's target is what it points to in area.
-        // For relocations without addend, this is what we adjust; for
-        // relocations with addend, we leave this (it will be zero)
-        // and instead adjust the addend.
-        ELF::Addr byte_offset = relocation->r_offset - section_start;
-        ELF::Off* target = reinterpret_cast<ELF::Off*>(area + byte_offset);
-        AdjustRelocation<Rel>(i, hole_start, hole_size, relocation, target);
-      }
-    }
-
-    // If we altered the data for this section, write it back.
-    if (memcmp(area, data->d_buf, data->d_size)) {
-      RewriteSectionData(data, area, data->d_size);
-    }
-    delete [] area;
-  }
-}
-
-// Pad relocations with a given number of null relocations.
 template <typename Rel>
 void PadRelocations(size_t count, std::vector<Rel>* relocations);
 
@@ -807,23 +923,6 @@ void PadRelocations<ELF::Rela>(size_t count,
   null_relocation.r_addend = 0;
   std::vector<ELF::Rela> padding(count, null_relocation);
   relocations->insert(relocations->end(), padding.begin(), padding.end());
-}
-
-// Adjust relocations so that the offset that they indicate will be correct
-// after the hole in the dynamic relocations is added or removed (in effect,
-// relocate the relocations).
-template <typename Rel>
-void AdjustRelocations(ELF::Off hole_start,
-                       ssize_t hole_size,
-                       std::vector<Rel>* relocations) {
-  for (size_t i = 0; i < relocations->size(); ++i) {
-    Rel* relocation = &relocations->at(i);
-    if (relocation->r_offset > hole_start) {
-      relocation->r_offset += hole_size;
-      VLOG(1) << "relocation[" << i
-              << "] offset adjusted to " << relocation->r_offset;
-    }
-  }
 }
 
 }  // namespace
@@ -895,12 +994,11 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
     return false;
   }
 
-  // Unless padding, pre-apply relative relocations to account for the
-  // hole, and pre-adjust all relocation offsets accordingly.
+  // If not padding fully, apply only enough padding to preserve alignment.
+  // Otherwise, pad so that we do not shrink the relocations section at all.
   if (!is_padding_relocations_) {
-    // Pre-calculate the size of the hole we will close up when we rewrite
-    // dynamic relocations.  We have to adjust relocation addresses to
-    // account for this.
+    // Calculate the size of the hole we will close up when we rewrite
+    // dynamic relocations.
     ELF::Shdr* section_header = ELF::getshdr(relocations_section_);
     const ELF::Off hole_start = section_header->sh_offset;
     ssize_t hole_size =
@@ -939,14 +1037,6 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
     // Add null relocations to other_relocations to preserve alignment.
     PadRelocations<Rel>(padding, &other_relocations);
     LOG(INFO) << "Alignment pad : " << padding << " relocations";
-
-    // Apply relocations to all relative data to relocate it into the
-    // area it will occupy once the hole in the dynamic relocations is removed.
-    AdjustRelocationTargets<Rel>(
-        elf_, hole_start, -hole_size, &relative_relocations);
-    // Relocate the relocations.
-    AdjustRelocations<Rel>(hole_start, -hole_size, &relative_relocations);
-    AdjustRelocations<Rel>(hole_start, -hole_size, &other_relocations);
   } else {
     // If padding, add NONE-type relocations to other_relocations to make it
     // the same size as the the original relocations we read in.  This makes
@@ -1009,12 +1099,18 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
       dynamic_base + data->d_size / sizeof(dynamics[0]));
   // Use two of the spare slots to describe the packed section.
   ELF::Shdr* section_header = ELF::getshdr(android_relocations_section_);
-  const ELF::Dyn offset_dyn
-      = {DT_ANDROID_REL_OFFSET, {section_header->sh_offset}};
-  AddDynamicEntry(offset_dyn, &dynamics);
-  const ELF::Dyn size_dyn
-      = {DT_ANDROID_REL_SIZE, {section_header->sh_size}};
-  AddDynamicEntry(size_dyn, &dynamics);
+  {
+    ELF::Dyn dyn;
+    dyn.d_tag = DT_ANDROID_REL_OFFSET;
+    dyn.d_un.d_ptr = section_header->sh_offset;
+    AddDynamicEntry(dyn, &dynamics);
+  }
+  {
+    ELF::Dyn dyn;
+    dyn.d_tag = DT_ANDROID_REL_SIZE;
+    dyn.d_un.d_val = section_header->sh_size;
+    AddDynamicEntry(dyn, &dynamics);
+  }
   const void* dynamics_data = &dynamics[0];
   const size_t dynamics_bytes = dynamics.size() * sizeof(dynamics[0]);
   RewriteSectionData(data, dynamics_data, dynamics_bytes);
@@ -1126,14 +1222,6 @@ bool ElfFile::UnpackTypedRelocations(const std::vector<uint8_t>& packed,
     // Adjust the hole size for the padding added to preserve alignment.
     hole_size -= padding * sizeof(other_relocations[0]);
     LOG(INFO) << "Expansion     : " << hole_size << " bytes";
-
-    // Apply relocations to all relative data to relocate it into the
-    // area it will occupy once the hole in dynamic relocations is opened.
-    AdjustRelocationTargets<Rel>(
-        elf_, hole_start, hole_size, &relative_relocations);
-    // Relocate the relocations.
-    AdjustRelocations<Rel>(hole_start, hole_size, &relative_relocations);
-    AdjustRelocations<Rel>(hole_start, hole_size, &other_relocations);
   }
 
   // Rewrite the current dynamic relocations section to be the relative

@@ -57,6 +57,7 @@ struct ELF {
   enum { kFileClass = ELFCLASS32 };
   enum { kRelativeRelocationCode = R_ARM_RELATIVE };
   enum { kNoRelocationCode = R_ARM_NONE };
+  enum { kGnuStackSegmentAlignment = 0 };
 
   static inline const char* Machine() { return "ARM"; }
 
@@ -90,6 +91,7 @@ struct ELF {
   enum { kFileClass = ELFCLASS64 };
   enum { kRelativeRelocationCode = R_AARCH64_RELATIVE };
   enum { kNoRelocationCode = R_AARCH64_NONE };
+  enum { kGnuStackSegmentAlignment = 16 };
 
   static inline const char* Machine() { return "ARM64"; }
 
