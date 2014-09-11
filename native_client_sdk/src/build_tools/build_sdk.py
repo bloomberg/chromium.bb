@@ -259,6 +259,9 @@ NACL_HEADER_MAP = {
       ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
       ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
+  'bionic': [
+      ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
+  ],
   'host': []
 }
 
@@ -565,6 +568,7 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
   glibcdir = os.path.join(pepperdir, 'toolchain', platform + '_x86_glibc')
   armdir = os.path.join(pepperdir, 'toolchain', platform + '_arm_newlib')
   pnacldir = os.path.join(pepperdir, 'toolchain', platform + '_pnacl')
+  bionicdir = os.path.join(pepperdir, 'toolchain', platform + '_arm_bionic')
 
   if set(toolchains) & set(['glibc', 'newlib']):
     GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR)
@@ -585,6 +589,10 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
   if 'arm' in toolchains:
     InstallNaClHeaders(GetToolchainNaClInclude('newlib', armdir, 'arm'),
                        'arm')
+
+  if 'bionic' in toolchains:
+    InstallNaClHeaders(GetToolchainNaClInclude('bionic', bionicdir, 'arm'),
+                       'bionic')
 
   if 'pnacl' in toolchains:
     # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
