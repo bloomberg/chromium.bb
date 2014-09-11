@@ -42,8 +42,15 @@ int GetCurrentUserImageSize() {
 namespace login {
 
 bool LoginScrollIntoViewEnabled() {
+#if defined(USE_ATHENA)
+  // TODO(nkostylev): temporary always enable overscroll mode for Athena,
+  // later we will need special API in Blink to specify which element need to
+  // be centered when virtual keyboard shown, crbug.com/411879
+  return false;
+#else
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableLoginScrollIntoView);
+#endif
 }
 
 NetworkStateHelper::NetworkStateHelper() {}

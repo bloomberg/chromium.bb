@@ -859,8 +859,9 @@ void AccessibilityManager::UpdateBrailleImeState() {
 void AccessibilityManager::InputMethodChanged(
     input_method::InputMethodManager* manager,
     bool show_message) {
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   // Sticky keys is implemented only in ash.
+  // TODO(dpolukhin): support Athena, crbug.com/408733.
   ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
       manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
       manager->IsAltGrUsedByCurrentInputMethod());

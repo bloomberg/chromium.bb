@@ -177,8 +177,11 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): Support locale change, crbug.com/411884.
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyLocaleChanged(
       this, cur_locale, from_locale_, to_locale_);
+#endif
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {

@@ -12,6 +12,7 @@ enum ContainerPriorities {
   CP_DEFAULT,
   CP_HOME_CARD,
   CP_SYSTEM_MODAL,
+  CP_LOGIN_SCREEN,
   CP_VIRTUAL_KEYBOARD,
 };
 

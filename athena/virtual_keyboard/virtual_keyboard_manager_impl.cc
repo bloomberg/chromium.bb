@@ -83,18 +83,18 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
     container_ = athena::ScreenManager::Get()->CreateContainer(params);
     container_->SetLayoutManager(new FillLayoutManager(container_));
 
-    keyboard_controller_.reset(new keyboard::KeyboardController(
+    keyboard::KeyboardController* controller = new keyboard::KeyboardController(
         new BasicKeyboardControllerProxy(browser_context_,
-                                         container_->GetRootWindow())));
-    keyboard::KeyboardController::ResetInstance(keyboard_controller_.get());
-    aura::Window* kb_container = keyboard_controller_->GetContainerWindow();
+                                         container_->GetRootWindow()));
+    // ResetInstance takes ownership.
+    keyboard::KeyboardController::ResetInstance(controller);
+    aura::Window* kb_container = controller->GetContainerWindow();
     container_->AddChild(kb_container);
     kb_container->Show();
   }
 
   content::BrowserContext* browser_context_;
   aura::Window* container_;
-  scoped_ptr<keyboard::KeyboardController> keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardManagerImpl);
 };

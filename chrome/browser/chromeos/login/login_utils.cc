@@ -90,6 +90,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
+#if defined(USE_ATHENA)
+#include "athena/extensions/public/extensions_delegate.h"
+#include "athena/main/public/athena_launcher.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -284,6 +289,11 @@ void LoginUtilsImpl::DoBrowserLaunchInternal(Profile* profile,
 
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
+
+#if defined(USE_ATHENA)
+  athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
+  athena::StartAthenaSessionWithContext(profile);
+#else
   StartupBrowserCreator browser_creator;
   int return_code;
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
@@ -298,6 +308,7 @@ void LoginUtilsImpl::DoBrowserLaunchInternal(Profile* profile,
 
   // Triggers app launcher start page service to load start page web contents.
   app_list::StartPageService::Get(profile);
+#endif
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the

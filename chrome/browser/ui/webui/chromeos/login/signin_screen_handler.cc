@@ -299,8 +299,10 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
+#if !defined(USE_ATHENA)
   max_mode_delegate_.reset(new TouchViewControllerDelegate());
   max_mode_delegate_->AddObserver(this);
+#endif
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
@@ -320,8 +322,10 @@ SigninScreenHandler::~SigninScreenHandler() {
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
   network_state_informer_->RemoveObserver(this);
-  max_mode_delegate_->RemoveObserver(this);
-  max_mode_delegate_.reset(NULL);
+  if (max_mode_delegate_) {
+    max_mode_delegate_->RemoveObserver(this);
+    max_mode_delegate_.reset(NULL);
+  }
   ScreenlockBridge::Get()->SetLockHandler(NULL);
 }
 
@@ -1384,8 +1388,10 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
 }
 
 void SigninScreenHandler::HandleGetTouchViewState() {
-  CallJS("login.AccountPickerScreen.setTouchViewState",
-         max_mode_delegate_->IsMaximizeModeEnabled());
+  if (max_mode_delegate_) {
+    CallJS("login.AccountPickerScreen.setTouchViewState",
+           max_mode_delegate_->IsMaximizeModeEnabled());
+  }
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

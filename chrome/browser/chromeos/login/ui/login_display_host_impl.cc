@@ -96,6 +96,11 @@
 #include "ui/wm/core/window_animations.h"
 #include "url/gurl.h"
 
+#if defined(USE_ATHENA)
+#include "athena/screen/public/screen_manager.h"
+#include "athena/util/container_priorities.h"
+#endif
+
 namespace {
 
 // Maximum delay for startup sound after 'loginPromptVisible' signal.
@@ -289,8 +294,10 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     is_observing_keyboard_ = true;
   }
 
+#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
   ash::Shell::GetScreen()->AddObserver(this);
+#endif
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
@@ -325,6 +332,12 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   waiting_for_wallpaper_load_ = !zero_delay_enabled &&
                                 (!is_registered || !disable_boot_animation);
+
+#if defined(USE_ATHENA)
+  // TODO(dpolukhin): remove #ifdef when Athena supports wallpaper manager.
+  // crbug.com/408734.
+  waiting_for_wallpaper_load_ = false;
+#endif
 
   // For slower hardware we have boot animation disabled so
   // we'll be initializing WebUI hidden, waiting for user pods to load and then
@@ -391,9 +404,11 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
     is_observing_keyboard_ = false;
   }
 
+#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->delegate()->
       RemoveVirtualKeyboardStateObserver(this);
   ash::Shell::GetScreen()->RemoveObserver(this);
+#endif
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
@@ -779,10 +794,12 @@ void LoginDisplayHostImpl::Observe(
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
              user_manager::UserManager::Get()->IsCurrentUserNew()) {
+#if !defined(USE_ATHENA)
     // For new user, move desktop to locker container so that windows created
     // during the user image picker step are below it.
     ash::Shell::GetInstance()->
         desktop_background_controller()->MoveDesktopToLockedContainer();
+#endif
     registrar_.Remove(this,
                       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                       content::NotificationService::AllSources());
@@ -1040,10 +1057,18 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   params.bounds = background_bounds();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+#if defined(USE_ATHENA)
+  athena::ScreenManager::ContainerParams container_params(
+      "LoginScreen", athena::CP_LOGIN_SCREEN);
+  container_params.can_activate_children = true;
+  login_screen_container_.reset(
+      athena::ScreenManager::Get()->CreateContainer(container_params));
+  params.parent = login_screen_container_.get();
+#else
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                ash::kShellWindowId_LockScreenContainer);
-
+#endif
   login_window_ = new views::Widget;
   params.delegate = new LoginWidgetDelegate(login_window_);
   login_window_->Init(params);
@@ -1145,6 +1170,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/407579
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
 
@@ -1164,6 +1191,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   system::InputDeviceSettings::Get()->SetNaturalScroll(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault));
+#endif
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 
@@ -1234,10 +1262,12 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   const std::string& layout = startup_manifest->keyboard_layout();
   VLOG(1) << "Initial locale: " << locale << "keyboard layout " << layout;
 
+#if !defined(USE_ATHENA)
   // Determine keyboard layout from OEM customization (if provided) or
   // initial locale and save it in preferences.
   manager->GetActiveIMEState()->SetInputMethodLoginDefaultFromVPD(locale,
                                                                   layout);
+#endif
 
   if (!current_locale.empty() || locale.empty()) {
     ShowLoginWizardFinish(first_screen_name, startup_manifest, display_host);

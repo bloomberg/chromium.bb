@@ -11,12 +11,18 @@
 namespace chromeos {
 
 InputEventsBlocker::InputEventsBlocker() {
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/411884
   ash::Shell::GetInstance()->PrependPreTargetHandler(this);
+#endif
   VLOG(1) << "InputEventsBlocker " << this << " created.";
 }
 
 InputEventsBlocker::~InputEventsBlocker() {
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/411884
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+#endif
   VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
 }
 

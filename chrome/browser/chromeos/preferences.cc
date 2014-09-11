@@ -529,10 +529,12 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kTouchHudProjectionEnabled) {
+#if !defined(USE_ATHENA)
     if (user_is_active) {
       const bool enabled = touch_hud_projection_enabled_.GetValue();
       ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
     }
+#endif
   }
 
   if (reason != REASON_PREF_CHANGED ||

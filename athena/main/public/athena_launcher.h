@@ -28,6 +28,8 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner);
 
 void StartAthenaSessionWithContext(content::BrowserContext* context);
 
+void CreateVirtualKeyboardWithContext(content::BrowserContext* context);
+
 // Starts the athena session.
 void StartAthenaSession(ActivityFactory* activity_factory,
                         AppModelBuilder* app_model_builder);

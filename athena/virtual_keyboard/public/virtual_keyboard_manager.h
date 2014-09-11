@@ -19,6 +19,8 @@ namespace athena {
 
 class ATHENA_EXPORT VirtualKeyboardManager {
  public:
+  virtual ~VirtualKeyboardManager() {}
+
   static VirtualKeyboardManager* Create(content::BrowserContext* context);
   static VirtualKeyboardManager* Get();
   static void Shutdown();

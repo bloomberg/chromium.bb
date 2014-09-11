@@ -319,6 +319,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // The bounds of the virtual keyboard.
   gfx::Rect keyboard_bounds_;
 
+#if defined(USE_ATHENA)
+  scoped_ptr<aura::Window> login_screen_container_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };
 

@@ -312,6 +312,8 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 }
 
 void CoreOobeHandler::UpdateA11yState() {
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/412891
   DCHECK(MagnificationManager::Get());
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
@@ -325,6 +327,7 @@ void CoreOobeHandler::UpdateA11yState() {
   a11y_info.SetBoolean("virtualKeyboardEnabled",
                        AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   CallJS("refreshA11yInfo", a11y_info);
+#endif
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {

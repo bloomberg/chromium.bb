@@ -112,10 +112,13 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
       kAthenaEnvStateKey, env_state);
 }
 
+void CreateVirtualKeyboardWithContext(content::BrowserContext* context) {
+  athena::VirtualKeyboardManager::Create(context);
+}
+
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
   StartAthenaSession(athena::CreateContentActivityFactory(),
                      new athena::ExtensionAppModelBuilder(context));
-  athena::VirtualKeyboardManager::Create(context);
   athena::HomeCard::Get()->RegisterSearchProvider(
       new athena::UrlSearchProvider(context));
   AthenaEnvState* env_state =

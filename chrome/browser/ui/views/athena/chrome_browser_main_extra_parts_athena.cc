@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -47,9 +48,15 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
     }
     Profile* profile =
         g_browser_process->profile_manager()->GetActiveUserProfile();
-    // TODO(oshima|polukhin): Start OOBE/Login process.
-    athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
-    athena::StartAthenaSessionWithContext(profile);
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kLoginManager)) {
+      athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
+      athena::StartAthenaSessionWithContext(profile);
+    } else {
+      // Only initialize virtual keyboard with login profile, user session will
+      // start after login.
+      athena::CreateVirtualKeyboardWithContext(profile);
+    }
   }
   virtual void PostMainMessageLoopRun() OVERRIDE { athena::ShutdownAthena(); }
 

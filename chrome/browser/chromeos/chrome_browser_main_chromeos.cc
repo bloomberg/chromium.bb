@@ -708,6 +708,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 #if !defined(USE_ATHENA)
   MagnificationManager::Shutdown();
 #endif
+
   AccessibilityManager::Shutdown();
 
   media::SoundsManager::Shutdown();

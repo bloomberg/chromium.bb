@@ -59,6 +59,8 @@ bool InsertString(const std::string& str, std::set<std::string>* to) {
   return result.second;
 }
 
+#if !defined(USE_ATHENA)
+// TODO(dpolukhin): crbug.com/407579
 void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   scoped_ptr<base::DictionaryValue> optgroup(new base::DictionaryValue);
   optgroup->SetString(
@@ -66,6 +68,7 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
       l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
   input_methods_list->Append(optgroup.release());
 }
+#endif
 
 // Gets the list of languages with |descriptors| based on |base_language_codes|.
 // The |most_relevant_language_codes| will be first in the list. If
@@ -401,6 +404,8 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected) {
   scoped_ptr<base::ListValue> input_methods_list(new base::ListValue);
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/407579
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
@@ -459,6 +464,7 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     input_methods_list->Append(CreateInputMethodsEntry(*us_eng_descriptor,
                                                        selected).release());
   }
+#endif
   return input_methods_list.Pass();
 }
 
