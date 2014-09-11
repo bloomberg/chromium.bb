@@ -76,7 +76,6 @@ class ServiceWorkerCacheTest : public testing::Test {
           url_request_context,
           blob_storage_context->context()->AsWeakPtr());
     }
-    CreateBackend();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -121,15 +120,6 @@ class ServiceWorkerCacheTest : public testing::Test {
 
     no_body_response_ = ServiceWorkerResponse(
         GURL("http://example.com/no_body.html"), 200, "OK", headers, "");
-  }
-
-  void CreateBackend() {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    cache_->CreateBackend(base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
-                                     base::Unretained(this),
-                                     base::Unretained(loop.get())));
-    loop->Run();
-    EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -293,7 +283,7 @@ TEST_P(ServiceWorkerCacheTestP, PutBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
 }
 
-TEST_P(ServiceWorkerCacheTestP, PutBodyDropBlobRef) {
+TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_),
               CopyFetchResponse(body_response_),

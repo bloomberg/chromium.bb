@@ -113,11 +113,6 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
       scoped_ptr<ServiceWorkerCache> cache);
   void LazyInitDone();
 
-  void DidCreateBackend(base::WeakPtr<ServiceWorkerCache> cache,
-                        CacheID cache_id,
-                        const CacheAndErrorCallback& callback,
-                        ServiceWorkerCache::ErrorType error);
-
   CacheContext* AddCacheToMaps(const std::string& cache_name,
                                scoped_ptr<ServiceWorkerCache> cache);
 

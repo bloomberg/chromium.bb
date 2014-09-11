@@ -59,12 +59,9 @@ class CONTENT_EXPORT ServiceWorkerCache {
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
+  // Operations in progress will complete after the cache is deleted but pending
+  // operations (those operations waiting for init to finish) won't.
   virtual ~ServiceWorkerCache();
-
-  // Loads the backend and calls the callback with the result (true for
-  // success). This must be called before member functions that require a
-  // backend are called. The callback will always be called.
-  void CreateBackend(const ErrorCallback& callback);
 
   // Returns ErrorTypeNotFound if not found. The callback will always be called.
   // |request| must remain valid until the callback is called.
@@ -90,9 +87,6 @@ class CONTENT_EXPORT ServiceWorkerCache {
   // callback will always be called.
   void Keys(const RequestsCallback& callback);
 
-  // Call to determine if CreateBackend must be called.
-  bool HasCreatedBackend() const;
-
   void set_backend(scoped_ptr<disk_cache::Backend> backend) {
     backend_ = backend.Pass();
   }
@@ -107,6 +101,11 @@ class CONTENT_EXPORT ServiceWorkerCache {
                      net::URLRequestContext* request_context,
                      base::WeakPtr<storage::BlobStorageContext> blob_context);
 
+  void PutImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
+               scoped_ptr<ServiceWorkerResponse> response,
+               scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+               const ErrorCallback& callback);
+
   // Static callbacks for the Keys function.
   static void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context,
                                    int rv);
@@ -117,10 +116,19 @@ class CONTENT_EXPORT ServiceWorkerCache {
       const Entries::iterator& iter,
       scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
 
+  // Loads the backend and calls the callback with the result (true for
+  // success). The callback will always be called.
+  void CreateBackend(const ErrorCallback& callback);
+
+  void Init(const base::Closure& callback);
+  void InitDone(ErrorType error);
+
   scoped_ptr<disk_cache::Backend> backend_;
   base::FilePath path_;
   net::URLRequestContext* request_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
+  bool initialized_;
+  std::vector<base::Closure> init_callbacks_;
 
   base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;
 

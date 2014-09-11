@@ -437,16 +437,7 @@ void ServiceWorkerCacheStorage::GetCache(
     return;
   }
 
-  ServiceWorkerCache* cache = cache_context->cache.get();
-
-  if (cache->HasCreatedBackend())
-    return callback.Run(cache_context->id, CACHE_STORAGE_ERROR_NO_ERROR);
-
-  cache->CreateBackend(base::Bind(&ServiceWorkerCacheStorage::DidCreateBackend,
-                                  weak_factory_.GetWeakPtr(),
-                                  cache->AsWeakPtr(),
-                                  cache_context->id,
-                                  callback));
+  callback.Run(cache_context->id, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
 void ServiceWorkerCacheStorage::HasCache(const std::string& cache_name,
@@ -516,23 +507,6 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
   }
 
   callback.Run(names, CACHE_STORAGE_ERROR_NO_ERROR);
-}
-
-void ServiceWorkerCacheStorage::DidCreateBackend(
-    base::WeakPtr<ServiceWorkerCache> cache,
-    CacheID cache_id,
-    const CacheAndErrorCallback& callback,
-    ServiceWorkerCache::ErrorType error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (error != ServiceWorkerCache::ErrorTypeOK || !cache) {
-    // TODO(jkarlin): This should delete the directory and try again in case
-    // the cache is simply corrupt.
-    callback.Run(kInvalidCacheID, CACHE_STORAGE_ERROR_STORAGE);
-    return;
-  }
-
-  callback.Run(cache_id, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
 // Init is run lazily so that it is called on the proper MessageLoop.
@@ -664,15 +638,11 @@ void ServiceWorkerCacheStorage::CreateCacheDidWriteIndex(
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!cache) {
-    callback.Run(false, CACHE_STORAGE_ERROR_CLOSING);
+    callback.Run(kInvalidCacheID, CACHE_STORAGE_ERROR_CLOSING);
     return;
   }
 
-  cache->CreateBackend(base::Bind(&ServiceWorkerCacheStorage::DidCreateBackend,
-                                  weak_factory_.GetWeakPtr(),
-                                  cache,
-                                  id,
-                                  callback));
+  callback.Run(id, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
 void ServiceWorkerCacheStorage::DeleteCacheDidWriteIndex(
