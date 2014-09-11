@@ -588,10 +588,10 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
   // crbug.com/345527.
   var urls = util.entriesToURLs(entries);
-  fm.resolveSelectResults_(urls, function(resolvedURLs) {
-    for (var index = 0; index < resolvedURLs.length; ++index) {
-      // TODO(mtomasz): Pass Entry instead of URL.
-      fm.volumeManager.mountArchive(resolvedURLs[index],
+  for (var index = 0; index < urls.length; ++index) {
+    // TODO(mtomasz): Pass Entry instead of URL.
+    fm.volumeManager.mountArchive(
+        urls[index],
         function(volumeInfo) {
           if (tracker.hasChanged) {
             tracker.stop();
@@ -613,9 +613,8 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
           var namePos = path.lastIndexOf('/');
           fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
                              path.substr(namePos + 1), error));
-        }.bind(null, resolvedURLs[index]));
-      }
-  });
+        }.bind(null, urls[index]));
+  }
 };
 
 /**

@@ -488,10 +488,6 @@ callback RequestFileSystemCallback = void(optional object fileSystem);
 callback GetEntryPropertiesCallback =
     void(EntryProperties[] entryProperties);
 
-// |localFilePaths| An array of the local file paths for the requested files,
-// one entry for each file in fileUrls.
-callback GetDriveFilesCallback = void(DOMString[] localFilePaths);
-
 // |sourcePath| Source path of the mount.
 callback AddMountCallback = void(DOMString sourcePath);
 
@@ -647,12 +643,6 @@ interface Functions {
   static void pinDriveFile(DOMString fileUrl,
                            boolean pin,
                            optional SimpleCallback callback);
-
-  // Get Drive files.
-  // |fileUrls| Array of Drive file URLs to get.
-  // |callback|
-  static void getDriveFiles(DOMString[] fileUrls,
-                            GetDriveFilesCallback callback);
 
   // Resolves file entries in the isolated file system and returns corresponding
   // entries in the external file system mounted to Chrome OS file manager

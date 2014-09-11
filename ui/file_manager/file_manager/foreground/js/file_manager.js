@@ -3483,59 +3483,38 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Resolves selected file urls returned from an Open dialog.
-   *
-   * For drive files this involves some special treatment.
-   * Starts getting drive files if needed.
-   *
-   * @param {Array.<string>} fileUrls Drive URLs.
-   * @param {function(Array.<string>)} callback To be called with fixed URLs.
-   * @private
-   */
-  FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
-    if (this.isOnDrive()) {
-      chrome.fileManagerPrivate.getDriveFiles(
-        fileUrls,
-        function(localPaths) {
-          callback(fileUrls);
-        });
-    } else {
-      callback(fileUrls);
-    }
-  };
-
-  /**
-   * Closes this modal dialog with some files selected.
-   * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
-   * @param {Object} selection Contains urls, filterIndex and multiple fields.
-   * @private
-   */
-  FileManager.prototype.callSelectFilesApiAndClose_ = function(selection) {
-    var self = this;
-    function callback() {
-      window.close();
-    }
-    if (selection.multiple) {
-      chrome.fileManagerPrivate.selectFiles(
-          selection.urls, this.params_.shouldReturnLocalPath, callback);
-    } else {
-      var forOpening = (this.dialogType != DialogType.SELECT_SAVEAS_FILE);
-      chrome.fileManagerPrivate.selectFile(
-          selection.urls[0], selection.filterIndex, forOpening,
-          this.params_.shouldReturnLocalPath, callback);
-    }
-  };
-
-  /**
    * Tries to close this modal dialog with some files selected.
    * Performs preprocessing if needed (e.g. for Drive).
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    * @private
    */
   FileManager.prototype.selectFilesAndClose_ = function(selection) {
-    if (!this.isOnDrive() ||
-        this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
-      setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
+    var callSelectFilesApiAndClose = function(callback) {
+      var onFileSelected = function() {
+        callback();
+        if (!chrome.runtime.lastError) {
+          // Call next method on a timeout, as it's unsafe to
+          // close a window from a callback.
+          setTimeout(window.close.bind(window), 0);
+        }
+      };
+      if (selection.multiple) {
+        chrome.fileManagerPrivate.selectFiles(
+            selection.urls,
+            this.params_.shouldReturnLocalPath,
+            onFileSelected);
+      } else {
+        chrome.fileManagerPrivate.selectFile(
+            selection.urls[0],
+            selection.filterIndex,
+            this.dialogType != DialogType.SELECT_SAVEAS_FILE /* for opening */,
+            this.params_.shouldReturnLocalPath,
+            onFileSelected);
+      }
+    }.bind(this);
+
+    if (!this.isOnDrive() || this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
+      callSelectFilesApiAndClose(function() {});
       return;
     }
 
@@ -3557,8 +3536,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var bytesDone = 0;
 
     var onFileTransfersUpdated = function(status) {
-      var escaped = encodeURI(status.fileUrl);
-      var old = progressMap[escaped];
+      if (!(status.fileUrl in progressMap))
+        return;
+      if (status.total == -1)
+        return;
+
+      var old = progressMap[status.fileUrl];
       if (old == -1) {
         // -1 means we don't know file size yet.
         bytesTotal += status.total;
@@ -3566,7 +3549,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         old = 0;
       }
       bytesDone += status.processed - old;
-      progressMap[escaped] = status.processed;
+      progressMap[status.fileUrl] = status.processed;
 
       var percent = bytesTotal == 0 ? 0 : bytesDone / bytesTotal;
       // For files we don't have information about, assume the progress is zero.
@@ -3579,7 +3562,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var setup = function() {
       this.document_.querySelector('.dialog-container').appendChild(shade);
-      setTimeout(function() { shade.setAttribute('fadein', 'fadein') }, 100);
+      setTimeout(function() { shade.setAttribute('fadein', 'fadein'); }, 100);
       footer.setAttribute('progress', 'progress');
       this.cancelButton_.removeEventListener('click', this.onCancelBound_);
       this.cancelButton_.addEventListener('click', onCancel);
@@ -3597,21 +3580,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this);
 
     var onCancel = function() {
-      cancelled = true;
       // According to API cancel may fail, but there is no proper UI to reflect
       // this. So, we just silently assume that everything is cancelled.
       chrome.fileManagerPrivate.cancelFileTransfers(
           selection.urls, function(response) {});
-      cleanup();
-    }.bind(this);
-
-    var onResolved = function(resolvedUrls) {
-      if (cancelled) return;
-      cleanup();
-      selection.urls = resolvedUrls;
-      // Call next method on a timeout, as it's unsafe to
-      // close a window from a callback.
-      setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
     }.bind(this);
 
     var onProperties = function(properties) {
@@ -3621,7 +3593,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           filesTotal--;
         }
       }
-      this.resolveSelectResults_(selection.urls, onResolved);
+      callSelectFilesApiAndClose(cleanup);
     }.bind(this);
 
     setup();

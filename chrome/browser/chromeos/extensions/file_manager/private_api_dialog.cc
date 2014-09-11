@@ -98,6 +98,11 @@ bool FileManagerPrivateSelectFilesFunction::RunAsync() {
 void FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (files.empty()) {
+    SendResponse(false);
+    return;
+  }
+
   SelectFileDialogExtension::OnMultiFilesSelected(GetFileDialogRoutingID(this),
                                                   files);
   SendResponse(true);

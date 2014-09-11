@@ -78,43 +78,6 @@ class FileManagerPrivatePinDriveFileFunction
   void OnPinStateSet(drive::FileError error);
 };
 
-// Get drive files for the given list of file URLs. Initiate downloading of
-// drive files if these are not cached. Return a list of local file names.
-// This function puts empty strings instead of local paths for files could
-// not be obtained. For instance, this can happen if the user specifies a new
-// file name to save a file on drive. There may be other reasons to fail. The
-// file manager should check if the local paths returned from getDriveFiles()
-// contain empty paths.
-// TODO(satorux): Should we propagate error types to the JavaScript layer?
-class FileManagerPrivateGetDriveFilesFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDriveFiles",
-                             FILEMANAGERPRIVATE_GETDRIVEFILES)
-
-  FileManagerPrivateGetDriveFilesFunction();
-
- protected:
-  virtual ~FileManagerPrivateGetDriveFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  // Gets the file on the top of the |remaining_drive_paths_| or sends the
-  // response if the queue is empty.
-  void GetFileOrSendResponse();
-
-  // Called by FileSystem::GetFile(). Pops the file from
-  // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
-  void OnFileReady(drive::FileError error,
-                   const base::FilePath& local_path,
-                   scoped_ptr<drive::ResourceEntry> entry);
-
-  std::queue<base::FilePath> remaining_drive_paths_;
-  std::vector<std::string> local_paths_;
-};
-
 // Implements the chrome.fileManagerPrivate.cancelFileTransfers method.
 class FileManagerPrivateCancelFileTransfersFunction
     : public LoggedAsyncExtensionFunction {

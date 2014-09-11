@@ -148,6 +148,10 @@ void GetSelectedFileInfoInternal(Profile* profile,
 void ContinueGetSelectedFileInfo(Profile* profile,
                                  scoped_ptr<GetSelectedFileInfoParams> params,
                                  const base::FilePath& local_path) {
+  if (local_path.empty()) {
+    params->callback.Run(std::vector<ui::SelectedFileInfo>());
+    return;
+  }
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
   params->selected_files.push_back(ui::SelectedFileInfo(file_path, local_path));
