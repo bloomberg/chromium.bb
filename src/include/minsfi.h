@@ -21,7 +21,7 @@ bool MinsfiInitializeSandbox(void);
  * returned by the sandbox. Returns EXIT_FAILURE if sandbox cannot be invoked,
  * e.g. because it has not been initialized.
  */
-int MinsfiInvokeSandbox(void);
+int MinsfiInvokeSandbox(int argc, char **argv);
 
 /*
  * Destroys the MinSFI address subspace if there is one. Returns FALSE if

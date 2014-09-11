@@ -3236,6 +3236,7 @@ if not nacl_env.Bit('nacl_glibc'):
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/minsfi/untrusted/nacl.scons',
     'src/nonsfi/irt/build.scons',
     'src/nonsfi/linux/nacl.scons',
     'src/nonsfi/loader/build.scons',

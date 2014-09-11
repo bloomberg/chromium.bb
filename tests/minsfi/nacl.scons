@@ -12,12 +12,16 @@ if not env.Bit('bitcode') or not env.Bit('minsfi') or \
    not trusted_env.Bit('build_x86') or trusted_env.Bit('windows'):
   Return()
 
-def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0):
+def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0,
+                   support_lib=True):
   if ptrsize == 0:
     ptrsize = 24 if trusted_env.Bit('build_x86_32') else 32
 
   bc_env = env.Clone()
   bc_env.Replace(CCFLAGS=[], LINKFLAGS=[])
+  if support_lib:
+    bc_env.Append(LIBS=['minsfi_support'])
+  bc_env.Append(LIBS=['c'])
 
   # Compile the untrusted file.
   # We cannot pass the source file directly to the ComponentProgram call
@@ -65,5 +69,10 @@ def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0):
       ['small_tests', 'toolchain_tests', 'minsfi_tests'],
       'run_minsfi_' + test_name + '_test')
 
-CompileSandbox('memory_layout', 'test_memory_layout.c', 'sandbox_dummy.c')
-CompileSandbox('initializer', 'test_initializer.c', 'sandbox_dummy.c')
+CompileSandbox('memory_layout', 'test_memory_layout.c', 'sandbox_dummy.c',
+               support_lib=False)
+CompileSandbox('initializer', 'test_initializer.c', 'sandbox_dummy.c',
+               support_lib=False)
+CompileSandbox('pointer_conversion', 'test_pointer_conversion.c',
+               'sandbox_dummy.c', support_lib=False)
+CompileSandbox('invoke_args', 'test_invoke_args.c', 'sandbox_invoke_args.c')

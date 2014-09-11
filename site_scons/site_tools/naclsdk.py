@@ -237,7 +237,7 @@ def _SetEnvForPnacl(env, root):
 
   if env.Bit('minsfi'):
     pnacl_llc_flags += ' -relocation-model=pic -filetype=obj'
-    pnacl_ld_flags += ' -nostdlib -Wl,-r'
+    pnacl_ld_flags += ' -nostdlib -Wl,-r -L' + os.path.join(root, 'usr', 'lib')
 
   if env.Bit('use_sandboxed_translator'):
     sb_flags = ' --pnacl-sb'

@@ -22,6 +22,9 @@
 
 extern uint64_t __sfi_memory_base;
 
+static int argc = 1;
+static char *argv[] = { "foo" };
+
 void helper_initialize(void) {
   ASSERT_EQ(true, MinsfiInitializeSandbox());
   ASSERT_NE(NULL, MinsfiGetActiveSandbox());
@@ -30,11 +33,11 @@ void helper_initialize(void) {
 }
 
 void helper_invoke_success(void) {
-  ASSERT_EQ((int) 0xCAFEBABE, MinsfiInvokeSandbox());
+  ASSERT_EQ((int) 0xCAFEBABE, MinsfiInvokeSandbox(argc, argv));
 }
 
 void helper_invoke_error(void) {
-  ASSERT_EQ(EXIT_FAILURE, MinsfiInvokeSandbox());
+  ASSERT_EQ(EXIT_FAILURE, MinsfiInvokeSandbox(argc, argv));
 }
 
 void helper_destroy(void) {

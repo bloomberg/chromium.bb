@@ -12,6 +12,13 @@
 #include <stdint.h>
 #include <unistd.h>
 
+/*
+ * An integer type capable of holding an address converted from an untrusted
+ * pointer. Functions in the minsfi_ptr.h header file convert between
+ * native and untrusted pointers without loss of information.
+ */
+typedef uint32_t sfiptr_t;
+
 typedef struct {
   uint32_t ptr_size;               /* size of sandboxed pointers in bits */
   uint32_t dataseg_offset;
@@ -20,7 +27,7 @@ typedef struct {
 } MinsfiManifest;
 
 typedef struct {
-  uint32_t offset;
+  sfiptr_t offset;
   uint32_t length;
 } MinsfiMemoryRegion;
 
@@ -33,7 +40,7 @@ typedef struct {
 typedef struct {
   char *mem_base;
   uint64_t mem_alloc_size;
-  uint32_t ptr_mask;
+  sfiptr_t ptr_mask;
   MinsfiMemoryLayout mem_layout;
 } MinsfiSandbox;
 
@@ -54,6 +61,21 @@ bool MinsfiGenerateMemoryLayout(const MinsfiManifest *manifest,
  * information about the sandbox into the given MinsfiSandbox struct.
  */
 bool MinsfiInitSandbox(const MinsfiManifest *manifest, MinsfiSandbox *sb);
+
+/*
+ * Arguments are passed to the sandbox with a single pointer to an array of
+ * integers called 'info' where:
+ *   info[0] = argc
+ *   info[j+1] = untrusted pointer to argv[j]      (for 0 <= j < argc)
+ * The sandbox will expect this array to be stored at the bottom of the
+ * untrusted stack and will start growing the stack backwards from the given
+ * address.
+ *
+ * This function will iterate over the arguments, store the argv[*] strings
+ * at the bottom of the untrusted stack and prepend it with the 'info' data
+ * structure as described above.
+ */
+sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb);
 
 /*
  * Unmaps a memory region given by the provided base and the declared pointer
