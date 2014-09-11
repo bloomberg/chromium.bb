@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <script>
+            if (window.testRunner) {
+                testRunner.dumpResourceRequestPriorities();
+                testRunner.dumpAsText();
+            }
+        </script>
+        <script src="/js-test-resources/js-test.js"></script>
+        <script src="../misc/resources/defer-script.js" defer></script>
+        <script src="../misc/resources/async-script.js" async></script>
+        <script src="resources/head.js"></script>
+    </head>
+    <body>
+        <script>
+            document.write('<script src="resources/document-write.js"><\/script>');
+        </script>
+        <script>
+            var script = document.createElement('script');
+            script.src = "resources/injected.js";
+            document.getElementsByTagName('head')[0].appendChild(script);
+        </script>
+        <script>
+            var asyncScript = document.createElement('script');
+            asyncScript.async = true;
+            asyncScript.src = "resources/injected-async.js";
+            document.getElementsByTagName('head')[0].appendChild(asyncScript);
+        </script>
+        <script src="resources/body.js"></script>
+    </body>
+</html>

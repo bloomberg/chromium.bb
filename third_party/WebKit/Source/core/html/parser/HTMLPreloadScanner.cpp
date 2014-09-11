@@ -111,6 +111,7 @@ public:
         , m_sourceSize(0)
         , m_sourceSizeSet(false)
         , m_isCORSEnabled(false)
+        , m_defer(FetchRequest::NoDefer)
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_mediaValues(mediaValues)
     {
@@ -170,6 +171,7 @@ public:
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
+        request->setDefer(m_defer);
         return request.release();
     }
 
@@ -182,6 +184,10 @@ private:
             setUrlToLoad(attributeValue, DisallowURLReplacement);
         else if (match(attributeName, crossoriginAttr))
             setCrossOriginAllowed(attributeValue);
+        else if (match(attributeName, asyncAttr))
+            setDefer(FetchRequest::LazyLoad);
+        else if (match(attributeName, deferAttr))
+            setDefer(FetchRequest::LazyLoad);
     }
 
     template<typename NameType>
@@ -337,6 +343,16 @@ private:
             m_allowCredentials = DoNotAllowStoredCredentials;
     }
 
+    void setDefer(FetchRequest::DeferOption defer)
+    {
+        m_defer = defer;
+    }
+
+    bool defer() const
+    {
+        return m_defer;
+    }
+
     const StringImpl* m_tagImpl;
     String m_urlToLoad;
     ImageCandidate m_srcsetImageCandidate;
@@ -349,6 +365,7 @@ private:
     unsigned m_sourceSize;
     bool m_sourceSizeSet;
     bool m_isCORSEnabled;
+    FetchRequest::DeferOption m_defer;
     StoredCredentials m_allowCredentials;
     RefPtr<MediaValues> m_mediaValues;
 };

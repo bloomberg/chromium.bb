@@ -124,11 +124,16 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     case Resource::Raw:
         return request.options().synchronousPolicy == RequestSynchronously ? ResourceLoadPriorityVeryHigh : ResourceLoadPriorityMedium;
     case Resource::Script:
+        // Async scripts do not block the parser so they get the lowest priority and can be
+        // loaded in parser order with images.
+        if (FetchRequest::LazyLoad == request.defer())
+            return ResourceLoadPriorityLow;
+        return ResourceLoadPriorityMedium;
     case Resource::Font:
     case Resource::ImportResource:
         return ResourceLoadPriorityMedium;
     case Resource::Image:
-        // We'll default images to VeryLow, and promote whatever is visible. This improves
+        // Default images to VeryLow, and promote whatever is visible. This improves
         // speed-index by ~5% on average, ~14% at the 99th percentile.
         return ResourceLoadPriorityVeryLow;
     case Resource::Media:

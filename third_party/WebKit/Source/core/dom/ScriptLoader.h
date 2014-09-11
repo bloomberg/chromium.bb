@@ -21,6 +21,7 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 #include "wtf/text/TextPosition.h"
@@ -77,7 +78,7 @@ private:
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
 
-    bool fetchScript(const String& sourceUrl);
+    bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
     void stopLoadRequest();
 
     ScriptLoaderClient* client() const;

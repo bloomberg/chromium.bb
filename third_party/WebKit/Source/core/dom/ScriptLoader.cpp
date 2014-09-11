@@ -217,7 +217,10 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_characterEncoding = elementDocument.charset();
 
     if (client->hasSourceAttribute()) {
-        if (!fetchScript(client->sourceAttributeValue()))
+        FetchRequest::DeferOption defer = FetchRequest::NoDefer;
+        if (!m_parserInserted || client->asyncAttributeValue() || client->deferAttributeValue())
+            defer = FetchRequest::LazyLoad;
+        if (!fetchScript(client->sourceAttributeValue(), defer))
             return false;
     }
 
@@ -246,7 +249,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     return true;
 }
 
-bool ScriptLoader::fetchScript(const String& sourceUrl)
+bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOption defer)
 {
     ASSERT(m_element);
 
@@ -266,6 +269,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
         bool scriptPassesCSP = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
         if (scriptPassesCSP)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+        request.setDefer(defer);
 
         m_resource = elementDocument->fetcher()->fetchScript(request);
         m_isExternalScript = true;

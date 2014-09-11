@@ -38,7 +38,7 @@ class SecurityOrigin;
 
 class FetchRequest {
 public:
-    enum DeferOption { NoDefer, DeferredByClient };
+    enum DeferOption { NoDefer, LazyLoad, DeferredByClient };
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
 
     explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);

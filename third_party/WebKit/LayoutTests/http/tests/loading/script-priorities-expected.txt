@@ -1,0 +1,24 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+http://127.0.0.1:8000/js-test-resources/js-test.js has priority Medium
+http://127.0.0.1:8000/misc/resources/defer-script.js has priority Low
+http://127.0.0.1:8000/misc/resources/async-script.js has priority Low
+http://127.0.0.1:8000/loading/resources/head.js has priority Medium
+http://127.0.0.1:8000/loading/resources/body.js has priority Medium
+http://127.0.0.1:8000/loading/resources/document-write.js has priority Medium
+http://127.0.0.1:8000/loading/resources/injected.js has priority Low
+http://127.0.0.1:8000/loading/resources/injected-async.js has priority Low
+main frame - didFinishDocumentLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+head
+async
+document.write
+body
+defer
+PASS successfullyParsed is true
+
+TEST COMPLETE
+injected
+injected (async)
+
