@@ -38,7 +38,7 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void SetMemoryLimit(int buffers_of_data) {
-    stream_->set_memory_limit_for_testing(buffers_of_data * kDataSize);
+    stream_->set_memory_limit(buffers_of_data * kDataSize);
   }
 
   void SetStreamInfo(int frames_per_second, int keyframes_per_second) {

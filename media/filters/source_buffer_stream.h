@@ -141,7 +141,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // yet.
   base::TimeDelta GetMaxInterbufferDistance() const;
 
-  void set_memory_limit_for_testing(int memory_limit) {
+  void set_memory_limit(int memory_limit) {
     memory_limit_ = memory_limit;
   }
 

@@ -156,9 +156,10 @@ class SourceState {
   void MarkEndOfStream();
   void UnmarkEndOfStream();
   void Shutdown();
-  // Sets the memory limit on each stream. |memory_limit| is the
-  // maximum number of bytes each stream is allowed to hold in its buffer.
-  void SetMemoryLimitsForTesting(int memory_limit);
+  // Sets the memory limit on each stream of a specific type.
+  // |memory_limit| is the maximum number of bytes each stream of type |type|
+  // is allowed to hold in its buffer.
+  void SetMemoryLimits(DemuxerStream::Type type, int memory_limit);
   bool IsSeekWaitingForData() const;
 
  private:
@@ -485,16 +486,26 @@ void SourceState::Shutdown() {
   }
 }
 
-void SourceState::SetMemoryLimitsForTesting(int memory_limit) {
-  if (audio_)
-    audio_->set_memory_limit_for_testing(memory_limit);
-
-  if (video_)
-    video_->set_memory_limit_for_testing(memory_limit);
-
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->set_memory_limit_for_testing(memory_limit);
+void SourceState::SetMemoryLimits(DemuxerStream::Type type, int memory_limit) {
+  switch (type) {
+    case DemuxerStream::AUDIO:
+      if (audio_)
+        audio_->set_memory_limit(memory_limit);
+      break;
+    case DemuxerStream::VIDEO:
+      if (video_)
+        video_->set_memory_limit(memory_limit);
+      break;
+    case DemuxerStream::TEXT:
+      for (TextStreamMap::iterator itr = text_stream_map_.begin();
+           itr != text_stream_map_.end(); ++itr) {
+        itr->second->set_memory_limit(memory_limit);
+      }
+      break;
+    case DemuxerStream::UNKNOWN:
+    case DemuxerStream::NUM_TYPES:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -1500,10 +1511,10 @@ void ChunkDemuxer::Shutdown() {
     base::ResetAndReturn(&seek_cb_).Run(PIPELINE_ERROR_ABORT);
 }
 
-void ChunkDemuxer::SetMemoryLimitsForTesting(int memory_limit) {
+void ChunkDemuxer::SetMemoryLimits(DemuxerStream::Type type, int memory_limit) {
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
-    itr->second->SetMemoryLimitsForTesting(memory_limit);
+    itr->second->SetMemoryLimits(type, memory_limit);
   }
 }
 

@@ -962,8 +962,19 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   void CheckExpectedRanges(const std::string&  id,
                            const std::string& expected) {
-    Ranges<base::TimeDelta> r = demuxer_->GetBufferedRanges(id);
+    CheckExpectedRanges(demuxer_->GetBufferedRanges(id), expected);
+  }
 
+  void CheckExpectedRanges(DemuxerStream::Type type,
+                           const std::string& expected) {
+    ChunkDemuxerStream* stream =
+        static_cast<ChunkDemuxerStream*>(demuxer_->GetStream(type));
+    CheckExpectedRanges(stream->GetBufferedRanges(kDefaultDuration()),
+                        expected);
+  }
+
+  void CheckExpectedRanges(const Ranges<base::TimeDelta>& r,
+                           const std::string& expected) {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
@@ -3269,10 +3280,40 @@ TEST_F(ChunkDemuxerTest, CanceledSeekDuringInitialPreroll) {
   AppendCluster(seek_time.InMilliseconds(), 10);
 }
 
+TEST_F(ChunkDemuxerTest, SetMemoryLimitType) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  // Set different memory limits for audio and video.
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, 5 * kBlockSize);
+
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(1000);
+
+  // Append data at the start that can be garbage collected:
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 0, 10);
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, 0, 5);
+
+  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,230) }");
+  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,165) }");
+
+  // Seek so we can garbage collect the data appended above.
+  Seek(seek_time);
+
+  // Append data at seek_time.
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum,
+                            seek_time.InMilliseconds(), 10);
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
+                            seek_time.InMilliseconds(), 5);
+
+  // Verify that the old data, and nothing more, has been garbage collected.
+  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [1000,1230) }");
+  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [1000,1165) }");
+}
+
 TEST_F(ChunkDemuxerTest, GCDuringSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
 
-  demuxer_->SetMemoryLimitsForTesting(5 * kBlockSize);
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 5 * kBlockSize);
 
   base::TimeDelta seek_time1 = base::TimeDelta::FromMilliseconds(1000);
   base::TimeDelta seek_time2 = base::TimeDelta::FromMilliseconds(500);
