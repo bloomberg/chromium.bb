@@ -655,5 +655,5 @@ base.dll!base::MessageLoop::DeferOrRunPendingTask
 
 INVALID HEAP ARGUMENT
 name=http://crbug.com/413215
-*!replace_operator_delete
+*!replace_operator_delete*
 v8.dll!*

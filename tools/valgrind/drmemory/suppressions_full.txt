@@ -2200,5 +2200,5 @@ content.dll!content::NavigationControllerImpl::LoadEntry
 
 INVALID HEAP ARGUMENT
 name=bug_413215
-*!replace_operator_delete
+*!replace_operator_delete*
 v8.dll!*
