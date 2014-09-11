@@ -58,18 +58,18 @@ private:
     }
 
     // Decodes the image.  If |onlySize| is true, stops decoding after
-    // calculating the image size.  If decoding fails but there is no more
+    // calculating the image size. If decoding fails but there is no more
     // data coming, sets the "decode failure" flag.
     void decode(bool onlySize);
 
     // Decodes the image.  If |onlySize| is true, stops decoding after
-    // calculating the image size.  Returns whether decoding succeeded.
+    // calculating the image size. Returns whether decoding succeeded.
     bool decodeHelper(bool onlySize);
 
     // Processes the file header at the beginning of the data.  Sets
-    // |*imgDataOffset| based on the header contents.  Returns true if the
+    // |imgDataOffset| based on the header contents. Returns true if the
     // file header could be decoded.
-    bool processFileHeader(size_t* imgDataOffset);
+    bool processFileHeader(size_t& imgDataOffset);
 
     // An index into |m_data| representing how much we've already decoded.
     // Note that this only tracks data _this_ class decodes; once the

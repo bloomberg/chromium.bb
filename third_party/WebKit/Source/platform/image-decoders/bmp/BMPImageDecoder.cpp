@@ -110,7 +110,7 @@ void BMPImageDecoder::decode(bool onlySize)
 bool BMPImageDecoder::decodeHelper(bool onlySize)
 {
     size_t imgDataOffset = 0;
-    if ((m_decodedOffset < sizeOfFileHeader) && !processFileHeader(&imgDataOffset))
+    if ((m_decodedOffset < sizeOfFileHeader) && !processFileHeader(imgDataOffset))
         return false;
 
     if (!m_reader) {
@@ -124,16 +124,14 @@ bool BMPImageDecoder::decodeHelper(bool onlySize)
     return m_reader->decodeBMP(onlySize);
 }
 
-bool BMPImageDecoder::processFileHeader(size_t* imgDataOffset)
+bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset)
 {
-    ASSERT(imgDataOffset);
-
     // Read file header.
     ASSERT(!m_decodedOffset);
     if (m_data->size() < sizeOfFileHeader)
         return false;
     const uint16_t fileType = (m_data->data()[0] << 8) | static_cast<uint8_t>(m_data->data()[1]);
-    *imgDataOffset = readUint32(10);
+    imgDataOffset = readUint32(10);
     m_decodedOffset = sizeOfFileHeader;
 
     // See if this is a bitmap filetype we understand.
