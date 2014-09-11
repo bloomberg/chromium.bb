@@ -3198,5 +3198,26 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
   widget->CloseNow();
 }
 
+// Tests that the root view is correctly set up for Widget types that do not
+// require a non-client view, before any other views are added to the widget.
+// That is, before Widget::ReorderNativeViews() is called which, if called with
+// a root view not set, could cause the root view to get resized to the widget.
+TEST_F(WidgetTest, NonClientWindowValidAfterInit) {
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  View* root_view = widget->GetRootView();
+
+  // Size the root view to exceed the widget bounds.
+  const gfx::Rect test_rect(0, 0, 500, 500);
+  root_view->SetBoundsRect(test_rect);
+
+  EXPECT_NE(test_rect.size(), widget->GetWindowBoundsInScreen().size());
+
+  EXPECT_EQ(test_rect, root_view->bounds());
+  widget->ReorderNativeViews();
+  EXPECT_EQ(test_rect, root_view->bounds());
+
+  widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
