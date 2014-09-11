@@ -132,8 +132,8 @@ SandboxFileSystemTestHelper::NewOperationContext() {
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
     storage::FileChangeObserver* observer) {
-  file_system_context_->sandbox_backend()->GetQuotaUtil()->
-      AddFileChangeObserver(type_, observer, NULL);
+  file_system_context_->sandbox_delegate()->AddFileChangeObserver(
+      type_, observer, NULL);
 }
 
 storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {

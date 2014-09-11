@@ -211,6 +211,21 @@ storage::FileSystemQuotaUtil* SyncFileSystemBackend::GetQuotaUtil() {
   return GetDelegate();
 }
 
+const storage::UpdateObserverList* SyncFileSystemBackend::GetUpdateObservers(
+    storage::FileSystemType type) const {
+  return GetDelegate()->GetUpdateObservers(type);
+}
+
+const storage::ChangeObserverList* SyncFileSystemBackend::GetChangeObservers(
+    storage::FileSystemType type) const {
+  return GetDelegate()->GetChangeObservers(type);
+}
+
+const storage::AccessObserverList* SyncFileSystemBackend::GetAccessObservers(
+    storage::FileSystemType type) const {
+  return GetDelegate()->GetAccessObservers(type);
+}
+
 // static
 SyncFileSystemBackend* SyncFileSystemBackend::GetBackend(
     const storage::FileSystemContext* file_system_context) {

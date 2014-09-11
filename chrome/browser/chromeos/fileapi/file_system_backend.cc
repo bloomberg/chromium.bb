@@ -145,6 +145,21 @@ storage::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {
   return NULL;
 }
 
+const storage::UpdateObserverList* FileSystemBackend::GetUpdateObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}
+
+const storage::ChangeObserverList* FileSystemBackend::GetChangeObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}
+
+const storage::AccessObserverList* FileSystemBackend::GetAccessObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}
+
 bool FileSystemBackend::IsAccessAllowed(
     const storage::FileSystemURL& url) const {
   if (!url.is_valid())

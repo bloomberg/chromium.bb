@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 
 namespace storage {
 
@@ -45,6 +46,12 @@ class IsolatedFileSystemBackend : public FileSystemBackend {
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE;
 
  private:
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;

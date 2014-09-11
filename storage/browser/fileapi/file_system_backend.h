@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/open_file_system_mode.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
@@ -129,6 +130,21 @@ class STORAGE_EXPORT FileSystemBackend {
   // Returns the specialized FileSystemQuotaUtil for this backend.
   // This could return NULL if this backend does not support quota.
   virtual FileSystemQuotaUtil* GetQuotaUtil() = 0;
+
+  // Returns the update observer list for |type|. It may return NULL when no
+  // observers are added.
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const = 0;
+
+  // Returns the change observer list for |type|. It may return NULL when no
+  // observers are added.
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const = 0;
+
+  // Returns the access observer list for |type|. It may return NULL when no
+  // observers are added.
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const = 0;
 };
 
 // An interface to control external file system access permissions.

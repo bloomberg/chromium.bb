@@ -273,21 +273,6 @@ PluginPrivateFileSystemBackend::CreateQuotaReservationOnFileTaskRunner(
   return scoped_refptr<QuotaReservation>();
 }
 
-void PluginPrivateFileSystemBackend::AddFileUpdateObserver(
-    FileSystemType type,
-    FileUpdateObserver* observer,
-    base::SequencedTaskRunner* task_runner) {}
-
-void PluginPrivateFileSystemBackend::AddFileChangeObserver(
-    FileSystemType type,
-    FileChangeObserver* observer,
-    base::SequencedTaskRunner* task_runner) {}
-
-void PluginPrivateFileSystemBackend::AddFileAccessObserver(
-    FileSystemType type,
-    FileAccessObserver* observer,
-    base::SequencedTaskRunner* task_runner) {}
-
 const UpdateObserverList* PluginPrivateFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
   return NULL;

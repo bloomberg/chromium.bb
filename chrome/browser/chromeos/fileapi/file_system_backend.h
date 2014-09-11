@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/fileapi/file_system_types.h"
 
@@ -117,6 +118,12 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       int64 offset,
       storage::FileSystemContext* context) const OVERRIDE;
   virtual storage::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual const storage::UpdateObserverList* GetUpdateObservers(
+      storage::FileSystemType type) const OVERRIDE;
+  virtual const storage::ChangeObserverList* GetChangeObservers(
+      storage::FileSystemType type) const OVERRIDE;
+  virtual const storage::AccessObserverList* GetAccessObservers(
+      storage::FileSystemType type) const OVERRIDE;
 
   // storage::ExternalFileSystemBackend overrides.
   virtual bool IsAccessAllowed(

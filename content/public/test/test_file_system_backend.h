@@ -64,14 +64,18 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
       int64 offset,
       storage::FileSystemContext* context) const OVERRIDE;
   virtual storage::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual const storage::UpdateObserverList* GetUpdateObservers(
+      storage::FileSystemType type) const OVERRIDE;
+  virtual const storage::ChangeObserverList* GetChangeObservers(
+      storage::FileSystemType type) const OVERRIDE;
+  virtual const storage::AccessObserverList* GetAccessObservers(
+      storage::FileSystemType type) const OVERRIDE;
 
   // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
   // once.
   void InitializeCopyOrMoveFileValidatorFactory(
       scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory);
 
-  const storage::UpdateObserverList* GetUpdateObservers(
-      storage::FileSystemType type) const;
   void AddFileChangeObserver(storage::FileChangeObserver* observer);
 
   // For CopyOrMoveFileValidatorFactory testing. Once it's set to true
@@ -89,6 +93,8 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
   scoped_ptr<storage::AsyncFileUtilAdapter> file_util_;
   scoped_ptr<storage::WatcherManager> watcher_manager_;
   scoped_ptr<QuotaUtil> quota_util_;
+  storage::UpdateObserverList update_observers_;
+  storage::ChangeObserverList change_observers_;
 
   bool require_copy_or_move_validator_;
   scoped_ptr<storage::CopyOrMoveFileValidatorFactory>

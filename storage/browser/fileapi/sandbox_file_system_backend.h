@@ -59,6 +59,12 @@ class STORAGE_EXPORT SandboxFileSystemBackend
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE;
 
   // Returns an origin enumerator of this backend.
   // This method can only be called on the file thread.

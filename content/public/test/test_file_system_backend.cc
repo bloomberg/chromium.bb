@@ -158,11 +158,7 @@ class TestWatcherManager : public storage::WatcherManager {
 class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
                                          public storage::FileUpdateObserver {
  public:
-  explicit QuotaUtil(base::SequencedTaskRunner* task_runner)
-      : usage_(0),
-        task_runner_(task_runner) {
-    update_observers_ = update_observers_.AddObserver(this, task_runner_.get());
-  }
+  QuotaUtil() : usage_(0) {}
   virtual ~QuotaUtil() {}
 
   // FileSystemQuotaUtil overrides.
@@ -203,42 +199,6 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     return usage_;
   }
 
-  virtual void AddFileUpdateObserver(
-      storage::FileSystemType type,
-      FileUpdateObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void AddFileChangeObserver(
-      storage::FileSystemType type,
-      storage::FileChangeObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE {
-    change_observers_ = change_observers_.AddObserver(observer, task_runner);
-  }
-
-  virtual void AddFileAccessObserver(
-      storage::FileSystemType type,
-      storage::FileAccessObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual const storage::UpdateObserverList* GetUpdateObservers(
-      storage::FileSystemType type) const OVERRIDE {
-    return &update_observers_;
-  }
-
-  virtual const storage::ChangeObserverList* GetChangeObservers(
-      storage::FileSystemType type) const OVERRIDE {
-    return &change_observers_;
-  }
-
-  virtual const storage::AccessObserverList* GetAccessObservers(
-      storage::FileSystemType type) const OVERRIDE {
-    return NULL;
-  }
-
   // FileUpdateObserver overrides.
   virtual void OnStartUpdate(const FileSystemURL& url) OVERRIDE {}
   virtual void OnUpdate(const FileSystemURL& url, int64 delta) OVERRIDE {
@@ -246,26 +206,23 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
   }
   virtual void OnEndUpdate(const FileSystemURL& url) OVERRIDE {}
 
-  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
-
  private:
   int64 usage_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  storage::UpdateObserverList update_observers_;
-  storage::ChangeObserverList change_observers_;
+  DISALLOW_COPY_AND_ASSIGN(QuotaUtil);
 };
 
 TestFileSystemBackend::TestFileSystemBackend(
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& base_path)
     : base_path_(base_path),
+      task_runner_(task_runner),
       file_util_(
           new storage::AsyncFileUtilAdapter(new TestFileUtil(base_path))),
       watcher_manager_(new TestWatcherManager()),
-      quota_util_(new QuotaUtil(task_runner)),
+      quota_util_(new QuotaUtil),
       require_copy_or_move_validator_(false) {
+  update_observers_ =
+      update_observers_.AddObserver(quota_util_.get(), task_runner_.get());
 }
 
 TestFileSystemBackend::~TestFileSystemBackend() {
@@ -323,8 +280,7 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(*GetUpdateObservers(url.type()));
-  operation_context->set_change_observers(
-      *quota_util_->GetChangeObservers(url.type()));
+  operation_context->set_change_observers(*GetChangeObservers(url.type()));
   return FileSystemOperation::Create(url, context, operation_context.Pass());
 }
 
@@ -365,13 +321,23 @@ storage::FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
 
 const storage::UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
     storage::FileSystemType type) const {
-  return quota_util_->GetUpdateObservers(type);
+  return &update_observers_;
+}
+
+const storage::ChangeObserverList* TestFileSystemBackend::GetChangeObservers(
+    storage::FileSystemType type) const {
+  return &change_observers_;
+}
+
+const storage::AccessObserverList* TestFileSystemBackend::GetAccessObservers(
+    storage::FileSystemType type) const {
+  return NULL;
 }
 
 void TestFileSystemBackend::AddFileChangeObserver(
     storage::FileChangeObserver* observer) {
-  quota_util_->AddFileChangeObserver(
-      storage::kFileSystemTypeTest, observer, quota_util_->task_runner());
+  change_observers_ =
+      change_observers_.AddObserver(observer, task_runner_.get());
 }
 
 }  // namespace content

@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
-#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
@@ -62,28 +61,6 @@ class STORAGE_EXPORT FileSystemQuotaUtil {
       CreateQuotaReservationOnFileTaskRunner(
           const GURL& origin_url,
           FileSystemType type) = 0;
-
-  virtual void AddFileUpdateObserver(
-      FileSystemType type,
-      FileUpdateObserver* observer,
-      base::SequencedTaskRunner* task_runner) = 0;
-  virtual void AddFileChangeObserver(
-      FileSystemType type,
-      FileChangeObserver* observer,
-      base::SequencedTaskRunner* task_runner) = 0;
-  virtual void AddFileAccessObserver(
-      FileSystemType type,
-      FileAccessObserver* observer,
-      base::SequencedTaskRunner* task_runner) = 0;
-
-  // Returns the observer list for |type|, or returns NULL if any observers
-  // have not been registered on |type|.
-  virtual const UpdateObserverList* GetUpdateObservers(
-      FileSystemType type) const = 0;
-  virtual const ChangeObserverList* GetChangeObservers(
-      FileSystemType type) const = 0;
-  virtual const AccessObserverList* GetAccessObservers(
-      FileSystemType type) const = 0;
 };
 
 }  // namespace storage

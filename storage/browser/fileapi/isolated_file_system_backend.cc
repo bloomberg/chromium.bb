@@ -149,4 +149,19 @@ FileSystemQuotaUtil* IsolatedFileSystemBackend::GetQuotaUtil() {
   return NULL;
 }
 
+const UpdateObserverList* IsolatedFileSystemBackend::GetUpdateObservers(
+    FileSystemType type) const {
+  return NULL;
+}
+
+const ChangeObserverList* IsolatedFileSystemBackend::GetChangeObservers(
+    FileSystemType type) const {
+  return NULL;
+}
+
+const AccessObserverList* IsolatedFileSystemBackend::GetAccessObservers(
+    FileSystemType type) const {
+  return NULL;
+}
+
 }  // namespace storage

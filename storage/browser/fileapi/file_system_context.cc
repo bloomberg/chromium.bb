@@ -293,25 +293,19 @@ bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(
     FileSystemType type) const {
   FileSystemBackend* backend = GetFileSystemBackend(type);
-  if (backend->GetQuotaUtil())
-    return backend->GetQuotaUtil()->GetUpdateObservers(type);
-  return NULL;
+  return backend->GetUpdateObservers(type);
 }
 
 const ChangeObserverList* FileSystemContext::GetChangeObservers(
     FileSystemType type) const {
   FileSystemBackend* backend = GetFileSystemBackend(type);
-  if (backend->GetQuotaUtil())
-    return backend->GetQuotaUtil()->GetChangeObservers(type);
-  return NULL;
+  return backend->GetChangeObservers(type);
 }
 
 const AccessObserverList* FileSystemContext::GetAccessObservers(
     FileSystemType type) const {
   FileSystemBackend* backend = GetFileSystemBackend(type);
-  if (backend->GetQuotaUtil())
-    return backend->GetQuotaUtil()->GetAccessObservers(type);
-  return NULL;
+  return backend->GetAccessObservers(type);
 }
 
 void FileSystemContext::GetFileSystemTypes(

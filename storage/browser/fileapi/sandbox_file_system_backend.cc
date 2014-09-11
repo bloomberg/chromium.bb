@@ -157,6 +157,21 @@ FileSystemQuotaUtil* SandboxFileSystemBackend::GetQuotaUtil() {
   return delegate_;
 }
 
+const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
+    FileSystemType type) const {
+  return delegate_->GetUpdateObservers(type);
+}
+
+const ChangeObserverList* SandboxFileSystemBackend::GetChangeObservers(
+    FileSystemType type) const {
+  return delegate_->GetChangeObservers(type);
+}
+
+const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
+    FileSystemType type) const {
+  return delegate_->GetAccessObservers(type);
+}
+
 SandboxFileSystemBackendDelegate::OriginEnumerator*
 SandboxFileSystemBackend::CreateOriginEnumerator() {
   DCHECK(delegate_);

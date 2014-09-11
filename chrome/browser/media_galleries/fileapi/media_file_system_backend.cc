@@ -368,3 +368,18 @@ storage::FileSystemQuotaUtil* MediaFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }
+
+const storage::UpdateObserverList* MediaFileSystemBackend::GetUpdateObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}
+
+const storage::ChangeObserverList* MediaFileSystemBackend::GetChangeObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}
+
+const storage::AccessObserverList* MediaFileSystemBackend::GetAccessObservers(
+    storage::FileSystemType type) const {
+  return NULL;
+}

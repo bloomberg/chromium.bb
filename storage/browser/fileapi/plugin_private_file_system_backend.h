@@ -13,6 +13,7 @@
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_options.h"
 #include "storage/browser/fileapi/file_system_quota_util.h"
+#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -87,6 +88,12 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE;
 
   // FileSystemQuotaUtil overrides.
   virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
@@ -109,24 +116,6 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       CreateQuotaReservationOnFileTaskRunner(
           const GURL& origin_url,
           FileSystemType type) OVERRIDE;
-  virtual void AddFileUpdateObserver(
-      FileSystemType type,
-      FileUpdateObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileChangeObserver(
-      FileSystemType type,
-      FileChangeObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileAccessObserver(
-      FileSystemType type,
-      FileAccessObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual const UpdateObserverList* GetUpdateObservers(
-      FileSystemType type) const OVERRIDE;
-  virtual const ChangeObserverList* GetChangeObservers(
-      FileSystemType type) const OVERRIDE;
-  virtual const AccessObserverList* GetAccessObservers(
-      FileSystemType type) const OVERRIDE;
 
  private:
   friend class content::PluginPrivateFileSystemBackendTest;
