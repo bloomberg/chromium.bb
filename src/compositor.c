@@ -4335,7 +4335,8 @@ int main(int argc, char *argv[])
 	int i, fd;
 	char *backend = NULL;
 	char *shell = NULL;
-	char *modules, *option_modules = NULL;
+	char *modules = NULL;
+	char *option_modules = NULL;
 	char *log = NULL;
 	char *server_socket = NULL, *end;
 	int32_t idle_time = 300;
