@@ -642,28 +642,28 @@ const size_t kMaxParseableFields = 200;
 
 bool IsMonthInput(const WebInputElement* element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kMonth, ("month"));
-  return element && element->formControlType() == kMonth;
+  return element && !element->isNull() && element->formControlType() == kMonth;
 }
 
 // All text fields, including password fields, should be extracted.
 bool IsTextInput(const WebInputElement* element) {
-  return element && element->isTextField();
+  return element && !element->isNull() && element->isTextField();
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {
   // Static for improved performance.
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
-  return element.formControlType() == kSelectOne;
+  return !element.isNull() && element.formControlType() == kSelectOne;
 }
 
 bool IsTextAreaElement(const WebFormControlElement& element) {
   // Static for improved performance.
   CR_DEFINE_STATIC_LOCAL(WebString, kTextArea, ("textarea"));
-  return element.formControlType() == kTextArea;
+  return !element.isNull() && element.formControlType() == kTextArea;
 }
 
 bool IsCheckableElement(const WebInputElement* element) {
-  if (!element)
+  if (!element || element->isNull())
     return false;
 
   return element->isCheckbox() || element->isRadioButton();
