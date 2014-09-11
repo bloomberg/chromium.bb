@@ -33,7 +33,10 @@ TEST(Visibility, CanSeeMe) {
 TEST(Visibility, Public) {
   Err err;
   Visibility vis;
-  ASSERT_TRUE(vis.Set(SourceDir("//"), Value(NULL, "*"), &err));
+
+  Value list(NULL, Value::LIST);
+  list.list_value().push_back(Value(NULL, "*"));
+  ASSERT_TRUE(vis.Set(SourceDir("//"), list, &err));
 
   EXPECT_TRUE(vis.CanSeeMe(Label(SourceDir("//random/"), "thing")));
   EXPECT_TRUE(vis.CanSeeMe(Label(SourceDir("//"), "")));

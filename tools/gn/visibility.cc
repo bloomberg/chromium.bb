@@ -25,16 +25,10 @@ bool Visibility::Set(const SourceDir& current_dir,
                      Err* err) {
   patterns_.clear();
 
-  // Allow a single string to be passed in to make the common case (just one
-  // pattern) easier to specify.
-  if (value.type() == Value::STRING) {
-    patterns_.push_back(LabelPattern::GetPattern(current_dir, value, err));
-    return !err->has_error();
-  }
-
-  // If it's not a string, it should be a list of strings.
-  if (!value.VerifyTypeIs(Value::LIST, err))
+  if (!value.VerifyTypeIs(Value::LIST, err)) {
+    CHECK(err->has_error());
     return false;
+  }
 
   const std::vector<Value>& list = value.list_value();
   for (size_t i = 0; i < list.size(); i++) {

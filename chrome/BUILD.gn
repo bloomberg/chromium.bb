@@ -242,7 +242,7 @@ if (is_win) {
   process_version("version_header") {
     # TODO(brettW) this should have more reduced visibility, but chrome/browser
     # currently depends on this.
-    #visibility = ":*"
+    #visibility = [ ":*" ]
     source = "version.h.in"
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
@@ -397,7 +397,7 @@ repack("packed_extra_resources") {
 
 # Collects per-locale grit files from many sources into global per-locale files.
 chrome_repack_locales("repack_locales_pack") {
-  visibility = ":*"
+  visibility = [ ":*" ]
 
   input_locales = locales
 
@@ -409,7 +409,7 @@ chrome_repack_locales("repack_locales_pack") {
 }
 
 chrome_repack_locales("repack_pseudo_locales_pack") {
-  visibility = ":*"
+  visibility = [ ":*" ]
 
   input_locales = [ "fake-bidi" ]
 
@@ -442,7 +442,7 @@ template("chrome_repack_percent") {
   copy_name = target_name
 
   repack(repack_name) {
-    visibility = ":$copy_name"
+    visibility = [ ":$copy_name" ]
     # All sources should also have deps for completeness.
     sources = [
       "$root_gen_dir/components/resources/component_resources_${percent}_percent.pak",
@@ -490,7 +490,7 @@ template("chrome_repack_percent") {
   }
 
   copy(copy_name) {
-    visibility = ":*"
+    visibility = [ ":*" ]
     deps = [ ":$repack_name" ]
     sources = [ repack_output_file ]
     outputs = [ "$root_build_dir/chrome_${percent}_percent.pak" ]

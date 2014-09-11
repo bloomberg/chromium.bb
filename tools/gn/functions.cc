@@ -774,6 +774,8 @@ Value RunFunction(Scope* scope,
 
     Value result = found_function->second.executed_block_runner(
         function, args.list_value(), &block_scope, err);
+    if (err->has_error())
+      return Value();
 
     if (!block_scope.CheckForUnusedVars(err))
       return Value();
