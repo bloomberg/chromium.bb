@@ -22,6 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/query_parser/query_parser.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
@@ -143,6 +144,17 @@ std::string TruncateUrl(const std::string& url) {
   return url.substr(0, kCleanedUpUrlMaxLength);
 }
 
+// Returns the URL from the clipboard. If there is no URL an empty URL is
+// returned.
+GURL GetUrlFromClipboard() {
+  base::string16 url_text;
+#if !defined(OS_IOS)
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &url_text);
+#endif
+  return GURL(url_text);
+}
+
 }  // namespace
 
 QueryFields::QueryFields() {}
@@ -196,9 +208,14 @@ void PasteFromClipboard(BookmarkModel* model,
     return;
 
   BookmarkNodeData bookmark_data;
-  if (!bookmark_data.ReadFromClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE))
-    return;
-
+  if (!bookmark_data.ReadFromClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+    GURL url = GetUrlFromClipboard();
+    if (!url.is_valid())
+      return;
+    BookmarkNode node(url);
+    node.SetTitle(base::ASCIIToUTF16(url.spec()));
+    bookmark_data = BookmarkNodeData(&node);
+  }
   if (index == -1)
     index = parent->child_count();
   ScopedGroupBookmarkActions group_paste(model);
@@ -208,7 +225,8 @@ void PasteFromClipboard(BookmarkModel* model,
 bool CanPasteFromClipboard(BookmarkModel* model, const BookmarkNode* node) {
   if (!node || !model->client()->CanBeEditedByUser(node))
     return false;
-  return BookmarkNodeData::ClipboardContainsBookmarks();
+  return (BookmarkNodeData::ClipboardContainsBookmarks() ||
+          GetUrlFromClipboard().is_valid());
 }
 
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(

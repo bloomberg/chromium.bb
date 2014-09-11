@@ -257,6 +257,38 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 
 // Copy and paste is not yet supported on iOS. http://crbug.com/228147
 #if !defined(OS_IOS)
+TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
+  const base::string16 url_text = ASCIIToUTF16("http://www.google.com/");
+  const BookmarkNode* new_folder = model->AddFolder(
+      model->bookmark_bar_node(), 0, ASCIIToUTF16("New_Folder"));
+
+  // Write blank text to clipboard.
+  {
+    ui::ScopedClipboardWriter clipboard_writer(
+        ui::Clipboard::GetForCurrentThread(), ui::CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(base::string16());
+  }
+  // Now we shouldn't be able to paste from the clipboard.
+  EXPECT_FALSE(CanPasteFromClipboard(model.get(), new_folder));
+
+  // Write some valid url to the clipboard.
+  {
+    ui::ScopedClipboardWriter clipboard_writer(
+        ui::Clipboard::GetForCurrentThread(), ui::CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(url_text);
+  }
+  // Now we should be able to paste from the clipboard.
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), new_folder));
+
+  PasteFromClipboard(model.get(), new_folder, 0);
+  ASSERT_EQ(1, new_folder->child_count());
+
+  // Url for added node should be same as url_text.
+  EXPECT_EQ(url_text, ASCIIToUTF16(new_folder->GetChild(0)->url().spec()));
+}
+
 TEST_F(BookmarkUtilsTest, CopyPaste) {
   TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
