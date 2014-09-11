@@ -39,6 +39,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/style/ShadowData.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/DisplayList.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -236,6 +237,13 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     bool pathHasChanged = !(newPath == m_path);
     if (pathHasChanged) {
         m_path = newPath;
+
+        GraphicsContext gc(0);
+        gc.beginRecording(boundingRect);
+        gc.setFillColor(m_node->renderer()->style()->tapHighlightColor());
+        gc.fillPath(m_path);
+        m_displayList = gc.endRecording();
+
         m_contentLayer->layer()->setBounds(enclosingIntRect(boundingRect).size());
     }
 
@@ -253,9 +261,8 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     GraphicsContext gc(canvas,
         contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
-    gc.clip(clipRect);
-    gc.setFillColor(m_node->renderer()->style()->tapHighlightColor());
-    gc.fillPath(m_path);
+    m_displayList->setClip(clipRect);
+    gc.drawDisplayList(m_displayList.get());
 }
 
 void LinkHighlight::startHighlightAnimationIfNeeded()

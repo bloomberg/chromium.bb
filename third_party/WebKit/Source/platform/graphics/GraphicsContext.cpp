@@ -135,8 +135,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     , m_antialiasHairlineImages(false)
     , m_shouldSmoothFonts(true)
 {
-    ASSERT(canvas);
-
     // FIXME: Do some tests to determine how many states are typically used, and allocate
     // several here.
     m_paintStateStack.append(GraphicsContextState::create());
@@ -159,7 +157,6 @@ GraphicsContext::~GraphicsContext()
 
 void GraphicsContext::resetCanvas(SkCanvas* canvas)
 {
-    ASSERT(canvas);
     m_canvas = canvas;
     m_trackedRegion.reset();
 }
@@ -180,8 +177,10 @@ void GraphicsContext::save()
 
     m_paintState->incrementSaveCount();
 
-    m_canvasStateStack.append(CanvasSaveState(m_pendingCanvasSave, m_canvas->getSaveCount()));
-    m_pendingCanvasSave = true;
+    if (m_canvas) {
+        m_canvasStateStack.append(CanvasSaveState(m_pendingCanvasSave, m_canvas->getSaveCount()));
+        m_pendingCanvasSave = true;
+    }
 }
 
 void GraphicsContext::restore()
@@ -201,16 +200,21 @@ void GraphicsContext::restore()
         m_paintState = m_paintStateStack[m_paintStateIndex].get();
     }
 
-    CanvasSaveState savedState = m_canvasStateStack.last();
-    m_canvasStateStack.removeLast();
-    m_pendingCanvasSave = savedState.m_pendingSave;
-    m_canvas->restoreToCount(savedState.m_restoreCount);
+    if (m_canvas) {
+        ASSERT(m_canvasStateStack.size() > 0);
+        CanvasSaveState savedState = m_canvasStateStack.last();
+        m_canvasStateStack.removeLast();
+        m_pendingCanvasSave = savedState.m_pendingSave;
+        m_canvas->restoreToCount(savedState.m_restoreCount);
+    }
 }
 
 void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint)
 {
     if (contextDisabled())
         return;
+
+    ASSERT(m_canvas);
 
     realizeCanvasSave();
 
@@ -224,6 +228,8 @@ void GraphicsContext::restoreLayer()
     if (contextDisabled())
         return;
 
+    ASSERT(m_canvas);
+
     m_canvas->restore();
     if (regionTrackingEnabled())
         m_trackedRegion.popCanvasLayer(this);
@@ -233,6 +239,8 @@ void GraphicsContext::beginAnnotation(const AnnotationList& annotations)
 {
     if (contextDisabled())
         return;
+
+    ASSERT(m_canvas);
 
     canvas()->beginCommentGroup("GraphicsContextAnnotation");
 
@@ -250,6 +258,7 @@ void GraphicsContext::endAnnotation()
     if (contextDisabled())
         return;
 
+    ASSERT(m_canvas);
     ASSERT(m_annotationCount > 0);
     canvas()->endCommentGroup();
 
@@ -355,6 +364,7 @@ bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
 {
     if (contextDisabled())
         return false;
+    ASSERT(m_canvas);
     SkIRect skIBounds;
     if (!m_canvas->getClipDeviceBounds(&skIBounds))
         return false;
@@ -365,8 +375,10 @@ bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
 
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
-    if (contextDisabled())
+    if (contextDisabled() || !m_canvas)
         return SkMatrix::I();
+
+    ASSERT(m_canvas);
 
     if (!isRecording())
         return m_canvas->getTotalMatrix();
@@ -391,6 +403,7 @@ void GraphicsContext::adjustTextRenderMode(SkPaint* paint) const
 
 bool GraphicsContext::couldUseLCDRenderedText() const
 {
+    ASSERT(m_canvas);
     // Our layers only have a single alpha channel. This means that subpixel
     // rendered text cannot be composited correctly when the layer is
     // collapsed. Therefore, subpixel text is contextDisabled when we are drawing
@@ -428,6 +441,7 @@ bool GraphicsContext::readPixels(const SkImageInfo& info, void* pixels, size_t r
     if (contextDisabled())
         return false;
 
+    ASSERT(m_canvas);
     return m_canvas->readPixels(info, pixels, rowBytes, x, y);
 }
 
@@ -436,6 +450,7 @@ void GraphicsContext::setMatrix(const SkMatrix& matrix)
     if (contextDisabled())
         return;
 
+    ASSERT(m_canvas);
     realizeCanvasSave();
 
     m_canvas->setMatrix(matrix);
@@ -449,6 +464,7 @@ void GraphicsContext::concat(const SkMatrix& matrix)
     if (matrix.isIdentity())
         return;
 
+    ASSERT(m_canvas);
     realizeCanvasSave();
 
     m_canvas->concat(matrix);
@@ -499,10 +515,9 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
 {
     RefPtr<DisplayList> displayList = DisplayList::create(bounds);
 
-    SkPictureRecorder* recorder = 0;
-
     SkCanvas* savedCanvas = m_canvas;
     SkMatrix savedMatrix = getTotalMatrix();
+    SkPictureRecorder* recorder = 0;
 
     if (!contextDisabled()) {
         FloatRect bounds = displayList->bounds();
@@ -545,6 +560,7 @@ bool GraphicsContext::isRecording() const
 void GraphicsContext::drawDisplayList(DisplayList* displayList)
 {
     ASSERT(displayList);
+    ASSERT(m_canvas);
 
     if (contextDisabled() || displayList->bounds().isEmpty())
         return;
@@ -749,6 +765,7 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
 
 void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1125,6 +1142,7 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
 
 void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
 {
+    ASSERT(m_canvas);
     if (contextDisabled() || !picture)
         return;
 
@@ -1151,6 +1169,7 @@ void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1184,6 +1203,7 @@ void GraphicsContext::writePixels(const SkBitmap& bitmap, int x, int y)
 
 void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1198,6 +1218,7 @@ void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar
 void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     const SkRect& dst, const SkPaint* paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1212,6 +1233,7 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1223,6 +1245,7 @@ void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
 
 void GraphicsContext::drawPath(const SkPath& path, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1234,6 +1257,7 @@ void GraphicsContext::drawPath(const SkPath& path, const SkPaint& paint)
 
 void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1245,6 +1269,7 @@ void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
 
 void GraphicsContext::drawRRect(const SkRRect& rrect, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1266,6 +1291,7 @@ void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, cons
 void GraphicsContext::drawPosText(const void* text, size_t byteLength,
     const SkPoint pos[], const SkRect& textRect, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1280,6 +1306,7 @@ void GraphicsContext::drawPosText(const void* text, size_t byteLength,
 void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
     const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1293,6 +1320,7 @@ void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
 
 void GraphicsContext::drawTextBlob(const SkTextBlob* blob, const SkPoint& origin, const SkPaint& paint)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1346,7 +1374,9 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color)
 }
 
 void GraphicsContext::fillBetweenRoundedRects(const IntRect& outer, const IntSize& outerTopLeft, const IntSize& outerTopRight, const IntSize& outerBottomLeft, const IntSize& outerBottomRight,
-    const IntRect& inner, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color& color) {
+    const IntRect& inner, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color& color)
+{
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1378,6 +1408,7 @@ void GraphicsContext::fillBetweenRoundedRects(const RoundedRect& outer, const Ro
 void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLeft, const IntSize& topRight,
     const IntSize& bottomLeft, const IntSize& bottomRight, const Color& color)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1553,6 +1584,7 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
 
 void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion::Op op)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1563,6 +1595,7 @@ void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion
 
 void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion::Op op)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1573,6 +1606,7 @@ void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion
 
 void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegion::Op op)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1583,6 +1617,7 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
 
 void GraphicsContext::beginCull(const FloatRect& rect)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1592,6 +1627,7 @@ void GraphicsContext::beginCull(const FloatRect& rect)
 
 void GraphicsContext::endCull()
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1602,6 +1638,7 @@ void GraphicsContext::endCull()
 
 void GraphicsContext::rotate(float angleInRadians)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1612,6 +1649,7 @@ void GraphicsContext::rotate(float angleInRadians)
 
 void GraphicsContext::translate(float x, float y)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1625,6 +1663,7 @@ void GraphicsContext::translate(float x, float y)
 
 void GraphicsContext::scale(float x, float y)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1638,6 +1677,7 @@ void GraphicsContext::scale(float x, float y)
 
 void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1647,6 +1687,7 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
 
 void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRect& rect)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 
@@ -1656,6 +1697,7 @@ void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRec
 
 void GraphicsContext::addURLTargetAtPoint(const String& name, const IntPoint& pos)
 {
+    ASSERT(m_canvas);
     if (contextDisabled())
         return;
 

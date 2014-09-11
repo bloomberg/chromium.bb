@@ -75,7 +75,11 @@ public:
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
+    // A 0 canvas is allowed, but in such cases the context must only have canvas
+    // related commands called when within a beginRecording/endRecording block.
+    // Furthermore, save/restore calls must be balanced any time the canvas is 0.
     explicit GraphicsContext(SkCanvas*, DisabledMode = NothingDisabled);
+
     ~GraphicsContext();
 
     // Returns the canvas used for painting. Must not be called if painting is disabled.
@@ -480,6 +484,7 @@ private:
         if (!m_pendingCanvasSave || contextDisabled())
             return;
 
+        ASSERT(m_canvas); // m_pendingCanvasSave should never be true when no canvas.
         m_canvas->save();
         m_pendingCanvasSave = false;
     }

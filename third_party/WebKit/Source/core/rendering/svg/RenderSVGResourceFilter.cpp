@@ -144,7 +144,6 @@ static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBu
 static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
 {
     context->beginRecording(filterData->boundaries);
-
     // We pass the boundaries to SkPictureImageFilter so it knows the
     // world-space position of the filter primitives. It gets them
     // from the DisplayList, which also applies the inverse translate

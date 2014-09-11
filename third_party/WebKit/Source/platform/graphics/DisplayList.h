@@ -56,8 +56,8 @@ public:
 
     const FloatRect& bounds() const { return m_bounds; }
 
-    // This entry point will return 0 when the DisplayList is in the
-    // midst of recording (i.e., between a beginRecording/endRecording pair)
+    // This entry point will return 0 when the DisplayList is in the midst of
+    // recording (i.e., between a GraphicsContext beginRecording/endRecording pair)
     // and if no recording has ever been completed. Otherwise it will return
     // the picture created by the last endRecording call.
     SkPicture* picture() const { return m_picture.get(); }
