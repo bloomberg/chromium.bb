@@ -70,6 +70,10 @@ class IncidentReportingServiceTest : public testing::Test {
 
     virtual ~TestIncidentReportingService() { test_instance_.Get().Set(NULL); }
 
+    bool IsProcessingReport() const {
+      return IncidentReportingService::IsProcessingReport();
+    }
+
    protected:
     virtual void OnProfileAdded(Profile* profile) OVERRIDE {
       pre_profile_add_callback_.Run(profile);
@@ -281,7 +285,7 @@ class IncidentReportingServiceTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   TestingProfileManager profile_manager_;
-  scoped_ptr<safe_browsing::IncidentReportingService> instance_;
+  scoped_ptr<TestIncidentReportingService> instance_;
   base::Closure on_start_upload_callback_;
   OnCreateDownloadFinderAction on_create_download_finder_action_;
   OnDelayedAnalysisAction on_delayed_analysis_action_;
@@ -493,6 +497,9 @@ TEST_F(IncidentReportingServiceTest, AddIncident) {
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
   ASSERT_TRUE(UploaderDestroyed());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that multiple incidents are coalesced into the same report.
@@ -516,6 +523,9 @@ TEST_F(IncidentReportingServiceTest, CoalesceIncidents) {
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
   ASSERT_TRUE(UploaderDestroyed());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that an incident added during profile initialization when safe browsing
@@ -530,6 +540,9 @@ TEST_F(IncidentReportingServiceTest, NoSafeBrowsing) {
 
   // Verify that no report upload took place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that no incident report is uploaded if there is no recent download.
@@ -549,6 +562,9 @@ TEST_F(IncidentReportingServiceTest, NoDownloadNoUpload) {
   EXPECT_TRUE(HasCreatedDownloadFinder());
   AssertNoUpload();
   EXPECT_TRUE(DownloadFinderDestroyed());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that no incident report is uploaded if there is no recent download.
@@ -571,6 +587,9 @@ TEST_F(IncidentReportingServiceTest, NoProfilesNoUpload) {
   // Although CreateDownloadFinder was called, no instance was returned so there
   // is nothing to have been destroyed.
   EXPECT_FALSE(DownloadFinderDestroyed());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that an identical incident added after upload is not uploaded again.
@@ -594,6 +613,9 @@ TEST_F(IncidentReportingServiceTest, OneIncidentOneUpload) {
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that two incidents of the same type with different payloads lead to two
@@ -621,6 +643,9 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
 
   // Verify that an additional report upload took place.
   ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that the same incident added for two different profiles in sequence
@@ -646,6 +671,9 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
 
   // Verify that a second report upload took place.
   ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that an upload succeeds if the profile is destroyed while it is
@@ -665,6 +693,9 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
   // Verify that report upload took place and contained the incident and
   // environment data.
   ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 
   // The lack of a crash indicates that the deleted profile was not accessed by
   // the service while handling the upload response.
@@ -699,6 +730,9 @@ TEST_F(IncidentReportingServiceTest, MigrateOldPref) {
 
   // No upload should have taken place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that no upload results from adding an incident that is not affiliated
@@ -712,6 +746,9 @@ TEST_F(IncidentReportingServiceTest, ProcessWideNoProfileNoUpload) {
 
   // No upload should have taken place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that there is an upload when a profile is present for a proc-wide
@@ -738,6 +775,9 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that two process-wide incidents of the same type with different
@@ -769,6 +809,9 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
 
   // Verify that an additional report upload took place.
   ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that there is an upload when a profile appears after a proc-wide
@@ -792,6 +835,9 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUploadAfterProfile) {
 
   // An upload should have taken place.
   ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
@@ -819,6 +865,9 @@ TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
 
   // Still no collection should have taken place.
   ASSERT_FALSE(HasCollectedEnvironmentData());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that delayed analysis callbacks are called following the addition of a
@@ -842,6 +891,9 @@ TEST_F(IncidentReportingServiceTest, AnalysisAfterProfile) {
 
   // And now they have.
   ASSERT_TRUE(DelayedAnalysisRan());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that delayed analysis callbacks are called following their registration
@@ -859,6 +911,9 @@ TEST_F(IncidentReportingServiceTest, AnalysisWhenRegisteredWithProfile) {
 
   // Confirm that the callbacks were run.
   ASSERT_TRUE(DelayedAnalysisRan());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that no upload results from a delayed analysis incident when no
@@ -879,6 +934,9 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisNoProfileNoUpload) {
 
   // No upload should have taken place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Tests that there is an upload when a profile is present for a delayed
@@ -908,6 +966,37 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisOneUpload) {
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
+// Tests that the service stops processing when no download is found.
+TEST_F(IncidentReportingServiceTest, NoDownloadNoWaiting) {
+  // Tell the fixture to return no downloads found.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_NO_DOWNLOADS);
+
+  // Register a callback.
+  RegisterAnalysis(ON_DELAYED_ANALYSIS_NO_ACTION);
+
+  // Add a profile that participates in safe browsing.
+  Profile* profile = CreateProfile(
+      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION);
+
+  // Add an incident.
+  AddTestIncident(profile);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that the download finder was run but that no report upload took
+  // place.
+  EXPECT_TRUE(HasCreatedDownloadFinder());
+  AssertNoUpload();
+  EXPECT_TRUE(DownloadFinderDestroyed());
+
+  // Ensure that the report is dropped.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Parallel uploads

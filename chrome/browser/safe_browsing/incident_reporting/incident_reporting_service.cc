@@ -438,6 +438,10 @@ scoped_ptr<IncidentReportUploader> IncidentReportingService::StartReportUpload(
              callback, request_context_getter, report).Pass();
 }
 
+bool IncidentReportingService::IsProcessingReport() const {
+  return report_ != NULL;
+}
+
 IncidentReportingService::ProfileContext*
 IncidentReportingService::GetOrCreateProfileContext(Profile* profile) {
   ProfileContextCollection::iterator it =
@@ -680,11 +684,11 @@ bool IncidentReportingService::WaitingForMostRecentDownload() {
   // The next easy case: waiting if the finder is operating.
   if (last_download_finder_)
     return true;
-  // The harder case: waiting if a profile has not yet been added.
+  // The harder case: waiting if a non-NULL profile has not yet been added.
   for (ProfileContextCollection::const_iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
-    if (!scan->second->added)
+    if (scan->first && !scan->second->added)
       return true;
   }
   // There is no most recent download and there's nothing more to wait for.

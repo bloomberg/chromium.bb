@@ -129,6 +129,9 @@ class IncidentReportingService : public content::NotificationObserver {
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const ClientIncidentReport& report);
 
+  // Returns true if a report is currently being processed.
+  bool IsProcessingReport() const;
+
  private:
   struct ProfileContext;
   class UploadContext;
