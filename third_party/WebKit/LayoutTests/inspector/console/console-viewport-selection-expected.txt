@@ -221,3 +221,6 @@ first visible message index: 135   viewport is covered: YES
 Running: testZeroOffsetSelection
 Selected text: world
 
+Running: testSelectAll
+Selected all 150 messages.
+

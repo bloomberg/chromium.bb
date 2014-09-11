@@ -162,6 +162,24 @@ function test()
             InspectorTest.addResult("Selected text: " + viewport._selectedText());
             next();
         },
+
+        function testSelectAll(next)
+        {
+            viewport.forceScrollItemToBeFirst(0);
+
+            // Set some initial selection in console.
+            var base = consoleView.itemElement(messagesCount - 2);
+            var extent = consoleView.itemElement(messagesCount - 1);
+            window.getSelection().setBaseAndExtent(base, 0, extent, 0);
+
+            // Try to select all messages.
+            document.execCommand("selectAll");
+
+            var text = viewport._selectedText();
+            var count = text ? text.split("\n").length : 0;
+            InspectorTest.addResult(count === messagesCount ? "Selected all " + count + " messages." : "Selected " + count + " messages instead of " + messagesCount);
+            next();
+        }
     ];
 
     var awaitingMessagesCount = messagesCount;
