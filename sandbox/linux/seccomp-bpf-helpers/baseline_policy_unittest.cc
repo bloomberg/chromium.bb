@@ -28,6 +28,7 @@
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/services/android_futex.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -256,10 +257,9 @@ TEST_BASELINE_SIGSYS(__NR_inotify_init);
 TEST_BASELINE_SIGSYS(__NR_vserver);
 #endif
 
-#if !defined(OS_ANDROID)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithRequeuePriorityInheritence,
-                 DEATH_MESSAGE(GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
   syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI, 0, NULL, NULL, 0);
   _exit(1);
@@ -267,7 +267,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithRequeuePriorityInheritencePrivate,
-                 DEATH_MESSAGE(GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
   syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
@@ -275,12 +275,11 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithUnlockPIPrivate,
-                 DEATH_MESSAGE(GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
   syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
 }
-#endif  // !defined(OS_ANDROID)
 
 BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
   const int is_dumpable = prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);
