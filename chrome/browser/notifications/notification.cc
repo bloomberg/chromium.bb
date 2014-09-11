@@ -4,10 +4,6 @@
 
 #include "chrome/browser/notifications/notification.h"
 
-#include "base/strings/string_util.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "ui/base/webui/web_ui_util.h"
-
 Notification::Notification(const GURL& origin_url,
                            const GURL& icon_url,
                            const base::string16& title,
@@ -28,11 +24,7 @@ Notification::Notification(const GURL& origin_url,
       origin_url_(origin_url),
       icon_url_(icon_url),
       replace_id_(replace_id),
-      delegate_(delegate) {
-  // "Upconvert" the string parameters to a data: URL.
-  content_url_ = GURL(DesktopNotificationService::CreateDataUrl(
-      icon_url, title, body, dir));
-}
+      delegate_(delegate) {}
 
 Notification::Notification(
     message_center::NotificationType type,
@@ -87,7 +79,6 @@ Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       origin_url_(notification.origin_url()),
       icon_url_(notification.icon_url()),
-      content_url_(notification.content_url()),
       button_one_icon_url_(notification.button_one_icon_url()),
       button_two_icon_url_(notification.button_two_icon_url()),
       image_url_(notification.image_url()),
@@ -100,7 +91,6 @@ Notification& Notification::operator=(const Notification& notification) {
   message_center::Notification::operator=(notification);
   origin_url_ = notification.origin_url();
   icon_url_ = notification.icon_url();
-  content_url_ = notification.content_url();
   button_one_icon_url_ = notification.button_one_icon_url();
   button_two_icon_url_ = notification.button_two_icon_url();
   image_url_ = notification.image_url();

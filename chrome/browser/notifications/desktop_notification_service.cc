@@ -33,9 +33,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
-#include "grit/browser_resources.h"
-#include "net/base/escape.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -68,7 +65,6 @@ void CancelNotification(const std::string& id) {
 
 }  // namespace
 
-
 // DesktopNotificationService -------------------------------------------------
 
 // static
@@ -81,60 +77,6 @@ void DesktopNotificationService::RegisterProfilePrefs(
       prefs::kMessageCenterDisabledSystemComponentIds,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
-}
-
-// static
-base::string16 DesktopNotificationService::CreateDataUrl(
-    const GURL& icon_url,
-    const base::string16& title,
-    const base::string16& body,
-    WebTextDirection dir) {
-  int resource;
-  std::vector<std::string> subst;
-  if (icon_url.is_valid()) {
-    resource = IDR_NOTIFICATION_ICON_HTML;
-    subst.push_back(icon_url.spec());
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(title)));
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(body)));
-    // icon float position
-    subst.push_back(dir == blink::WebTextDirectionRightToLeft ?
-                    "right" : "left");
-  } else if (title.empty() || body.empty()) {
-    resource = IDR_NOTIFICATION_1LINE_HTML;
-    base::string16 line = title.empty() ? body : title;
-    // Strings are div names in the template file.
-    base::string16 line_name =
-        title.empty() ? base::ASCIIToUTF16("description")
-                      : base::ASCIIToUTF16("title");
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(line_name)));
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(line)));
-  } else {
-    resource = IDR_NOTIFICATION_2LINE_HTML;
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(title)));
-    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(body)));
-  }
-  // body text direction
-  subst.push_back(dir == blink::WebTextDirectionRightToLeft ?
-                  "rtl" : "ltr");
-
-  return CreateDataUrl(resource, subst);
-}
-
-// static
-base::string16 DesktopNotificationService::CreateDataUrl(
-    int resource, const std::vector<std::string>& subst) {
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          resource));
-
-  if (template_html.empty()) {
-    NOTREACHED() << "unable to load template. ID: " << resource;
-    return base::string16();
-  }
-
-  std::string data = ReplaceStringPlaceholders(template_html, subst, NULL);
-  return base::UTF8ToUTF16("data:text/html;charset=utf-8," +
-                               net::EscapeQueryParamValue(data, false));
 }
 
 // static
@@ -153,12 +95,9 @@ std::string DesktopNotificationService::AddIconNotification(
   return notification.delegate_id();
 }
 
-DesktopNotificationService::DesktopNotificationService(
-    Profile* profile,
-    NotificationUIManager* ui_manager)
+DesktopNotificationService::DesktopNotificationService(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
       profile_(profile),
-      ui_manager_(ui_manager),
       extension_registry_observer_(this),
       weak_factory_(this) {
   OnStringListPrefChanged(
@@ -225,7 +164,7 @@ void DesktopNotificationService::ShowDesktopNotification(
   // The webkit notification doesn't timeout.
   notification.set_never_timeout(true);
 
-  GetUIManager()->Add(notification, profile_);
+  g_browser_process->notification_ui_manager()->Add(notification, profile_);
   if (cancel_callback)
     *cancel_callback = base::Bind(&CancelNotification, proxy->id());
 
@@ -257,14 +196,6 @@ base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
 #endif
 
   return base::UTF8ToUTF16(origin.host());
-}
-
-NotificationUIManager* DesktopNotificationService::GetUIManager() {
-  // We defer setting ui_manager_ to the global singleton until we need it
-  // in order to avoid UI dependent construction during startup.
-  if (!ui_manager_)
-    ui_manager_ = g_browser_process->notification_ui_manager();
-  return ui_manager_;
 }
 
 bool DesktopNotificationService::IsNotifierEnabled(

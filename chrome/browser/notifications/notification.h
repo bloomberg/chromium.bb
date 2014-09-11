@@ -13,10 +13,13 @@
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "ui/gfx/image/image.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "url/gurl.h"
+
+namespace gfx {
+class Image;
+}
 
 // Representation of a notification to be shown to the user.
 // On non-Ash platforms these are rendered as HTML, sometimes described by a
@@ -63,9 +66,6 @@ class Notification : public message_center::Notification {
   virtual ~Notification();
   Notification& operator=(const Notification& notification);
 
-  // The URL (may be data:) containing the contents for the notification.
-  const GURL& content_url() const { return content_url_; }
-
   // The origin URL of the script which requested the notification.
   const GURL& origin_url() const { return origin_url_; }
 
@@ -100,10 +100,6 @@ class Notification : public message_center::Notification {
   // URL for the icon associated with the notification. Requires delegate_
   // to have a non NULL RenderViewHost.
   GURL icon_url_;
-
-  // The URL of the HTML content of the toast (may be a data: URL for simple
-  // string-based notifications).
-  GURL content_url_;
 
   // The URLs of the button images for a rich notification.
   GURL button_one_icon_url_;

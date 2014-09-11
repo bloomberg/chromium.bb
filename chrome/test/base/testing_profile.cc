@@ -166,7 +166,7 @@ class TestExtensionURLRequestContextGetter
 #if defined(ENABLE_NOTIFICATIONS)
 KeyedService* CreateTestDesktopNotificationService(
     content::BrowserContext* profile) {
-  return new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
+  return new DesktopNotificationService(static_cast<Profile*>(profile));
 }
 #endif
 
