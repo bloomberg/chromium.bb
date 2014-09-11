@@ -52,7 +52,8 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
                     public drive::FileSystemObserver,
                     public drive::JobListObserver,
                     public drive::DriveServiceObserver,
-                    public VolumeManagerObserver {
+                    public VolumeManagerObserver,
+                    public content::NotificationObserver {
  public:
   explicit EventRouter(Profile* profile);
   virtual ~EventRouter();
@@ -126,6 +127,11 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
   virtual void OnFormatCompleted(
       const std::string& device_path, bool success) OVERRIDE;
 
+  // content::NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
@@ -196,6 +202,8 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
   WatcherMap file_watchers_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   scoped_ptr<DeviceEventRouter> device_event_router_;
 

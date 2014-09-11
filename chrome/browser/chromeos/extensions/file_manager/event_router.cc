@@ -269,6 +269,22 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
   }
 }
 
+void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
+                                                 Profile* running_profile) {
+  extensions::ProcessManager* const process_manager =
+      extensions::ExtensionSystem::Get(running_profile)->process_manager();
+  if (!process_manager)
+    return;
+
+  extensions::ExtensionHost* const extension_host =
+      process_manager->GetBackgroundHostForExtension(kFileManagerAppId);
+  if (!extension_host || !extension_host->render_process_host())
+    return;
+
+  const int id = extension_host->render_process_host()->GetID();
+  file_manager::util::SetupProfileFileAccessPermissions(id, added_profile);
+}
+
 // Checks if we should send a progress event or not according to the
 // |last_time| of sending an event. If |always| is true, the function always
 // returns true. If the function returns true, the function also updates
@@ -464,6 +480,10 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
+
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_ADDED,
+                              content::NotificationService::AllSources());
 }
 
 // File watch setup routines.
@@ -934,6 +954,16 @@ void EventRouter::OnFormatCompleted(const std::string& device_path,
                                     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Do nothing.
+}
+
+void EventRouter::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PROFILE_ADDED) {
+    Profile* const added_profile = content::Source<Profile>(source).ptr();
+    if (!added_profile->IsOffTheRecord())
+      GrantAccessForAddedProfileToRunningInstance(added_profile, profile_);
+  }
 }
 
 }  // namespace file_manager
