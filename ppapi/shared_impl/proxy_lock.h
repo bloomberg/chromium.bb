@@ -117,28 +117,34 @@ ReturnType CallWhileUnlocked(ReturnType (*function)()) {
   ProxyAutoUnlock unlock;
   return function();
 }
-template <class ReturnType, class P1>
-ReturnType CallWhileUnlocked(ReturnType (*function)(P1), const P1& p1) {
+// Note we use 2 types for the params, even though for the most part we expect
+// A1 to match P1. We let the compiler determine if P1 can convert safely to
+// A1. This allows callers to avoid having to do things like
+// const_cast to add const.
+template <class ReturnType, class A1, class P1>
+ReturnType CallWhileUnlocked(ReturnType (*function)(A1), const P1& p1) {
   ProxyAutoUnlock unlock;
   return function(p1);
 }
-template <class ReturnType, class P1, class P2>
-ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2),
+template <class ReturnType, class A1, class A2, class P1, class P2>
+ReturnType CallWhileUnlocked(ReturnType (*function)(A1, A2),
                              const P1& p1,
                              const P2& p2) {
   ProxyAutoUnlock unlock;
   return function(p1, p2);
 }
-template <class ReturnType, class P1, class P2, class P3>
-ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3),
+template <class ReturnType, class A1, class A2, class A3, class P1, class P2,
+          class P3>
+ReturnType CallWhileUnlocked(ReturnType (*function)(A1, A2, A3),
                              const P1& p1,
                              const P2& p2,
                              const P3& p3) {
   ProxyAutoUnlock unlock;
   return function(p1, p2, p3);
 }
-template <class ReturnType, class P1, class P2, class P3, class P4>
-ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4),
+template <class ReturnType, class A1, class A2, class A3, class A4, class P1,
+          class P2, class P3, class P4>
+ReturnType CallWhileUnlocked(ReturnType (*function)(A1, A2, A3, A4),
                              const P1& p1,
                              const P2& p2,
                              const P3& p3,
@@ -146,8 +152,9 @@ ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4),
   ProxyAutoUnlock unlock;
   return function(p1, p2, p3, p4);
 }
-template <class ReturnType, class P1, class P2, class P3, class P4, class P5>
-ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4, P5),
+template <class ReturnType, class A1, class A2, class A3, class A4, class A5,
+          class P1, class P2, class P3, class P4, class P5>
+ReturnType CallWhileUnlocked(ReturnType (*function)(A1, A2, A3, A4, A5),
                              const P1& p1,
                              const P2& p2,
                              const P3& p3,

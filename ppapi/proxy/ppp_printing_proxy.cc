@@ -167,11 +167,8 @@ void PPP_Printing_Proxy::OnPluginMsgBegin(PP_Instance instance,
     return;
   memcpy(&settings, &settings_string[0], sizeof(settings));
 
-  if (ppp_printing_impl_) {
-    *result = CallWhileUnlocked(ppp_printing_impl_->Begin,
-        instance,
-        const_cast<const PP_PrintSettings_Dev*>(&settings));
-  }
+  if (ppp_printing_impl_)
+    *result = CallWhileUnlocked(ppp_printing_impl_->Begin, instance, &settings);
 }
 
 void PPP_Printing_Proxy::OnPluginMsgPrintPages(
@@ -183,7 +180,7 @@ void PPP_Printing_Proxy::OnPluginMsgPrintPages(
 
   PP_Resource plugin_resource = CallWhileUnlocked(
       ppp_printing_impl_->PrintPages,
-      instance, &pages[0], static_cast<uint32_t>(pages.size()));
+      instance, &pages[0], pages.size());
   ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
   Resource* resource_object = resource_tracker->GetResource(plugin_resource);
   if (!resource_object)

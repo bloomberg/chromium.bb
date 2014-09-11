@@ -166,8 +166,8 @@ void VideoCaptureResource::OnPluginMsgOnDeviceInfo(
                     pp_instance(),
                     pp_resource(),
                     &info,
-                    static_cast<uint32_t>(buffers.size()),
-                    const_cast<const PP_Resource*>(resources.get()));
+                    buffers.size(),
+                    resources.get());
 
   for (size_t i = 0; i < buffers.size(); ++i)
     tracker->ReleaseResource(resources[i]);

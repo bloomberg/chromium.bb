@@ -688,7 +688,7 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
     CallWhileUnlocked(ppp_decryptor_impl_->Decrypt,
                       instance,
                       plugin_resource.get(),
-                      const_cast<const PP_EncryptedBlockInfo*>(&block_info));
+                      &block_info);
   }
 }
 
@@ -713,7 +713,7 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeAudioDecoder(
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeAudioDecoder,
         instance,
-        const_cast<const PP_AudioDecoderConfig*>(&decoder_config),
+        &decoder_config,
         plugin_resource.get());
   }
 }
@@ -739,7 +739,7 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeVideoDecoder(
     CallWhileUnlocked(
         ppp_decryptor_impl_->InitializeVideoDecoder,
         instance,
-        const_cast<const PP_VideoDecoderConfig*>(&decoder_config),
+        &decoder_config,
         plugin_resource.get());
   }
 }
@@ -793,7 +793,7 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecode(
         instance,
         decoder_type,
         plugin_resource.get(),
-        const_cast<const PP_EncryptedBlockInfo*>(&block_info));
+        &block_info);
   }
 }
 
