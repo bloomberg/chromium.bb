@@ -19,6 +19,18 @@ using blink::Scheduler;
 
 namespace {
 
+class SchedulerForTest : public blink::Scheduler {
+public:
+    static void initializeOnMainThread()
+    {
+        s_sharedScheduler = new SchedulerForTest();
+    }
+
+    using Scheduler::Normal;
+    using Scheduler::CompositorPriority;
+    using Scheduler::enterSchedulerPolicy;
+};
+
 class TestMainThread : public blink::WebThread {
 public:
     // blink::WebThread implementation.
@@ -75,6 +87,7 @@ public:
         , m_sharedTimerFunction(nullptr)
         , m_sharedTimerRunning(false)
         , m_sharedTimerFireInterval(0)
+        , m_monotonicallyIncreasingTime(0)
     {
     }
 
@@ -87,6 +100,11 @@ public:
     virtual void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) OVERRIDE
     {
         m_sharedTimerFunction = timerFunction;
+    }
+
+    virtual double monotonicallyIncreasingTime() OVERRIDE
+    {
+        return m_monotonicallyIncreasingTime;
     }
 
     virtual void setSharedTimerFireInterval(double)
@@ -125,11 +143,17 @@ public:
         return m_mainThread.numPendingMainThreadTasks();
     }
 
+    void setMonotonicTimeForTest(double time)
+    {
+        m_monotonicallyIncreasingTime = time;
+    }
+
 private:
     TestMainThread m_mainThread;
     SharedTimerFunction m_sharedTimerFunction;
     bool m_sharedTimerRunning;
     double m_sharedTimerFireInterval;
+    double m_monotonicallyIncreasingTime;
 };
 
 class SchedulerTest : public testing::Test {
@@ -138,13 +162,18 @@ public:
         : m_reentrantCount(0)
         , m_maxRecursion(4)
     {
-        Scheduler::initializeOnMainThread();
-        m_scheduler = Scheduler::shared();
+        SchedulerForTest::initializeOnMainThread();
+        m_scheduler = static_cast<SchedulerForTest*>(Scheduler::shared());
     }
 
     ~SchedulerTest()
     {
         Scheduler::shutdown();
+    }
+
+    virtual void SetUp() OVERRIDE
+    {
+        m_scheduler->enterSchedulerPolicy(SchedulerForTest::Normal);
     }
 
     void runPendingTasks()
@@ -186,7 +215,7 @@ public:
 
 protected:
     SchedulerTestingPlatformSupport m_platformSupport;
-    Scheduler* m_scheduler;
+    SchedulerForTest* m_scheduler;
     std::vector<std::string> m_order;
     std::vector<int> m_reentrantOrder;
     int m_reentrantCount;
@@ -266,8 +295,23 @@ TEST_F(SchedulerTest, TestIdleTask)
     EXPECT_EQ(4, result);
 }
 
-TEST_F(SchedulerTest, TestTaskPrioritization)
+TEST_F(SchedulerTest, TestTaskPrioritization_normalPolicy)
 {
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L1")));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L2")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I1")));
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C1")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I2")));
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C2")));
+
+    runPendingTasks();
+    EXPECT_THAT(m_order, testing::ElementsAre(
+        std::string("L1"), std::string("L2"), std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2")));
+}
+
+TEST_F(SchedulerTest, TestTaskPrioritization_compositorPriorityPolicy)
+{
+    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L1")));
     m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L2")));
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I1")));
@@ -383,9 +427,26 @@ void postDummyInputTask()
     Scheduler::shared()->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
 }
 
-TEST_F(SchedulerTest, HighPriorityTasksOnlyRunOncePerSharedTimerFiring)
+TEST_F(SchedulerTest, HighPriorityTasksOnlyDontRunBecauseOfSharedTimerFiring_InNormalMode)
 {
     s_dummyTaskCount = 0;
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+    // Trigger the posting of an input task during execution of the shared timer function.
+    m_scheduler->setSharedTimerFiredFunction(&postDummyInputTask);
+    m_scheduler->setSharedTimerFireInterval(0);
+    m_platformSupport.triggerSharedTimer();
+
+    EXPECT_EQ(0, s_dummyTaskCount);
+
+    // Clean up.
+    m_scheduler->stopSharedTimer();
+    m_scheduler->setSharedTimerFiredFunction(nullptr);
+}
+
+TEST_F(SchedulerTest, HighPriorityTasksOnlyRunOncePerSharedTimerFiring_InLowSchedulerPolicy)
+{
+    s_dummyTaskCount = 0;
+    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
     // Trigger the posting of an input task during execution of the shared timer function.
     m_scheduler->setSharedTimerFiredFunction(&postDummyInputTask);
@@ -397,6 +458,51 @@ TEST_F(SchedulerTest, HighPriorityTasksOnlyRunOncePerSharedTimerFiring)
     // Clean up.
     m_scheduler->stopSharedTimer();
     m_scheduler->setSharedTimerFiredFunction(nullptr);
+}
+
+TEST_F(SchedulerTest, TestInputEventDoesNotTriggerShouldYield_InNormalMode)
+{
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestCompositorEventDoesNotTriggerShouldYield_InNormalMode)
+{
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InLowSchedulerPolicy)
+{
+    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYield_InLowSchedulerPolicy)
+{
+    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestCompositorEvent_LowSchedulerPolicyDoesntLastLong)
+{
+    m_platformSupport.setMonotonicTimeForTest(1000.0);
+
+    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+    m_platformSupport.setMonotonicTimeForTest(1000.5);
+    runPendingTasks();
+
+    ASSERT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
 } // namespace
