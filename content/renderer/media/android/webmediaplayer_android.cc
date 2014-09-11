@@ -1289,8 +1289,9 @@ void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
 }
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
+  const bool was_playing = is_playing_;
   is_playing_ = is_playing;
-  if (!delegate_)
+  if (!delegate_ || was_playing == is_playing_)
     return;
   if (is_playing)
     delegate_->DidPlay(this);

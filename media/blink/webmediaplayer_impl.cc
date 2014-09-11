@@ -197,7 +197,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  if (delegate_.get())
+  if (delegate_)
     delegate_->PlayerGone(this);
 
   // Abort any pending IO so stopping the pipeline doesn't get blocked.
@@ -281,7 +281,7 @@ void WebMediaPlayerImpl::play() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
-  if (delegate_.get())
+  if (delegate_ && playback_rate_ > 0)
     delegate_->DidPlay(this);
 }
 
@@ -289,6 +289,7 @@ void WebMediaPlayerImpl::pause() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  const bool was_already_paused = paused_ || playback_rate_ == 0;
   paused_ = true;
   pipeline_.SetPlaybackRate(0.0f);
   if (data_source_)
@@ -297,7 +298,7 @@ void WebMediaPlayerImpl::pause() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
-  if (delegate_.get())
+  if (!was_already_paused && delegate_)
     delegate_->DidPause(this);
 }
 
@@ -357,6 +358,10 @@ void WebMediaPlayerImpl::setRate(double rate) {
       rate = kMinRate;
     else if (rate > kMaxRate)
       rate = kMaxRate;
+    if (playback_rate_ == 0 && delegate_)
+      delegate_->DidPlay(this);
+  } else if (playback_rate_ != 0 && delegate_) {
+    delegate_->DidPause(this);
   }
 
   playback_rate_ = rate;
