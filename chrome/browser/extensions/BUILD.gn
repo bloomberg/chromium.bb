@@ -80,11 +80,6 @@ static_library("extensions") {
     "//content/public/browser",
   ]
 
-  # TODO(GYP) This config should be a direct_dependent_config of 
-  # //third_party/webrtc/modules/desktop_capture so we shouldn't have to
-  # include it here. Remove this line when the direct_dependent_config is set.
-  configs += [ "//third_party/webrtc:common_inherited_config" ]
-
   if (is_chromeos) {
     sources += rebase_path(
         gypi_values.chrome_browser_extensions_chromeos_sources,

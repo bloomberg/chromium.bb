@@ -91,10 +91,5 @@ static_library("base") {
     "//remoting/proto",
     "//third_party/protobuf:protobuf_lite",
   ]
-
-  # TODO(GYP) This config should be a direct_dependent_config of 
-  # //third_party/webrtc/modules/desktop_capture so we shouldn't have to
-  # include it here. Remove this line when the direct_dependent_config is set.
-  configs += [ "//third_party/webrtc:common_inherited_config" ]
 }
 

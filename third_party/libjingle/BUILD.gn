@@ -516,10 +516,6 @@ if (enable_webrtc) {
       "//third_party/webrtc/modules/video_render",
     ]
 
-    # TODO(GYP) this should be removed and we should get this config by one of
-    # the webrtc targets specifying it for the direct_dependent_configs.
-    #configs += [ "//third_party/webrtc:common_config" ]  # TODO(GYP)
-
     if (!is_ios) {
       # TODO(mallinath) - Enable SCTP for iOS.
       sources += [
