@@ -13,6 +13,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/layout.h"
 
 namespace ash {
 namespace  {
@@ -75,9 +76,17 @@ void AshNativeCursorManager::SetDisplay(
   DCHECK(display.is_valid());
   // Use the platform's device scale factor instead of the display's, which
   // might have been adjusted for the UI scale.
-  const float scale_factor = Shell::GetInstance()->display_manager()->
+  const float original_scale = Shell::GetInstance()->display_manager()->
       GetDisplayInfo(display.id()).device_scale_factor();
-  if (image_cursors_->SetDisplay(display, scale_factor))
+#if defined(OS_CHROMEOS)
+  // And use the nearest resource scale factor.
+  const float cursor_scale = ui::GetScaleForScaleFactor(
+      ui::GetSupportedScaleFactor(original_scale));
+#else
+  // TODO(oshima): crbug.com/143619
+  const float cursor_scale = original_scale;
+#endif
+  if (image_cursors_->SetDisplay(display, cursor_scale))
     SetCursor(delegate->GetCursor(), delegate);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->cursor_window_controller()->

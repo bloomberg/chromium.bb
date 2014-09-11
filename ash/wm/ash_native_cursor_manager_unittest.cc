@@ -146,6 +146,17 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetCurrentCursorRotation());
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(oshima): crbug.com/143619
+TEST_F(AshNativeCursorManagerTest, FractionalScale) {
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  CursorManagerTestApi test_api(cursor_manager);
+  // Cursor should use the resource scale factor.
+  UpdateDisplay("800x100*1.25");
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+}
+#endif
+
 TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(display_id);
