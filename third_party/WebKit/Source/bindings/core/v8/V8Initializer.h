@@ -32,7 +32,7 @@ namespace blink {
 
 class V8Initializer {
 public:
-    static void initializeMainThreadIfNeeded(v8::Isolate*);
+    static void initializeMainThreadIfNeeded();
     static void initializeWorker(v8::Isolate*);
 };
 

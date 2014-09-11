@@ -189,10 +189,6 @@ static void timerTraceProfilerInMainThread(const char* name, int status)
 
 static void initializeV8Common(v8::Isolate* isolate)
 {
-    v8::ResourceConstraints constraints;
-    constraints.ConfigureDefaults(static_cast<uint64_t>(blink::Platform::current()->physicalMemoryMB()) << 20, static_cast<uint32_t>(blink::Platform::current()->virtualMemoryLimitMB()) << 20, static_cast<uint32_t>(blink::Platform::current()->numberOfProcessors()));
-    v8::SetResourceConstraints(isolate, &constraints);
-
     v8::V8::AddGCPrologueCallback(V8GCController::gcPrologue);
     v8::V8::AddGCEpilogueCallback(V8GCController::gcEpilogue);
 
@@ -201,7 +197,7 @@ static void initializeV8Common(v8::Isolate* isolate)
     isolate->SetAutorunMicrotasks(false);
 }
 
-void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
+void V8Initializer::initializeMainThreadIfNeeded()
 {
     ASSERT(isMainThread());
 
@@ -210,10 +206,13 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
         return;
     initialized = true;
 
+    gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode, v8ArrayBufferAllocator());
+
+    v8::Isolate* isolate = V8PerIsolateData::initialize();
+
     initializeV8Common(isolate);
 
     v8::V8::SetFatalErrorHandler(reportFatalErrorInMainThread);
-    V8PerIsolateData::ensureInitialized(isolate);
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);

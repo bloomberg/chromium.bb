@@ -105,16 +105,14 @@ public:
 };
 
 WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
-    : m_isolate(v8::Isolate::New())
+    : m_isolate(0)
     , m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
     , m_globalScopeExecutionState(0)
 {
-    m_isolate->Enter();
+    m_isolate = V8PerIsolateData::initialize();
     V8Initializer::initializeWorker(m_isolate);
-    v8::V8::Initialize();
-    V8PerIsolateData::ensureInitialized(m_isolate);
     m_world = DOMWrapperWorld::create(WorkerWorldId);
     m_interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
@@ -133,8 +131,6 @@ public:
     virtual void postCleanup()
     {
         V8PerIsolateData::dispose(m_isolate);
-        m_isolate->Exit();
-        m_isolate->Dispose();
     }
 
 private:

@@ -51,7 +51,7 @@ typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 
 class V8PerIsolateData {
 public:
-    static void ensureInitialized(v8::Isolate*);
+    static v8::Isolate* initialize();
     static V8PerIsolateData* from(v8::Isolate* isolate)
     {
         ASSERT(isolate);
@@ -61,7 +61,7 @@ public:
     static void dispose(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
-    v8::Isolate* isolate() { return m_isolate; }
+    v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
 
@@ -100,7 +100,7 @@ public:
     void setPreviousSamplingState(const char* name) { m_previousSamplingState = name; }
 
 private:
-    explicit V8PerIsolateData(v8::Isolate*);
+    V8PerIsolateData();
     ~V8PerIsolateData();
 
     typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate> > DOMTemplateMap;
@@ -108,7 +108,6 @@ private:
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
 
-    v8::Isolate* m_isolate;
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
     DOMTemplateMap m_domTemplateMapForMainWorld;
     DOMTemplateMap m_domTemplateMapForNonMainWorld;
