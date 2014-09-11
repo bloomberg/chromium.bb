@@ -147,6 +147,9 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // digitizer.
   int max_touch_points_;
 
+  // Device ID of the virtual core keyboard.
+  int virtual_core_keyboard_device_;
+
   SequentialIDGenerator id_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);

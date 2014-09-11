@@ -32,6 +32,7 @@ TouchFactory::TouchFactory()
       touch_events_disabled_(false),
       touch_device_list_(),
       max_touch_points_(-1),
+      virtual_core_keyboard_device_(-1),
       id_generator_(0) {
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
@@ -144,6 +145,8 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       }
 #endif
       pointer_device_lookup_[devinfo->deviceid] = true;
+    } else if (devinfo->use == XIMasterKeyboard) {
+      virtual_core_keyboard_device_ = devinfo->deviceid;
     }
 
 #if defined(USE_XI2_MT)
@@ -175,9 +178,11 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     return !touch_events_disabled_ && IsTouchDevice(xiev->deviceid);
   }
 #endif
-  // Make sure only key-events from the master device are processed.
-  if (event->evtype == XI_KeyPress || event->evtype == XI_KeyRelease)
-    return xiev->deviceid == xiev->sourceid;
+  // Make sure only key-events from the virtual core keyboard are processed.
+  if (event->evtype == XI_KeyPress || event->evtype == XI_KeyRelease) {
+    return (virtual_core_keyboard_device_ < 0) ||
+           (virtual_core_keyboard_device_ == xiev->deviceid);
+  }
 
   if (event->evtype != XI_ButtonPress &&
       event->evtype != XI_ButtonRelease &&

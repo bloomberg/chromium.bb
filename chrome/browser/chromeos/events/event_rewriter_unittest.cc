@@ -46,6 +46,7 @@ namespace {
 // The device id of the test touchpad device.
 const unsigned int kTouchPadDeviceId = 1;
 const int kKeyboardDeviceId = 2;
+const int kMasterKeyboardDeviceId = 3;
 
 std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
                                       int ui_flags,
@@ -150,8 +151,11 @@ void CheckKeyTestCase(chromeos::EventRewriter* rewriter,
     if (xevent->xkey.keycode)
       CheckX11KeyTestCase(expected, rewriter, test, xevent);
     // Test an XI2 GenericEvent.
-    xev.InitGenericKeyEvent(
-        kKeyboardDeviceId, test.type, test.input.key_code, test.input.flags);
+    xev.InitGenericKeyEvent(kMasterKeyboardDeviceId,
+                            kKeyboardDeviceId,
+                            test.type,
+                            test.input.key_code,
+                            test.input.flags);
     xevent = xev;
     DCHECK(xevent->type == GenericEvent);
     XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
