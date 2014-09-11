@@ -546,5 +546,33 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunSync() {
   return true;
 }
 
+EasyUnlockPrivateGetSignInChallengeFunction::
+    EasyUnlockPrivateGetSignInChallengeFunction() {
+}
+
+EasyUnlockPrivateGetSignInChallengeFunction::
+    ~EasyUnlockPrivateGetSignInChallengeFunction() {
+}
+
+bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
+  SetError("Not implemented");
+  SendResponse(false);
+  return true;
+}
+
+EasyUnlockPrivateTrySignInSecretFunction::
+    EasyUnlockPrivateTrySignInSecretFunction() {
+}
+
+EasyUnlockPrivateTrySignInSecretFunction::
+    ~EasyUnlockPrivateTrySignInSecretFunction() {
+}
+
+bool EasyUnlockPrivateTrySignInSecretFunction::RunAsync() {
+  SetError("Not implemented");
+  SendResponse(false);
+  return true;
+}
+
 }  // namespace api
 }  // namespace extensions

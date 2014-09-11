@@ -277,6 +277,38 @@ class EasyUnlockPrivateGetRemoteDevicesFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetRemoteDevicesFunction);
 };
 
+class EasyUnlockPrivateGetSignInChallengeFunction :
+    public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getSignInChallenge",
+                             EASYUNLOCKPRIVATE_GETSIGNINCHALLENGE)
+  EasyUnlockPrivateGetSignInChallengeFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateGetSignInChallengeFunction();
+
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetSignInChallengeFunction);
+};
+
+class EasyUnlockPrivateTrySignInSecretFunction :
+    public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.trySignInSecret",
+                             EASYUNLOCKPRIVATE_TRYSIGNINSECRET)
+  EasyUnlockPrivateTrySignInSecretFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateTrySignInSecretFunction();
+
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateTrySignInSecretFunction);
+};
+
 }  // namespace api
 }  // namespace extensions
 

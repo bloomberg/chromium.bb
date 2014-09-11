@@ -259,5 +259,14 @@
 
     // Gets the remote device list.
     static void getRemoteDevices(GetRemoteDevicesCallback callback);
+
+    // Gets the sign-in challenge for the current user.
+    static void getSignInChallenge(DataCallback callback);
+
+    // Tries to sign-in the current user with a secret obtained by decrypting
+    // the sign-in challenge. Check chrome.runtime.lastError for failures. Upon
+    // success, the user session will be started.
+    static void trySignInSecret(ArrayBuffer signInSecret,
+                                EmptyCallback callback);
   };
 };
