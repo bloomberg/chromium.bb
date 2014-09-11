@@ -133,6 +133,7 @@ protected:
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(IDBAny*);
     void setResult(IDBAny*);
+    ScriptState* scriptState() { return m_scriptState.get(); }
 
     bool m_contextStopped;
     Member<IDBTransaction> m_transaction;

@@ -201,10 +201,10 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     idbOpenDBRequest->addEventListener(EventTypeNames::success, callback, false);
 }
 
-static IDBTransaction* transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IndexedDBNames::readonly)
+static IDBTransaction* transactionForDatabase(ScriptState* scriptState, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IndexedDBNames::readonly)
 {
     TrackExceptionState exceptionState;
-    IDBTransaction* idbTransaction = idbDatabase->transaction(executionContext, objectStoreName, mode, exceptionState);
+    IDBTransaction* idbTransaction = idbDatabase->transaction(scriptState, objectStoreName, mode, exceptionState);
     if (exceptionState.hadException())
         return 0;
     return idbTransaction;
@@ -491,7 +491,7 @@ public:
     {
         if (!requestCallback()->isActive())
             return;
-        IDBTransaction* idbTransaction = transactionForDatabase(context(), idbDatabase, m_objectStoreName);
+        IDBTransaction* idbTransaction = transactionForDatabase(scriptState(), idbDatabase, m_objectStoreName);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;
@@ -731,7 +731,7 @@ public:
     {
         if (!requestCallback()->isActive())
             return;
-        IDBTransaction* idbTransaction = transactionForDatabase(context(), idbDatabase, m_objectStoreName, IndexedDBNames::readwrite);
+        IDBTransaction* idbTransaction = transactionForDatabase(scriptState(), idbDatabase, m_objectStoreName, IndexedDBNames::readwrite);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;

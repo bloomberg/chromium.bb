@@ -295,7 +295,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-IDBTransaction* IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
+IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::transaction");
     Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
@@ -336,14 +336,14 @@ IDBTransaction* IDBDatabase::transaction(ExecutionContext* context, const Vector
     int64_t transactionId = nextTransactionId();
     m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).leakPtr(), objectStoreIds, mode);
 
-    return IDBTransaction::create(context, transactionId, scope, mode, this);
+    return IDBTransaction::create(scriptState, transactionId, scope, mode, this);
 }
 
-IDBTransaction* IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& exceptionState)
+IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const String& storeName, const String& mode, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);
-    return transaction(context, storeNames, mode, exceptionState);
+    return transaction(scriptState, storeNames, mode, exceptionState);
 }
 
 void IDBDatabase::forceClose()

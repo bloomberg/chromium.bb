@@ -26,6 +26,7 @@
 #ifndef IDBTransaction_h
 #define IDBTransaction_h
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
 #include "core/events/EventListener.h"
@@ -56,8 +57,8 @@ class IDBTransaction FINAL
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
 public:
-    static IDBTransaction* create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, WebIDBTransactionMode, IDBDatabase*);
-    static IDBTransaction* create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
+    static IDBTransaction* create(ScriptState*, int64_t, const Vector<String>& objectStoreNames, WebIDBTransactionMode, IDBDatabase*);
+    static IDBTransaction* create(ScriptState*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
     virtual ~IDBTransaction();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -106,7 +107,7 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    IDBTransaction(ExecutionContext*, int64_t, const Vector<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
+    IDBTransaction(ScriptState*, int64_t, const Vector<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 

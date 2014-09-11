@@ -44,23 +44,23 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db)
+IDBTransaction* IDBTransaction::create(ScriptState* scriptState, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(scriptState, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
     transaction->suspendIfNeeded();
     return transaction;
 }
 
-IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+IDBTransaction* IDBTransaction::create(ScriptState* scriptState, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(scriptState, id, Vector<String>(), WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
     transaction->suspendIfNeeded();
     return transaction;
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
-    : ActiveDOMObject(context)
+IDBTransaction::IDBTransaction(ScriptState* scriptState, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+    : ActiveDOMObject(scriptState->executionContext())
     , m_id(id)
     , m_database(db)
     , m_objectStoreNames(objectStoreNames)
@@ -77,7 +77,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     }
 
     if (m_state == Active)
-        IDBPendingTransactionMonitor::from(*context).addNewTransaction(*this);
+        IDBPendingTransactionMonitor::from(*scriptState->executionContext()).addNewTransaction(*this);
     m_database->transactionCreated(this);
 }
 

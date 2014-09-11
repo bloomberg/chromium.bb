@@ -31,7 +31,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
@@ -103,7 +102,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
     IDBDatabaseMetadata oldMetadata(metadata);
     oldMetadata.intVersion = oldVersion;
 
-    m_transaction = IDBTransaction::create(executionContext(), m_transactionId, idbDatabase, this, oldMetadata);
+    m_transaction = IDBTransaction::create(scriptState(), m_transactionId, idbDatabase, this, oldMetadata);
     setResult(IDBAny::create(idbDatabase));
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
