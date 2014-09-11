@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
@@ -19,12 +20,27 @@
 namespace mojo {
 namespace {
 
+static blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
+    const String& status_line) {
+  if (status_line.is_null())
+    return blink::WebURLResponse::HTTP_0_9;
+
+  if (StartsWithASCII(status_line, "HTTP/1.0", true))
+    return blink::WebURLResponse::HTTP_1_0;
+
+  if (StartsWithASCII(status_line, "HTTP/1.1", true))
+    return blink::WebURLResponse::HTTP_1_1;
+
+  return blink::WebURLResponse::Unknown;
+}
+
 blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   blink::WebURLResponse result;
   result.initialize();
   result.setURL(GURL(url_response->url));
   result.setMIMEType(blink::WebString::fromUTF8(url_response->mime_type));
   result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
+  result.setHTTPVersion(StatusLineToHTTPVersion(url_response->status_line));
   result.setHTTPStatusCode(url_response->status_code);
 
   // TODO(darin): Initialize timing properly.
@@ -32,7 +48,22 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   timing.initialize();
   result.setLoadTiming(timing);
 
-  // TODO(darin): Copy other fields.
+  for (size_t i = 0; i < url_response->headers.size(); ++i) {
+    const std::string& header_line = url_response->headers[i];
+    size_t first_colon = header_line.find(":");
+
+    if (first_colon == std::string::npos || first_colon == 0)
+      continue;
+
+    std::string value;
+    TrimWhitespaceASCII(header_line.substr(first_colon + 1),
+                        base::TRIM_LEADING,
+                        &value);
+    result.setHTTPHeaderField(
+        blink::WebString::fromUTF8(header_line.substr(0, first_colon)),
+        blink::WebString::fromUTF8(value));
+  }
+
   return result;
 }
 
