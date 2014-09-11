@@ -1,19 +1,4 @@
-<!DOCTYPE html>
-<title>Tests that all geofencing methods always reject.</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script>
-// Copied from http/tests/serviceworker/resources/worker-test-harness.js, can be
-// removed once this makes it into testharness.js itself.
-function promise_test(func, name, properties) {
-  properties = properties || {};
-  var test = async_test(name, properties);
-  Promise.resolve(test.step(func, test, test))
-    .then(function() { test.done(); })
-    .catch(test.step_func(function(value) {
-        throw value;
-      }));
-}
+importScripts('../../serviceworker/resources/worker-test-harness.js');
 
 promise_test(function(test) {
     return navigator.geofencing.registerRegion(
@@ -34,5 +19,3 @@ promise_test(function(test) {
       .then(test.unreached_func('Promise should not have resolved'))
       .catch(function() { });
   }, 'getRegisteredRegions should fail');
-
-</script>

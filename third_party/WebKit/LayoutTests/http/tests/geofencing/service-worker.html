@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<title>Tests that all geofencing methods always reject, in a service worker.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script>
+service_worker_test(
+    'resources/worker.js',
+    'Verifies that all geofencing methods always reject.');
+</script>
