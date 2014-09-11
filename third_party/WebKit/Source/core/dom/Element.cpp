@@ -1327,9 +1327,6 @@ void Element::attach(const AttachContext& context)
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
-        // Only clear the style state if we're not going to reuse the style from recalcStyle.
-        if (!context.resolvedStyle)
-            data->resetStyleState();
     }
 
     RenderTreeBuilder(this, context.resolvedStyle).createRendererForElementIfNeeded();
@@ -1368,11 +1365,9 @@ void Element::detach(const AttachContext& context)
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
 
-        // attach() will perform the below steps for us when inside recalcStyle.
-        if (!document().inStyleRecalc()) {
-            data->resetStyleState();
+        // attach() will clear the computed style for us when inside recalcStyle.
+        if (!document().inStyleRecalc())
             data->clearComputedStyle();
-        }
 
         if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
             if (context.performingReattach) {
@@ -1481,7 +1476,6 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
     if (change >= Inherit || needsStyleRecalc()) {
         if (hasRareData()) {
             ElementRareData* data = elementRareData();
-            data->resetStyleState();
             data->clearComputedStyle();
 
             if (change >= Inherit) {

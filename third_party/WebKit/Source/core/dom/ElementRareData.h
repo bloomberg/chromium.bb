@@ -52,8 +52,6 @@ public:
     void setPseudoElement(PseudoId, PassRefPtrWillBeRawPtr<PseudoElement>);
     PseudoElement* pseudoElement(PseudoId) const;
 
-    void resetStyleState();
-
     short tabIndex() const { return m_tabindex; }
 
     void setTabIndexExplicitly(short index)
@@ -225,11 +223,6 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
     default:
         return 0;
     }
-}
-
-inline void ElementRareData::resetStyleState()
-{
-    clearElementFlag(StyleAffectedByEmpty);
 }
 
 } // namespace
