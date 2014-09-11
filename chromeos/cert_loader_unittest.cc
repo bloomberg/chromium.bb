@@ -149,10 +149,12 @@ class CertLoaderTest : public testing::Test,
     net::CertificateList client_cert_list;
     scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
         database->GetPrivateSlot().get()));
-    ASSERT_EQ(
-        net::OK,
-        database->ImportFromPKCS12(module, pkcs12_data, base::string16(), false,
-                                   imported_certs));
+    ASSERT_EQ(net::OK,
+              database->ImportFromPKCS12(module.get(),
+                                         pkcs12_data,
+                                         base::string16(),
+                                         false,
+                                         imported_certs));
     ASSERT_EQ(1U, imported_certs->size());
   }
 
@@ -202,14 +204,16 @@ TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
 
   // Certs are loaded asynchronously, so the new cert should not yet be in the
   // cert list.
-  EXPECT_FALSE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   // The certificate list should be updated now, as the message loop's been run.
-  EXPECT_TRUE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  EXPECT_TRUE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
@@ -224,7 +228,8 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
@@ -239,7 +244,8 @@ TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  EXPECT_TRUE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  EXPECT_TRUE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
@@ -256,7 +262,8 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
@@ -270,15 +277,17 @@ TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  ASSERT_TRUE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  ASSERT_TRUE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 
-  primary_db_->DeleteCertAndKey(certs[0]);
+  primary_db_->DeleteCertAndKey(certs[0].get());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  ASSERT_FALSE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  ASSERT_FALSE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 }
 
 TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
@@ -289,13 +298,14 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  ASSERT_TRUE(IsCertInCertificateList(certs[0], cert_loader_->cert_list()));
+  ASSERT_TRUE(
+      IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
 
   // The value that should have been set by |ImportCACert|.
   ASSERT_EQ(net::NSSCertDatabase::TRUST_DEFAULT,
-            primary_db_->GetCertTrust(certs[0], net::CA_CERT));
+            primary_db_->GetCertTrust(certs[0].get(), net::CA_CERT));
   ASSERT_TRUE(primary_db_->SetCertTrust(
-      certs[0], net::CA_CERT, net::NSSCertDatabase::TRUSTED_SSL));
+      certs[0].get(), net::CA_CERT, net::NSSCertDatabase::TRUSTED_SSL));
 
   // Cert trust change should trigger certificate reload in cert_loader_.
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());

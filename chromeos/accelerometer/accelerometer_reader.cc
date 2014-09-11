@@ -159,7 +159,7 @@ AccelerometerReader::AccelerometerReader(
       delegate_(delegate),
       configuration_(new AccelerometerReader::Configuration()),
       weak_factory_(this) {
-  DCHECK(task_runner_);
+  DCHECK(task_runner_.get());
   DCHECK(delegate_);
   // Asynchronously detect and initialize the accelerometer to avoid delaying
   // startup.
@@ -184,10 +184,12 @@ void AccelerometerReader::TriggerRead() {
 
   scoped_refptr<AccelerometerReader::Reading> reading(
       new AccelerometerReader::Reading());
-  base::PostTaskAndReplyWithResult(task_runner_, FROM_HERE,
-      base::Bind(&ReadAccelerometer, reading),
-      base::Bind(&AccelerometerReader::OnDataRead,
-          weak_factory_.GetWeakPtr(), reading));
+  base::PostTaskAndReplyWithResult(task_runner_.get(),
+                                   FROM_HERE,
+                                   base::Bind(&ReadAccelerometer, reading),
+                                   base::Bind(&AccelerometerReader::OnDataRead,
+                                              weak_factory_.GetWeakPtr(),
+                                              reading));
 }
 
 void AccelerometerReader::OnDataRead(

@@ -230,9 +230,11 @@ class NetworkConnectionHandlerTest : public testing::Test {
     net::CertificateList loaded_certs;
     scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
         test_nssdb_->GetPrivateSlot().get()));
-    if (test_nssdb_->ImportFromPKCS12(
-            module, pkcs12_data, base::string16(), false, &loaded_certs) !=
-        net::OK) {
+    if (test_nssdb_->ImportFromPKCS12(module.get(),
+                                      pkcs12_data,
+                                      base::string16(),
+                                      false,
+                                      &loaded_certs) != net::OK) {
       LOG(ERROR) << "Error while importing to NSSDB.";
       return NULL;
     }
@@ -371,7 +373,7 @@ TEST_F(NetworkConnectionHandlerTest, ConnectCertificateMissing) {
 TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
   StartCertLoader();
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
                                  cert->subject().common_name.c_str()),
@@ -386,7 +388,7 @@ TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
 TEST_F(NetworkConnectionHandlerTest,
        DISABLED_ConnectWithCertificateRequestedBeforeCertsAreLoaded) {
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
                                  cert->subject().common_name.c_str()),

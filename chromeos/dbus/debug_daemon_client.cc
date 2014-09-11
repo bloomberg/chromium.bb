@@ -233,7 +233,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // Create dbus::FileDescriptor on the worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
     base::PostTaskAndReplyWithResult(
-        task_runner,
+        task_runner.get(),
         FROM_HERE,
         base::Bind(
             &DebugDaemonClientImpl::CreateFileDescriptorToStopSystemTracing,

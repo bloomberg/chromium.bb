@@ -129,7 +129,7 @@ class NetworkCertMigrator::MigrationTask
     int real_slot_id = -1;
     scoped_refptr<net::X509Certificate> cert =
         FindCertificateWithPkcs11Id(pkcs11_id, &real_slot_id);
-    if (!cert) {
+    if (!cert.get()) {
       LOG(WARNING) << "No matching cert found, removing the certificate "
                       "configuration from network " << service_path;
       chromeos::client_cert::SetEmptyShillProperties(config_type,
@@ -141,7 +141,7 @@ class NetworkCertMigrator::MigrationTask
       return;
     }
 
-    if (cert && real_slot_id != configured_slot_id) {
+    if (cert.get() && real_slot_id != configured_slot_id) {
       VLOG(1) << "Network " << service_path
               << " is configured with no or an incorrect slot id.";
       chromeos::client_cert::SetShillProperties(
@@ -174,7 +174,7 @@ class NetworkCertMigrator::MigrationTask
 
     scoped_refptr<net::X509Certificate> cert =
         FindCertificateWithNickname(nickname);
-    if (!cert) {
+    if (!cert.get()) {
       VLOG(2) << "No matching cert found.";
       return;
     }

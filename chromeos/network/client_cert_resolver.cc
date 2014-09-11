@@ -151,7 +151,7 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
         net::X509Certificate::CreateFromHandle(
             issuer_handle.get(),
             net::X509Certificate::OSCertHandles() /* no intermediate certs */);
-    if (!issuer) {
+    if (!issuer.get()) {
       LOG(ERROR) << "Couldn't create issuer cert.";
       continue;
     }
@@ -410,7 +410,8 @@ void ClientCertResolver::ResolveNetworks(
   VLOG(2) << "Start task for resolving client cert patterns.";
   base::TaskRunner* task_runner = slow_task_runner_for_test_.get();
   if (!task_runner)
-    task_runner = base::WorkerPool::GetTaskRunner(true /* task is slow */);
+    task_runner =
+        base::WorkerPool::GetTaskRunner(true /* task is slow */).get();
 
   NetworkCertMatches* matches = new NetworkCertMatches;
   task_runner->PostTaskAndReply(

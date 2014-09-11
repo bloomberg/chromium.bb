@@ -86,7 +86,7 @@ DBusThreadManager::~DBusThreadManager() {
 
   // Shut down the bus. During the browser shutdown, it's ok to shut down
   // the bus synchronously.
-  if (system_bus_)
+  if (system_bus_.get())
     system_bus_->ShutdownOnDBusThreadAndBlock();
 
   // Stop the D-Bus thread.

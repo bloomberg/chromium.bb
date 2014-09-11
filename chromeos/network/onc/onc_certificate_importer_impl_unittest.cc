@@ -131,8 +131,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
     if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
       EXPECT_EQ(1u, imported_server_and_ca_certs_.size());
-      EXPECT_TRUE(imported_server_and_ca_certs_[*guid]->Equals(
-          public_list_[0]));
+      EXPECT_TRUE(
+          imported_server_and_ca_certs_[*guid]->Equals(public_list_[0].get()));
     } else {  // net::USER_CERT
       EXPECT_TRUE(imported_server_and_ca_certs_.empty());
     }

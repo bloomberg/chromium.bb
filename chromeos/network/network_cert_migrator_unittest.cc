@@ -115,10 +115,12 @@ class NetworkCertMigratorTest : public testing::Test {
     net::CertificateList client_cert_list;
     scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
         test_nssdb_->GetPrivateSlot().get()));
-    ASSERT_EQ(
-        net::OK,
-        test_nssdb_->ImportFromPKCS12(
-            module, pkcs12_data, base::string16(), false, &client_cert_list));
+    ASSERT_EQ(net::OK,
+              test_nssdb_->ImportFromPKCS12(module.get(),
+                                            pkcs12_data,
+                                            base::string16(),
+                                            false,
+                                            &client_cert_list));
     ASSERT_TRUE(!client_cert_list.empty());
     test_client_cert_ = client_cert_list[0];
 
@@ -290,10 +292,10 @@ class NetworkCertMigratorTest : public testing::Test {
 
  private:
   void CleanupTestCert() {
-    if (test_ca_cert_)
+    if (test_ca_cert_.get())
       ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_ca_cert_.get()));
 
-    if (test_client_cert_)
+    if (test_client_cert_.get())
       ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_client_cert_.get()));
   }
 
