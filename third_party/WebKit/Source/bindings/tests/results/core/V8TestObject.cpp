@@ -5223,8 +5223,6 @@ static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> stringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringArg, toByteString(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodByteStringArg(stringArg);
@@ -5248,8 +5246,6 @@ static void voidMethodScalarValueStringArgMethod(const v8::FunctionCallbackInfo<
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> scalarValueStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(scalarValueStringArg, toScalarValueString(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodScalarValueStringArg(scalarValueStringArg);
@@ -5273,8 +5269,6 @@ static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     unsigned long long domTimeStampArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(domTimeStampArg, toUInt64(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodDOMTimeStampArg(domTimeStampArg);
@@ -5321,8 +5315,6 @@ static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int byteArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(byteArg, toInt8(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodByteArg(byteArg);
@@ -5392,8 +5384,6 @@ static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodLongArg(longArg);
@@ -5417,8 +5407,6 @@ static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     long long longLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longLongArg, toInt64(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodLongLongArg(longLongArg);
@@ -5442,8 +5430,6 @@ static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     unsigned octetArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(octetArg, toUInt8(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodOctetArg(octetArg);
@@ -5467,8 +5453,6 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int shortArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(shortArg, toInt16(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodShortArg(shortArg);
@@ -5492,8 +5476,6 @@ static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     unsigned unsignedLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedLongArg, toUInt32(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodUnsignedLongArg(unsignedLongArg);
@@ -5517,8 +5499,6 @@ static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     unsigned long long unsignedLongLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedLongLongArg, toUInt64(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodUnsignedLongLongArg(unsignedLongLongArg);
@@ -5542,8 +5522,6 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     unsigned unsignedShortArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedShortArg, toUInt16(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodUnsignedShortArg(unsignedShortArg);
@@ -6863,8 +6841,6 @@ static void overloadedPromiseMethod1Method(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->overloadedPromiseMethod(arg).v8Value());
@@ -6928,8 +6904,6 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
     V8StringResource<> stringArg;
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
     }
@@ -6993,8 +6967,6 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             impl->voidMethodOptionalLongArg();
             return;
@@ -7017,8 +6989,6 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
             return;
@@ -7041,8 +7011,6 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
             return;
@@ -7065,8 +7033,6 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
             return;
@@ -7095,8 +7061,6 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
     int longArg;
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->voidMethodLongArgOptionalLongArg(longArg);
@@ -7127,8 +7091,6 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
     int optionalLongArg1;
     int optionalLongArg2;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
@@ -7242,8 +7204,6 @@ static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> defaultByteStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultByteStringArg, toByteString(info[0], exceptionState), exceptionState);
         } else {
@@ -7289,8 +7249,6 @@ static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8
     long long defaultLongLongArg;
     unsigned defaultUnsignedArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongArg, toInt32(info[0], exceptionState), exceptionState);
         } else {
@@ -7392,8 +7350,6 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<TreatNullAsNullString> defaultStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultStringArg, toByteString(info[0], exceptionState), exceptionState);
         } else {
@@ -7604,8 +7560,6 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodA(longArg);
@@ -7618,8 +7572,6 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     int longArg1;
     int longArg2;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg1, toInt32(info[0], exceptionState), exceptionState);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg2, toInt32(info[1], exceptionState), exceptionState);
     }
@@ -7664,8 +7616,6 @@ static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodB(longArg);
@@ -7678,8 +7628,6 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     V8StringResource<> stringArg;
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->overloadedMethodB(stringArg);
@@ -7736,8 +7684,6 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodC(longArg);
@@ -7791,8 +7737,6 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodD(longArg);
@@ -7846,8 +7790,6 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodE(longArg);
@@ -7975,8 +7917,6 @@ static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedMethodG(longArg);
@@ -8168,8 +8108,6 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestDictionary* testDictionaryArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testDictionaryArg, V8TestDictionary::toImpl(info.GetIsolate(), info[0], exceptionState), exceptionState);
         } else {
@@ -8227,8 +8165,6 @@ static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedPerWorldBindingsMethod(longArg);
@@ -8272,8 +8208,6 @@ static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->overloadedPerWorldBindingsMethod(longArg);
@@ -8316,8 +8250,6 @@ static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Val
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     TestObject::overloadedStaticMethod(longArg);
@@ -8329,8 +8261,6 @@ static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
     int longArg1;
     int longArg2;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg1, toInt32(info[0], exceptionState), exceptionState);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg2, toInt32(info[1], exceptionState), exceptionState);
     }
@@ -8450,8 +8380,6 @@ static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackIn
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int defaultUndefinedLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->voidMethodDefaultUndefinedLongArg(defaultUndefinedLongArg);
@@ -8492,8 +8420,6 @@ static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int enforceRangeLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(enforceRangeLongArg, toInt32(info[0], EnforceRange, exceptionState), exceptionState);
     }
     impl->voidMethodEnforceRangeLongArg(enforceRangeLongArg);
@@ -8861,8 +8787,6 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->DeprecateAsOverloadedMethod(arg);
@@ -8914,8 +8838,6 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->DeprecateAsSameValueOverloadedMethod(arg);
@@ -8966,8 +8888,6 @@ static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->measureAsOverloadedMethod(arg);
@@ -9019,8 +8939,6 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->measureAsSameValueOverloadedMethod(arg);
@@ -9071,8 +8989,6 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
@@ -9125,8 +9041,6 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
@@ -9179,8 +9093,6 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
@@ -9431,8 +9343,6 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
             if (exceptionState.hadException()) {
@@ -9548,8 +9458,6 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -9622,8 +9530,6 @@ static void runtimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallback
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->runtimeEnabledOverloadedVoidMethod(longArg);
@@ -9691,8 +9597,6 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::Functio
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg);
@@ -10046,8 +9950,6 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int value;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
     }
     int result = 0;
@@ -10161,8 +10063,6 @@ static void methodImplementedInCPPForPrivateScriptOnlyMethod(const v8::FunctionC
     int value1;
     int value2;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value1, toInt16(info[0], exceptionState), exceptionState);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value2, toInt16(info[1], exceptionState), exceptionState);
     }

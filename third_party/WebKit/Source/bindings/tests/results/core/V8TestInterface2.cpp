@@ -47,8 +47,6 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
     }
     RefPtr<TestInterfaceEmpty> result = impl->item(index, exceptionState);
@@ -78,8 +76,6 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     unsigned index;
     V8StringResource<> value;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(value, info[1]);
     }
@@ -109,8 +105,6 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(index, toUInt32(info[0], exceptionState), exceptionState);
     }
     bool result = impl->deleteItem(index, exceptionState);

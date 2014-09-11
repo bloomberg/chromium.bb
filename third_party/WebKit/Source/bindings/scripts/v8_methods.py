@@ -54,6 +54,7 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 
 def argument_needs_try_catch(method, argument):
     return_promise = method.idl_type and method.idl_type.name == 'Promise'
+    is_clamp = 'Clamp' in argument.extended_attributes
     idl_type = argument.idl_type
     base_type = idl_type.base_type
 
@@ -68,7 +69,13 @@ def argument_needs_try_catch(method, argument):
         # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
         ((base_type == 'DOMString' or idl_type.is_enum) and
          not argument.is_variadic and
-         not return_promise))
+         not return_promise) or
+        # Conversion that take an ExceptionState& argument throw all their
+        # exceptions via it, and doesn't need/use a TryCatch, except if the
+        # argument has [Clamp], in which case it uses a separate code path in
+        # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
+        (idl_type.v8_conversion_needs_exception_state and
+         not is_clamp))
 
 
 def use_local_result(method):

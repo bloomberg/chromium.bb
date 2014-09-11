@@ -90,36 +90,24 @@ namespace blink {
 
 #define TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(var, value, exceptionState) \
     var = (value);                                                        \
-    if (UNLIKELY(block.HasCaught() || exceptionState.throwIfNeeded()))    \
+    if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
         return;                                                           \
 
-#define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState)     \
-    type var;                                                              \
-    {                                                                      \
-        v8::TryCatch block;                                                \
-        V8RethrowTryCatchScope rethrow(block);                             \
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(var, value, exceptionState); \
-    }
+#define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState)  \
+    type var;                                                           \
+    var = (value);                                                      \
+    if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
+        return;
 
 #define TONATIVE_DEFAULT_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
-    type var;                                                                     \
-    {                                                                             \
-        v8::TryCatch block;                                                       \
-        V8RethrowTryCatchScope rethrow(block);                                    \
-        var = (value);                                                            \
-        if (UNLIKELY(block.HasCaught() || exceptionState.throwIfNeeded()))        \
-            return retVal;                                                        \
-    }
+    type var = (value);                                                           \
+    if (UNLIKELY(exceptionState.throwIfNeeded()))                                 \
+        return retVal;
 
 // We need to cancel the exception propergation when we return a rejected
 // Promise.
 #define TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState) \
     var = (value);                                                                                   \
-    if (UNLIKELY(block.HasCaught())) {                                                               \
-        v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), block.Exception()));      \
-        block.Reset();                                                                               \
-        return;                                                                                      \
-    }                                                                                                \
     if (UNLIKELY(exceptionState.hadException())) {                                                   \
         v8SetReturnValue(info, exceptionState.reject(scriptState).v8Value());                        \
         return;                                                                                      \
@@ -127,10 +115,7 @@ namespace blink {
 
 #define TONATIVE_VOID_EXCEPTIONSTATE_PROMISE(type, var, value, exceptionState, info, scriptState)     \
     type var;                                                                                         \
-    {                                                                                                 \
-        v8::TryCatch block;                                                                           \
-        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState); \
-    }
+    TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(var, value, exceptionState, info, scriptState);
 
 // type is an instance of class template V8StringResource<>,
 // but Mode argument varies; using type (not Mode) for consistency

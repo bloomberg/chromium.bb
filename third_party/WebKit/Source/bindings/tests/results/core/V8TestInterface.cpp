@@ -1351,8 +1351,6 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
@@ -1430,8 +1428,6 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int value;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
     }
     int result = 0;
