@@ -19,14 +19,23 @@ import processor
 
 # High priority code to compile.
 _NEED_TO_COMPILE = map(_FROM_SRC, [
-  'chrome/browser/resources',
-  'chrome/browser/ui/webui',
+  'chrome/browser/resources/bookmark_manager',
+  'chrome/browser/resources/downloads',
+  'chrome/browser/resources/extensions',
+  'chrome/browser/resources/help',
+  'chrome/browser/resources/history',
+  'chrome/browser/resources/ntp4',
+  'chrome/browser/resources/options',
+  'chrome/browser/resources/print_preview',
+  'chrome/browser/resources/uber',
   'ui/webui/resources/js',
 ])
 
 
 # Code that we'd eventually like to compile.
 _WANT_TO_COMPILE = map(_FROM_SRC, [
+  'chrome/browser/resources',
+  'chrome/browser/ui/webui',
   'chrome/renderer/resources',
   'chrome/test/data',
   'content/renderer/resources',
