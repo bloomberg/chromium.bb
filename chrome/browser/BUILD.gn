@@ -92,6 +92,7 @@ static_library("browser") {
     "//courgette:courgette_lib",
     "//crypto",
     "//google_apis",
+    "//gpu/config",
     "//jingle:notifier",
     "//skia",
     "//sql",

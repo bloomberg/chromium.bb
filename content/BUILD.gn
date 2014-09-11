@@ -9,16 +9,43 @@ config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
 }
 
+# When targets depend on, e.g. //content/public/browser, what happens? To
+# facilitate the complexity here, the "public" targets are groups that forward
+# to the right thing depending on the build mode. Say for additional
+# illustration, the public browser sources also depend on the public common
+# ones.
+#
+# The non-component build is easy:
+# foo ->
+#   //content/public/browser (group) ->
+#     //content/public/browser:browser_sources (source set) ->
+#       //content/browser (source set, this is the non-public browser target)
+#       //content/public/common:common_sources (source set)
+#
+# The component build is more complicated because we want everybody to depend on
+# one content shared library regardless of which public target they depend on:
+# foo ->
+#   //content/public/browser (group) ->
+#     //content (shared library) ->
+#       //content/public/browser:browser_sources (source set) ->
+#         //content/browser (source set; this is the non-public browser target)
+#         //content/public/common:common_sources (source set)
+#
+# That the internal content dependencies must depend on the *_sources targets
+# to avoid dependency cycles, and external dependencies must depend on the
+# //content/public/browser and similar targets to avoid double-linking (these
+# targets make sure the dependency goes through the content shared library
+# when doing a component build).
+
 content_shared_components = [
   "//content/gpu",
   "//content/plugin",
   "//content/public/browser:browser_sources",
-  "//content/public/child",
-  "//content/public/common",
-  "//content/public/plugin",
-  "//content/public/renderer",
-  "//content/public/utility",
-  "//content/renderer",
+  "//content/public/child:child_sources",
+  "//content/public/common:common_sources",
+  "//content/public/plugin:plugin_sources",
+  "//content/public/renderer:renderer_sources",
+  "//content/public/utility:utility_sources",
 ]
 
 if (enable_plugins) {
@@ -28,8 +55,7 @@ if (enable_plugins) {
 if (is_component_build) {
   shared_library("content") {
     deps = content_shared_components + [
-      "//content/app",
-      "//content/public/app",
+      "//content/public/app:both_sources",
     ]
     forward_dependent_configs_from = deps
   }

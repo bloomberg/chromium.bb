@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 source_set("ppapi_plugin") {
+  visibility = [ "//content/*" ]
+
   sources = [
     "broker_process_dispatcher.cc",
     "broker_process_dispatcher.h",
@@ -21,6 +23,8 @@ source_set("ppapi_plugin") {
   deps = [
     "//base",
     "//content:export",
+    "//content/public/child:child_sources",
+    "//content/public/common:common_sources",
     "//mojo/public/interfaces/application",
     "//ppapi:ppapi_ipc",
     "//skia",

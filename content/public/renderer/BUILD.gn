@@ -5,7 +5,19 @@
 import("//build/config/features.gni")
 import("//content/renderer/renderer.gni")
 
-source_set("renderer") {
+# See //content/BUILD.gn for how this works.
+group("renderer") {
+  if (is_component_build) {
+    deps = [ "//content" ]
+  } else {
+    deps = [ ":renderer_sources" ]
+  }
+  forward_dependent_configs_from = deps
+}
+
+source_set("renderer_sources") {
+  visibility = [ "//content/*" ]
+
   sources = rebase_path(content_renderer_gypi_values.public_renderer_sources,
                         ".", "//content")
 
@@ -14,7 +26,7 @@ source_set("renderer") {
   ]
 
   deps = [
-    "//content/public/common",
+    "//content/public/common:common_sources",
     "//content/renderer",
     "//skia",
     "//third_party/libjingle",
@@ -27,7 +39,8 @@ source_set("renderer") {
   allow_circular_includes_from = [
     # This target is a pair with content/renderer. They always go together and
     # include headers from each other.
-    "//content/renderer",
+    # TODO(brettw) enable this when this permits non-dependent targets.
+    #"//content/renderer",
   ]
 
   if (enable_webrtc) {

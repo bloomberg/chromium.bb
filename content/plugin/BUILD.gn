@@ -7,7 +7,10 @@ import("//build/config/features.gni")
 # This is the NPAPI plugin process. It isn't used on Linux.
 if (enable_plugins && !is_linux) {
   source_set("plugin") {
-    visibility = [ "//content/*" ]
+    # Only the public target should depend on this. All other targets (even
+    # internal content ones) should depend on the public one.
+    visibility = [ "//content/public/plugin:plugin_sources" ]
+
     sources = [
       "plugin_channel.cc",
       "plugin_channel.h",

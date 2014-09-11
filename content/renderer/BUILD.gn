@@ -7,8 +7,9 @@ import("//build/config/ui.gni")
 import("//content/renderer/renderer.gni")
 
 source_set("renderer") {
-  # Only targets in the content tree can depend directly on this target.
-  visibility = [ "//content/*" ]
+  # Only the public target should depend on this. All other targets (even
+  # internal content ones) should depend on the public one.
+  visibility = [ "//content/public/renderer:renderer_sources" ]
 
   sources = rebase_path(content_renderer_gypi_values.private_renderer_sources,
                         ".", "//content")
@@ -26,10 +27,9 @@ source_set("renderer") {
     "//cc",
     "//cc/blink",
     "//content:resources",
-    "//content/public/child",
     "//content/common:mojo_bindings",
-    "//content/public/child",
-    "//content/public/common",
+    "//content/public/child:child_sources",
+    "//content/public/common:common_sources",
     "//gin",
     "//gpu",
     "//jingle:jingle_glue",

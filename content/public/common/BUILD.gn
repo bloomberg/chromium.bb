@@ -5,7 +5,19 @@
 import("//build/config/features.gni")
 import("//content/common/common.gni")
 
-source_set("common") {
+# See //content/BUILD.gn for how this works.
+group("common") {
+  if (is_component_build) {
+    deps = [ "//content" ]
+  } else {
+    deps = [ ":common_sources" ]
+  }
+  forward_dependent_configs_from = deps
+}
+
+source_set("common_sources") {
+  visibility = [ "//content/*" ]
+
   sources = rebase_path(content_common_gypi_values.public_common_sources,
                         ".", "//content")
 

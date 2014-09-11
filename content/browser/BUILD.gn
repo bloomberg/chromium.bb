@@ -6,15 +6,10 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/browser/browser.gni")
 
-config("storage_config") {
-  if (is_android) {
-    defines = [ "APPCACHE_USE_SIMPLE_CACHE" ]
-  }
-}
-
 source_set("browser") {
-  # Only targets in the content tree can depend directly on this target.
-  visibility = [ "//content/*" ]
+  # Only the public target should depend on this. All other targets (even
+  # internal content ones) should depend on the public one.
+  visibility = [ "//content/public/browser:browser_sources" ]
 
   defines = []
   libs = []
@@ -27,7 +22,7 @@ source_set("browser") {
     "//content:resources",
     "//content/browser/service_worker:proto",
     "//content/browser/speech/proto",
-    "//content/public/common",
+    "//content/public/common:common_sources",
     "//crypto",
     "//google_apis",
     "//net",

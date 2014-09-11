@@ -8,8 +8,9 @@ import("//content/common/common.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("common") {
-  # Only targets in the content tree can depend directly on this target.
-  visibility = [ "//content/*" ]
+  # Only the public target should depend on this. All other targets (even
+  # internal content ones) should depend on the public one.
+  visibility = [ "//content/public/common:common_sources" ]
 
   sources = rebase_path(content_common_gypi_values.private_common_sources,
                         ".", "//content")
@@ -51,6 +52,7 @@ source_set("common") {
       # content and moved to android_webview. See crbug.com/365797.
       "//gpu/command_buffer/client:gl_in_process_context",
       "//gpu/command_buffer/client:gles2_c_lib",
+      "//gpu/command_buffer/client:gles2_cmd_helper",
       "//gpu/command_buffer/client:gles2_implementation",
       "//gpu/command_buffer/service",
       "//gpu/ipc",

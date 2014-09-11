@@ -2,7 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("plugin") {
+# See //content/BUILD.gn for how this works.
+group("plugin") {
+  if (is_component_build) {
+    deps = [ "//content" ]
+  } else {
+    deps = [ ":plugin_sources" ]
+  }
+  forward_dependent_configs_from = deps
+}
+
+source_set("plugin_sources") {
+  visibility = [ "//content/*" ]
+
   sources = [
     "content_plugin_client.h",
   ]
@@ -10,6 +22,6 @@ source_set("plugin") {
   deps = [
     "//base",
     "//content/plugin",
-    "//content/public/common",
+    "//content/public/common:common_sources",
   ]
 }

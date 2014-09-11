@@ -18,8 +18,8 @@ static_library("test_support") {
   deps = [
     "//cc/blink",
     "//content/public/app:both",
-    "//content/public/browser",
-    "//content/public/common",
+    "//content/public/browser:browser_sources",
+    "//content/public/common:common_sources",
     "//net:test_support",
     "//skia",
     "//storage/common",
@@ -44,10 +44,10 @@ static_library("test_support") {
 
     deps += [
       "//content/browser/speech/proto",
-      "//content/child",
+      "//content/public/child:child_sources",
       "//content/gpu",
-      "//content/public/renderer",
-      "//content/public/utility",
+      "//content/public/renderer:renderer_sources",
+      "//content/public/utility:utility_sources",
       "//cc",
       "//cc:test_support",
       "//media",

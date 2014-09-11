@@ -173,12 +173,12 @@ shared_library("main_dll") {
   if (false) {  #chrome_multiple_dll) {
     defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
     deps += [
-      "//content/app:browser",
+      "//content/public/app:browser",
     ]
   } else {
     deps += [
       ":child_dependencies",
-      "//content/app:both",
+      "//content/public/app:both",
     ]
   }
 
@@ -230,8 +230,7 @@ group("child_dependencies") {
       "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",
-      "//content/gpu",
-      "//content/ppapi_plugin",
+      "//content/public/child",
       "//third_party/WebKit/public:blink_devtools_frontend_resources",
     ]
   }
@@ -480,6 +479,11 @@ template("chrome_repack_percent") {
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [ "//ui/chromeos/resources" ]
+    }
+    if (enable_extensions) {
+      sources += [
+        "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak",
+      ]
     }
 
     output = repack_output_file

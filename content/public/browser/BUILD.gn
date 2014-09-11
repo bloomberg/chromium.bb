@@ -5,6 +5,7 @@
 import("//content/browser/browser.gni")
 import("//build/config/ui.gni")
 
+# See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
     deps = [ "//content" ]
@@ -15,6 +16,8 @@ group("browser") {
 }
 
 source_set("browser_sources") {
+  visibility = [ "//content/*" ]
+
   if (is_ios) {
     # iOS doesn't get the normal file list and only takes these whitelisted
     # files.
@@ -40,7 +43,7 @@ source_set("browser_sources") {
 
   deps = [
     "//content/browser",
-    "//content/public/common",
+    "//content/public/common:common_sources",
     "//net",
     "//skia",
     "//ui/accessibility",
@@ -51,7 +54,8 @@ source_set("browser_sources") {
   allow_circular_includes_from = [
     # This target is a pair with content/browser. They always go together and
     # include headers from each other.
-    "//content/browser",
+    # TODO(brettw) enable this when this permits non-dependent targets.
+    #"//content/browser",
   ]
 
   # We expose skia headers in the public API.
