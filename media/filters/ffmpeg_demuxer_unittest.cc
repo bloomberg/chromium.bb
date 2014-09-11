@@ -438,17 +438,9 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
 
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    // Check first buffer in video stream.  It should have been adjusted such
-    // that it starts 400ms after the first audio buffer.
-    video->Read(
-        NewReadCB(FROM_HERE,
-                  5636,
-                  (video_start_time - audio_start_time).InMicroseconds()));
+    video->Read(NewReadCB(FROM_HERE, 5636, video_start_time.InMicroseconds()));
     message_loop_.Run();
-
-    // Since the audio buffer has a lower first timestamp, it should become
-    // zero.
-    audio->Read(NewReadCB(FROM_HERE, 165, 0));
+    audio->Read(NewReadCB(FROM_HERE, 165, audio_start_time.InMicroseconds()));
     message_loop_.Run();
 
     // Verify that the start time is equal to the lowest timestamp (ie the

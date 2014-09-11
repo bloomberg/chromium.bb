@@ -305,6 +305,12 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       start_time = base::TimeDelta();
     }
 
+    // Don't rebase timestamps for positive start times, the HTML Media Spec
+    // details this in section "4.8.10.6 Offsets into the media resource." We
+    // will still need to rebase timestamps before seeking with FFmpeg though.
+    if (start_time > base::TimeDelta())
+      start_time = base::TimeDelta();
+
     buffer->set_timestamp(stream_timestamp - start_time);
 
     // If enabled, mark audio packets with negative timestamps for post-decode
@@ -588,7 +594,15 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   // we know we're going to drop it on the floor.
 
   // FFmpeg requires seeks to be adjusted according to the lowest starting time.
-  const base::TimeDelta seek_time = time + start_time_;
+  // Since EnqueuePacket() rebased negative timestamps by the start time, we
+  // must correct the shift here.
+  //
+  // Additionally, to workaround limitations in how we expose seekable ranges to
+  // Blink (http://crbug.com/137275), we also want to clamp seeks before the
+  // start time to the start time.
+  const base::TimeDelta seek_time =
+      start_time_ < base::TimeDelta() ? time + start_time_
+                                      : time < start_time_ ? start_time_ : time;
 
   // Choose the seeking stream based on whether it contains the seek time, if no
   // match can be found prefer the preferred stream.
