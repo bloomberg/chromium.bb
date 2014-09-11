@@ -385,6 +385,22 @@ void GuestViewBase::WebContentsDestroyed() {
   delete this;
 }
 
+void GuestViewBase::ActivateContents(WebContents* web_contents) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->ActivateContents(
+      embedder_web_contents());
+}
+
+void GuestViewBase::DeactivateContents(WebContents* web_contents) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->DeactivateContents(
+      embedder_web_contents());
+}
+
 void GuestViewBase::RunFileChooser(WebContents* web_contents,
                                    const content::FileChooserParams& params) {
   if (!attached() || !embedder_web_contents()->GetDelegate())

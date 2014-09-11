@@ -273,6 +273,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual void WebContentsDestroyed() OVERRIDE FINAL;
 
   // WebContentsDelegate implementation.
+  virtual void ActivateContents(content::WebContents* contents) OVERRIDE FINAL;
+  virtual void DeactivateContents(
+      content::WebContents* contents) OVERRIDE FINAL;
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
