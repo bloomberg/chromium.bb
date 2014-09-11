@@ -32,7 +32,7 @@ class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
 
   unsigned size() { return dispatched_events_.size(); }
   KeyEvent* event(unsigned index) {
-    CHECK_GT(dispatched_events_.size(), index);
+    DCHECK_GT(dispatched_events_.size(), index);
     return dispatched_events_[index];
   }
 

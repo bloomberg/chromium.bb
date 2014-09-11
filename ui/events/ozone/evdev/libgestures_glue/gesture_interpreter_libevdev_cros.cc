@@ -97,14 +97,14 @@ GestureInterpreterLibevdevCros::~GestureInterpreterLibevdevCros() {
 void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
     Evdev* evdev,
     EventStateRec* evstate) {
-  CHECK(evdev->info.is_monotonic) << "libevdev must use monotonic timestamps";
+  DCHECK(evdev->info.is_monotonic) << "libevdev must use monotonic timestamps";
   VLOG(9) << "HACK DO NOT REMOVE OR LINK WILL FAIL" << (void*)gestures_log;
 
   HardwareProperties hwprops = GestureHardwareProperties(evdev);
   GestureInterpreterDeviceClass devclass = GestureDeviceClass(evdev);
 
   // Create & initialize GestureInterpreter.
-  CHECK(!interpreter_);
+  DCHECK(!interpreter_);
   interpreter_ = NewGestureInterpreter();
   GestureInterpreterInitialize(interpreter_, devclass);
   GestureInterpreterSetHardwareProperties(interpreter_, &hwprops);

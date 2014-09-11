@@ -34,7 +34,7 @@ EventModifiersEvdev::EventModifiersEvdev()
 EventModifiersEvdev::~EventModifiersEvdev() {}
 
 void EventModifiersEvdev::UpdateModifier(unsigned int modifier, bool down) {
-  CHECK_LT(modifier, EVDEV_NUM_MODIFIERS);
+  DCHECK_LT(modifier, EVDEV_NUM_MODIFIERS);
 
   if (down) {
     modifiers_down_[modifier]++;
@@ -49,7 +49,7 @@ void EventModifiersEvdev::UpdateModifier(unsigned int modifier, bool down) {
 }
 
 void EventModifiersEvdev::UpdateModifierLock(unsigned int modifier, bool down) {
-  CHECK_LT(modifier, EVDEV_NUM_MODIFIERS);
+  DCHECK_LT(modifier, EVDEV_NUM_MODIFIERS);
 
   if (down)
     modifier_flags_locked_ ^= kEventFlagFromModifiers[modifier];

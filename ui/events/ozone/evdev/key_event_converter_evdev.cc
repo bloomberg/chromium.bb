@@ -217,7 +217,7 @@ void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  CHECK_EQ(read_size % sizeof(*inputs), 0u);
+  DCHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
 }
 

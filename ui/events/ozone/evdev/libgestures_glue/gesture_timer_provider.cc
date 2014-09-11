@@ -29,7 +29,7 @@ class GesturesTimer {
  private:
   void OnTimerExpired() {
     struct timespec ts;
-    CHECK(!clock_gettime(CLOCK_MONOTONIC, &ts));
+    DCHECK(!clock_gettime(CLOCK_MONOTONIC, &ts));
     stime_t next_delay = callback_(StimeFromTimespec(&ts), callback_data_);
     if (next_delay >= 0) {
       timer_.Start(FROM_HERE,
