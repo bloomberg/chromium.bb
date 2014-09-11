@@ -133,7 +133,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
-        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
         EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StatePressed, webTouchBuilder.touches[0].state);
         EXPECT_FLOAT_EQ(p0.screenPosition.x, webTouchBuilder.touches[0].screenPosition.x);
@@ -157,7 +156,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
         EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[0].state);
         EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
@@ -175,7 +173,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
         EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[0].state);
         EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
@@ -193,7 +190,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
         EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[0].state);
         EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[1].state);
@@ -214,7 +210,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
-        ASSERT_EQ(0u, webTouchBuilder.changedTouchesLength);
     }
 }
 

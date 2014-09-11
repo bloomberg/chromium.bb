@@ -491,11 +491,6 @@ public:
     // List of all touches, regardless of state.
     WebTouchPoint touches[touchesLengthCap];
 
-    // FIXME: Remove after eliminating downstream references, crbug.com/358132.
-    unsigned changedTouchesLength;
-    // List of all touches whose state has changed since the last WebTouchEvent
-    WebTouchPoint changedTouches[touchesLengthCap];
-
     // Whether the event can be canceled (with preventDefault). If true then the browser
     // must wait for an ACK for this event. If false then no ACK IPC is expected.
     // See comment at the top for why an int is used here instead of a bool.
@@ -504,7 +499,6 @@ public:
     WebTouchEvent()
         : WebInputEvent(sizeof(WebTouchEvent))
         , touchesLength(0)
-        , changedTouchesLength(0)
         , cancelable(true)
     {
     }
