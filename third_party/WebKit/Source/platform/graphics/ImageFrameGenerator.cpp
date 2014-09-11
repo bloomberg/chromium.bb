@@ -69,7 +69,7 @@ private:
     size_t m_rowBytes;
 };
 
-static bool updateYUVComponentSizes(const ImageDecoder* decoder, SkISize componentSizes[3], ImageDecoder::SizeType sizeType)
+static bool updateYUVComponentSizes(ImageDecoder* decoder, SkISize componentSizes[3], ImageDecoder::SizeType sizeType)
 {
     // canDecodeToYUV() has to be called AFTER isSizeAvailable(),
     // otherwise the output color space may not be set in the decoder.
