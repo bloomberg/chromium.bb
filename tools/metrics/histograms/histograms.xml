@@ -11305,6 +11305,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>KeyError event count using an unknown key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Unknown.SystemCode" units="system code">
+  <owner>xhwang@chromium.org</owner>
+  <summary>System code count using an unknown key system.</summary>
+</histogram>
+
 <histogram name="Media.EME.Widevine.addKey" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>addKey result using the Widevine key system.</summary>
@@ -11341,6 +11346,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Media.EME.Widevine.KeyError" enum="MediaKeyError">
   <owner>xhwang@chromium.org</owner>
   <summary>KeyError event count using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.SystemCode" units="system code">
+  <owner>xhwang@chromium.org</owner>
+  <summary>System code count using the Widevine key system.</summary>
 </histogram>
 
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">

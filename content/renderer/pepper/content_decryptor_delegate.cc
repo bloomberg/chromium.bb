@@ -7,7 +7,9 @@
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -94,7 +96,7 @@ bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
 //
 // Returns true if |block_info| is successfully filled. Returns false
 // otherwise.
-static bool MakeEncryptedBlockInfo(
+bool MakeEncryptedBlockInfo(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     uint32_t request_id,
     PP_EncryptedBlockInfo* block_info) {
@@ -286,6 +288,16 @@ MediaKeys::Exception PpExceptionTypeToMediaException(
       NOTREACHED();
       return MediaKeys::UNKNOWN_ERROR;
   }
+}
+
+// TODO(xhwang): Unify EME UMA reporting code when prefixed EME is deprecated.
+// See http://crbug.com/412987 for details.
+void ReportSystemCodeUMA(const std::string& key_system, uint32 system_code) {
+  // Sparse histogram macro does not cache the histogram, so it's safe to use
+  // macro with non-static histogram name here.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Media.EME." + KeySystemNameForUMA(key_system) + ".SystemCode",
+      system_code);
 }
 
 }  // namespace
@@ -767,6 +779,8 @@ void ContentDecryptorDelegate::OnPromiseRejected(
     PP_CdmExceptionCode exception_code,
     uint32 system_code,
     PP_Var error_description) {
+  ReportSystemCodeUMA(key_system_, system_code);
+
   StringVar* error_description_string = StringVar::FromPPVar(error_description);
   DCHECK(error_description_string);
 
@@ -846,6 +860,8 @@ void ContentDecryptorDelegate::OnSessionError(
     PP_CdmExceptionCode exception_code,
     uint32 system_code,
     PP_Var error_description) {
+  ReportSystemCodeUMA(key_system_, system_code);
+
   if (session_error_cb_.is_null())
     return;
 
