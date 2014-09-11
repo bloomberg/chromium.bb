@@ -244,7 +244,8 @@ private:
     String sourceMapURLForScript(const Script&, CompileResult);
 
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed);
-    AsyncCallStackTracker& asyncCallStackTracker() { return *m_asyncCallStackTracker; };
+    AsyncCallStackTracker& asyncCallStackTracker() const { return *m_asyncCallStackTracker; };
+    PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
@@ -272,7 +273,7 @@ private:
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
-    PromiseTracker m_promiseTracker;
+    OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
 };
 
 } // namespace blink

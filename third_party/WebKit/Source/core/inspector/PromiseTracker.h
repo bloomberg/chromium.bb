@@ -17,12 +17,14 @@ namespace blink {
 
 class ScriptState;
 
-class PromiseTracker FINAL {
+class PromiseTracker FINAL : public NoBaseWillBeGarbageCollected<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
-    DISALLOW_ALLOCATION();
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 public:
-    PromiseTracker();
-    ~PromiseTracker();
+    static PassOwnPtrWillBeRawPtr<PromiseTracker> create()
+    {
+        return adoptPtrWillBeNoop(new PromiseTracker());
+    }
 
     bool isEnabled() const { return m_isEnabled; }
     void setEnabled(bool);
@@ -40,13 +42,17 @@ public:
 
     void trace(Visitor*);
 
+    PromiseDataMap& promiseDataMap() { return m_promiseDataMap; }
+
 private:
+    PromiseTracker();
+
     int circularSequentialId();
     PassRefPtrWillBeRawPtr<PromiseData> createPromiseDataIfNeeded(v8::Isolate*, v8::Handle<v8::Object> promise);
 
-    bool m_isEnabled;
     int m_circularSequentialId;
     PromiseDataMap m_promiseDataMap;
+    bool m_isEnabled;
 };
 
 } // namespace blink

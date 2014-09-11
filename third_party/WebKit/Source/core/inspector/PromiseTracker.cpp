@@ -27,18 +27,16 @@ public:
     int promiseHash() const { return m_promiseHash; }
     ScopedPersistent<v8::Object>& promise() { return m_promise; }
 
+#if !ENABLE(OILPAN)
+    WeakPtr<PromiseData> createWeakPtr()
+    {
+        return m_weakPtrFactory.createWeakPtr();
+    }
+#endif
+
     void trace(Visitor* visitor)
     {
         visitor->trace(m_callStack);
-    }
-
-    WeakPtrWillBeRawPtr<PromiseData> createWeakPtr()
-    {
-#if ENABLE(OILPAN)
-        return this;
-#else
-        return m_weakPtrFactory.createWeakPtr();
-#endif
     }
 
 private:
@@ -81,57 +79,68 @@ namespace {
 
 class PromiseDataWrapper FINAL : public NoBaseWillBeGarbageCollected<PromiseDataWrapper> {
 public:
-    static PassOwnPtrWillBeRawPtr<PromiseDataWrapper> create(PromiseTracker::PromiseData* data, PromiseTracker::PromiseDataMap* map)
+    static PassOwnPtrWillBeRawPtr<PromiseDataWrapper> create(PromiseTracker::PromiseData* data, PromiseTracker* tracker)
     {
-        return adoptPtrWillBeNoop(new PromiseDataWrapper(data->createWeakPtr(), map));
+#if ENABLE(OILPAN)
+        return new PromiseDataWrapper(data, tracker);
+#else
+        return adoptPtr(new PromiseDataWrapper(data->createWeakPtr(), tracker));
+#endif
     }
 
+#if ENABLE(OILPAN)
+    static void didRemovePromise(const v8::WeakCallbackData<v8::Object, Persistent<PromiseDataWrapper> >& data)
+#else
     static void didRemovePromise(const v8::WeakCallbackData<v8::Object, PromiseDataWrapper>& data)
+#endif
     {
-        OwnPtrWillBeRawPtr<PromiseDataWrapper> wrapper = adoptPtrWillBeNoop(data.GetParameter());
+#if ENABLE(OILPAN)
+        OwnPtr<Persistent<PromiseDataWrapper> > persistentWrapper = adoptPtr(data.GetParameter());
+        RawPtr<PromiseDataWrapper> wrapper = *persistentWrapper;
+#else
+        OwnPtr<PromiseDataWrapper> wrapper = adoptPtr(data.GetParameter());
+#endif
         WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> promiseData = wrapper->m_data;
-        if (!promiseData)
+        if (!promiseData || !wrapper->m_tracker)
             return;
-        PromiseTracker::PromiseDataMap* map = wrapper->m_promiseDataMap;
+        PromiseTracker::PromiseDataMap& map = wrapper->m_tracker->promiseDataMap();
         int promiseHash = promiseData->promiseHash();
-        PromiseTracker::PromiseDataVector* vector = &map->find(promiseHash)->value;
+        PromiseTracker::PromiseDataVector* vector = &map.find(promiseHash)->value;
         int index = indexOf(vector, promiseData->promise());
         ASSERT(index >= 0);
         vector->remove(index);
-        if (vector->size() == 0)
-            map->remove(promiseHash);
+        if (vector->isEmpty())
+            map.remove(promiseHash);
     }
 
     void trace(Visitor* visitor)
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_data);
-        visitor->trace(m_promiseDataMap);
+        visitor->trace(m_tracker);
 #endif
     }
 
 private:
-    PromiseDataWrapper(WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> data, PromiseTracker::PromiseDataMap* map)
+    PromiseDataWrapper(WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> data, PromiseTracker* tracker)
         : m_data(data)
-        , m_promiseDataMap(map)
+        , m_tracker(tracker)
     {
     }
 
-    WeakPtrWillBeMember<PromiseTracker::PromiseData> m_data;
-    RawPtrWillBeMember<PromiseTracker::PromiseDataMap> m_promiseDataMap;
+    WeakPtrWillBeWeakMember<PromiseTracker::PromiseData> m_data;
+    RawPtrWillBeWeakMember<PromiseTracker> m_tracker;
 };
 
 }
 
 PromiseTracker::PromiseTracker()
-    : m_isEnabled(false)
-    , m_circularSequentialId(0)
+    : m_circularSequentialId(0)
+    , m_isEnabled(false)
 {
 }
 
-PromiseTracker::~PromiseTracker()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 
 void PromiseTracker::trace(Visitor* visitor)
 {
@@ -170,16 +179,22 @@ PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromis
     else
         vector = &m_promiseDataMap.add(promiseHash, PromiseDataVector()).storedValue->value;
 
-    RefPtrWillBeRawPtr<PromiseData> data = nullptr;
     int index = indexOf(vector, ScopedPersistent<v8::Object>(isolate, promise));
-    if (index == -1) {
-        data = PromiseData::create(isolate, promiseHash, circularSequentialId(), promise);
-        OwnPtrWillBeRawPtr<PromiseDataWrapper> wrapper = PromiseDataWrapper::create(data.get(), &m_promiseDataMap);
-        data->m_promise.setWeak(wrapper.leakPtr(), &PromiseDataWrapper::didRemovePromise);
-        vector->append(data);
-    } else {
-        data = vector->at(index);
-    }
+    if (index != -1)
+        return vector->at(index);
+
+    // FIXME: Consider using the ScriptState's DOMWrapperWorld instead
+    // to handle the lifetime of PromiseDataWrapper, avoiding all this
+    // manual labor to achieve the same, with and without Oilpan.
+    RefPtrWillBeRawPtr<PromiseData> data = PromiseData::create(isolate, promiseHash, circularSequentialId(), promise);
+    OwnPtrWillBeRawPtr<PromiseDataWrapper> dataWrapper = PromiseDataWrapper::create(data.get(), this);
+#if ENABLE(OILPAN)
+    OwnPtr<Persistent<PromiseDataWrapper> > wrapper = adoptPtr(new Persistent<PromiseDataWrapper>(dataWrapper));
+#else
+    OwnPtr<PromiseDataWrapper> wrapper = dataWrapper.release();
+#endif
+    data->m_promise.setWeak(wrapper.leakPtr(), &PromiseDataWrapper::didRemovePromise);
+    vector->append(data);
 
     return data.release();
 }
