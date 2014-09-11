@@ -322,6 +322,16 @@ runTests([
     navigateAndWait(getURL("complexLoad/a.html"));
   },
 
+  // Tests redirect of <img crossorigin="anonymous" src="...">
+  function crossOriginAnonymousRedirect() {
+    testLoadCORSImage("anonymous");
+  },
+
+  // Tests redirect of <img crossorigin="use-credentials" src="...">
+  function crossOriginCredentialedRedirect() {
+    testLoadCORSImage("use-credentials");
+  },
+
   // Loads a testserver page that echoes the User-Agent header that was
   // sent to fetch it. We modify the outgoing User-Agent in
   // onBeforeSendHeaders, so we should see that modified version.
@@ -994,3 +1004,130 @@ runTests([
     });
   },
 ]);
+
+
+// This helper verifies that extensions can successfully redirect resources even
+// if cross-origin access control is in effect via the crossorigin attribute.
+// Used by crossOriginAnonymousRedirect and crossOriginCredentialedRedirect.
+function testLoadCORSImage(crossOriginAttributeValue) {
+  // (Non-existent) image URL, with random query string to bust the cache.
+  var requestedUrl = getServerURL("cors/intercepted_by_extension.gif?" +
+                                  Math.random(), "original.tld");
+  var frameUrl = getServerURL(
+      "extensions/api_test/webrequest/cors/load_image.html?" +
+      "crossOrigin=" + crossOriginAttributeValue +
+      "&src=" + encodeURIComponent(requestedUrl));
+  var redirectTarget = getServerURL(
+      "extensions/api_test/webrequest/cors/redirect_target.gif", "domain.tld");
+  expect(
+    [  // events
+      { label: "onBeforeRequest-1",
+        event: "onBeforeRequest",
+        details: {
+          type: "image",
+          url: requestedUrl,
+          // Frame URL unavailable because requests are filtered by type=image.
+          frameUrl: "unknown frame URL",
+        },
+        retval: {redirectUrl: redirectTarget}
+      },
+      { label: "onBeforeRedirect",
+        event: "onBeforeRedirect",
+        details: {
+          type: "image",
+          url: requestedUrl,
+          redirectUrl: redirectTarget,
+          statusLine: "HTTP/1.1 307 Internal Redirect",
+          statusCode: 307,
+          fromCache: false,
+        }
+      },
+      { label: "onBeforeRequest-2",
+        event: "onBeforeRequest",
+        details: {
+          type: "image",
+          url: redirectTarget,
+          // Frame URL unavailable because requests are filtered by type=image.
+          frameUrl: "unknown frame URL",
+        },
+      },
+      {
+        label: "onBeforeSendHeaders",
+        event: "onBeforeSendHeaders",
+        details: {
+          type: "image",
+          url: redirectTarget,
+        }
+      },
+      {
+        label: "onSendHeaders",
+        event: "onSendHeaders",
+        details: {
+          type: "image",
+          url: redirectTarget,
+        }
+      },
+      {
+        label: "onHeadersReceived",
+        event: "onHeadersReceived",
+        details: {
+          type: "image",
+          url: redirectTarget,
+          statusLine: "HTTP/1.1 200 OK",
+        }
+      },
+      { label: "onResponseStarted",
+        event: "onResponseStarted",
+        details: {
+          type: "image",
+          url: redirectTarget,
+          fromCache: false,
+          statusCode: 200,
+          ip: "127.0.0.1",
+          statusLine: "HTTP/1.1 200 OK",
+        }
+      },
+      { label: "onCompleted",
+        event: "onCompleted",
+        details: {
+          type: "image",
+          url: redirectTarget,
+          fromCache: false,
+          statusCode: 200,
+          ip: "127.0.0.1",
+          statusLine: "HTTP/1.1 200 OK",
+        }
+      },
+      // After the image loads, the test will load the following URL
+      // to signal that the test succeeded.
+      {
+        label: "onBeforeRequest-3",
+        event: "onBeforeRequest",
+        details: {
+          type: "image",
+          url: getServerURL("signal_that_image_loaded_successfully"),
+          // Frame URL unavailable because requests are filtered by type=image.
+          frameUrl: "unknown frame URL",
+        },
+        retval: {cancel: true}
+      },
+      { label: "onErrorOccurred",
+        event: "onErrorOccurred",
+        details: {
+          type: "image",
+          url: getServerURL("signal_that_image_loaded_successfully"),
+          fromCache: false,
+          error: "net::ERR_BLOCKED_BY_CLIENT",
+        }
+      },
+    ],
+    [  // event order
+      ["onBeforeRequest-1", "onBeforeRedirect", "onBeforeRequest-2",
+       "onBeforeSendHeaders", "onSendHeaders", "onHeadersReceived",
+       "onResponseStarted", "onCompleted",
+       "onBeforeRequest-3", "onErrorOccurred"],
+    ],
+    {urls: ["<all_urls>"], types: ['image']}, // filter
+    ["blocking"]);
+  navigateAndWait(frameUrl);
+}

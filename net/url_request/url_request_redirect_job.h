@@ -17,9 +17,11 @@ class GURL;
 
 namespace net {
 
-// A URLRequestJob that will redirect the request to the specified
-// URL.  This is useful to restart a request at a different URL based
-// on the result of another job.
+// A URLRequestJob that will redirect the request to the specified URL. This is
+// useful to restart a request at a different URL based on the result of another
+// job. The redirect URL could be visible to scripts if the redirect points to
+// a same-origin URL, or if the redirection target is served with CORS response
+// headers.
 class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
  public:
   // Valid status codes for the redirect job. Other 30x codes are theoretically

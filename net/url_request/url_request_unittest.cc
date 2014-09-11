@@ -6720,6 +6720,74 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   TestLoadTimingCacheHitNoNetwork(load_timing_info);
 }
 
+// Make sure that the CORS headers are added to cross-origin HSTS redirects.
+TEST_F(HTTPSRequestTest, HSTSCrossOriginAddHeaders) {
+  static const char kOriginHeaderValue[] = "http://www.example.com";
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  // Per spec, TransportSecurityState expects a domain name, rather than an IP
+  // address, so a MockHostResolver is needed to redirect example.net to the
+  // SpawnedTestServer. MockHostResolver maps all hosts to 127.0.0.1 by default.
+  MockHostResolver host_resolver;
+
+  TransportSecurityState transport_security_state;
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1);
+  bool include_subdomains = false;
+  transport_security_state.AddHSTS("example.net", expiry, include_subdomains);
+
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+
+  MockCertVerifier cert_verifier;
+  cert_verifier.set_default_result(OK);
+
+  TestURLRequestContext context(true);
+  context.set_host_resolver(&host_resolver);
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  GURL hsts_http_url(base::StringPrintf("http://example.net:%d/somehstssite",
+                                        test_server.host_port_pair().port()));
+  url::Replacements<char> replacements;
+  const char kNewScheme[] = "https";
+  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+  GURL hsts_https_url = hsts_http_url.ReplaceComponents(replacements);
+
+  TestDelegate d;
+  // Quit on redirect to allow response header inspection upon redirect.
+  d.set_quit_on_redirect(true);
+
+  scoped_ptr<URLRequest> req(context.CreateRequest(hsts_http_url,
+                                                   DEFAULT_PRIORITY, &d, NULL));
+  // Set Origin header to simulate a cross-origin request.
+  HttpRequestHeaders request_headers;
+  request_headers.SetHeader("Origin", kOriginHeaderValue);
+  req->SetExtraRequestHeaders(request_headers);
+
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, d.received_redirect_count());
+
+  const HttpResponseHeaders* headers = req->response_headers();
+  std::string redirect_location;
+  EXPECT_TRUE(headers->EnumerateHeader(NULL, "Location", &redirect_location));
+  EXPECT_EQ(hsts_https_url.spec(), redirect_location);
+
+  std::string received_cors_header;
+  EXPECT_TRUE(headers->EnumerateHeader(NULL, "Access-Control-Allow-Origin",
+                                       &received_cors_header));
+  EXPECT_EQ(kOriginHeaderValue, received_cors_header);
+}
+
 namespace {
 
 class SSLClientAuthTestDelegate : public TestDelegate {
