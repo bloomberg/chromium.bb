@@ -844,15 +844,6 @@ HistoryModel.prototype.canFillPage_ = function(page) {
 };
 
 /**
- * Enables or disables grouping by domain.
- * @param {boolean} groupByDomain New groupByDomain_ value.
- */
-HistoryModel.prototype.setGroupByDomain = function(groupByDomain) {
-  this.groupByDomain_ = groupByDomain;
-  this.offset_ = 0;
-};
-
-/**
  * Gets whether we are grouped by domain.
  * @return {boolean} Whether the results are grouped by domain.
  */
@@ -1766,7 +1757,6 @@ PageState.prototype.getHashData = function() {
   var result = {
     q: '',
     page: 0,
-    grouped: false,
     range: 0,
     offset: 0
   };
@@ -1777,9 +1767,8 @@ PageState.prototype.getHashData = function() {
   var hashSplit = window.location.hash.substr(1).split('&');
   for (var i = 0; i < hashSplit.length; i++) {
     var pair = hashSplit[i].split('=');
-    if (pair.length > 1) {
+    if (pair.length > 1)
       result[pair[0]] = decodeURIComponent(pair[1].replace(/\+/g, ' '));
-    }
   }
 
   return result;
@@ -1847,7 +1836,6 @@ function load() {
 
   // Create default view.
   var hashData = pageState.getHashData();
-  var grouped = (hashData.grouped == 'true') || historyModel.getGroupByDomain();
   var page = parseInt(hashData.page, 10) || historyView.getPage();
   var range = /** @type {HistoryModel.Range} */(parseInt(hashData.range, 10)) ||
       historyView.getRangeInDays();
