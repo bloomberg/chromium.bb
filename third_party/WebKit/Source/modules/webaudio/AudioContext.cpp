@@ -80,9 +80,7 @@ namespace blink {
 
 bool AudioContext::isSampleRateRangeGood(float sampleRate)
 {
-    // FIXME: It would be nice if the minimum sample-rate could be less than 44.1KHz,
-    // but that will require some fixes in HRTFPanner::fftSizeForSampleRate(), and some testing there.
-    return sampleRate >= 44100 && sampleRate <= 96000;
+    return sampleRate >= AudioBuffer::minAllowedSampleRate() && sampleRate <= AudioBuffer::maxAllowedSampleRate();
 }
 
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.

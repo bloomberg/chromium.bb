@@ -4,6 +4,15 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS new OfflineAudioContext(1, 0, 44100) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': number of frames cannot be zero..
+PASS new OfflineAudioContext(2, 512, 3000) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 192000) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 8000) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 11025) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 22050) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 44100) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 48000) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 88200) did not throw exception.
+PASS new OfflineAudioContext(2, 512, 96000) did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

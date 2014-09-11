@@ -10,6 +10,16 @@ description("Tests the OfflineAudioContext constructor");
 
 // Make sure we don't crash when giving 0 as number of frames.
 shouldThrow("new OfflineAudioContext(1, 0, 44100)");
+// Make sure we don't throw exceptions for supported ranges of sample rates for an OfflineAudioContext.
+shouldNotThrow("new OfflineAudioContext(2, 512, 3000)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 192000)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 8000)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 11025)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 22050)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 44100)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 48000)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 88200)");
+shouldNotThrow("new OfflineAudioContext(2, 512, 96000)");
 </script>
 </body>
 </html>

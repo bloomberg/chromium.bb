@@ -50,8 +50,8 @@ PASS Invalid channelInterpration value did not change mode
 PASS context.destination.channelCount = 99 threw exception IndexSizeError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 2]..
 PASS new OfflineAudioContext(32, 100, context.sampleRate) did not throw exception.
 PASS new OfflineAudioContext(99, 100, context.sampleRate) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [0, 32]..
-PASS new OfflineAudioContext(1, 100, 1) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1) must be in the range 44100-96000 Hz..
-PASS new OfflineAudioContext(1, 100, 1e6) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1.00000e+6) must be in the range 44100-96000 Hz..
+PASS new OfflineAudioContext(1, 100, 1) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 192000]..
+PASS new OfflineAudioContext(1, 100, 1e6) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 192000]..
 PASS new OfflineAudioContext(1, -88200000000000, 44100) threw exception NotSupportedError: Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100).
 PASS node.oversample = '9x' did not throw exception.
 PASS Invalid oversample value did not change node.oversample

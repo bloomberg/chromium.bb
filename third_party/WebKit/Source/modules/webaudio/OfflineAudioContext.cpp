@@ -67,8 +67,9 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
     }
 
     if (!isSampleRateRangeGood(sampleRate)) {
-        exceptionState.throwDOMException(SyntaxError, "sample rate (" + String::number(sampleRate) + ") must be in the range 44100-96000 Hz.");
-        return 0;
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange(
+            "sampleRate", sampleRate, 3000.f, ExceptionMessages::InclusiveBound, 192000.f, ExceptionMessages::InclusiveBound));
+        return nullptr;
     }
 
     OfflineAudioContext* audioContext = adoptRefCountedGarbageCollectedWillBeNoop(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate));
