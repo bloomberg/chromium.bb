@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace base {
+class Timer;
+}  // namespace base
+
 namespace url {
 class Origin;
 }  // namespace url
@@ -37,8 +41,9 @@ class LinearCongruentialGenerator {
 };
 
 // Alternate version of WebSocketStream::CreateAndConnectStream() for testing
-// use only. The difference is the use of a |create_helper| argument in place of
-// |requested_subprotocols|. Implemented in websocket_stream.cc.
+// use only. The differences are the use of a |create_helper| argument in place
+// of |requested_subprotocols| and taking |timer| as the handshake timeout
+// timer. Implemented in websocket_stream.cc.
 NET_EXPORT_PRIVATE extern scoped_ptr<WebSocketStreamRequest>
     CreateAndConnectStreamForTesting(
         const GURL& socket_url,
@@ -46,7 +51,8 @@ NET_EXPORT_PRIVATE extern scoped_ptr<WebSocketStreamRequest>
         const url::Origin& origin,
         URLRequestContext* url_request_context,
         const BoundNetLog& net_log,
-        scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate);
+        scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
+        scoped_ptr<base::Timer> timer);
 
 // Generates a standard WebSocket handshake request. The challenge key used is
 // "dGhlIHNhbXBsZSBub25jZQ==". Each header in |extra_headers| must be terminated

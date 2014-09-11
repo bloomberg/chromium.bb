@@ -16,6 +16,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/http/http_request_headers.h"
@@ -79,6 +81,13 @@ scoped_ptr<DeterministicSocketData> BuildNullSocketData() {
   return make_scoped_ptr(new DeterministicSocketData(NULL, 0, NULL, 0));
 }
 
+class MockWeakTimer : public base::MockTimer,
+                      public base::SupportsWeakPtr<MockWeakTimer> {
+ public:
+  MockWeakTimer(bool retain_user_task, bool is_repeating)
+      : MockTimer(retain_user_task, is_repeating) {}
+};
+
 // A sub-class of WebSocketHandshakeStreamCreateHelper which always sets a
 // deterministic key to use in the WebSocket handshake.
 class DeterministicKeyWebSocketHandshakeStreamCreateHelper
@@ -105,11 +114,12 @@ class WebSocketStreamCreateTest : public ::testing::Test {
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
       const std::string& extra_request_headers,
-      const std::string& response_body) {
+      const std::string& response_body,
+      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
     url_request_context_host_.SetExpectations(
         WebSocketStandardRequest(socket_path, origin, extra_request_headers),
         response_body);
-    CreateAndConnectStream(socket_url, sub_protocols, origin);
+    CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
   }
 
   // |extra_request_headers| and |extra_response_headers| must end in "\r\n" or
@@ -119,23 +129,27 @@ class WebSocketStreamCreateTest : public ::testing::Test {
                                 const std::vector<std::string>& sub_protocols,
                                 const std::string& origin,
                                 const std::string& extra_request_headers,
-                                const std::string& extra_response_headers) {
+                                const std::string& extra_response_headers,
+                                scoped_ptr<base::Timer> timer =
+                                scoped_ptr<base::Timer>()) {
     CreateAndConnectCustomResponse(
         socket_url,
         socket_path,
         sub_protocols,
         origin,
         extra_request_headers,
-        WebSocketStandardResponse(extra_response_headers));
+        WebSocketStandardResponse(extra_response_headers),
+        timer.Pass());
   }
 
   void CreateAndConnectRawExpectations(
       const std::string& socket_url,
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
-      scoped_ptr<DeterministicSocketData> socket_data) {
+      scoped_ptr<DeterministicSocketData> socket_data,
+      scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
     AddRawExpectations(socket_data.Pass());
-    CreateAndConnectStream(socket_url, sub_protocols, origin);
+    CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
   }
 
   // Add additional raw expectations for sockets created before the final one.
@@ -147,7 +161,8 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   // parameters.
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
-                              const std::string& origin) {
+                              const std::string& origin,
+                              scoped_ptr<base::Timer> timer) {
     for (size_t i = 0; i < ssl_data_.size(); ++i) {
       scoped_ptr<SSLSocketDataProvider> ssl_data(ssl_data_[i]);
       ssl_data_[i] = NULL;
@@ -166,7 +181,9 @@ class WebSocketStreamCreateTest : public ::testing::Test {
         url::Origin(origin),
         url_request_context_host_.GetURLRequestContext(),
         BoundNetLog(),
-        connect_delegate.Pass());
+        connect_delegate.Pass(),
+        timer ? timer.Pass() : scoped_ptr<base::Timer>(
+            new base::Timer(false, false)));
   }
 
   static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -1096,6 +1113,67 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_TIMED_OUT",
             failure_message());
+}
+
+// The server doesn't respond to the opening handshake.
+TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
+  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
+  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
+                                  "http://localhost", socket_data.Pass(),
+                                  timer.PassAs<base::Timer>());
+  EXPECT_FALSE(has_failed());
+  ASSERT_TRUE(weak_timer.get());
+  EXPECT_TRUE(weak_timer->IsRunning());
+
+  weak_timer->Fire();
+  RunUntilIdle();
+
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("WebSocket opening handshake timed out", failure_message());
+  ASSERT_TRUE(weak_timer.get());
+  EXPECT_FALSE(weak_timer->IsRunning());
+}
+
+// When the connection establishes the timer should be stopped.
+TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
+  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
+
+  CreateAndConnectStandard(
+      "ws://localhost/", "/", NoSubProtocols(), "http://localhost", "", "",
+      timer.PassAs<base::Timer>());
+  ASSERT_TRUE(weak_timer);
+  EXPECT_TRUE(weak_timer->IsRunning());
+
+  RunUntilIdle();
+  EXPECT_FALSE(has_failed());
+  EXPECT_TRUE(stream_);
+  ASSERT_TRUE(weak_timer);
+  EXPECT_FALSE(weak_timer->IsRunning());
+}
+
+// When the connection fails the timer should be stopped.
+TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
+  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  socket_data->set_connect_data(
+      MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
+  scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
+  base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
+  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
+                                  "http://localhost", socket_data.Pass(),
+                                  timer.PassAs<base::Timer>());
+  ASSERT_TRUE(weak_timer.get());
+  EXPECT_TRUE(weak_timer->IsRunning());
+
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+            failure_message());
+  ASSERT_TRUE(weak_timer.get());
+  EXPECT_FALSE(weak_timer->IsRunning());
 }
 
 // Cancellation during connect works.
