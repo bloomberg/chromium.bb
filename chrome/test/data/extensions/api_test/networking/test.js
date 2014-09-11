@@ -324,6 +324,7 @@ var availableTests = [
                      "Effective": "UserPolicy",
                      "UserPolicy": "My WiFi Network"
                    },
+                   "Source": "UserPolicy",
                    "Type": {
                      "Active": "WiFi",
                      "Effective": "UserPolicy",

@@ -431,6 +431,36 @@
       networks. The format is 00:11:22:AA:BB:CC.
     </dd>
 
+    <dt class="field">Source</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">string</span>
+      </span>
+      Indicates whether the network is configured and how it is configured:
+      <ul>
+        <li><span class="value">User</span>: Configured for the active
+          user only, i.e. an unshared configuration.</li>
+        <li><span class="value">Device</span>: Configured for all users of the
+          device (e.g laptop), i.e. a shared configuration.</li>
+        <li><span class="value">UserPolicy</span>: Configured by the user
+          policy for the active user.</li>
+        <li><span class="value">DevicePolicy</span>: Configured by the device
+          policy for the device.</li>
+        <li><span class="value">None</span>: Not configured, e.g. a visible
+          but unconfigured WiFi network.</li>
+      </ul>
+      <span class="rule">
+        <span class="rule_id"></span>
+        Allowed values are:
+        <span class="value">User</span>,
+        <span class="value">Device</span>,
+        <span class="value">UserPolicy</span>,
+        <span class="value">DevicePolicy</span>,
+        <span class="value">None</span>
+      </span>
+    </dd>
+
     <dt class="field">Priority</dt>
     <dd>
       <span class="field_meta">

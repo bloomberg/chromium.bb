@@ -127,12 +127,14 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
           base::Bind(
               &ManagedNetworkConfigurationHandlerImpl::SendManagedProperties,
               weak_ptr_factory_.GetWeakPtr(),
+              userhash,
               callback,
               error_callback)),
       error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
+    const std::string& userhash,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
@@ -159,14 +161,14 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
     // properties _might_ be user configured.
   }
 
+  std::string guid;
+  shill_properties->GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
+
+  ::onc::ONCSource onc_source;
+  FindPolicyByGUID(userhash, guid, &onc_source);
   scoped_ptr<base::DictionaryValue> active_settings(
       onc::TranslateShillServiceToONCPart(
-          *shill_properties,
-          &onc::kNetworkWithStateSignature));
-
-  std::string guid;
-  active_settings->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
-                                                 &guid);
+          *shill_properties, onc_source, &onc::kNetworkWithStateSignature));
 
   const base::DictionaryValue* network_policy = NULL;
   const base::DictionaryValue* global_policy = NULL;
@@ -215,8 +217,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
     const std::string& service_path,
     scoped_ptr<base::DictionaryValue> shill_properties) {
   scoped_ptr<base::DictionaryValue> onc_network(
-      onc::TranslateShillServiceToONCPart(*shill_properties,
-                                          &onc::kNetworkWithStateSignature));
+      onc::TranslateShillServiceToONCPart(
+          *shill_properties, ::onc::ONC_SOURCE_UNKNOWN,
+          &onc::kNetworkWithStateSignature));
   callback.Run(service_path, *onc_network);
 }
 

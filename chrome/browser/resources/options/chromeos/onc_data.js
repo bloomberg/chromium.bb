@@ -133,6 +133,29 @@ cr.define('cr.onc', function() {
     },
 
     /**
+     * Returns the Source of this configuration. If undefined returns 'None'.
+     * @return {string} The configuration source: 'None', 'User', 'Device',
+     *                  'UserPolicy', or 'DevicePolicy'.
+     */
+    getSource: function() {
+      var source = this.getActiveValue('Source');
+      if (source == undefined)
+        return 'None';
+      return source;
+    },
+
+    /**
+     * Returns the WiFi security type (defaults to 'None').
+     * @return {string} The security type.
+     */
+    getWiFiSecurity: function() {
+      var security = this.getActiveValue('WiFi.Security');
+      if (security == undefined)
+        return 'None';
+      return security;
+    },
+
+   /**
      * Updates the properties of |data_| from the properties in |update|.
      * Note: this only looks at top level entries, so if a dictionary is
      * updated the entire dictionary is written over. TODO(stevenjb):

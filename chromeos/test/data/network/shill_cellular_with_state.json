@@ -49,5 +49,6 @@
       "LockType": "sim-pin",
       "LockEnabled": true
     }
-  }
+  },
+  "Profile": "/profile/default",
 }

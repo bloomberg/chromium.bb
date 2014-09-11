@@ -78,7 +78,7 @@ TEST_P(ONCTranslatorShillToOncTest, Translate) {
       test_utils::ReadTestDictionary(result_onc_filename));
 
   scoped_ptr<base::DictionaryValue> translation(TranslateShillServiceToONCPart(
-      *shill_network, &kNetworkWithStateSignature));
+      *shill_network, ::onc::ONC_SOURCE_NONE, &kNetworkWithStateSignature));
 
   EXPECT_TRUE(test_utils::Equals(expected_onc_network.get(),
                                  translation.get()));

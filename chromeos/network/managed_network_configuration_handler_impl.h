@@ -123,6 +123,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
   // Sends the response to the caller of GetManagedProperties.
   void SendManagedProperties(
+      const std::string& userhash,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,

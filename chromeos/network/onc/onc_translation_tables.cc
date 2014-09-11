@@ -178,6 +178,7 @@ const FieldTranslationEntry network_fields[] = {
     // { ::onc::network_config::kConnectionState, shill::kStateProperty },
     // { ::onc::network_config::kRestrictedConnectivity,
     //   shill::kStateProperty },
+    // { ::onc::network_config::kSource, shill::kProfileProperty },
     // { ::onc::network_config::kMacAddress, shill::kAddressProperty },
     {NULL}};
 

@@ -123,11 +123,9 @@ const char kTagDisconnect[] = "disconnect";
 const char kTagErrorMessage[] = "errorMessage";
 const char kTagForget[] = "forget";
 const char kTagOptions[] = "options";
-const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagCarriers[] = "carriers";
 const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
-const char kTagShared[] = "shared";
 const char kTagShowActivateButton[] = "showActivateButton";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 const char kTagTrue[] = "true";
@@ -312,10 +310,6 @@ scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
   dictionary->SetString(
       kTagErrorMessage,
       ash::network_connect::ErrorString(network->error(), network->path()));
-
-  dictionary->SetBoolean(kTagRemembered, !network->profile_path().empty());
-  bool shared = !network->IsPrivate();
-  dictionary->SetBoolean(kTagShared, shared);
 
   const std::string& type = network->type();
 

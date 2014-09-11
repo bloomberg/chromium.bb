@@ -2,6 +2,7 @@
    "Name": {
       "Active": "wifi2"
    },
+   "Source": "User",
    "Type": {
       "Active": "WiFi"
    },

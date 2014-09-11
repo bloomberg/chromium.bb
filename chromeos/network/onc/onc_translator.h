@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -36,10 +37,13 @@ scoped_ptr<base::DictionaryValue> TranslateONCObjectToShill(
 // This function is used to translate network settings coming from Shill to ONC
 // before sending them to the UI. The result doesn't have to be valid ONC, but
 // only a subset of it and includes only the values that are actually required
-// by the UI.
+// by the UI. If |onc_source| != ONC_SOURCE_UNKNOWN then the 'Source' property
+// of the ONC dictionary will be set accordingly. Note: ONC_SOURCE_USER_IMPORT
+// is treated the same as ONC_SOURCE_NONE.
 CHROMEOS_EXPORT
 scoped_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
+    ::onc::ONCSource onc_source,
     const OncValueSignature* onc_signature);
 
 }  // namespace onc

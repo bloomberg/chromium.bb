@@ -13,6 +13,7 @@ namespace onc {
 
 // Indicates from which source an ONC blob comes from.
 enum ONCSource {
+  ONC_SOURCE_UNKNOWN,
   ONC_SOURCE_NONE,
   ONC_SOURCE_USER_IMPORT,
   ONC_SOURCE_DEVICE_POLICY,
@@ -69,6 +70,12 @@ ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kPriority[];
 ONC_EXPORT extern const char kProxySettings[];
 ONC_EXPORT extern const char kSearchDomains[];
+ONC_EXPORT extern const char kSource[];
+ONC_EXPORT extern const char kSourceDevice[];
+ONC_EXPORT extern const char kSourceDevicePolicy[];
+ONC_EXPORT extern const char kSourceNone[];
+ONC_EXPORT extern const char kSourceUser[];
+ONC_EXPORT extern const char kSourceUserPolicy[];
 ONC_EXPORT extern const char kConnectionState[];
 ONC_EXPORT extern const char kRestrictedConnectivity[];
 ONC_EXPORT extern const char kConnectable[];

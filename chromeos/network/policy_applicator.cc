@@ -112,6 +112,7 @@ void PolicyApplicator::GetEntryCallback(
 
   scoped_ptr<base::DictionaryValue> onc_part(
       onc::TranslateShillServiceToONCPart(entry_properties,
+                                          ::onc::ONC_SOURCE_UNKNOWN,
                                           &onc::kNetworkWithStateSignature));
 
   std::string old_guid;

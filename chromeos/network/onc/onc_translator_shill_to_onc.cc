@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -50,16 +51,20 @@ scoped_ptr<base::Value> ConvertStringToValue(const std::string& str,
 class ShillToONCTranslator {
  public:
   ShillToONCTranslator(const base::DictionaryValue& shill_dictionary,
+                       ::onc::ONCSource onc_source,
                        const OncValueSignature& onc_signature)
       : shill_dictionary_(&shill_dictionary),
+        onc_source_(onc_source),
         onc_signature_(&onc_signature) {
     field_translation_table_ = GetFieldTranslationTable(onc_signature);
   }
 
   ShillToONCTranslator(const base::DictionaryValue& shill_dictionary,
+                       ::onc::ONCSource onc_source,
                        const OncValueSignature& onc_signature,
                        const FieldTranslationEntry* field_translation_table)
       : shill_dictionary_(&shill_dictionary),
+        onc_source_(onc_source),
         onc_signature_(&onc_signature),
         field_translation_table_(field_translation_table) {
   }
@@ -132,6 +137,7 @@ class ShillToONCTranslator {
   std::string GetName();
 
   const base::DictionaryValue* shill_dictionary_;
+  ::onc::ONCSource onc_source_;
   const OncValueSignature* onc_signature_;
   const FieldTranslationEntry* field_translation_table_;
   scoped_ptr<base::DictionaryValue> onc_object_;
@@ -342,6 +348,7 @@ void ShillToONCTranslator::TranslateCellularWithState() {
     return;
   }
   ShillToONCTranslator nested_translator(*device_dictionary,
+                                         onc_source_,
                                          kCellularWithStateSignature,
                                          kCellularDeviceTable);
   scoped_ptr<base::DictionaryValue> nested_object =
@@ -413,6 +420,25 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
       onc_object_->SetBooleanWithoutPathExpansion(
           ::onc::network_config::kRestrictedConnectivity, true);
     }
+  }
+
+  std::string profile_path;
+  if (onc_source_ != ::onc::ONC_SOURCE_UNKNOWN &&
+      shill_dictionary_->GetStringWithoutPathExpansion(shill::kProfileProperty,
+                                                       &profile_path)) {
+    std::string source;
+    if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY)
+      source = ::onc::network_config::kSourceDevicePolicy;
+    else if (onc_source_ == ::onc::ONC_SOURCE_USER_POLICY)
+      source = ::onc::network_config::kSourceUserPolicy;
+    else if (profile_path == NetworkProfileHandler::GetSharedProfilePath())
+      source = ::onc::network_config::kSourceDevice;
+    else if (!profile_path.empty())
+      source = ::onc::network_config::kSourceUser;
+    else
+      source = ::onc::network_config::kSourceNone;
+    onc_object_->SetStringWithoutPathExpansion(
+        ::onc::network_config::kSource, source);
   }
 
   // Use a human-readable aa:bb format for any hardware MAC address. Note:
@@ -507,8 +533,8 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
     NOTREACHED() << "Unable to find signature for field: " << onc_field_name;
     return;
   }
-  ShillToONCTranslator nested_translator(dictionary,
-                                         *field_signature->value_signature);
+  ShillToONCTranslator nested_translator(
+      dictionary, onc_source_, *field_signature->value_signature);
   scoped_ptr<base::DictionaryValue> nested_object =
       nested_translator.CreateTranslatedONCObject();
   if (nested_object->empty())
@@ -549,6 +575,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
       continue;
     ShillToONCTranslator nested_translator(
         *shill_value,
+        onc_source_,
         *field_signature->value_signature->onc_array_entry_signature);
     scoped_ptr<base::DictionaryValue> nested_object =
         nested_translator.CreateTranslatedONCObject();
@@ -636,10 +663,11 @@ std::string ShillToONCTranslator::GetName() {
 
 scoped_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
+    ::onc::ONCSource onc_source,
     const OncValueSignature* onc_signature) {
   CHECK(onc_signature != NULL);
 
-  ShillToONCTranslator translator(shill_dictionary, *onc_signature);
+  ShillToONCTranslator translator(shill_dictionary, onc_source, *onc_signature);
   return translator.CreateTranslatedONCObject();
 }
 

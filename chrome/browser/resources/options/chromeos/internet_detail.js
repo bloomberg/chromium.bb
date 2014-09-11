@@ -379,14 +379,18 @@ cr.define('options.internet', function() {
      * Update details page controls.
      */
     updateControls: function() {
+      var onc = this.onc_;
+      if (onc == undefined)
+        return;  // May get called from a pref update before initialized.
+
       // Only show ipconfig section if network is connected OR if nothing on
       // this device is connected. This is so that you can fix the ip configs
       // if you can't connect to any network.
       // TODO(chocobo): Once ipconfig is moved to flimflam service objects,
       //   we need to redo this logic to allow configuration of all networks.
-      $('ipconfig-section').hidden = !this.connected && this.deviceConnected;
-      $('ipconfig-dns-section').hidden =
-        !this.connected && this.deviceConnected;
+      var connected = onc.getActiveValue('ConnectionState') == 'Connected';
+      $('ipconfig-section').hidden = !connected && this.deviceConnected;
+      $('ipconfig-dns-section').hidden = !connected && this.deviceConnected;
 
       // Network type related.
       updateHidden('#details-internet-page .cellular-details',
@@ -414,16 +418,15 @@ cr.define('options.internet', function() {
                    this.type_ == 'VPN');
 
       // Password and shared.
+      var source = onc.getSource();
+      var shared = (source == 'Device' || source == 'DevicePolicy');
       updateHidden('#details-internet-page #password-details',
-                   this.type_ != 'WiFi' || !this.hasSecurity);
-      updateHidden('#details-internet-page #wifi-shared-network',
-          !this.shared);
-      updateHidden('#details-internet-page #prefer-network',
-                   !this.showPreferred);
+                   this.type_ != 'WiFi' || onc.getWiFiSecurity() == 'None');
+      updateHidden('#details-internet-page #wifi-shared-network', !shared);
+      updateHidden('#details-internet-page #prefer-network', source == 'None');
 
       // WiMAX.
-      updateHidden('#details-internet-page #wimax-shared-network',
-                   !this.shared);
+      updateHidden('#details-internet-page #wimax-shared-network', !shared);
 
       // Proxy
       this.updateProxyBannerVisibility_();
@@ -578,7 +581,7 @@ cr.define('options.internet', function() {
 
       var connectable = onc.getActiveValue('Connectable');
       if (connectState != 'Connected' &&
-          (!connectable || this.hasSecurity ||
+          (!connectable || onc.getWiFiSecurity() != 'None' ||
           (this.type_ == 'Wimax' || this.type_ == 'VPN'))) {
         $('details-internet-configure').hidden = false;
       } else {
@@ -592,7 +595,6 @@ cr.define('options.internet', function() {
       $('network-details-title').textContent = onc.getTranslatedValue('Name');
       var connectionState = onc.getActiveValue('ConnectionState');
       var connectionStateString = onc.getTranslatedValue('ConnectionState');
-      this.connected = connectionState == 'Connected';
       $('network-details-subtitle-status').textContent = connectionStateString;
       var typeKey;
       var type = this.type_;
@@ -1024,7 +1026,6 @@ cr.define('options.internet', function() {
     var connectionStateString = onc.getTranslatedValue('ConnectionState');
     if ('deviceConnected' in update)
       detailsPage.deviceConnected = update.deviceConnected;
-    detailsPage.connected = connectionState == 'Connected';
     $('connection-state').textContent = connectionStateString;
 
     detailsPage.updateConnectionButtonVisibilty_();
@@ -1071,11 +1072,10 @@ cr.define('options.internet', function() {
     $('web-proxy-auto-discovery').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
-    detailsPage.connected =
-        onc.getActiveValue('ConnectionState') == 'Connected';
 
     // Only show proxy for remembered networks.
-    if (data.remembered) {
+    var remembered = onc.getSource() != 'None';
+    if (remembered) {
       detailsPage.showProxy = true;
       chrome.send('selectNetwork', [detailsPage.servicePath_]);
     } else {
@@ -1231,7 +1231,7 @@ cr.define('options.internet', function() {
     }
 
     var setOrHideParent = function(field, property) {
-      if (property) {
+      if (property != undefined) {
         $(field).textContent = property;
         $(field).parentElement.hidden = false;
       } else {
@@ -1253,13 +1253,12 @@ cr.define('options.internet', function() {
     if (type == 'WiFi') {
       OptionsPage.showTab($('wifi-network-nav-tab'));
       detailsPage.gsm = false;
-      detailsPage.shared = data.shared;
       $('wifi-connection-state').textContent = connectionStateString;
       $('wifi-restricted-connectivity').textContent = restrictedString;
       var ssid = onc.getActiveValue('WiFi.SSID');
       $('wifi-ssid').textContent = ssid ? ssid : networkName;
       setOrHideParent('wifi-bssid', onc.getActiveValue('WiFi.BSSID'));
-      var security = onc.getActiveValue('WiFi.Security');
+      var security = onc.getWiFiSecurity();
       if (security == 'None')
         security = undefined;
       setOrHideParent('wifi-security', security);
@@ -1273,24 +1272,20 @@ cr.define('options.internet', function() {
       $('wifi-signal-strength').textContent = strengthString;
       setOrHideParent('wifi-hardware-address',
                       onc.getActiveValue('MacAddress'));
-      detailsPage.showPreferred = data.remembered;
       var priority = onc.getActiveValue('Priority');
       $('prefer-network-wifi').checked = priority > 0;
-      $('prefer-network-wifi').disabled = !data.remembered;
+      $('prefer-network-wifi').disabled = !remembered;
       $('auto-connect-network-wifi').checked =
           onc.getActiveValue('AutoConnect');
-      $('auto-connect-network-wifi').disabled = !data.remembered;
-      detailsPage.hasSecurity = security != undefined;
+      $('auto-connect-network-wifi').disabled = !remembered;
     } else if (type == 'Wimax') {
       OptionsPage.showTab($('wimax-network-nav-tab'));
       detailsPage.gsm = false;
-      detailsPage.shared = data.shared;
-      detailsPage.showPreferred = data.remembered;
       $('wimax-connection-state').textContent = connectionStateString;
       $('wimax-restricted-connectivity').textContent = restrictedString;
       $('auto-connect-network-wimax').checked =
           onc.getActiveValue('AutoConnect');
-      $('auto-connect-network-wimax').disabled = !data.remembered;
+      $('auto-connect-network-wimax').disabled = !remembered;
       var identity = onc.getActiveValue('Wimax.EAP.Identity');
       setOrHideParent('wimax-eap-identity', identity);
       $('wimax-signal-strength').textContent = strengthString;

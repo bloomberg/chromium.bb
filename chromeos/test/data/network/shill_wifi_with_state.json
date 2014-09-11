@@ -6,6 +6,7 @@
    "Name": "OpenWrt",
    "Passphrase": "some passphrase",
    "Priority": 1,
+   "Profile": "/profile/someuser",
    "Security": "psk",
    "State": "idle",
    "Strength": 10,

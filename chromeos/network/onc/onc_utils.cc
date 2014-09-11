@@ -160,12 +160,14 @@ scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
 
 std::string GetSourceAsString(ONCSource source) {
   switch (source) {
+    case ONC_SOURCE_UNKNOWN:
+      return "unknown";
+    case ONC_SOURCE_NONE:
+      return "none";
     case ONC_SOURCE_DEVICE_POLICY:
       return "device policy";
     case ONC_SOURCE_USER_POLICY:
       return "user policy";
-    case ONC_SOURCE_NONE:
-      return "none";
     case ONC_SOURCE_USER_IMPORT:
       return "user import";
   }

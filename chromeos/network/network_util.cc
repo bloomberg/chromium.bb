@@ -147,8 +147,9 @@ scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
   network->GetStateProperties(&shill_dictionary);
 
   scoped_ptr<base::DictionaryValue> onc_dictionary =
-      TranslateShillServiceToONCPart(
-          shill_dictionary, &onc::kNetworkWithStateSignature);
+      TranslateShillServiceToONCPart(shill_dictionary,
+                                     ::onc::ONC_SOURCE_UNKNOWN,
+                                     &onc::kNetworkWithStateSignature);
   return onc_dictionary.Pass();
 }
 
