@@ -18,6 +18,7 @@
 namespace gin {
 
 namespace {
+v8::ArrayBuffer::Allocator* g_array_buffer_allocator = NULL;
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   base::RandBytes(buffer, amount);
@@ -46,7 +47,7 @@ IsolateHolder::IsolateHolder()
                                 base::SysInfo::AmountOfVirtualMemory(),
                                 base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
-  Init(ArrayBufferAllocator::SharedInstance());
+  Init(g_array_buffer_allocator);
 }
 
 IsolateHolder::IsolateHolder(v8::Isolate* isolate,
@@ -70,6 +71,7 @@ void IsolateHolder::Initialize(ScriptMode mode,
     return;
   v8::V8::InitializePlatform(V8Platform::Get());
   v8::V8::SetArrayBufferAllocator(allocator);
+  g_array_buffer_allocator = allocator;
   if (mode == gin::IsolateHolder::kStrictMode) {
     static const char v8_flags[] = "--use_strict";
     v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);
