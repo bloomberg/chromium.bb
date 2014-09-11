@@ -340,14 +340,22 @@ bool HTMLFormControlElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || shouldShowFocusRingOnMouseFocus();
 }
 
-bool HTMLFormControlElement::wasFocusedByMouse() const
+void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
 {
-    return m_wasFocusedByMouse;
+    if (type != FocusTypePage)
+        m_wasFocusedByMouse = type == FocusTypeMouse;
+    HTMLElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
-void HTMLFormControlElement::setWasFocusedByMouse(bool wasFocusedByMouse)
+void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
 {
-    m_wasFocusedByMouse = wasFocusedByMouse;
+    if (!m_wasFocusedByMouse)
+        return;
+    if (!event.isKeyboardEvent() || event.type() != EventTypeNames::keydown)
+        return;
+    m_wasFocusedByMouse = false;
+    if (renderer())
+        renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 short HTMLFormControlElement::tabIndex() const

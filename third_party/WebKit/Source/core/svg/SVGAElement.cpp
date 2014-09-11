@@ -165,14 +165,11 @@ bool SVGAElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || SVGGraphicsElement::supportsFocus();
 }
 
-bool SVGAElement::wasFocusedByMouse() const
+void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
 {
-    return m_wasFocusedByMouse;
-}
-
-void SVGAElement::setWasFocusedByMouse(bool wasFocusedByMouse)
-{
-    m_wasFocusedByMouse = wasFocusedByMouse;
+    if (type != FocusTypePage)
+        m_wasFocusedByMouse = type == FocusTypeMouse;
+    SVGGraphicsElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const

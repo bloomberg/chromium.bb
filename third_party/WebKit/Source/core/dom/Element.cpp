@@ -2135,22 +2135,8 @@ bool Element::isMouseFocusable() const
     return isFocusable();
 }
 
-void Element::willCallDefaultEventHandler(const Event& event)
-{
-    if (!wasFocusedByMouse())
-        return;
-    if (!event.isKeyboardEvent() || event.type() != EventTypeNames::keydown)
-        return;
-    setWasFocusedByMouse(false);
-    if (renderer())
-        renderer()->setShouldDoFullPaintInvalidation(true);
-}
-
 void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
 {
-    if (type != FocusTypePage)
-        setWasFocusedByMouse(type == FocusTypeMouse);
-
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);
     EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
 }
