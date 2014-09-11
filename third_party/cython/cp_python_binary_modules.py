@@ -29,7 +29,11 @@ def main():
   opts = parser.parse_args()
 
   if not os.path.exists(opts.destination_dir):
-    os.makedirs(opts.destination_dir)
+    try:
+      os.makedirs(opts.destination_dir)
+    except:
+      # Ignore errors on directory creation.
+      pass
 
   for mapping in opts.mappings:
     [module, library] = mapping.split('=')
