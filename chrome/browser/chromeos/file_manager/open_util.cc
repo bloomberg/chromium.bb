@@ -142,8 +142,15 @@ void OnContinueOpenItemCompleted(Profile* profile,
                                  const base::FilePath& file_path,
                                  bool result) {
   if (!result) {
-    ShowWarningMessageBox(
-        profile, file_path, IDS_FILE_BROWSER_ERROR_VIEWING_FILE);
+    int message;
+    if (file_path.Extension() == FILE_PATH_LITERAL(".dmg"))
+      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_DMG;
+    else if (file_path.Extension() == FILE_PATH_LITERAL(".exe") ||
+             file_path.Extension() == FILE_PATH_LITERAL(".msi"))
+      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_EXECUTABLE;
+    else
+      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE;
+    ShowWarningMessageBox(profile, file_path, message);
   }
 }
 
