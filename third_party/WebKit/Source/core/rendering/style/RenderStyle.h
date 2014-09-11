@@ -1815,7 +1815,6 @@ private:
     bool diffNeedsFullLayout(const RenderStyle& other) const;
     bool diffNeedsPaintInvalidationLayer(const RenderStyle& other) const;
     bool diffNeedsPaintInvalidationObject(const RenderStyle& other) const;
-    bool diffNeedsRecompositeLayer(const RenderStyle& other) const;
     void updatePropertySpecificDifferences(const RenderStyle& other, StyleDifference&) const;
 };
 
