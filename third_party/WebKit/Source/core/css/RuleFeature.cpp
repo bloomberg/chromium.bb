@@ -212,9 +212,15 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
     if (selector.match() == CSSSelector::Id)
         return &ensureIdInvalidationSet(selector.value());
     if (selector.match() == CSSSelector::PseudoClass) {
-        CSSSelector::PseudoType pseudo = selector.pseudoType();
-        if (pseudo == CSSSelector::PseudoHover || pseudo == CSSSelector::PseudoActive || pseudo == CSSSelector::PseudoFocus)
-            return &ensurePseudoInvalidationSet(pseudo);
+        switch (selector.pseudoType()) {
+        case CSSSelector::PseudoEmpty:
+        case CSSSelector::PseudoHover:
+        case CSSSelector::PseudoActive:
+        case CSSSelector::PseudoFocus:
+            return &ensurePseudoInvalidationSet(selector.pseudoType());
+        default:
+            break;
+        }
     }
     return 0;
 }

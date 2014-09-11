@@ -1718,9 +1718,15 @@ void Element::checkForEmptyStyleChange()
 
     if (!style && !styleAffectedByEmpty())
         return;
+    if (styleChangeType() >= SubtreeStyleChange)
+        return;
+    if (!inActiveDocument())
+        return;
+    if (!document().styleResolver())
+        return;
 
     if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildren())))
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoEmpty, *this);
 }
 
 void Element::childrenChanged(const ChildrenChange& change)
