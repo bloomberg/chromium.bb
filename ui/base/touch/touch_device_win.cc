@@ -15,6 +15,9 @@ bool IsTouchDevicePresent() {
 }
 
 int MaxTouchPoints() {
+  if (!IsTouchDevicePresent())
+    return 0;
+
   return GetSystemMetrics(SM_MAXIMUMTOUCHES);
 }
 
