@@ -3479,8 +3479,14 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
-# We build the IRT using the nnacl TC even when the pnacl TC is used otherwise.
-if nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64'):
+# The choice of toolchain used to build the IRT does not depend on the toolchain
+# used to build user/test code. The PNaCl toolchain is used on x86, except on
+# Windows (because pnacl-clang doesn't run on Windows XP. If we stop supporting
+# building on XP, we can remove this exception).  See
+# https://code.google.com/p/nativeclient/issues/detail?id=3936
+if (nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64') or
+    (nacl_irt_env.Bit('target_x86_32') and
+     not nacl_irt_env.Bit('host_windows'))):
   nacl_irt_env.SetBits('bitcode')
 else:
   nacl_irt_env.ClearBits('bitcode')
@@ -3505,6 +3511,15 @@ if nacl_irt_env.Bit('bitcode'):
     nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
+  elif nacl_irt_env.Bit('target_x86_32'):
+    nacl_irt_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
+    # X86-32 IRT needs to be callable with an under-aligned stack, so we disable
+    # SSE instructions, which can fault on misaligned addresses: see
+    # https://code.google.com/p/nativeclient/issues/detail?id=3935
+    nacl_irt_env.Append(LINKFLAGS=['--target=i686-unknown-nacl',
+                                   '--pnacl-allow-translate',
+                                   '-arch', 'x86-32',
+                                   '-Wt,-mattr=-sse'])
   elif nacl_irt_env.Bit('target_mips32'):
     # Disable the PNaCl IRT verifier since it will complain about
     # __executable_start symbol not being a valid external symbol.
