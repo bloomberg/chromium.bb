@@ -104,10 +104,16 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
     return false;
   }
 
+#if defined(OS_NACL)
   // File tokens are used internally by NaClIPCAdapter and should have
   // been cleared from the message when it is received here.
+  // Note that, on Non-SFI NaCl, the IPC channel is directly connected to the
+  // renderer process, so NaClIPCAdapter does not work. It means,
+  // file_token_{lo,hi} fields may be properly filled, although it is just
+  // ignored here.
   CHECK(file_token_lo == 0);
   CHECK(file_token_hi == 0);
+#endif
 
   // Copy the file if we received a valid file descriptor. Otherwise, if we got
   // a reply, the file doesn't exist, so provide an fd of -1.
