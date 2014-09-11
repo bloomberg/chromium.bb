@@ -269,7 +269,7 @@ BluetoothGattServiceServiceProvider::Create(
     const dbus::ObjectPath& object_path,
     const std::string& uuid,
     const std::vector<dbus::ObjectPath>& includes) {
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
+  if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothGattServiceServiceProviderImpl(
         bus, object_path, uuid, includes);
   }

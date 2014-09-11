@@ -86,6 +86,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Sets the global instance. Must be called before any calls to Get().
   // We explicitly initialize and shut down the global object, rather than
   // making it a Singleton, to ensure clean startup and shutdown.
+  // This will initialize real or stub DBusClients depending on command-line
+  // arguments and whether this process runs in a ChromeOS environment.
   static void Initialize();
 
   // Returns a DBusThreadManagerSetter instance that allows tests to
@@ -104,7 +106,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   static DBusThreadManager* Get();
 
   // Returns true if |client| is stubbed.
-  static bool IsUsingStub(DBusClientBundle::DBusClientType client);
+  bool IsUsingStub(DBusClientBundle::DBusClientType client);
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   dbus::Bus* GetSystemBus();
@@ -151,35 +153,33 @@ class CHROMEOS_EXPORT DBusThreadManager {
  private:
   friend class DBusThreadManagerSetter;
 
-  DBusThreadManager();
+  // Creates a new DBusThreadManager using the DBusClients set in
+  // |client_bundle|.
+  explicit DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle);
   ~DBusThreadManager();
 
-  // Creates a global instance of DBusThreadManager. Can not be called more
-  // than once.
-  static void CreateGlobalInstance();
+  // Creates a global instance of DBusThreadManager with the real
+  // implementations for all clients that are listed in |unstub_client_mask| and
+  // stub implementations for all clients that are not included. Cannot be
+  // called more than once.
+  static void CreateGlobalInstance(
+      DBusClientBundle::DBusClientTypeMask unstub_client_mask);
 
-  // Initialize global thread manager instance.
-  static void InitializeRegular();
+  // Initialize global thread manager instance with all real dbus client
+  // implementations.
+  static void InitializeWithRealClients();
 
   // Initialize global thread manager instance with stubbed-out dbus clients
   // implementation.
   static void InitializeWithStubs();
 
   // Initialize with stub implementations for only certain clients that are
-  // not included in comma-separated |unstub_clients| list.
+  // not included in the comma-separated |unstub_clients| list.
   static void InitializeWithPartialStub(const std::string& unstub_clients);
 
-  // Constructs all clients and stores them in the respective *_client_ member
-  // variable.
-  void CreateDefaultClients();
-
-  // Constructs all clients and stores them in the respective *_client_ member
-  // variable.
+  // Initializes all currently stored DBusClients with the system bus and
+  // performs additional setup.
   void InitializeClients();
-
-  // Bitmask that defines which dbus clients are not stubbed out. Bitmap flags
-  // are defined within DBusClientBundle::DBusClientType enum.
-  static DBusClientBundle::DBusClientTypeMask unstub_client_mask_;
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;

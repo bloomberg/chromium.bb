@@ -252,7 +252,7 @@ BluetoothProfileServiceProvider* BluetoothProfileServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
+  if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothProfileServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothProfileServiceProvider(object_path, delegate);

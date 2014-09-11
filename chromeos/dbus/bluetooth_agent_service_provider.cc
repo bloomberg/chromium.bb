@@ -469,7 +469,7 @@ BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
+  if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothAgentServiceProvider(object_path, delegate);

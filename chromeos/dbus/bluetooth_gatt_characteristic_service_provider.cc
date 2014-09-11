@@ -464,7 +464,7 @@ BluetoothGattCharacteristicServiceProvider::Create(
       const std::vector<std::string>& flags,
       const std::vector<std::string>& permissions,
       const dbus::ObjectPath& service_path) {
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
+  if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothGattCharacteristicServiceProviderImpl(
         bus, object_path, delegate, uuid, flags, permissions, service_path);
   }

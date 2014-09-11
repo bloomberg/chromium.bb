@@ -54,12 +54,12 @@ namespace chromeos {
 static DBusThreadManager* g_dbus_thread_manager = NULL;
 static bool g_using_dbus_thread_manager_for_testing = false;
 
-DBusClientBundle::DBusClientTypeMask
-    DBusThreadManager::unstub_client_mask_ = DBusClientBundle::NO_CLIENTS;
-
-DBusThreadManager::DBusThreadManager() {
+DBusThreadManager::DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle)
+    : client_bundle_(client_bundle.Pass()) {
   dbus::statistics::Initialize();
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::ALL_CLIENTS)) {
+
+  if (client_bundle_->IsUsingAnyRealClient()) {
+    // At least one real DBusClient is used.
     // Create the D-Bus thread.
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -74,7 +74,9 @@ DBusThreadManager::DBusThreadManager() {
     system_bus_ = new dbus::Bus(system_bus_options);
   }
 
-  CreateDefaultClients();
+  // TODO(crbug.com/345586): Move PowerPolicyController out of
+  // DBusThreadManager.
+  power_policy_controller_.reset(new PowerPolicyController);
 }
 
 DBusThreadManager::~DBusThreadManager() {
@@ -95,7 +97,7 @@ DBusThreadManager::~DBusThreadManager() {
 
   dbus::statistics::Shutdown();
 
-  if (g_dbus_thread_manager == NULL)
+  if (!g_dbus_thread_manager)
     return;  // Called form Shutdown() or local test instance.
 
   // There should never be both a global instance and a local instance.
@@ -268,13 +270,6 @@ PowerPolicyController* DBusThreadManager::GetPowerPolicyController() {
   return power_policy_controller_.get();
 }
 
-void DBusThreadManager::CreateDefaultClients() {
-  client_bundle_.reset(new DBusClientBundle());
-  // TODO(crbug.com/345586): Move PowerPolicyController out of
-  // DBusThreadManager.
-  power_policy_controller_.reset(new PowerPolicyController);
-}
-
 void DBusThreadManager::InitializeClients() {
   GetBluetoothAdapterClient()->Init(GetSystemBus());
   GetBluetoothAgentManagerClient()->Init(GetSystemBus());
@@ -329,9 +324,8 @@ void DBusThreadManager::InitializeClients() {
   client_bundle_->SetupDefaultEnvironment();
 }
 
-// static
 bool DBusThreadManager::IsUsingStub(DBusClientBundle::DBusClientType client) {
-  return !(unstub_client_mask_ & client);
+  return client_bundle_->IsUsingStub(client);
 }
 
 // static
@@ -341,7 +335,7 @@ void DBusThreadManager::Initialize() {
   if (g_using_dbus_thread_manager_for_testing)
     return;
 
-  CHECK(g_dbus_thread_manager == NULL);
+  CHECK(!g_dbus_thread_manager);
   bool use_dbus_stub = !base::SysInfo::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDbusStub);
@@ -355,7 +349,7 @@ void DBusThreadManager::Initialize() {
   } else if (use_dbus_stub) {
     InitializeWithStubs();
   } else {
-    InitializeRegular();
+    InitializeWithRealClients();
   }
 }
 
@@ -370,39 +364,37 @@ scoped_ptr<DBusThreadManagerSetter> DBusThreadManager::GetSetterForTesting() {
 }
 
 // static
-void DBusThreadManager::CreateGlobalInstance() {
+void DBusThreadManager::CreateGlobalInstance(
+    DBusClientBundle::DBusClientTypeMask unstub_client_mask) {
   CHECK(!g_dbus_thread_manager);
-  g_dbus_thread_manager = new DBusThreadManager();
+  g_dbus_thread_manager = new DBusThreadManager(
+      make_scoped_ptr(new DBusClientBundle(unstub_client_mask)));
   g_dbus_thread_manager->InitializeClients();
 }
 
 // static
-void DBusThreadManager::InitializeRegular() {
-  unstub_client_mask_ = DBusClientBundle::ALL_CLIENTS;
-  CreateGlobalInstance();
+void DBusThreadManager::InitializeWithRealClients() {
+  CreateGlobalInstance(~static_cast<DBusClientBundle::DBusClientTypeMask>(0));
   VLOG(1) << "DBusThreadManager initialized for Chrome OS";
 }
 
 // static
 void DBusThreadManager::InitializeWithStubs() {
-  unstub_client_mask_ = DBusClientBundle::NO_CLIENTS;
-  CreateGlobalInstance();
+  CreateGlobalInstance(0 /* unstub_client_mask */);
   VLOG(1) << "DBusThreadManager created for testing";
 }
 
 // static
 void DBusThreadManager::InitializeWithPartialStub(
     const std::string& unstub_clients) {
-  unstub_client_mask_ = DBusClientBundle::ParseUnstubList(unstub_clients);
+  DBusClientBundle::DBusClientTypeMask unstub_client_mask =
+      DBusClientBundle::ParseUnstubList(unstub_clients);
   // We should have something parsed correctly here.
-  if (unstub_client_mask_ == 0) {
-    LOG(FATAL) << "Switch values for --"
-               << chromeos::switches::kDbusUnstubClients
-               << " cannot be parsed: "
-               << unstub_clients;
-  }
+  LOG_IF(FATAL, unstub_client_mask == 0)
+      << "Switch values for --" << chromeos::switches::kDbusUnstubClients
+      << " cannot be parsed: " << unstub_clients;
   VLOG(1) << "DBusThreadManager initialized for mixed runtime environment";
-  CreateGlobalInstance();
+  CreateGlobalInstance(unstub_client_mask);
 }
 
 // static

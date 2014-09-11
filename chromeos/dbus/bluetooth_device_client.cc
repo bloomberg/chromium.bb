@@ -56,7 +56,8 @@ class BluetoothDeviceClientImpl
     : public BluetoothDeviceClient,
       public dbus::ObjectManager::Interface {
  public:
-  BluetoothDeviceClientImpl() : weak_ptr_factory_(this) {}
+  BluetoothDeviceClientImpl()
+      : object_manager_(NULL), weak_ptr_factory_(this) {}
 
   virtual ~BluetoothDeviceClientImpl() {
     object_manager_->UnregisterInterface(

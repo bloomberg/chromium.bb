@@ -11,8 +11,7 @@
 namespace chromeos {
 
 TEST(DBusClientBundleTest, UnstubFlagParser) {
-  EXPECT_EQ(DBusClientBundle::NO_CLIENTS,
-            DBusClientBundle::ParseUnstubList("foo"));
+  EXPECT_EQ(0, DBusClientBundle::ParseUnstubList("foo"));
 
   EXPECT_EQ(DBusClientBundle::BLUETOOTH,
             DBusClientBundle::ParseUnstubList("BLUETOOTH"));

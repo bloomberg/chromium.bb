@@ -460,7 +460,7 @@ BluetoothGattDescriptorServiceProvider::Create(
     const std::string& uuid,
     const std::vector<std::string>& permissions,
     const dbus::ObjectPath& characteristic_path) {
-  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
+  if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothGattDescriptorServiceProviderImpl(
         bus, object_path, delegate, uuid, permissions, characteristic_path);
   }

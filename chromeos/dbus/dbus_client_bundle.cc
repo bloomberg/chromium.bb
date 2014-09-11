@@ -21,7 +21,6 @@
 #include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
@@ -107,22 +106,22 @@ const struct {
     { "update_engine",  DBusClientBundle::UPDATE_ENGINE },
 };
 
-// Parses single command line param value for dbus subsystem and returns its
-// enum representation. DBusClientType::UNKWNOWN is returned if |client_type|
-// does not match any known dbus client.
+// Parses single command line param value for dbus subsystem. If successful,
+// returns its enum representation. Otherwise returns NO_CLIENT.
 DBusClientBundle::DBusClientType GetDBusClientType(
-    const std::string& client_type) {
+    const std::string& client_type_name) {
   for (size_t i = 0; i < arraysize(client_type_map); i++) {
-    if (LowerCaseEqualsASCII(client_type, client_type_map[i].param_name))
+    if (LowerCaseEqualsASCII(client_type_name, client_type_map[i].param_name))
       return client_type_map[i].client_type;
   }
-  return DBusClientBundle::NO_CLIENTS;
+  return DBusClientBundle::NO_CLIENT;
 }
 
 }  // namespace
 
-DBusClientBundle::DBusClientBundle() {
-  if (!DBusThreadManager::IsUsingStub(BLUETOOTH)) {
+DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
+    : unstub_client_mask_(unstub_client_mask) {
+  if (!IsUsingStub(BLUETOOTH)) {
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
     bluetooth_agent_manager_client_.reset(
         BluetoothAgentManagerClient::Create());
@@ -153,37 +152,36 @@ DBusClientBundle::DBusClientBundle() {
     bluetooth_gatt_service_client_.reset(new FakeBluetoothGattServiceClient);
   }
 
-  if (!DBusThreadManager::IsUsingStub(CRAS))
+  if (!IsUsingStub(CRAS))
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
     cras_audio_client_.reset(new CrasAudioClientStubImpl);
 
   cros_disks_client_.reset(CrosDisksClient::Create(
-      DBusThreadManager::IsUsingStub(CROS_DISKS) ?
-          STUB_DBUS_CLIENT_IMPLEMENTATION :
-          REAL_DBUS_CLIENT_IMPLEMENTATION));
+      IsUsingStub(CROS_DISKS) ? STUB_DBUS_CLIENT_IMPLEMENTATION
+                              : REAL_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (!DBusThreadManager::IsUsingStub(CRYPTOHOME))
+  if (!IsUsingStub(CRYPTOHOME))
     cryptohome_client_.reset(CryptohomeClient::Create());
   else
     cryptohome_client_.reset(new FakeCryptohomeClient);
 
-  if (!DBusThreadManager::IsUsingStub(DEBUG_DAEMON))
+  if (!IsUsingStub(DEBUG_DAEMON))
     debug_daemon_client_.reset(DebugDaemonClient::Create());
   else
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
-  if (!DBusThreadManager::IsUsingStub(EASY_UNLOCK))
+  if (!IsUsingStub(EASY_UNLOCK))
     easy_unlock_client_.reset(EasyUnlockClient::Create());
   else
     easy_unlock_client_.reset(new FakeEasyUnlockClient);
 
-  if (!DBusThreadManager::IsUsingStub(LORGNETTE_MANAGER))
+  if (!IsUsingStub(LORGNETTE_MANAGER))
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
 
-  if (!DBusThreadManager::IsUsingStub(SHILL)) {
+  if (!IsUsingStub(SHILL)) {
     shill_manager_client_.reset(ShillManagerClient::Create());
     shill_device_client_.reset(ShillDeviceClient::Create());
     shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
@@ -197,7 +195,7 @@ DBusClientBundle::DBusClientBundle() {
     shill_profile_client_.reset(new FakeShillProfileClient);
   }
 
-  if (!DBusThreadManager::IsUsingStub(GSM_SMS)) {
+  if (!IsUsingStub(GSM_SMS)) {
     gsm_sms_client_.reset(GsmSMSClient::Create());
   } else {
     FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
@@ -207,23 +205,23 @@ DBusClientBundle::DBusClientBundle() {
     gsm_sms_client_.reset(gsm_sms_client);
   }
 
-  if (!DBusThreadManager::IsUsingStub(IMAGE_BURNER))
+  if (!IsUsingStub(IMAGE_BURNER))
     image_burner_client_.reset(ImageBurnerClient::Create());
   else
     image_burner_client_.reset(new FakeImageBurnerClient);
 
-  if (!DBusThreadManager::IsUsingStub(INTROSPECTABLE))
+  if (!IsUsingStub(INTROSPECTABLE))
     introspectable_client_.reset(IntrospectableClient::Create());
   else
     introspectable_client_.reset(new FakeIntrospectableClient);
 
-  if (!DBusThreadManager::IsUsingStub(MODEM_MESSAGING))
+  if (!IsUsingStub(MODEM_MESSAGING))
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
 
   // Create the NFC clients in the correct order based on their dependencies.
-  if (!DBusThreadManager::IsUsingStub(NFC)) {
+  if (!IsUsingStub(NFC)) {
     nfc_manager_client_.reset(NfcManagerClient::Create());
     nfc_adapter_client_.reset(
         NfcAdapterClient::Create(nfc_manager_client_.get()));
@@ -240,38 +238,44 @@ DBusClientBundle::DBusClientBundle() {
     nfc_record_client_.reset(new FakeNfcRecordClient);
   }
 
-  if (!DBusThreadManager::IsUsingStub(PERMISSION_BROKER))
+  if (!IsUsingStub(PERMISSION_BROKER))
     permission_broker_client_.reset(PermissionBrokerClient::Create());
   else
     permission_broker_client_.reset(new FakePermissionBrokerClient);
 
   power_manager_client_.reset(PowerManagerClient::Create(
-      DBusThreadManager::IsUsingStub(POWER_MANAGER) ?
-          STUB_DBUS_CLIENT_IMPLEMENTATION :
-          REAL_DBUS_CLIENT_IMPLEMENTATION));
+      IsUsingStub(POWER_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION
+                                 : REAL_DBUS_CLIENT_IMPLEMENTATION));
 
   session_manager_client_.reset(SessionManagerClient::Create(
-      DBusThreadManager::IsUsingStub(SESSION_MANAGER) ?
-          STUB_DBUS_CLIENT_IMPLEMENTATION :
-          REAL_DBUS_CLIENT_IMPLEMENTATION));
+      IsUsingStub(SESSION_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION
+                                   : REAL_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (!DBusThreadManager::IsUsingStub(SMS))
+  if (!IsUsingStub(SMS))
     sms_client_.reset(SMSClient::Create());
   else
     sms_client_.reset(new FakeSMSClient);
 
-  if (!DBusThreadManager::IsUsingStub(SYSTEM_CLOCK))
+  if (!IsUsingStub(SYSTEM_CLOCK))
     system_clock_client_.reset(SystemClockClient::Create());
   else
     system_clock_client_.reset(new FakeSystemClockClient);
 
   update_engine_client_.reset(UpdateEngineClient::Create(
-      DBusThreadManager::IsUsingStub(UPDATE_ENGINE) ?
-          STUB_DBUS_CLIENT_IMPLEMENTATION :
-          REAL_DBUS_CLIENT_IMPLEMENTATION));
+      IsUsingStub(UPDATE_ENGINE) ? STUB_DBUS_CLIENT_IMPLEMENTATION
+                                 : REAL_DBUS_CLIENT_IMPLEMENTATION));
 }
 
 DBusClientBundle::~DBusClientBundle() {
+}
+
+bool DBusClientBundle::IsUsingStub(DBusClientType client) {
+  return !(unstub_client_mask_ & client);
+}
+
+bool DBusClientBundle::IsUsingAnyRealClient() {
+  // 'Using any real client' is equivalent to 'Unstubbed any client'.
+  return unstub_client_mask_ != 0;
 }
 
 void DBusClientBundle::SetupDefaultEnvironment() {
@@ -291,7 +295,7 @@ DBusClientBundle::DBusClientTypeMask DBusClientBundle::ParseUnstubList(
           unstub_components.begin();
        iter != unstub_components.end(); ++iter) {
     DBusClientBundle::DBusClientType client = GetDBusClientType(*iter);
-    if (client != DBusClientBundle::NO_CLIENTS) {
+    if (client != NO_CLIENT) {
       LOG(WARNING) << "Unstubbing dbus client for " << *iter;
       unstub_mask |= client;
     } else {

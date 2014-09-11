@@ -51,12 +51,12 @@ class UpdateEngineClient;
 // system bus. See also the comment in the destructor of DBusThreadManagerImpl.
 class CHROMEOS_EXPORT DBusClientBundle {
  public:
-  typedef unsigned int DBusClientTypeMask;
+  typedef int DBusClientTypeMask;
 
   // TODO(zelidrag): We might want to collapse few more of these subsystems if
   // their dbus interfaced correspond to the same daemon.
   enum DBusClientType {
-    NO_CLIENTS =           0,
+    NO_CLIENT =            0,
     BLUETOOTH  =           1 << 0,
     CRAS =                 1 << 1,
     CROS_DISKS =           1 << 2,
@@ -76,11 +76,16 @@ class CHROMEOS_EXPORT DBusClientBundle {
     SMS =                  1 << 16,
     SYSTEM_CLOCK =         1 << 17,
     UPDATE_ENGINE =        1 << 18,
-    ALL_CLIENTS =          ~static_cast<DBusClientTypeMask>(0),
   };
 
-  DBusClientBundle();
+  DBusClientBundle(DBusClientTypeMask unstub_client_mask);
   ~DBusClientBundle();
+
+  // Returns true if |client| is stubbed.
+  bool IsUsingStub(DBusClientType client);
+
+  // Returns true if any real DBusClient is used.
+  bool IsUsingAnyRealClient();
 
   // Initialize proper runtime environment for its dbus clients.
   void SetupDefaultEnvironment();
@@ -232,6 +237,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
  private:
   friend class DBusThreadManagerSetter;
 
+  // Bitmask that defines which dbus clients are not stubbed out. Bitmap flags
+  // are defined within DBusClientType enum.
+  DBusClientTypeMask unstub_client_mask_;
+
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
@@ -258,7 +267,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<ModemMessagingClient> modem_messaging_client_;
   // The declaration order for NFC client objects is important. See
-  // DBusThreadManager::CreateDefaultClients for the dependencies.
+  // DBusThreadManager::InitializeClients for the dependencies.
   scoped_ptr<NfcManagerClient> nfc_manager_client_;
   scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
   scoped_ptr<NfcDeviceClient> nfc_device_client_;
