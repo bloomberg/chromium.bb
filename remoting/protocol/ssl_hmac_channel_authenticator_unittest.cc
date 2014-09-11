@@ -36,7 +36,7 @@ const char kTestSharedSecretBad[] = "0000-0000-0001";
 
 class MockChannelDoneCallback {
  public:
-  MOCK_METHOD2(OnDone, void(net::Error error, net::StreamSocket* socket));
+  MOCK_METHOD2(OnDone, void(int error, net::StreamSocket* socket));
 };
 
 ACTION_P(QuitThreadOnCounter, counter) {
@@ -82,7 +82,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     host_auth_->SecureAndAuthenticate(
         host_fake_socket_.PassAs<net::StreamSocket>(),
         base::Bind(&SslHmacChannelAuthenticatorTest::OnHostConnected,
-                   base::Unretained(this)));
+                   base::Unretained(this), std::string("ref argument value")));
 
     // Expect two callbacks to be called - the client callback and the host
     // callback.
@@ -109,14 +109,20 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     message_loop_.Run();
   }
 
-  void OnHostConnected(net::Error error,
+  void OnHostConnected(const std::string& ref_argument,
+                       int error,
                        scoped_ptr<net::StreamSocket> socket) {
+    // Try deleting the authenticator and verify that this doesn't destroy
+    // reference parameters.
+    host_auth_.reset();
+    DCHECK_EQ(ref_argument, "ref argument value");
+
     host_callback_.OnDone(error, socket.get());
     host_socket_ = socket.Pass();
   }
 
-  void OnClientConnected(net::Error error,
-                         scoped_ptr<net::StreamSocket> socket) {
+  void OnClientConnected(int error, scoped_ptr<net::StreamSocket> socket) {
+    client_auth_.reset();
     client_callback_.OnDone(error, socket.get());
     client_socket_ = socket.Pass();
   }

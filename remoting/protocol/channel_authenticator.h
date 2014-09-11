@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "net/base/net_errors.h"
 
 namespace net {
 class StreamSocket;
@@ -23,14 +22,14 @@ namespace protocol {
 // should be used only once for one channel.
 class ChannelAuthenticator {
  public:
-  typedef base::Callback<void(net::Error error, scoped_ptr<net::StreamSocket>)>
+  typedef base::Callback<void(int error, scoped_ptr<net::StreamSocket>)>
       DoneCallback;
 
   virtual ~ChannelAuthenticator() {}
 
-  // Start authentication of the given |socket|. |done_callback| is
-  // called when authentication is finished. Callback may be invoked
-  // before this method returns.
+  // Start authentication of the given |socket|. |done_callback| is called when
+  // authentication is finished. Callback may be invoked before this method
+  // returns, and may delete the calling authenticator.
   virtual void SecureAndAuthenticate(
       scoped_ptr<net::StreamSocket> socket,
       const DoneCallback& done_callback) = 0;

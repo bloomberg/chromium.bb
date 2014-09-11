@@ -8,8 +8,8 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/stream_channel_factory.h"
 
 namespace remoting {
 namespace protocol {

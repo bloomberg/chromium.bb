@@ -17,7 +17,7 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
-class ChannelFactory;
+class StreamChannelFactory;
 class Session;
 
 class ProtobufVideoReader : public VideoReader {
@@ -40,7 +40,7 @@ class ProtobufVideoReader : public VideoReader {
 
   VideoPacketFormat::Encoding encoding_;
 
-  ChannelFactory* channel_factory_;
+  StreamChannelFactory* channel_factory_;
   scoped_ptr<net::StreamSocket> channel_;
 
   ProtobufMessageReader<VideoPacket> reader_;

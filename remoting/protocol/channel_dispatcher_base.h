@@ -19,7 +19,7 @@ namespace remoting {
 namespace protocol {
 
 struct ChannelConfig;
-class ChannelFactory;
+class StreamChannelFactory;
 class Session;
 
 // Base class for channel message dispatchers. It's responsible for
@@ -56,7 +56,7 @@ class ChannelDispatcherBase {
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
 
   std::string channel_name_;
-  ChannelFactory* channel_factory_;
+  StreamChannelFactory* channel_factory_;
   InitializedCallback initialized_callback_;
   scoped_ptr<net::StreamSocket> channel_;
 

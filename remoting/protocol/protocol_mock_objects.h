@@ -167,8 +167,8 @@ class MockSession : public Session {
 
   MOCK_METHOD1(SetEventHandler, void(Session::EventHandler* event_handler));
   MOCK_METHOD0(error, ErrorCode());
-  MOCK_METHOD0(GetTransportChannelFactory, ChannelFactory*());
-  MOCK_METHOD0(GetMultiplexedChannelFactory, ChannelFactory*());
+  MOCK_METHOD0(GetTransportChannelFactory, StreamChannelFactory*());
+  MOCK_METHOD0(GetMultiplexedChannelFactory, StreamChannelFactory*());
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());
