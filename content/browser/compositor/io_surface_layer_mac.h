@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/scoped_cgl.h"
 
 @class IOSurfaceLayer;
 
@@ -66,10 +67,12 @@ class IOSurfaceLayerClient {
   // size of |io_surface_|.
   gfx::Size frame_pixel_size_;
 
-  // The GL texture that is bound to |io_surface_|. If |io_surface_| changes,
-  // then this is marked as dirty by setting |io_surface_texture_dirty_|.
+  // The GL texture that was bound to |io_surface_| during the last draw call,
+  // along with the context that was done in, and the value of |io_surface_| at
+  // the time of the bind.
   GLuint io_surface_texture_;
-  bool io_surface_texture_dirty_;
+  base::ScopedTypeRef<CGLContextObj> io_surface_texture_context_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_texture_io_surface_;
 
   // The CGL renderer ID, captured at draw time.
   GLint cgl_renderer_id_;

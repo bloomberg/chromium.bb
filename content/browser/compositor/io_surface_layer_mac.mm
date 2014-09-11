@@ -27,13 +27,32 @@
     LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
   } while (0)
 
-// Helper function for logging error codes.
 namespace {
+
+// Helper function for logging error codes.
 template<typename T>
 std::string to_string(T value) {
   std::ostringstream stream;
   stream << value;
   return stream.str();
+}
+
+// Helper function posted to destroy textures on a clean stack.
+void DestroyTexture(
+    base::ScopedTypeRef<CGLContextObj> context,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    GLuint texture) {
+  // Destroy the texture before tearing down the context, and while the
+  // IOSurface is still being kept around.
+  CGLSetCurrentContext(context);
+  glDeleteTextures(1, &texture);
+  CGLSetCurrentContext(NULL);
+
+  // Release (and likely destroy) the context.
+  context.reset();
+
+  // Finally release the IOSurface.
+  io_surface.reset();
 }
 }
 
@@ -41,6 +60,9 @@ std::string to_string(T value) {
 // IOSurfaceLayer(Private)
 
 @interface IOSurfaceLayer(Private)
+// Reset the texture and post a task to clean it up.
+- (void)resetTextureAndPostDestroy;
+
 // Force a draw immediately, but only if one was requested.
 - (void)displayIfNeededAndAck;
 
@@ -113,7 +135,6 @@ void IOSurfaceLayerHelper::TimerFired() {
     did_not_draw_counter_ = 0;
     is_pumping_frames_ = false;
     io_surface_texture_ = 0;
-    io_surface_texture_dirty_ = false;
     cgl_renderer_id_ = 0;
 
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -170,8 +191,8 @@ void IOSurfaceLayerHelper::TimerFired() {
   // GL texture needs to bind to the new surface.
   if (!io_surface_ || io_surface_id != IOSurfaceGetID(io_surface_)) {
     io_surface_.reset(IOSurfaceLookup(io_surface_id));
-    io_surface_texture_dirty_ = true;
     if (!io_surface_) {
+      [self resetTextureAndPostDestroy];
       content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
           logging::LOG_ERROR,
           "IOSurfaceLayer",
@@ -306,9 +327,7 @@ void IOSurfaceLayerHelper::TimerFired() {
 - (void)releaseCGLContext:(CGLContextObj)glContext {
   // The GL context is being destroyed, so mark the resources as needing to be
   // recreated.
-  io_surface_texture_ = 0;
-  io_surface_texture_dirty_ = true;
-  cgl_renderer_id_ = 0;
+  [self resetTextureAndPostDestroy];
   [super releaseCGLContext:glContext];
 }
 
@@ -325,6 +344,8 @@ void IOSurfaceLayerHelper::TimerFired() {
 
   // Create the texture if it has not been created in this context yet.
   if (!io_surface_texture_) {
+    DCHECK(!io_surface_texture_io_surface_);
+    DCHECK(!io_surface_texture_context_);
     glGenTextures(1, &io_surface_texture_);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, io_surface_texture_);
     glTexParameteri(
@@ -332,12 +353,13 @@ void IOSurfaceLayerHelper::TimerFired() {
     glTexParameteri(
         GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-    io_surface_texture_dirty_ = true;
+    io_surface_texture_context_.reset(glContext, base::scoped_policy::RETAIN);
   }
+  DCHECK(io_surface_texture_context_ == glContext);
 
   // Associate the IOSurface with this texture, if the underlying IOSurface has
   // been changed.
-  if (io_surface_texture_dirty_ && io_surface_) {
+  if (io_surface_ != io_surface_texture_io_surface_) {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, io_surface_texture_);
     CGLError cgl_error = CGLTexImageIOSurface2D(
         glContext,
@@ -350,20 +372,20 @@ void IOSurfaceLayerHelper::TimerFired() {
         io_surface_.get(),
         0 /* plane */);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-    if (cgl_error != kCGLNoError) {
+    if (cgl_error == kCGLNoError) {
+      io_surface_texture_io_surface_ = io_surface_;
+    } else {
+      [self resetTextureAndPostDestroy];
       content::GpuDataManagerImpl::GetInstance()->AddLogMessage(
           logging::LOG_ERROR,
           "IOSurfaceLayer",
           std::string("CGLTexImageIOSurface2D failed with CGL error ") +
               to_string(cgl_error));
-      glDeleteTextures(1, &io_surface_texture_);
-      io_surface_texture_ = 0;
       if (client_)
         client_->IOSurfaceLayerHitError();
     }
-  } else if (io_surface_texture_) {
-    glDeleteTextures(1, &io_surface_texture_);
-    io_surface_texture_ = 0;
+  } else if (!io_surface_) {
+    [self resetTextureAndPostDestroy];
   }
 
   // Fill the viewport with the texture. The viewport must be smaller or equal
@@ -450,6 +472,28 @@ void IOSurfaceLayerHelper::TimerFired() {
               displayTime:timeStamp];
 
   [self ackPendingFrame];
+}
+
+- (void)resetTextureAndPostDestroy {
+  if (!io_surface_texture_) {
+    DCHECK(!io_surface_texture_context_);
+    DCHECK(!io_surface_texture_io_surface_);
+    return;
+  }
+
+  // Post a task to clean up the texture on a clean stack.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DestroyTexture,
+                 io_surface_texture_context_,
+                 io_surface_texture_io_surface_,
+                 io_surface_texture_));
+
+  // Reset the texture state.
+  io_surface_texture_ = 0;
+  io_surface_texture_context_.reset();
+  io_surface_texture_io_surface_.reset();
+  cgl_renderer_id_ = 0;
 }
 
 @end
