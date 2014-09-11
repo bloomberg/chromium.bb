@@ -7,7 +7,7 @@ import "data_stream.mojom"
 module device.serial {
 
 struct DeviceInfo {
-  string? path;
+  string path;
   uint16 vendor_id;
   bool has_vendor_id = false;
   uint16 product_id;
@@ -82,7 +82,7 @@ struct DeviceControlSignals {
 };
 
 interface SerialService {
-  GetDevices() => (DeviceInfo?[]? devices);
+  GetDevices() => (DeviceInfo[] devices);
 
   // Creates a |Connection| to |path| with options specified by |options|,
   // returning it via |connection|. Sending and receiving data over this
@@ -90,17 +90,17 @@ interface SerialService {
   // and |connection| will not be usable if |path| does not specify a valid
   // serial device or there is an error connecting to or configuring the
   // connection.
-  Connect(string? path,
+  Connect(string path,
           ConnectionOptions? options,
-          Connection&? connection,
-          DataSink&? sink,
-          DataSource&? source);
+          Connection& connection,
+          DataSink& sink,
+          DataSource& source);
 };
 
 interface Connection {
   GetInfo() => (ConnectionInfo? info);
-  SetOptions(ConnectionOptions? options) => (bool success);
-  SetControlSignals(HostControlSignals? signals) => (bool success);
+  SetOptions(ConnectionOptions options) => (bool success);
+  SetControlSignals(HostControlSignals signals) => (bool success);
   GetControlSignals() => (DeviceControlSignals? signals);
   Flush() => (bool success);
 };

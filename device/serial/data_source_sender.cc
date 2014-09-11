@@ -90,9 +90,8 @@ DataSourceSender::~DataSourceSender() {
 
 void DataSourceSender::Init(mojo::ScopedDataPipeProducerHandle handle) {
   // This should never occur. |handle_| is only valid and |pending_send_| is
-  // only set after Init is called. Receiving an invalid |handle| from the
-  // client is also unrecoverable.
-  if (pending_send_ || handle_.is_valid() || !handle.is_valid() || shut_down_) {
+  // only set after Init is called.
+  if (pending_send_ || handle_.is_valid() || shut_down_) {
     DispatchFatalError();
     return;
   }

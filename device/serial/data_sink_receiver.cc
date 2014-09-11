@@ -89,7 +89,7 @@ DataSinkReceiver::~DataSinkReceiver() {
 }
 
 void DataSinkReceiver::Init(mojo::ScopedDataPipeConsumerHandle handle) {
-  if (!handle.is_valid() || handle_.is_valid()) {
+  if (handle_.is_valid()) {
     DispatchFatalError();
     return;
   }

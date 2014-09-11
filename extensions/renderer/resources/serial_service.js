@@ -30,7 +30,7 @@ define('serial_service', [
   function getDevices() {
     return service.getDevices().then(function(response) {
       return $Array.map(response.devices, function(device) {
-        var result = {path: device.path || ''};
+        var result = {path: device.path};
         if (device.has_vendor_id)
           result.vendorId = device.vendor_id;
         if (device.has_product_id)

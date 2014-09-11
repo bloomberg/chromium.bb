@@ -33,6 +33,7 @@ class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
     result[1]->vendor_id = 1234;
     result[1]->product_id = 5678;
     result[2] = device::serial::DeviceInfo::New();
+    result[2]->path = "";
     result[2]->display_name = "";
     return result.Pass();
   }
