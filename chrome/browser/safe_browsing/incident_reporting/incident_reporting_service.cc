@@ -398,8 +398,10 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
 
   // Start a new report if this profile participates in safe browsing and there
   // are process-wide incidents.
-  if (safe_browsing_enabled && GetProfileContext(NULL))
+  if (safe_browsing_enabled && GetProfileContext(NULL) &&
+      GetProfileContext(NULL)->incidents.size()) {
     BeginReportProcessing();
+  }
 
   // TODO(grt): register for pref change notifications to start delayed analysis
   // and/or report processing if sb is currently disabled but subsequently

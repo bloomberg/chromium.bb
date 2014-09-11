@@ -794,6 +794,33 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUploadAfterProfile) {
   ExpectTestIncidentUploaded(1);
 }
 
+TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
+  // Register a callback.
+  RegisterAnalysis(ON_DELAYED_ANALYSIS_NO_ACTION);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Confirm that the callback was not run.
+  ASSERT_FALSE(DelayedAnalysisRan());
+
+  // No collection should have taken place.
+  ASSERT_FALSE(HasCollectedEnvironmentData());
+
+  // Add a profile that participates in safe browsing.
+  CreateProfile(
+      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Confirm that the callback was run.
+  ASSERT_TRUE(DelayedAnalysisRan());
+
+  // Still no collection should have taken place.
+  ASSERT_FALSE(HasCollectedEnvironmentData());
+}
+
 // Tests that delayed analysis callbacks are called following the addition of a
 // profile that participates in safe browsing.
 TEST_F(IncidentReportingServiceTest, AnalysisAfterProfile) {
