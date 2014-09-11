@@ -14,7 +14,9 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -235,6 +237,14 @@ ResultExpr RestrictFutex() {
               FUTEX_WAKE_BITSET),
              Allow())
       .Default(CrashSIGSYSFutex());
+}
+
+ResultExpr RestrictGetSetpriority(pid_t target_pid) {
+  const Arg<int> which(0);
+  const Arg<int> who(1);
+  return If(which == PRIO_PROCESS,
+            If(who == 0 || who == target_pid, Allow()).Else(Error(EPERM)))
+      .Else(CrashSIGSYS());
 }
 
 }  // namespace sandbox.

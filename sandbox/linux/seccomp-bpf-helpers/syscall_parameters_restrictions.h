@@ -62,6 +62,10 @@ bpf_dsl::ResultExpr RestrictKillTarget(pid_t target_pid, int sysno);
 // Crash if FUTEX_CMP_REQUEUE_PI is used in the second argument of futex(2).
 bpf_dsl::ResultExpr RestrictFutex();
 
+// Crash if |which| is not PRIO_PROCESS. EPERM if |who| is not 0, neither
+// |target_pid| while calling setpriority(2) / getpriority(2).
+bpf_dsl::ResultExpr RestrictGetSetpriority(pid_t target_pid);
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_

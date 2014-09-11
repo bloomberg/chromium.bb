@@ -150,6 +150,9 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_futex)
     return RestrictFutex();
 
+  if (sysno == __NR_getpriority || sysno ==__NR_setpriority)
+    return RestrictGetSetpriority(current_pid);
+
   if (sysno == __NR_madvise) {
     // Only allow MADV_DONTNEED (aka MADV_FREE).
     const Arg<int> advice(2);
@@ -171,7 +174,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictMprotectFlags();
 
   if (sysno == __NR_prctl)
-    return sandbox::RestrictPrctl();
+    return RestrictPrctl();
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__mips__) || \
     defined(__aarch64__)

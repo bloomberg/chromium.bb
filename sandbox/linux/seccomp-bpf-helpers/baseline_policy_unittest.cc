@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -298,6 +299,41 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DEATH_SEGV_MESSAGE(GetPrctlErrorMessageContentForTests()),
                  BaselinePolicy) {
   prctl(PR_CAPBSET_READ, 0, 0, 0, 0);
+  _exit(1);
+}
+
+BPF_TEST_C(BaselinePolicy, GetOrSetPriority, BaselinePolicy) {
+  errno = 0;
+  const int original_prio = getpriority(PRIO_PROCESS, 0);
+  // Check errno instead of the return value since this system call can return
+  // -1 as a valid value.
+  BPF_ASSERT_EQ(0, errno);
+
+  errno = 0;
+  int rc = getpriority(PRIO_PROCESS, getpid());
+  BPF_ASSERT_EQ(0, errno);
+
+  rc = getpriority(PRIO_PROCESS, getpid() + 1);
+  BPF_ASSERT_EQ(-1, rc);
+  BPF_ASSERT_EQ(EPERM, errno);
+
+  rc = setpriority(PRIO_PROCESS, 0, original_prio);
+  BPF_ASSERT_EQ(0, rc);
+
+  rc = setpriority(PRIO_PROCESS, getpid(), original_prio);
+  BPF_ASSERT_EQ(0, rc);
+
+  errno = 0;
+  rc = setpriority(PRIO_PROCESS, getpid() + 1, original_prio);
+  BPF_ASSERT_EQ(-1, rc);
+  BPF_ASSERT_EQ(EPERM, errno);
+}
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 GetPrioritySigsys,
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  getpriority(PRIO_USER, 0);
   _exit(1);
 }
 
