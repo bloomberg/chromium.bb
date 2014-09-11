@@ -951,10 +951,15 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (CXXMethodDecl* trace = info->GetTraceMethod()) {
       if (trace->isPure())
         ReportClassDeclaresPureVirtualTrace(info, trace);
-      if (info->record()->isPolymorphic())
-        CheckPolymorphicClass(info, trace);
     } else if (info->RequiresTraceMethod()) {
       ReportClassRequiresTraceMethod(info);
+    }
+
+    // Check polymorphic classes that are GC-derived or have a trace method.
+    if (info->record()->hasDefinition() && info->record()->isPolymorphic()) {
+      CXXMethodDecl* trace = info->GetTraceMethod();
+      if (trace || info->IsGCDerived())
+        CheckPolymorphicClass(info, trace);
     }
 
     {
@@ -1010,8 +1015,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   // hold to satisfy that assumption:
   //
   // 1. If trace is virtual, then it must be defined in the left-most base.
-  // This ensures that if the vtable is initialized and it contains a pointer to
-  // the trace method.
+  // This ensures that if the vtable is initialized then it contains a pointer
+  // to the trace method.
   //
   // 2. If trace is non-virtual, then the trace method is defined and we must
   // ensure that the left-most base defines a vtable. This ensures that the
@@ -1041,7 +1046,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         return;
 
       // Stop with the left-most prior to a safe polymorphic base (a safe base
-      // is non-polymorphic and contains no fields that need tracing).
+      // is non-polymorphic and contains no fields).
       if (Config::IsSafePolymorphicBase(name))
         break;
 
@@ -1052,7 +1057,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (RecordInfo* left_most_info = cache_.Lookup(left_most)) {
 
       // Check condition (1):
-      if (trace->isVirtual()) {
+      if (trace && trace->isVirtual()) {
         if (CXXMethodDecl* trace = left_most_info->GetTraceMethod()) {
           if (trace->isVirtual())
             return;
@@ -1062,7 +1067,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       }
 
       // Check condition (2):
-      if (DeclaresVirtualMethods(info->record()))
+      if (DeclaresVirtualMethods(left_most))
         return;
       if (left_most_base) {
         ++it; // Get the base next to the "safe polymorphic base"

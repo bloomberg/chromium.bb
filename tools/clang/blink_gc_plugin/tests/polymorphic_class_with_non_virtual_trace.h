@@ -41,6 +41,21 @@ private:
     Member<HeapObject> m_obj;
 };
 
+template<typename T>
+class TemplatedNonPolymorphicBase
+    : public GarbageCollected<TemplatedNonPolymorphicBase<T> > {
+public:
+    void trace(Visitor* visitor) { visitor->trace(m_obj); }
+private:
+    Member<HeapObject> m_obj;
+};
+
+// Looks OK, but will result in an incorrect object pointer when marking.
+class TemplatedIsNotLeftMostPolymorphic
+    : public TemplatedNonPolymorphicBase<TemplatedIsNotLeftMostPolymorphic>,
+      public PolymorphicBase {
+};
+
 }
 
 #endif
