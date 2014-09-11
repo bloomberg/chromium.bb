@@ -247,6 +247,7 @@
             'variations/variations_seed_processor_unittest.cc',
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
+            'web_cache/browser/web_cache_manager_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
             'webdata/common/web_database_migration_unittest.cc',
           ],
@@ -487,6 +488,9 @@
                 # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',
                 'components.gyp:visitedlink_renderer',
+
+                # Dependencies of web_cache
+                'components.gyp:web_cache_browser',
 
                 # Dependencies of web_modal
                 'components.gyp:web_modal',

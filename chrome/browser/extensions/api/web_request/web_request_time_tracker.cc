@@ -7,13 +7,8 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/warning_set.h"
 
-using content::BrowserThread;
 
 // TODO(mpcomplete): tweak all these constants.
 namespace {

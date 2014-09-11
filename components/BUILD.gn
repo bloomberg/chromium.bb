@@ -95,6 +95,9 @@ group("all_components") {
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
     "//components/visitedlink/renderer",
+    "//components/web_cache/browser",
+    "//components/web_cache/common",
+    "//components/web_cache/renderer",
     "//components/web_modal",
     "//components/webdata/common",
     "//components/wifi",
@@ -171,6 +174,8 @@ group("all_components") {
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.
       "//components/visitedlink/renderer",  # Blocked on blink
+      "//components/web_cache/browser",  # Blocked on content and blink.
+      "//components/web_cache/renderer",  # Blocked on content and blink.
       "//components/web_modal",  # Blocked on content.
     ]
   }

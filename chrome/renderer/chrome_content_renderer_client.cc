@@ -79,6 +79,7 @@
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -287,6 +288,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
+  web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
 
   extension_dispatcher_delegate_.reset(
       new ChromeExtensionsDispatcherDelegate());
@@ -321,6 +323,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   search_bouncer_.reset(new SearchBouncer());
 
   thread->AddObserver(chrome_observer_.get());
+  thread->AddObserver(web_cache_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
@@ -502,7 +505,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
-  new ChromeRenderViewObserver(render_view, chrome_observer_.get());
+  new ChromeRenderViewObserver(render_view, web_cache_observer_.get());
 
   new password_manager::CredentialManagerClient(render_view);
 }

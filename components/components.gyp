@@ -68,6 +68,7 @@
         'power.gypi',
         'sessions.gypi',
         'visitedlink.gypi',
+        'web_cache.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',
       ],

@@ -5,8 +5,8 @@
 // This is the browser side of the cache manager, it tracks the activity of the
 // render processes and allocates available memory cache resources.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
-#define CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
+#ifndef COMPONENTS_WEB_CACHE_BROWSER_WEB_CACHE_MANAGER_H_
+#define COMPONENTS_WEB_CACHE_BROWSER_WEB_CACHE_MANAGER_H_
 
 #include <list>
 #include <map>
@@ -25,13 +25,30 @@ template<typename Type>
 struct DefaultSingletonTraits;
 class PrefRegistrySimple;
 
+namespace web_cache {
+
 class WebCacheManager : public content::NotificationObserver {
   friend class WebCacheManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(WebCacheManagerBrowserTest, CrashOnceOnly);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_1);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_2);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_3);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_4);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_5);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebCacheManagerTest,
+      CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_6);
 
  public:
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Gets the singleton WebCacheManager object.  The first time this method
   // is called, a WebCacheManager object is constructed and returned.
   // Subsequent calls will return the same object.
@@ -219,4 +236,6 @@ class WebCacheManager : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(WebCacheManager);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
+}  // namespace web_cache
+
+#endif  // COMPONENTS_WEB_CACHE_BROWSER_WEB_CACHE_MANAGER_H_

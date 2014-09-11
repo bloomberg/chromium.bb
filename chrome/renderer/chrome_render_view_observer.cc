@@ -17,11 +17,11 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate/translate_helper.h"
 #include "chrome/renderer/webview_color_overlay.h"
+#include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
@@ -154,9 +154,9 @@ bool RetrieveMetaTagContent(const WebFrame* main_frame,
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
-    ChromeRenderProcessObserver* chrome_render_process_observer)
+    web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
     : content::RenderViewObserver(render_view),
-      chrome_render_process_observer_(chrome_render_process_observer),
+      web_cache_render_process_observer_(web_cache_render_process_observer),
       translate_helper_(new TranslateHelper(render_view)),
       phishing_classifier_(NULL),
       capture_timer_(false, false) {
@@ -285,8 +285,8 @@ void ChromeRenderViewObserver::OnSetWindowFeatures(
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // Execute cache clear operations that were postponed until a navigation
   // event (including tab reload).
-  if (chrome_render_process_observer_)
-    chrome_render_process_observer_->ExecutePendingClearCache();
+  if (web_cache_render_process_observer_)
+    web_cache_render_process_observer_->ExecutePendingClearCache();
   // Let translate_helper do any preparatory work for loading a URL.
   if (translate_helper_)
     translate_helper_->PrepareForUrl(url);

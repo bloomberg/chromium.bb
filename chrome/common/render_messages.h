@@ -191,16 +191,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-// Tells the renderer to set its maximum cache size to the supplied value.
-IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
-                     size_t /* min_dead_capacity */,
-                     size_t /* max_dead_capacity */,
-                     size_t /* capacity */)
-
-// Tells the renderer to clear the cache.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
-                     bool /* on_navigation */)
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // For WebUI testing, this message requests JavaScript to be executed at a time
 // which is late enough to not be thrown out, and early enough to be before

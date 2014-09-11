@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/common/gpu_memory_stats.h"

@@ -57,7 +57,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -261,7 +260,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
-  WebCacheManager::RegisterPrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   autofill::AutofillDialogController::RegisterPrefs(registry);

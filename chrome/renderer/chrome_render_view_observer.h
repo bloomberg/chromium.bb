@@ -18,7 +18,6 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
-class ChromeRenderProcessObserver;
 class ContentSettingsObserver;
 class SkBitmap;
 class TranslateHelper;
@@ -34,6 +33,10 @@ namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
 
+namespace web_cache {
+class WebCacheRenderProcessObserver;
+}
+
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
 class ChromeRenderViewObserver : public content::RenderViewObserver {
@@ -41,7 +44,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
       content::RenderView* render_view,
-      ChromeRenderProcessObserver* chrome_render_process_observer);
+      web_cache::WebCacheRenderProcessObserver*
+          web_cache_render_process_observer);
   virtual ~ChromeRenderViewObserver();
 
  private:
@@ -91,7 +95,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   std::vector<base::string16> webui_javascript_;
 
   // Owned by ChromeContentRendererClient and outlive us.
-  ChromeRenderProcessObserver* chrome_render_process_observer_;
+  web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer_;
 
   // Have the same lifetime as us.
   TranslateHelper* translate_helper_;

@@ -7,9 +7,11 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/common/sandbox_win.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
@@ -84,12 +86,15 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 }
 
 void ShellContentRendererClient::RenderThreadStarted() {
+  RenderThread* thread = RenderThread::Get();
   shell_observer_.reset(new ShellRenderProcessObserver());
+  web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
 #if defined(OS_MACOSX)
   // We need to call this once before the sandbox was initialized to cache the
   // value.
   base::debug::BeingDebugged();
 #endif
+  thread->AddObserver(web_cache_observer_.get());
 }
 
 void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {

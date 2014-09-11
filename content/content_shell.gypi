@@ -47,6 +47,7 @@
         '../cc/blink/cc_blink.gyp:cc_blink',
         '../cc/cc.gyp:cc',
         '../components/components.gyp:crash_component',
+        '../components/components.gyp:web_cache_renderer',
         '../gin/gin.gyp:gin',
         '../gpu/gpu.gyp:gpu',
         '../ipc/ipc.gyp:ipc',

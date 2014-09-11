@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  output_name = "web_cache_browser"
+  sources = [
+    "web_cache_manager.cc",
+    "web_cache_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/web_cache/common",
+    "//content/public/browser",
+    "//third_party/WebKit/public:blink",
+  ]
+}

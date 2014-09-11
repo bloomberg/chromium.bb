@@ -54,6 +54,10 @@ namespace visitedlink {
 class VisitedLinkSlave;
 }
 
+namespace web_cache {
+class WebCacheRenderProcessObserver;
+}
+
 namespace blink {
 class WebSecurityOrigin;
 }
@@ -196,6 +200,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             blink::WebPluginParams* params);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
+  scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
   scoped_ptr<ChromeExtensionsDispatcherDelegate> extension_dispatcher_delegate_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<extensions::RendererPermissionsPolicyDelegate>

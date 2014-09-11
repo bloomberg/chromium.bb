@@ -1164,7 +1164,6 @@
         'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
         'browser/renderer_context_menu/render_view_context_menu_test_util.h',
         'browser/renderer_context_menu/render_view_context_menu_unittest.cc',
-        'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
         'browser/resources/chromeos/braille_ime/braille_ime.js',
         'browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs',

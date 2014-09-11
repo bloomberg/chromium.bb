@@ -33,7 +33,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -50,6 +49,7 @@
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/download_manager.h"
@@ -571,7 +571,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_CACHE) {
     // Tell the renderers to clear their cache.
-    WebCacheManager::GetInstance()->ClearCache();
+    web_cache::WebCacheManager::GetInstance()->ClearCache();
 
     // Invoke DoClearCache on the IO thread.
     waiting_for_clear_cache_ = true;

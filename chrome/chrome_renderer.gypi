@@ -283,6 +283,7 @@
         '../components/components.gyp:translate_core_common',
         '../components/components.gyp:translate_core_language_detection',
         '../components/components.gyp:visitedlink_renderer',
+        '../components/components.gyp:web_cache_renderer',
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/app/strings/content_strings.gyp:content_strings',
         '../content/content.gyp:content_renderer',

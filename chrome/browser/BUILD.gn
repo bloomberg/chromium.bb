@@ -156,6 +156,7 @@ static_library("browser") {
       "//components/url_matcher",
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
+      "//components/web_cache/browser",
       "//components/web_modal",
       "//content/app/resources",
       "//media",

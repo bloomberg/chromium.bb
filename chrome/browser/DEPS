@@ -73,6 +73,7 @@ include_rules = [
   "+components/user_manager",
   "+components/user_prefs",
   "+components/web_modal",
+  "+components/web_cache/browser",
   "+components/webdata/common",
   "+content/public/browser",
   "+content/test/net",

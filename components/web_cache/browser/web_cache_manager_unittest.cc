@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,6 +13,8 @@ using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
 using blink::WebCache;
+
+namespace web_cache {
 
 class WebCacheManagerTest : public testing::Test {
  protected:
@@ -309,3 +311,156 @@ TEST_F(WebCacheManagerTest, AddToStrategyTest) {
   manager()->Remove(kRendererID);
   manager()->Remove(kRendererID2);
 }
+
+// Regression test for http://crbug.com/12362.
+// There are three operations in the following order will cause the crash:
+// Remove(kRendererID) -> ObserveActivity(kRendererID) -> Remove(kRendererID2)
+// To prevent similar failures in the future, 6 tests are added in total to
+// cover all the possible orderings of these three operations.
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_1) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  // The following order will cause a crash in http://crbug.com/12362.
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+}
+
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_2) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+}
+
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_3) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+}
+
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_4) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+}
+
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_5) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+}
+
+TEST_F(WebCacheManagerTest,
+       CallRemoveRendererAndObserveActivityInAnyOrderShouldNotCrashTest_6) {
+  EXPECT_EQ(0U, active_renderers(manager()).size());
+  EXPECT_EQ(0U, inactive_renderers(manager()).size());
+
+  // Add, Remove, and ObserveActivity trigger deferred
+  // calls to ReviseAllocationStrategy and that we call it directly after each
+  // operation to sidestep the need to wait for an unobservable background
+  // operation.
+  manager()->Add(kRendererID);
+  manager()->ReviseAllocationStrategy();
+  manager()->Add(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID2);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->Remove(kRendererID);
+  manager()->ReviseAllocationStrategy();
+
+  manager()->ObserveActivity(kRendererID);
+  manager()->ReviseAllocationStrategy();
+}
+
+}  // namespace web_cache

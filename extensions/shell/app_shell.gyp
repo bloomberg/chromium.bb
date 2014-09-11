@@ -18,6 +18,7 @@
         '<(DEPTH)/components/components.gyp:omaha_query_params',
         '<(DEPTH)/components/components.gyp:pref_registry',
         '<(DEPTH)/components/components.gyp:user_prefs',
+        '<(DEPTH)/components/components.gyp:web_cache_renderer',
         '<(DEPTH)/content/content.gyp:content',
         '<(DEPTH)/content/content.gyp:content_gpu',
         '<(DEPTH)/content/content.gyp:content_ppapi_plugin',

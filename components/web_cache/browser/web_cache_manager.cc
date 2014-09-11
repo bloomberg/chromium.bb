@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 
 #include <algorithm>
 
@@ -15,17 +15,16 @@
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
+#include "components/web_cache/common/web_cache_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 
 using base::Time;
 using base::TimeDelta;
 using blink::WebCache;
+
+namespace web_cache {
 
 static const int kReviseAllocationDelayMS = 200;
 
@@ -52,11 +51,6 @@ int GetDefaultCacheSize() {
 }
 
 }  // anonymous namespace
-
-// static
-void WebCacheManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kMemoryCacheSize, GetDefaultCacheSize());
-}
 
 // static
 WebCacheManager* WebCacheManager::GetInstance() {
@@ -183,10 +177,6 @@ void WebCacheManager::Observe(int type,
 
 // static
 size_t WebCacheManager::GetDefaultGlobalSizeLimit() {
-  PrefService* perf_service = g_browser_process->local_state();
-  if (perf_service)
-    return perf_service->GetInteger(prefs::kMemoryCacheSize);
-
   return GetDefaultCacheSize();
 }
 
@@ -326,9 +316,9 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
         max_dead_capacity = std::min(static_cast<size_t>(512 * 1024),
                                      max_dead_capacity);
       }
-      host->Send(new ChromeViewMsg_SetCacheCapacities(min_dead_capacity,
-                                                      max_dead_capacity,
-                                                      capacity));
+      host->Send(new WebCacheMsg_SetCacheCapacities(min_dead_capacity,
+                                                    max_dead_capacity,
+                                                    capacity));
     }
     ++allocation;
   }
@@ -342,7 +332,7 @@ void WebCacheManager::ClearRendererCache(
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(*iter);
     if (host)
-      host->Send(new ChromeViewMsg_ClearCache(occasion == ON_NAVIGATION));
+      host->Send(new WebCacheMsg_ClearCache(occasion == ON_NAVIGATION));
   }
 }
 
@@ -442,3 +432,5 @@ void WebCacheManager::FindInactiveRenderers() {
     ++iter;
   }
 }
+
+}  // namespace web_cache

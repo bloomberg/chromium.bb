@@ -1,0 +1,17 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("renderer") {
+  output_name = "web_cache_renderer"
+  sources = [
+    "web_cache_render_process_observer.cc",
+    "web_cache_render_process_observer.h",
+  ]
+
+  deps = [
+    "//components/web_cache/common",
+    "//content/public/renderer",
+    "//third_party/WebKit/public:blink",
+  ]
+}

@@ -16,9 +16,9 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/render_messages.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -134,7 +134,8 @@ void ChromeRenderMessageFilter::OnResourceTypeStats(
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
     const WebCache::UsageStats& stats) {
-  WebCacheManager::GetInstance()->ObserveStats(render_process_id_, stats);
+  web_cache::WebCacheManager::GetInstance()->ObserveStats(
+      render_process_id_, stats);
 }
 
 void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,

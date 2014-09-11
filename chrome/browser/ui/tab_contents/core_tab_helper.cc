@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -21,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -145,7 +145,7 @@ void CoreTabHelper::DidStartLoading(content::RenderViewHost* render_view_host) {
 }
 
 void CoreTabHelper::WasShown() {
-  WebCacheManager::GetInstance()->ObserveActivity(
+  web_cache::WebCacheManager::GetInstance()->ObserveActivity(
       web_contents()->GetRenderProcessHost()->GetID());
 }
 

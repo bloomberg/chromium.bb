@@ -46,6 +46,7 @@ static_library("renderer") {
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//components/visitedlink/renderer",
+    "//components/web_cache/renderer",
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/renderer",

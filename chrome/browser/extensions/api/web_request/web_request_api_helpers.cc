@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
@@ -42,7 +42,7 @@ namespace {
 typedef std::vector<linked_ptr<net::ParsedCookie> > ParsedResponseCookies;
 
 void ClearCacheOnNavigationOnUI() {
-  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
+  web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
 bool ParseCookieLifetime(net::ParsedCookie* cookie,
