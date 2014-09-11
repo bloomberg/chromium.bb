@@ -128,13 +128,13 @@ class IpcDesktopEnvironmentFactory
   typedef std::map<int, DesktopSessionProxy*> ActiveConnectionsList;
   ActiveConnectionsList active_connections_;
 
-  // Factory for weak pointers to DesktopSessionConnector interface.
-  base::WeakPtrFactory<DesktopSessionConnector> connector_factory_;
-
   // Next desktop session ID. IDs are allocated sequentially starting from 0.
   // This gives us more than 67 years of unique IDs assuming a new ID is
   // allocated every second.
   int next_id_;
+
+  // Factory for weak pointers to DesktopSessionConnector interface.
+  base::WeakPtrFactory<DesktopSessionConnector> connector_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcDesktopEnvironmentFactory);
 };
