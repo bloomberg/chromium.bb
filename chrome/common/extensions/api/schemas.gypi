@@ -26,6 +26,7 @@
       'bookmarks.json',
       'braille_display_private.idl',
       'browser.idl',
+      'chrome_web_view_internal.json',
       'cloud_print_private.json',
       'command_line_private.json',
       'content_settings.json',
@@ -99,7 +100,6 @@
       'webrtc_audio_private.idl',
       'webrtc_logging_private.idl',
       'webstore_private.json',
-      'web_view_internal.json',
       'windows.json',
     ],
     'main_schema_include_rules': [

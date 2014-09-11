@@ -11,7 +11,7 @@
 // TODO(lazyboy): Share common code /w context_menus_custom_bindings.js.
 
 var EventBindings = require('event_bindings');
-var binding = require('binding').Binding.create('webViewInternal');
+var binding = require('binding').Binding.create('chromeWebViewInternal');
 var contextMenuNatives = requireNative('context_menus');
 var sendRequest = require('sendRequest').sendRequest;
 
@@ -127,4 +127,4 @@ binding.registerCustomHook(function(bindingsAPI) {
 
 });
 
-exports.WebView = binding.generate();
+exports.ChromeWebView = binding.generate();

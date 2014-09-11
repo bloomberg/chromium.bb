@@ -46,6 +46,7 @@
       'test.json',
       'usb.idl',
       'usb_private.idl',
+      'web_view_internal.json',
     ],
     'non_compiled_schema_files': [
     ],

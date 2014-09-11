@@ -1449,8 +1449,6 @@
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h',
       'browser/guest_view/web_view/context_menu_content_type_web_view.cc',
       'browser/guest_view/web_view/context_menu_content_type_web_view.h',
-      'browser/guest_view/web_view/web_view_find_helper.cc',
-      'browser/guest_view/web_view/web_view_find_helper.h',
       'browser/infobars/infobar_extension_api.cc',
       'browser/infobars/infobar_extension_api.h',
       'browser/metrics/extensions_metrics_provider.cc',

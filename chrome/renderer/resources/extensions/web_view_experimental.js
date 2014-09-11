@@ -13,10 +13,11 @@ var ContextMenusSchema =
 var CreateEvent = require('webViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var MessagingNatives = requireNative('messaging_natives');
-var WebView = require('webViewInternal').WebView;
+//var WebView = require('webViewInternal').WebView;
+var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
 var WebViewInternal = require('webView').WebViewInternal;
-var WebViewSchema =
-    requireNative('schema_registry').GetSchema('webViewInternal');
+var ChromeWebViewSchema =
+    requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
@@ -32,7 +33,7 @@ function GetUniqueSubEventName(eventName) {
 // |viewInstanceId|. Any time a ContextMenusEvent is dispatched, we re-dispatch
 // it to the subEvent's listeners. This way
 // <webview>.contextMenus.onClicked behave as a regular chrome Event type.
-var ContextMenusEvent = CreateEvent('webViewInternal.onClicked');
+var ContextMenusEvent = CreateEvent('chromeWebViewInternal.onClicked');
 
 /**
  * This event is exposed as <webview>.contextMenus.onClicked.
@@ -68,22 +69,22 @@ function WebViewContextMenusImpl(viewInstanceId) {
 
 WebViewContextMenusImpl.prototype.create = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
-  return $Function.apply(WebView.contextMenusCreate, null, args);
+  return $Function.apply(ChromeWebView.contextMenusCreate, null, args);
 };
 
 WebViewContextMenusImpl.prototype.remove = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
-  return $Function.apply(WebView.contextMenusRemove, null, args);
+  return $Function.apply(ChromeWebView.contextMenusRemove, null, args);
 };
 
 WebViewContextMenusImpl.prototype.removeAll = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
-  return $Function.apply(WebView.contextMenusRemoveAll, null, args);
+  return $Function.apply(ChromeWebView.contextMenusRemoveAll, null, args);
 };
 
 WebViewContextMenusImpl.prototype.update = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
-  return $Function.apply(WebView.contextMenusUpdate, null, args);
+  return $Function.apply(ChromeWebView.contextMenusUpdate, null, args);
 };
 
 var WebViewContextMenus = utils.expose(
@@ -109,7 +110,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
       validateCall();
       // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
       // with |items|, implement.
-      WebView.showContextMenu(this.guestInstanceId, requestId, items);
+      ChromeWebView.showContextMenu(this.guestInstanceId, requestId, items);
     }.bind(this)
   };
   webViewEvent.menu = menu;
@@ -121,7 +122,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   if (!defaultPrevented) {
     actionTaken = true;
     // The default action is equivalent to just showing the context menu as is.
-    WebView.showContextMenu(this.guestInstanceId, requestId, undefined);
+    ChromeWebView.showContextMenu(this.guestInstanceId, requestId, undefined);
 
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.
@@ -162,9 +163,9 @@ WebViewInternal.prototype.setupExperimentalContextMenus = function() {
       var getOnClickedEvent = function() {
         return function() {
           if (!this.contextMenusOnClickedEvent_) {
-            var eventName = 'webViewInternal.onClicked';
+            var eventName = 'chromeWebViewInternal.onClicked';
             // TODO(lazyboy): Find event by name instead of events[0].
-            var eventSchema = WebViewSchema.events[0];
+            var eventSchema = ChromeWebViewSchema.events[0];
             var eventOptions = {supportsListeners: true};
             var onClickedEvent = new ContextMenusOnClickedEvent(
                 eventName, eventSchema, eventOptions, this.viewInstanceId);

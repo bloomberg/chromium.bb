@@ -1,0 +1,368 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "webViewInternal",
+    "description": "none",
+    "compiler_options": {
+      "implemented_in": "extensions/browser/api/web_view/web_view_internal_api.h"
+    },
+    "functions": [
+      {
+        "name": "executeScript",
+        "type": "function",
+        "description": "Injects JavaScript code into a <webview> page.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "src",
+            "description": "The src of the guest <webview> tag."
+          },
+          {
+            "$ref": "extensionTypes.InjectDetails",
+            "name": "details",
+            "description": "Details of the script to run."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after all the JavaScript has been executed.",
+            "parameters": [
+              {
+                "name": "result",
+                "optional": true,
+                "type": "array",
+                "items": {"type": "any", "minimum": 0},
+                "description": "The result of the script in every injected frame."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "insertCSS",
+        "type": "function",
+        "description": "Injects CSS into a <webview> page. For details, see the <a href='/extensions/content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "src",
+            "description": "The src of the guest <webview> tag."
+          },
+          {
+            "$ref": "extensionTypes.InjectDetails",
+            "name": "details",
+            "description": "Details of the CSS text to insert."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when all the CSS has been inserted.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "captureVisibleRegion",
+        "type": "function",
+        "description": "Captures the visible area of the currently loaded page inside <webview>.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "$ref": "extensionTypes.ImageDetails",
+            "name": "options",
+            "optional": true
+          },
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {"type": "string", "name": "dataUrl", "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setZoom",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "number",
+            "name": "zoomFactor",
+            "description" : "The new zoom factor."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the zoom message has been sent to the guest process.",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getZoom",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the current zoom factor is retreived.",
+            "parameters": [
+              {
+                "type": "number",
+                "name": "zoomFactor",
+                "description": "The current zoom factor."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "find",
+        "type": "function",
+        "description": "Initiates a find-in-page request.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "searchText",
+            "description": "The string to find in the page."
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "optional": true,
+            "properties": {
+              "backward": {
+                "type": "boolean",
+                "description": "Flag to find matches in reverse order.",
+                "optional": true
+              },
+              "matchCase": {
+                "type": "boolean",
+                "description": "Flag to match |searchText| with case-sensitivity.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after all find results have been returned for this find request.",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "object",
+                "name": "results",
+                "optional": true,
+                "properties": {
+                  "numberOfMatches": {
+                    "type": "integer",
+                    "description": "The number of times |searchText| was matched on the page."
+                  },
+                  "activeMatchOrdinal": {
+                    "type": "integer",
+                    "description": "The ordinal number of the current match."
+                  },
+                  "selectionRect": {
+                    "type": "object",
+                    "description": "Describes a rectangle around the active match.",
+                    "properties": {
+                      "left": {
+                        "type": "integer"
+                      },
+                      "top": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "canceled": {
+                    "type": "boolean",
+                    "description": "Indicates whether this find request was canceled."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "stopFinding",
+        "type": "function",
+        "description": "Ends the current find session (clearing all highlighting) and cancels all find requests in progress.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "action",
+            "description": "Determines what to do with the active match after the find session has ended. 'clear' will clear the highlighting over the active match; 'keep' will keep the active match highlighted; 'activate' will keep the active match highlighted and simulate a user click on that match.",
+            "optional": true,
+            "enum": ["clear", "keep", "activate"]
+          }
+        ]
+      },
+      {
+        "name": "go",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "integer",
+            "name": "relativeIndex"
+          }
+        ]
+      },
+      {
+        "name": "overrideUserAgent",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "userAgentOverride"
+          }
+        ]
+      },
+      {
+        "name": "reload",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      },
+      {
+        "name": "setName",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "frameName"
+          }
+        ]
+      },
+      {
+        "name": "setPermission",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "integer",
+            "name": "requestId"
+          },
+          {
+            "type": "string",
+            "name": "action",
+            "enum": ["allow", "deny", "default"]
+          },
+          {
+            "type": "string",
+            "name": "userInput",
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "allowed",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "navigate",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "src"
+          }
+        ]
+      },
+      {
+        "name": "stop",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      },
+      {
+        "name": "terminate",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      }
+    ]
+  }
+]

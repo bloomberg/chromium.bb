@@ -193,6 +193,11 @@
     "dependencies": ["permission:chromeosInfoPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "chromeWebViewInternal": {
+    "internal": true,
+    "dependencies": ["permission:webview"],
+    "contexts": ["blessed_extension"]
+  },
   "cloudPrintPrivate": {
     "dependencies": ["permission:cloudPrintPrivate"],
     "contexts": ["blessed_extension"]
@@ -772,35 +777,6 @@
     // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
   },
-  "webViewExperimentalInternal": [{
-    "internal": true,
-    "channel": "dev",
-    "contexts": ["blessed_extension"],
-    "dependencies": ["permission:webview"]
-  },
-  {
-    "internal": true,
-    "channel": "stable",
-    "contexts": ["blessed_extension"],
-    "dependencies": ["permission:webview"],
-    "whitelist": [
-      "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",
-      "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB",
-      "1A26E32DE447A17CBE5E9750CDBA78F58539B39C",
-      "59048028102D7B4C681DBC7BC6CD980C3DC66DA3"
-    ]
-  }],
-  "webViewInternal": [{
-    "internal": true,
-    "dependencies": ["permission:webview"],
-    "contexts": ["blessed_extension"]
-  }, {
-    // Component extensions can use the webViewInternal API from iframes.
-    "location": "component",
-    "internal": true,
-    "dependencies": ["permission:webview"],
-    "contexts": ["unblessed_extension"]
-  }],
   "webViewRequest": [{
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]

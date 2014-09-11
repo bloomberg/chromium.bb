@@ -500,6 +500,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_UNCAUGHT_EXCEPTION_HANDLER_JS));
   resources.push_back(std::make_pair("unload_event", IDR_UNLOAD_EVENT_JS));
   resources.push_back(std::make_pair("utils", IDR_UTILS_JS));
+  resources.push_back(std::make_pair("webViewInternal",
+                                     IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair(mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS));
   resources.push_back(

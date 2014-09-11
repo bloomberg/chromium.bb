@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 
 #include <utility>
 
-#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
+#include "extensions/browser/api/web_view/web_view_internal_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 namespace extensions {

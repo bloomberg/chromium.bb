@@ -13,7 +13,7 @@ include_rules = [
   "+sync",
   "+third_party/leveldatabase",
   "+third_party/skia/include",
-  "+third_party/WebKit/public/web/WebInputEvent.h",
+  "+third_party/WebKit/public/web",
 ]
 
 specific_include_rules = {

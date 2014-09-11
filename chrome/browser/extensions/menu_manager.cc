@@ -18,8 +18,8 @@
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
-#include "chrome/common/extensions/api/web_view_internal.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -41,7 +41,7 @@ using extensions::ExtensionSystem;
 namespace extensions {
 
 namespace context_menus = api::context_menus;
-namespace web_view = api::web_view_internal;
+namespace chrome_web_view = api::chrome_web_view_internal;
 
 namespace {
 
@@ -712,7 +712,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   {
     // Dispatch to .contextMenus.onClicked handler.
     scoped_ptr<Event> event(
-        new Event(webview_guest ? web_view::OnClicked::kEventName
+        new Event(webview_guest ? chrome_web_view::OnClicked::kEventName
                                 : context_menus::OnClicked::kEventName,
                   args.Pass()));
     event->restrict_to_browser_context = context;

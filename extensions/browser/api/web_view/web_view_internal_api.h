@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
+#ifndef EXTENSIONS_BROWSER_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
+#define EXTENSIONS_BROWSER_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 
 #include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
@@ -14,8 +14,6 @@
 // new APIs must extend WebViewInternalExtensionFunction or
 // WebViewInternalExecuteCodeFunction which do a process ID check to prevent
 // abuse by normal renderer processes.
-// TODO(guohui): refactor WebViewInternalExecuteCodeFunction to also extend
-// WebViewInternalExtensionFunction.
 namespace extensions {
 
 // An abstract base class for async webview APIs. It does a process ID check
@@ -35,74 +33,6 @@ class WebViewInternalExtensionFunction : public AsyncExtensionFunction {
   virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
 };
 
-class WebViewInternalContextMenusCreateFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.contextMenusCreate",
-                             WEBVIEWINTERNAL_CONTEXTMENUSCREATE);
-  WebViewInternalContextMenusCreateFunction() {}
-
- protected:
-  virtual ~WebViewInternalContextMenusCreateFunction() {}
-
-  // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalContextMenusCreateFunction);
-};
-
-class WebViewInternalContextMenusUpdateFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.contextMenusUpdate",
-                             WEBVIEWINTERNAL_CONTEXTMENUSUPDATE);
-  WebViewInternalContextMenusUpdateFunction() {}
-
- protected:
-  virtual ~WebViewInternalContextMenusUpdateFunction() {}
-
-  // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalContextMenusUpdateFunction);
-};
-
-class WebViewInternalContextMenusRemoveFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.contextMenusRemove",
-                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVE);
-  WebViewInternalContextMenusRemoveFunction() {}
-
- protected:
-  virtual ~WebViewInternalContextMenusRemoveFunction() {}
-
-  // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalContextMenusRemoveFunction);
-};
-
-class WebViewInternalContextMenusRemoveAllFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.contextMenusRemoveAll",
-                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVEALL);
-  WebViewInternalContextMenusRemoveAllFunction() {}
-
- protected:
-  virtual ~WebViewInternalContextMenusRemoveAllFunction() {}
-
-  // ExtensionFunction implementation.
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalContextMenusRemoveAllFunction);
-};
-
 class WebViewInternalNavigateFunction
     : public WebViewInternalExtensionFunction {
  public:
@@ -118,34 +48,6 @@ class WebViewInternalNavigateFunction
   virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalNavigateFunction);
-};
-
-class WebViewInternalClearDataFunction
-    : public WebViewInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.clearData",
-                             WEBVIEWINTERNAL_CLEARDATA);
-
-  WebViewInternalClearDataFunction();
-
- protected:
-  virtual ~WebViewInternalClearDataFunction();
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
-
-  uint32 GetRemovalMask();
-  void ClearDataDone();
-
-  // Removal start time.
-  base::Time remove_since_;
-  // Removal mask, corresponds to StoragePartition::RemoveDataMask enum.
-  uint32 remove_mask_;
-  // Tracks any data related or parse errors.
-  bool bad_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalClearDataFunction);
 };
 
 class WebViewInternalExecuteCodeFunction
@@ -365,24 +267,6 @@ class WebViewInternalSetPermissionFunction
   virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetPermissionFunction);
-};
-
-class WebViewInternalShowContextMenuFunction
-    : public WebViewInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.showContextMenu",
-                             WEBVIEWINTERNAL_SHOWCONTEXTMENU);
-
-  WebViewInternalShowContextMenuFunction();
-
- protected:
-  virtual ~WebViewInternalShowContextMenuFunction();
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  virtual bool RunAsyncSafe(WebViewGuest* guest) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalShowContextMenuFunction);
 };
 
 class WebViewInternalOverrideUserAgentFunction

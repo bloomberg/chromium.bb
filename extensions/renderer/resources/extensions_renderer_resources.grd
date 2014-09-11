@@ -31,6 +31,7 @@
       <include name="IDR_UNCAUGHT_EXCEPTION_HANDLER_JS" file="uncaught_exception_handler.js" type="BINDATA" />
       <include name="IDR_UNLOAD_EVENT_JS" file="unload_event.js" type="BINDATA" />
       <include name="IDR_UTILS_JS" file="utils.js" type="BINDATA" />
+      <include name="IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="web_view_internal.js" type="BINDATA" />
 
       <!-- Custom bindings for APIs. -->
       <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="app_runtime_custom_bindings.js" type="BINDATA" />

@@ -70,6 +70,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/browser/script_executor.h"
+#include "extensions/common/api/extension_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
-#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
+#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 

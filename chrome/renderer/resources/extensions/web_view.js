@@ -10,6 +10,7 @@ var DocumentNatives = requireNative('document_natives');
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
+var ChromeWebView = require('chromeWebViewInternal').ChromeWebView
 // TODO(lazyboy): Rename this to WebViewInternal and call WebViewInternal
 // something else.
 var WebView = require('webViewInternal').WebView;
@@ -238,7 +239,7 @@ WebViewInternal.prototype.clearData = function() {
     return;
   }
   var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
-  $Function.apply(WebView.clearData, null, args);
+  $Function.apply(ChromeWebView.clearData, null, args);
 };
 
 /**
@@ -1035,7 +1036,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   // Setting |params| = undefined will show the context menu unmodified, hence
   // the 'contextmenu' API is disabled for stable channel.
   var params = undefined;
-  WebView.showContextMenu(this.guestInstanceId, requestId, params);
+  ChromeWebView.showContextMenu(this.guestInstanceId, requestId, params);
 };
 
 /**

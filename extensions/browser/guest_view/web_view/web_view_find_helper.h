@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
 
 #include <map>
 #include <vector>
@@ -187,4 +187,4 @@ class WebViewFindHelper {
 
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_
