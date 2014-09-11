@@ -142,7 +142,7 @@
               ],
               'action': [
                 'python',
-                '<(DEPTH)/native_client/build/test_build.py',
+                '<(script)',
                 '-r',
                 '<(arch)',
                 '<(name)',
@@ -191,7 +191,7 @@
               ],
               'action': [
                 'python',
-                '<(DEPTH)/native_client/build/test_build.py',
+                '<(script)',
                 '-r',
                 '<(arch)',
                 '<(name)',

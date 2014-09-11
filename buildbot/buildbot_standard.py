@@ -76,20 +76,8 @@ def ArchiveCoverage(context):
 
 
 def CommandGypBuild(context):
-  if context.Windows():
-    Command(
-        context,
-        cmd=[os.path.join(context['msvc'], 'Common7', 'IDE', 'devenv.com'),
-             r'build\all.sln',
-             '/build', context['gyp_mode']])
-  elif context.Linux():
-    Command(context, cmd=[
-        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
-  elif context.Mac():
-    Command(context, cmd=[
-        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
-  else:
-    raise Exception('Unknown platform')
+  Command(context, cmd=[
+      'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
 
 
 def CommandGypGenerate(context):

@@ -419,7 +419,7 @@ class Builder(object):
     if self.verbose:
       sys.stderr.write(str(msg) + '\n')
 
-  def Run(self, cmd_line, get_output=False, **kwargs):
+  def Run(self, cmd_line, get_output=False, possibly_batch=True, **kwargs):
     """Helper which runs a command line.
 
     Returns the error code if get_output is False.
@@ -441,7 +441,8 @@ class Builder(object):
       runner = subprocess.call
       if get_output:
         runner = subprocess.check_output
-      if self.is_pnacl_toolchain and pynacl.platform.IsWindows():
+      if (possibly_batch and self.is_pnacl_toolchain and
+          pynacl.platform.IsWindows()):
         # PNaCl toolchain executable is a script, not a binary, so it doesn't
         # want to run on Windows without a shell
         result = runner(' '.join(cmd_line), shell=True, **kwargs)
@@ -790,7 +791,7 @@ class Builder(object):
 
     if self.tls_edit is not None:
       tls_edit_cmd = [FixPath(self.tls_edit), link_out, out]
-      tls_edit_err = self.Run(tls_edit_cmd, out)
+      tls_edit_err = self.Run(tls_edit_cmd, out, possibly_batch=False)
       if tls_edit_err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
 

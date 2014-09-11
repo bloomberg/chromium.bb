@@ -111,27 +111,32 @@ def SetupWindowsEnvironment(context):
   # Needed for finding devenv.
   context['msvc'] = msvc
 
-  # The context on other systems has GYP_DEFINES set, set it for windows to be
-  # able to save and restore without KeyError.
-  context.SetEnv('GYP_DEFINES', '')
+  SetupGyp(context, [])
 
 
-def SetupGypDefines(context, extra_vars=[]):
-  context.SetEnv('GYP_DEFINES', ' '.join(context['gyp_vars'] + extra_vars))
+def SetupGyp(context, extra_vars=[]):
+  context.SetEnv('GYP_GENERATORS', 'ninja')
+  if os.environ.get('BUILDBOT_BUILDERNAME'):
+    goma_opts = [
+        'use_goma=1',
+        'gomadir=/b/build/goma',
+    ]
+  else:
+    goma_opts = []
+  context.SetEnv('GYP_DEFINES', ' '.join(
+      context['gyp_vars'] + goma_opts + extra_vars))
 
 
 def SetupLinuxEnvironment(context):
-  SetupGypDefines(context, ['target_arch='+context['gyp_arch']])
-  context.SetEnv('GYP_GENERATORS', 'ninja')
+  SetupGyp(context, ['target_arch='+context['gyp_arch']])
 
 
 def SetupMacEnvironment(context):
-  SetupGypDefines(context, ['target_arch='+context['gyp_arch']])
-  context.SetEnv('GYP_GENERATORS', 'ninja')
+  SetupGyp(context, ['target_arch='+context['gyp_arch']])
 
 
 def SetupAndroidEnvironment(context):
-  SetupGypDefines(context, ['OS=android', 'target_arch='+context['gyp_arch']])
+  SetupGyp(context, ['OS=android', 'target_arch='+context['gyp_arch']])
   context.SetEnv('GYP_GENERATORS', 'ninja')
   context.SetEnv('GYP_CROSSCOMPILE', '1')
 

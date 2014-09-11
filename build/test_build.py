@@ -193,7 +193,8 @@ def LogDeps(path, nexe, arch, tools):
   for tool in tools:
     out_set |= set(GetLdrIrtNexe(path, nexe, arch, tool))
   for out in out_set:
-    print out
+    # Emit forward slashes here as that's what gyp expects.
+    print out.replace('\\', '/')
 
 
 def Main(argv):
