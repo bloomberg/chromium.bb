@@ -322,7 +322,7 @@ void ServiceWorkerRegistration::OnRestoreFinished(
     scoped_refptr<ServiceWorkerVersion> version,
     ServiceWorkerStatusCode status) {
   if (!context_) {
-    callback.Run(ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_ABORT);
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
   context_->storage()->NotifyDoneInstallingRegistration(
