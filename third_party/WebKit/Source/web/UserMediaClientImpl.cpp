@@ -31,6 +31,7 @@
 #include "config.h"
 #include "web/UserMediaClientImpl.h"
 
+#include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDevicesRequest.h"
 #include "public/web/WebUserMediaClient.h"
@@ -67,6 +68,12 @@ void UserMediaClientImpl::cancelMediaDevicesRequest(MediaDevicesRequest* request
 {
     if (m_client)
         m_client->cancelMediaDevicesRequest(WebMediaDevicesRequest(request));
+}
+
+void UserMediaClientImpl::requestSources(MediaStreamTrackSourcesRequest* request)
+{
+    if (m_client)
+        m_client->requestSources(request);
 }
 
 } // namespace blink

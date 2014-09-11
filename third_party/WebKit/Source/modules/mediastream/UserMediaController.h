@@ -47,6 +47,8 @@ public:
     void requestMediaDevices(MediaDevicesRequest*);
     void cancelMediaDevicesRequest(MediaDevicesRequest*);
 
+    void requestSources(MediaStreamTrackSourcesRequest*);
+
     static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
     static const char* supplementName();
     static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
@@ -78,6 +80,11 @@ inline void UserMediaController::requestMediaDevices(MediaDevicesRequest* reques
 inline void UserMediaController::cancelMediaDevicesRequest(MediaDevicesRequest* request)
 {
     m_client->cancelMediaDevicesRequest(request);
+}
+
+inline void UserMediaController::requestSources(MediaStreamTrackSourcesRequest* request)
+{
+    m_client->requestSources(request);
 }
 
 } // namespace blink

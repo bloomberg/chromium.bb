@@ -50,6 +50,7 @@ public:
     virtual void cancelUserMediaRequest(UserMediaRequest*) OVERRIDE;
     virtual void requestMediaDevices(MediaDevicesRequest*) OVERRIDE;
     virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) OVERRIDE;
+    virtual void requestSources(MediaStreamTrackSourcesRequest*) OVERRIDE;
 
 private:
     UserMediaClientImpl();

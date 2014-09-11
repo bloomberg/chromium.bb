@@ -33,6 +33,7 @@
 
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
+#include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 
 namespace blink {
 
@@ -44,6 +45,7 @@ public:
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
     virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
     virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
+    virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
 
 protected:
     virtual ~UserMediaClient() { }
