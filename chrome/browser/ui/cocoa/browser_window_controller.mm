@@ -374,21 +374,31 @@ using content::WebContents;
     // Allow bar visibility to be changed.
     [self enableBarVisibilityUpdates];
 
-    // Force a relayout of all the various bars.
-    [self layoutSubviews];
-
     // Set the window to participate in Lion Fullscreen mode.  Setting this flag
     // has no effect on Snow Leopard or earlier.  Panels can share a fullscreen
     // space with a tabbed window, but they can not be primary fullscreen
-    // windows.  Do this after |-layoutSubviews| so that the fullscreen button
-    // can be adjusted in FramedBrowserWindow.
+    // windows.
     NSUInteger collectionBehavior = [window collectionBehavior];
     collectionBehavior |=
        browser_->type() == Browser::TYPE_TABBED ||
            browser_->type() == Browser::TYPE_POPUP ?
                NSWindowCollectionBehaviorFullScreenPrimary :
                NSWindowCollectionBehaviorFullScreenAuxiliary;
-    [window setCollectionBehavior:collectionBehavior];
+
+    if ([self shouldUseNewAvatarButton]) {
+      // The new avatar button is to the left of the fullscreen button.
+      // We need to call layoutSubviews after the fullscreen button is enabled
+      // because the avatar button's position depends on it.
+      [window setCollectionBehavior:collectionBehavior];
+      [self layoutSubviews];
+    } else {
+      // The old avatar button is to the right of the fullscreen button.
+      // We need to call layoutSubviews first because the fullscreen button's
+      // position depends on it.
+      // See -[FramedBrowserWindow fullScreenButtonOriginAdjustment].
+      [self layoutSubviews];
+      [window setCollectionBehavior:collectionBehavior];
+    }
 
     // For a popup window, |desiredContentRect| contains the desired height of
     // the content, not of the whole window.  Now that all the views are laid
