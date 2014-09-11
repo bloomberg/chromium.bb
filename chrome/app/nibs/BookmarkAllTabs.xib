@@ -49,13 +49,13 @@
 			<object class="NSWindowTemplate" id="1005">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 242}, {480, 268}}</string>
+				<string key="NSWindowRect">{{196, 240}, {580, 270}}</string>
 				<int key="NSWTFlags">536870912</int>
 				<string key="NSWindowTitle">Bookmark All Tabs</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<nil key="NSUserInterfaceItemIdentifier"/>
-				<string key="NSWindowContentMinSize">{480, 244}</string>
+				<string key="NSWindowContentMinSize">{331, 270}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
