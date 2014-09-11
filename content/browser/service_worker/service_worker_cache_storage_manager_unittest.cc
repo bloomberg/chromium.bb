@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,16 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
     cache_manager_->SetBlobParametersForCache(
         url_request_context, blob_storage_context->context()->AsWeakPtr());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    base::RunLoop().RunUntilIdle();
+    disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+    base::RunLoop().RunUntilIdle();
+    cache_manager_.reset();
+    base::RunLoop().RunUntilIdle();
+    disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual bool MemoryOnly() { return false; }
