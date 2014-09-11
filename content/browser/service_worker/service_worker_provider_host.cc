@@ -28,7 +28,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     : process_id_(process_id),
       provider_id_(provider_id),
       context_(context),
-      dispatcher_host_(dispatcher_host) {
+      dispatcher_host_(dispatcher_host),
+      allow_association_(true) {
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -183,7 +184,7 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
     return false;
   if (running_hosted_version_.get())
     return false;
-  if (!registration || associated_registration_.get())
+  if (!registration || associated_registration_.get() || !allow_association_)
     return false;
   return true;
 }

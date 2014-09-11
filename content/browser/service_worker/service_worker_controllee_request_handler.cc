@@ -45,6 +45,9 @@ ServiceWorkerControlleeRequestHandler::
     else
       provider_host_->active_version()->DeferScheduledUpdate();
   }
+
+  if (is_main_resource_load_ && provider_host_)
+    provider_host_->SetAllowAssociation(true);
 }
 
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
@@ -116,6 +119,10 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // in redirect case, unassociate it now.
   provider_host_->DisassociateRegistration();
 
+  // Also prevent a registrater job for establishing an association to a new
+  // registration while we're finding an existing registration.
+  provider_host_->SetAllowAssociation(false);
+
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);
   context_->storage()->FindRegistrationForDocument(
@@ -129,6 +136,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(job_.get());
+  provider_host_->SetAllowAssociation(true);
   if (status != SERVICE_WORKER_OK) {
     job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
@@ -155,6 +163,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   // Wait until it's activated before firing fetch events.
   if (active_version.get() &&
       active_version->status() == ServiceWorkerVersion::ACTIVATING) {
+    provider_host_->SetAllowAssociation(false);
     registration->active_version()->RegisterStatusChangeCallback(
         base::Bind(&self::OnVersionStatusChanged,
                    weak_factory_.GetWeakPtr(),
@@ -196,12 +205,12 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version) {
+  provider_host_->SetAllowAssociation(true);
   if (version != registration->active_version() ||
       version->status() != ServiceWorkerVersion::ACTIVATED) {
     job_->FallbackToNetwork();
     return;
   }
-
   provider_host_->AssociateRegistration(registration);
   job_->ForwardToServiceWorker();
 }

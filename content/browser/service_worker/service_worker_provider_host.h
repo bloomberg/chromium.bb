@@ -99,6 +99,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns true if |registration| can be associated with this provider.
   bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
 
+  // For use by the ServiceWorkerControlleeRequestHandler to disallow
+  // new registration association while a navigation is occurring and
+  // an existing registration is being looked for.
+  void SetAllowAssociation(bool allow) { allow_association_ = allow; }
+
   // Returns true if the context referred to by this host (i.e. |context_|) is
   // still alive.
   bool IsContextAlive();
@@ -153,6 +158,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
+  bool allow_association_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
