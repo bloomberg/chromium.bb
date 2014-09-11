@@ -208,7 +208,7 @@ bool Builder::CheckForBadItems(Err* err) const {
     if (depstring.empty()) {
       // Something's very wrong, just dump out the bad nodes.
       depstring = "I have no idea what went wrong, but these are unresolved, "
-          "possible due to an\ninternal error:";
+          "possibly due to an\ninternal error:";
       for (size_t i = 0; i < bad_records.size(); i++) {
         depstring += "\n\"" +
             bad_records[i]->label().GetUserVisibleName(false) + "\"";
@@ -526,12 +526,12 @@ std::string Builder::CheckForCircularDependencies(
   if (!RecursiveFindCycle(bad_records[0], &cycle))
     return std::string();  // Didn't find a cycle, something else is wrong.
 
-  // Walk backwards since the dependency arrows point in the reverse direction.
   std::string ret;
-  for (int i = static_cast<int>(cycle.size()) - 1; i >= 0; i--) {
+  for (size_t i = 0; i < cycle.size(); i++) {
     ret += "  " + cycle[i]->label().GetUserVisibleName(false);
-    if (i != 0)
-      ret += " ->\n";
+    if (i != cycle.size() - 1)
+      ret += " ->";
+    ret += "\n";
   }
 
   return ret;
