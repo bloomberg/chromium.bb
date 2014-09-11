@@ -15,9 +15,6 @@ shouldBeTrue("thisDocument !== document");
 shouldBe("thisDocument.__proto__", "document.__proto__");
 shouldBe("thisDocument.head.__proto__", "document.head.__proto__");
 
-// The import shares window between the master.
-shouldBe("thisDocument.defaultView", "document.defaultView");
-
 // Since the construcdtor belongs to master's window, its owner document is the master
 shouldBe("(new Image()).ownerDocument", "document");
 

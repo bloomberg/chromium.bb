@@ -6,7 +6,9 @@
 </head>
 <body>
 <script>
-shouldBe("importLink.import.defaultView", "document.defaultView");
+// This used to be non-null but not longer is.
+// See http://crbug.com/408272
+shouldBeNull("importLink.import.defaultView");
 
 window.jsTestIsAsync = true;
 

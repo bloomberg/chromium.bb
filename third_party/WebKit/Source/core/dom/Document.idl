@@ -80,7 +80,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 
-    [ImplementedAs=executingWindow] readonly attribute Window defaultView;
+    [ImplementedAs=domWindow] readonly attribute Window defaultView;
 
     // DOM Level 2 Style (DocumentStyle interface)
 
