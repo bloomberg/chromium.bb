@@ -69,15 +69,6 @@
     "channel": "dev",
     "contexts": ["blessed_extension"]
   },
-  "app.window": {
-    "channel": "stable",
-    "contexts": ["blessed_extension"],
-    "extension_types": ["platform_app"],
-    "noparent": true
-  },
-  "app.window.canSetVisibleOnAllWorkspaces": {
-    "channel": "dev"
-  },
   "app.getDetails": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []

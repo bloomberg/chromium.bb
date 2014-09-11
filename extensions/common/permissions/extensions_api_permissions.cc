@@ -14,6 +14,10 @@ namespace extensions {
 
 namespace {
 
+const char kOldAlwaysOnTopWindowsPermission[] = "alwaysOnTopWindows";
+const char kOldFullscreenPermission[] = "fullscreen";
+const char kOldOverrideEscFullscreenPermission[] = "overrideEscFullscreen";
+
 template <typename T>
 APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
   return new T(permission);
@@ -24,12 +28,17 @@ APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
 std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
     const {
   APIPermissionInfo::InitInfo permissions_to_register[] = {
+      {APIPermission::kAlphaEnabled, "app.window.alpha"},
+      {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
       {APIPermission::kAudioCapture, "audioCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
        PermissionMessage::kAudioCapture},
       {APIPermission::kDns, "dns"},
+      {APIPermission::kFullscreen, "app.window.fullscreen"},
       {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
+      {APIPermission::kOverrideEscFullscreen,
+       "app.window.fullscreen.overrideEsc"},
       {APIPermission::kPower, "power"},
       {APIPermission::kSerial, "serial", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_SERIAL, PermissionMessage::kSerial},
@@ -56,6 +65,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kVideoCapture, "videoCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
        PermissionMessage::kVideoCapture},
+      {APIPermission::kWindowShape, "app.window.shape"},
   };
 
   std::vector<APIPermissionInfo*> permissions;
@@ -66,7 +76,15 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
 
 std::vector<PermissionsProvider::AliasInfo>
 ExtensionsAPIPermissions::GetAllAliases() const {
-  return std::vector<PermissionsProvider::AliasInfo>();
+  std::vector<PermissionsProvider::AliasInfo> aliases;
+  aliases.push_back(PermissionsProvider::AliasInfo(
+      "app.window.alwaysOnTop", kOldAlwaysOnTopWindowsPermission));
+  aliases.push_back(PermissionsProvider::AliasInfo("app.window.fullscreen",
+                                                   kOldFullscreenPermission));
+  aliases.push_back(
+      PermissionsProvider::AliasInfo("app.window.fullscreen.overrideEsc",
+                                     kOldOverrideEscFullscreenPermission));
+  return aliases;
 }
 
 }  // namespace extensions

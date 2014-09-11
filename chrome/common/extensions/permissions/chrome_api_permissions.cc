@@ -16,9 +16,6 @@ namespace extensions {
 
 namespace {
 
-const char kOldAlwaysOnTopWindowsPermission[] = "alwaysOnTopWindows";
-const char kOldFullscreenPermission[] = "fullscreen";
-const char kOldOverrideEscFullscreenPermission[] = "overrideEscFullscreen";
 const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
 
@@ -296,7 +293,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
            APIPermissionInfo::kFlagCannotBeOptional},
 
       // Platform-app permissions.
-      {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
+
       // The permission string for "fileSystem" is only shown when
       // "write" or "directory" is present. Read-only access is only
       // granted after the user has been shown a file or directory
@@ -325,13 +322,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kPushMessaging, "pushMessaging",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kPointerLock, "pointerLock"},
-      {APIPermission::kFullscreen, "app.window.fullscreen"},
       {APIPermission::kAudio, "audio"},
       {APIPermission::kCastStreaming, "cast.streaming"},
-      {APIPermission::kOverrideEscFullscreen,
-       "app.window.fullscreen.overrideEsc"},
-      {APIPermission::kWindowShape, "app.window.shape"},
-      {APIPermission::kAlphaEnabled, "app.window.alpha"},
       {APIPermission::kBrowser, "browser"},
 
       // Settings override permissions.
@@ -363,13 +355,6 @@ std::vector<PermissionsProvider::AliasInfo>
 ChromeAPIPermissions::GetAllAliases() const {
   // Register aliases.
   std::vector<PermissionsProvider::AliasInfo> aliases;
-  aliases.push_back(PermissionsProvider::AliasInfo(
-      "app.window.alwaysOnTop", kOldAlwaysOnTopWindowsPermission));
-  aliases.push_back(PermissionsProvider::AliasInfo("app.window.fullscreen",
-                                                   kOldFullscreenPermission));
-  aliases.push_back(
-      PermissionsProvider::AliasInfo("app.window.fullscreen.overrideEsc",
-                                     kOldOverrideEscFullscreenPermission));
   aliases.push_back(PermissionsProvider::AliasInfo(
       "unlimitedStorage", kOldUnlimitedStoragePermission));
   aliases.push_back(PermissionsProvider::AliasInfo(
