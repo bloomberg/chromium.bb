@@ -4,6 +4,9 @@
 
 package org.chromium.content.browser;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -43,6 +46,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         mContentViewCore = getContentViewCore();
         assertWaitForPageScaleFactorMatch(1.1f);
         assertWaitForSelectActionBarVisible(false);
+        assertWaitForPastePopupStatus(false);
     }
 
     @SmallTest
@@ -118,6 +122,57 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertTrue(mContentViewCore.hasSelection());
     }
 
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupNotShownOnLongPressingNonEmptyInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarVisible(true);
+        assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupClearedOnTappingEmptyInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        DOMUtils.clickNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupClearedOnTappingNonEmptyInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupClearedOnTappingOutsideInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        DOMUtils.clickNode(this, mContentViewCore, "plain_text_2");
+        assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupClearedOnLongPressingOutsideInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        DOMUtils.longPressNode(this, mContentViewCore, "plain_text_2");
+        assertWaitForPastePopupStatus(false);
+    }
+
     private void assertWaitForSelectActionBarVisible(
             final boolean visible) throws InterruptedException {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -164,5 +219,22 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
                 contentViewCore.onFocusChanged(gainFocus);
             }
         });
+    }
+
+    private void copyStringToClipboard() {
+        ClipboardManager clipboardManager =
+                (ClipboardManager) getActivity().getSystemService(
+                        Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("test", "Text to copy");
+                clipboardManager.setPrimaryClip(clip);
+    }
+
+    private void assertWaitForPastePopupStatus(final boolean show) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return show == mContentViewCore.getPastePopupForTest().isShowing();
+            }
+        }));
     }
 }
