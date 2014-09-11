@@ -530,7 +530,8 @@ ChromeAppViewAsh::ChromeAppViewAsh()
       ui_channel_(nullptr),
       core_window_hwnd_(NULL),
       metro_dpi_scale_(0),
-      win32_dpi_scale_(0) {
+      win32_dpi_scale_(0),
+      last_cursor_(NULL) {
   DVLOG(1) << __FUNCTION__;
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
@@ -815,7 +816,8 @@ void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
 }
 
 void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
-  ::SetCursor(HCURSOR(cursor));
+  ::SetCursor(cursor);
+  last_cursor_ = cursor;
 }
 
 void ChromeAppViewAsh::OnDisplayFileOpenDialog(
@@ -1082,6 +1084,11 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
     return hr;
 
   if (pointer.IsMouse()) {
+    // If the mouse was moved towards the charms or the OS specific section,
+    // the cursor may change from what the browser last set. Restore it here.
+    if (::GetCursor() != last_cursor_)
+      SetCursor(last_cursor_);
+
     GenerateMouseEventFromMoveIfNecessary(pointer);
     ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(
         pointer.x(),

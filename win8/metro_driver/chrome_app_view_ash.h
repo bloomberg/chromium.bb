@@ -238,6 +238,9 @@ class ChromeAppViewAsh
   // The win32 dpi scale which is queried via GetDeviceCaps. Please refer to
   // ui/gfx/win/dpi.cc for more information.
   float win32_dpi_scale_;
+
+  // The cursor set by the chroem browser process.
+  HCURSOR last_cursor_;
 };
 
 #endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_

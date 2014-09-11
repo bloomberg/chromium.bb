@@ -171,9 +171,9 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   IPC::Sender* host_;
   scoped_ptr<ui::ViewProp> prop_;
 
-  // Set to true if we need to ignore mouse messages until the SetCursorPos
+  // Incremented if we need to ignore mouse messages until the SetCursorPos
   // operation is acked by the viewer.
-  bool ignore_mouse_moves_until_set_cursor_ack_;
+  int ignore_mouse_moves_until_set_cursor_ack_;
 
   // Tracking last click event for synthetically generated mouse events.
   scoped_ptr<ui::MouseEvent> last_mouse_click_event_;
