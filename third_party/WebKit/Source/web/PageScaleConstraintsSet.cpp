@@ -40,11 +40,11 @@ static const float defaultMinimumScale = 0.25f;
 static const float defaultMaximumScale = 5.0f;
 
 PageScaleConstraintsSet::PageScaleConstraintsSet()
-    : m_lastContentsWidth(0)
+    : m_finalConstraints(1, 1, 1)
+    , m_lastContentsWidth(0)
     , m_needsReset(false)
     , m_constraintsDirty(false)
 {
-    m_finalConstraints = defaultConstraints();
 }
 
 PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
