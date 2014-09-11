@@ -73,14 +73,6 @@ cr.define('options', function() {
      */
     initializationComplete_: false,
 
-    /**
-     * When a section is waiting to change its height, this will be a number.
-     * Otherwise it'll be null.
-     * @type {?number}
-     * @private
-     */
-    sectionHeightChangeTimeout_: null,
-
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -745,13 +737,11 @@ cr.define('options', function() {
       section.style.height = (showing ? 0 : container.offsetHeight) + 'px';
       section.classList.add('sliding');
 
-      if (this.sectionHeightChangeTimeout_ !== null)
-        clearTimeout(this.sectionHeightChangeTimeout_);
+      // Force a style recalc before starting the animation.
+      /** @suppress {uselessCode} */
+      section.offsetHeight;
 
-      this.sectionHeightChangeTimeout_ = setTimeout(function() {
-        section.style.height = (showing ? container.offsetHeight : 0) + 'px';
-        this.sectionHeightChangeTimeout_ = null;
-      });
+      section.style.height = (showing ? container.offsetHeight : 0) + 'px';
     },
 
     /**
