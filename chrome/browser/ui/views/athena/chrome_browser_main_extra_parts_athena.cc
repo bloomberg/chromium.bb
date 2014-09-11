@@ -51,6 +51,7 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kLoginManager)) {
       athena::ExtensionsDelegate::CreateExtensionsDelegateForChrome(profile);
+      athena::CreateVirtualKeyboardWithContext(profile);
       athena::StartAthenaSessionWithContext(profile);
     } else {
       // Only initialize virtual keyboard with login profile, user session will
