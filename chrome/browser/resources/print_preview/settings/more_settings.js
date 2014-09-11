@@ -74,9 +74,18 @@ cr.define('print_preview', function() {
       iconEl.classList.toggle('more-settings-icon-plus', !all);
       iconEl.classList.toggle('more-settings-icon-minus', all);
 
-      var hasSectionsToToggle = this.settingsSections_.some(function(section) {
-        return section.hasCollapsibleContent();
-      });
+      var availableSections = this.settingsSections_.reduce(
+          function(count, section) {
+            return count + (section.isAvailable() ? 1 : 0);
+          }, 0);
+
+      // Magic 6 is chosen as the number of sections when it still feels like
+      // manageable and not too crowded.
+      var hasSectionsToToggle =
+          availableSections > 6 &&
+          this.settingsSections_.some(function(section) {
+            return section.hasCollapsibleContent();
+          });
 
       if (hasSectionsToToggle)
         fadeInElement(this.getElement());

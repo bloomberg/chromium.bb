@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 #advanced-options-settings .advanced-options-settings-button {
-  height: 28px;
   margin: 10px 0;
+  min-height: 28px;
+  width: 100%;
 }

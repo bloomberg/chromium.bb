@@ -431,19 +431,9 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  var moreSettingsDiv = $('more-settings');
   var otherOptionsDiv = $('other-options-settings');
 
-  // Check that options are collapsed (section is visible, because duplex is
-  // available).
   checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(
-      otherOptionsDiv.querySelector('.fit-to-page-container'), false);
-  checkSectionVisible($('media-size-settings'), false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
-
   checkElementDisplayed(
       otherOptionsDiv.querySelector('.fit-to-page-container'), true);
   expectTrue(
@@ -475,15 +465,9 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
   cr.dispatchSimpleEvent(
       this.nativeLayer_, print_preview.NativeLayer.EventType.DISABLE_SCALING);
 
-  var moreSettingsDiv = $('more-settings');
   var otherOptionsDiv = $('other-options-settings');
 
-  // Check that options are collapsed (section is visible, because duplex is
-  // available).
   checkSectionVisible(otherOptionsDiv, true);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
 
   checkElementDisplayed(
       otherOptionsDiv.querySelector('.fit-to-page-container'), true);
