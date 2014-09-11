@@ -208,10 +208,6 @@ void DrawingBuffer::freeRecycledMailboxes()
 
 bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
 {
-    ASSERT(!m_isHidden);
-    if (!m_contentsChanged)
-        return false;
-
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
         // 1. WebGL draws something.
@@ -220,6 +216,9 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         // 4. Here.
         return false;
     }
+    ASSERT(!m_isHidden);
+    if (!m_contentsChanged)
+        return false;
 
     // Resolve the multisampled buffer into m_colorBuffer texture.
     if (m_multisampleMode != None)

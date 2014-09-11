@@ -884,7 +884,7 @@ void WebGLRenderingContextBase::markLayerComposited()
 
 void WebGLRenderingContextBase::setIsHidden(bool hidden)
 {
-    if (!isContextLost())
+    if (drawingBuffer())
         drawingBuffer()->setIsHidden(hidden);
 }
 
