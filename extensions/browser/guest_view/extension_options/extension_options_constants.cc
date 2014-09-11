@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/extension_options/extension_options_constants.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_constants.h"
 
 namespace extensionoptions {
 
@@ -22,6 +22,5 @@ const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
 const char kOldHeight[] = "oldHeight";
 const char kOldWidth[] = "oldWidth";
-
 
 }  // namespace extensionoptions

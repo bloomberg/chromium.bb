@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_
-#define CHROME_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_
 
 #include "base/macros.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
 #include "extensions/browser/guest_view/guest_view.h"
 #include "url/gurl.h"
 
@@ -20,7 +21,8 @@ class ExtensionOptionsGuest
  public:
   static const char Type[];
   static extensions::GuestViewBase* Create(
-      content::BrowserContext* browser_context, int guest_instance_id);
+      content::BrowserContext* browser_context,
+      int guest_instance_id);
 
   // GuestViewBase implementation.
   virtual void CreateWebContents(
@@ -69,9 +71,11 @@ class ExtensionOptionsGuest
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;
+  scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
+      extension_options_guest_delegate_;
   GURL options_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuest);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_GUEST_H_

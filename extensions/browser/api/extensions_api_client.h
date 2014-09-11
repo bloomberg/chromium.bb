@@ -24,6 +24,7 @@ class BrowserContext;
 namespace extensions {
 
 class AppViewGuestDelegate;
+class ExtensionOptionsGuestDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
 class WebViewGuest;
@@ -61,6 +62,11 @@ class ExtensionsAPIClient {
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
 
+  // Returns a delegate for ExtensionOptionsGuest. The caller owns the returned
+  // ExtensionOptionsGuestDelegate.
+  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate()
+      const;
+
   // Creates a delegate for MimeHandlerViewGuest.
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>
       CreateMimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest) const;
@@ -75,8 +81,6 @@ class ExtensionsAPIClient {
   virtual WebViewPermissionHelperDelegate*
       CreateWebViewPermissionHelperDelegate (
           WebViewPermissionHelper* web_view_permission_helper) const;
-
-  virtual void RegisterGuestViewTypes() {}
 
   // TODO(wjmaclean): Remove this as soon as rules_registry_service.* moves to
   // extensions/browser/api/declarative/.

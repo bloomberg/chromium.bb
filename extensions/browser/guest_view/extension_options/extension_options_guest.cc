@@ -2,27 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/guest_view/extension_options/extension_options_constants.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/api/extension_options_internal.h"
 #include "components/crx_file/id_util.h"
-#include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_web_contents_observer.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_constants.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/common/api/extension_options_internal.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -33,7 +27,7 @@
 #include "ipc/ipc_message_macros.h"
 
 using content::WebContents;
-using namespace extensions::api;
+using namespace extensions::core_api;
 
 // static
 const char ExtensionOptionsGuest::Type[] = "extensionoptions";
@@ -41,7 +35,10 @@ const char ExtensionOptionsGuest::Type[] = "extensionoptions";
 ExtensionOptionsGuest::ExtensionOptionsGuest(
     content::BrowserContext* browser_context,
     int guest_instance_id)
-    : GuestView<ExtensionOptionsGuest>(browser_context, guest_instance_id) {
+    : GuestView<ExtensionOptionsGuest>(browser_context, guest_instance_id),
+      extension_options_guest_delegate_(
+          extensions::ExtensionsAPIClient::Get()
+              ->CreateExtensionOptionsGuestDelegate()) {
 }
 
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
@@ -117,15 +114,16 @@ void ExtensionOptionsGuest::DidAttachToEmbedder() {
 void ExtensionOptionsGuest::DidInitialize() {
   extension_function_dispatcher_.reset(
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents());
+  if (extension_options_guest_delegate_) {
+    extension_options_guest_delegate_->CreateChromeExtensionWebContentsObserver(
+        web_contents());
+  }
 }
 
 void ExtensionOptionsGuest::DidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
-      extensions::api::extension_options_internal::OnLoad::kEventName,
-      args.Pass()));
+      extension_options_internal::OnLoad::kEventName, args.Pass()));
 }
 
 const char* ExtensionOptionsGuest::GetAPINamespace() const {
@@ -159,15 +157,16 @@ content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
 content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(embedder_web_contents());
+  if (!extension_options_guest_delegate_)
+    return NULL;
 
   // Don't allow external URLs with the CURRENT_TAB disposition be opened in
   // this guest view, change the disposition to NEW_FOREGROUND_TAB.
   if ((!params.url.SchemeIs(extensions::kExtensionScheme) ||
        params.url.host() != options_page_.host()) &&
       params.disposition == CURRENT_TAB) {
-    return browser->OpenURL(
+    return extension_options_guest_delegate_->OpenURLInNewTab(
+        embedder_web_contents(),
         content::OpenURLParams(params.url,
                                params.referrer,
                                params.frame_tree_node_id,
@@ -175,7 +174,8 @@ content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
                                params.transition,
                                params.is_renderer_initiated));
   }
-  return browser->OpenURL(params);
+  return extension_options_guest_delegate_->OpenURLInNewTab(
+      embedder_web_contents(), params);
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
@@ -186,14 +186,11 @@ void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
 
 bool ExtensionOptionsGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
-  ContextMenuDelegate* menu_delegate =
-      ContextMenuDelegate::FromWebContents(web_contents());
-  DCHECK(menu_delegate);
+  if (!extension_options_guest_delegate_)
+    return false;
 
-  scoped_ptr<RenderViewContextMenu> menu =
-      menu_delegate->BuildMenu(web_contents(), params);
-  menu_delegate->ShowMenu(menu.Pass());
-  return true;
+  return extension_options_guest_delegate_->HandleContextMenu(web_contents(),
+                                                              params);
 }
 
 bool ExtensionOptionsGuest::ShouldCreateWebContents(
@@ -209,16 +206,17 @@ bool ExtensionOptionsGuest::ShouldCreateWebContents(
   // external links to be opened in a new tab, not in a new guest view.
   // Therefore we just open the URL in a new tab, and since we aren't handling
   // the new web contents, we return false.
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(embedder_web_contents());
-  content::OpenURLParams params(target_url,
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK,
-                                false);
-  browser->OpenURL(params);
   // TODO(ericzeng): Open the tab in the background if the click was a
   //   ctrl-click or middle mouse button click
+  if (extension_options_guest_delegate_) {
+    extension_options_guest_delegate_->OpenURLInNewTab(
+        embedder_web_contents(),
+        content::OpenURLParams(target_url,
+                               content::Referrer(),
+                               NEW_FOREGROUND_TAB,
+                               content::PAGE_TRANSITION_LINK,
+                               false));
+  }
   return false;
 }
 
@@ -233,8 +231,8 @@ bool ExtensionOptionsGuest::OnMessageReceived(const IPC::Message& message) {
 
 void ExtensionOptionsGuest::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(
-      params, web_contents()->GetRenderViewHost());
+  extension_function_dispatcher_->Dispatch(params,
+                                           web_contents()->GetRenderViewHost());
 }
 
 void ExtensionOptionsGuest::SetUpAutoSize() {

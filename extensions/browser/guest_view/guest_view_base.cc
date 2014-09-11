@@ -15,6 +15,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -460,9 +461,9 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
 // static
 void GuestViewBase::RegisterGuestViewTypes() {
   AppViewGuest::Register();
+  ExtensionOptionsGuest::Register();
   MimeHandlerViewGuest::Register();
   WebViewGuest::Register();
-  ExtensionsAPIClient::Get()->RegisterGuestViewTypes();
 }
 
 }  // namespace extensions

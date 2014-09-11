@@ -25,6 +25,7 @@
       'dns.idl',
       'events.json',
       'extensions_manifest_types.json',
+      'extension_options_internal.idl',
       'extension_types.json',
       'guest_view_internal.json',
       'hid.idl',

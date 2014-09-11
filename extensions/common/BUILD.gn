@@ -238,6 +238,8 @@ source_set("common") {
       "extension_api.cc",
       "manifest_handlers/externally_connectable.cc",
       "manifest_handlers/externally_connectable.h",
+      "manifest_handlers/options_page_info.cc",
+      "manifest_handlers/options_page_info.h",
     ]
   }
 

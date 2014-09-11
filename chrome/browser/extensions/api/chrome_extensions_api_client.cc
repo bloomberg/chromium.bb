@@ -8,13 +8,12 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
-#include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
+#include "chrome/browser/guest_view/extension_options/chrome_extension_options_guest_delegate.h"
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
@@ -49,6 +48,11 @@ AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
   return new ChromeAppViewGuestDelegate();
 }
 
+ExtensionOptionsGuestDelegate*
+ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate() const {
+  return new ChromeExtensionOptionsGuestDelegate();
+}
+
 scoped_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
@@ -66,10 +70,6 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
     CreateWebViewPermissionHelperDelegate(
         WebViewPermissionHelper* web_view_permission_helper) const {
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
-}
-
-void ChromeExtensionsAPIClient::RegisterGuestViewTypes() {
-  ExtensionOptionsGuest::Register();
 }
 
 scoped_refptr<RulesRegistry> ChromeExtensionsAPIClient::GetRulesRegistry(

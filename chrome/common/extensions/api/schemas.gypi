@@ -44,7 +44,6 @@
       'echo_private.json',
       'enterprise_platform_keys_private.json',
       'experience_sampling_private.json',
-      'extension_options_internal.idl',
       'feedback_private.idl',
       'file_manager_private.idl',
       'file_manager_private_internal.idl',
