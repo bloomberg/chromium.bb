@@ -13,6 +13,13 @@ import subprocess
 import sys
 
 
+# Must be in src/.
+os.chdir(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+
+g_total_differences = 0
+
+
 def FindAndRemoveArgWithValue(command_line, argname):
   """Given a command line as a list, remove and return the value of an option
   that takes a value as a separate entry.
@@ -42,6 +49,25 @@ def MergeSpacedArgs(command_line, argname):
   return result
 
 
+def NormalizeSymbolArguments(command_line):
+  """Normalize -g arguments.
+
+  If there's no -g args, it's equivalent to -g0. -g2 is equivalent to -g.
+  Modifies |command_line| in place.
+  """
+  # Strip -g0 if there's no symbols.
+  have_some_symbols = False
+  for x in command_line:
+    if x.startswith('-g') and x != '-g0':
+      have_some_symbols = True
+  if not have_some_symbols and '-g0' in command_line:
+    command_line.remove('-g0')
+
+  # Rename -g2 to -g.
+  if '-g2' in command_line:
+    command_line[index('-g2')] = '-g'
+
+
 def GetFlags(lines):
   """Turn a list of command lines into a semi-structured dict."""
   flags_by_output = {}
@@ -55,6 +81,8 @@ def GetFlags(lines):
 
     output_name = FindAndRemoveArgWithValue(command_line, '-o')
     dep_name = FindAndRemoveArgWithValue(command_line, '-MF')
+
+    NormalizeSymbolArguments(command_line)
 
     command_line = MergeSpacedArgs(command_line, '-Xclang')
 
@@ -74,6 +102,21 @@ def GetFlags(lines):
                                          x not in dash_f and \
                                          x not in warnings and \
                                          x not in cc_file]
+
+    # Filter for libFindBadConstructs.so having a relative path in one and
+    # absolute path in the other.
+    others_filtered = []
+    for x in others:
+      if x.startswith('-Xclang ') and x.endswith('libFindBadConstructs.so'):
+        others_filtered.append(
+            '-Xclang ' +
+            os.path.join(os.getcwd(),
+                         os.path.normpath(
+                             os.path.join('out/gn_flags', x.split(' ', 1)[1]))))
+      else:
+        others_filtered.append(x)
+    others = others_filtered
+
     flags_by_output[cc_file[0]] = {
       'output': output_name,
       'depname': dep_name,
@@ -89,25 +132,29 @@ def GetFlags(lines):
 def CompareLists(gyp, gn, name, dont_care_gyp=None, dont_care_gn=None):
   """Return a report of any differences between gyp and gn lists, ignoring
   anything in |dont_care_{gyp|gn}| respectively."""
+  global g_total_differences
   if not dont_care_gyp:
     dont_care_gyp = []
   if not dont_care_gn:
     dont_care_gn = []
   output = ''
   if gyp[name] != gn[name]:
-    output += '  %s differ:\n' % name
     gyp_set = set(gyp[name])
     gn_set = set(gn[name])
     missing_in_gyp = gyp_set - gn_set
     missing_in_gn = gn_set - gyp_set
     missing_in_gyp -= set(dont_care_gyp)
     missing_in_gn -= set(dont_care_gn)
+    if missing_in_gyp or missing_in_gn:
+      output += '  %s differ:\n' % name
     if missing_in_gyp:
       output += '    In gyp, but not in GN:\n      %s' % '\n      '.join(
           sorted(missing_in_gyp)) + '\n'
+      g_total_differences += len(missing_in_gyp)
     if missing_in_gn:
       output += '    In GN, but not in gyp:\n      %s' % '\n      '.join(
           sorted(missing_in_gn)) + '\n\n'
+      g_total_differences += len(missing_in_gn)
   return output
 
 
@@ -166,6 +213,7 @@ def main():
     print '\n'.join(sorted(files))
     print diff
 
+  print 'Total differences:', g_total_differences
   return 1 if files_with_given_differences or different_source_list else 0
 
 

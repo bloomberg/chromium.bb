@@ -22,7 +22,8 @@ declare_args() {
   #   2 means regular build with symbols.
   #   1 means minimal symbols, usually enough for backtraces only.
   #   0 means no symbols.
-  symbol_level = 2
+  #   -1 means auto-set (off in release, regular in debug).
+  symbol_level = -1
 
   # Component build.
   is_component_build = false
@@ -353,6 +354,17 @@ if (is_debug) {
   _default_optimization_config = "//build/config/compiler:optimize"
 }
 _native_compiler_configs += [ _default_optimization_config ]
+
+# If it wasn't manually set, set to an appropriate default.
+if (symbol_level == -1) {
+  # Linux is slowed by having symbols as part of the target binary, whereas
+  # Mac and Windows have them separate, so in Release Linux, default them off.
+  if (is_debug || !is_linux) {
+    symbol_level = 2
+  } else {
+    symbol_level = 0
+  }
+}
 
 # Symbol setup.
 if (symbol_level == 2) {

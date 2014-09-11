@@ -3654,9 +3654,6 @@
                 ],
               }],
               ['clang==1', {
-                'cflags!': [
-                  '-fno-ident',
-                ],
                 # TODO(thakis): Remove once http://llvm.org/PR20354 is fixed
                 # and the fix is in chromium.
                 'cflags': [ '-fno-slp-vectorize', ],

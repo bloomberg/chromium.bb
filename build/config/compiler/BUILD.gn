@@ -103,6 +103,14 @@ config("compiler") {
     }
   }
 
+  if (is_clang) {
+    cflags += [
+      # TODO(thakis): Remove once http://llvm.org/PR20354 is fixed
+      # and the fix is in chromium.
+      "-fno-slp-vectorize",
+    ]
+  }
+
   if (is_clang && !is_win) {
     # This is here so that all files get recompiled after a clang roll and
     # when turning clang on or off. (defines are passed via the command line,
@@ -150,7 +158,7 @@ config("compiler") {
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
     if (cpu_arch == "x64") {
-      cflags += [ "-m64" ]
+      cflags += [ "-m64", "-march=x86-64", ]
       ldflags += [ "-m64" ]
     } else if (cpu_arch == "x86") {
       cflags += [ "-m32" ]
@@ -704,13 +712,10 @@ config("default_warnings") {
         # which we no longer use. Check if it makes sense to remove
         # this as well. http://crbug.com/316352
         "-Wno-unneeded-internal-declaration",
-      ]
 
-      if (!is_mac && !is_ios) {
-        cflags_cc += [
-          "-Wno-reserved-user-defined-literal",
-        ]
-      }
+        # TODO(thakis): Remove, http://crbug.com/263960
+        "-Wno-reserved-user-defined-literal",
+      ]
     }
     if (gcc_version >= 48) {
       cflags_cc += [
