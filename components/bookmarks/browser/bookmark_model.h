@@ -38,15 +38,12 @@ class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkStorage;
 class ScopedGroupBookmarkActions;
+class TestBookmarkClient;
 struct BookmarkMatch;
 }
 
 namespace favicon_base {
 struct FaviconImageResult;
-}
-
-namespace test {
-class TestBookmarkClient;
 }
 
 // BookmarkModel --------------------------------------------------------------
@@ -289,7 +286,7 @@ class BookmarkModel : public KeyedService {
   friend class bookmarks::BookmarkCodecTest;
   friend class bookmarks::BookmarkStorage;
   friend class bookmarks::ScopedGroupBookmarkActions;
-  friend class test::TestBookmarkClient;
+  friend class bookmarks::TestBookmarkClient;
 
   // Used to order BookmarkNodes by URL.
   class NodeURLComparator {

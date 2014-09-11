@@ -72,7 +72,7 @@ class BookmarkProviderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE;
 
-  test::TestBookmarkClient client_;
+  bookmarks::TestBookmarkClient client_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;

@@ -32,6 +32,7 @@ using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 
+namespace bookmarks {
 namespace {
 
 // Test cases used to test the removal of extra whitespace when adding
@@ -293,7 +294,7 @@ class BookmarkModelTest : public testing::Test,
   }
 
  protected:
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   ObserverDetails observer_details_;
 
@@ -953,7 +954,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
       ASSERT_TRUE(ids.insert(it.Next()->id()).second);
   }
 
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
 };
 
@@ -1210,3 +1211,4 @@ TEST(BookmarkNodeTest, NodeMetaInfo) {
 }
 
 }  // namespace
+}  // namespace bookmarks

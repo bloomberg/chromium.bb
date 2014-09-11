@@ -44,7 +44,7 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   base::MessageLoop message_loop_;
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<BookmarkModel> model_;
 

@@ -224,7 +224,7 @@ class BookmarkCodecTest : public testing::Test {
     CheckIDs(model->mobile_node(), &assigned_ids);
   }
 
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
 };
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {

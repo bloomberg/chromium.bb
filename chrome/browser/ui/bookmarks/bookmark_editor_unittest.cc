@@ -13,7 +13,7 @@ using base::ASCIIToUTF16;
 namespace {
 
 TEST(BookmarkEditorTest, ApplyEditsWithNoFolderChange) {
-  test::TestBookmarkClient client;
+  bookmarks::TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* bookmarkbar = model->bookmark_bar_node();
   model->AddURL(bookmarkbar, 0, ASCIIToUTF16("url0"), GURL("chrome://newtab"));

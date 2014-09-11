@@ -74,7 +74,7 @@ class BookmarkUtilsTest : public testing::Test,
 };
 
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
@@ -132,7 +132,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 
 // Check exact matching against a URL query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
@@ -168,7 +168,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
 
 // Check exact matching against a title query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
@@ -206,7 +206,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
 
 // Check matching against a query with multiple predicates.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
@@ -258,7 +258,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 // Copy and paste is not yet supported on iOS. http://crbug.com/228147
 #if !defined(OS_IOS)
 TEST_F(BookmarkUtilsTest, CopyPaste) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
@@ -286,7 +286,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 }
 
 TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
@@ -329,7 +329,7 @@ TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
 #define MAYBE_CutToClipboard CutToClipboard
 #endif
 TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   model->AddObserver(this);
 
@@ -355,7 +355,7 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
 }
 
 TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   // Load a model with an extra node that is not editable.
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;
@@ -384,7 +384,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
 #endif  // !defined(OS_IOS)
 
 TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   // This tests the case where selection contains one item and that item is a
   // folder.
@@ -426,7 +426,7 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
 
 // Verifies that meta info is copied when nodes are cloned.
 TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   // Add a node containing meta info.
   const BookmarkNode* node = model->AddURL(model->other_node(),
@@ -458,7 +458,7 @@ TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
 }
 
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
-  test::TestBookmarkClient client;
+  TestBookmarkClient client;
   // Load a model with an extra node that is not editable.
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;

@@ -11,7 +11,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 
-namespace test {
+namespace bookmarks {
 
 TestBookmarkClient::TestBookmarkClient() {}
 
@@ -88,4 +88,4 @@ bookmarks::BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
   return extra_nodes.Pass();
 }
 
-}  // namespace test
+}  // namespace bookmarks

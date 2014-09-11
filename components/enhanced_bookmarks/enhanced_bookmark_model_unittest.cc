@@ -26,7 +26,7 @@ class EnhancedBookmarkModelTest : public testing::Test {
   virtual ~EnhancedBookmarkModelTest() {}
 
   virtual void SetUp() OVERRIDE {
-    test::TestBookmarkClient bookmark_client;
+    bookmarks::TestBookmarkClient bookmark_client;
     bookmark_model_.reset(bookmark_client.CreateModel().release());
     model_.reset(new enhanced_bookmarks::EnhancedBookmarkModel(
         bookmark_model_.get(), "v1.0"));

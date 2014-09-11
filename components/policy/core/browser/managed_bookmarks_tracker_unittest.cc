@@ -162,7 +162,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
   base::MessageLoop loop_;
   TestingPrefServiceSimple prefs_;
-  test::TestBookmarkClient client_;
+  bookmarks::TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   bookmarks::MockBookmarkModelObserver observer_;
   BookmarkPermanentNode* managed_node_;

@@ -45,7 +45,7 @@ class BookmarkNodeDataTest : public testing::Test {
 
  private:
   base::ScopedTempDir profile_dir_;
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
 

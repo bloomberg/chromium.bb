@@ -9,6 +9,8 @@
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using bookmarks::TestBookmarkClient;
+
 namespace {
 
 const GURL bookmark_url("http://example.com/index.html");
@@ -33,7 +35,7 @@ class EnhancedBookmarkUtilsTest : public testing::Test {
 };
 
 TEST_F(EnhancedBookmarkUtilsTest, TestBookmarkSearch) {
-  test::TestBookmarkClient bookmark_client;
+  TestBookmarkClient bookmark_client;
   scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node1 = AddBookmark(bookmark_model.get(), "john hopkins");
   const BookmarkNode* node2 = AddBookmark(bookmark_model.get(), "JohN hopkins");

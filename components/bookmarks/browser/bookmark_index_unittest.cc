@@ -26,7 +26,7 @@ namespace {
 
 const char kAboutBlankURL[] = "about:blank";
 
-class BookmarkClientMock : public test::TestBookmarkClient {
+class BookmarkClientMock : public TestBookmarkClient {
  public:
   BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
       : typed_count_map_(typed_count_map) {}
@@ -132,7 +132,7 @@ class BookmarkIndexTest : public testing::Test {
   }
 
  protected:
-  test::TestBookmarkClient client_;
+  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
 
  private:
