@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/audio_stream_monitor.h"
+#include "chrome/browser/media/audio_stream_monitor.h"
 
 #include <map>
 #include <utility>
@@ -11,49 +11,52 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "content/browser/web_contents/web_contents_impl.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_power_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::InvokeWithoutArgs;
 
-namespace content {
-
 namespace {
 
-const int kRenderProcessId = 1;
-const int kAnotherRenderProcessId = 2;
 const int kStreamId = 3;
 const int kAnotherStreamId = 6;
 
 // Used to confirm audio indicator state changes occur at the correct times.
-class MockWebContentsDelegate : public WebContentsDelegate {
+class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
   MOCK_METHOD2(NavigationStateChanged,
-               void(const WebContents* source, InvalidateTypes changed_flags));
+               void(const content::WebContents* source,
+                    content::InvalidateTypes changed_flags));
 };
 
 }  // namespace
 
-class AudioStreamMonitorTest : public RenderViewHostTestHarness {
+class AudioStreamMonitorTest : public testing::Test {
  public:
   AudioStreamMonitorTest() {
     // Start |clock_| at non-zero.
     clock_.Advance(base::TimeDelta::FromSeconds(1000000));
+
+    // Create a WebContents instance and set it to use our mock delegate.
+    web_contents_.reset(content::WebContents::Create(
+        content::WebContents::CreateParams(&profile_, NULL)));
+    web_contents_->SetDelegate(&mock_web_contents_delegate_);
+
+    // Create an AudioStreamMonitor instance whose lifecycle is tied to that of
+    // |web_contents_|, and override its clock with the test clock.
+    AudioStreamMonitor::CreateForWebContents(web_contents_.get());
+    CHECK(audio_stream_monitor());
+    const_cast<base::TickClock*&>(audio_stream_monitor()->clock_) = &clock_;
   }
 
-  virtual void SetUp() OVERRIDE {
-    RenderViewHostTestHarness::SetUp();
-
-    WebContentsImpl* web_contents = reinterpret_cast<WebContentsImpl*>(
-        RenderViewHostTestHarness::web_contents());
-    web_contents->SetDelegate(&mock_web_contents_delegate_);
-    monitor_ = web_contents->audio_stream_monitor();
-    const_cast<base::TickClock*&>(monitor_->clock_) = &clock_;
+  AudioStreamMonitor* audio_stream_monitor() {
+    return AudioStreamMonitor::FromWebContents(web_contents_.get());
   }
 
   base::TimeTicks GetTestClockTime() { return clock_.NowTicks(); }
@@ -70,32 +73,31 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
     current_power_[stream_id] = power;
   }
 
-  void SimulatePollTimerFired() { monitor_->Poll(); }
+  void SimulatePollTimerFired() { audio_stream_monitor()->Poll(); }
 
-  void SimulateOffTimerFired() { monitor_->MaybeToggle(); }
+  void SimulateOffTimerFired() { audio_stream_monitor()->MaybeToggle(); }
 
-  void ExpectIsPolling(int render_process_id, int stream_id, bool is_polling) {
-    const AudioStreamMonitor::StreamID key(render_process_id, stream_id);
-    EXPECT_EQ(
-        is_polling,
-        monitor_->poll_callbacks_.find(key) != monitor_->poll_callbacks_.end());
-    EXPECT_EQ(!monitor_->poll_callbacks_.empty(),
-              monitor_->poll_timer_.IsRunning());
+  void ExpectIsPolling(int stream_id, bool is_polling) {
+    AudioStreamMonitor* const monitor = audio_stream_monitor();
+    EXPECT_EQ(is_polling,
+              monitor->poll_callbacks_.find(stream_id) !=
+                  monitor->poll_callbacks_.end());
+    EXPECT_EQ(!monitor->poll_callbacks_.empty(),
+              monitor->poll_timer_.IsRunning());
   }
 
   void ExpectTabWasRecentlyAudible(bool was_audible,
                                    const base::TimeTicks& last_blurt_time) {
-    EXPECT_EQ(was_audible, monitor_->was_recently_audible_);
-    EXPECT_EQ(last_blurt_time, monitor_->last_blurt_time_);
-    EXPECT_EQ(monitor_->was_recently_audible_,
-              monitor_->off_timer_.IsRunning());
+    AudioStreamMonitor* const monitor = audio_stream_monitor();
+    EXPECT_EQ(was_audible, monitor->was_recently_audible_);
+    EXPECT_EQ(last_blurt_time, monitor->last_blurt_time_);
+    EXPECT_EQ(monitor->was_recently_audible_, monitor->off_timer_.IsRunning());
   }
 
   void ExpectWebContentsWillBeNotifiedOnce(bool should_be_audible) {
-    EXPECT_CALL(
-        mock_web_contents_delegate_,
-        NavigationStateChanged(RenderViewHostTestHarness::web_contents(),
-                               INVALIDATE_TYPE_TAB))
+    EXPECT_CALL(mock_web_contents_delegate_,
+                NavigationStateChanged(web_contents_.get(),
+                                       content::INVALIDATE_TYPE_TAB))
         .WillOnce(InvokeWithoutArgs(
             this,
             should_be_audible
@@ -114,37 +116,25 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
         AudioStreamMonitor::kHoldOnMilliseconds);
   }
 
-  void StartMonitoring(
-      int render_process_id,
-      int stream_id,
-      const AudioStreamMonitor::ReadPowerAndClipCallback& callback) {
-    monitor_->StartMonitoringStreamOnUIThread(
-        render_process_id, stream_id, callback);
-  }
-
-  void StopMonitoring(int render_process_id, int stream_id) {
-    monitor_->StopMonitoringStreamOnUIThread(render_process_id, stream_id);
-  }
-
- protected:
-  AudioStreamMonitor* monitor_;
-
  private:
   std::pair<float, bool> ReadPower(int stream_id) {
     return std::make_pair(current_power_[stream_id], false);
   }
 
   void ExpectIsNotifyingForToggleOn() {
-    EXPECT_TRUE(monitor_->WasRecentlyAudible());
+    EXPECT_TRUE(audio_stream_monitor()->WasRecentlyAudible());
   }
 
   void ExpectIsNotifyingForToggleOff() {
-    EXPECT_FALSE(monitor_->WasRecentlyAudible());
+    EXPECT_FALSE(audio_stream_monitor()->WasRecentlyAudible());
   }
 
+  content::TestBrowserThreadBundle browser_thread_bundle_;
+  TestingProfile profile_;
   MockWebContentsDelegate mock_web_contents_delegate_;
   base::SimpleTestTickClock clock_;
   std::map<int, float> current_power_;
+  scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamMonitorTest);
 };
@@ -152,16 +142,17 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
 // Tests that AudioStreamMonitor is polling while it has a
 // ReadPowerAndClipCallback, and is not polling at other times.
 TEST_F(AudioStreamMonitorTest, PollsWhenProvidedACallback) {
-  EXPECT_FALSE(monitor_->WasRecentlyAudible());
-  ExpectIsPolling(kRenderProcessId, kStreamId, false);
+  EXPECT_FALSE(audio_stream_monitor()->WasRecentlyAudible());
+  ExpectIsPolling(kStreamId, false);
 
-  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
-  EXPECT_FALSE(monitor_->WasRecentlyAudible());
-  ExpectIsPolling(kRenderProcessId, kStreamId, true);
+  audio_stream_monitor()->StartMonitoringStream(kStreamId,
+                                                CreatePollCallback(kStreamId));
+  EXPECT_FALSE(audio_stream_monitor()->WasRecentlyAudible());
+  ExpectIsPolling(kStreamId, true);
 
-  StopMonitoring(kRenderProcessId, kStreamId);
-  EXPECT_FALSE(monitor_->WasRecentlyAudible());
-  ExpectIsPolling(kRenderProcessId, kStreamId, false);
+  audio_stream_monitor()->StopMonitoringStream(kStreamId);
+  EXPECT_FALSE(audio_stream_monitor()->WasRecentlyAudible());
+  ExpectIsPolling(kStreamId, false);
 }
 
 // Tests that AudioStreamMonitor debounces the power level readings it's taking,
@@ -169,7 +160,8 @@ TEST_F(AudioStreamMonitorTest, PollsWhenProvidedACallback) {
 // threshold.  See comments in audio_stream_monitor.h for expected behavior.
 TEST_F(AudioStreamMonitorTest,
        ImpulsesKeepIndicatorOnUntilHoldingPeriodHasPassed) {
-  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
+  audio_stream_monitor()->StartMonitoringStream(kStreamId,
+                                                CreatePollCallback(kStreamId));
 
   // Expect WebContents will get one call form AudioStreamMonitor to toggle the
   // indicator on upon the very first poll.
@@ -216,9 +208,11 @@ TEST_F(AudioStreamMonitorTest,
 // Tests that the AudioStreamMonitor correctly processes the blurts from two
 // different streams in the same tab.
 TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
-  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
-  StartMonitoring(
-      kRenderProcessId, kAnotherStreamId, CreatePollCallback(kAnotherStreamId));
+  audio_stream_monitor()->StartMonitoringStream(kStreamId,
+                                                CreatePollCallback(kStreamId));
+  audio_stream_monitor()->StartMonitoringStream(
+      kAnotherStreamId,
+      CreatePollCallback(kAnotherStreamId));
 
   base::TimeTicks last_blurt_time;
   ExpectTabWasRecentlyAudible(false, last_blurt_time);
@@ -282,16 +276,3 @@ TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
     ExpectTabWasRecentlyAudible(false, last_blurt_time);
   }
 }
-
-TEST_F(AudioStreamMonitorTest, MultipleRendererProcesses) {
-  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
-  StartMonitoring(
-      kAnotherRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
-  ExpectIsPolling(kRenderProcessId, kStreamId, true);
-  ExpectIsPolling(kAnotherRenderProcessId, kStreamId, true);
-  StopMonitoring(kAnotherRenderProcessId, kStreamId);
-  ExpectIsPolling(kRenderProcessId, kStreamId, true);
-  ExpectIsPolling(kAnotherRenderProcessId, kStreamId, false);
-}
-
-}  // namespace content
