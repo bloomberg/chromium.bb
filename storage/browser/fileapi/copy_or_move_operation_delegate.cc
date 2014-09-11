@@ -799,7 +799,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
       (file_system_context()
            ->GetFileSystemBackend(src_url.type())
            ->HasInplaceCopyImplementation(src_url.type()) ||
-       operation_type_ == OperationType::OPERATION_MOVE)) {
+       operation_type_ == OPERATION_MOVE)) {
     impl = new CopyOrMoveOnSameFileSystemImpl(
         operation_runner(), operation_type_, src_url, dest_url, option_,
         base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
