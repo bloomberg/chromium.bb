@@ -1194,8 +1194,8 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 
 #if defined(OS_CHROMEOS)
 void CdmAdapter::ReportOutputProtectionUMA(OutputProtectionStatus status) {
-  pp::UMAPrivate uma_interface_(this);
-  uma_interface_.HistogramEnumeration(
+  pp::UMAPrivate uma_interface(this);
+  uma_interface.HistogramEnumeration(
       "Media.EME.OutputProtection", status, OUTPUT_PROTECTION_MAX);
 }
 
