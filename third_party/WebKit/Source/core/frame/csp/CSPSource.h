@@ -14,7 +14,12 @@ class KURL;
 
 class CSPSource {
 public:
-    CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, bool hostHasWildcard, bool portHasWildcard);
+    enum WildcardDisposition {
+        HasWildcard,
+        NoWildcard
+    };
+
+    CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard);
     bool matches(const KURL&) const;
 
 private:
@@ -30,8 +35,8 @@ private:
     int m_port;
     String m_path;
 
-    bool m_hostHasWildcard;
-    bool m_portHasWildcard;
+    WildcardDisposition m_hostWildcard;
+    WildcardDisposition m_portWildcard;
 };
 
 } // namespace
