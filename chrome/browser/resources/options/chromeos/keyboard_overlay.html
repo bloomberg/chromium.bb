@@ -4,102 +4,99 @@
   <div class="content-area">
     <table class="option-control-table">
        <tr>
-         <td>
-           <label class="option-name" for="remap-search-key-to"
-               i18n-content="remapSearchKeyToContent">
-           </label>
+         <td class="option-name" id="remap-search-key-to-label"
+             i18n-content="remapSearchKeyToContent">
          </td>
          <td class="option-value">
-           <select id="remap-search-key-to" class="control"
+           <select class="control"
                data-type="number" i18n-options="remapSearchKeyToValue"
                metric="Options_KeyboardRemapSearchKey"
-               pref="settings.language.xkb_remap_search_key_to" dialog-pref>
+               pref="settings.language.xkb_remap_search_key_to"
+               aria-labelledby="remap-search-key-to-label" dialog-pref>
            </select>
          </td>
        </tr>
        <tr>
-         <td>
-           <label class="option-name" for="remap-control-key-to"
-               i18n-content="remapControlKeyToContent">
-           </label>
+         <td class="option-name" id="remap-control-key-to-label"
+             i18n-content="remapControlKeyToContent">
          </td>
          <td class="option-value">
-           <select id="remap-control-key-to" class="control"
+           <select class="control"
                data-type="number" i18n-options="remapControlKeyToValue"
                metric="Options_KeyboardRemapControlKey"
-               pref="settings.language.xkb_remap_control_key_to" dialog-pref>
+               pref="settings.language.xkb_remap_control_key_to"
+               aria-labelledby="remap-control-key-to-label" dialog-pref>
            </select>
          </td>
        </tr>
        <tr>
-         <td>
-           <label class="option-name" for="remap-alt-key-to"
-               i18n-content="remapAltKeyToContent">
-           </label>
+         <td class="option-name" id="remap-alt-key-to-label"
+             i18n-content="remapAltKeyToContent">
          </td>
          <td class="option-value">
-           <select id="remap-alt-key-to" class="control" data-type="number"
+           <select class="control" data-type="number"
                metric="Options_KeyboardRemapAltKey"
                pref="settings.language.xkb_remap_alt_key_to"
-               i18n-options="remapAltKeyToValue" dialog-pref></select>
+               i18n-options="remapAltKeyToValue"
+               aria-labelledby="remap-alt-key-to-label" dialog-pref></select>
          </td>
        </tr>
        <!-- The caps lock section is hidden by default. This is only visible
             when --has-chromeos-keyboard flag is not passed. -->
        <tr id="caps-lock-remapping-section" hidden>
-         <td>
-           <label class="option-name" for="remap-caps-lock-key-to"
+         <td class="option-name" id="remap-caps-lock-key-to-label"
                i18n-content="remapCapsLockKeyToContent">
-           </label>
          </td>
          <td class="option-value">
-           <select id="remap-caps-lock-key-to" class="control"
+           <select class="control"
                data-type="number"
                metric="Options_KeyboardRemapCapsLockKey"
                pref="settings.language.remap_caps_lock_key_to"
-               i18n-options="remapCapsLockKeyToValue" dialog-pref></select>
+               aria-labelledby="remap-caps-lock-key-to-label" dialog-pref>
+           </select>
          </td>
        </tr>
        <!-- The diamond key section is hidden by default. This is only visible
             when --has-chromeos-diamond-key flag is passed. -->
        <tr id="diamond-key-remapping-section" hidden>
-         <td>
-           <label class="option-name" for="remap-diamond-key-to"
-               i18n-content="remapDiamondKeyToContent">
-           </label>
+         <td class="option-name" id="remap-diamond-key-to-label"
+             i18n-content="remapDiamondKeyToContent">
          </td>
          <td class="option-value">
-           <select id="remap-diamond-key-to" class="control"
+           <select class="control"
                data-type="number"
                metric="Options_KeyboardRemapDiamondKey"
                pref="settings.language.remap_diamond_key_to"
-               i18n-options="remapDiamondKeyToValue" dialog-pref></select>
+               i18n-options="remapDiamondKeyToValue"
+               aria-labelledby="remap-diamond-key-to-label" dialog-pref>
+           </select>
          </td>
        </tr>
     </table>
     <div class="settings-row">
-      <div class="checkbox">
-        <span class="controlled-setting-with-label">
-          <input id="send-function-keys" type="checkbox"
-              pref="settings.language.send_function_keys" dialog-pref>
+      <div class="checkbox controlled-setting-with-label">
+        <label>
+          <input type="checkbox"
+              pref="settings.language.send_function_keys"
+              aria-describedby="send-function-keys-description" dialog-pref>
           <span>
-            <label for="send-function-keys" i18n-content="sendFunctionKeys">
-            </label>
+            <span i18n-content="sendFunctionKeys"></span>
             <span class="bubble-button controlled-setting-indicator"
                 pref="settings.language.send_function_keys"></span>
           </span>
-        </span>
+        </label>
       </div>
-      <label id="send-function-keys-description" for="send-function-keys"
-          i18n-content="sendFunctionKeysDescription">
-      </label>
+      <span id="send-function-keys-description"
+          i18n-content="sendFunctionKeysDescription"></span>
     </div>
     <div class="settings-row">
       <div class="checkbox">
-        <input id="enable-auto-repeat" type="checkbox"
-            pref="settings.language.xkb_auto_repeat_enabled_r2"
-            metric="Options_KeyboardAutoRepeat" dialog-pref>
-        <label for="enable-auto-repeat" i18n-content="enableAutoRepeat"></label>
+        <label>
+          <input id="enable-auto-repeat" type="checkbox"
+              pref="settings.language.xkb_auto_repeat_enabled_r2"
+              metric="Options_KeyboardAutoRepeat" dialog-pref>
+          <span i18n-content="enableAutoRepeat"></span>
+        </label>
       </div>
       <div id="auto-repeat-settings-section">
         <div class="row">
