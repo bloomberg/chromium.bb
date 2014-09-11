@@ -91,10 +91,10 @@
         '-std=c++11',
       ],
       'cflags_cc!': [
+        '-fno-exceptions',
         '-fno-rtti',
       ],
       'cflags!': [
-        '-fno-exceptions',
         '-fvisibility=hidden',
       ],
       'ldflags': [
