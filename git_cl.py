@@ -839,6 +839,53 @@ or verify this branch is set up to track another (via the --track argument to
         author,
         upstream=upstream_branch)
 
+  def GetStatus(self):
+    """Apply a rough heuristic to give a simple summary of an issue's review
+    or CQ status, assuming adherence to a common workflow.
+
+    Returns None if no issue for this branch, or one of the following keywords:
+      * 'error'   - error from review tool (including deleted issues)
+      * 'unsent'  - not sent for review
+      * 'waiting' - waiting for review
+      * 'reply'   - waiting for owner to reply to review
+      * 'lgtm'    - LGTM from at least one approved reviewer
+      * 'commit'  - in the commit queue
+      * 'closed'  - closed
+    """
+    if not self.GetIssue():
+      return None
+
+    try:
+      props = self.GetIssueProperties()
+    except urllib2.HTTPError:
+      return 'error'
+
+    if props.get('closed'):
+      # Issue is closed.
+      return 'closed'
+    if props.get('commit'):
+      # Issue is in the commit queue.
+      return 'commit'
+
+    try:
+      reviewers = self.GetApprovingReviewers()
+    except urllib2.HTTPError:
+      return 'error'
+
+    if reviewers:
+      # Was LGTM'ed.
+      return 'lgtm'
+
+    messages = props.get('messages') or []
+
+    if not messages:
+      # No message was sent.
+      return 'unsent'
+    if messages[-1]['sender'] != props.get('owner_email'):
+      # Non-LGTM reply from non-owner
+      return 'reply'
+    return 'waiting'
+
   def RunHook(self, committing, may_prompt, verbose, change):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
 
@@ -1218,6 +1265,19 @@ def CMDbaseurl(parser, args):
                   error_ok=False).strip()
 
 
+def color_for_status(status):
+  """Maps a Changelist status to color, for CMDstatus and other tools."""
+  return {
+    'unsent': Fore.RED,
+    'waiting': Fore.BLUE,
+    'reply': Fore.YELLOW,
+    'lgtm': Fore.GREEN,
+    'commit': Fore.MAGENTA,
+    'closed': Fore.CYAN,
+    'error': Fore.WHITE,
+  }.get(status, Fore.WHITE)
+
+
 def CMDstatus(parser, args):
   """Show status of changelists.
 
@@ -1277,36 +1337,13 @@ def CMDstatus(parser, args):
       """Fetches information for an issue and returns (branch, issue, color)."""
       c = Changelist(branchref=b)
       i = c.GetIssueURL()
-      props = {}
-      r = None
-      if i:
-        try:
-          props = c.GetIssueProperties()
-          r = c.GetApprovingReviewers() if i else None
-        except urllib2.HTTPError:
-          # The issue probably doesn't exist anymore.
-          i += ' (broken)'
+      status = c.GetStatus()
+      color = color_for_status(status)
 
-      msgs = props.get('messages') or []
+      if i and (not status or status == 'error'):
+        # The issue probably doesn't exist anymore.
+        i += ' (broken)'
 
-      if not i:
-        color = Fore.WHITE
-      elif props.get('closed'):
-        # Issue is closed.
-        color = Fore.CYAN
-      elif props.get('commit'):
-        # Issue is in the commit queue.
-        color = Fore.MAGENTA
-      elif r:
-        # Was LGTM'ed.
-        color = Fore.GREEN
-      elif not msgs:
-        # No message was sent.
-        color = Fore.RED
-      elif msgs[-1]['sender'] != props.get('owner_email'):
-        color = Fore.YELLOW
-      else:
-        color = Fore.BLUE
       output.put((b, i, color))
 
     # Process one branch synchronously to work through authentication, then
