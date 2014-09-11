@@ -124,50 +124,6 @@ TEST_F(DeviceEventRouterTest, AddAndRemoveDevice) {
   EXPECT_EQ("/device/test", device_event_router->events[0].device_path);
 }
 
-TEST_F(DeviceEventRouterTest, DeviceScan) {
-  const Disk disk = CreateTestDisk("/device/test", "/mount/path1");
-  const Disk disk_unmounted = CreateTestDisk("/device/test", "");
-  const VolumeInfo volumeInfo =
-      CreateTestVolumeInfo("/device/test", "/mount/path1");
-  device_event_router->OnDeviceAdded("/device/test");
-  base::RunLoop().RunUntilIdle();
-  device_event_router->OnDiskAdded(disk, true);
-  device_event_router->OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, volumeInfo);
-  device_event_router->OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE,
-                                         volumeInfo);
-  device_event_router->OnDiskRemoved(disk_unmounted);
-  device_event_router->OnDeviceRemoved("/device/test");
-  ASSERT_EQ(2u, device_event_router->events.size());
-  EXPECT_EQ(file_manager_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
-            device_event_router->events[0].type);
-  EXPECT_EQ("/device/test", device_event_router->events[0].device_path);
-  EXPECT_EQ(file_manager_private::DEVICE_EVENT_TYPE_REMOVED,
-            device_event_router->events[1].type);
-  EXPECT_EQ("/device/test", device_event_router->events[1].device_path);
-}
-
-TEST_F(DeviceEventRouterTest, DeviceScanCancelled) {
-  const Disk disk = CreateTestDisk("/device/test", "/mount/path1");
-  const Disk disk_unmounted = CreateTestDisk("/device/test", "");
-  const VolumeInfo volumeInfo =
-      CreateTestVolumeInfo("/device/test", "/mount/path1");
-  device_event_router->OnDeviceAdded("/device/test");
-  base::RunLoop().RunUntilIdle();
-  device_event_router->OnDiskAdded(disk, false);
-  device_event_router->OnDiskRemoved(disk_unmounted);
-  device_event_router->OnDeviceRemoved("/device/test");
-  ASSERT_EQ(3u, device_event_router->events.size());
-  EXPECT_EQ(file_manager_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
-            device_event_router->events[0].type);
-  EXPECT_EQ("/device/test", device_event_router->events[0].device_path);
-  EXPECT_EQ(file_manager_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
-            device_event_router->events[1].type);
-  EXPECT_EQ("/device/test", device_event_router->events[1].device_path);
-  EXPECT_EQ(file_manager_private::DEVICE_EVENT_TYPE_REMOVED,
-            device_event_router->events[2].type);
-  EXPECT_EQ("/device/test", device_event_router->events[2].device_path);
-}
-
 TEST_F(DeviceEventRouterTest, HardUnplugged) {
   const Disk disk1 = CreateTestDisk("/device/test", "/mount/path1");
   const Disk disk2 = CreateTestDisk("/device/test", "/mount/path2");

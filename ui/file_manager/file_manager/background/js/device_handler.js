@@ -94,15 +94,6 @@ DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
  * @type {DeviceHandler.Notification}
  * @const
  */
-DeviceHandler.Notification.DEVICE = new DeviceHandler.Notification(
-    'device',
-    'REMOVABLE_DEVICE_DETECTION_TITLE',
-    'REMOVABLE_DEVICE_SCANNING_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
 DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
     'deviceNavigation',
     'REMOVABLE_DEVICE_DETECTION_TITLE',
@@ -227,18 +218,11 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
  */
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
   switch (event.type) {
-    case 'scan_started':
-      DeviceHandler.Notification.DEVICE.show(event.devicePath);
-      break;
-    case 'scan_cancelled':
-      DeviceHandler.Notification.DEVICE.hide(event.devicePath);
-      break;
     case 'disabled':
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.show(
           event.devicePath);
       break;
     case 'removed':
-      DeviceHandler.Notification.DEVICE.hide(event.devicePath);
       DeviceHandler.Notification.DEVICE_FAIL.hide(event.devicePath);
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.hide(
           event.devicePath);
@@ -349,7 +333,6 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
       return;
     // If this is the first result, hide the scanning notification.
     case DeviceHandler.MountStatus.NO_RESULT:
-      DeviceHandler.Notification.DEVICE.hide(volume.devicePath);
       this.mountStatus_[volume.devicePath] = getFirstStatus(event);
       break;
     // If there are only parent errors, and the new result is child's one, hide

@@ -98,10 +98,6 @@ enum InspectionType {
 
 // Device event type.
 enum DeviceEventType {
-  // Device scan is started.
-  scan_started,
-  // Device scan is cancelled.
-  scan_cancelled,
   // If the device is disabled by preference.
   disabled,
   // Device is removed.

@@ -17,7 +17,6 @@ using content::BrowserThread;
 DeviceEventRouter::DeviceEventRouter()
     : resume_time_delta_(base::TimeDelta::FromSeconds(5)),
       startup_time_delta_(base::TimeDelta::FromSeconds(10)),
-      scan_time_delta_(base::TimeDelta::FromSeconds(5)),
       is_starting_up_(false),
       is_resuming_(false),
       weak_factory_(this) {
@@ -26,7 +25,6 @@ DeviceEventRouter::DeviceEventRouter()
 DeviceEventRouter::DeviceEventRouter(base::TimeDelta overriding_time_delta)
     : resume_time_delta_(overriding_time_delta),
       startup_time_delta_(overriding_time_delta),
-      scan_time_delta_(overriding_time_delta),
       is_starting_up_(false),
       is_resuming_(false),
       weak_factory_(this) {
@@ -52,34 +50,11 @@ void DeviceEventRouter::StartupDelayed() {
 void DeviceEventRouter::OnDeviceAdded(const std::string& device_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (is_starting_up_ || is_resuming_) {
-    SetDeviceState(device_path, DEVICE_STATE_USUAL);
-    return;
-  }
-
+  SetDeviceState(device_path, DEVICE_STATE_USUAL);
   if (IsExternalStorageDisabled()) {
     OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_DISABLED,
                   device_path);
-    SetDeviceState(device_path, DEVICE_STATE_USUAL);
     return;
-  }
-
-  SetDeviceState(device_path, DEVICE_SCANNED);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DeviceEventRouter::OnDeviceAddedDelayed,
-                 weak_factory_.GetWeakPtr(),
-                 device_path),
-      scan_time_delta_);
-}
-
-void DeviceEventRouter::OnDeviceAddedDelayed(const std::string& device_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (GetDeviceState(device_path) == DEVICE_SCANNED) {
-    OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
-                  device_path);
-    SetDeviceState(device_path, DEVICE_SCANNED_AND_REPORTED);
   }
 }
 
@@ -92,17 +67,7 @@ void DeviceEventRouter::OnDeviceRemoved(const std::string& device_path) {
 void DeviceEventRouter::OnDiskAdded(
     const chromeos::disks::DiskMountManager::Disk& disk,
     bool mounting) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!mounting) {
-    // If the disk is not being mounted, mark the device scan cancelled.
-    const std::string& device_path = disk.system_path_prefix();
-    if (GetDeviceState(device_path) == DEVICE_SCANNED_AND_REPORTED) {
-      OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
-                    device_path);
-    }
-    SetDeviceState(device_path, DEVICE_STATE_USUAL);
-  }
+  // Do nothing.
 }
 
 void DeviceEventRouter::OnDiskRemoved(

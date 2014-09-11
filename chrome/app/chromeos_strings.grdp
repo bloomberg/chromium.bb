@@ -3746,9 +3746,6 @@ Battery full
   <message name="IDS_REMOVABLE_DEVICE_DETECTION_TITLE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
     Removable device detected
   </message>
-  <message name="IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
-    Scanning content...
-  </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to Files.app. If user clicks a button in the notification, Files.app opens.">
     Explore the device's content in the Files app.
   </message>

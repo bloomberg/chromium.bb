@@ -25,7 +25,6 @@ function setUp() {
   // Set up string assets.
   loadTimeData.data = {
     REMOVABLE_DEVICE_DETECTION_TITLE: 'Device detected',
-    REMOVABLE_DEVICE_SCANNING_MESSAGE: 'Scanning...',
     REMOVABLE_DEVICE_NAVIGATION_MESSAGE: 'DEVICE_NAVIGATION',
     REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
     DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
@@ -356,29 +355,6 @@ function testMulitpleFail() {
   assertEquals(
       'MULTIPART_DEVICE_UNSUPPORTED: label',
       chrome.notifications.items['deviceFail:/device/path'].message);
-}
-
-function testScanCanceled() {
-  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
-    type: 'scan_started',
-    devicePath: '/device/path'
-  });
-  assertTrue('device:/device/path' in chrome.notifications.items);
-  assertEquals('Scanning...',
-               chrome.notifications.items['device:/device/path'].message);
-
-  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
-    type: 'scan_cancelled',
-    devicePath: '/device/path'
-  });
-  assertEquals(0, Object.keys(chrome.notifications.items).length);
-
-  // Nothing happened.
-  chrome.fileManagerPrivate.onDeviceChanged.dispatch({
-    type: 'removed',
-    devicePath: '/device/path'
-  });
-  assertEquals(0, Object.keys(chrome.notifications.items).length);
 }
 
 function testDisabledDevice() {

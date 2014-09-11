@@ -17,11 +17,11 @@
 namespace file_manager {
 
 enum DeviceState {
-  // Device is not being scanned and is not hard unplugged.
+  // Device is not being hard unplugged.
   DEVICE_STATE_USUAL,
-  DEVICE_SCANNED,
-  DEVICE_SCANNED_AND_REPORTED,
+  // Device is hard unplugged.
   DEVICE_HARD_UNPLUGGED,
+  // Device is hard unplugged and reported to the JavaScript side.
   DEVICE_HARD_UNPLUGGED_AND_REPORTED
 };
 
@@ -85,7 +85,6 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Whther to use zero time delta for testing or not.
   const base::TimeDelta resume_time_delta_;
   const base::TimeDelta startup_time_delta_;
-  const base::TimeDelta scan_time_delta_;
 
   // Whether the profile is starting up or not.
   bool is_starting_up_;
