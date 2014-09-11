@@ -1226,9 +1226,6 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     }
     m_mouseDownWasInSubframe = false;
 
-    // Mouse events simulated from touch should not hit-test again.
-    ASSERT(!mouseEvent.fromTouch());
-
     HitTestRequest request(HitTestRequest::Active);
     // Save the document point we generate in case the window coordinate is invalidated by what happens
     // when we dispatch the event.
@@ -2288,11 +2285,11 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
     m_longTapShouldInvokeContextMenu = false;
     if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
-            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, WTF::currentTime());
         m_mouseDown = mouseDownEvent;
 
         PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
-            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly);
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
         m_didStartDrag = false;
@@ -2808,7 +2805,7 @@ bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestR
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
 #endif
 
-    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::FromTouch, WTF::currentTime());
     // To simulate right-click behavior, we send a right mouse down and then
     // context menu event.
     // FIXME: Send HitTestResults to avoid redundant hit tests.

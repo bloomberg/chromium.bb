@@ -293,9 +293,9 @@ bool PopupContainer::handleGestureEvent(const PlatformGestureEvent& gestureEvent
 {
     switch (gestureEvent.type()) {
     case PlatformEvent::GestureTap: {
-        PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(), NoButton, PlatformEvent::MouseMoved, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::RealOrIndistinguishable, gestureEvent.timestamp());
-        PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::RealOrIndistinguishable, gestureEvent.timestamp());
-        PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseReleased, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::RealOrIndistinguishable, gestureEvent.timestamp());
+        PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(), NoButton, PlatformEvent::MouseMoved, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
+        PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
+        PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseReleased, /* clickCount */ 1, gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
         // handleMouseMoveEvent(fakeMouseMove);
         handleMouseDownEvent(fakeMouseDown);
         handleMouseReleaseEvent(fakeMouseUp);
