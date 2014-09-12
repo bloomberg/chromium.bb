@@ -72,7 +72,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, 
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const FontFaceDescriptors* descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const FontFaceDescriptors& descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
 
@@ -84,14 +84,14 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, con
     return fontFace.release();
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors* descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors& descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->data()), source->byteLength());
     return fontFace.release();
 }
 
-PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBufferView> source, const FontFaceDescriptors* descriptors)
+PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBufferView> source, const FontFaceDescriptors& descriptors)
 {
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(context, family, descriptors));
     fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->baseAddress()), source->byteLength());
@@ -132,17 +132,17 @@ FontFace::FontFace()
 {
 }
 
-FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const FontFaceDescriptors* descriptors)
+FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const FontFaceDescriptors& descriptors)
     : m_family(family)
     , m_status(Unloaded)
 {
     Document* document = toDocument(context);
-    setPropertyFromString(document, descriptors->style(), CSSPropertyFontStyle);
-    setPropertyFromString(document, descriptors->weight(), CSSPropertyFontWeight);
+    setPropertyFromString(document, descriptors.style(), CSSPropertyFontStyle);
+    setPropertyFromString(document, descriptors.weight(), CSSPropertyFontWeight);
     // FIXME: we don't implement 'font-strech' property yet so we can't set the property.
-    setPropertyFromString(document, descriptors->unicodeRange(), CSSPropertyUnicodeRange);
-    setPropertyFromString(document, descriptors->variant(), CSSPropertyFontVariant);
-    setPropertyFromString(document, descriptors->featureSettings(), CSSPropertyWebkitFontFeatureSettings);
+    setPropertyFromString(document, descriptors.unicodeRange(), CSSPropertyUnicodeRange);
+    setPropertyFromString(document, descriptors.variant(), CSSPropertyFontVariant);
+    setPropertyFromString(document, descriptors.featureSettings(), CSSPropertyWebkitFontFeatureSettings);
 }
 
 FontFace::~FontFace()

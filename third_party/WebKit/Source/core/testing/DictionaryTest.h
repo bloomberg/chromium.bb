@@ -25,7 +25,7 @@ public:
     virtual ~DictionaryTest();
 
     // Stores all members into corresponding fields
-    void set(const InternalDictionary*);
+    void set(const InternalDictionary&);
     // Creates a TestDictionary instnace from fields and returns it
     InternalDictionary* get();
 

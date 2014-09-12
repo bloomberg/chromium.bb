@@ -17,35 +17,35 @@ DictionaryTest::~DictionaryTest()
 {
 }
 
-void DictionaryTest::set(const InternalDictionary* testingDictionary)
+void DictionaryTest::set(const InternalDictionary& testingDictionary)
 {
     reset();
-    if (testingDictionary->hasLongMember())
-        m_longMember = testingDictionary->longMember();
-    m_longMemberWithDefault = testingDictionary->longMemberWithDefault();
-    if (testingDictionary->hasLongOrNullMember())
-        m_longOrNullMember = testingDictionary->longOrNullMember();
+    if (testingDictionary.hasLongMember())
+        m_longMember = testingDictionary.longMember();
+    m_longMemberWithDefault = testingDictionary.longMemberWithDefault();
+    if (testingDictionary.hasLongOrNullMember())
+        m_longOrNullMember = testingDictionary.longOrNullMember();
     // |longOrNullMemberWithDefault| has a default value but can be null, so
     // we need to check availability.
-    if (testingDictionary->hasLongOrNullMemberWithDefault())
-        m_longOrNullMemberWithDefault = testingDictionary->longOrNullMemberWithDefault();
-    if (testingDictionary->hasBooleanMember())
-        m_booleanMember = testingDictionary->booleanMember();
-    if (testingDictionary->hasDoubleMember())
-        m_doubleMember = testingDictionary->doubleMember();
-    m_stringMember = testingDictionary->stringMember();
-    m_stringMemberWithDefault = testingDictionary->stringMemberWithDefault();
-    if (testingDictionary->hasStringSequenceMember())
-        m_stringSequenceMember = testingDictionary->stringSequenceMember();
-    if (testingDictionary->hasStringSequenceOrNullMember())
-        m_stringSequenceOrNullMember = testingDictionary->stringSequenceOrNullMember();
-    m_enumMember = testingDictionary->enumMember();
-    m_enumMemberWithDefault = testingDictionary->enumMemberWithDefault();
-    m_enumOrNullMember = testingDictionary->enumOrNullMember();
-    if (testingDictionary->hasElementMember())
-        m_elementMember = testingDictionary->elementMember();
-    if (testingDictionary->hasElementOrNullMember())
-        m_elementOrNullMember = testingDictionary->elementOrNullMember();
+    if (testingDictionary.hasLongOrNullMemberWithDefault())
+        m_longOrNullMemberWithDefault = testingDictionary.longOrNullMemberWithDefault();
+    if (testingDictionary.hasBooleanMember())
+        m_booleanMember = testingDictionary.booleanMember();
+    if (testingDictionary.hasDoubleMember())
+        m_doubleMember = testingDictionary.doubleMember();
+    m_stringMember = testingDictionary.stringMember();
+    m_stringMemberWithDefault = testingDictionary.stringMemberWithDefault();
+    if (testingDictionary.hasStringSequenceMember())
+        m_stringSequenceMember = testingDictionary.stringSequenceMember();
+    if (testingDictionary.hasStringSequenceOrNullMember())
+        m_stringSequenceOrNullMember = testingDictionary.stringSequenceOrNullMember();
+    m_enumMember = testingDictionary.enumMember();
+    m_enumMemberWithDefault = testingDictionary.enumMemberWithDefault();
+    m_enumOrNullMember = testingDictionary.enumOrNullMember();
+    if (testingDictionary.hasElementMember())
+        m_elementMember = testingDictionary.elementMember();
+    if (testingDictionary.hasElementOrNullMember())
+        m_elementOrNullMember = testingDictionary.elementOrNullMember();
 }
 
 InternalDictionary* DictionaryTest::get()

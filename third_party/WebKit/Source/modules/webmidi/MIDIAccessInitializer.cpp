@@ -17,13 +17,12 @@
 
 namespace blink {
 
-MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions* options)
+MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState)
     , m_requestSysex(false)
 {
-    ASSERT(options);
-    if (options->hasSysex())
-        m_requestSysex = options->sysex();
+    if (options.hasSysex())
+        m_requestSysex = options.sysex();
 }
 
 MIDIAccessInitializer::~MIDIAccessInitializer()

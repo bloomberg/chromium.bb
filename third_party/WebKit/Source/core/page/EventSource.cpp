@@ -59,10 +59,10 @@ namespace blink {
 
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
-inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const EventSourceInit* eventSourceInit)
+inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const EventSourceInit& eventSourceInit)
     : ActiveDOMObject(context)
     , m_url(url)
-    , m_withCredentials(eventSourceInit->withCredentials())
+    , m_withCredentials(eventSourceInit.withCredentials())
     , m_state(CONNECTING)
     , m_decoder(TextResourceDecoder::create("text/plain", "UTF-8"))
     , m_connectTimer(this, &EventSource::connectTimerFired)
@@ -72,7 +72,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
 {
 }
 
-PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit* eventSourceInit, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit& eventSourceInit, ExceptionState& exceptionState)
 {
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");

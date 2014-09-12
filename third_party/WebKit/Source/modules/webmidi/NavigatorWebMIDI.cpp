@@ -70,12 +70,12 @@ NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
     return *supplement;
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const MIDIOptions* options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const MIDIOptions& options)
 {
     return NavigatorWebMIDI::from(navigator).requestMIDIAccess(scriptState, options);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const MIDIOptions* options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const MIDIOptions& options)
 {
     if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

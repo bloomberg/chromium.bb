@@ -8116,7 +8116,7 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
             testDictionaryArg = TestDictionary::create();
         }
     }
-    impl->overloadedMethodJ(testDictionaryArg);
+    impl->overloadedMethodJ(*testDictionaryArg);
 }
 
 static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info)

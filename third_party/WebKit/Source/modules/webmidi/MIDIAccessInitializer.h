@@ -37,7 +37,7 @@ public:
             , version(version) { }
     };
 
-    static ScriptPromise start(ScriptState* scriptState, const MIDIOptions* options)
+    static ScriptPromise start(ScriptState* scriptState, const MIDIOptions& options)
     {
         RefPtr<MIDIAccessInitializer> p = adoptRef(new MIDIAccessInitializer(scriptState, options));
         p->keepAliveWhilePending();
@@ -59,7 +59,7 @@ public:
 private:
     ScriptPromise start();
 
-    MIDIAccessInitializer(ScriptState*, const MIDIOptions*);
+    MIDIAccessInitializer(ScriptState*, const MIDIOptions&);
 
     ExecutionContext* executionContext() const;
 

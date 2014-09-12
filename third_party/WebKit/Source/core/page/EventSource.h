@@ -56,7 +56,7 @@ class EventSource FINAL : public RefCountedWillBeGarbageCollectedFinalized<Event
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassRefPtrWillBeRawPtr<EventSource> create(ExecutionContext*, const String& url, const EventSourceInit*, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<EventSource> create(ExecutionContext*, const String& url, const EventSourceInit&, ExceptionState&);
     virtual ~EventSource();
 
     static const unsigned long long defaultReconnectDelay;
@@ -91,7 +91,7 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
 
 private:
-    EventSource(ExecutionContext*, const KURL&, const EventSourceInit*);
+    EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(const char*, int) OVERRIDE;

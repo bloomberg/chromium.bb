@@ -58,9 +58,9 @@ class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, pub
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors*);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const FontFaceDescriptors*);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors*);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const FontFaceDescriptors&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
     static PassRefPtrWillBeRawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
@@ -109,7 +109,7 @@ public:
 
 private:
     FontFace();
-    FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors*);
+    FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors&);
 
     void initCSSFontFace(Document*, PassRefPtrWillBeRawPtr<CSSValue> src);
     void initCSSFontFace(const unsigned char* data, unsigned size);
