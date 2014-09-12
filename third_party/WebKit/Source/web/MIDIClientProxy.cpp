@@ -47,7 +47,7 @@ void MIDIClientProxy::requestSysexPermission(MIDIAccessInitializer* initializer)
     if (m_client)
         m_client->requestSysexPermission(WebMIDIPermissionRequest(initializer));
     else
-        initializer->setSysexEnabled(false);
+        initializer->resolveSysexPermission(false);
 }
 
 void MIDIClientProxy::cancelSysexPermissionRequest(MIDIAccessInitializer* initializer)

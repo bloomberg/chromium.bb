@@ -47,8 +47,8 @@ class NavigatorWebMIDI FINAL : public NoBaseWillBeGarbageCollected<NavigatorWebM
 public:
     static NavigatorWebMIDI& from(Navigator&);
 
-    static ScriptPromise requestMIDIAccess(ScriptState*, Navigator&, const Dictionary&);
-    ScriptPromise requestMIDIAccess(ScriptState*, const Dictionary&);
+    static ScriptPromise requestMIDIAccess(ScriptState*, Navigator&, const MIDIOptions*);
+    ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions*);
 
     virtual void trace(Visitor*) OVERRIDE;
 

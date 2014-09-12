@@ -56,7 +56,7 @@ void MIDIClientMock::resetMock()
 
 void MIDIClientMock::requestSysexPermission(MIDIAccessInitializer* initializer)
 {
-    initializer->setSysexEnabled(m_allowed);
+    initializer->resolveSysexPermission(m_allowed);
 }
 
 void MIDIClientMock::cancelSysexPermissionRequest(MIDIAccessInitializer*)

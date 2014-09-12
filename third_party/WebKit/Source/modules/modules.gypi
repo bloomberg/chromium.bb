@@ -275,6 +275,9 @@
       'webmidi/MIDIMessageEvent.idl',
       'websockets/CloseEvent.idl',
     ],
+    'modules_dictionary_idl_files': [
+      'webmidi/MIDIOptions.idl',
+    ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
       '<(blink_modules_output_dir)/EventModules.cpp',
@@ -286,8 +289,13 @@
       '<(blink_modules_output_dir)/IndexedDBNames.cpp',
       '<(blink_modules_output_dir)/IndexedDBNames.h',
     ],
+    'generated_modules_dictionary_files': [
+      '<(blink_modules_output_dir)/webmidi/MIDIOptions.cpp',
+      '<(blink_modules_output_dir)/webmidi/MIDIOptions.h',
+    ],
     'modules_files': [
       '<@(extra_blink_module_files)',
+      '<@(generated_modules_dictionary_files)',
       '<@(generated_modules_files)',
       'InitModules.cpp',
       'InitModules.h',
@@ -940,7 +948,6 @@
       'webmidi/MIDIInputMap.h',
       'webmidi/MIDIMessageEvent.h',
       'webmidi/MIDIPortMap.h',
-      'webmidi/MIDIOptions.h',
       'webmidi/MIDIOutput.cpp',
       'webmidi/MIDIOutput.h',
       'webmidi/MIDIOutputMap.cpp',

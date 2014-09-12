@@ -14,15 +14,21 @@
   'variables': {
     # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 
+    'modules_definition_idl_files': [
+      '<@(modules_dictionary_idl_files)',
+      '<@(modules_idl_files)',
+    ],
+
     # Interface IDL files: generate individual bindings (includes testing)
     'modules_interface_idl_files': [
       # No testing or generated interface IDL files in modules currently
-      '<@(modules_idl_files)',
+      '<@(modules_definition_idl_files)',
     ],
 
     # Write lists of main IDL files to a file, so that the command lines don't
     # exceed OS length limits.
-    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
+    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_definition_idl_files))',
+    'modules_dictionary_idl_files_list': '<|(modules_dictionary_idl_files_list.tmp <@(modules_dictionary_idl_files))',
 
     # Dependency IDL files: don't generate individual bindings, but do process
     # in IDL dependency computation, and count as build dependencies
@@ -56,7 +62,7 @@
 
     # Static IDL files
     'modules_static_interface_idl_files': [
-      '<@(modules_idl_files)',
+      '<@(modules_definition_idl_files)',
     ],
     'modules_static_dependency_idl_files': [
       '<@(modules_dependency_idl_files)',

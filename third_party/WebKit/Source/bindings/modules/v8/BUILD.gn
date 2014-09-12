@@ -11,6 +11,7 @@ visibility = [ "//third_party/WebKit/*" ]
 # bindings_modules_generated in modules/v8/generated.gyp
 group("bindings_modules_generated") {
   deps = [
+    ":bindings_modules_dictionary_impl_generated",
     ":bindings_modules_generated_aggregate",
     ":bindings_modules_generated_individual",
   ]
@@ -18,7 +19,7 @@ group("bindings_modules_generated") {
 
 # bindings_modules_generated_aggregate in modules/v8/generated.gyp
 aggregate_generated_bindings("bindings_modules_generated_aggregate") {
-  sources = modules_idl_files
+  sources = modules_definition_idl_files
   component_dir = "modules"
   outputs = bindings_modules_generated_aggregate_files
 }
@@ -26,7 +27,13 @@ aggregate_generated_bindings("bindings_modules_generated_aggregate") {
 # bindings_modules_generated_individual in modules/v8/generated.gyp
 idl_compiler("bindings_modules_generated_individual") {
   # Note in GYP this is modules_interface_idl_files but this variable is just
-  # defined to modules_idl_files.
-  sources = modules_idl_files
+  # defined to modules_definition_idl_files.
+  sources = modules_definition_idl_files
   output_dir = bindings_modules_v8_output_dir
+}
+
+# bindings_modules_dictionary_impl_generated in modules/v8/generated.gyp
+idl_dictionary("bindings_modules_dictionary_impl_generated") {
+  sources = modules_dictionary_idl_files
+  outputs = generated_modules_dictionary_files
 }

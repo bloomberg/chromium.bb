@@ -7,9 +7,13 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 
+modules_definition_idl_files =
+  modules_dictionary_idl_files +
+  modules_idl_files
+
 # Static IDL files
 modules_static_interface_idl_files =
-  modules_idl_files
+  modules_definition_idl_files
 modules_static_dependency_idl_files =
   modules_dependency_idl_files +
   modules_testing_dependency_idl_files

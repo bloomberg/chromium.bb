@@ -47,7 +47,6 @@ class MIDIInput;
 class MIDIInputMap;
 class MIDIOutput;
 class MIDIOutputMap;
-struct MIDIOptions;
 
 class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIAccess>);

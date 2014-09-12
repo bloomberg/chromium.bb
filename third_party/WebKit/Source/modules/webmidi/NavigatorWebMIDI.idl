@@ -31,5 +31,5 @@
 [
     RuntimeEnabled=WebMIDI,
 ] partial interface Navigator {
-    [CallWith=ScriptState] Promise requestMIDIAccess(optional Dictionary options);
+    [CallWith=ScriptState] Promise requestMIDIAccess(optional MIDIOptions options);
 };

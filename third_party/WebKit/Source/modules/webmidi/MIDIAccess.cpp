@@ -39,7 +39,6 @@
 #include "modules/webmidi/MIDIController.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIInputMap.h"
-#include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIOutput.h"
 #include "modules/webmidi/MIDIOutputMap.h"
 #include "modules/webmidi/MIDIPort.h"

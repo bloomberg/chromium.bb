@@ -70,12 +70,12 @@ NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
     return *supplement;
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const MIDIOptions* options)
 {
     return NavigatorWebMIDI::from(navigator).requestMIDIAccess(scriptState, options);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const MIDIOptions* options)
 {
     if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
@@ -85,7 +85,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, cons
         return promise;
     }
 
-    return MIDIAccessInitializer::start(scriptState, MIDIOptions(options));
+    return MIDIAccessInitializer::start(scriptState, options);
 }
 
 } // namespace blink

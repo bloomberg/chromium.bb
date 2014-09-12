@@ -17,11 +17,13 @@
 
 namespace blink {
 
-MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
+MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions* options)
     : ScriptPromiseResolver(scriptState)
-    , m_options(options)
-    , m_sysexEnabled(false)
+    , m_requestSysex(false)
 {
+    ASSERT(options);
+    if (options->hasSysex())
+        m_requestSysex = options->sysex();
 }
 
 MIDIAccessInitializer::~MIDIAccessInitializer()
@@ -39,7 +41,7 @@ ScriptPromise MIDIAccessInitializer::start()
     ScriptPromise promise = this->promise();
     m_accessor = MIDIAccessor::create(this);
 
-    if (!m_options.sysex) {
+    if (!m_requestSysex) {
         m_accessor->startSession();
         return promise;
     }
@@ -70,16 +72,15 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
 {
     ASSERT(m_accessor);
     if (success) {
-        resolve(MIDIAccess::create(m_accessor.release(), m_sysexEnabled, m_portDescriptors, executionContext()));
+        resolve(MIDIAccess::create(m_accessor.release(), m_requestSysex, m_portDescriptors, executionContext()));
     } else {
         reject(DOMError::create(error, message));
     }
 }
 
-void MIDIAccessInitializer::setSysexEnabled(bool enable)
+void MIDIAccessInitializer::resolveSysexPermission(bool allowed)
 {
-    m_sysexEnabled = enable;
-    if (enable)
+    if (allowed)
         m_accessor->startSession();
     else
         reject(DOMError::create("SecurityError"));
