@@ -3349,10 +3349,8 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
 
         // This will handle the trailing/leading <custom-ident>* in the grammar.
         trailingIdentWasAdded = false;
-        if (m_valueList->current() && m_valueList->current()->unit == CSSParserValue::ValueList) {
-            parseGridLineNames(*m_valueList, *templateRows);
-            trailingIdentWasAdded = true;
-        }
+        if (m_valueList->current() && m_valueList->current()->unit == CSSParserValue::ValueList)
+            trailingIdentWasAdded = parseGridLineNames(*m_valueList, *templateRows);
     }
 
     // [<track-list> /]?
@@ -3540,14 +3538,14 @@ bool CSSPropertyParser::parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>
     return true;
 }
 
-void CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSValueList& valueList, CSSGridLineNamesValue* previousNamedAreaTrailingLineNames)
+bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSValueList& valueList, CSSGridLineNamesValue* previousNamedAreaTrailingLineNames)
 {
     ASSERT(inputList.current() && inputList.current()->unit == CSSParserValue::ValueList);
 
     CSSParserValueList* identList = inputList.current()->valueList;
     if (!identList->size()) {
         inputList.next();
-        return;
+        return false;
     }
 
     // Need to ensure the identList is at the heading index, since the parserList might have been rewound.
@@ -3566,6 +3564,7 @@ void CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
         valueList.append(lineNames.release());
 
     inputList.next();
+    return true;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
