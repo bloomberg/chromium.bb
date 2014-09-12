@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -1418,12 +1419,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
       content::Source<Panel>(panel1));
 
   // Send unload notification on the first extension.
-  extensions::UnloadedExtensionInfo details(
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  registry->RemoveEnabled(extension->id());
+  registry->TriggerOnUnloaded(
       extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(browser()->profile()),
-      content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Wait for the panels opened by the first extension to close.
   signal.Wait();
