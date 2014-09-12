@@ -878,15 +878,12 @@ bool AppsGridView::IsAnimatingView(views::View* view) {
 
 gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
-  const gfx::Size tile_size = gfx::Size(kPreferredTileWidth,
-                                        kPreferredTileHeight);
   int page_switcher_height = kBottomPadding;
   if (page_switcher_view_)
     page_switcher_height = page_switcher_view_->GetPreferredSize().height();
-  return gfx::Size(
-      tile_size.width() * cols_ + insets.width(),
-      tile_size.height() * rows_per_page_ +
-          page_switcher_height + insets.height());
+  gfx::Size size = GetTileGridSize();
+  size.Enlarge(insets.width(), insets.height() + page_switcher_height);
+  return size;
 }
 
 bool AppsGridView::GetDropFormats(
@@ -1162,20 +1159,12 @@ void AppsGridView::MoveSelected(int page_delta,
 }
 
 void AppsGridView::CalculateIdealBounds() {
-  gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty())
-    return;
-
-  gfx::Size tile_size(kPreferredTileWidth, kPreferredTileHeight);
-
-  gfx::Rect grid_rect(gfx::Size(tile_size.width() * cols_,
-                                tile_size.height() * rows_per_page_));
-  grid_rect.Intersect(rect);
+  gfx::Size grid_size = GetTileGridSize();
 
   // Page size including padding pixels. A tile.x + page_width means the same
   // tile slot in the next page; similarly for tile.y + page_height.
-  const int page_width = grid_rect.width() + kPagePadding;
-  const int page_height = grid_rect.height() + kPagePadding;
+  const int page_width = grid_size.width() + kPagePadding;
+  const int page_height = grid_size.height() + kPagePadding;
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
@@ -1241,10 +1230,8 @@ void AppsGridView::CalculateIdealBounds() {
 
     const int row = view_index.slot / cols_;
     const int col = view_index.slot % cols_;
-    gfx::Rect tile_slot(
-        gfx::Point(grid_rect.x() + col * tile_size.width() + x_offset,
-                   grid_rect.y() + row * tile_size.height() + y_offset),
-        tile_size);
+    gfx::Rect tile_slot = GetExpectedTileBounds(row, col);
+    tile_slot.Offset(x_offset, y_offset);
     if (i < view_model_.view_size()) {
       view_model_.set_ideal_bounds(i, tile_slot);
     } else {
@@ -2188,7 +2175,7 @@ gfx::Rect AppsGridView::GetTileBoundsForPoint(const gfx::Point& point,
   int y = point.y();
   int col = (x - bounds.x()) / kPreferredTileWidth;
   int row = (y - bounds.y()) / kPreferredTileHeight;
-  gfx::Rect tile_rect = GetTileBounds(row, col);
+  gfx::Rect tile_rect = GetExpectedTileBounds(row, col);
 
   // Check if |point| is outside a valid item's tile.
   Index index(pagination_model_.selected_page(), row * cols_ + col);
@@ -2196,17 +2183,18 @@ gfx::Rect AppsGridView::GetTileBoundsForPoint(const gfx::Point& point,
   return tile_rect;
 }
 
-gfx::Rect AppsGridView::GetTileBounds(int row, int col) const {
+gfx::Size AppsGridView::GetTileGridSize() const {
+  gfx::Rect bounds = GetExpectedTileBounds(0, 0);
+  bounds.Union(GetExpectedTileBounds(rows_per_page_ - 1, cols_ - 1));
+  return bounds.size();
+}
+
+gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   gfx::Rect bounds(GetContentsBounds());
   gfx::Size tile_size(kPreferredTileWidth, kPreferredTileHeight);
-  gfx::Rect grid_rect(gfx::Size(tile_size.width() * cols_,
-                                tile_size.height() * rows_per_page_));
-  grid_rect.Intersect(bounds);
-  gfx::Rect tile_rect(
-      gfx::Point(grid_rect.x() + col * tile_size.width(),
-                 grid_rect.y() + row * tile_size.height()),
-      tile_size);
-  return tile_rect;
+  return gfx::Rect(gfx::Point(bounds.x() + col * tile_size.width(),
+                              bounds.y() + row * tile_size.height()),
+                   tile_size);
 }
 
 bool AppsGridView::IsLastPossibleDropTarget(const Index& index) const {
@@ -2222,7 +2210,7 @@ views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
   // Calculate the original bound of the tile at |index|.
   int row = slot / cols_;
   int col = slot % cols_;
-  gfx::Rect tile_rect = GetTileBounds(row, col);
+  gfx::Rect tile_rect = GetExpectedTileBounds(row, col);
 
   for (int i = 0; i < view_model_.view_size(); ++i) {
     views::View* view = view_model_.view_at(i);

@@ -405,8 +405,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // is a valid item sits on the tile.
   gfx::Rect GetTileBoundsForPoint(const gfx::Point& point, Index* tile_index);
 
-  // Gets the bounds of the tile located at |row| and |col| on current page.
-  gfx::Rect GetTileBounds(int row, int col) const;
+  // Returns the size of the entire tile grid.
+  gfx::Size GetTileGridSize() const;
+
+  // Gets the expected bounds of a tile located at |row| and |col| on the
+  // current page.
+  gfx::Rect GetExpectedTileBounds(int row, int col) const;
 
   // Returns true if the slot of |index| is the last possible slot to drop
   // an item, i.e. first empty slot next to the last item on the last page.
