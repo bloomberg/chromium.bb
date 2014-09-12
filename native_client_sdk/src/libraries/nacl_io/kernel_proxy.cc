@@ -324,7 +324,7 @@ char* KernelProxy::getwd(char* buf) {
 }
 
 int KernelProxy::chmod(const char* path, mode_t mode) {
-  int fd = KernelProxy::open(path, O_RDONLY, mode);
+  int fd = open(path, O_RDONLY, mode);
   if (-1 == fd)
     return -1;
 
@@ -342,10 +342,6 @@ int KernelProxy::fchown(int fd, uid_t owner, gid_t group) {
 }
 
 int KernelProxy::lchown(const char* path, uid_t owner, gid_t group) {
-  return 0;
-}
-
-int KernelProxy::utime(const char* filename, const struct utimbuf* times) {
   return 0;
 }
 
@@ -680,6 +676,23 @@ int KernelProxy::ioctl(int fd, int request, va_list args) {
   return 0;
 }
 
+int KernelProxy::futimens(int fd, const struct timespec times[2]) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node()->Futimens(times);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}
+
 off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
@@ -718,7 +731,7 @@ int KernelProxy::unlink(const char* path) {
 }
 
 int KernelProxy::truncate(const char* path, off_t len) {
-  int fd = KernelProxy::open(path, O_WRONLY, 0);
+  int fd = open(path, O_WRONLY, 0);
   if (-1 == fd)
     return -1;
 
@@ -864,10 +877,14 @@ int KernelProxy::readlink(const char* path, char* buf, size_t count) {
   return -1;
 }
 
-int KernelProxy::utimes(const char* filename, const struct timeval times[2]) {
-  LOG_TRACE("utimes is not implemented.");
-  errno = EINVAL;
-  return -1;
+int KernelProxy::utimens(const char* path, const struct timespec times[2]) {
+  int fd = open(path, O_RDONLY, 0);
+  if (-1 == fd)
+    return -1;
+
+  int result = futimens(fd, times);
+  close(fd);
+  return result;
 }
 
 // TODO(noelallen): Needs implementation.

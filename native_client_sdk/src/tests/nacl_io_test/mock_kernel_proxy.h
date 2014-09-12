@@ -29,10 +29,11 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD2(fchmod, int(int, int));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
   MOCK_METHOD3(fcntl, int(int, int, va_list));
+  MOCK_METHOD1(fdatasync, int(int));
   MOCK_METHOD2(ftruncate, int(int, off_t));
   MOCK_METHOD2(fstat, int(int, struct stat*));
   MOCK_METHOD1(fsync, int(int));
-  MOCK_METHOD1(fdatasync, int(int));
+  MOCK_METHOD2(futimens, int(int, const struct timespec[2]));
   MOCK_METHOD2(getcwd, char*(char*, size_t));
   MOCK_METHOD3(getdents, int(int, void*, unsigned int));
   MOCK_METHOD1(getwd, char*(char*));
@@ -49,6 +50,7 @@ class MockKernelProxy : public nacl_io::KernelProxy {
                           const void*));
   MOCK_METHOD2(munmap, int(void*, size_t));
   MOCK_METHOD3(open, int(const char*, int, mode_t));
+  MOCK_METHOD1(open_resource, int(const char*));
   MOCK_METHOD1(pipe, int(int[2]));
   MOCK_METHOD3(read, ssize_t(int, void*, size_t));
   MOCK_METHOD3(readlink, int(const char*, char*, size_t count));
@@ -61,13 +63,11 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD2(tcflush, int(int, int));
   MOCK_METHOD2(tcgetattr, int(int, struct termios*));
   MOCK_METHOD3(tcsetattr, int(int, int, const struct termios*));
-  MOCK_METHOD1(umount, int(const char*));
   MOCK_METHOD2(truncate, int(const char*, off_t));
+  MOCK_METHOD1(umount, int(const char*));
   MOCK_METHOD1(unlink, int(const char*));
-  MOCK_METHOD2(utime, int(const char*, const struct utimbuf*));
-  MOCK_METHOD2(utimes, int(const char*, const struct timeval[2]));
+  MOCK_METHOD2(utimens, int(const char*, const struct timespec[2]));
   MOCK_METHOD3(write, ssize_t(int, const void*, size_t));
-  MOCK_METHOD1(open_resource, int(const char*));
 
 #ifdef PROVIDES_SOCKET_API
   MOCK_METHOD3(poll, int(struct pollfd*, nfds_t, int));

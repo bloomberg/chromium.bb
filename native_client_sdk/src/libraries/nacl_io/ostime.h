@@ -19,6 +19,14 @@ int clock_settime(clockid_t clock_id, const struct timespec* tp);
 #else
 
 #include <time.h>
+#include <utime.h>
+#include <sys/time.h>
+
+#ifdef __GLIBC__
+#define st_atimensec st_atim.tv_nsec
+#define st_mtimensec st_mtim.tv_nsec
+#define st_ctimensec st_ctim.tv_nsec
+#endif
 
 #endif
 

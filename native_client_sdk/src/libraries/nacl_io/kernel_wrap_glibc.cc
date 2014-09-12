@@ -25,6 +25,7 @@
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/log.h"
 #include "nacl_io/osmman.h"
+#include "nacl_io/ostime.h"
 
 namespace {
 
@@ -41,8 +42,11 @@ void stat_to_nacl_stat(const struct stat* buf, nacl_abi_stat* nacl_buf) {
   nacl_buf->nacl_abi_st_blksize = buf->st_blksize;
   nacl_buf->nacl_abi_st_blocks = buf->st_blocks;
   nacl_buf->nacl_abi_st_atime = buf->st_atime;
+  nacl_buf->nacl_abi_st_atimensec = buf->st_atimensec;
   nacl_buf->nacl_abi_st_mtime = buf->st_mtime;
+  nacl_buf->nacl_abi_st_mtimensec = buf->st_mtimensec;
   nacl_buf->nacl_abi_st_ctime = buf->st_ctime;
+  nacl_buf->nacl_abi_st_ctimensec = buf->st_ctimensec;
 }
 
 void nacl_stat_to_stat(const nacl_abi_stat* nacl_buf, struct stat* buf) {
@@ -58,8 +62,11 @@ void nacl_stat_to_stat(const nacl_abi_stat* nacl_buf, struct stat* buf) {
   buf->st_blksize = nacl_buf->nacl_abi_st_blksize;
   buf->st_blocks = nacl_buf->nacl_abi_st_blocks;
   buf->st_atime = nacl_buf->nacl_abi_st_atime;
+  buf->st_atimensec = nacl_buf->nacl_abi_st_atimensec;
   buf->st_mtime = nacl_buf->nacl_abi_st_mtime;
+  buf->st_mtimensec = nacl_buf->nacl_abi_st_mtimensec;
   buf->st_ctime = nacl_buf->nacl_abi_st_ctime;
+  buf->st_ctimensec = nacl_buf->nacl_abi_st_ctimensec;
 }
 
 }  // namespace

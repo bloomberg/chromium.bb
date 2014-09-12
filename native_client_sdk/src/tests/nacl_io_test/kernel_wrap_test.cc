@@ -19,13 +19,13 @@
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostermios.h"
+#include "nacl_io/ostime.h"
 #include "ppapi_simple/ps.h"
 
 #if defined(__native_client__) && !defined(__GLIBC__)
 extern "C" {
-// TODO(sbc): remove once these get added to the newlib toolchain headers.
+// TODO(sbc): remove once this gets added to the newlib toolchain headers.
 int fchdir(int fd);
-int utimes(const char *filename, const struct timeval times[2]);
 }
 #endif
 
@@ -40,30 +40,48 @@ using ::testing::StrEq;
 
 namespace {
 
-#define COMPARE_FIELD(f)                                                     \
-  if (arg->f != statbuf->f) {                                                \
-    *result_listener << "mismatch of field \"" #f                            \
-                        "\". "                                               \
-                        "expected: " << statbuf->f << " actual: " << arg->f; \
-    return false;                                                            \
+#define COMPARE_FIELD(actual, expected, f)                                 \
+  if (actual != expected) {                                                \
+    *result_listener << "mismatch of field \"" f                           \
+                        "\". "                                             \
+                        "expected: " << expected << " actual: " << actual; \
+    return false;                                                          \
   }
 
-MATCHER_P(IsEqualToStatbuf, statbuf, "") {
-  COMPARE_FIELD(st_dev);
-  COMPARE_FIELD(st_ino);
-  COMPARE_FIELD(st_mode);
-  COMPARE_FIELD(st_nlink);
-  COMPARE_FIELD(st_uid);
-  COMPARE_FIELD(st_gid);
-  COMPARE_FIELD(st_rdev);
-  COMPARE_FIELD(st_size);
-  COMPARE_FIELD(st_atime);
-  COMPARE_FIELD(st_mtime);
-  COMPARE_FIELD(st_ctime);
+#define COMPARE_FIELD_SIMPLE(f) COMPARE_FIELD(arg->f, other->f, #f)
+
+MATCHER_P(IsEqualToStatbuf, other, "") {
+  COMPARE_FIELD_SIMPLE(st_dev);
+  COMPARE_FIELD_SIMPLE(st_ino);
+  COMPARE_FIELD_SIMPLE(st_mode);
+  COMPARE_FIELD_SIMPLE(st_nlink);
+  COMPARE_FIELD_SIMPLE(st_uid);
+  COMPARE_FIELD_SIMPLE(st_gid);
+  COMPARE_FIELD_SIMPLE(st_rdev);
+  COMPARE_FIELD_SIMPLE(st_size);
+  COMPARE_FIELD_SIMPLE(st_atime);
+  COMPARE_FIELD_SIMPLE(st_mtime);
+  COMPARE_FIELD_SIMPLE(st_ctime);
+  return true;
+}
+
+MATCHER_P(IsEqualToUtimbuf, other, "") {
+  COMPARE_FIELD(arg[0].tv_sec, other->actime, "actime");
+  COMPARE_FIELD(arg[1].tv_sec, other->modtime, "modtime");
+  return true;
+}
+
+MATCHER_P(IsEqualToTimeval, other, "") {
+  COMPARE_FIELD(arg[0].tv_sec, other[0].tv_sec, "[0].tv_sec");
+  COMPARE_FIELD(arg[0].tv_nsec, other[0].tv_usec * 1000, "[0].tv_usec");
+  COMPARE_FIELD(arg[1].tv_sec, other[1].tv_sec, "[1].tv_sec");
+  COMPARE_FIELD(arg[1].tv_nsec, other[1].tv_usec * 1000, "[1].tv_usec");
   return true;
 }
 
 #undef COMPARE_FIELD
+#undef COMPARE_FIELD_SIMPLE
+
 
 ACTION_P(SetErrno, value) {
   errno = value;
@@ -299,6 +317,14 @@ TEST_F(KernelWrapTest, fsync) {
   EXPECT_CALL(mock, fsync(kDummyInt))
       .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(-1, fsync(kDummyInt));
+  ASSERT_EQ(kDummyErrno, errno);
+}
+
+TEST_F(KernelWrapTest, futimes) {
+  struct timeval times[2] = {{123, 234}, {345, 456}};
+  EXPECT_CALL(mock, futimens(kDummyInt, IsEqualToTimeval(times)))
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
+  EXPECT_EQ(-1, futimes(kDummyInt, times));
   ASSERT_EQ(kDummyErrno, errno);
 }
 
@@ -615,14 +641,15 @@ TEST_F(KernelWrapTest, unlink) {
 }
 
 TEST_F(KernelWrapTest, utime) {
-  const struct utimbuf* times = NULL;
-  EXPECT_CALL(mock, utime(kDummyConstChar, times)).WillOnce(Return(kDummyInt));
-  EXPECT_EQ(kDummyInt, utime(kDummyConstChar, times));
+  const struct utimbuf times = {123, 456};
+  EXPECT_CALL(mock, utimens(kDummyConstChar, IsEqualToUtimbuf(&times)))
+      .WillOnce(Return(kDummyInt));
+  EXPECT_EQ(kDummyInt, utime(kDummyConstChar, &times));
 }
 
 TEST_F(KernelWrapTest, utimes) {
-  struct timeval* times = NULL;
-  EXPECT_CALL(mock, utimes(kDummyConstChar, times))
+  struct timeval times[2] = {{123, 234}, {345, 456}};
+  EXPECT_CALL(mock, utimens(kDummyConstChar, IsEqualToTimeval(times)))
       .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(-1, utimes(kDummyConstChar, times));
   ASSERT_EQ(kDummyErrno, errno);

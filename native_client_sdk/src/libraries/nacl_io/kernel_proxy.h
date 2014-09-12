@@ -89,7 +89,6 @@ class KernelProxy : protected KernelObject {
   virtual int chown(const char* path, uid_t owner, gid_t group);
   virtual int fchown(int fd, uid_t owner, gid_t group);
   virtual int lchown(const char* path, uid_t owner, gid_t group);
-  virtual int utime(const char* filename, const struct utimbuf* times);
 
   // System calls that take a path as an argument: The kernel proxy will look
   // for the Node associated to the path. To find the node, the kernel proxy
@@ -118,6 +117,7 @@ class KernelProxy : protected KernelObject {
   virtual int fdatasync(int fd);
   virtual int isatty(int fd);
   virtual int ioctl(int fd, int request, va_list args);
+  virtual int futimens(int fd, const struct timespec times[2]);
 
   // lseek() relies on the filesystem's Stat() to determine whether or not the
   // file handle corresponding to fd is a directory
@@ -135,7 +135,7 @@ class KernelProxy : protected KernelObject {
   // access() uses the Filesystem's Stat().
   virtual int access(const char* path, int amode);
   virtual int readlink(const char* path, char* buf, size_t count);
-  virtual int utimes(const char* filename, const struct timeval times[2]);
+  virtual int utimens(const char* path, const struct timespec times[2]);
 
   virtual int link(const char* oldpath, const char* newpath);
   virtual int symlink(const char* oldpath, const char* newpath);

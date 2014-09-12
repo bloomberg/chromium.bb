@@ -176,6 +176,10 @@ Error Node::Tcsetattr(int optional_actions, const struct termios* termios_p) {
   return EINVAL;
 }
 
+Error Node::Futimens(const struct timespec times[2]) {
+  return EINVAL;
+}
+
 int Node::GetLinks() {
   return stat_.st_nlink;
 }

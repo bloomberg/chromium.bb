@@ -14,6 +14,7 @@
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
+#include "nacl_io/ostime.h"
 
 using namespace nacl_io;
 
@@ -30,8 +31,13 @@ class FuseFsForTesting : public FuseFs {
 
 // Implementation of a simple flat memory filesystem.
 struct File {
+  File() {
+    memset(&times, 0, sizeof(times));
+  }
+
   std::string name;
   std::vector<uint8_t> data;
+  timespec times[2];
 };
 
 typedef std::vector<File> Files;
@@ -77,6 +83,10 @@ int testfs_getattr(const char* path, struct stat* stbuf) {
 
   stbuf->st_mode = S_IFREG | last_create_mode;
   stbuf->st_size = file->data.size();
+  stbuf->st_atime = file->times[0].tv_sec;
+  stbuf->st_atimensec = file->times[0].tv_nsec;
+  stbuf->st_mtime = file->times[1].tv_sec;
+  stbuf->st_mtimensec = file->times[1].tv_nsec;
   return 0;
 }
 
@@ -160,32 +170,43 @@ int testfs_write(const char* path,
   return size;
 }
 
+int testfs_utimens(const char* path, const struct timespec times[2]) {
+  File* file = FindFile(path);
+  if (file == NULL)
+    return -ENOENT;
+
+  file->times[0] = times[0];
+  file->times[1] = times[1];
+  return 0;
+}
+
 const char hello_world[] = "Hello, World!\n";
 
 fuse_operations g_fuse_operations = {
-  0,  // flag_nopath
-  0,  // flag_reserved
-  NULL,  // init
-  NULL,  // destroy
-  NULL,  // access
-  testfs_create,  // create
-  NULL,  // fgetattr
-  NULL,  // fsync
-  NULL,  // ftruncate
-  testfs_getattr,  // getattr
-  NULL,  // mkdir
-  NULL,  // mknod
-  testfs_open,  // open
-  NULL,  // opendir
-  testfs_read,  // read
-  testfs_readdir,  // readdir
-  NULL,  // release
-  NULL,  // releasedir
-  NULL,  // rename
-  NULL,  // rmdir
-  NULL,  // truncate
-  NULL,  // unlink
-  testfs_write,  // write
+    0,               // flag_nopath
+    0,               // flag_reserved
+    NULL,            // init
+    NULL,            // destroy
+    NULL,            // access
+    testfs_create,   // create
+    NULL,            // fgetattr
+    NULL,            // fsync
+    NULL,            // ftruncate
+    testfs_getattr,  // getattr
+    NULL,            // mkdir
+    NULL,            // mknod
+    testfs_open,     // open
+    NULL,            // opendir
+    testfs_read,     // read
+    testfs_readdir,  // readdir
+    NULL,            // release
+    NULL,            // releasedir
+    NULL,            // rename
+    NULL,            // rmdir
+    NULL,            // truncate
+    NULL,            // unlink
+    testfs_write,    // write
+    testfs_utimens,  // utimens
 };
 
 class FuseFsTest : public ::testing::Test {
@@ -318,6 +339,26 @@ TEST_F(FuseFsTest, GetDents) {
   EXPECT_STREQ("..", entries[1].d_name);
   EXPECT_STREQ("hello", entries[2].d_name);
   EXPECT_STREQ("foobar", entries[3].d_name);
+}
+
+TEST_F(FuseFsTest, Utimens) {
+  struct stat statbuf;
+  ScopedNode node;
+
+  struct timespec times[2];
+  times[0].tv_sec = 1000;
+  times[0].tv_nsec = 2000;
+  times[1].tv_sec = 3000;
+  times[1].tv_nsec = 4000;
+
+  ASSERT_EQ(0, fs_.Open(Path("/hello"), O_RDONLY, &node));
+  EXPECT_EQ(0, node->Futimens(times));
+
+  EXPECT_EQ(0, node->GetStat(&statbuf));
+  EXPECT_EQ(times[0].tv_sec, statbuf.st_atime);
+  EXPECT_EQ(times[0].tv_nsec, statbuf.st_atimensec);
+  EXPECT_EQ(times[1].tv_sec, statbuf.st_mtime);
+  EXPECT_EQ(times[1].tv_nsec, statbuf.st_mtimensec);
 }
 
 namespace {

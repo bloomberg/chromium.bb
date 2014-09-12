@@ -247,6 +247,20 @@ Error FuseFsNode::GetStat(struct stat* stat) {
   return 0;
 }
 
+Error FuseFsNode::Futimens(const struct timespec times[2]) {
+  int result;
+  if (!fuse_ops_->utimens) {
+    LOG_TRACE("fuse_ops_->utimens is NULL.");
+    return ENOSYS;
+  }
+
+  result = fuse_ops_->utimens(path_.c_str(), times);
+  if (result < 0)
+    return -result;
+
+  return result;
+}
+
 Error FuseFsNode::VIoctl(int request, va_list args) {
   LOG_ERROR("Ioctl not implemented for fusefs.");
   return ENOSYS;

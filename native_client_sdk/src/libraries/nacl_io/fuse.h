@@ -198,6 +198,8 @@ struct fuse_operations {
                size_t count,
                off_t,
                struct fuse_file_info*);
+  // Called by utime()/utimes()/futimes()/futimens() etc.
+  int (*utimens)(const char*, const struct timespec tv[2]);
 
   // The following functions are not currently called by the nacl_io
   // implementation of FUSE.
@@ -232,7 +234,6 @@ struct fuse_operations {
   int (*setxattr)(const char*, const char*, const char*, size_t, int);
   int (*statfs)(const char*, struct statvfs*);
   int (*symlink)(const char*, const char*);
-  int (*utimens)(const char*, const struct timespec tv[2]);
   int (*write_buf)(const char*,
                    struct fuse_bufvec* buf,
                    off_t off,

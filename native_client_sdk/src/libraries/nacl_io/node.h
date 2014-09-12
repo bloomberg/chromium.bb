@@ -89,6 +89,7 @@ class Node : public sdk_util::RefObject {
   virtual Error Tcgetattr(struct termios* termios_p);
   virtual Error Tcsetattr(int optional_actions,
                           const struct termios* termios_p);
+  virtual Error Futimens(const struct timespec times[2]);
 
   virtual int GetLinks();
   virtual int GetMode();

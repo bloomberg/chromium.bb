@@ -14,6 +14,7 @@
 #include "nacl_io/log.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
+#include "nacl_io/ostime.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/real_pepper_interface.h"
 
@@ -328,7 +329,24 @@ int ki_readlink(const char* path, char* buf, size_t count) {
 
 int ki_utimes(const char* path, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
-  return s_state.kp->utimes(path, times);
+  // Implement in terms of utimens.
+  struct timespec ts[2];
+  ts[0].tv_sec = times[0].tv_sec;
+  ts[0].tv_nsec = times[0].tv_usec * 1000;
+  ts[1].tv_sec = times[1].tv_sec;
+  ts[1].tv_nsec = times[1].tv_usec * 1000;
+  return s_state.kp->utimens(path, ts);
+}
+
+int ki_futimes(int fd, const struct timeval times[2]) {
+  ON_NOSYS_RETURN(-1);
+  // Implement in terms of futimens.
+  struct timespec ts[2];
+  ts[0].tv_sec = times[0].tv_sec;
+  ts[0].tv_nsec = times[0].tv_usec * 1000;
+  ts[1].tv_sec = times[1].tv_sec;
+  ts[1].tv_nsec = times[1].tv_usec * 1000;
+  return s_state.kp->futimens(fd, ts);
 }
 
 void* ki_mmap(void* addr,
@@ -378,7 +396,18 @@ int ki_lchown(const char* path, uid_t owner, gid_t group) {
 
 int ki_utime(const char* filename, const struct utimbuf* times) {
   ON_NOSYS_RETURN(-1);
-  return s_state.kp->utime(filename, times);
+  // Implement in terms of utimens.
+  struct timespec ts[2];
+  ts[0].tv_sec = times->actime;
+  ts[0].tv_nsec = 0;
+  ts[1].tv_sec = times->modtime;
+  ts[1].tv_nsec = 0;
+  return s_state.kp->utimens(filename, ts);
+}
+
+int ki_futimens(int fd, const struct timespec times[2]) {
+  ON_NOSYS_RETURN(-1);
+  return s_state.kp->futimens(fd, times);
 }
 
 int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout) {

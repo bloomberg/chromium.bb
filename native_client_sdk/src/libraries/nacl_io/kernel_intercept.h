@@ -107,6 +107,7 @@ int ki_symlink(const char* oldpath, const char* newpath);
 int ki_access(const char* path, int amode);
 int ki_readlink(const char* path, char* buf, size_t count);
 int ki_utimes(const char* path, const struct timeval times[2]);
+int ki_futimes(int fd, const struct timeval times[2]);
 void* ki_mmap(void* addr,
               size_t length,
               int prot,
@@ -121,6 +122,7 @@ int ki_chown(const char* path, uid_t owner, gid_t group);
 int ki_fchown(int fd, uid_t owner, gid_t group);
 int ki_lchown(const char* path, uid_t owner, gid_t group);
 int ki_utime(const char* filename, const struct utimbuf* times);
+int ki_futimens(int fd, const struct timespec times[2]);
 
 int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout);
 int ki_select(int nfds,
