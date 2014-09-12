@@ -31,7 +31,7 @@
 [
     RuntimeEnabled=EncodingAPI,
     Exposed=(Window,Worker),
-    Constructor(optional DOMString label = "utf-8", optional Dictionary options),
+    Constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options),
     RaisesException=Constructor,
     GarbageCollected,
     MeasureAs=TextDecoderConstructor
@@ -39,5 +39,5 @@
     readonly attribute DOMString encoding;
     readonly attribute boolean fatal;
     readonly attribute boolean ignoreBOM;
-    [RaisesException, MeasureAs=TextDecoderDecode] DOMString decode(optional ArrayBufferView input, optional Dictionary options);
+    [RaisesException, MeasureAs=TextDecoderDecode] DOMString decode(optional ArrayBufferView input, optional TextDecodeOptions options);
 };

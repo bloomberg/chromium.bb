@@ -39,7 +39,7 @@
 
 namespace blink {
 
-TextDecoder* TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
+TextDecoder* TextDecoder::create(const String& label, const TextDecoderOptions& options, ExceptionState& exceptionState)
 {
     WTF::TextEncoding encoding(label);
     // The replacement encoding is not valid, but the Encoding API also
@@ -49,13 +49,7 @@ TextDecoder* TextDecoder::create(const String& label, const Dictionary& options,
         return 0;
     }
 
-    bool fatal = false;
-    DictionaryHelper::get(options, "fatal", fatal);
-
-    bool ignoreBOM = false;
-    DictionaryHelper::get(options, "ignoreBOM", ignoreBOM);
-
-    return new TextDecoder(encoding, fatal, ignoreBOM);
+    return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());
 }
 
 
@@ -82,15 +76,12 @@ String TextDecoder::encoding() const
     return name;
 }
 
-String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, ExceptionState& exceptionState)
+String TextDecoder::decode(ArrayBufferView* input, const TextDecodeOptions& options, ExceptionState& exceptionState)
 {
-    bool stream = false;
-    DictionaryHelper::get(options, "stream", stream);
-
     const char* start = input ? static_cast<const char*>(input->baseAddress()) : 0;
     size_t length = input ? input->byteLength() : 0;
 
-    WTF::FlushBehavior flush = stream ? WTF::DoNotFlush : WTF::DataEOF;
+    WTF::FlushBehavior flush = options.stream() ? WTF::DoNotFlush : WTF::DataEOF;
 
     bool sawError = false;
     String s = m_codec->decode(start, length, flush, m_fatal, sawError);
@@ -111,6 +102,12 @@ String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, Ex
         m_bomSeen = false;
 
     return s;
+}
+
+String TextDecoder::decode(ExceptionState& exceptionState)
+{
+    TextDecodeOptions* options = TextDecodeOptions::create();
+    return decode(0, *options, exceptionState);
 }
 
 } // namespace blink
