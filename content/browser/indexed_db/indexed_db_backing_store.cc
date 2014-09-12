@@ -2678,13 +2678,14 @@ leveldb::Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
     NOTREACHED();
     return InternalInconsistencyStatus();
   }
-  scoped_ptr<LevelDBIterator> it = transaction()->CreateIterator();
   std::string encoded_key = blob_entry_key.Encode();
-  leveldb::Status s = it->Seek(encoded_key);
+  bool found;
+  std::string encoded_value;
+  leveldb::Status s = transaction()->Get(encoded_key, &encoded_value, &found);
   if (!s.ok())
     return s;
-  if (it->IsValid() && CompareKeys(it->Key(), encoded_key) == 0) {
-    if (!DecodeBlobData(it->Value().as_string(), &value->blob_info)) {
+  if (found) {
+    if (!DecodeBlobData(encoded_value, &value->blob_info)) {
       INTERNAL_READ_ERROR(GET_BLOB_INFO_FOR_RECORD);
       return InternalInconsistencyStatus();
     }
@@ -3981,7 +3982,6 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
   // Look up all old files to remove as part of the transaction, store their
   // names in blobs_to_remove_, and remove their old blob data entries.
   if (iter != blob_change_map_.end()) {
-    scoped_ptr<LevelDBIterator> db_iter = transaction_->CreateIterator();
     for (; iter != blob_change_map_.end(); ++iter) {
       BlobEntryKey blob_entry_key;
       StringPiece key_piece(iter->second->key());
@@ -3996,11 +3996,13 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
       else
         DCHECK_EQ(database_id_, blob_entry_key.database_id());
       std::string blob_entry_key_bytes = blob_entry_key.Encode();
-      db_iter->Seek(blob_entry_key_bytes);
-      if (db_iter->IsValid() &&
-          !CompareKeys(db_iter->Key(), blob_entry_key_bytes)) {
+      bool found;
+      std::string blob_entry_value_bytes;
+      leveldb::Status s = transaction_->Get(
+          blob_entry_key_bytes, &blob_entry_value_bytes, &found);
+      if (s.ok() && found) {
         std::vector<IndexedDBBlobInfo> blob_info;
-        if (!DecodeBlobData(db_iter->Value().as_string(), &blob_info)) {
+        if (!DecodeBlobData(blob_entry_value_bytes, &blob_info)) {
           INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
           transaction_ = NULL;
           return false;
