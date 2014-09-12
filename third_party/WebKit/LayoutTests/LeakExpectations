@@ -58,9 +58,9 @@ crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak 
 crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
 crbug.com/364417 svg/custom/bug79798.html [ Leak ]
-crbug.com/364417 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak ]
-crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
-crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
+crbug.com/364417 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak ]
+crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
+crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
 
 crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
 
