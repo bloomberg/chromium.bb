@@ -3500,6 +3500,7 @@
             'html/HTMLDimensionTest.cpp',
             'html/HTMLFormControlElementTest.cpp',
             'html/HTMLLinkElementSizesAttributeTest.cpp',
+            'html/HTMLSelectElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',

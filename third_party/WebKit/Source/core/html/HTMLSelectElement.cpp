@@ -1040,6 +1040,7 @@ FormControlState HTMLSelectElement::saveFormControlState() const
         if (!option->selected())
             continue;
         state.append(option->value());
+        state.append(String::number(i));
         if (!multiple())
             break;
     }
@@ -1074,21 +1075,34 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
         toHTMLOptionElement(items[i])->setSelectedState(false);
     }
 
+    // The saved state should have at least one value and an index.
+    ASSERT(state.valueSize() >= 2);
     if (!multiple()) {
-        size_t foundIndex = searchOptionsForValue(state[0], 0, itemsSize);
-        if (foundIndex != kNotFound)
-            toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
+        size_t index = state[1].toUInt();
+        if (index < itemsSize && isHTMLOptionElement(items[index]) && toHTMLOptionElement(items[index])->value() == state[0]) {
+            toHTMLOptionElement(items[index])->setSelectedState(true);
+        } else {
+            size_t foundIndex = searchOptionsForValue(state[0], 0, itemsSize);
+            if (foundIndex != kNotFound)
+                toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
+        }
     } else {
         size_t startIndex = 0;
-        for (size_t i = 0; i < state.valueSize(); ++i) {
+        for (size_t i = 0; i < state.valueSize(); i+= 2) {
             const String& value = state[i];
-            size_t foundIndex = searchOptionsForValue(value, startIndex, itemsSize);
-            if (foundIndex == kNotFound)
-                foundIndex = searchOptionsForValue(value, 0, startIndex);
-            if (foundIndex == kNotFound)
-                continue;
-            toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
-            startIndex = foundIndex + 1;
+            const size_t index = state[i + 1].toUInt();
+            if (index < itemsSize && isHTMLOptionElement(items[index]) && toHTMLOptionElement(items[index])->value() == value) {
+                toHTMLOptionElement(items[index])->setSelectedState(true);
+                startIndex = index + 1;
+            } else {
+                size_t foundIndex = searchOptionsForValue(value, startIndex, itemsSize);
+                if (foundIndex == kNotFound)
+                    foundIndex = searchOptionsForValue(value, 0, startIndex);
+                if (foundIndex == kNotFound)
+                    continue;
+                toHTMLOptionElement(items[foundIndex])->setSelectedState(true);
+                startIndex = foundIndex + 1;
+            }
         }
     }
 
