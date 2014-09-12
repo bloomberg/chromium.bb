@@ -165,6 +165,8 @@ crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ F
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
+crbug.com/412516 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
+
 crbug.com/366437 fast/repaint/box-shadow-h.html [ Pass ImageOnlyFailure ]
 crbug.com/366437 fast/repaint/box-shadow-v.html [ Pass ImageOnlyFailure ]
 

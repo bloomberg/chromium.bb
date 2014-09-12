@@ -874,7 +874,8 @@ void RenderBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& p
     flipForWritingMode(paintRect);
     paintRect.move(-scrolledContentOffset()); // For overflow:auto/scroll/hidden.
 
-    // Do not clip scroll layer contents to reduce the number of paint invalidations while scrolling.
+    // Do not clip scroll layer contents because the compositor expects the whole layer
+    // to be always invalidated in-time.
     if (usesCompositedScrolling()) {
         flipForWritingMode(paintRect);
         return;

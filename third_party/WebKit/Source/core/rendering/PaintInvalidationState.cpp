@@ -87,13 +87,21 @@ void PaintInvalidationState::applyClipIfNeeded(const RenderObject& renderer)
         return;
 
     const RenderBox& box = toRenderBox(renderer);
-    LayoutRect clipRect(toPoint(m_paintOffset), box.layer()->size());
-    if (m_clipped) {
-        m_clipRect.intersect(clipRect);
+
+    // Do not clip scroll layer contents because the compositor expects the whole layer
+    // to be always invalidated in-time.
+    if (box.usesCompositedScrolling()) {
+        ASSERT(!m_clipped); // The box should establish paint invalidation container, so no m_clipped inherited.
     } else {
-        m_clipRect = clipRect;
-        m_clipped = true;
+        LayoutRect clipRect(toPoint(m_paintOffset), box.layer()->size());
+        if (m_clipped) {
+            m_clipRect.intersect(clipRect);
+        } else {
+            m_clipRect = clipRect;
+            m_clipped = true;
+        }
     }
+
     m_paintOffset -= box.scrolledContentOffset();
 }
 
