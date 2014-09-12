@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#destination-settings h1 {
+#destination-settings .left-column {
   padding-top: 20px;
   vertical-align: top;
 }

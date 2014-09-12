@@ -181,7 +181,7 @@ cr.define('print_preview', function() {
      * @type {!print_preview.MoreSettings}
      * @private
      */
-    this.moreSettings_ = new print_preview.MoreSettings([
+    var settingsSections = [
         this.destinationSettings_,
         this.pageSettings_,
         this.copiesSettings_,
@@ -190,7 +190,9 @@ cr.define('print_preview', function() {
         this.marginSettings_,
         this.colorSettings_,
         this.otherOptionsSettings_,
-        this.advancedOptionsSettings_]);
+        this.advancedOptionsSettings_];
+    this.moreSettings_ = new print_preview.MoreSettings(
+        this.destinationStore_, settingsSections);
     this.addChild(this.moreSettings_);
 
     /**

@@ -7,19 +7,30 @@ cr.define('print_preview', function() {
 
   /**
    * Toggles visibility of the specified printing options sections.
+   * @param {!print_preview.DestinationStore} destinationStore To listen for
+   *     destination changes.
    * @param {!Array.<print_preview.SettingsSection>} settingsSections Sections
    *     to toggle by this component.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function MoreSettings(settingsSections) {
+  function MoreSettings(destinationStore, settingsSections) {
     print_preview.Component.call(this);
+
+    /** @private {!print_preview.DestinationStore} */
+    this.destinationStore_ = destinationStore;
 
     /** @private {!Array.<print_preview.SettingsSection>} */
     this.settingsSections_ = settingsSections;
 
     /** @private {MoreSettings.SettingsToShow} */
     this.settingsToShow_ = MoreSettings.SettingsToShow.MOST_POPULAR;
+
+    /** @private {boolean} */
+    this.capabilitiesReady_ = false;
+
+    /** @private {boolean} */
+    this.firstDestinationReady_ = false;
   };
 
   /**
@@ -39,6 +50,15 @@ cr.define('print_preview', function() {
       print_preview.Component.prototype.enterDocument.call(this);
 
       this.tracker.add(this.getElement(), 'click', this.onClick_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          this.onDestinationChanged_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              SELECTED_DESTINATION_CAPABILITIES_READY,
+          this.onDestinationCapabilitiesReady_.bind(this));
       this.settingsSections_.forEach(function(section) {
         this.tracker.add(
             section,
@@ -46,7 +66,7 @@ cr.define('print_preview', function() {
             this.updateState_.bind(this));
       }.bind(this));
 
-      this.updateState_();
+      this.updateState_(true);
     },
 
     /**
@@ -59,14 +79,40 @@ cr.define('print_preview', function() {
           this.settingsToShow_ == MoreSettings.SettingsToShow.MOST_POPULAR ?
               MoreSettings.SettingsToShow.ALL :
               MoreSettings.SettingsToShow.MOST_POPULAR;
-      this.updateState_();
+      this.updateState_(false);
+    },
+
+    /**
+     * Called when the destination selection has changed. Updates UI elements.
+     * @private
+     */
+    onDestinationChanged_: function() {
+      this.firstDestinationReady_ = true;
+      this.capabilitiesReady_ = false;
+      this.updateState_(false);
+    },
+
+    /**
+     * Called when the destination selection has changed. Updates UI elements.
+     * @private
+     */
+    onDestinationCapabilitiesReady_: function() {
+      this.capabilitiesReady_ = true;
+      this.updateState_(false);
     },
 
     /**
      * Updates the component appearance according to the current state.
+     * @param {boolean} noAnimation Whether section visibility transitions
+     *     should not be animated.
      * @private
      */
-    updateState_: function() {
+    updateState_: function(noAnimation) {
+      if (!this.firstDestinationReady_) {
+        fadeOutElement(this.getElement(), noAnimation);
+        return;
+      }
+
       var all = this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
       this.getChildElement('.more-settings-label').textContent =
           localStrings.getString(all ? 'lessOptionsLabel' : 'moreOptionsLabel');
@@ -80,23 +126,24 @@ cr.define('print_preview', function() {
           }, 0);
 
       // Magic 6 is chosen as the number of sections when it still feels like
-      // manageable and not too crowded.
+      // manageable and not too crowded. Also, when capabilities are not know
+      // yet, ignore this limit to avoid unnecessary fade in/out cycles.
       var hasSectionsToToggle =
-          availableSections > 6 &&
+          (availableSections > 6 || !this.capabilitiesReady_) &&
           this.settingsSections_.some(function(section) {
             return section.hasCollapsibleContent();
           });
 
       if (hasSectionsToToggle)
-        fadeInElement(this.getElement());
+        fadeInElement(this.getElement(), noAnimation);
       else
-        fadeOutElement(this.getElement());
+        fadeOutElement(this.getElement(), noAnimation);
 
       var collapseContent =
           this.settingsToShow_ == MoreSettings.SettingsToShow.MOST_POPULAR &&
           hasSectionsToToggle;
       this.settingsSections_.forEach(function(section) {
-        section.collapseContent = collapseContent;
+        section.setCollapseContent(collapseContent, noAnimation);
       });
     }
   };

@@ -24,7 +24,7 @@ cr.define('print_preview', function() {
      * Whether content of this section should be collapsed or not.
      * @private {boolean}
      */
-    this.collapseContent_ = false;
+    this.collapseContent_ = true;
   };
 
   /**
@@ -68,10 +68,12 @@ cr.define('print_preview', function() {
     /**
      * @param {boolean} collapseContent Whether the content of this section
      *     should be collapsed, even if this section is available.
+     * @param {boolean} noAnimation Whether section visibility transition
+     *     should not be animated.
      */
-    set collapseContent(collapseContent) {
+    setCollapseContent: function(collapseContent, noAnimation) {
       this.collapseContent_ = collapseContent && this.hasCollapsibleContent();
-      this.updateUiStateInternal();
+      this.updateUiStateInternal(noAnimation);
     },
 
     /** @override */
@@ -84,17 +86,19 @@ cr.define('print_preview', function() {
 
     /**
      * Updates the component appearance according to the current state.
+     * @param {boolean=} opt_noAnimation Whether section visibility transition
+     *     should not be animated.
      * @protected
      */
-    updateUiStateInternal: function() {
+    updateUiStateInternal: function(opt_noAnimation) {
       var hasCollapsibleContent = this.hasCollapsibleContent();
       var changed = this.hasCollapsibleContentCached_ != hasCollapsibleContent;
       this.hasCollapsibleContentCached_ = hasCollapsibleContent;
 
       if (this.isSectionVisibleInternal())
-        fadeInOption(this.getElement());
+        fadeInOption(this.getElement(), opt_noAnimation);
       else
-        fadeOutOption(this.getElement());
+        fadeOutOption(this.getElement(), opt_noAnimation);
 
       if (changed) {
         cr.dispatchSimpleEvent(
