@@ -34,12 +34,14 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -361,6 +363,24 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
         dashArray.append(dashes->at(i)->value(lengthContext));
 
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
+}
+
+void SVGRenderSupport::fillOrStrokePrimitive(GraphicsContext* context, unsigned short resourceMode, const Path* path, const RenderSVGShape* shape)
+{
+    ASSERT(resourceMode != ApplyToDefaultMode);
+
+    if (resourceMode & ApplyToFillMode) {
+        if (path)
+            context->fillPath(*path);
+        else if (shape)
+            shape->fillShape(context);
+    }
+    if (resourceMode & ApplyToStrokeMode) {
+        if (path)
+            context->strokePath(*path);
+        else if (shape)
+            shape->strokeShape(context);
+    }
 }
 
 bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)
