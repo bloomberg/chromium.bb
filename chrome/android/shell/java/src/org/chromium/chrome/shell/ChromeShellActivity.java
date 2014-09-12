@@ -281,6 +281,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU && event.getRepeatCount() == 0) {
+            if (mToolbar != null) mToolbar.hideSuggestions();
             mAppMenuHandler.showAppMenu(findViewById(R.id.menu_button), true, false);
             return true;
         }
