@@ -204,7 +204,7 @@ bool SSLClientCertificateSelector::Accept() {
                    base::Unretained(this),
                    cert));
 #else
-    Unlocked(cert);
+    Unlocked(cert.get());
 #endif
     return false;  // Unlocked() will close the dialog.
   }
