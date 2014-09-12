@@ -240,13 +240,11 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalBooleanArgument, info[0]->BooleanValue());
+        optionalBooleanArgument = info[0]->BooleanValue();
     }
     v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)), impl);
 }
@@ -263,13 +261,11 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalBooleanArgument, info[0]->BooleanValue());
+        optionalBooleanArgument = info[0]->BooleanValue();
     }
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)));
 }

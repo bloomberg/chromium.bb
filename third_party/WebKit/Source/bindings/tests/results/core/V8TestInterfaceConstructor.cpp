@@ -66,7 +66,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
         if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
@@ -81,7 +81,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
         TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
-        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]));
+        optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]);
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));

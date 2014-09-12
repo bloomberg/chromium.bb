@@ -60,7 +60,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    TONATIVE_VOID(TestInterface5Implementation*, cppValue, V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -346,13 +346,11 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface5", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }

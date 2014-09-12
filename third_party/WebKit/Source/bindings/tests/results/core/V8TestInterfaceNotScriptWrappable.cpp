@@ -45,7 +45,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Propert
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceNotScriptWrappable*, cppValue, V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceNotScriptWrappable* cppValue = V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -65,9 +65,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toImpl(info.Holder());
     TestInterfaceNotScriptWrappable* arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        arg = V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->func(arg);
 }

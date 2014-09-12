@@ -73,7 +73,10 @@ def argument_needs_try_catch(method, argument):
         # exceptions via it, and doesn't need/use a TryCatch, except if the
         # argument has [Clamp], in which case it uses a separate code path in
         # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
-        idl_type.v8_conversion_needs_exception_state)
+        idl_type.v8_conversion_needs_exception_state or
+        # A trivial conversion cannot throw exceptions at all, so doesn't need a
+        # TryCatch to catch them.
+        idl_type.v8_conversion_is_trivial)
 
 
 def use_local_result(method):

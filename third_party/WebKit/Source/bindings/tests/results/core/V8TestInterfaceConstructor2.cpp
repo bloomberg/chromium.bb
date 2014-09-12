@@ -76,7 +76,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
         if (!info[3]->IsUndefined()) {

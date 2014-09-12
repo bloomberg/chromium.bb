@@ -100,7 +100,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
 {
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, propertyName, name);
-    TONATIVE_VOID(Node*, propertyValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* propertyValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;

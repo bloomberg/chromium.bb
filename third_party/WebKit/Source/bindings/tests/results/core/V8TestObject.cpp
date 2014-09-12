@@ -324,7 +324,7 @@ static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(bool, cppValue, v8Value->BooleanValue());
+    bool cppValue = v8Value->BooleanValue();
     impl->setBooleanAttribute(cppValue);
 }
 
@@ -713,7 +713,7 @@ static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceEmptyAttribute(WTF::getPtr(cppValue));
 }
 
@@ -742,7 +742,7 @@ static void testObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestObject*, cppValue, V8TestObject::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestObject* cppValue = V8TestObject::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestObjectAttribute(WTF::getPtr(cppValue));
 }
 
@@ -771,7 +771,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setVoidCallbackFunctionAttribute(cppValue);
 }
 
@@ -800,7 +800,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
 
@@ -1007,7 +1007,7 @@ static void anyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setAnyAttribute(cppValue);
 }
 
@@ -1065,7 +1065,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(LocalDOMWindow*, cppValue, toDOMWindow(v8Value, info.GetIsolate()));
+    LocalDOMWindow* cppValue = toDOMWindow(v8Value, info.GetIsolate());
     impl->setWindowAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1094,7 +1094,7 @@ static void documentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Document*, cppValue, V8Document::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Document* cppValue = V8Document::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setDocumentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1123,7 +1123,7 @@ static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(DocumentFragment*, cppValue, V8DocumentFragment::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    DocumentFragment* cppValue = V8DocumentFragment::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1152,7 +1152,7 @@ static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(DocumentType*, cppValue, V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    DocumentType* cppValue = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setDocumentTypeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1181,7 +1181,7 @@ static void elementAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Element*, cppValue, V8Element::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Element* cppValue = V8Element::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setElementAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1210,7 +1210,7 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Node*, cppValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1239,7 +1239,7 @@ static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ShadowRoot*, cppValue, V8ShadowRoot::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    ShadowRoot* cppValue = V8ShadowRoot::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setShadowRootAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1268,7 +1268,7 @@ static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ArrayBuffer*, cppValue, v8Value->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(v8Value)) : 0);
+    ArrayBuffer* cppValue = v8Value->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(v8Value)) : 0;
     impl->setArrayBufferAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1297,7 +1297,7 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Float32Array*, cppValue, v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(v8Value)) : 0);
+    Float32Array* cppValue = v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(v8Value)) : 0;
     impl->setFloat32ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1326,7 +1326,7 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Uint8Array*, cppValue, v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(v8Value)) : 0);
+    Uint8Array* cppValue = v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(v8Value)) : 0;
     impl->setUint8ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1591,7 +1591,7 @@ static void testInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8V
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1851,7 +1851,7 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setCachedAttributeAnyAttribute(cppValue);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute")); // Invalidate the cached value.
 }
@@ -1962,7 +1962,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->setCallWithExecutionContextAnyAttribute(executionContext, cppValue);
 }
@@ -1993,7 +1993,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
 
@@ -2024,7 +2024,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
@@ -3041,7 +3041,7 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
     RawPtr<TestInterfaceGarbageCollected> impl = WTF::getPtr(proxyImpl->locationGarbageCollected());
     if (!impl)
         return;
-    TONATIVE_VOID(TestInterfaceGarbageCollected*, cppValue, V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -3080,7 +3080,7 @@ static void locationWillBeGarbageCollectedAttributeSetter(v8::Local<v8::Value> v
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = WTF::getPtr(proxyImpl->locationWillBeGarbageCollected());
     if (!impl)
         return;
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -3214,7 +3214,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setRaisesExceptionTestInterfaceEmptyAttribute(WTF::getPtr(cppValue), exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -3258,7 +3258,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8::
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "cachedAttributeRaisesExceptionGetterAnyAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
+    ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setCachedAttributeRaisesExceptionGetterAnyAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeRaisesExceptionGetterAnyAttribute")); // Invalidate the cached value.
@@ -3289,7 +3289,7 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
 }
@@ -3320,7 +3320,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
 }
@@ -3351,7 +3351,7 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(bool, cppValue, v8Value->BooleanValue());
+    bool cppValue = v8Value->BooleanValue();
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
 }
@@ -4442,7 +4442,7 @@ static void typeCheckingInterfaceTestInterfaceAttributeAttributeSetter(v8::Local
         return;
     }
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTypeCheckingInterfaceTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4477,7 +4477,7 @@ static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetter(v8:
         return;
     }
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTypeCheckingInterfaceTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4598,7 +4598,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4627,7 +4627,7 @@ static void testInterfaceGarbageCollectedAttributeAttributeSetter(v8::Local<v8::
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceGarbageCollected*, cppValue, V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceGarbageCollectedAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4656,7 +4656,7 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Loca
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceGarbageCollected*, cppValue, V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4685,7 +4685,7 @@ static void testInterfaceWillBeGarbageCollectedAttributeAttributeSetter(v8::Loca
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceWillBeGarbageCollectedAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4714,7 +4714,7 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetter(v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceWillBeGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4828,7 +4828,7 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID(Node*, cppValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     V8TestObject::PrivateScript::nodeAttributeAttributeSetter(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
 }
 
@@ -5295,9 +5295,7 @@ static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool booleanArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(booleanArg, info[0]->BooleanValue());
+        booleanArg = info[0]->BooleanValue();
     }
     impl->voidMethodBooleanArg(booleanArg);
 }
@@ -5561,9 +5559,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -5587,10 +5583,8 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
     int longArg;
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
     }
     impl->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
@@ -5639,7 +5633,7 @@ static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackIn
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(voidCallbackFunctionArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+        voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
@@ -5662,7 +5656,7 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(anyCallbackFunctionOptionalAnyArgArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+        anyCallbackFunctionOptionalAnyArgArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);
 }
@@ -5732,9 +5726,7 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     EventTarget* eventTargetArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(eventTargetArg, V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+        eventTargetArg = V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0;
     }
     impl->voidMethodEventTargetArg(eventTargetArg);
 }
@@ -5757,7 +5749,7 @@ static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& in
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(anyArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+        anyArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodAnyArg(anyArg);
 }
@@ -5778,9 +5770,7 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Attr* attrArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(attrArg, V8Attr::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        attrArg = V8Attr::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodAttrArg(attrArg);
 }
@@ -5801,9 +5791,7 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Document* documentArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(documentArg, V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        documentArg = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodDocumentArg(documentArg);
 }
@@ -5824,9 +5812,7 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DocumentType* documentTypeArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(documentTypeArg, V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        documentTypeArg = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodDocumentTypeArg(documentTypeArg);
 }
@@ -5847,9 +5833,7 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Element* elementArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(elementArg, V8Element::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        elementArg = V8Element::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodElementArg(elementArg);
 }
@@ -5870,9 +5854,7 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Node* nodeArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(nodeArg, V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        nodeArg = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodNodeArg(nodeArg);
 }
@@ -5958,9 +5940,7 @@ static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ArrayBuffer* arrayBufferArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferArg(arrayBufferArg);
 }
@@ -5981,9 +5961,7 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ArrayBuffer* arrayBufferArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferOrNullArg(arrayBufferArg);
 }
@@ -6004,9 +5982,7 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ArrayBufferView* arrayBufferViewArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayBufferViewArg, info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0);
+        arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferViewArg(arrayBufferViewArg);
 }
@@ -6027,9 +6003,7 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Float32Array* float32ArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(float32ArrayArg, info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0);
+        float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodFloat32ArrayArg(float32ArrayArg);
 }
@@ -6050,9 +6024,7 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Int32Array* int32ArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(int32ArrayArg, info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Handle<v8::Int32Array>::Cast(info[0])) : 0);
+        int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Handle<v8::Int32Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodInt32ArrayArg(int32ArrayArg);
 }
@@ -6073,9 +6045,7 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Uint8Array* uint8ArrayArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(uint8ArrayArg, info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(info[0])) : 0);
+        uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodUint8ArrayArg(uint8ArrayArg);
 }
@@ -6449,9 +6419,7 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallba
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* nullableTestInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        nullableTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodTestInterfaceEmptyOrNullArg(nullableTestInterfaceEmptyArg);
 }
@@ -6803,9 +6771,7 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtrWillBeRawPtr<XPathNSResolver> xPathNSResolverArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(xPathNSResolverArg, toXPathNSResolver(info[0], info.GetIsolate()));
+        xPathNSResolverArg = toXPathNSResolver(info[0], info.GetIsolate());
     }
     impl->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
 }
@@ -6948,13 +6914,11 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             impl->voidMethodOptionalTestInterfaceEmptyArg();
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
@@ -7130,14 +7094,12 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
     int longArg;
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]));
+        optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
     }
     impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
@@ -7161,9 +7123,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
     int longArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
             return;
@@ -7307,10 +7267,8 @@ static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool defaultBooleanArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+            defaultBooleanArg = info[0]->BooleanValue();
         } else {
             defaultBooleanArg = true;
         }
@@ -7330,10 +7288,8 @@ static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInf
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool defaultBooleanArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
+            defaultBooleanArg = info[0]->BooleanValue();
         } else {
             defaultBooleanArg = false;
         }
@@ -7396,10 +7352,8 @@ static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCa
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceImplementation* defaultTestInterfaceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(defaultTestInterfaceArg, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+            defaultTestInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         } else {
             defaultTestInterfaceArg = nullptr;
         }
@@ -7491,9 +7445,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
     TestInterfaceEmpty* testInterfaceEmptyArg;
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         for (int i = 1; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
                 V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", "parameter 2 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
@@ -7698,9 +7650,7 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->overloadedMethodC(testInterfaceEmptyArg);
 }
@@ -7804,9 +7754,7 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->overloadedMethodE(testInterfaceEmptyOrNullArg);
 }
@@ -7930,10 +7878,8 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+            testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         } else {
             testInterfaceEmptyOrNullArg = nullptr;
         }
@@ -7990,9 +7936,7 @@ static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceImplementation* testInterfaceArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceArg, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->overloadedMethodH(testInterfaceArg);
 }
@@ -8002,9 +7946,7 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->overloadedMethodH(testInterfaceEmptyArg);
 }
@@ -8357,9 +8299,7 @@ static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::Func
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* defaultUndefinedTestInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        defaultUndefinedTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
@@ -8589,15 +8529,13 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool optionalBooleanArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalBooleanArg, info[0]->BooleanValue());
+        optionalBooleanArg = info[0]->BooleanValue();
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
@@ -9190,9 +9128,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -9213,9 +9149,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -9581,9 +9515,7 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::Functio
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceImplementation* testInterface;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterface, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterface = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterface);
 }
@@ -9728,13 +9660,11 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethod(const v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -9997,9 +9927,7 @@ static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Node* value;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(value, V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        value = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     RefPtrWillBeRawPtr<Node> result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
@@ -10029,10 +9957,8 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
     double value2;
     V8StringResource<> string;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(document, V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]));
-        TONATIVE_VOID_INTERNAL(node, V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]));
+        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value1, toInt16(info[2], exceptionState), exceptionState);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value2, toDouble(info[3], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(string, info[4]);
@@ -10808,7 +10734,7 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
         block.ReThrow();
         return false;
     }
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value), false);
+    Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
@@ -10844,7 +10770,7 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
         block.ReThrow();
         return false;
     }
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value), false);
+    Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
@@ -11051,7 +10977,7 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
         block.ReThrow();
         return false;
     }
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value), false);
+    Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
     RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;

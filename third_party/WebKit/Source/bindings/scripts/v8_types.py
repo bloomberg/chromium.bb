@@ -481,6 +481,15 @@ def v8_conversion_needs_exception_state(idl_type):
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 
 
+def v8_conversion_is_trivial(idl_type):
+    # The conversion is a simple expression that returns the converted value and
+    # cannot raise an exception.
+    return (idl_type.base_type == 'boolean' or
+            idl_type.is_wrapper_type)
+
+IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
+
+
 def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate):
     if idl_type.name == 'void':
         return ''
@@ -557,6 +566,11 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     elif idl_type.v8_conversion_needs_exception_state:
         macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
+    elif idl_type.v8_conversion_is_trivial:
+        assignment = '%s = %s' % (variable_name, cpp_value)
+        if declare_variable:
+            return '%s %s' % (this_cpp_type, assignment)
+        return assignment
     else:
         macro = 'TONATIVE_DEFAULT' if used_in_private_script else 'TONATIVE_VOID'
 

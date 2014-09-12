@@ -85,10 +85,8 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     V8StringResource<> defaultNullStringOptionalstringArg;
     V8StringResource<> optionalStringArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
-        TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
+        defaultUndefinedOptionalBooleanArg = info[1]->BooleanValue();
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[3]);
         if (!info[4]->IsUndefined()) {

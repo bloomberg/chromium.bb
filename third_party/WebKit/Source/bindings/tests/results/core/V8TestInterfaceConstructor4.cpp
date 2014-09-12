@@ -37,9 +37,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceConstructor4* testInterface4Arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterface4Arg, V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterface4Arg = V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(testInterface4Arg);
     v8::Handle<v8::Object> wrapper = info.Holder();

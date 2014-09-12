@@ -72,7 +72,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -432,7 +432,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID(Node*, cppValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setImplementsNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -497,7 +497,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID(Node*, cppValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setImplementsRuntimeEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -532,7 +532,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID(Node*, cppValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setImplementsPerContextEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -985,13 +985,11 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
             return;
         }
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -1227,15 +1225,13 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     V8StringResource<> strArg;
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(strArg, info[0]);
         if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]));
+        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
@@ -1405,7 +1401,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(partialCallbackTypeArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+        partialCallbackTypeArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }

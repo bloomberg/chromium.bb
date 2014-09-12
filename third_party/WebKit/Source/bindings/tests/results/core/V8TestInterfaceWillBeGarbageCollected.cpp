@@ -51,7 +51,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Propert
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(holder);
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -71,9 +71,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(info.Holder());
     TestInterfaceWillBeGarbageCollected* arg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]));
+        arg = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
     impl->func(arg);
 }
