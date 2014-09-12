@@ -3139,8 +3139,9 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, false, false,
-                                OnHostResolutionCallback()));
+      new TransportSocketParams(
+          host_port2, false, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
@@ -3218,8 +3219,9 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
   scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, false, false,
-                                OnHostResolutionCallback()));
+      new TransportSocketParams(
+          host_port3, false, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   scoped_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,
             connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
@@ -3307,8 +3309,9 @@ TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, false, false,
-                                OnHostResolutionCallback()));
+      new TransportSocketParams(
+          host_port2, false, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,

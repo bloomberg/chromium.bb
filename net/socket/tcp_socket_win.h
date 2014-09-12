@@ -75,7 +75,11 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   void Close();
 
-  bool UsingTCPFastOpen() const;
+  // Setter/Getter methods for TCP FastOpen socket option.
+  // NOOPs since TCP FastOpen is not implemented in Windows.
+  bool UsingTCPFastOpen() const { return false; }
+  void EnableTCPFastOpenIfSupported() {}
+
   bool IsValid() const { return socket_ != INVALID_SOCKET; }
 
   // Marks the start/end of a series of connect attempts for logging purpose.
@@ -152,4 +156,3 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
 }  // namespace net
 
 #endif  // NET_SOCKET_TCP_SOCKET_WIN_H_
-

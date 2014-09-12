@@ -847,8 +847,12 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
   // instance, constructed from a NetworkSession::Params, to allow us
   // to move this option to IOThread::Globals &
   // HttpNetworkSession::Params.
-  if (command_line.HasSwitch(switches::kEnableTcpFastOpen))
-    net::SetTCPFastOpenEnabled(true);
+
+  bool always_enable_if_supported =
+    command_line.HasSwitch(switches::kEnableTcpFastOpen);
+  // Check for OS support of TCP FastOpen, and turn it on for all connections
+  // if indicated by user.
+  net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
 }
 
 void IOThread::ConfigureSpdyFromTrial(const std::string& spdy_trial_group,

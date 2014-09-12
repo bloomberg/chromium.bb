@@ -40,9 +40,12 @@ class TransportClientSocketPoolTest : public testing::Test {
       : connect_backup_jobs_enabled_(
             ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
         params_(
-            new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                      false, false,
-                                      OnHostResolutionCallback())),
+            new TransportSocketParams(
+                HostPortPair("www.google.com", 80),
+                false,
+                false,
+                OnHostResolutionCallback(),
+                TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
@@ -59,10 +62,17 @@ class TransportClientSocketPoolTest : public testing::Test {
         connect_backup_jobs_enabled_);
   }
 
+  scoped_refptr<TransportSocketParams> CreateParamsForTCPFastOpen() {
+      return new TransportSocketParams(HostPortPair("www.google.com", 80),
+          false, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED);
+  }
+
   int StartRequest(const std::string& group_name, RequestPriority priority) {
     scoped_refptr<TransportSocketParams> params(new TransportSocketParams(
         HostPortPair("www.google.com", 80), false, false,
-        OnHostResolutionCallback()));
+        OnHostResolutionCallback(),
+        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
     return test_base_.StartRequestUsingPool(
         &pool_, group_name, priority, params);
   }
@@ -201,8 +211,8 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
   ClientSocketHandle handle;
   HostPortPair host_port_pair("unresolvable.host.name", 80);
   scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
-      host_port_pair, false, false,
-      OnHostResolutionCallback()));
+      host_port_pair, false, false, OnHostResolutionCallback(),
+      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", dest, kDefaultPriority, callback.callback(),
                         &pool_, BoundNetLog()));
@@ -477,7 +487,8 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
       within_callback_ = true;
       scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
           HostPortPair("www.google.com", 80), false, false,
-          OnHostResolutionCallback()));
+          OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
       int rv = handle_->Init("a", dest, LOWEST, callback(), pool_,
                              BoundNetLog());
       EXPECT_EQ(OK, rv);
@@ -497,7 +508,8 @@ TEST_F(TransportClientSocketPoolTest, RequestTwice) {
   RequestSocketCallback callback(&handle, &pool_);
   scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
       HostPortPair("www.google.com", 80), false, false,
-      OnHostResolutionCallback()));
+      OnHostResolutionCallback(),
+      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   int rv = handle.Init("a", dest, LOWEST, callback.callback(), &pool_,
                        BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
@@ -962,6 +974,137 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
   handle.socket()->GetLocalAddress(&endpoint);
   EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
   EXPECT_EQ(1, client_socket_factory_.allocation_count());
+}
+
+// Test that if TCP FastOpen is enabled, it is set on the socket
+// when we have only an IPv4 address.
+TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
+  // Create a pool without backup jobs.
+  ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
+  TransportClientSocketPool pool(kMaxSockets,
+                                 kMaxSocketsPerGroup,
+                                 histograms_.get(),
+                                 host_resolver_.get(),
+                                 &client_socket_factory_,
+                                 NULL);
+  client_socket_factory_.set_default_client_socket_type(
+      MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
+  // Resolve an AddressList with only IPv4 addresses.
+  host_resolver_->rules()->AddIPLiteralRule("*", "1.1.1.1", std::string());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  // Enable TCP FastOpen in TransportSocketParams.
+  scoped_refptr<TransportSocketParams> params = CreateParamsForTCPFastOpen();
+  handle.Init("a", params, LOW, callback.callback(), &pool, BoundNetLog());
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(handle.socket()->UsingTCPFastOpen());
+}
+
+// Test that if TCP FastOpen is enabled, it is set on the socket
+// when we have only IPv6 addresses.
+TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
+  // Create a pool without backup jobs.
+  ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
+  TransportClientSocketPool pool(kMaxSockets,
+                                 kMaxSocketsPerGroup,
+                                 histograms_.get(),
+                                 host_resolver_.get(),
+                                 &client_socket_factory_,
+                                 NULL);
+  client_socket_factory_.set_default_client_socket_type(
+      MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
+  // Resolve an AddressList with only IPv6 addresses.
+  host_resolver_->rules()
+      ->AddIPLiteralRule("*", "2:abcd::3:4:ff,3:abcd::3:4:ff", std::string());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  // Enable TCP FastOpen in TransportSocketParams.
+  scoped_refptr<TransportSocketParams> params = CreateParamsForTCPFastOpen();
+  handle.Init("a", params, LOW, callback.callback(), &pool, BoundNetLog());
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(handle.socket()->UsingTCPFastOpen());
+}
+
+// Test that if TCP FastOpen is enabled, it does not do anything when there
+// is a IPv6 address with fallback to an IPv4 address. This test tests the case
+// when the IPv6 connect fails and the IPv4 one succeeds.
+TEST_F(TransportClientSocketPoolTest,
+           NoTCPFastOpenOnIPv6FailureWithIPv4Fallback) {
+  // Create a pool without backup jobs.
+  ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
+  TransportClientSocketPool pool(kMaxSockets,
+                                 kMaxSocketsPerGroup,
+                                 histograms_.get(),
+                                 host_resolver_.get(),
+                                 &client_socket_factory_,
+                                 NULL);
+
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
+    // This is the IPv6 socket.
+    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
+    // This is the IPv4 socket.
+    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
+  };
+  client_socket_factory_.set_client_socket_types(case_types, 2);
+  // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
+  host_resolver_->rules()
+      ->AddIPLiteralRule("*", "2:abcd::3:4:ff,2.2.2.2", std::string());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  // Enable TCP FastOpen in TransportSocketParams.
+  scoped_refptr<TransportSocketParams> params = CreateParamsForTCPFastOpen();
+  handle.Init("a", params, LOW, callback.callback(), &pool, BoundNetLog());
+  EXPECT_EQ(OK, callback.WaitForResult());
+  // Verify that the socket used is connected to the fallback IPv4 address.
+  IPEndPoint endpoint;
+  handle.socket()->GetLocalAddress(&endpoint);
+  EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
+  EXPECT_EQ(2, client_socket_factory_.allocation_count());
+  // Verify that TCP FastOpen was not turned on for the socket.
+  EXPECT_FALSE(handle.socket()->UsingTCPFastOpen());
+}
+
+// Test that if TCP FastOpen is enabled, it does not do anything when there
+// is a IPv6 address with fallback to an IPv4 address. This test tests the case
+// when the IPv6 connect succeeds.
+TEST_F(TransportClientSocketPoolTest,
+           NoTCPFastOpenOnIPv6SuccessWithIPv4Fallback) {
+  // Create a pool without backup jobs.
+  ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
+  TransportClientSocketPool pool(kMaxSockets,
+                                 kMaxSocketsPerGroup,
+                                 histograms_.get(),
+                                 host_resolver_.get(),
+                                 &client_socket_factory_,
+                                 NULL);
+
+  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
+    // This is the IPv6 socket.
+    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET,
+    // This is the IPv4 socket.
+    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
+  };
+  client_socket_factory_.set_client_socket_types(case_types, 2);
+  // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
+  host_resolver_->rules()
+      ->AddIPLiteralRule("*", "2:abcd::3:4:ff,2.2.2.2", std::string());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  // Enable TCP FastOpen in TransportSocketParams.
+  scoped_refptr<TransportSocketParams> params = CreateParamsForTCPFastOpen();
+  handle.Init("a", params, LOW, callback.callback(), &pool, BoundNetLog());
+  EXPECT_EQ(OK, callback.WaitForResult());
+  // Verify that the socket used is connected to the IPv6 address.
+  IPEndPoint endpoint;
+  handle.socket()->GetLocalAddress(&endpoint);
+  EXPECT_EQ(kIPv6AddressSize, endpoint.address().size());
+  EXPECT_EQ(1, client_socket_factory_.allocation_count());
+  // Verify that TCP FastOpen was not turned on for the socket.
+  EXPECT_FALSE(handle.socket()->UsingTCPFastOpen());
 }
 
 }  // namespace

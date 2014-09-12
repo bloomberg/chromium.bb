@@ -192,10 +192,12 @@ class HttpProxyClientSocketPoolTest
   scoped_refptr<TransportSocketParams> CreateHttpProxyParams() const {
     if (GetParam().proxy_type != HTTP)
       return NULL;
-    return new TransportSocketParams(HostPortPair(kHttpProxyHost, 80),
-                                     false,
-                                     false,
-                                     OnHostResolutionCallback());
+    return new TransportSocketParams(
+        HostPortPair(kHttpProxyHost, 80),
+        false,
+        false,
+        OnHostResolutionCallback(),
+        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
   }
 
   scoped_refptr<SSLSocketParams> CreateHttpsProxyParams() const {
@@ -206,7 +208,8 @@ class HttpProxyClientSocketPoolTest
             HostPortPair(kHttpsProxyHost, 443),
             false,
             false,
-            OnHostResolutionCallback()),
+            OnHostResolutionCallback(),
+            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT),
         NULL,
         NULL,
         HostPortPair(kHttpsProxyHost, 443),

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/socket/tcp_socket.h"
 #include "net/socket/tcp_socket_win.h"
 
 #include <mstcpip.h>
@@ -122,6 +123,12 @@ int MapConnectError(int os_error) {
 }  // namespace
 
 //-----------------------------------------------------------------------------
+
+// Nothing to do for Windows since it doesn't support TCP FastOpen.
+// TODO(jri): Remove these along with the corresponding global variables.
+bool IsTCPFastOpenSupported() { return false; }
+bool IsTCPFastOpenUserEnabled() { return false; }
+void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {}
 
 // This class encapsulates all the state that has to be preserved as long as
 // there is a network IO operation in progress. If the owner TCPSocketWin is
@@ -694,11 +701,6 @@ void TCPSocketWin::Close() {
   connect_os_error_ = 0;
 }
 
-bool TCPSocketWin::UsingTCPFastOpen() const {
-  // Not supported on windows.
-  return false;
-}
-
 void TCPSocketWin::StartLoggingMultipleConnectAttempts(
     const AddressList& addresses) {
   if (!logging_multiple_connect_attempts_) {
@@ -1021,4 +1023,3 @@ void TCPSocketWin::DidSignalRead() {
 }
 
 }  // namespace net
-

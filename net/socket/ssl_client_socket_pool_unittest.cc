@@ -87,20 +87,24 @@ class SSLClientSocketPoolTest
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         session_(CreateNetworkSession()),
         direct_transport_socket_params_(
-            new TransportSocketParams(HostPortPair("host", 443),
-                                      false,
-                                      false,
-                                      OnHostResolutionCallback())),
+            new TransportSocketParams(
+                HostPortPair("host", 443),
+                false,
+                false,
+                OnHostResolutionCallback(),
+                TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         transport_histograms_("MockTCP"),
         transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
                                &transport_histograms_,
                                &socket_factory_),
         proxy_transport_socket_params_(
-            new TransportSocketParams(HostPortPair("proxy", 443),
-                                      false,
-                                      false,
-                                      OnHostResolutionCallback())),
+            new TransportSocketParams(
+                HostPortPair("proxy", 443),
+                false,
+                false,
+                OnHostResolutionCallback(),
+                TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
                                   true,

@@ -13,6 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/task_runner_util.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/address_list.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/io_buffer.h"
@@ -31,6 +33,12 @@
 namespace net {
 
 namespace {
+
+// True if OS supports TCP FastOpen.
+bool g_tcp_fastopen_supported = false;
+// True if TCP FastOpen is user-enabled for all connections.
+// TODO(jri): Change global variable to param in HttpNetworkSession::Params.
+bool g_tcp_fastopen_user_enabled = false;
 
 // SetTCPNoDelay turns on/off buffering in the kernel. By default, TCP sockets
 // will wait up to 200ms for more data to complete a packet before transmitting.
@@ -69,13 +77,58 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
   return true;
 }
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+// Checks if the kernel supports TCP FastOpen.
+bool SystemSupportsTCPFastOpen() {
+  const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
+      "/proc/sys/net/ipv4/tcp_fastopen";
+  std::string system_supports_tcp_fastopen;
+  if (!base::ReadFileToString(base::FilePath(kTCPFastOpenProcFilePath),
+                              &system_supports_tcp_fastopen)) {
+    return false;
+  }
+  // The read from /proc should return '1' if TCP FastOpen is enabled in the OS.
+  if (system_supports_tcp_fastopen.empty() ||
+      (system_supports_tcp_fastopen[0] != '1')) {
+    return false;
+  }
+  return true;
+}
+
+void RegisterTCPFastOpenIntentAndSupport(bool user_enabled,
+                                         bool system_supported) {
+  g_tcp_fastopen_supported = system_supported;
+  g_tcp_fastopen_user_enabled = user_enabled;
+}
+#endif
+
 }  // namespace
 
 //-----------------------------------------------------------------------------
 
+bool IsTCPFastOpenSupported() {
+  return g_tcp_fastopen_supported;
+}
+
+bool IsTCPFastOpenUserEnabled() {
+  return g_tcp_fastopen_user_enabled;
+}
+
+// This is asynchronous because it needs to do file IO, and it isn't allowed to
+// do that on the IO thread.
+void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  base::PostTaskAndReplyWithResult(
+      base::WorkerPool::GetTaskRunner(/*task_is_slow=*/false).get(),
+      FROM_HERE,
+      base::Bind(SystemSupportsTCPFastOpen),
+      base::Bind(RegisterTCPFastOpenIntentAndSupport, user_enabled));
+#endif
+}
+
 TCPSocketLibevent::TCPSocketLibevent(NetLog* net_log,
                                      const NetLog::Source& source)
-    : use_tcp_fastopen_(IsTCPFastOpenEnabled()),
+    : use_tcp_fastopen_(false),
       tcp_fastopen_connected_(false),
       fast_open_status_(FAST_OPEN_STATUS_UNKNOWN),
       logging_multiple_connect_attempts_(false),
@@ -369,6 +422,11 @@ bool TCPSocketLibevent::UsingTCPFastOpen() const {
   return use_tcp_fastopen_;
 }
 
+void TCPSocketLibevent::EnableTCPFastOpenIfSupported() {
+  if (IsTCPFastOpenSupported())
+    use_tcp_fastopen_ = true;
+}
+
 bool TCPSocketLibevent::IsValid() const {
   return socket_ != NULL && socket_->socket_fd() != kInvalidSocket;
 }
@@ -495,7 +553,7 @@ void TCPSocketLibevent::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
                                       const CompletionCallback& callback,
                                       int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  // Records fast open status regardless of error in asynchronous case.
+  // Records TCP FastOpen status regardless of error in asynchronous case.
   // TODO(rdsmith,jri): Change histogram name to indicate it could be called on
   // error.
   RecordFastOpenStatus();
@@ -597,7 +655,7 @@ void TCPSocketLibevent::RecordFastOpenStatus() {
     bool getsockopt_success(false);
     bool server_acked_data(false);
 #if defined(TCP_INFO)
-    // Probe to see the if the socket used TCP Fast Open.
+    // Probe to see the if the socket used TCP FastOpen.
     tcp_info info;
     socklen_t info_len = sizeof(tcp_info);
     getsockopt_success =

@@ -65,7 +65,10 @@ class NET_EXPORT TCPSocketLibevent {
 
   void Close();
 
+  // Setter/Getter methods for TCP FastOpen socket option.
   bool UsingTCPFastOpen() const;
+  void EnableTCPFastOpenIfSupported();
+
   bool IsValid() const;
 
   // Marks the start/end of a series of connect attempts for logging purpose.
@@ -168,11 +171,10 @@ class NET_EXPORT TCPSocketLibevent {
   scoped_ptr<SocketLibevent> accept_socket_;
 
   // Enables experimental TCP FastOpen option.
-  const bool use_tcp_fastopen_;
+  bool use_tcp_fastopen_;
 
   // True when TCP FastOpen is in use and we have done the connect.
   bool tcp_fastopen_connected_;
-
   FastOpenStatus fast_open_status_;
 
   bool logging_multiple_connect_attempts_;

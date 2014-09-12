@@ -523,8 +523,8 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(
-          key.host_port_pair(), false, false,
-          OnHostResolutionCallback()));
+          key.host_port_pair(), false, false, OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
 
   scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
   TestCompletionCallback callback;

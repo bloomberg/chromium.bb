@@ -225,6 +225,10 @@ bool TCPClientSocket::UsingTCPFastOpen() const {
   return socket_->UsingTCPFastOpen();
 }
 
+void TCPClientSocket::EnableTCPFastOpenIfSupported() {
+  socket_->EnableTCPFastOpenIfSupported();
+}
+
 bool TCPClientSocket::WasNpnNegotiated() const {
   return false;
 }

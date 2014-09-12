@@ -51,10 +51,12 @@ void RunLoopForTimePeriod(base::TimeDelta period) {
 class WebSocketTransportClientSocketPoolTest : public testing::Test {
  protected:
   WebSocketTransportClientSocketPoolTest()
-      : params_(new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                          false,
-                                          false,
-                                          OnHostResolutionCallback())),
+      : params_(new TransportSocketParams(
+            HostPortPair("www.google.com", 80),
+            false,
+            false,
+            OnHostResolutionCallback(),
+            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
@@ -72,10 +74,12 @@ class WebSocketTransportClientSocketPoolTest : public testing::Test {
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
     scoped_refptr<TransportSocketParams> params(
-        new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                  false,
-                                  false,
-                                  OnHostResolutionCallback()));
+        new TransportSocketParams(
+            HostPortPair("www.google.com", 80),
+            false,
+            false,
+            OnHostResolutionCallback(),
+            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
     return test_base_.StartRequestUsingPool(
         &pool_, group_name, priority, params);
   }
@@ -148,7 +152,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
   ClientSocketHandle handle;
   HostPortPair host_port_pair("unresolvable.host.name", 80);
   scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
-      host_port_pair, false, false, OnHostResolutionCallback()));
+      host_port_pair, false, false, OnHostResolutionCallback(),
+      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a",
                         dest,
@@ -398,10 +403,12 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
       }
       within_callback_ = true;
       scoped_refptr<TransportSocketParams> dest(
-          new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                    false,
-                                    false,
-                                    OnHostResolutionCallback()));
+          new TransportSocketParams(
+              HostPortPair("www.google.com", 80),
+              false,
+              false,
+              OnHostResolutionCallback(),
+              TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
       int rv =
           handle_->Init("a", dest, LOWEST, callback(), pool_, BoundNetLog());
       EXPECT_EQ(OK, rv);
@@ -420,10 +427,12 @@ TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, &pool_);
   scoped_refptr<TransportSocketParams> dest(
-      new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
+      new TransportSocketParams(
+          HostPortPair("www.google.com", 80),
+          false,
+          false,
+          OnHostResolutionCallback(),
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   int rv = handle.Init(
       "a", dest, LOWEST, callback.callback(), &pool_, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);

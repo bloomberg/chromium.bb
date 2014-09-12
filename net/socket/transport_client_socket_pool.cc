@@ -60,12 +60,21 @@ TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
     bool disable_resolver_cache,
     bool ignore_limits,
-    const OnHostResolutionCallback& host_resolution_callback)
+    const OnHostResolutionCallback& host_resolution_callback,
+    CombineConnectAndWritePolicy combine_connect_and_write_if_supported)
     : destination_(host_port_pair),
       ignore_limits_(ignore_limits),
-      host_resolution_callback_(host_resolution_callback) {
+      host_resolution_callback_(host_resolution_callback),
+      combine_connect_and_write_(combine_connect_and_write_if_supported) {
   if (disable_resolver_cache)
     destination_.set_allow_cached_response(false);
+  // combine_connect_and_write currently translates to TCP FastOpen.
+  // Enable TCP FastOpen if user wants it.
+  if (combine_connect_and_write_ == COMBINE_CONNECT_AND_WRITE_DEFAULT) {
+    IsTCPFastOpenUserEnabled() ? combine_connect_and_write_ =
+        COMBINE_CONNECT_AND_WRITE_DESIRED :
+        COMBINE_CONNECT_AND_WRITE_PROHIBITED;
+  }
 }
 
 TransportSocketParams::~TransportSocketParams() {}
@@ -261,10 +270,25 @@ int TransportConnectJob::DoTransportConnect() {
   transport_socket_ =
       helper_.client_socket_factory()->CreateTransportClientSocket(
           helper_.addresses(), net_log().net_log(), net_log().source());
-  int rv = transport_socket_->Connect(helper_.on_io_complete());
-  if (rv == ERR_IO_PENDING &&
+
+  // If the list contains IPv6 and IPv4 addresses, the first address will
+  // be IPv6, and the IPv4 addresses will be tried as fallback addresses,
+  // per "Happy Eyeballs" (RFC 6555).
+  bool try_ipv6_connect_with_ipv4_fallback =
       helper_.addresses().front().GetFamily() == ADDRESS_FAMILY_IPV6 &&
-      !AddressListOnlyContainsIPv6(helper_.addresses())) {
+      !AddressListOnlyContainsIPv6(helper_.addresses());
+
+  // Enable TCP FastOpen if indicated by transport socket params.
+  // Note: We currently do not turn on TCP FastOpen for destinations where
+  // we try a TCP connect over IPv6 with fallback to IPv4.
+  if (!try_ipv6_connect_with_ipv4_fallback &&
+      helper_.params()->combine_connect_and_write() ==
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED) {
+    transport_socket_->EnableTCPFastOpenIfSupported();
+  }
+
+  int rv = transport_socket_->Connect(helper_.on_io_complete());
+  if (rv == ERR_IO_PENDING && try_ipv6_connect_with_ipv4_fallback) {
     fallback_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(

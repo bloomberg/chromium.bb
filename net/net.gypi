@@ -980,7 +980,6 @@
       'socket/tcp_listen_socket.h',
       'socket/tcp_server_socket.cc',
       'socket/tcp_server_socket.h',
-      'socket/tcp_socket.cc',
       'socket/tcp_socket.h',
       'socket/tcp_socket_libevent.cc',
       'socket/tcp_socket_libevent.h',

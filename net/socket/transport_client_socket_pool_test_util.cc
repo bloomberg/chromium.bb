@@ -34,7 +34,8 @@ class MockConnectClientSocket : public StreamSocket {
   MockConnectClientSocket(const AddressList& addrlist, net::NetLog* net_log)
       : connected_(false),
         addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {}
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        use_tcp_fastopen_(false) {}
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) OVERRIDE {
@@ -63,7 +64,10 @@ class MockConnectClientSocket : public StreamSocket {
   virtual void SetSubresourceSpeculation() OVERRIDE {}
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
+  virtual void EnableTCPFastOpenIfSupported() OVERRIDE {
+    use_tcp_fastopen_ = true;
+  }
+  virtual bool UsingTCPFastOpen() const OVERRIDE { return use_tcp_fastopen_; }
   virtual bool WasNpnNegotiated() const OVERRIDE { return false; }
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
     return kProtoUnknown;
@@ -88,6 +92,7 @@ class MockConnectClientSocket : public StreamSocket {
   bool connected_;
   const AddressList addrlist_;
   BoundNetLog net_log_;
+  bool use_tcp_fastopen_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectClientSocket);
 };
@@ -96,7 +101,8 @@ class MockFailingClientSocket : public StreamSocket {
  public:
   MockFailingClientSocket(const AddressList& addrlist, net::NetLog* net_log)
       : addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {}
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        use_tcp_fastopen_(false) {}
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) OVERRIDE {
@@ -118,7 +124,10 @@ class MockFailingClientSocket : public StreamSocket {
   virtual void SetSubresourceSpeculation() OVERRIDE {}
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
+  virtual void EnableTCPFastOpenIfSupported() OVERRIDE {
+    use_tcp_fastopen_ = true;
+  }
+  virtual bool UsingTCPFastOpen() const OVERRIDE { return use_tcp_fastopen_; }
   virtual bool WasNpnNegotiated() const OVERRIDE { return false; }
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
     return kProtoUnknown;
@@ -143,6 +152,7 @@ class MockFailingClientSocket : public StreamSocket {
  private:
   const AddressList addrlist_;
   BoundNetLog net_log_;
+  bool use_tcp_fastopen_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFailingClientSocket);
 };
@@ -158,6 +168,7 @@ class MockTriggerableClientSocket : public StreamSocket {
         is_connected_(false),
         addrlist_(addrlist),
         net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        use_tcp_fastopen_(false),
         weak_factory_(this) {}
 
   // Call this method to get a closure which will trigger the connect callback
@@ -228,7 +239,10 @@ class MockTriggerableClientSocket : public StreamSocket {
   virtual void SetSubresourceSpeculation() OVERRIDE {}
   virtual void SetOmniboxSpeculation() OVERRIDE {}
   virtual bool WasEverUsed() const OVERRIDE { return false; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
+  virtual void EnableTCPFastOpenIfSupported() OVERRIDE {
+    use_tcp_fastopen_ = true;
+  }
+  virtual bool UsingTCPFastOpen() const OVERRIDE { return use_tcp_fastopen_; }
   virtual bool WasNpnNegotiated() const OVERRIDE { return false; }
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
     return kProtoUnknown;
@@ -261,6 +275,7 @@ class MockTriggerableClientSocket : public StreamSocket {
   const AddressList addrlist_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
+  bool use_tcp_fastopen_;
 
   base::WeakPtrFactory<MockTriggerableClientSocket> weak_factory_;
 

@@ -75,9 +75,14 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   // Write() methods had been called, not the underlying transport's.
   virtual bool WasEverUsed() const = 0;
 
+  // TODO(jri): Clean up -- remove this method.
   // Returns true if the underlying transport socket is using TCP FastOpen.
   // TCP FastOpen is an experiment with sending data in the TCP SYN packet.
   virtual bool UsingTCPFastOpen() const = 0;
+
+  // TODO(jri): Clean up -- rename to a more general EnableAutoConnectOnWrite.
+  // Enables use of TCP FastOpen for the underlying transport socket.
+  virtual void EnableTCPFastOpenIfSupported() {}
 
   // Returns true if NPN was negotiated during the connection of this socket.
   virtual bool WasNpnNegotiated() const = 0;

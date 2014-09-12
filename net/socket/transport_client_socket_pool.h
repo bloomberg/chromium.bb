@@ -29,19 +29,39 @@ OnHostResolutionCallback;
 class NET_EXPORT_PRIVATE TransportSocketParams
     : public base::RefCounted<TransportSocketParams> {
  public:
+  // CombineConnectAndWrite currently translates to using TCP FastOpen.
+  // TCP FastOpen should not be used if the first write to the socket may
+  // be non-idempotent, as the underlying socket could retransmit the data
+  // on failure of the first transmission.
+  // NOTE: Currently, COMBINE_CONNECT_AND_WRITE_DESIRED is used if the data in
+  // the write is known to be idempotent, and COMBINE_CONNECT_AND_WRITE_DEFAULT
+  // is used as a default for other cases (including non-idempotent writes).
+  enum CombineConnectAndWritePolicy {
+    COMBINE_CONNECT_AND_WRITE_DEFAULT,    // Default policy, implemented in
+                                          // TransportSocketParams constructor.
+    COMBINE_CONNECT_AND_WRITE_DESIRED,    // Combine if supported by socket.
+    COMBINE_CONNECT_AND_WRITE_PROHIBITED  // Do not combine.
+  };
+
   // |host_resolution_callback| will be invoked after the the hostname is
   // resolved.  If |host_resolution_callback| does not return OK, then the
-  // connection will be aborted with that value.
+  // connection will be aborted with that value. |combine_connect_and_write|
+  // defines the policy for use of TCP FastOpen on this socket.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
       bool disable_resolver_cache,
       bool ignore_limits,
-      const OnHostResolutionCallback& host_resolution_callback);
+      const OnHostResolutionCallback& host_resolution_callback,
+      CombineConnectAndWritePolicy combine_connect_and_write);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
   bool ignore_limits() const { return ignore_limits_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
+  }
+
+  CombineConnectAndWritePolicy combine_connect_and_write() const {
+    return combine_connect_and_write_;
   }
 
  private:
@@ -51,6 +71,7 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   HostResolver::RequestInfo destination_;
   bool ignore_limits_;
   const OnHostResolutionCallback host_resolution_callback_;
+  CombineConnectAndWritePolicy combine_connect_and_write_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);
 };
@@ -90,6 +111,7 @@ class NET_EXPORT_PRIVATE TransportConnectJobHelper {
   State next_state() const { return next_state_; }
   void set_next_state(State next_state) { next_state_ = next_state; }
   CompletionCallback on_io_complete() const { return on_io_complete_; }
+  const TransportSocketParams* params() { return params_.get(); }
 
   int DoResolveHost(RequestPriority priority, const BoundNetLog& net_log);
   int DoResolveHostComplete(int result, const BoundNetLog& net_log);

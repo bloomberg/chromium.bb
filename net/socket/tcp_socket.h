@@ -16,13 +16,6 @@
 
 namespace net {
 
-// Enable/disable experimental TCP FastOpen option.
-// Not thread safe.  Must be called during initialization/startup only.
-NET_EXPORT void SetTCPFastOpenEnabled(bool value);
-
-// Check if the TCP FastOpen option is enabled.
-bool IsTCPFastOpenEnabled();
-
 // TCPSocket provides a platform-independent interface for TCP sockets.
 //
 // It is recommended to use TCPClientSocket/TCPServerSocket instead of this
@@ -34,6 +27,17 @@ typedef TCPSocketWin TCPSocket;
 #elif defined(OS_POSIX)
 typedef TCPSocketLibevent TCPSocket;
 #endif
+
+// Check if TCP FastOpen is supported by the OS.
+bool IsTCPFastOpenSupported();
+
+// Check if TCP FastOpen is enabled by the user.
+bool IsTCPFastOpenUserEnabled();
+
+// Checks if TCP FastOpen is supported by the kernel. Also enables TFO for all
+// connections if indicated by user.
+// Not thread safe.  Must be called during initialization/startup only.
+NET_EXPORT void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled);
 
 }  // namespace net
 
