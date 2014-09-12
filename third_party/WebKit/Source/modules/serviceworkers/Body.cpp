@@ -19,6 +19,16 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     if (m_bodyUsed)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Already read", scriptState->isolate()));
 
+    // When the main thread sends a V8::TerminateExecution() signal to a worker
+    // thread, any V8 API on the worker thread starts returning an empty
+    // handle. This can happen in Body::readAsync. To avoid the situation, we
+    // first check the ExecutionContext and return immediately if it's already
+    // gone (which means that the V8::TerminateExecution() signal has been sent
+    // to this worker thread).
+    ExecutionContext* executionContext = scriptState->executionContext();
+    if (!executionContext)
+        return ScriptPromise();
+
     m_bodyUsed = true;
     m_responseType = type;
 
@@ -62,7 +72,7 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     }
 
     m_loader = adoptPtr(new FileReaderLoader(readType, this));
-    m_loader->start(scriptState->executionContext(), blobHandle);
+    m_loader->start(executionContext, blobHandle);
 
     return promise;
 }
