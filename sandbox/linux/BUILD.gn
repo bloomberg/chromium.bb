@@ -86,6 +86,8 @@ test("sandbox_linux_unittests") {
     "//testing/gtest",
   ]
 
+  libs = [ "rt" ]
+
   if (compile_suid_client) {
     sources += [
       "suid/client/setuid_sandbox_client_unittest.cc",
