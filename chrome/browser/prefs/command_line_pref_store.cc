@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -30,9 +31,13 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
       { data_reduction_proxy::switches::kDataReductionProxy,
           data_reduction_proxy::prefs::kDataReductionProxy },
-      { switches::kDiskCacheDir, prefs::kDiskCacheDir },
       { switches::kSSLVersionMin, prefs::kSSLVersionMin },
       { switches::kSSLVersionMax, prefs::kSSLVersionMax },
+};
+
+const CommandLinePrefStore::PathSwitchToPreferenceMapEntry
+    CommandLinePrefStore::path_switch_map_[] = {
+      { switches::kDiskCacheDir, prefs::kDiskCacheDir },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
@@ -100,6 +105,14 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
       SetValue(string_switch_map_[i].preference_path,
                new base::StringValue(command_line_->GetSwitchValueASCII(
                    string_switch_map_[i].switch_name)));
+    }
+  }
+
+  for (size_t i = 0; i < arraysize(path_switch_map_); ++i) {
+    if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
+      SetValue(path_switch_map_[i].preference_path,
+               new base::StringValue(command_line_->GetSwitchValuePath(
+                   path_switch_map_[i].switch_name).value()));
     }
   }
 

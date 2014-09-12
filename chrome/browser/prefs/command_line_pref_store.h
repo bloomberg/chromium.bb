@@ -31,6 +31,11 @@ class CommandLinePrefStore : public ValueMapPrefStore {
     const char* preference_path;
   };
 
+  struct PathSwitchToPreferenceMapEntry {
+    const char* switch_name;
+    const char* preference_path;
+  };
+
   struct IntegerSwitchToPreferenceMapEntry {
     const char* switch_name;
     const char* preference_path;
@@ -63,6 +68,7 @@ class CommandLinePrefStore : public ValueMapPrefStore {
   // Mappings of command line switches to prefs.
   static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];
   static const StringSwitchToPreferenceMapEntry string_switch_map_[];
+  static const PathSwitchToPreferenceMapEntry path_switch_map_[];
   static const IntegerSwitchToPreferenceMapEntry integer_switch_map_[];
 
   DISALLOW_COPY_AND_ASSIGN(CommandLinePrefStore);
