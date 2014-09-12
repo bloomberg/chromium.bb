@@ -21,6 +21,8 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
 namespace {
 
 const char* const kPredefinedAllowedUMAOrigins[] = {
@@ -33,8 +35,11 @@ const char* const kWhitelistedHistogramPrefixes[] = {
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
-    "libwidevinecdmadapter.so",  // see http://crbug.com/368743
-    "libpdf.so"                  // see http://crbug.com/405305
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
+    kWidevineCdmAdapterFileName,  // see http://crbug.com/368743
+                                  // and http://crbug.com/410630
+#endif
+    "libpdf.so"                   // see http://crbug.com/405305
 };
 
 std::string HashPrefix(const std::string& histogram) {
