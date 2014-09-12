@@ -943,7 +943,10 @@ def main(args):
   if buildbot_common.IsSDKBuilder():
     options.archive = True
     options.build_ports = True
-    options.build_app_engine = True
+    # TODO(binji): re-enable app_engine build when the linux builder stops
+    # breaking when trying to git clone from github.
+    # See http://crbug.com/412969.
+    options.build_app_engine = False
     options.tar = True
 
   toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
