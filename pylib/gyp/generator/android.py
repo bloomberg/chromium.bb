@@ -66,33 +66,6 @@ header = """\
 
 """
 
-android_standard_include_paths = set([
-    # JNI_H_INCLUDE in build/core/binary.mk
-    'dalvik/libnativehelper/include/nativehelper',
-    # from SRC_HEADERS in build/core/config.mk
-    'system/core/include',
-    'hardware/libhardware/include',
-    'hardware/libhardware_legacy/include',
-    'hardware/ril/include',
-    'dalvik/libnativehelper/include',
-    'frameworks/native/include',
-    'frameworks/native/opengl/include',
-    'frameworks/base/include',
-    'frameworks/base/opengl/include',
-    'frameworks/base/native/include',
-    'external/skia/include',
-    # TARGET_C_INCLUDES in build/core/combo/TARGET_linux-arm.mk
-    'bionic/libc/arch-arm/include',
-    'bionic/libc/include',
-    'bionic/libstdc++/include',
-    'bionic/libc/kernel/common',
-    'bionic/libc/kernel/arch-arm',
-    'bionic/libm/include',
-    'bionic/libm/include/arm',
-    'bionic/libthread_db/include',
-    ])
-
-
 # Map gyp target types to Android module classes.
 MODULE_CLASSES = {
     'static_library': 'STATIC_LIBRARIES',
@@ -185,7 +158,6 @@ class AndroidMkWriter(object):
     if self.android_stem != self.android_module:
       self.WriteLn('LOCAL_MODULE_STEM := ' + self.android_stem)
     self.WriteLn('LOCAL_MODULE_SUFFIX := ' + self.android_suffix)
-    self.WriteLn('LOCAL_MODULE_TAGS := optional')
     if self.toolset == 'host':
       self.WriteLn('LOCAL_IS_HOST_MODULE := true')
       self.WriteLn('LOCAL_MULTILIB := $(GYP_HOST_MULTILIB)')
@@ -713,9 +685,7 @@ class AndroidMkWriter(object):
 
   def NormalizeIncludePaths(self, include_paths):
     """ Normalize include_paths.
-    Convert absolute paths to relative to the Android top directory;
-    filter out include paths that are already brought in by the Android build
-    system.
+    Convert absolute paths to relative to the Android top directory.
 
     Args:
       include_paths: A list of unprocessed include paths.
@@ -726,10 +696,7 @@ class AndroidMkWriter(object):
     for path in include_paths:
       if path[0] == '/':
         path = gyp.common.RelativePath(path, self.android_top_dir)
-
-      # Filter out the Android standard search path.
-      if path not in android_standard_include_paths:
-        normalized.append(path)
+      normalized.append(path)
     return normalized
 
   def ExtractIncludesFromCFlags(self, cflags):
@@ -810,28 +777,41 @@ class AndroidMkWriter(object):
     spec, configs: input from gyp.
     link_deps: link dependency list; see ComputeDeps()
     """
-    for configname, config in sorted(configs.iteritems()):
-      ldflags = list(config.get('ldflags', []))
-      self.WriteLn('')
-      self.WriteList(ldflags, 'LOCAL_LDFLAGS_%s' % configname)
-    self.WriteLn('\nLOCAL_LDFLAGS := $(LOCAL_LDFLAGS_$(GYP_CONFIGURATION))')
+    if self.type != 'static_library':
+      for configname, config in sorted(configs.iteritems()):
+        ldflags = list(config.get('ldflags', []))
+        self.WriteLn('')
+        self.WriteList(ldflags, 'LOCAL_LDFLAGS_%s' % configname)
+      self.WriteLn('\nLOCAL_LDFLAGS := $(LOCAL_LDFLAGS_$(GYP_CONFIGURATION))')
 
     # Libraries (i.e. -lfoo)
+    # These must be included even for static libraries as some of them provide
+    # implicit include paths through the build system.
     libraries = gyp.common.uniquer(spec.get('libraries', []))
     static_libs, dynamic_libs = self.ComputeAndroidLibraryModuleNames(
         libraries)
 
-    # Link dependencies (i.e. libfoo.a, libfoo.so)
-    static_link_deps = [x[1] for x in link_deps if x[0] == 'static']
-    shared_link_deps = [x[1] for x in link_deps if x[0] == 'shared']
-    self.WriteLn('')
-    self.WriteList(static_libs + static_link_deps,
-                   'LOCAL_STATIC_LIBRARIES')
-    self.WriteLn('# Enable grouping to fix circular references')
-    self.WriteLn('LOCAL_GROUP_STATIC_LIBRARIES := true')
-    self.WriteLn('')
-    self.WriteList(dynamic_libs + shared_link_deps,
-                   'LOCAL_SHARED_LIBRARIES')
+    # Link dependencies (i.e. other gyp targets this target depends on)
+    # These need not be included for static libraries as within the gyp build
+    # we do not use the implicit include path mechanism.
+    if self.type != 'static_library':
+      static_link_deps = [x[1] for x in link_deps if x[0] == 'static']
+      shared_link_deps = [x[1] for x in link_deps if x[0] == 'shared']
+    else:
+      static_link_deps = []
+      shared_link_deps = []
+
+    # Only write the lists if they are non-empty.
+    if static_libs or static_link_deps:
+      self.WriteLn('')
+      self.WriteList(static_libs + static_link_deps,
+                     'LOCAL_STATIC_LIBRARIES')
+      self.WriteLn('# Enable grouping to fix circular references')
+      self.WriteLn('LOCAL_GROUP_STATIC_LIBRARIES := true')
+    if dynamic_libs or shared_link_deps:
+      self.WriteLn('')
+      self.WriteList(dynamic_libs + shared_link_deps,
+                     'LOCAL_SHARED_LIBRARIES')
 
 
   def WriteTarget(self, spec, configs, deps, link_deps, part_of_all,
