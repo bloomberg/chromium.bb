@@ -2300,21 +2300,24 @@ int WebViewImpl::textInputFlags()
     if (!element)
         return WebTextInputFlagNone;
 
+    DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, spellcheckString, ("spellcheck", AtomicString::ConstructFromLiteral));
     int flags = 0;
 
-    const AtomicString& autocomplete = element->getAttribute("autocomplete");
+    const AtomicString& autocomplete = element->getAttribute(autocompleteString);
     if (autocomplete == "on")
         flags |= WebTextInputFlagAutocompleteOn;
     else if (autocomplete == "off")
         flags |= WebTextInputFlagAutocompleteOff;
 
-    const AtomicString& autocorrect = element->getAttribute("autocorrect");
+    const AtomicString& autocorrect = element->getAttribute(autocorrectString);
     if (autocorrect == "on")
         flags |= WebTextInputFlagAutocorrectOn;
     else if (autocorrect == "off")
         flags |= WebTextInputFlagAutocorrectOff;
 
-    const AtomicString& spellcheck = element->getAttribute("spellcheck");
+    const AtomicString& spellcheck = element->getAttribute(spellcheckString);
     if (spellcheck == "on")
         flags |= WebTextInputFlagSpellcheckOn;
     else if (spellcheck == "off")
