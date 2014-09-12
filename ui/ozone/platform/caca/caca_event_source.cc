@@ -217,8 +217,7 @@ void CacaEventSource::OnInputEvent(caca_event_t* event, CacaWindow* window) {
       gfx::PointF location = TranslateLocation(last_cursor_location_, window);
       ui::MouseEvent mouse_event(
           type, location, location, flags, changed_flags);
-      ui::MouseEvent mouse_event2(&mouse_event);
-      window->OnCacaEvent(&mouse_event2);
+      window->OnCacaEvent(&mouse_event);
       break;
     }
     default:

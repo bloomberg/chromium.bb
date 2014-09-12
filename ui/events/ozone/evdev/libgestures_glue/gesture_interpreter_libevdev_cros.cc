@@ -392,11 +392,7 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int modifier,
   EventType type = (down ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED);
   modifiers_->UpdateModifier(modifier, down);
   MouseEvent event(type, loc, loc, modifiers_->GetModifierFlags() | flag, flag);
-
-  // This hack is necessary to trigger setting the repeat count.
-  // TODO(spang): Fix it.
-  MouseEvent event2(&event);
-  Dispatch(&event2);
+  Dispatch(&event);
 }
 
 }  // namespace ui

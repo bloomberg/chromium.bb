@@ -4,8 +4,10 @@
 
 #include "ui/ozone/platform/dri/dri_window.h"
 
+#include "base/bind.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
@@ -89,9 +91,11 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   return true;
 }
 
-uint32_t DriWindow::DispatchEvent(const PlatformEvent& ne) {
-  Event* event = static_cast<Event*>(ne);
-  delegate_->DispatchEvent(event);
+uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
+  DispatchEventFromNativeUiEvent(
+      native_event,
+      base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                 base::Unretained(delegate_)));
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 

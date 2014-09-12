@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/egltest/ozone_platform_egltest.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
@@ -12,6 +13,7 @@
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -150,9 +152,12 @@ bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
   return true;
 }
 
-uint32_t EgltestWindow::DispatchEvent(const ui::PlatformEvent& ne) {
-  ui::Event* event = static_cast<ui::Event*>(ne);
-  delegate_->DispatchEvent(event);
+uint32_t EgltestWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
+  DispatchEventFromNativeUiEvent(
+      native_event,
+      base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                 base::Unretained(delegate_)));
+
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 

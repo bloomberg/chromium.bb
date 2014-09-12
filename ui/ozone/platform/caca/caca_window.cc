@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
@@ -102,7 +103,10 @@ void CacaWindow::OnCacaQuit() {
 
 
 void CacaWindow::OnCacaEvent(ui::Event* event) {
-  delegate_->DispatchEvent(event);
+  DispatchEventFromNativeUiEvent(
+      event,
+      base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                 base::Unretained(delegate_)));
 }
 
 gfx::Rect CacaWindow::GetBounds() { return gfx::Rect(bitmap_size_); }
