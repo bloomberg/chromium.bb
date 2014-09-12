@@ -38,6 +38,8 @@ class InputHandlerProxyClient {
 
   virtual void DidStopFlinging() = 0;
 
+  virtual void DidReceiveInputEvent() = 0;
+
  protected:
   virtual ~InputHandlerProxyClient() {}
 };

@@ -195,6 +195,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   TRACE_EVENT1("input", "InputHandlerProxy::HandleInputEvent",
                "type", WebInputEventTraits::GetName(event.type));
 
+  client_->DidReceiveInputEvent();
   if (FilterInputEventForFlingBoosting(event))
     return DID_HANDLE;
 

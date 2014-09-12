@@ -179,9 +179,22 @@ class MockInputHandlerProxyClient
 
   MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
   virtual void DidStopFlinging() OVERRIDE {}
+  virtual void DidReceiveInputEvent() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
+};
+
+class MockInputHandlerProxyClientWithDidReceiveInputEvent
+    : public MockInputHandlerProxyClient {
+ public:
+  MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
+  virtual ~MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
+
+  MOCK_METHOD0(DidReceiveInputEvent, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClientWithDidReceiveInputEvent);
 };
 
 WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
@@ -1933,6 +1946,23 @@ TEST_F(InputHandlerProxyTest, FlingBoostTerminatedDuringScrollSequence) {
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, DidReceiveInputEvent) {
+  testing::StrictMock<
+      MockInputHandlerProxyClientWithDidReceiveInputEvent> mock_client;
+  input_handler_.reset(
+        new content::InputHandlerProxy(&mock_input_handler_, &mock_client));
+
+  // Note the type of input event isn't important.
+  WebMouseWheelEvent wheel;
+  wheel.type = WebInputEvent::MouseWheel;
+  wheel.scrollByPage = true;
+
+  EXPECT_CALL(mock_client, DidReceiveInputEvent());
+
+  input_handler_->HandleInputEvent(wheel);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
 }
 
 } // namespace
