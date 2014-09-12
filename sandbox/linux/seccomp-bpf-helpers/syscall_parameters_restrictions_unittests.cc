@@ -16,7 +16,10 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/tests/unit_tests.h"
+
+#if !defined(OS_ANDROID)
 #include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
+#endif
 
 namespace sandbox {
 
@@ -117,6 +120,7 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
 
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID)
 BPF_DEATH_TEST_C(ParameterRestrictions,
                  clock_gettime_crash_cpu_clock,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
@@ -130,6 +134,7 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   struct timespec ts;
   clock_gettime(kInitCPUClockID, &ts);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
