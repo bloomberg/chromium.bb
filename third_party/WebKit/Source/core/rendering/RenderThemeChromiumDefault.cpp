@@ -26,11 +26,11 @@
 #include "core/rendering/RenderThemeChromiumDefault.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -133,12 +133,12 @@ String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 #if !OS(WIN)
     return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
 #if !OS(ANDROID)
-        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss)) +
+        loadResourceAsASCIIString("themeInputMultipleFields.css") +
 #endif
-        String(themeChromiumLinuxCss, sizeof(themeChromiumLinuxCss));
+        loadResourceAsASCIIString("themeChromiumLinux.css");
 #else
     return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
-        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss));
+        loadResourceAsASCIIString("themeInputMultipleFields.css");
 #endif
 }
 

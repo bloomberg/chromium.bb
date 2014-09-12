@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
-#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderMediaControls.h"
@@ -32,6 +31,7 @@
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -70,14 +70,14 @@ RenderThemeChromiumSkia::~RenderThemeChromiumSkia()
 String RenderThemeChromiumSkia::extraDefaultStyleSheet()
 {
     return RenderTheme::extraDefaultStyleSheet() +
-        String(themeWinCss, sizeof(themeWinCss)) +
-        String(themeChromiumSkiaCss, sizeof(themeChromiumSkiaCss)) +
-        String(themeChromiumCss, sizeof(themeChromiumCss));
+        loadResourceAsASCIIString("themeWin.css") +
+        loadResourceAsASCIIString("themeChromiumSkia.css") +
+        loadResourceAsASCIIString("themeChromium.css");
 }
 
 String RenderThemeChromiumSkia::extraQuirksStyleSheet()
 {
-    return String(themeWinQuirksCss, sizeof(themeWinQuirksCss));
+    return loadResourceAsASCIIString("themeWinQuirks.css");
 }
 
 bool RenderThemeChromiumSkia::supportsHover(const RenderStyle* style) const

@@ -551,52 +551,6 @@
           ],
         },
         {
-          'action_name': 'UserAgentStyleSheets',
-          'variables': {
-            'scripts': [
-              '../build/scripts/make-file-arrays.py',
-            ],
-            'stylesheets': [
-              'css/html.css',
-              'css/quirks.css',
-              'css/view-source.css',
-              'css/themeChromium.css',
-              'css/themeChromiumAndroid.css',
-              'css/themeChromiumLinux.css',
-              'css/themeChromiumSkia.css',
-              'css/themeInputMultipleFields.css',
-              'css/themeMac.css',
-              'css/themeWin.css',
-              'css/themeWinQuirks.css',
-              'css/svg.css',
-              'css/navigationTransitions.css',
-              'css/mathml.css',
-              'css/mediaControls.css',
-              'css/mediaControlsAndroid.css',
-              'css/fullscreen.css',
-              'css/xhtmlmp.css',
-              'css/viewportAndroid.css',
-            ],
-          },
-          'inputs': [
-            '<@(scripts)',
-            '<@(stylesheets)'
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/UserAgentStyleSheets.h',
-            '<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
-          ],
-          'action': [
-            'python',
-            '<@(scripts)',
-            '--namespace',
-            'blink',
-            '--out-h=<(blink_core_output_dir)/UserAgentStyleSheets.h',
-            '--out-cpp=<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
-            '<@(stylesheets)',
-          ],
-        },
-        {
           'action_name': 'FetchInitiatorTypeNames',
           'inputs': [
             '<@(make_names_files)',
