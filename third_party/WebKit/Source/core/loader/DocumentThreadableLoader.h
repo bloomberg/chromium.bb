@@ -81,6 +81,9 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
 
         void cancelWithError(const ResourceError&);
 
+        // Notify Inspector about resource response. Use this method if response is not going to be finished normally.
+        void notifyResponseReceived(unsigned long identifier, const ResourceResponse&);
+
         // Methods containing code to handle resource fetch results which is
         // common to both sync and async mode.
         void handleResponse(unsigned long identifier, const ResourceResponse&);
@@ -96,7 +99,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         void handlePreflightFailure(const String& url, const String& errorDescription);
         // Investigates the response for the preflight request. If successful,
         // the actual request will be made later in handleSuccessfulFinish().
-        void handlePreflightResponse(unsigned long identifier, const ResourceResponse&);
+        void handlePreflightResponse(const ResourceResponse&);
 
         void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
         bool isAllowedRedirect(const KURL&) const;
