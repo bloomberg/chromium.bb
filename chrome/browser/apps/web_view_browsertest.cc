@@ -1000,7 +1000,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
   TestHelper("testInvalidChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
+// Disable on Chrome OS, as it is flaking a lot. See: http://crbug.com/413618.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Shim_TestEventName DISABLED_Shim_TestEventName
+#else
+#define MAYBE_Shim_TestEventName Shim_TestEventName
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestEventName) {
   TestHelper("testEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
