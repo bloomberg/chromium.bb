@@ -1558,7 +1558,8 @@ std::list<XID>& DesktopWindowTreeHostX11::open_windows() {
 void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   if (show_state != ui::SHOW_STATE_DEFAULT &&
       show_state != ui::SHOW_STATE_NORMAL &&
-      show_state != ui::SHOW_STATE_INACTIVE) {
+      show_state != ui::SHOW_STATE_INACTIVE &&
+      show_state != ui::SHOW_STATE_MAXIMIZED) {
     // It will behave like SHOW_STATE_NORMAL.
     NOTIMPLEMENTED();
   }
