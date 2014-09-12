@@ -15,7 +15,7 @@ class DictionaryValue;
 
 namespace printing {
 
-class Metafile;
+class MetafilePlayer;
 class PrintDialogGtkInterface;
 
 // PrintingContext with optional native UI for print dialog and pdf_paper_size.
@@ -34,7 +34,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
       gfx::Size (*get_pdf_paper_size)(PrintingContextLinux* context));
 
   // Prints the document contained in |metafile|.
-  void PrintDocument(const Metafile* metafile);
+  void PrintDocument(const MetafilePlayer& metafile);
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(

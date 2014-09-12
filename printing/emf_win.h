@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "printing/metafile.h"
 
 namespace base {
@@ -47,10 +48,10 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Generates a new metafile that will record every GDI command, and will
   // be saved to |metafile_path|.
-  virtual bool InitToFile(const base::FilePath& metafile_path);
+  bool InitToFile(const base::FilePath& metafile_path);
 
   // Initializes the Emf with the data in |metafile_path|.
-  virtual bool InitFromFile(const base::FilePath& metafile_path);
+  bool InitFromFile(const base::FilePath& metafile_path);
 
   // Metafile methods.
   virtual bool Init() OVERRIDE;
@@ -73,11 +74,6 @@ class PRINTING_EXPORT Emf : public Metafile {
   virtual uint32 GetDataSize() const OVERRIDE;
   virtual bool GetData(void* buffer, uint32 size) const OVERRIDE;
 
-  // Saves the EMF data to a file as-is. It is recommended to use the .emf file
-  // extension but it is not enforced. This function synchronously writes to the
-  // file. For testing only.
-  virtual bool SaveTo(const base::FilePath& file_path) const OVERRIDE;
-
   // Should be passed to Playback to keep the exact same size.
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
 
@@ -92,28 +88,23 @@ class PRINTING_EXPORT Emf : public Metafile {
   virtual bool Playback(HDC hdc, const RECT* rect) const OVERRIDE;
   virtual bool SafePlayback(HDC hdc) const OVERRIDE;
 
-  virtual HENHMETAFILE emf() const OVERRIDE {
-    return emf_;
-  }
+  HENHMETAFILE emf() const { return emf_; }
 
   // Returns true if metafile contains alpha blend.
   bool IsAlphaBlendUsed() const;
 
   // Returns new metafile with only bitmap created by playback of the current
   // metafile. Returns NULL if fails.
-  Emf* RasterizeMetafile(int raster_area_in_pixels) const;
+  scoped_ptr<Emf> RasterizeMetafile(int raster_area_in_pixels) const;
 
   // Returns new metafile where AlphaBlend replaced by bitmaps. Returns NULL
   // if fails.
-  Emf* RasterizeAlphaBlend() const;
+  scoped_ptr<Emf> RasterizeAlphaBlend() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
   FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);
   FRIEND_TEST_ALL_PREFIXES(EmfTest, FileBackedEmf);
-
-  // Retrieves the underlying data stream. It is a helper function.
-  bool GetDataAsVector(std::vector<uint8>* buffer) const;
 
   // Playbacks safely one EMF record.
   static int CALLBACK SafePlaybackProc(HDC hdc,

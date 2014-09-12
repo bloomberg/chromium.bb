@@ -361,8 +361,8 @@ void PrintDialogGtk2::ShowDialog(
   gtk_window_present_with_time(GTK_WINDOW(dialog_), time);
 }
 
-void PrintDialogGtk2::PrintDocument(const printing::Metafile* metafile,
-                                   const base::string16& document_name) {
+void PrintDialogGtk2::PrintDocument(const printing::MetafilePlayer& metafile,
+                                    const base::string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -370,28 +370,30 @@ void PrintDialogGtk2::PrintDocument(const printing::Metafile* metafile,
   // this dialog.
   AddRef();
 
-  bool error = false;
-  if (!base::CreateTemporaryFile(&path_to_pdf_)) {
-    LOG(ERROR) << "Creating temporary file failed";
-    error = true;
+  bool success = base::CreateTemporaryFile(&path_to_pdf_);
+
+  if (success) {
+    base::File file;
+    file.Initialize(path_to_pdf_,
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    success = metafile.SaveTo(&file);
+    file.Close();
+    if (!success)
+      base::DeleteFile(path_to_pdf_, false);
   }
 
-  if (!error && !metafile->SaveTo(path_to_pdf_)) {
+  if (!success) {
     LOG(ERROR) << "Saving metafile failed";
-    base::DeleteFile(path_to_pdf_, false);
-    error = true;
-  }
-
-  if (error) {
     // Matches AddRef() above.
     Release();
-  } else {
-    // No errors, continue printing.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PrintDialogGtk2::SendDocumentToPrinter, this,
-                   document_name));
+    return;
   }
+
+  // No errors, continue printing.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PrintDialogGtk2::SendDocumentToPrinter, this, document_name));
 }
 
 void PrintDialogGtk2::AddRefToDialog() {

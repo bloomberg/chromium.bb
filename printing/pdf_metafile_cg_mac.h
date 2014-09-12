@@ -49,9 +49,6 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   virtual uint32 GetDataSize() const OVERRIDE;
   virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const OVERRIDE;
 
-  // For testing purposes only.
-  virtual bool SaveTo(const base::FilePath& file_path) const OVERRIDE;
-
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
   virtual unsigned int GetPageCount() const OVERRIDE;
 

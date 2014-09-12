@@ -30,7 +30,7 @@ class ChildProcessHost;
 }
 
 namespace printing {
-class Emf;
+class MetafilePlayer;
 struct PageRange;
 struct PrinterCapsAndDefaults;
 struct PrinterSemanticCapsAndDefaults;
@@ -54,7 +54,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     // Called when at least one page in the specified PDF has been rendered
     // successfully into |metafile|.
     virtual void OnRenderPDFPagesToMetafileSucceeded(
-        const printing::Emf& metafile,
+        const printing::MetafilePlayer& metafile,
         int highest_rendered_page_number,
         double scale_factor) {}
     // Called when no page in the passed in PDF could be rendered.

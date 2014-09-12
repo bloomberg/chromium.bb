@@ -44,6 +44,7 @@
         'image_linux.cc',
         'image_mac.cc',
         'image_win.cc',
+        'metafile.cc',
         'metafile.h',
         'metafile_skia_wrapper.cc',
         'metafile_skia_wrapper.h',

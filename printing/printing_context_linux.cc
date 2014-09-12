@@ -59,9 +59,8 @@ void PrintingContextLinux::SetPdfPaperSizeFunction(
   get_pdf_paper_size_ = get_pdf_paper_size;
 }
 
-void PrintingContextLinux::PrintDocument(const Metafile* metafile) {
+void PrintingContextLinux::PrintDocument(const MetafilePlayer& metafile) {
   DCHECK(print_dialog_);
-  DCHECK(metafile);
   print_dialog_->PrintDocument(metafile, document_name_);
 }
 

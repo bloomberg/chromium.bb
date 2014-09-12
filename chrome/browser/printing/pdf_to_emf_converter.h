@@ -14,19 +14,16 @@ class FilePath;
 }
 
 namespace printing {
+
+class MetafilePlayer;
 class PdfRenderSettings;
-}
-
-namespace printing {
-
-class Metafile;
 
 class PdfToEmfConverter {
  public:
   // Callback for when the PDF is converted to an EMF.
   // Takes ownership of metafiles.
-  typedef base::Callback<
-      void(double /*scale_factor*/, ScopedVector<Metafile>* /*emf_files*/)>
+  typedef base::Callback<void(double /*scale_factor*/,
+                              ScopedVector<MetafilePlayer>* /*emf_files*/)>
       ResultCallback;
   virtual ~PdfToEmfConverter() {}
 

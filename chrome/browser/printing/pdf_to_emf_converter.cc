@@ -284,7 +284,7 @@ void PdfToEmfUtilityProcessHostClient::RunCallbackOnUIThread(
     const std::vector<printing::PageRange>& page_ranges,
     double scale_factor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ScopedVector<Metafile> pages;
+  ScopedVector<MetafilePlayer> pages;
   std::vector<printing::PageRange>::const_iterator iter;
   for (iter = page_ranges.begin(); iter != page_ranges.end(); ++iter) {
     for (int page_number = iter->from; page_number <= iter->to; ++page_number) {

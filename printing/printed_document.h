@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "printing/print_settings.h"
@@ -21,7 +22,7 @@ class TaskRunner;
 
 namespace printing {
 
-class Metafile;
+class MetafilePlayer;
 class PrintedPage;
 class PrintedPagesSource;
 class PrintingContext;
@@ -45,7 +46,7 @@ class PRINTING_EXPORT PrintedDocument
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
   void SetPage(int page_number,
-               Metafile* metafile,
+               scoped_ptr<MetafilePlayer> metafile,
 #if defined(OS_WIN)
                double shrink,
 #endif  // OS_WIN
@@ -75,10 +76,6 @@ class PRINTING_EXPORT PrintedDocument
   // Disconnects the PrintedPage source (PrintedPagesSource). It is done when
   // the source is being destroyed.
   void DisconnectSource();
-
-  // Retrieves the current memory usage of the renderer pages.
-  // Note: locks for a short amount of time.
-  uint32 MemoryUsage() const;
 
   // Sets the number of pages in the document to be rendered. Can only be set
   // once.

@@ -23,7 +23,7 @@ class RenderViewHost;
 namespace printing {
 
 class JobEventDetails;
-class Metafile;
+class MetafilePlayer;
 class PdfToEmfConverter;
 class PrintJob;
 class PrintJobWorkerOwner;
@@ -138,7 +138,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Called on completion of converting the pdf to emf.
   void OnPdfToEmfConverted(const PrintHostMsg_DidPrintPage_Params& params,
                            double scale_factor,
-                           ScopedVector<Metafile>* emf_files);
+                           ScopedVector<MetafilePlayer>* emf_files);
 #endif  // OS_WIN
 
   content::NotificationRegistrar registrar_;

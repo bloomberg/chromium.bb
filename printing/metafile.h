@@ -5,6 +5,8 @@
 #ifndef PRINTING_METAFILE_H_
 #define PRINTING_METAFILE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "printing/printing_export.h"
@@ -19,7 +21,7 @@
 #endif
 
 namespace base {
-class FilePath;
+class File;
 }
 
 namespace gfx {
@@ -29,17 +31,10 @@ class Size;
 
 class SkBaseDevice;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-namespace base {
-struct FileDescriptor;
-}
-#endif
-
 namespace printing {
 
-// This class creates a graphics context that renders into a data stream
-// (usually PDF or EMF).
-class PRINTING_EXPORT Metafile {
+// This class plays metafiles from data stream (usually PDF or EMF).
+class PRINTING_EXPORT MetafilePlayer {
  public:
 #if defined(OS_MACOSX)
   // |shrink_to_fit| specifies whether the output should be shrunk to fit a
@@ -71,8 +66,40 @@ class PRINTING_EXPORT Metafile {
     bool autorotate;
   };
 #endif  // defined(OS_MACOSX)
+  MetafilePlayer();
+  virtual ~MetafilePlayer();
 
-  virtual ~Metafile() {}
+#if defined(OS_WIN)
+  // The slow version of Playback(). It enumerates all the records and play them
+  // back in the HDC. The trick is that it skip over the records known to have
+  // issue with some printers. See Emf::Record::SafePlayback implementation for
+  // details.
+  virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const = 0;
+
+#elif defined(OS_MACOSX)
+  // Renders the given page into |rect| in the given context.
+  // Pages use a 1-based index. The rendering uses the arguments in
+  // |params| to determine scaling, translation, and rotation.
+  virtual bool RenderPage(unsigned int page_number,
+                          gfx::NativeDrawingContext context,
+                          const CGRect rect,
+                          const MacRenderPageParams& params) const = 0;
+#endif  // if defined(OS_WIN)
+
+  // Saves the underlying data to the given file. This function should ONLY be
+  // called after the metafile is closed. Returns true if writing succeeded.
+  virtual bool SaveTo(base::File* file) const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MetafilePlayer);
+};
+
+// This class creates a graphics context that renders into a data stream
+// (usually PDF or EMF).
+class PRINTING_EXPORT Metafile : public MetafilePlayer {
+ public:
+  Metafile();
+  virtual ~Metafile();
 
   // Initializes a fresh new metafile for rendering. Returns false on failure.
   // Note: It should only be called from within the renderer process to allocate
@@ -87,10 +114,9 @@ class PRINTING_EXPORT Metafile {
   // This method calls StartPage and then returns an appropriate
   // VectorPlatformDevice implementation bound to the context created by
   // StartPage or NULL on error.
-  virtual SkBaseDevice* StartPageForVectorCanvas(
-      const gfx::Size& page_size,
-      const gfx::Rect& content_area,
-      const float& scale_factor) = 0;
+  virtual SkBaseDevice* StartPageForVectorCanvas(const gfx::Size& page_size,
+                                                 const gfx::Rect& content_area,
+                                                 const float& scale_factor) = 0;
 
   // Prepares a context for rendering a new page with the given |page_size|,
   // |content_area| and  a |scale_factor| to use for the drawing. The units are
@@ -117,15 +143,9 @@ class PRINTING_EXPORT Metafile {
   // Returns true if the copy succeeds.
   virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const = 0;
 
-  // Saves the underlying data to the given file. This function should ONLY be
-  // called after the metafile is closed. Returns true if writing succeeded.
-  virtual bool SaveTo(const base::FilePath& file_path) const = 0;
-
-  // Returns the bounds of the given page. Pages use a 1-based index.
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const = 0;
   virtual unsigned int GetPageCount() const = 0;
 
-  // Get the context for rendering to the PDF.
   virtual gfx::NativeDrawingContext context() const = 0;
 
 #if defined(OS_WIN)
@@ -139,28 +159,14 @@ class PRINTING_EXPORT Metafile {
   // it requires user intervention.
   virtual bool Playback(gfx::NativeDrawingContext hdc,
                         const RECT* rect) const = 0;
+#endif  // OS_WIN
 
-  // The slow version of Playback(). It enumerates all the records and play them
-  // back in the HDC. The trick is that it skip over the records known to have
-  // issue with some printers. See Emf::Record::SafePlayback implementation for
-  // details.
-  virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const = 0;
+  bool GetDataAsVector(std::vector<char>* buffer) const;
 
-  virtual HENHMETAFILE emf() const = 0;
-#elif defined(OS_MACOSX)
-  // Renders the given page into |rect| in the given context.
-  // Pages use a 1-based index. The rendering uses the arguments in
-  // |params| to determine scaling, translation, and rotation.
-  virtual bool RenderPage(unsigned int page_number,
-                          gfx::NativeDrawingContext context,
-                          const CGRect rect,
-                          const MacRenderPageParams& params) const = 0;
-#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // Saves the underlying data to the file associated with fd. This function
-  // should ONLY be called after the metafile is closed.
-  // Returns true if writing succeeded.
-  virtual bool SaveToFD(const base::FileDescriptor& fd) const = 0;
-#endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  virtual bool SaveTo(base::File* file) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Metafile);
 };
 
 }  // namespace printing

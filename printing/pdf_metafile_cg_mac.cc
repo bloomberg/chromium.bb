@@ -286,19 +286,6 @@ bool PdfMetafileCg::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   return true;
 }
 
-bool PdfMetafileCg::SaveTo(const base::FilePath& file_path) const {
-  DCHECK(pdf_data_.get());
-  DCHECK(!context_.get());
-
-  std::string path_string = file_path.value();
-  ScopedCFTypeRef<CFURLRef> path_url(CFURLCreateFromFileSystemRepresentation(
-      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.c_str()),
-      path_string.length(), false));
-  SInt32 error_code;
-  CFURLWriteDataAndPropertiesToResource(path_url, pdf_data_, NULL, &error_code);
-  return error_code == 0;
-}
-
 CGContextRef PdfMetafileCg::context() const {
   return context_.get();
 }

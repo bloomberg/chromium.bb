@@ -130,7 +130,7 @@ void PrintViewManagerBase::OnDidGetDocumentCookie(int cookie) {
 void PrintViewManagerBase::OnPdfToEmfConverted(
     const PrintHostMsg_DidPrintPage_Params& params,
     double scale_factor,
-    ScopedVector<Metafile>* emf_files) {
+    ScopedVector<MetafilePlayer>* emf_files) {
   if (!print_job_.get())
     return;
 
@@ -148,7 +148,7 @@ void PrintViewManagerBase::OnPdfToEmfConverted(
   for (size_t i = 0; i < emf_files->size(); ++i) {
     // Update the rendered document. It will send notifications to the listener.
     document->SetPage(i,
-                      (*emf_files)[i],
+                      make_scoped_ptr((*emf_files)[i]),
                       scale_factor,
                       params.page_size,
                       params.content_area);
@@ -200,7 +200,7 @@ void PrintViewManagerBase::OnDidPrintPage(
 #if !defined(OS_WIN)
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
-                    metafile.release(),
+                    metafile.PassAs<MetafilePlayer>(),
                     params.page_size,
                     params.content_area);
 

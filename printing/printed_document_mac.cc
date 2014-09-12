@@ -29,7 +29,7 @@ void PrintedDocument::RenderPrintedPage(
   gfx::Rect content_area;
   page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 
-  const Metafile* metafile = page.metafile();
+  const MetafilePlayer* metafile = page.metafile();
   // Each Metafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
   struct Metafile::MacRenderPageParams params;

@@ -52,7 +52,7 @@ const uint32 EMF_HEADER_SIZE = 128;
 TEST(EmfTest, DC) {
   // Simplest use case.
   uint32 size;
-  std::vector<BYTE> data;
+  std::vector<char> data;
   {
     Emf emf;
     EXPECT_TRUE(emf.Init());
@@ -134,7 +134,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
   if (!dc.Get())
     return;
   uint32 size;
-  std::vector<BYTE> data;
+  std::vector<char> data;
   {
     Emf emf;
     EXPECT_TRUE(emf.Init());
@@ -179,7 +179,7 @@ TEST(EmfTest, FileBackedEmf) {
   EXPECT_TRUE(base::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
                                              &metafile_path));
   uint32 size;
-  std::vector<BYTE> data;
+  std::vector<char> data;
   {
     Emf emf;
     EXPECT_TRUE(emf.InitToFile(metafile_path));
@@ -221,12 +221,12 @@ TEST(EmfTest, RasterizeMetafile) {
   // Just 1px bitmap but should be stretched to the same bounds.
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 
-  raster.reset(emf.RasterizeMetafile(20));
+  raster = emf.RasterizeMetafile(20);
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 
-  raster.reset(emf.RasterizeMetafile(16*1024*1024));
+  raster = emf.RasterizeMetafile(16 * 1024 * 1024);
   // Expected size about 64MB.
-  EXPECT_LE(abs(int(raster->GetDataSize()) - 64*1024*1024), 1024*1024);
+  EXPECT_LE(abs(int(raster->GetDataSize()) - 64 * 1024 * 1024), 1024 * 1024);
   // Bounds should still be the same.
   EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 }

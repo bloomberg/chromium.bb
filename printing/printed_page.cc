@@ -7,11 +7,11 @@
 namespace printing {
 
 PrintedPage::PrintedPage(int page_number,
-                         Metafile* metafile,
+                         scoped_ptr<MetafilePlayer> metafile,
                          const gfx::Size& page_size,
                          const gfx::Rect& page_content_rect)
     : page_number_(page_number),
-      metafile_(metafile),
+      metafile_(metafile.Pass()),
 #if defined(OS_WIN)
       shrink_factor_(0.0f),
 #endif  // OS_WIN
@@ -22,7 +22,7 @@ PrintedPage::PrintedPage(int page_number,
 PrintedPage::~PrintedPage() {
 }
 
-const Metafile* PrintedPage::metafile() const {
+const MetafilePlayer* PrintedPage::metafile() const {
   return metafile_.get();
 }
 

@@ -336,7 +336,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
     // ServiceUtilityProcessHost::Client implementation.
     virtual void OnRenderPDFPagesToMetafileSucceeded(
-        const printing::Emf& metafile,
+        const printing::MetafilePlayer& metafile,
         int highest_rendered_page_number,
         double scale_factor) OVERRIDE {
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);

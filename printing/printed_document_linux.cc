@@ -27,8 +27,8 @@ void PrintedDocument::RenderPrintedPage(
   {
     base::AutoLock lock(lock_);
     if (page.page_number() - 1 == mutable_.first_page) {
-      static_cast<PrintingContextLinux*>(context)->PrintDocument(
-          page.metafile());
+      static_cast<PrintingContextLinux*>(context)
+          ->PrintDocument(*page.metafile());
     }
   }
 }

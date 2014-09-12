@@ -23,13 +23,13 @@ class PRINTING_EXPORT PrintedPage
     : public base::RefCountedThreadSafe<PrintedPage> {
  public:
   PrintedPage(int page_number,
-              Metafile* metafile,
+              scoped_ptr<MetafilePlayer> metafile,
               const gfx::Size& page_size,
               const gfx::Rect& page_content_rect);
 
   // Getters
   int page_number() const { return page_number_; }
-  const Metafile* metafile() const;
+  const MetafilePlayer* metafile() const;
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
 #if defined(OS_WIN)
@@ -53,7 +53,7 @@ class PRINTING_EXPORT PrintedPage
   const int page_number_;
 
   // Actual paint data.
-  const scoped_ptr<Metafile> metafile_;
+  const scoped_ptr<MetafilePlayer> metafile_;
 
 #if defined(OS_WIN)
   // Shrink done in comparison to desired_dpi.

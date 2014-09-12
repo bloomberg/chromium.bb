@@ -128,18 +128,6 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
   return true;
 }
 
-bool PdfMetafileSkia::SaveTo(const base::FilePath& file_path) const {
-  DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
-  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
-  if (base::WriteFile(file_path,
-                      reinterpret_cast<const char*>(data->data()),
-                      GetDataSize()) != static_cast<int>(GetDataSize())) {
-    DLOG(ERROR) << "Failed to save file " << file_path.value().c_str();
-    return false;
-  }
-  return true;
-}
-
 gfx::Rect PdfMetafileSkia::GetPageBounds(unsigned int page_number) const {
   // TODO(vandebo) add a method to get the page size for a given page to
   // SkPDFDocument.
@@ -170,10 +158,6 @@ bool PdfMetafileSkia::SafePlayback(gfx::NativeDrawingContext hdc) const {
   return false;
 }
 
-HENHMETAFILE PdfMetafileSkia::emf() const {
-  NOTREACHED();
-  return NULL;
-}
 #elif defined(OS_MACOSX)
 /* TODO(caryclark): The set up of PluginInstance::PrintPDFOutput may result in
    rasterized output.  Even if that flow uses PdfMetafileCg::RenderPage,
@@ -203,23 +187,15 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
     DLOG(ERROR) << "Invalid file descriptor!";
     return false;
   }
-
-  bool result = true;
+  base::File file(fd.fd);
   SkAutoDataUnref data(data_->pdf_stream_.copyToData());
-  if (base::WriteFileDescriptor(fd.fd,
-                                reinterpret_cast<const char*>(data->data()),
-                                GetDataSize()) !=
-      static_cast<int>(GetDataSize())) {
-    DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
-    result = false;
-  }
+  bool result =
+      file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->data()),
+                             GetDataSize()) == static_cast<int>(GetDataSize());
+  DLOG_IF(ERROR, !result) << "Failed to save file with fd " << fd.fd;
 
-  if (fd.auto_close) {
-    if (IGNORE_EINTR(close(fd.fd)) < 0) {
-      DPLOG(WARNING) << "close";
-      result = false;
-    }
-  }
+  if (!fd.auto_close)
+    file.TakePlatformFile();
   return result;
 }
 #endif
@@ -229,23 +205,26 @@ PdfMetafileSkia::PdfMetafileSkia()
       page_outstanding_(false) {
 }
 
-PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {
+scoped_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
+  scoped_ptr<PdfMetafileSkia> metafile;
   SkPDFDocument pdf_doc(SkPDFDocument::kDraftMode_Flags);
-  SkDynamicMemoryWStream pdf_stream;
   if (!pdf_doc.appendPage(data_->current_page_.get()))
-    return NULL;
+    return metafile.Pass();
 
+  SkDynamicMemoryWStream pdf_stream;
   if (!pdf_doc.emitPDF(&pdf_stream))
-    return NULL;
+    return metafile.Pass();
 
-  SkAutoDataUnref data(pdf_stream.copyToData());
-  if (data->size() == 0)
-    return NULL;
+  SkAutoDataUnref data_copy(pdf_stream.copyToData());
+  if (data_copy->size() == 0)
+    return scoped_ptr<PdfMetafileSkia>();
 
-  PdfMetafileSkia* metafile = new PdfMetafileSkia;
-  metafile->InitFromData(data->bytes(),
-                         base::checked_cast<uint32>(data->size()));
-  return metafile;
+  metafile.reset(new PdfMetafileSkia);
+  if (!metafile->InitFromData(data_copy->bytes(),
+                              base::checked_cast<uint32>(data_copy->size()))) {
+    metafile.reset();
+  }
+  return metafile.Pass();
 }
 
 }  // namespace printing

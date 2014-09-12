@@ -15,6 +15,12 @@
 #include <windows.h>
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+namespace base {
+struct FileDescriptor;
+}
+#endif
+
 namespace printing {
 
 struct PdfMetafileSkiaData;
@@ -44,8 +50,6 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   virtual uint32 GetDataSize() const OVERRIDE;
   virtual bool GetData(void* dst_buffer, uint32 dst_buffer_size) const OVERRIDE;
 
-  virtual bool SaveTo(const base::FilePath& file_path) const OVERRIDE;
-
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
   virtual unsigned int GetPageCount() const OVERRIDE;
 
@@ -55,7 +59,6 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   virtual bool Playback(gfx::NativeDrawingContext hdc,
                         const RECT* rect) const OVERRIDE;
   virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const OVERRIDE;
-  virtual HENHMETAFILE emf() const OVERRIDE;
 #elif defined(OS_MACOSX)
   virtual bool RenderPage(unsigned int page_number,
                           gfx::NativeDrawingContext context,
@@ -64,11 +67,12 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
 #endif
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  virtual bool SaveToFD(const base::FileDescriptor& fd) const OVERRIDE;
+  // TODO(vitalybuka): replace with SaveTo().
+  bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   // Return a new metafile containing just the current page in draft mode.
-  PdfMetafileSkia* GetMetafileForCurrentPage();
+  scoped_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
 
  private:
   scoped_ptr<PdfMetafileSkiaData> data_;

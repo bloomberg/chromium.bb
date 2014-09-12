@@ -4,6 +4,7 @@
 
 #include "printing/emf_win.h"
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -271,38 +272,6 @@ bool Emf::GetData(void* buffer, uint32 size) const {
       GetEnhMetaFileBits(emf_, size, reinterpret_cast<BYTE*>(buffer));
   DCHECK(size2 == size);
   return size2 == size && size2 != 0;
-}
-
-bool Emf::GetDataAsVector(std::vector<uint8>* buffer) const {
-  uint32 size = GetDataSize();
-  if (!size)
-    return false;
-
-  buffer->resize(size);
-  if (!GetData(&buffer->front(), size))
-    return false;
-  return true;
-}
-
-bool Emf::SaveTo(const base::FilePath& file_path) const {
-  HANDLE file = CreateFile(file_path.value().c_str(), GENERIC_WRITE,
-                           FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-                           CREATE_ALWAYS, 0, NULL);
-  if (file == INVALID_HANDLE_VALUE)
-    return false;
-
-  bool success = false;
-  std::vector<uint8> buffer;
-  if (GetDataAsVector(&buffer)) {
-    DWORD written = 0;
-    if (WriteFile(file, &*buffer.begin(), static_cast<DWORD>(buffer.size()),
-                  &written, NULL) &&
-        written == buffer.size()) {
-      success = true;
-    }
-  }
-  CloseHandle(file);
-  return success;
 }
 
 int CALLBACK Emf::SafePlaybackProc(HDC hdc,
@@ -606,7 +575,7 @@ bool Emf::IsAlphaBlendUsed() const {
   return result;
 }
 
-Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
+scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   gfx::Rect page_bounds = GetPageBounds(1);
   gfx::Size page_size(page_bounds.size());
   if (page_size.GetArea() <= 0) {
@@ -648,10 +617,10 @@ Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   result->FinishPage();
   result->FinishDocument();
 
-  return result.release();
+  return result.Pass();
 }
 
-Emf* Emf::RasterizeAlphaBlend() const {
+scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
   gfx::Rect page_bounds = GetPageBounds(1);
   if (page_bounds.size().GetArea() <= 0) {
     NOTREACHED() << "Metafile is empty";
@@ -676,7 +645,7 @@ Emf* Emf::RasterizeAlphaBlend() const {
 
   result->FinishDocument();
 
-  return result.release();
+  return result.Pass();
 }
 
 

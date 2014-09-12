@@ -86,8 +86,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
     if (print_preview_context_.IsModifiable() &&
         print_preview_context_.generate_draft_pages()) {
       DCHECK(!draft_metafile.get());
-      draft_metafile.reset(
-          print_preview_context_.metafile()->GetMetafileForCurrentPage());
+      draft_metafile =
+          print_preview_context_.metafile()->GetMetafileForCurrentPage();
     }
   }
   return PreviewPageRendered(page_number, draft_metafile.get());
