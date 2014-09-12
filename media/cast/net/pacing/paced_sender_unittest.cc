@@ -65,8 +65,12 @@ class PacedSenderTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
-    paced_sender_.reset(new PacedSender(
-        &testing_clock_, &logging_, &mock_transport_, task_runner_));
+    paced_sender_.reset(new PacedSender(kTargetBurstSize,
+                                        kMaxBurstSize,
+                                        &testing_clock_,
+                                        &logging_,
+                                        &mock_transport_,
+                                        task_runner_));
     paced_sender_->RegisterAudioSsrc(kAudioSsrc);
     paced_sender_->RegisterVideoSsrc(kVideoSsrc);
   }

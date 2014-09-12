@@ -22,6 +22,10 @@
 namespace media {
 namespace cast {
 
+// Meant to use as defaults for pacer construction.
+static const size_t kTargetBurstSize = 10;
+static const size_t kMaxBurstSize = 20;
+
 class LoggingImpl;
 
 // Use std::pair for free comparison operators.
@@ -78,6 +82,8 @@ class PacedSender : public PacedPacketSender,
   // The |external_transport| should only be used by the Cast receiver and for
   // testing.
   PacedSender(
+      size_t target_burst_size,  // Should normally be kTargetBurstSize.
+      size_t max_burst_size,     // Should normally be kMaxBurstSize.
       base::TickClock* clock,
       LoggingImpl* logging,
       PacketSender* external_transport,
@@ -185,8 +191,11 @@ class PacedSender : public PacedPacketSender,
   // Records the last byte sent for payload with a specific SSRC.
   std::map<uint32, int64> last_byte_sent_;
 
-  // Maximum burst size for the next three bursts.
+  size_t target_burst_size_;
   size_t max_burst_size_;
+
+  // Maximum burst size for the next three bursts.
+  size_t current_max_burst_size_;
   size_t next_max_burst_size_;
   size_t next_next_max_burst_size_;
   // Number of packets already sent in the current burst.

@@ -54,6 +54,13 @@ class CastTransportSenderImpl : public CastTransportSender {
   // This can be a null callback, i.e. if user is not interested in raw events.
   // |raw_events_callback_interval|: This can be |base::TimeDelta()| if
   // |raw_events_callback| is a null callback.
+  // |options| contains optional settings for the transport, possible
+  // keys are:
+  //   "DSCP" (value doesn't matter) - turns DSCP on
+  //   "pacer_target_burst_size": int - specifies how many packets to send
+  //                                    per 10 ms ideally.
+  //   "pacer_max_burst_size": int - specifies how many pakcets to send
+  //                                 per 10 ms, max
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,

@@ -14,6 +14,20 @@
 namespace media {
 namespace cast {
 
+namespace {
+int LookupOptionWithDefault(const base::DictionaryValue& options,
+                            const std::string& path,
+                            int default_value) {
+  int ret;
+  if (options.GetInteger(path, &ret)) {
+    return ret;
+  } else {
+    return default_value;
+  }
+};
+
+}  // namespace
+
 scoped_ptr<CastTransportSender> CastTransportSender::Create(
     net::NetLog* net_log,
     base::TickClock* clock,
@@ -58,7 +72,13 @@ CastTransportSenderImpl::CastTransportSenderImpl(
                                                        net::IPEndPoint(),
                                                        remote_end_point,
                                                        status_callback)),
-      pacer_(clock,
+      pacer_(LookupOptionWithDefault(*options.get(),
+                                     "pacer_target_burst_size",
+                                     kTargetBurstSize),
+             LookupOptionWithDefault(*options.get(),
+                                     "pacer_max_burst_size",
+                                     kMaxBurstSize),
+             clock,
              &logging_,
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),

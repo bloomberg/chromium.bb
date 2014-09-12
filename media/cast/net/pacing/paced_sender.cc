@@ -18,14 +18,7 @@ static const int64 kPacingIntervalMs = 10;
 // Each frame will be split into no more than kPacingMaxBurstsPerFrame
 // bursts of packets.
 static const size_t kPacingMaxBurstsPerFrame = 3;
-static const size_t kTargetBurstSize = 10;
-static const size_t kMaxBurstSize = 20;
 static const size_t kMaxDedupeWindowMs = 500;
-
-// Number of packets that we keep the information of sent time and sent bytes.
-// This number allows 0.5 seconds of history if sending at maximum rate.
-static const size_t kPacketHistorySize =
-    kMaxBurstSize * kMaxDedupeWindowMs / kPacingIntervalMs;
 
 }  // namespace
 
@@ -42,6 +35,8 @@ PacedSender::PacketSendRecord::PacketSendRecord()
     : last_byte_sent(0), last_byte_sent_for_audio(0) {}
 
 PacedSender::PacedSender(
+    size_t target_burst_size,
+    size_t max_burst_size,
     base::TickClock* clock,
     LoggingImpl* logging,
     PacketSender* transport,
@@ -52,9 +47,11 @@ PacedSender::PacedSender(
       transport_task_runner_(transport_task_runner),
       audio_ssrc_(0),
       video_ssrc_(0),
-      max_burst_size_(kTargetBurstSize),
-      next_max_burst_size_(kTargetBurstSize),
-      next_next_max_burst_size_(kTargetBurstSize),
+      target_burst_size_(target_burst_size),
+      max_burst_size_(max_burst_size),
+      current_max_burst_size_(target_burst_size_),
+      next_max_burst_size_(target_burst_size_),
+      next_next_max_burst_size_(target_burst_size_),
       current_burst_size_(0),
       state_(State_Unblocked),
       weak_factory_(this) {
@@ -245,8 +242,8 @@ void PacedSender::SendStoredPackets() {
     // which is more bandwidth than the cast library should need, and sending
     // out more data per second is unlikely to be helpful.
     size_t max_burst_size = std::min(
-        kMaxBurstSize,
-        std::max(kTargetBurstSize, size() / kPacingMaxBurstsPerFrame));
+        max_burst_size_,
+        std::max(target_burst_size_, size() / kPacingMaxBurstsPerFrame));
 
     // If the queue is long, issue a warning. Try to limit the number of
     // warnings issued by only issuing the warning when the burst size
@@ -255,7 +252,7 @@ void PacedSender::SendStoredPackets() {
       LOG(WARNING) << "Packet queue is very long:" << size();
     }
 
-    max_burst_size_ = std::max(next_max_burst_size_, max_burst_size);
+    current_max_burst_size_ = std::max(next_max_burst_size_, max_burst_size);
     next_max_burst_size_ = std::max(next_next_max_burst_size_, max_burst_size);
     next_next_max_burst_size_ = max_burst_size;
   }
@@ -263,7 +260,7 @@ void PacedSender::SendStoredPackets() {
   base::Closure cb = base::Bind(&PacedSender::SendStoredPackets,
                                 weak_factory_.GetWeakPtr());
   while (!empty()) {
-    if (current_burst_size_ >= max_burst_size_) {
+    if (current_burst_size_ >= current_max_burst_size_) {
       transport_task_runner_->PostDelayedTask(FROM_HERE,
                                               cb,
                                               burst_end_ - now);
@@ -304,11 +301,13 @@ void PacedSender::SendStoredPackets() {
   }
 
   // Keep ~0.5 seconds of data (1000 packets).
-  if (send_history_buffer_.size() >= kPacketHistorySize) {
+  if (send_history_buffer_.size() >=
+      max_burst_size_ * kMaxDedupeWindowMs / kPacingIntervalMs) {
     send_history_.swap(send_history_buffer_);
     send_history_buffer_.clear();
   }
-  DCHECK_LE(send_history_buffer_.size(), kPacketHistorySize);
+  DCHECK_LE(send_history_buffer_.size(),
+            max_burst_size_ * kMaxDedupeWindowMs / kPacingIntervalMs);
   state_ = State_Unblocked;
 }
 

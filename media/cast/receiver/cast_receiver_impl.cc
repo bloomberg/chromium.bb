@@ -31,7 +31,9 @@ CastReceiverImpl::CastReceiverImpl(
     const FrameReceiverConfig& video_config,
     PacketSender* const packet_sender)
     : cast_environment_(cast_environment),
-      pacer_(cast_environment->Clock(),
+      pacer_(kTargetBurstSize,
+             kMaxBurstSize,
+             cast_environment->Clock(),
              cast_environment->Logging(),
              packet_sender,
              cast_environment->GetTaskRunner(CastEnvironment::MAIN)),
