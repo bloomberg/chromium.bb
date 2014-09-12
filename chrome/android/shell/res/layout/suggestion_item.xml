@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/suggestion_item"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/inner_layout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical">
+
+        <TextView android:id="@+id/suggestion_item_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAlignment="viewStart"
+            android:textSize="18sp"
+            android:includeFontPadding="false"/>
+
+        <TextView android:id="@+id/suggestion_item_sublabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:textSize="14sp"
+            android:textColor="#8b8b8b"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAlignment="viewStart"
+            android:includeFontPadding="false"/>
+    </LinearLayout>
+
+    <ImageView
+        android:background="?android:attr/selectableItemBackground"
+        android:id="@+id/suggestion_item_arrow"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:gravity="end"
+        android:scaleType="center"
+        android:src="@drawable/suggestion_arrow"/>
+</LinearLayout>
+

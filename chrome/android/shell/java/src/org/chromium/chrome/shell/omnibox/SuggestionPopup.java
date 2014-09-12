@@ -14,9 +14,10 @@ import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
-import android.widget.TextView;
+
 
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
@@ -34,7 +35,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
     private static final long SUGGESTION_START_DELAY_MS = 30;
 
     private final Context mContext;
-    private final TextView mUrlField;
+    private final EditText mUrlField;
     private final ChromeShellToolbar mToolbar;
     private final AutocompleteController mAutocomplete;
 
@@ -48,7 +49,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
      * Initializes a suggestion popup that will track urlField value and display suggestions based
      * on that value.
      */
-    public SuggestionPopup(Context context, TextView urlField,
+    public SuggestionPopup(Context context, EditText urlField,
             ChromeShellToolbar toolbar) {
         mContext = context;
         mUrlField = urlField;
@@ -139,7 +140,8 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
         mSuggestionsPopup.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
         mSuggestionsPopup.setWidth(mUrlField.getWidth());
         mSuggestionArrayAdapter =
-                new SuggestionArrayAdapter(mContext, R.layout.dropdown_item, suggestions);
+                new SuggestionArrayAdapter(mContext, R.layout.dropdown_item, suggestions,
+                        mUrlField);
         mSuggestionsPopup.setHeight(getSuggestionPopupHeight());
         mSuggestionsPopup.setAdapter(mSuggestionArrayAdapter);
         mSuggestionsPopup.setAnchorView(mUrlField);
