@@ -655,9 +655,8 @@ cr.define('options.contentSettings', function() {
      * location's hash.
      */
     didShowPage: function() {
-      var hash = location.hash;
-      if (hash)
-        this.showList(hash.slice(1));
+      if (this.hash)
+        this.showList(this.hash.slice(1));
     },
   };
 

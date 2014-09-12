@@ -33,17 +33,9 @@ cr.define('options', function() {
           this.pageDiv.querySelectorAll('.exceptions-list-button');
       for (var i = 0; i < exceptionsButtons.length; i++) {
         exceptionsButtons[i].onclick = function(event) {
-          var page = ContentSettingsExceptionsArea.getInstance();
-
-          // Add on the proper hash for the content type, and store that in the
-          // history so back/forward and tab restore works.
           var hash = event.currentTarget.getAttribute('contentType');
-          var url = page.name + '#' + hash;
-          uber.pushState({pageName: page.name}, url);
-
-          // Navigate after the local history has been replaced in order to have
-          // the correct hash loaded.
-          PageManager.showPageByName('contentExceptions', false);
+          PageManager.showPageByName('contentExceptions', true,
+                                     {hash: '#' + hash});
         };
       }
 

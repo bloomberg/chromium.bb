@@ -248,7 +248,8 @@ function load() {
   // appropriately to chrome://settings/. If the URL matches, updateHistory_
   // will avoid the extra replaceState.
   var updateHistory = true;
-  PageManager.showPageByName(pageName, updateHistory, {replaceState: true});
+  PageManager.showPageByName(pageName, updateHistory,
+                             {replaceState: true, hash: location.hash});
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
   for (var i = 0; i < subpagesNavTabs.length; i++) {
@@ -279,5 +280,5 @@ window.onbeforeunload = function() {
  */
 window.onpopstate = function(e) {
   var pageName = PageManager.getPageNameFromPath();
-  PageManager.setState(pageName, e.state);
+  PageManager.setState(pageName, location.hash, e.state);
 };

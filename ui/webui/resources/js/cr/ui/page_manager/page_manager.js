@@ -139,6 +139,7 @@ cr.define('cr.ui.pageManager', function() {
      *     showing the page (defaults to true).
      * @param {Object=} opt_propertyBag An optional bag of properties including
      *     replaceState (if history state should be replaced instead of pushed).
+     *     hash (a hash state to attach to the page).
      */
     showPageByName: function(pageName,
                              opt_updateHistory,
@@ -163,7 +164,8 @@ cr.define('cr.ui.pageManager', function() {
       var targetPage = this.registeredPages[pageName.toLowerCase()];
       if (!targetPage || !targetPage.canShowPage()) {
         // If it's not a page, try it as an overlay.
-        if (!targetPage && this.showOverlay_(pageName, rootPage)) {
+        var hash = opt_propertyBag.hash || '';
+        if (!targetPage && this.showOverlay_(pageName, hash, rootPage)) {
           if (opt_updateHistory)
             this.updateHistoryState_(!!opt_propertyBag.replaceState);
           this.updateTitle_();
@@ -188,6 +190,9 @@ cr.define('cr.ui.pageManager', function() {
           page.willHidePage();
         }
       });
+
+      // Update the page's hash.
+      targetPage.hash = opt_propertyBag.hash || '';
 
       // Update visibilities to show only the hierarchy of the target page.
       this.forEachPage_(!isRootPageLocked, function(page) {
@@ -214,6 +219,11 @@ cr.define('cr.ui.pageManager', function() {
           page.didShowPage();
         }
       });
+
+      // If the target page was already visible, notify it that its hash
+      // changed externally.
+      if (targetPageWasVisible)
+        targetPage.didChangeHash();
 
       // Update the document title. Do this after didShowPage was called, in
       // case a page decides to change its title.
@@ -294,6 +304,16 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
+     * Called when a page's hash changes. If the page is the topmost visible
+     * page, the history state is updated.
+     * @param {cr.ui.pageManager.Page} page The page whose hash has changed.
+     */
+    onPageHashChanged: function(page) {
+      if (page == this.getTopmostVisiblePage())
+        this.updateHistoryState_(false);
+    },
+
+    /**
      * Returns the topmost visible page, or null if no page is visible.
      * @return {cr.ui.pageManager.Page} The topmost visible page.
      */
@@ -316,7 +336,7 @@ cr.define('cr.ui.pageManager', function() {
 
       if (overlay.didClosePage)
         overlay.didClosePage();
-      this.updateHistoryState_(false, {ignoreHash: true});
+      this.updateHistoryState_(false);
       this.updateTitle_();
 
       this.restoreLastFocusedElement_();
@@ -391,9 +411,10 @@ cr.define('cr.ui.pageManager', function() {
     /**
      * Callback for window.onpopstate to handle back/forward navigations.
      * @param {string} pageName The current page name.
+     * @param {string} hash The hash to pass into the page.
      * @param {Object} data State data pushed into history.
      */
-    setState: function(pageName, data) {
+    setState: function(pageName, hash, data) {
       var currentOverlay = this.getVisibleOverlay_();
       var lowercaseName = pageName.toLowerCase();
       var newPage = this.registeredPages[lowercaseName] ||
@@ -403,7 +424,7 @@ cr.define('cr.ui.pageManager', function() {
         currentOverlay.visible = false;
         if (currentOverlay.didClosePage) currentOverlay.didClosePage();
       }
-      this.showPageByName(pageName, false);
+      this.showPageByName(pageName, false, {hash: hash});
     },
 
 
@@ -454,12 +475,13 @@ cr.define('cr.ui.pageManager', function() {
     /**
      * Shows a registered overlay page. Does not update history.
      * @param {string} overlayName Page name.
+     * @param {string} hash The hash state to associate with the overlay.
      * @param {cr.ui.pageManager.Page} rootPage The currently visible root-level
      *     page.
      * @return {boolean} Whether we showed an overlay.
      * @private
      */
-    showOverlay_: function(overlayName, rootPage) {
+    showOverlay_: function(overlayName, hash, rootPage) {
       var overlay = this.registeredOverlayPages[overlayName.toLowerCase()];
       if (!overlay || !overlay.canShowPage())
         return false;
@@ -475,10 +497,13 @@ cr.define('cr.ui.pageManager', function() {
         this.showPageByName(overlay.parentPage.name, false);
       }
 
+      overlay.hash = hash;
       if (!overlay.visible) {
         overlay.visible = true;
         if (overlay.didShowPage)
           overlay.didShowPage();
+      } else {
+        overlay.didChangeHash();
       }
 
       // Change focus to the overlay if any other control was focused by
@@ -584,11 +609,9 @@ cr.define('cr.ui.pageManager', function() {
      * to update the history.
      * @param {boolean} replace If true, handlers should replace the current
      *     history event rather than create new ones.
-     * @param {Object=} opt_params A bag of optional params, including:
-     *     {boolean} ignoreHash Whether to include the hash or not.
      * @private
      */
-    updateHistoryState_: function(replace, opt_params) {
+    updateHistoryState_: function(replace) {
       if (this.isDialog)
         return;
 
@@ -601,9 +624,7 @@ cr.define('cr.ui.pageManager', function() {
 
       // If the page is already in history (the user may have clicked the same
       // link twice, or this is the initial load), do nothing.
-      var hash = opt_params && opt_params.ignoreHash ?
-          '' : window.location.hash;
-      var newPath = (page == this.defaultPage_ ? '' : page.name) + hash;
+      var newPath = (page == this.defaultPage_ ? '' : page.name) + page.hash;
       if (path == newPath)
         return;
 

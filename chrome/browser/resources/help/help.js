@@ -47,6 +47,6 @@
    */
   window.onpopstate = function(e) {
     var pageName = PageManager.getPageNameFromPath();
-    PageManager.setState(pageName, e.state);
+    PageManager.setState(pageName, location.hash, e.state);
   };
 })();

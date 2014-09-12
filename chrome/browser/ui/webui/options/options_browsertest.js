@@ -520,14 +520,25 @@ TEST_F('OptionsWebUIExtendedTest', 'DISABLED_ShowSearchPageNoQuery',
   this.verifyHistory_(['settings'], testDone);
 });
 
+// Manipulate the search page via the search field.
+TEST_F('OptionsWebUIExtendedTest', 'ShowSearchFromField', function() {
+  $('search-field').onsearch({currentTarget: {value: 'query'}});
+  this.verifyOpenPages_(['settings', 'search'], 'search#query');
+  this.verifyHistory_(['', 'search#query'], function() {
+    $('search-field').onsearch({currentTarget: {value: 'query2'}});
+    this.verifyOpenPages_(['settings', 'search'], 'search#query2');
+    this.verifyHistory_(['', 'search#query', 'search#query2'], function() {
+      $('search-field').onsearch({currentTarget: {value: ''}});
+      this.verifyOpenPages_(['settings'], '');
+      this.verifyHistory_(['', 'search#query', 'search#query2', ''], testDone);
+    }.bind(this));
+  }.bind(this));
+});
+
 // Show a page without updating history.
 TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
   this.verifyOpenPages_(['settings'], '');
-  // There are only two main pages, 'settings' and 'search'. It's not possible
-  // to show the search page using PageManager.showPageByName, because it
-  // reverts to the settings page if it has no search text set. So we show the
-  // search page by performing a search, then test showPageByName.
-  $('search-field').onsearch({currentTarget: {value: 'query'}});
+  PageManager.showPageByName('search', true, {hash: '#query'});
 
   // The settings page is also still "open" (i.e., visible), in order to show
   // the search results. Furthermore, the URL hasn't been updated in the parent
@@ -543,38 +554,34 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
 });
 
 TEST_F('OptionsWebUIExtendedTest', 'ShowPageWithHistory', function() {
-  // See comments for ShowPageNoHistory.
-  $('search-field').onsearch({currentTarget: {value: 'query'}});
+  PageManager.showPageByName('search', true, {hash: '#query'});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
     PageManager.showPageByName('settings', true);
-    self.verifyOpenPages_(['settings'], '#query');
-    self.verifyHistory_(['', 'search#query', '#query'],
+    self.verifyOpenPages_(['settings'], '');
+    self.verifyHistory_(['', 'search#query', ''],
                         testDone);
   });
 });
 
 TEST_F('OptionsWebUIExtendedTest', 'ShowPageReplaceHistory', function() {
-  // See comments for ShowPageNoHistory.
-  $('search-field').onsearch({currentTarget: {value: 'query'}});
+  PageManager.showPageByName('search', true, {hash: '#query'});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
     PageManager.showPageByName('settings', true, {'replaceState': true});
-    self.verifyOpenPages_(['settings'], '#query');
-    self.verifyHistory_(['', '#query'], testDone);
+    self.verifyOpenPages_(['settings'], '');
+    self.verifyHistory_(['', ''], testDone);
   });
 });
 
 // This should be identical to ShowPageWithHisory.
 TEST_F('OptionsWebUIExtendedTest', 'NavigateToPage', function() {
-  // See comments for ShowPageNoHistory.
-  $('search-field').onsearch({currentTarget: {value: 'query'}});
+  PageManager.showPageByName('search', true, {hash: '#query'});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
     PageManager.showPageByName('settings');
-    self.verifyOpenPages_(['settings'], '#query');
-    self.verifyHistory_(['', 'search#query', '#query'],
-                        testDone);
+    self.verifyOpenPages_(['settings'], '');
+    self.verifyHistory_(['', 'search#query', ''], testDone);
   });
 });
 
@@ -672,6 +679,38 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
           testDone);
     });
   });
+});
+
+// Hashes are maintained separately for each page and are preserved when
+// overlays close.
+TEST_F('OptionsWebUIExtendedTest', 'CloseOverlayWithHashes', function() {
+  // Open an overlay on top of the search page.
+  PageManager.showPageByName('search', true, {hash: '#1'});
+  this.verifyOpenPages_(['settings', 'search'], 'search#1');
+  PageManager.showPageByName('languages', true, {hash: '#2'});
+  this.verifyOpenPages_(['settings', 'search', 'languages'],
+                        'languages#2');
+  PageManager.showPageByName('addLanguage', true, {hash: '#3'});
+  this.verifyOpenPages_(['settings', 'search', 'languages', 'addLanguage'],
+                       'addLanguage#3');
+
+  this.verifyHistory_(['', 'search#1', 'languages#2', 'addLanguage#3'],
+                      function() {
+    // Close the layer-2 overlay.
+    PageManager.closeOverlay();
+    this.verifyOpenPages_(['settings', 'search', 'languages'], 'languages#2');
+    this.verifyHistory_(
+        ['', 'search#1', 'languages#2', 'addLanguage#3', 'languages#2'],
+        function() {
+      // Close the layer-1 overlay.
+      PageManager.closeOverlay();
+      this.verifyOpenPages_(['settings', 'search'], 'search#1');
+      this.verifyHistory_(
+          ['', 'search#1', 'languages#2', 'addLanguage#3', 'languages#2',
+           'search#1'],
+          testDone);
+    }.bind(this));
+  }.bind(this));
 });
 
 // Test that closing an overlay that did not push history when opening does not

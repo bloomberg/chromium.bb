@@ -28,6 +28,7 @@ cr.define('cr.ui.pageManager', function() {
     this.pageDiv.page = null;
     this.tab = null;
     this.lastFocusedElement = null;
+    this.hash = '';
   }
 
   Page.prototype = {
@@ -64,6 +65,12 @@ cr.define('cr.ui.pageManager', function() {
      * Initializes page content.
      */
     initializePage: function() {},
+
+    /**
+     * Called by the PageManager when this.hash changes while the page is
+     * already visible. This is analogous to the hashchange DOM event.
+     */
+    didChangeHash: function() {},
 
     /**
      * Sets focus on the first focusable element. Override for a custom focus
@@ -115,6 +122,19 @@ cr.define('cr.ui.pageManager', function() {
      */
     canShowPage: function() {
       return true;
+    },
+
+    /**
+     * Updates the hash of the current page. If the page is topmost, the history
+     * state is updated.
+     * @param {string} hash The new hash value. Like location.hash, this
+     *     should include the leading '#' if not empty.
+     */
+    setHash: function(hash) {
+      if (this.hash == hash)
+        return;
+      this.hash = hash;
+      PageManager.onPageHashChanged(this);
     },
 
     /**

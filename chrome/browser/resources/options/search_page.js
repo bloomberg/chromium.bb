@@ -172,6 +172,11 @@ cr.define('options', function() {
       this.setSearchActive_(true);
     },
 
+    /** @override */
+    didChangeHash: function() {
+      this.setSearchActive_(true);
+    },
+
     /**
      * Called before this page will be hidden.
      */
@@ -200,7 +205,7 @@ cr.define('options', function() {
       this.searchActive_ = active;
 
       if (active) {
-        var hash = location.hash;
+        var hash = this.hash;
         if (hash) {
           this.searchField.value =
               decodeURIComponent(hash.slice(1).replace(/\+/g, ' '));
@@ -219,6 +224,8 @@ cr.define('options', function() {
           for (var i = 0, section; section = this.advancedSections_[i]; i++)
             $('settings').appendChild(section);
         }
+      } else {
+        this.searchField.value = '';
       }
 
       var pagesToSearch = this.getSearchablePages_();
@@ -280,23 +287,21 @@ cr.define('options', function() {
       // Cleanup the search query string.
       text = SearchPage.canonicalizeQuery(text);
 
-      // Set the hash on the current page, and the enclosing uber page. Only do
-      // this if the page is not current. See https://crbug.com/401004.
-      var hash = text ? '#' + encodeURIComponent(text) : '';
-      var path = text ? this.name : '';
-      if (location.hash != hash || location.pathname != '/' + path)
-        uber.pushState({}, path + hash);
-
-      // Toggle the search page if necessary.
-      if (text) {
-        if (!this.searchActive_)
-          PageManager.showPageByName(this.name, false);
-      } else {
+      // If the search string becomes empty, flip back to the default page.
+      if (!text) {
         if (this.searchActive_)
-          PageManager.showDefaultPage(false);
-
+          PageManager.showDefaultPage();
         this.insideSetSearchText_ = false;
         return;
+      }
+
+      // Toggle the search page if necessary. Otherwise, update the hash.
+      var hash = '#' + encodeURIComponent(text);
+      if (this.searchActive_) {
+        if (this.hash != hash)
+          this.setHash(hash);
+      } else {
+        PageManager.showPageByName(this.name, true, {hash: hash});
       }
 
       var foundMatches = false;
