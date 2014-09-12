@@ -21,6 +21,7 @@ namespace cc {
 class CompositorFrame;
 class DrawQuad;
 class RenderPass;
+class RenderPassId;
 class SharedQuadState;
 }  // namespace cc
 
@@ -44,6 +45,16 @@ struct MOJO_SURFACES_EXPORT TypeConverter<ColorPtr, SkColor> {
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, ColorPtr> {
   static SkColor Convert(const ColorPtr& input);
+};
+
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<RenderPassIdPtr, cc::RenderPassId> {
+  static RenderPassIdPtr Convert(const cc::RenderPassId& input);
+};
+
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<cc::RenderPassId, RenderPassIdPtr> {
+  static cc::RenderPassId Convert(const RenderPassIdPtr& input);
 };
 
 template <>

@@ -26,6 +26,13 @@ struct Rect {
   int32 height;
 };
 
+struct RectF {
+  float x;
+  float y;
+  float width;
+  float height;
+};
+
 struct Transform {
   // Row major order.
   float[16]? matrix;

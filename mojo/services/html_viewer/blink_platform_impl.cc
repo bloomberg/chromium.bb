@@ -137,6 +137,14 @@ void BlinkPlatformImpl::callOnMainThread(
   main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
+bool BlinkPlatformImpl::isThreadedCompositingEnabled() {
+  return true;
+}
+
+blink::WebCompositorSupport* BlinkPlatformImpl::compositorSupport() {
+  return &compositor_support_;
+}
+
 blink::WebScrollbarBehavior* BlinkPlatformImpl::scrollbarBehavior() {
   return &scrollbar_behavior_;
 }
