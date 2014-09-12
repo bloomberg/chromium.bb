@@ -53,3 +53,6 @@ class SystemHost(object):
         end = kwargs.get('end', '\n')
         stream = kwargs.get('stream', self.stdout)
         stream.write(sep.join([str(arg) for arg in args]) + end)
+
+    def exit(self, returncode):
+        sys.exit(returncode)
