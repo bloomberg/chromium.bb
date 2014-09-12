@@ -1,6 +1,6 @@
 # Device Motion / Orientation API related
-per-file DeviceMotionAndOrientation.java=mvanouwerkerk@chromium.org
-per-file DeviceMotionAndOrientation.java=timvolodine@chromium.org
+per-file DeviceSensors.java=mvanouwerkerk@chromium.org
+per-file DeviceSensors.java=timvolodine@chromium.org
 
 # Geolocation API related
 per-file LocationProvider.java=mvanouwerkerk@chromium.org
