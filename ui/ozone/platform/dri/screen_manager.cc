@@ -117,12 +117,6 @@ base::WeakPtr<HardwareDisplayController> ScreenManager::GetDisplayController(
   if (it != controllers_.end())
     return (*it)->AsWeakPtr();
 
-  // If no active controllers then pick the first controller at the location.
-  // TODO(dnicoara): Remove once async display configuration is fully supported.
-  it = FindDisplayControllerByLocation(bounds);
-  if (it != controllers_.end())
-    return (*it)->AsWeakPtr();
-
   return base::WeakPtr<HardwareDisplayController>();
 }
 
@@ -147,21 +141,6 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
     // We don't perform a strict check since content_shell will have windows
     // smaller than the display size.
     if (controller_bounds.Contains(bounds) && !(*it)->IsDisabled())
-      return it;
-  }
-
-  return controllers_.end();
-}
-
-ScreenManager::HardwareDisplayControllers::iterator
-ScreenManager::FindDisplayControllerByLocation(const gfx::Rect& bounds) {
-  for (HardwareDisplayControllers::iterator it = controllers_.begin();
-       it != controllers_.end();
-       ++it) {
-    gfx::Rect controller_bounds((*it)->origin(), (*it)->GetModeSize());
-    // We don't perform a strict check since content_shell will have windows
-    // smaller than the display size.
-    if (controller_bounds.Contains(bounds))
       return it;
   }
 

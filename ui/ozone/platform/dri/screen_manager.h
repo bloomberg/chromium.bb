@@ -57,6 +57,11 @@ class ScreenManager {
   base::WeakPtr<HardwareDisplayController> GetDisplayController(
       const gfx::Rect& bounds);
 
+  // On non CrOS builds there is no display configurator to look-up available
+  // displays and initialize the HDCs. In such cases this is called internally
+  // to initialize a display.
+  virtual void ForceInitializationOfPrimaryDisplay();
+
  private:
   typedef ScopedVector<HardwareDisplayController> HardwareDisplayControllers;
 
@@ -67,11 +72,6 @@ class ScreenManager {
   // Returns an iterator into |controllers_| for the controller located at
   // |origin|.
   HardwareDisplayControllers::iterator FindActiveDisplayControllerByLocation(
-      const gfx::Rect& bounds);
-
-  // Returns an iterator to the first controller located at |origin|. The
-  // controller may be disabled.
-  HardwareDisplayControllers::iterator FindDisplayControllerByLocation(
       const gfx::Rect& bounds);
 
   // Perform modesetting in |controller| using |origin| and |mode|.
@@ -86,11 +86,6 @@ class ScreenManager {
                         HardwareDisplayControllers::iterator mirror,
                         uint32_t crtc,
                         uint32_t connector);
-
-  // On non CrOS builds there is no display configurator to look-up available
-  // displays and initialize the HDCs. In such cases this is called internally
-  // to initialize a display.
-  virtual void ForceInitializationOfPrimaryDisplay();
 
   DriWrapper* dri_;  // Not owned.
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
