@@ -251,7 +251,7 @@ void TestCase::RunOnThreadInternal(
     void (*thread_func)(void*),
     void* thread_param,
     const PPB_Testing_Private* testing_interface) {
-  PP_ThreadType thread;
+  PP_Thread thread;
   PP_CreateThread(&thread, thread_func, thread_param);
   // Run a message loop so pepper calls can be dispatched. The background
   // thread will set result_ and make us Quit when it's done.

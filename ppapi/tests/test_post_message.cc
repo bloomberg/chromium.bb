@@ -869,7 +869,7 @@ std::string TestPostMessage::TestNonMainThread() {
   // times.  For good measure, call postMessage from the main thread
   // kMessagesToSendPerThread times. At the end, we make sure we got all the
   // values we expected.
-  PP_ThreadType threads[kThreadsToRun];
+  PP_Thread threads[kThreadsToRun];
   for (int32_t i = 0; i < kThreadsToRun; ++i) {
     // Set up a thread to send a value of i.
     void* arg = new InvokePostMessageThreadArg(instance_, pp::Var(i));

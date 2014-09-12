@@ -33,18 +33,22 @@
  * used in ppapi/tests, so is not part of the published API.
  */
 
-#if defined(PPAPI_POSIX)
-typedef pthread_t PP_ThreadType;
-#elif defined(PPAPI_OS_WIN)
-typedef uintptr_t PP_ThreadType;
-#endif
-
 typedef void (PP_ThreadFunction)(void* data);
 
-PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,
+#if defined(PPAPI_POSIX)
+typedef pthread_t PP_Thread;
+#elif defined(PPAPI_OS_WIN)
+struct PP_Thread {
+  HANDLE handle;
+  PP_ThreadFunction* thread_func;
+  void* thread_arg;
+};
+#endif
+
+PP_INLINE bool PP_CreateThread(PP_Thread* thread,
                                PP_ThreadFunction function,
                                void* thread_arg);
-PP_INLINE void PP_JoinThread(PP_ThreadType thread);
+PP_INLINE void PP_JoinThread(PP_Thread thread);
 
 #if defined(PPAPI_POSIX)
 /* Because POSIX thread functions return void* and Windows thread functions do
@@ -65,7 +69,7 @@ PP_INLINE void* PP_POSIXThreadFunctionThunk(void* posix_thread_arg) {
   return NULL;
 }
 
-PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,
+PP_INLINE bool PP_CreateThread(PP_Thread* thread,
                                PP_ThreadFunction function,
                                void* thread_arg) {
   PP_ThreadFunctionArgWrapper* arg_wrapper =
@@ -78,27 +82,39 @@ PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,
                          arg_wrapper) == 0);
 }
 
-PP_INLINE void PP_JoinThread(PP_ThreadType thread) {
+PP_INLINE void PP_JoinThread(PP_Thread thread) {
   void* exit_status;
   pthread_join(thread, &exit_status);
 }
 
 #elif defined(PPAPI_OS_WIN)
-typedef DWORD (PP_WindowsThreadFunction)(void* data);
 
-PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,
+PP_INLINE unsigned __stdcall PP_WindowsThreadFunction(void* param) {
+  PP_Thread* thread = reinterpret_cast<PP_Thread*>(param);
+  thread->thread_func(thread->thread_arg);
+  return 0;
+}
+
+PP_INLINE bool PP_CreateThread(PP_Thread* thread,
                                PP_ThreadFunction function,
                                void* thread_arg) {
   if (!thread)
     return false;
-  *thread = ::_beginthread(function,
-                           0,  /* Use default stack size. */
-                           thread_arg);
-  return (*thread != NULL);
+  thread->thread_func = function;
+  thread->thread_arg = thread_arg;
+  uintptr_t raw_handle = ::_beginthreadex(NULL,
+                                          0,  /* Use default stack size. */
+                                          &PP_WindowsThreadFunction,
+                                          thread,
+                                          0,
+                                          NULL);
+  thread->handle = reinterpret_cast<HANDLE>(raw_handle);
+  return (thread->handle != NULL);
 }
 
-PP_INLINE void PP_JoinThread(PP_ThreadType thread) {
-  ::WaitForSingleObject((HANDLE)thread, INFINITE);
+PP_INLINE void PP_JoinThread(PP_Thread thread) {
+  ::WaitForSingleObject(thread.handle, INFINITE);
+  ::CloseHandle(thread.handle);
 }
 
 #endif
