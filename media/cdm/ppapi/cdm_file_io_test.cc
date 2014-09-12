@@ -364,7 +364,7 @@ bool FileIOTest::MatchesResult(const TestStep& a, const TestStep& b) {
   if (a.type != RESULT_READ || a.status != cdm::FileIOClient::kSuccess)
     return true;
 
-  return (a.data_size == a.data_size &&
+  return (a.data_size == b.data_size &&
           std::equal(a.data, a.data + a.data_size, b.data));
 }
 
