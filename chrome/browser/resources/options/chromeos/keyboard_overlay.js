@@ -27,6 +27,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the keyboard overlay.
    * @constructor
+   * @extends {options.SettingsDialog}
    */
   function KeyboardOverlay() {
     options.SettingsDialog.call(this, 'keyboard-overlay',

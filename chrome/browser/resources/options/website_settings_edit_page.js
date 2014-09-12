@@ -11,6 +11,7 @@ cr.define('options.WebsiteSettings', function() {
   /**
    * Encapsulated handling of the website settings editor page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function WebsiteSettingsEditor() {
     Page.call(this, 'websiteEdit',

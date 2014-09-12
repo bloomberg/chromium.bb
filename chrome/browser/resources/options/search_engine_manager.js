@@ -10,6 +10,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of search engine management page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function SearchEngineManager() {
     this.activeNavTab = null;
@@ -61,7 +62,7 @@ cr.define('options', function() {
 
     /**
      * Sets up the given list as a search engine list
-     * @param {List} list The list to set up.
+     * @param {cr.ui.List} list The list to set up.
      * @private
      */
     setUpList_: function(list) {

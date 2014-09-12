@@ -26,6 +26,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the website settings page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function WebsiteSettingsManager() {
     Page.call(this, 'websiteSettings',
@@ -40,7 +41,7 @@ cr.define('options', function() {
 
     /**
      * The saved allowed origins list.
-     * @type {OriginList}
+     * @type {options.OriginList}
      * @private
      */
     allowedList_: null,

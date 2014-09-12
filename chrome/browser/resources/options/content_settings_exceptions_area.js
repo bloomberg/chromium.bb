@@ -178,7 +178,7 @@ cr.define('options.contentSettings', function() {
 
       if (controlledBy == 'policy' || controlledBy == 'extension') {
         this.querySelector('.row-delete-button').hidden = true;
-        var indicator = ControlledSettingIndicator();
+        var indicator = new ControlledSettingIndicator();
         indicator.setAttribute('content-exception', this.contentType);
         // Create a synthetic pref change event decorated as
         // CoreOptionsHandler::CreateValueForPref() does.
@@ -225,14 +225,11 @@ cr.define('options.contentSettings', function() {
      * @type {string}
      */
     get pattern() {
-      if (!this.isEmbeddingRule()) {
+      if (!this.isEmbeddingRule())
         return this.dataItem.origin;
-      } else {
-        return loadTimeData.getStringF('embeddedOnHost',
-                                       this.dataItem.embeddingOrigin);
-      }
 
-      return this.dataItem.displayPattern;
+      return loadTimeData.getStringF('embeddedOnHost',
+                                     this.dataItem.embeddingOrigin);
     },
     set pattern(pattern) {
       if (!this.editable)
@@ -400,7 +397,7 @@ cr.define('options.contentSettings', function() {
    * @param {boolean} enableAskOption Whether to show an 'ask every time' option
    *     in the select.
    * @constructor
-   * @extends {cr.ui.ExceptionsListItem}
+   * @extends {options.contentSettings.ExceptionsListItem}
    */
   function ExceptionsAddRowListItem(contentType, mode, enableAskOption) {
     var el = cr.doc.createElement('div');
@@ -533,7 +530,7 @@ cr.define('options.contentSettings', function() {
      * item to reflect this.
      *
      * @param {string} pattern The pattern.
-     * @param {bool} valid Whether said pattern is valid in the context of a
+     * @param {boolean} valid Whether said pattern is valid in the context of a
      *     content exception setting.
      */
     patternValidityCheckComplete: function(pattern, valid) {
@@ -593,6 +590,7 @@ cr.define('options.contentSettings', function() {
    * Encapsulated handling of content settings list subpage.
    *
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function ContentSettingsExceptionsArea() {
     Page.call(this, 'contentExceptions',

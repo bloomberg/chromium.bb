@@ -9,7 +9,7 @@ cr.define('options', function() {
   /**
    * Creates a new list item with support for inline editing.
    * @constructor
-   * @extends {options.DeletableListItem}
+   * @extends {options.DeletableItem}
    */
   function InlineEditableItem() {
     var el = cr.doc.createElement('div');
@@ -46,7 +46,7 @@ cr.define('options', function() {
 
     /**
      * Fields associated with edit mode.
-     * @type {array}
+     * @type {Array}
      * @private
      */
     editFields_: null,

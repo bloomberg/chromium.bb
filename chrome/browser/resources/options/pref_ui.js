@@ -124,14 +124,12 @@ cr.define('options', function() {
 
   /**
    * The name of the associated preference.
-   * @type {string}
    */
   cr.defineProperty(PrefInputElement, 'pref', cr.PropertyKind.ATTR);
 
   /**
    * The data type of the associated preference, only relevant for derived
    * classes that support different data types.
-   * @type {string}
    */
   cr.defineProperty(PrefInputElement, 'dataType', cr.PropertyKind.ATTR);
 
@@ -140,20 +138,17 @@ cr.define('options', function() {
    * in the settings UI immediately but are only actually committed when the
    * user confirms the dialog. If the user cancels the dialog instead, the
    * changes are rolled back in the settings UI and never committed.
-   * @type {boolean}
    */
   cr.defineProperty(PrefInputElement, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the associated preference is controlled by a source other than the
    * user's setting (can be 'policy', 'extension', 'recommended' or unset).
-   * @type {string}
    */
   cr.defineProperty(PrefInputElement, 'controlledBy', cr.PropertyKind.ATTR);
 
   /**
    * The user metric string.
-   * @type {string}
    */
   cr.defineProperty(PrefInputElement, 'metric', cr.PropertyKind.ATTR);
 
@@ -206,7 +201,6 @@ cr.define('options', function() {
 
   /**
    * Whether the mapping between checkbox state and associated pref is inverted.
-   * @type {boolean}
    */
   cr.defineProperty(PrefCheckbox, 'inverted_pref', cr.PropertyKind.BOOL_ATTR);
 
@@ -419,7 +413,7 @@ cr.define('options', function() {
 
       // Make sure the value is a string, because the value is stored as a
       // string in the HTMLOptionElement.
-      value = String(event.value.value);
+      var value = String(event.value.value);
 
       var found = false;
       for (var i = 0; i < this.options.length; i++) {
@@ -561,14 +555,12 @@ cr.define('options', function() {
 
   /**
    * The name of the associated preference.
-   * @type {string}
    */
   cr.defineProperty(PrefButton, 'pref', cr.PropertyKind.ATTR);
 
   /**
    * Whether the associated preference is controlled by a source other than the
    * user's setting (can be 'policy', 'extension', 'recommended' or unset).
-   * @type {string}
    */
   cr.defineProperty(PrefButton, 'controlledBy', cr.PropertyKind.ATTR);
 

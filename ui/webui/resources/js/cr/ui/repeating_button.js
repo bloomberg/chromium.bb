@@ -38,22 +38,22 @@ cr.define('cr.ui', function() {
     holdRepeatIntervalTime_: 50,
 
     /**
-     * Callback function when repeated intervals trigger. Initialized when the
-     * button is held for an initial delay period and cleared when the button
-     * is released.
-     * @type {function}
+     * Callback function ID when repeated intervals trigger. Initialized when
+     * the button is held for an initial delay period and cleared when the
+     * button is released.
+     * @type {number|undefined}
      * @private
      */
-    intervalCallback_: undefined,
+    intervalCallbackId_: undefined,
 
     /**
      * Callback function to arm the repeat timer. Initialized when the button
      * is pressed and cleared when the interval timer is set or the button is
      * released.
-     * @type {function}
+     * @type {number|undefined}
      * @private
      */
-    armRepeaterCallback_: undefined,
+    armRepeaterCallbackId_: undefined,
 
     /**
      * Initializes the button.
@@ -97,18 +97,19 @@ cr.define('cr.ui', function() {
       //               initial delay and repeat interval.
       this.buttonHeld_();
       var self = this;
-      this.armRepeaterCallback_ = function() {
+      var armRepeaterCallback = function() {
         // In the event of a click/tap operation, this button has already been
         // released by the time this timeout triggers. Test to ensure that the
         // button is still being held (i.e. clearTimeout has not been called).
-        if (self.armRepeaterCallback_) {
-          self.armRepeaterCallback_ = undefined;
+        if (typeof self.armRepeaterCallbackId_ != 'undefined') {
+          self.armRepeaterCallbackId_ = undefined;
           self.buttonHeld_();
-          self.intervalCallback_ = setInterval(self.buttonHeld_.bind(self),
-                                               self.holdRepeatIntervalTime_);
+          self.intervalCallbackId_ = setInterval(self.buttonHeld_.bind(self),
+                                                 self.holdRepeatIntervalTime_);
         }
       };
-      setTimeout(this.armRepeaterCallback_, this.holdDelayTime_);
+      this.armRepeaterCallbackId_ = setTimeout(armRepeaterCallback,
+                                               this.holdDelayTime_);
     },
 
     /**
@@ -125,13 +126,13 @@ cr.define('cr.ui', function() {
      * @private
      */
     clearTimeout_: function() {
-      if (this.armRepeaterCallback_) {
-        clearTimeout(this.armRepeaterCallback_);
-        this.armRepeaterCallback_ = undefined;
+      if (typeof this.armRepeaterCallbackId_ != 'undefined') {
+        clearTimeout(this.armRepeaterCallbackId_);
+        this.armRepeaterCallbackId_ = undefined;
       }
-      if (this.intervalCallback_) {
-        clearInterval(this.intervalCallback_);
-        this.intervalCallback_ = undefined;
+      if (typeof this.intervalCallbackId_ != 'undefined') {
+        clearInterval(this.intervalCallbackId_);
+        this.intervalCallbackId_ = undefined;
       }
     },
 

@@ -216,7 +216,7 @@ cr.define('cr.ui', function() {
 
     /**
      * syncWidthAndPositionToInput function bound to |this|.
-     * @type {Function}
+     * @type {!Function|undefined}
      * @private
      */
     boundSyncWidthAndPositionToInput_: undefined,

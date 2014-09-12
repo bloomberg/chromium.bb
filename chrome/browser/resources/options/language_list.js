@@ -14,7 +14,7 @@ cr.define('options', function() {
    * Creates a new Language list item.
    * @param {Object} languageInfo The information of the language.
    * @constructor
-   * @extends {DeletableItem.ListItem}
+   * @extends {options.DeletableItem.ListItem}
    */
   function LanguageListItem(languageInfo) {
     var el = cr.doc.createElement('li');

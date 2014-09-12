@@ -17,7 +17,7 @@ cr.define('options', function() {
    * @param {Object} entry A dictionary describing the handlers for a given
    *     protocol.
    * @constructor
-   * @extends {cr.ui.DeletableItemList}
+   * @extends {options.DeletableItemList}
    */
   function IgnoredHandlersListItem(entry) {
     var el = cr.doc.createElement('div');

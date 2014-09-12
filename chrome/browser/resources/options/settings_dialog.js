@@ -19,7 +19,7 @@ cr.define('options', function() {
    * @param {string} pageDivName See Page constructor.
    * @param {HTMLInputElement} okButton The confirmation button element.
    * @param {HTMLInputElement} cancelButton The cancellation button element.
-   * @extends {Page}
+   * @extends {cr.ui.pageManager.Page}
    */
   function SettingsDialog(name, title, pageDivName, okButton, cancelButton) {
     Page.call(this, name, title, pageDivName);

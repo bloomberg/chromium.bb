@@ -21,10 +21,10 @@ cr.define('options.system.bluetooth', function() {
    *          connected: boolean,
    *          connecting: boolean,
    *          connectable: boolean,
-   *          pairing: string|undefined,
-   *          passkey: number|undefined,
-   *          pincode: string|undefined,
-   *          entered: number|undefined}} device
+   *          pairing: (string|undefined),
+   *          passkey: (number|undefined),
+   *          pincode: (string|undefined),
+   *          entered: (number|undefined)}} device
    *    Description of the Bluetooth device.
    * @constructor
    * @extends {options.DeletableItem}
@@ -112,7 +112,7 @@ cr.define('options.system.bluetooth', function() {
     /**
      * Width of a list entry in px.
      * @type {number}
-     * @private.
+     * @private
      */
     itemWidth_: 400,
 
@@ -260,9 +260,9 @@ cr.define('options.system.bluetooth', function() {
     /**
      * Override the default implementation to return a predetermined size,
      * which in turns allows proper layout of items even if the list is hidden.
-     * @return {height: number, width: number} Dimensions of a single item in
+     * @return {{height: number, width: number}} Dimensions of a single item in
      *     the list of bluetooth device.
-     * @private.
+     * @private
      */
     getDefaultItemSize_: function() {
       return {

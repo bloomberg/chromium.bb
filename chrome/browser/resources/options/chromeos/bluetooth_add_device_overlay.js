@@ -9,6 +9,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the Bluetooth options page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function BluetoothOptions() {
     Page.call(this, 'bluetooth',

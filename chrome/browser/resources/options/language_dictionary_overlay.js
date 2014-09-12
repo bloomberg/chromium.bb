@@ -26,7 +26,7 @@ cr.define('options', function() {
 
     /**
      * A list of words in the dictionary.
-     * @type {DictionaryWordsList}
+     * @type {options.dictionary_words.DictionaryWordsList}
      * @private
      */
     wordList_: null,

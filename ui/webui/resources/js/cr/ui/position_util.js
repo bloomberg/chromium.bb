@@ -211,13 +211,14 @@ cr.define('cr.ui', function() {
    *     to.
    * @param {!HTMLElement} popupElement The popup element we are positioning.
    * @param {cr.ui.AnchorType} type The type of anchoring we want.
-   * @param {boolean} invertLeftRight Whether to invert the right/left
+   * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
   function positionPopupAroundElement(anchorElement, popupElement, type,
-                                      invertLeftRight) {
+                                      opt_invertLeftRight) {
     var anchorRect = anchorElement.getBoundingClientRect();
-    positionPopupAroundRect(anchorRect, popupElement, type, invertLeftRight);
+    positionPopupAroundRect(anchorRect, popupElement, type,
+                            !!opt_invertLeftRight);
   }
 
   /**

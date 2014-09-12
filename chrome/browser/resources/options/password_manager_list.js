@@ -10,7 +10,8 @@ cr.define('options.passwordManager', function() {
 
   /**
    * Creates a new passwords list item.
-   * @param {ArrayDataModel} dataModel The data model that contains this item.
+   * @param {cr.ui.ArrayDataModel} dataModel The data model that contains this
+   *     item.
    * @param {Array} entry An array of the form [url, username, password]. When
    *     the list has been filtered, a fourth element [index] may be present.
    * @param {boolean} showPasswords If true, add a button to the element to
@@ -194,7 +195,7 @@ cr.define('options.passwordManager', function() {
    * Creates a new PasswordExceptions list item.
    * @param {Array} entry A pair of the form [url, username].
    * @constructor
-   * @extends {Deletable.ListItem}
+   * @extends {options.DeletableListItem}
    */
   function PasswordExceptionsListItem(entry) {
     var el = cr.doc.createElement('div');

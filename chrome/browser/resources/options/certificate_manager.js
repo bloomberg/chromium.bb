@@ -14,6 +14,7 @@ cr.define('options', function() {
    * blah
    * @param {!string} id The id of this tab.
    * @param {boolean} isKiosk True if dialog is shown during CrOS kiosk launch.
+   * @constructor
    */
   function CertificateManagerTab(id, isKiosk) {
     this.tree = $(id + '-tree');
@@ -169,6 +170,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of ChromeOS accounts options page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function CertificateManager(model) {
     Page.call(this, 'certificates',

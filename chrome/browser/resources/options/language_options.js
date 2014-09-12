@@ -72,6 +72,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of ChromeOS language options page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function LanguageOptions(model) {
     Page.call(this, 'languages',
@@ -101,7 +102,7 @@ cr.define('options', function() {
 
     /**
      * Number of times a spell check dictionary download failed.
-     * @type {int}
+     * @type {number}
      * @private
      */
     spellcheckDictionaryDownloadFailures_: 0,
@@ -1332,7 +1333,7 @@ cr.define('options', function() {
 
   /**
    * Shows the node at |index| in |nodes|, hides all others.
-   * @param {Array<HTMLElement>} nodes The nodes to be shown or hidden.
+   * @param {Array.<HTMLElement>} nodes The nodes to be shown or hidden.
    * @param {number} index The index of |nodes| to show.
    */
   function showMutuallyExclusiveNodes(nodes, index) {

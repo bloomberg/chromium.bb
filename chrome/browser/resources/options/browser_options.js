@@ -1130,7 +1130,7 @@ cr.define('options', function() {
 
    /**
     * Shows the autoLaunch preference and initializes its checkbox value.
-    * @param {bool} enabled Whether autolaunch is enabled or or not.
+    * @param {boolean} enabled Whether autolaunch is enabled or or not.
     * @private
     */
     updateAutoLaunchState_: function(enabled) {
@@ -1513,9 +1513,10 @@ cr.define('options', function() {
     /**
      * Set network prediction checkbox value.
      *
-     * @param {Object} pref Information about network prediction options.
-     * @param {number} pref.value The value of network prediction options.
-     * @param {boolean} pref.disabled If the pref is not user modifiable.
+     * @param {{value: number, disabled: boolean}} pref Information about
+     *     network prediction options. |pref.value| is the value of network
+     *     prediction options. |pref.disabled| shows if the pref is not user
+     *     modifiable.
      * @private
      */
     setNetworkPredictionValue_: function(pref) {
@@ -1533,11 +1534,12 @@ cr.define('options', function() {
      * Set the font size selected item. This item actually reflects two
      * preferences: the default font size and the default fixed font size.
      *
-     * @param {Object} pref Information about the font size preferences.
-     * @param {number} pref.value The value of the default font size pref.
-     * @param {boolean} pref.disabled True if either pref not user modifiable.
-     * @param {string} pref.controlledBy The source of the pref value(s) if
-     *     either pref is currently not controlled by the user.
+     * @param {{value: number, disabled: boolean, controlledBy: string}} pref
+     *     Information about the font size preferences. |pref.value| is the
+     *     value of the default font size pref. |pref.disabled| is true if
+     *     either pref not user modifiable. |pref.controlledBy| is the source of
+     *     the pref value(s) if either pref is currently not controlled by the
+     *     user.
      * @private
      */
     setFontSize_: function(pref) {

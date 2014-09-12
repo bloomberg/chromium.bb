@@ -16,6 +16,7 @@ cr.define('options.internet', function() {
   /**
    * Creates a new field specifically for entering IP addresses.
    * @constructor
+   * @extends {options.EditableTextField}
    */
   function IPAddressField() {
     var el = cr.doc.createElement('div');

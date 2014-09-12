@@ -155,7 +155,8 @@ cr.define('options', function() {
      * @param {Element} el The div containing the sample text.
      * @param {number} size The font size of the sample text.
      * @param {string} font The font family of the sample text.
-     * @param {bool} showSize True if the font size should appear in the sample.
+     * @param {boolean} showSize True if the font size should appear in the
+     *     sample.
      * @private
      */
     setUpFontSample_: function(el, size, font, showSize) {
@@ -179,13 +180,12 @@ cr.define('options', function() {
       element.textContent = '';
 
       // Insert new child nodes into select element.
-      var value, text, selected, option;
       for (var i = 0; i < items.length; i++) {
-        value = items[i][0];
-        text = items[i][1];
-        dir = items[i][2];
+        var value = items[i][0];
+        var text = items[i][1];
+        var dir = items[i][2];
         if (text) {
-          selected = value == selectedValue;
+          var selected = value == selectedValue;
           var option = new Option(text, value, false, selected);
           option.dir = dir;
           element.appendChild(option);

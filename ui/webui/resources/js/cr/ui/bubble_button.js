@@ -8,6 +8,7 @@ cr.define('cr.ui', function() {
    * keyboard or mouse.
    * @constructor
    * @extends {HTMLSpanElement}
+   * @implements {EventListener}
    */
   var BubbleButton = cr.ui.define('span');
 
@@ -71,10 +72,19 @@ cr.define('cr.ui', function() {
           event.preventDefault();
           return;
       }
-      this.toggleBubble_();
+      this.toggleBubble();
       event.preventDefault();
       event.stopPropagation();
     },
+
+    /**
+     * Abstract method: subclasses should overwrite it. There is no way to mark
+     *     method as abstract for Closure Compiler, as of
+     *     https://github.com/google/closure-compiler/issues/104.
+     * @type {!Function|undefined}
+     * @protected
+     */
+    toggleBubble: assertNotReached,
   };
 
   // Export.

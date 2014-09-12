@@ -9,8 +9,8 @@ cr.define('options', function() {
   /**
    * ConsumerManagementOverlay class
    * Dialog that allows users to enroll/unenroll consumer management service.
-   * @extends {SettingsDialog}
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function ConsumerManagementOverlay() {
     Page.call(this, 'consumer-management-overlay',

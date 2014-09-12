@@ -12,6 +12,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of ChromeOS add language overlay page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function AddLanguageOverlay() {
     Page.call(this, 'addLanguage',

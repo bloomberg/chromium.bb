@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
+  /**
+   * @constructor
+   * @extends {HTMLDivElement}
+   */
   var EditableTextField = cr.ui.define('div');
 
   /**
@@ -50,7 +54,7 @@ cr.define('options', function() {
     decorate: function() {
       this.classList.add('editable-text-field');
 
-      this.createEditableTextCell();
+      this.createEditableTextCell('');
 
       if (this.hasAttribute('i18n-placeholder-text')) {
         var identifier = this.getAttribute('i18n-placeholder-text');
@@ -227,14 +231,16 @@ cr.define('options', function() {
 
       var container = this.ownerDocument.createElement('div');
 
-      var textEl = this.ownerDocument.createElement('div');
+      var textEl = /** @type {HTMLElement} */(
+          this.ownerDocument.createElement('div'));
       textEl.className = 'static-text';
       textEl.textContent = text;
       textEl.setAttribute('displaymode', 'static');
       this.appendChild(textEl);
       this.staticText_ = textEl;
 
-      var inputEl = this.ownerDocument.createElement('input');
+      var inputEl = /** @type {HTMLElement} */(
+          this.ownerDocument.createElement('input'));
       inputEl.className = 'editable-text';
       inputEl.type = 'text';
       inputEl.value = text;

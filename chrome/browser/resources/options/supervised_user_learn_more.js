@@ -9,7 +9,7 @@ cr.define('options', function() {
    * SupervisedUserLearnMore class.
    * Encapsulated handling of the 'Learn more...' overlay page.
    * @constructor
-   * @class
+   * @extends {cr.ui.pageManager.Page}
    */
   function SupervisedUserLearnMoreOverlay() {
     Page.call(this, 'supervisedUserLearnMore',

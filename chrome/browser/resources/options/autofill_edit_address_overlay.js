@@ -10,7 +10,8 @@ cr.define('options', function() {
   /**
    * AutofillEditAddressOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
-   * @class
+   * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function AutofillEditAddressOverlay() {
     Page.call(this, 'autofillEditAddress',
@@ -206,7 +207,7 @@ cr.define('options', function() {
 
     /**
      * Sets the value of each input field according to |address|.
-     * @param {object} address The object with values to use.
+     * @param {Object} address The object with values to use.
      * @private
      */
     setInputFields_: function(address) {

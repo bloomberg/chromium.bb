@@ -27,14 +27,14 @@ cr.define('options', function() {
 
     /**
      * The address list.
-     * @type {DeletableItemList}
+     * @type {options.DeletableItemList}
      * @private
      */
     addressList_: null,
 
     /**
      * The credit card list.
-     * @type {DeletableItemList}
+     * @type {options.DeletableItemList}
      * @private
      */
     creditCardList_: null,

@@ -57,7 +57,7 @@ cr.define('options', function() {
     // Use the fixed animation target height if set, in case the element is
     // currently being animated and we'd get an intermediate height below.
     if (height && height.substr(-2) == 'px')
-      return parseInt(height.substr(0, height.length - 2));
+      return parseInt(height.substr(0, height.length - 2), 10);
     return item.getBoundingClientRect().height;
   }
 
@@ -81,7 +81,7 @@ cr.define('options', function() {
 
   /**
    * Adds information about an app that protects this data item to the
-   * @{code element}.
+   * |element|.
    * @param {Element} element The DOM element the information should be
          appended to.
    * @param {{id: string, name: string}} appInfo Information about an app.
@@ -104,9 +104,9 @@ cr.define('options', function() {
    * stateless. We cache the expanded item in @{code CookiesList} though, so it
    * can keep state. (Mostly just which item is selected.)
    * @param {Object} origin Data used to create a cookie list item.
-   * @param {CookiesList} list The list that will contain this item.
+   * @param {options.CookiesList} list The list that will contain this item.
    * @constructor
-   * @extends {DeletableItem}
+   * @extends {options.DeletableItem}
    */
   function CookieListItem(origin, list) {
     var listItem = new DeletableItem(null);
@@ -229,6 +229,7 @@ cr.define('options', function() {
       // Force relayout before enabling animation, so that if we have
       // changed things since the last layout, they will not be animated
       // during subsequent layouts.
+      /** @suppress {suspiciousCode} */
       this.itemsChild.offsetHeight;
       this.classList.remove('measure-items');
       this.itemsChild.style.height = itemsHeight + 'px';
@@ -341,7 +342,7 @@ cr.define('options', function() {
 
     /**
      * Set the currently selected cookie node ("cookie bubble") index to
-     * @{code itemIndex}, unselecting any previously selected node first.
+     * |itemIndex|, unselecting any previously selected node first.
      * @param {number} itemIndex The index to set as the selected index.
      */
     set selectedIndex(itemIndex) {
@@ -677,7 +678,7 @@ cr.define('options', function() {
    * Creates a new cookies list.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {DeletableItemList}
+   * @extends {options.DeletableItemList}
    */
   var CookiesList = cr.ui.define('list');
 

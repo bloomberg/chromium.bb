@@ -13,6 +13,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the cookies and other site data page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function CookiesView(model) {
     Page.call(this, 'cookies',

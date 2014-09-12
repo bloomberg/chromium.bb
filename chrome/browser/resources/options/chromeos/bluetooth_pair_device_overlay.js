@@ -42,6 +42,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the Bluetooth device pairing page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function BluetoothPairing() {
     Page.call(this, 'bluetoothPairing',
@@ -62,10 +63,10 @@ cr.define('options', function() {
      *         connected: boolean,
      *         connecting: boolean,
      *         connectable: boolean,
-     *         pairing: string|undefined,
-     *         passkey: number|undefined,
-     *         pincode: string|undefined,
-     *         entered: number|undefined}}
+     *         pairing: (string|undefined),
+     *         passkey: (number|undefined),
+     *         pincode: (string|undefined),
+     *         entered: (number|undefined)}}
      * @private
      */
     device_: null,
@@ -170,7 +171,7 @@ cr.define('options', function() {
      */
     update: function(device) {
       this.device_ = {};
-      for (key in device)
+      for (var key in device)
         this.device_[key] = device[key];
       // Update the pairing instructions.
       var instructionsEl = $('bluetooth-pairing-instructions');
@@ -330,9 +331,9 @@ cr.define('options', function() {
 
   /**
    * Displays a message from the Bluetooth adapter.
-   * @param {Object} data Data for constructing the message.
-   * @param {string} data.message Name of message to show.
-   * @param {string} data.address Device address.
+   * @param {{message: string, address: string}} data Data for constructing the
+   *     message. |data.message| is the name of message to show. |data.address|
+   *     is the device address.
    */
   BluetoothPairing.showMessage = function(data) {
     var name = data.address;

@@ -12,6 +12,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of ChromeOS accounts options page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function AccountsOptions(model) {
     Page.call(this, 'accounts', loadTimeData.getString('accountsPageTabTitle'),

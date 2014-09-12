@@ -105,6 +105,7 @@ cr.define('options.network', function() {
    * connectivity.
    * @param {Object} data Description of the network list or command.
    * @constructor
+   * @extends {cr.ui.ListItem}
    */
   function NetworkListItem(data) {
     var el = cr.doc.createElement('li');
@@ -262,6 +263,8 @@ cr.define('options.network', function() {
   /**
    * Creates a control that displays a popup menu when clicked.
    * @param {Object} data  Description of the control.
+   * @constructor
+   * @extends {NetworkListItem}
    */
   function NetworkMenuItem(data) {
     var el = new NetworkListItem(data);
@@ -366,10 +369,10 @@ cr.define('options.network', function() {
   /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param {Object} data Description of the network.
-   * @param {string} data.key Item key.
-   * @param {Array.<Object>} data.networkList Description of the network.
+   * @param {{key: string, networkList: Array.<Object>}} data Description of the
+   *     network.
    * @constructor
+   * @extends {NetworkMenuItem}
    */
   function NetworkSelectorItem(data) {
     var el = new NetworkMenuItem(data);
@@ -429,7 +432,7 @@ cr.define('options.network', function() {
     /**
      * Creates a menu for selecting, configuring or disconnecting from a
      * network.
-     * @return {Element} The newly created menu.
+     * @return {!Element} The newly created menu.
      */
     createMenu: function() {
       var menu = this.ownerDocument.createElement('div');
@@ -658,11 +661,10 @@ cr.define('options.network', function() {
 
   /**
    * Creates a button-like control for configurating internet connectivity.
-   * @param {Object} data Description of the network control.
-   * @param {string} data.key Item key.
-   * @param {string} data.subtitle Subtitle.
-   * @param {function} data.command Item callback.
+   * @param {{key: string, subtitle: string, command: Function}} data
+   *     Description of the network control.
    * @constructor
+   * @extends {NetworkListItem}
    */
   function NetworkButtonItem(data) {
     var el = new NetworkListItem(data);
@@ -696,9 +698,9 @@ cr.define('options.network', function() {
    * @param {!Element} menu Parent menu.
    * @param {!Object} data Description of the network.
    * @param {!string} label Display name for the menu item.
-   * @param {?(string|function)} command Callback function or name
+   * @param {?(string|!Function)} command Callback function or name
    *     of the command for |networkCommand|.
-   * @param {?string=} opt_iconURL Optional URL to an icon for the menu item.
+   * @param {string=} opt_iconURL Optional URL to an icon for the menu item.
    * @return {!Element} The created menu item.
    * @private
    */
@@ -728,12 +730,12 @@ cr.define('options.network', function() {
     } else if (command != null) {
       if (data) {
         callback = function() {
-          command(data);
+          (/** @type {Function} */(command))(data);
           closeMenu_();
         };
       } else {
         callback = function() {
-          command();
+          (/** @type {Function} */(command))();
           closeMenu_();
         };
       }
@@ -752,6 +754,7 @@ cr.define('options.network', function() {
   /**
    * A list of controls for manipulating network connectivity.
    * @constructor
+   * @extends {cr.ui.List}
    */
   var NetworkList = cr.ui.define('list');
 
@@ -830,8 +833,8 @@ cr.define('options.network', function() {
      * Finds the index of a network item within the data model based on
      * category.
      * @param {string} key Unique key for the item in the list.
-     * @return {number} The index of the network item, or |undefined| if it is
-     *     not found.
+     * @return {(number|undefined)} The index of the network item, or
+     *     |undefined| if it is not found.
      */
     indexOf: function(key) {
       var size = this.dataModel.length;
@@ -1021,6 +1024,7 @@ cr.define('options.network', function() {
   /**
    * Element for indicating a policy managed network.
    * @constructor
+   * @extends {options.ControlledSettingIndicator}
    */
   function ManagedNetworkIndicator() {
     var el = cr.doc.createElement('span');
@@ -1061,10 +1065,10 @@ cr.define('options.network', function() {
     },
 
     /** @override */
-    toggleBubble_: function() {
+    toggleBubble: function() {
       if (activeMenu_ && !$(activeMenu_).contains(this))
         closeMenu_();
-      ControlledSettingIndicator.prototype.toggleBubble_.call(this);
+      ControlledSettingIndicator.prototype.toggleBubble.call(this);
       if (this.showingBubble) {
         var bubble = PageManager.getVisibleBubble();
         bubble.addEventListener('mousedown', this.stopEvent);

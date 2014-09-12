@@ -11,6 +11,24 @@
 //   networkingPrivate API. See network_config.js.
 // See crbug.com/279351 for more info.
 
+/** @typedef {{activationState: (string|undefined),
+ *             carriers: Array,
+ *             currentCarrierIndex; (number|undefined),
+ *             ipAutoConfig: boolean,
+ *             ipconfig: Object,
+ *             nameServerType: string,
+ *             restrictedPool: (string|undefined),
+ *             roamingState: (string|undefined),
+ *             savedIP: Object,
+ *             showActivateButton: (boolean|undefined)
+ *             showViewAccountButton: (boolean|undefined),
+ *             staticIP: Object}}
+ * Only the keys which had caused problems are declared in this typedef.
+ * There are many more of them.
+ * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
+ */
+var InternetDetailedInfo;
+
 cr.define('options.internet', function() {
   var OncData = cr.onc.OncData;
   var Page = cr.ui.pageManager.Page;
@@ -22,7 +40,7 @@ cr.define('options.internet', function() {
   /**
    * Helper function to set hidden attribute for elements matching a selector.
    * @param {string} selector CSS selector for extracting a list of elements.
-   * @param {bool} hidden New hidden value.
+   * @param {boolean} hidden New hidden value.
    */
   function updateHidden(selector, hidden) {
     var elements = cr.doc.querySelectorAll(selector);
@@ -63,7 +81,7 @@ cr.define('options.internet', function() {
   /**
    * Simple helper method for converting a field to a string. It is used to
    * easily assign an empty string from fields that may be unknown or undefined.
-   * @param {object} value that should be converted to a string.
+   * @param {Object} value that should be converted to a string.
    * @return {string} the result.
    */
   function stringFromValue(value) {
@@ -115,6 +133,7 @@ cr.define('options.internet', function() {
   /**
    * Encapsulated handling of ChromeOS internet details overlay page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function DetailsInternetPage() {
     // Cached Apn properties
@@ -126,7 +145,7 @@ cr.define('options.internet', function() {
     this.showProxy_ = false;
     // TODO(stevenjb): Use networkingPrivate.getNetworks to set this.
     this.deviceConnected_ = false;
-    Page.call(this, 'detailsInternetPage', null, 'details-internet-page');
+    Page.call(this, 'detailsInternetPage', '', 'details-internet-page');
   }
 
   cr.addSingletonGetter(DetailsInternetPage);
@@ -137,17 +156,16 @@ cr.define('options.internet', function() {
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
-      var params = parseQueryParams(window.location);
-      this.initializePageContents_(params);
-      this.showNetworkDetails_(params);
+      this.initializePageContents_();
+      this.showNetworkDetails_();
     },
 
     /**
      * Auto-activates the network details dialog if network information
      * is included in the URL.
      */
-    showNetworkDetails_: function(params) {
-      var servicePath = params.servicePath;
+    showNetworkDetails_: function() {
+      var servicePath = parseQueryParams(window.location).servicePath;
       if (!servicePath || !servicePath.length)
         return;
       var networkType = '';  // ignored for 'options'
@@ -157,7 +175,7 @@ cr.define('options.internet', function() {
     /**
      * Initializes the contents of the page.
      */
-    initializePageContents_: function(params) {
+    initializePageContents_: function() {
       $('details-internet-dismiss').addEventListener('click', function(event) {
         DetailsInternetPage.setDetails();
       });
@@ -476,9 +494,8 @@ cr.define('options.internet', function() {
      * Handler for when the user clicks on the checkbox to allow a
      * single proxy usage.
      * @private
-     * @param {Event} e Click Event.
      */
-    toggleSingleProxy_: function(e) {
+    toggleSingleProxy_: function() {
       if ($('proxy-all-protocols').checked) {
         $('multi-proxy').hidden = true;
         $('single-proxy').hidden = false;
@@ -492,9 +509,8 @@ cr.define('options.internet', function() {
      * Handler for when the user clicks on the checkbox to enter
      * auto configuration URL.
      * @private
-     * @param {Event} e Click Event.
      */
-    handleAutoConfigProxy_: function(e) {
+    handleAutoConfigProxy_: function() {
       $('proxy-pac-url').disabled = !$('proxy-use-pac-url').checked;
     },
 
@@ -502,9 +518,8 @@ cr.define('options.internet', function() {
      * Handler for selecting a radio button that will disable the manual
      * controls.
      * @private
-     * @param {Event} e Click event.
      */
-    disableManualProxy_: function(e) {
+    disableManualProxy_: function() {
       $('ignored-host-list').disabled = true;
       $('new-host').disabled = true;
       $('remove-host').disabled = true;
@@ -534,9 +549,8 @@ cr.define('options.internet', function() {
      * Handler for selecting a radio button that will enable the manual
      * controls.
      * @private
-     * @param {Event} e Click event.
      */
-    enableManualProxy_: function(e) {
+    enableManualProxy_: function() {
       $('ignored-host-list').redraw();
       var allDisabled = $('manual-proxy').disabled;
       $('ignored-host-list').disabled = allDisabled;
@@ -974,21 +988,22 @@ cr.define('options.internet', function() {
     var servicePath = detailsPage.servicePath_;
     if (type == 'WiFi') {
       sendCheckedIfEnabled(servicePath, 'setPreferNetwork',
-                           $('prefer-network-wifi'));
+          assertInstanceof($('prefer-network-wifi'), HTMLInputElement));
       sendCheckedIfEnabled(servicePath, 'setAutoConnect',
-                           $('auto-connect-network-wifi'));
+          assertInstanceof($('auto-connect-network-wifi'), HTMLInputElement));
     } else if (type == 'Wimax') {
       sendCheckedIfEnabled(servicePath, 'setAutoConnect',
-                           $('auto-connect-network-wimax'));
+          assertInstanceof($('auto-connect-network-wimax'), HTMLInputElement));
     } else if (type == 'Cellular') {
       sendCheckedIfEnabled(servicePath, 'setAutoConnect',
-                           $('auto-connect-network-cellular'));
+          assertInstanceof($('auto-connect-network-cellular'),
+                           HTMLInputElement));
     } else if (type == 'VPN') {
       chrome.send('setServerHostname',
                   [servicePath,
                    $('inet-server-hostname').value]);
       sendCheckedIfEnabled(servicePath, 'setAutoConnect',
-                           $('auto-connect-network-vpn'));
+          assertInstanceof($('auto-connect-network-vpn'), HTMLInputElement));
     }
 
     var nameServerTypes = ['automatic', 'google', 'user'];
@@ -1071,6 +1086,9 @@ cr.define('options.internet', function() {
     detailsPage.updateDetails_(update);
   };
 
+  /**
+   * @param {InternetDetailedInfo} data
+   */
   DetailsInternetPage.showDetailedInfo = function(data) {
     var onc = new OncData(data);
 

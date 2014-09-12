@@ -180,7 +180,7 @@ cr.define('options.search_engines', function() {
       } else {
         this.editable = false;
         this.querySelector('.row-delete-button').hidden = true;
-        var indicator = ControlledSettingIndicator();
+        var indicator = new ControlledSettingIndicator();
         indicator.setAttribute('setting', 'search-engine');
         // Create a synthetic pref change event decorated as
         // CoreOptionsHandler::CreateValueForPref() does.
@@ -248,7 +248,7 @@ cr.define('options.search_engines', function() {
      * Returns the input field values as an array suitable for passing to
      * chrome.send. The order of the array is important.
      * @private
-     * @return {array} The current input field values.
+     * @return {Array} The current input field values.
      */
     getInputFieldValues_: function() {
       return [this.nameField_.value,

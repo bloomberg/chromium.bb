@@ -9,7 +9,7 @@ cr.define('options', function() {
    * GeolocationOptions class
    * Handles initialization of the geolocation options.
    * @constructor
-   * @class
+   * @extends {cr.ui.pageManager.Page}
    */
   function GeolocationOptions() {
     Page.call(this, 'geolocationOptions',

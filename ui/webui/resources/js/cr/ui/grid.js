@@ -37,7 +37,7 @@ cr.define('cr.ui', function() {
      * Called when an element is decorated as a grid item.
      */
     decorate: function() {
-      ListItem.prototype.decorate.call(this, arguments);
+      ListItem.prototype.decorate.apply(this, arguments);
       this.textContent = this.dataItem;
     }
   };
@@ -63,7 +63,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Function used to create grid items.
-     * @type {function(): !GridItem}
+     * @type {function(new:cr.ui.GridItem, Object)}
      * @override
      */
     itemConstructor_: GridItem,
@@ -250,13 +250,12 @@ cr.define('cr.ui', function() {
      * puts spacers on the right places.
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
-     * @param {Object.<string, ListItem>} cachedItems Old items cache.
-     * @param {Object.<string, ListItem>} newCachedItems New items cache.
+     * @param {Object.<string, cr.ui.ListItem>} cachedItems Old items cache.
+     * @param {Object.<string, cr.ui.ListItem>} newCachedItems New items cache.
      * @override
      */
     mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
-      List.prototype.mergeItems.call(this,
-          firstIndex, lastIndex, cachedItems, newCachedItems);
+      List.prototype.mergeItems.call(this, firstIndex, lastIndex);
 
       var afterFiller = this.afterFiller_;
       var columns = this.columns;
@@ -342,7 +341,7 @@ cr.define('cr.ui', function() {
    *     interact with.
    * @param {cr.ui.Grid} grid The grid to interact with.
    * @constructor
-   * @extends {!cr.ui.ListSelectionController}
+   * @extends {cr.ui.ListSelectionController}
    */
   function GridSelectionController(selectionModel, grid) {
     this.selectionModel_ = selectionModel;

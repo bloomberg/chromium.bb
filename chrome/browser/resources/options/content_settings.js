@@ -186,7 +186,8 @@ cr.define('options', function() {
   /**
    * @param {string} type The type of exceptions (e.g. "location") to get.
    * @param {string} mode The mode of the desired exceptions list (e.g. otr).
-   * @return {?ExceptionsList} The corresponding exceptions list or null.
+   * @return {?options.contentSettings.ExceptionsList} The corresponding
+   *     exceptions list or null.
    */
   ContentSettings.getExceptionsList = function(type, mode) {
     return document.querySelector(
@@ -199,7 +200,7 @@ cr.define('options', function() {
    * @param {string} type The content type.
    * @param {string} mode The browser mode.
    * @param {string} pattern The pattern.
-   * @param {bool} valid Whether said pattern is valid in the context of
+   * @param {boolean} valid Whether said pattern is valid in the context of
    *     a content exception setting.
    */
   ContentSettings.patternValidityCheckComplete =
@@ -230,7 +231,7 @@ cr.define('options', function() {
 
   /**
    * Shows/hides the whole Web MIDI settings.
-   * @param {bool} show Wether to show the whole Web MIDI settings.
+   * @param {boolean} show Wether to show the whole Web MIDI settings.
    */
   ContentSettings.showExperimentalWebMIDISettings = function(show) {
     $('experimental-web-midi-settings').hidden = !show;
@@ -271,7 +272,7 @@ cr.define('options', function() {
 
   /**
    * Enables/disables the protected content exceptions button.
-   * @param {bool} enable Whether to enable the button.
+   * @param {boolean} enable Whether to enable the button.
    */
   ContentSettings.enableProtectedContentExceptions = function(enable) {
     var exceptionsButton = $('protected-content-exceptions');

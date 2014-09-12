@@ -11,7 +11,7 @@ cr.define('options', function() {
    * Encapsulated handling of the confirmation overlay page when creating a
    * supervised user.
    * @constructor
-   * @class
+   * @extends {cr.ui.pageManager.Page}
    */
   function SupervisedUserCreateConfirmOverlay() {
     Page.call(this, 'supervisedUserCreateConfirm',

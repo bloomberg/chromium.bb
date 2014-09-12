@@ -8,6 +8,9 @@ cr.define('options.autofillOptions', function() {
   /** @const */ var InlineEditableItem = options.InlineEditableItem;
   /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
 
+  /**
+   * @return {!HTMLButtonElement}
+   */
   function AutofillEditProfileButton(guid, edit) {
     var editButtonEl = document.createElement('button');
     editButtonEl.className = 'list-inline-button custom-appearance';
@@ -55,7 +58,7 @@ cr.define('options.autofillOptions', function() {
       this.contentElement.appendChild(label);
 
       // The 'Edit' button.
-      var editButtonEl = new AutofillEditProfileButton(
+      var editButtonEl = AutofillEditProfileButton(
         this.guid,
         AutofillOptions.loadAddressEditor);
       this.contentElement.appendChild(editButtonEl);
@@ -100,7 +103,7 @@ cr.define('options.autofillOptions', function() {
       this.contentElement.appendChild(icon);
 
       // The 'Edit' button.
-      var editButtonEl = new AutofillEditProfileButton(
+      var editButtonEl = AutofillEditProfileButton(
         this.guid,
         AutofillOptions.loadCreditCardEditor);
       this.contentElement.appendChild(editButtonEl);
@@ -219,8 +222,9 @@ cr.define('options.autofillOptions', function() {
 
   /**
    * Creates a new name value list item.
-   * @param {AutofillNameValuesList} list The parent list of this item.
-   * @param {array} entry An array of [first, middle, last] names.
+   * @param {options.autofillOptions.AutofillNameValuesList} list The parent
+   *     list of this item.
+   * @param {Array.<string>} entry An array of [first, middle, last] names.
    * @constructor
    * @extends {options.ValuesListItem}
    */

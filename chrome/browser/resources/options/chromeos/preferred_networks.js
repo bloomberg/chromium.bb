@@ -50,6 +50,7 @@ cr.define('options', function() {
    * @param {{Name: string, Type: string, servicePath: string}} data
    *     Description of the network.
    * @constructor
+   * @extends {options.DeletableItem}
    */
   function PreferredNetworkListItem(data) {
     var el = cr.doc.createElement('div');

@@ -12,7 +12,7 @@ cr.define('cr.ui', function() {
    * @param {number=} opt_length The number items in the selection.
    *
    * @constructor
-   * @extends {!cr.EventTarget}
+   * @extends {cr.EventTarget}
    */
   function ListSingleSelectionModel(opt_length) {
     this.length_ = opt_length || 0;

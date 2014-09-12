@@ -10,7 +10,7 @@ cr.define('options', function() {
    * StartupOverlay class
    * Encapsulated handling of the 'Set Startup pages' overlay page.
    * @constructor
-   * @class
+   * @extends {options.SettingsDialog}
    */
   function StartupOverlay() {
     SettingsDialog.call(this, 'startup',

@@ -11,7 +11,7 @@ cr.define('options.browser_options', function() {
    * Creates a new profile list item.
    * @param {Object} profileInfo The profile this item represents.
    * @constructor
-   * @extends {cr.ui.DeletableItem}
+   * @extends {options.DeletableItem}
    */
   function ProfileListItem(profileInfo) {
     var el = cr.doc.createElement('div');

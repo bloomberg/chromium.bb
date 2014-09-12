@@ -9,6 +9,8 @@ cr.define('options', function() {
   /**
    * Creates a deletable list item, which has a button that will trigger a call
    * to deleteItemAtIndex(index) in the list.
+   * @constructor
+   * @extends {cr.ui.ListItem}
    */
   var DeletableItem = cr.ui.define('li');
 

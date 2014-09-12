@@ -4,7 +4,6 @@
 
 cr.define('options', function() {
   /** @const */ var FocusOutlineManager = cr.ui.FocusOutlineManager;
-  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   var OptionsPage = {
     /**
@@ -24,24 +23,26 @@ cr.define('options', function() {
 
     /**
      * Shows the tab contents for the given navigation tab.
-     * @param {!Element} tab The tab that the user clicked.
+     * @param {Node} tab The tab that the user clicked.
      */
     showTab: function(tab) {
       // Search parents until we find a tab, or the nav bar itself. This allows
       // tabs to have child nodes, e.g. labels in separately-styled spans.
-      while (tab && !tab.classList.contains('subpages-nav-tabs') &&
+      while (tab && tab.classList &&
+             !tab.classList.contains('subpages-nav-tabs') &&
              !tab.classList.contains('tab')) {
         tab = tab.parentNode;
       }
-      if (!tab || !tab.classList.contains('tab'))
+      if (!tab || !tab.classList || !tab.classList.contains('tab'))
         return;
 
       // Find tab bar of the tab.
       var tabBar = tab;
-      while (tabBar && !tabBar.classList.contains('subpages-nav-tabs')) {
+      while (tabBar && tabBar.classList &&
+             !tabBar.classList.contains('subpages-nav-tabs')) {
         tabBar = tabBar.parentNode;
       }
-      if (!tabBar)
+      if (!tabBar || !tabBar.classList)
         return;
 
       if (tabBar.activeNavTab != null) {

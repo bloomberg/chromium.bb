@@ -26,9 +26,10 @@ cr.define('options', function() {
 
   /**
    * Creates a new user images grid item.
-   * @param {{url: string, title: string=, decorateFn: function=,
-   *     clickHandler: function=}} imageInfo User image URL, optional title,
-   *     decorator callback and click handler.
+   * @param {{url: string, title: (string|undefined),
+   *     decorateFn: (!Function|undefined),
+   *     clickHandler: (!Function|undefined)}} imageInfo User image URL,
+   *     optional title, decorator callback and click handler.
    * @constructor
    * @extends {cr.ui.GridItem}
    */
@@ -241,7 +242,7 @@ cr.define('options', function() {
      * Handles successful camera check.
      * @param {function(): boolean} onAvailable Callback to call. If it returns
      *     |true|, capture is started immediately.
-     * @param {MediaStream} stream Stream object as returned by getUserMedia.
+     * @param {!MediaStream} stream Stream object as returned by getUserMedia.
      * @private
      */
     handleCameraAvailable_: function(onAvailable, stream) {
@@ -312,7 +313,7 @@ cr.define('options', function() {
     /**
      * Current image captured from camera as data URL. Setting to null will
      * return to the live camera stream.
-     * @type {string=}
+     * @type {(string|undefined)}
      */
     get cameraImage() {
       return this.cameraImage_;
@@ -460,7 +461,8 @@ cr.define('options', function() {
     takePhoto: function() {
       if (!this.cameraOnline)
         return false;
-      var canvas = document.createElement('canvas');
+      var canvas = /** @type {HTMLCanvasElement} */(
+          document.createElement('canvas'));
       canvas.width = CAPTURE_SIZE.width;
       canvas.height = CAPTURE_SIZE.height;
       this.captureFrame_(
@@ -591,7 +593,7 @@ cr.define('options', function() {
           imageIndex,
           imageInfo.decorateFn);
       // Update image data with the reset of the keys from the old data.
-      for (k in imageInfo) {
+      for (var k in imageInfo) {
         if (!(k in newInfo))
           newInfo[k] = imageInfo[k];
       }

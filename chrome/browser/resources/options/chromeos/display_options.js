@@ -74,6 +74,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the 'Display' page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function DisplayOptions() {
     Page.call(this, 'display',
@@ -401,7 +402,7 @@ cr.define('options', function() {
           this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
         else if (newPosition.x + draggingDiv.offsetWidth <
-                   baseDiv.offstLeft)
+                   baseDiv.offsetLeft)
           this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
       }

@@ -30,7 +30,6 @@ cr.define('options', function() {
   /**
    * Whether the content setting is controlled by something else than the user's
    * settings (either 'policy' or 'extension').
-   * @type {string}
    */
   cr.defineProperty(ContentSettingsRadio, 'controlledBy', cr.PropertyKind.ATTR);
 

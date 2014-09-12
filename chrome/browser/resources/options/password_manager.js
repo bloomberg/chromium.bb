@@ -13,6 +13,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of password and exceptions page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function PasswordManager() {
     this.activeNavTab = null;
@@ -28,14 +29,14 @@ cr.define('options', function() {
 
     /**
      * The saved passwords list.
-     * @type {DeletableItemList}
+     * @type {options.DeletableItemList}
      * @private
      */
     savedPasswordsList_: null,
 
     /**
      * The password exceptions list.
-     * @type {DeletableItemList}
+     * @type {options.DeletableItemList}
      * @private
      */
     passwordExceptionsList_: null,
@@ -138,7 +139,7 @@ cr.define('options', function() {
 
     /**
      * Updates the visibility of the list and empty list placeholder.
-     * @param {!List} list The list to toggle visilibility for.
+     * @param {!cr.ui.List} list The list to toggle visilibility for.
      */
     updateListVisibility_: function(list) {
       var empty = list.dataModel.length == 0;

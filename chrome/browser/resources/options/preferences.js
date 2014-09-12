@@ -10,6 +10,7 @@ cr.define('options', function() {
   /**
    * Preferences class manages access to Chrome profile preferences.
    * @constructor
+   * @extends {cr.EventTarget}
    */
   function Preferences() {
     // Map of registered preferences.
@@ -23,16 +24,16 @@ cr.define('options', function() {
    * @param {string} name Preference name.
    * @param {boolean} value New preference value.
    * @param {boolean} commit Whether to commit the change to Chrome.
-   * @param {string} metric User metrics identifier.
+   * @param {string=} opt_metric User metrics identifier.
    */
-  Preferences.setBooleanPref = function(name, value, commit, metric) {
+  Preferences.setBooleanPref = function(name, value, commit, opt_metric) {
     if (!commit) {
       Preferences.getInstance().setPrefNoCommit_(name, 'bool', Boolean(value));
       return;
     }
 
     var argumentList = [name, Boolean(value)];
-    if (metric != undefined) argumentList.push(metric);
+    if (opt_metric != undefined) argumentList.push(opt_metric);
     chrome.send('setBooleanPref', argumentList);
   };
 
@@ -132,16 +133,16 @@ cr.define('options', function() {
    * value.
    * @param {string} name Preference name.
    * @param {boolean} commit Whether to commit the change to Chrome.
-   * @param {string} metric User metrics identifier.
+   * @param {string=} opt_metric User metrics identifier.
    */
-  Preferences.clearPref = function(name, commit, metric) {
+  Preferences.clearPref = function(name, commit, opt_metric) {
     if (!commit) {
       Preferences.getInstance().clearPrefNoCommit_(name);
       return;
     }
 
     var argumentList = [name];
-    if (metric != undefined) argumentList.push(metric);
+    if (opt_metric != undefined) argumentList.push(opt_metric);
     chrome.send('clearPref', argumentList);
   };
 
@@ -178,7 +179,7 @@ cr.define('options', function() {
      * Helper function for flattening of dictionary passed via fetchPrefs
      * callback.
      * @param {string} prefix Preference name prefix.
-     * @param {object} dict Map with preference values.
+     * @param {Object} dict Map with preference values.
      * @private
      */
     flattenMapAndDispatchEvent_: function(prefix, dict) {
@@ -308,7 +309,7 @@ cr.define('options', function() {
 
   /**
    * Callback for fetchPrefs method.
-   * @param {object} dict Map of fetched property values.
+   * @param {Object} dict Map of fetched property values.
    */
   Preferences.prefsFetchedCallback = function(dict) {
     Preferences.getInstance().flattenMapAndDispatchEvent_('', dict);
@@ -316,14 +317,14 @@ cr.define('options', function() {
 
   /**
    * Callback for observePrefs method.
-   * @param {array} notification An array defining changed preference values.
-   * notification[0] contains name of the change preference while its new value
-   * is stored in notification[1].
+   * @param {Array} notification An array defining changed preference values.
+   *     notification[0] contains name of the change preference while its new
+   *     value is stored in notification[1].
    */
   Preferences.prefsChangedCallback = function(notification) {
     var event = new Event(notification[0]);
     event.value = notification[1];
-    prefs = Preferences.getInstance();
+    var prefs = Preferences.getInstance();
     prefs.registeredPreferences_[notification[0]] = {orig: notification[1]};
     if (event.value)
       prefs.dispatchEvent(event);

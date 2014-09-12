@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('options');
+
+/**
+ * The user's selection in the synced data type drop-down menu, as an index.
+ * @enum {number}
+ * @const
+ */
+options.DataTypeSelection = {
+  SYNC_EVERYTHING: 0,
+  CHOOSE_WHAT_TO_SYNC: 1,
+  SYNC_NOTHING: 2
+};
+
 cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
@@ -37,17 +50,6 @@ cr.define('options', function() {
   // focus.
   var confirmPageVisible_ = false;
   var customizePageVisible_ = false;
-
-  /**
-   * The user's selection in the synced data type drop-down menu, as an index.
-   * @enum {number}
-   * @const
-   */
-  var DataTypeSelection = {
-    SYNC_EVERYTHING: 0,
-    CHOOSE_WHAT_TO_SYNC: 1,
-    SYNC_NOTHING: 2
-  };
 
   /**
    * SyncSetupOverlay class
@@ -162,7 +164,7 @@ cr.define('options', function() {
      * @private
      */
     restoreDataTypeCheckboxes_: function() {
-      for (dataType in dataTypeBoxesChecked_) {
+      for (var dataType in dataTypeBoxesChecked_) {
         $(dataType).checked = dataTypeBoxesChecked_[dataType];
       }
     },
@@ -183,17 +185,18 @@ cr.define('options', function() {
      * Sets the state of the sync data type checkboxes based on whether "Sync
      * everything", "Choose what to sync", or "Sync nothing" are selected in the
      * drop-down menu of the advanced settings dialog.
-     * @param {cr.DataTypeSelection} selectedIndex Index of user's selection.
+     * @param {options.DataTypeSelection} selectedIndex Index of user's
+     *     selection.
      * @private
      */
     setDataTypeCheckboxes_: function(selectedIndex) {
-      if (selectedIndex == DataTypeSelection.CHOOSE_WHAT_TO_SYNC) {
+      if (selectedIndex == options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC) {
         this.setDataTypeCheckboxesEnabled_(true);
         this.restoreDataTypeCheckboxes_();
       } else {
         this.setDataTypeCheckboxesEnabled_(false);
-        this.checkAllDataTypeCheckboxes_(selectedIndex ==
-                                         DataTypeSelection.SYNC_EVERYTHING);
+        this.checkAllDataTypeCheckboxes_(
+            selectedIndex == options.DataTypeSelection.SYNC_EVERYTHING);
       }
     },
 
@@ -264,9 +267,9 @@ cr.define('options', function() {
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
       var syncAll = $('sync-select-datatypes').selectedIndex ==
-                    DataTypeSelection.SYNC_EVERYTHING;
+                    options.DataTypeSelection.SYNC_EVERYTHING;
       var syncNothing = $('sync-select-datatypes').selectedIndex ==
-                        DataTypeSelection.SYNC_NOTHING;
+                        options.DataTypeSelection.SYNC_NOTHING;
       var result = JSON.stringify({
         'syncAllDataTypes': syncAll,
         'syncNothing': syncNothing,
@@ -307,7 +310,7 @@ cr.define('options', function() {
       $('customize-link').disabled = disabled;
       $('customize-link').onclick = disabled ? null : function() {
         SyncSetupOverlay.showCustomizePage(self.syncConfigureArgs_,
-                                           DataTypeSelection.SYNC_EVERYTHING);
+            options.DataTypeSelection.SYNC_EVERYTHING);
         return false;
       };
     },
@@ -323,8 +326,8 @@ cr.define('options', function() {
     setChooseDataTypesCheckboxes_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.syncAllDataTypes ?
-                                         DataTypeSelection.SYNC_EVERYTHING :
-                                         DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
+          options.DataTypeSelection.SYNC_EVERYTHING :
+          options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
 
       $('bookmarks-checkbox').checked = args.bookmarksSynced;
       dataTypeBoxesChecked_['bookmarks-checkbox'] = args.bookmarksSynced;
@@ -450,11 +453,11 @@ cr.define('options', function() {
       // data type checkboxes, and restore their checked state to the last time
       // the "Choose what to sync" was selected while the dialog was still up.
       datatypeSelect.onchange = function() {
-        if (this.selectedIndex == DataTypeSelection.SYNC_NOTHING) {
+        if (this.selectedIndex == options.DataTypeSelection.SYNC_NOTHING) {
           self.showSyncNothingPage_();
         } else {
           self.showCustomizePage_(self.syncConfigureArgs_, this.selectedIndex);
-          if (this.selectedIndex == DataTypeSelection.SYNC_EVERYTHING)
+          if (this.selectedIndex == options.DataTypeSelection.SYNC_EVERYTHING)
             self.checkAllDataTypeCheckboxes_(true);
           else
             self.restoreDataTypeCheckboxes_();
@@ -483,8 +486,8 @@ cr.define('options', function() {
         if (args.showSyncEverythingPage == false || this.usePassphrase_ ||
             args.syncAllDataTypes == false || args.showPassphrase) {
           var index = args.syncAllDataTypes ?
-                          DataTypeSelection.SYNC_EVERYTHING :
-                          DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
+                          options.DataTypeSelection.SYNC_EVERYTHING :
+                          options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
           this.showCustomizePage_(args, index);
         } else {
           this.showSyncEverythingPage_();
@@ -518,7 +521,7 @@ cr.define('options', function() {
       $('sync-select-datatypes').selectedIndex = 0;
 
       // The default state is to sync everything.
-      this.setDataTypeCheckboxes_(DataTypeSelection.SYNC_EVERYTHING);
+      this.setDataTypeCheckboxes_(options.DataTypeSelection.SYNC_EVERYTHING);
 
       if (!this.usePassphrase_)
         $('sync-custom-passphrase').hidden = true;
@@ -539,7 +542,8 @@ cr.define('options', function() {
      */
     showSyncNothingPage_: function() {
       // Reset the selection to 'Sync nothing'.
-      $('sync-select-datatypes').selectedIndex = DataTypeSelection.SYNC_NOTHING;
+      $('sync-select-datatypes').selectedIndex =
+          options.DataTypeSelection.SYNC_NOTHING;
 
       // Uncheck and disable the individual data type checkboxes.
       this.checkAllDataTypeCheckboxes_(false);
@@ -599,7 +603,7 @@ cr.define('options', function() {
     /**
      * Displays the advanced sync setting dialog, and pre-selects either the
      * "Sync everything" or the "Choose what to sync" drop-down menu item.
-     * @param {cr.DataTypeSelection} index Index of item to pre-select.
+     * @param {options.DataTypeSelection} index Index of item to pre-select.
      * @private
      */
     showCustomizePage_: function(args, index) {
@@ -619,7 +623,7 @@ cr.define('options', function() {
 
       $('sync-select-datatypes').selectedIndex = index;
       this.setDataTypeCheckboxesEnabled_(
-          index == DataTypeSelection.CHOOSE_WHAT_TO_SYNC);
+          index == options.DataTypeSelection.CHOOSE_WHAT_TO_SYNC);
 
       // Give the OK button focus only when the dialog wasn't already visible.
       if (wasCustomizePageHidden)
@@ -646,7 +650,7 @@ cr.define('options', function() {
     /**
      * Shows the appropriate sync setup page.
      * @param {string} page A page of the sync setup to show.
-     * @param {object} args Data from the C++ to forward on to the right
+     * @param {Object} args Data from the C++ to forward on to the right
      *     section.
      */
     showSyncSetupPage_: function(page, args) {
@@ -709,7 +713,7 @@ cr.define('options', function() {
      * initial state.
      * The initial state is specified by adding a class to the descendant
      * element in sync_setup_overlay.html.
-     * @param {HTMLElement} pageElementId The root page element id.
+     * @param {string} pageElementId The root page element id.
      * @private
      */
     resetPage_: function(pageElementId) {

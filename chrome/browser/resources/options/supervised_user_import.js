@@ -12,7 +12,7 @@ cr.define('options', function() {
    * Encapsulated handling of the 'Import existing supervised user' overlay
    * page.
    * @constructor
-   * @class
+   * @extends {cr.ui.pageManager.Page}
    */
   function SupervisedUserImportOverlay() {
     var title = loadTimeData.getString('supervisedUserImportTitle');

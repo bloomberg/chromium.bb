@@ -44,10 +44,10 @@ cr.define('options', function() {
     $('certificateImportErrorOverlayTitle').textContent = title;
     $('certificateImportErrorOverlayMessage').textContent = message;
 
-    ul = $('certificateImportErrorOverlayCertErrors');
+    var ul = $('certificateImportErrorOverlayCertErrors');
     ul.innerHTML = '';
     for (var i = 0; i < certErrors.length; ++i) {
-      li = document.createElement('li');
+      var li = document.createElement('li');
       li.textContent = loadTimeData.getStringF('certificateImportErrorFormat',
                                                certErrors[i].name,
                                                certErrors[i].error);

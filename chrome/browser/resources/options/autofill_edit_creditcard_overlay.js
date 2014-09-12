@@ -127,7 +127,7 @@ cr.define('options', function() {
       expirationYear.options.length = 0;
 
       var date = new Date();
-      var year = parseInt(date.getFullYear());
+      var year = parseInt(date.getFullYear(), 10);
       for (var i = 0; i < 10; ++i) {
         var text = year + i;
         var option = document.createElement('option');
@@ -170,7 +170,7 @@ cr.define('options', function() {
 
       expYear = creditCard.expirationYear;
       var date = new Date();
-      var year = parseInt(date.getFullYear());
+      var year = parseInt(date.getFullYear(), 10);
       for (var i = 0; i < 10; ++i) {
         var text = year + i;
         if (expYear == String(text))

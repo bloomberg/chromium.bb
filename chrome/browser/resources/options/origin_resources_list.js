@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ List = cr.ui.List;
-  /** @const */ ListItem = cr.ui.ListItem;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new list item for the origin's data.
    * @param {!Object} origin Data used to create the origin list item.
+   * @constructor
+   * @extends {cr.ui.ListItem}
    */
   function OriginListItem(origin) {
     var el = cr.doc.createElement('div');
@@ -52,6 +54,10 @@ cr.define('options', function() {
     }
   };
 
+  /**
+   * @constructor
+   * @extends {cr.ui.List}
+   */
   var OriginList = cr.ui.define('list');
 
   OriginList.prototype = {

@@ -9,6 +9,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of a search bubble.
    * @constructor
+   * @extends {HTMLDivElement}
    */
   function SearchBubble(text) {
     var el = cr.doc.createElement('div');
@@ -120,6 +121,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the search page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function SearchPage() {
     Page.call(this, 'search',
@@ -364,7 +366,7 @@ cr.define('options', function() {
       $('searchPageNoMatches').hidden = foundMatches;
 
       // Create search balloons for sub-page results.
-      length = bubbleControls.length;
+      var length = bubbleControls.length;
       for (var i = 0; i < length; i++)
         this.createSearchBubble_(bubbleControls[i], text);
 
