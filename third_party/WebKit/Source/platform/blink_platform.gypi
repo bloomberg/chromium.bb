@@ -750,6 +750,8 @@
       'plugins/PluginListBuilder.h',
       'scheduler/Scheduler.cpp',
       'scheduler/Scheduler.h',
+      'scheduler/TracedTask.cpp',
+      'scheduler/TracedTask.h',
       'scroll/ProgrammaticScrollAnimator.cpp',
       'scroll/ProgrammaticScrollAnimator.h',
       'scroll/ScrollAnimator.cpp',

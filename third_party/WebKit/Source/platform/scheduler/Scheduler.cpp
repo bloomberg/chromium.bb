@@ -11,8 +11,6 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
-#include "wtf/ThreadingPrimitives.h"
-
 
 namespace blink {
 
@@ -78,8 +76,8 @@ public:
 class Scheduler::MainThreadPendingTaskRunner : public WebThread::Task {
 public:
     MainThreadPendingTaskRunner(
-        const Scheduler::Task& task, const TraceLocation& location)
-        : m_task(task, location)
+        const Scheduler::Task& task, const TraceLocation& location, const char* traceName)
+        : m_task(task, location, traceName)
     {
         ASSERT(Scheduler::shared());
     }
@@ -95,7 +93,7 @@ public:
         m_task.run();
     }
 
-    Scheduler::TracedTask m_task;
+    TracedTask m_task;
 };
 
 Scheduler* Scheduler::s_sharedScheduler = nullptr;
@@ -149,18 +147,24 @@ void Scheduler::scheduleIdleTask(const TraceLocation& location, const IdleTask& 
     m_mainThread->postTask(new MainThreadIdleTaskAdapter(idleTask, 0, location));
 }
 
+void Scheduler::postHighPriorityTaskInternal(const TraceLocation& location, const Task& task, const char* traceName)
+{
+    Locker<Mutex> lock(m_pendingTasksMutex);
+
+    m_pendingHighPriorityTasks.append(TracedTask(task, location, traceName));
+    atomicIncrement(&m_highPriorityTaskCount);
+    maybePostMainThreadPendingHighPriorityTaskRunner();
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "PendingHighPriorityTasks", m_highPriorityTaskCount);
+}
+
 void Scheduler::postTask(const TraceLocation& location, const Task& task)
 {
-    m_mainThread->postTask(new MainThreadPendingTaskRunner(task, location));
+    m_mainThread->postTask(new MainThreadPendingTaskRunner(task, location, "Scheduler::MainThreadTask"));
 }
 
 void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 {
-    Locker<Mutex> lock(m_pendingTasksMutex);
-    m_pendingHighPriorityTasks.append(TracedTask(task, location));
-    atomicIncrement(&m_highPriorityTaskCount);
-    maybePostMainThreadPendingHighPriorityTaskRunner();
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "PendingHighPriorityTasks", m_highPriorityTaskCount);
+    postHighPriorityTaskInternal(location, task, "Scheduler::InputTask");
 }
 
 void Scheduler::didReceiveInputEvent()
@@ -170,11 +174,7 @@ void Scheduler::didReceiveInputEvent()
 
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
-    Locker<Mutex> lock(m_pendingTasksMutex);
-    m_pendingHighPriorityTasks.append(TracedTask(task, location));
-    atomicIncrement(&m_highPriorityTaskCount);
-    maybePostMainThreadPendingHighPriorityTaskRunner();
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "PendingHighPriorityTasks", m_highPriorityTaskCount);
+    postHighPriorityTaskInternal(location, task, "Scheduler::CompositorTask");
 }
 
 void Scheduler::maybePostMainThreadPendingHighPriorityTaskRunner()
@@ -329,14 +329,6 @@ void Scheduler::enterSchedulerPolicyLocked(SchedulerPolicy schedulerPolicy)
 
     releaseStore(&m_schedulerPolicy, schedulerPolicy);
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "SchedulerPolicy", schedulerPolicy);
-}
-
-void Scheduler::TracedTask::run()
-{
-    TRACE_EVENT2("blink", "TracedTask::run",
-        "src_file", m_location.fileName(),
-        "src_func", m_location.functionName());
-    m_task();
 }
 
 } // namespace blink

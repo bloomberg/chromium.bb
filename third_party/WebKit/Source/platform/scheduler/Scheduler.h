@@ -6,7 +6,7 @@
 #define Scheduler_h
 
 #include "platform/PlatformExport.h"
-#include "platform/TraceLocation.h"
+#include "platform/scheduler/TracedTask.h"
 #include "wtf/DoubleBufferedDeque.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
@@ -69,24 +69,13 @@ protected:
         CompositorPriority,
     };
 
-    class TracedTask {
-    public:
-        TracedTask(const Task& task, const TraceLocation& location)
-            : m_task(task)
-            , m_location(location) { }
-
-        void run();
-
-    private:
-        Task m_task;
-        TraceLocation m_location;
-    };
-
     Scheduler();
     virtual ~Scheduler();
 
-    static void sharedTimerAdapter();
+    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
+    void postHighPriorityTaskInternal(const TraceLocation&, const Task&, const char* traceName);
 
+    static void sharedTimerAdapter();
 
     // Start of main thread only members -----------------------------------
 
@@ -115,9 +104,6 @@ protected:
 
     // End of main thread only members -------------------------------------
 
-
-    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
-
     bool hasPendingHighPriorityWork() const;
 
     void enterSchedulerPolicyLocked(SchedulerPolicy);
@@ -134,7 +120,9 @@ protected:
     DoubleBufferedDeque<TracedTask> m_pendingHighPriorityTasks;
     double m_compositorPriorityPolicyEndTimeSeconds;
 
+    // Declared volatile as it is atomically incremented.
     volatile int m_highPriorityTaskCount;
+
     bool m_highPriorityTaskRunnerPosted;
 
     // Don't access m_schedulerPolicy directly, use enterSchedulerPolicyLocked and SchedulerPolicy instead.
