@@ -1,11 +1,13 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="documentation-test.js"></script>
 <script>
 
 function test()
 {
     InspectorTest.registerModule("documentation", true);
+    InspectorTest.killLoadXHRWithPrefix(WebInspector.DocumentationURLProvider.urlPrefix);
     var testCases = [
         "max",
         "insertBefore",
