@@ -604,6 +604,9 @@
           ['nacl_standalone==1 and target_arch=="x64"', {
             'xcode_settings': {'ARCHS': ['x86_64']},
           }],
+          ['nacl_standalone==1 and target_arch=="ia32"', {
+            'xcode_settings': {'ARCHS': ['i386']},
+          }],
           ['nacl_standalone==1', {
             'target_conditions': [
               ['_type!="static_library"', {
