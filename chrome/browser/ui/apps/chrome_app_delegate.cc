@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -175,6 +177,10 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 #endif  // defined(ENABLE_PRINTING)
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
+
+  // Kiosk app supports zooming.
+  if (chrome::IsRunningInForcedAppMode())
+    ZoomController::CreateForWebContents(web_contents);
 }
 
 void ChromeAppDelegate::ResizeWebContents(content::WebContents* web_contents,
