@@ -30,8 +30,6 @@ cr.define('login', function() {
     decorate: function() {
       $('add-user-button').addEventListener('click',
           this.handleAddUserClick_);
-      $('cancel-add-user-button').addEventListener('click',
-          this.handleCancelAddUserClick_);
       $('guest-user-header-bar-item').addEventListener('click',
           this.handleGuestClick_);
       $('guest-user-button').addEventListener('click',
@@ -135,8 +133,6 @@ cr.define('login', function() {
      * @private
      */
     updateUI_: function() {
-      $('add-user-button').hidden = false;
-      $('cancel-add-user-button').hidden = !this.allowCancel_;
       $('guest-user-header-bar-item').hidden = false;
       $('add-user-header-bar-item').hidden = false;
     },
