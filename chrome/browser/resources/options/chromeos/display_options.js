@@ -617,6 +617,9 @@ cr.define('options', function() {
           if (display.resolutions[i].isBest) {
             option.textContent += ' ' +
                 loadTimeData.getString('annotateBest');
+          } else if (display.resolutions[i].isNative) {
+            option.textContent += ' ' +
+                loadTimeData.getString('annotateNative');
           }
           if (display.resolutions[i].deviceScaleFactor && previousOption &&
               previousOption.textContent == option.textContent) {

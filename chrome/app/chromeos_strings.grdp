@@ -2075,6 +2075,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_BEST" desc="The text shown for resolution options to annotate this is the best resolution.">
     (Best)
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_NATIVE" desc="The text shown for resolution options to annotate this is the native resolution.">
+    (Native)
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
     Standard
   </message>

@@ -129,6 +129,111 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
   EXPECT_EQ(display_modes[4].refresh_rate, 60);
 }
 
+TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
+  ScopedVector<const ui::DisplayMode> modes;
+  // Data picked from peppy.
+  modes.push_back(new ui::DisplayMode(gfx::Size(2560, 1700), false, 60));
+  modes.push_back(new ui::DisplayMode(gfx::Size(2048, 1536), false, 60));
+  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1440), false, 60));
+
+  ui::TestDisplaySnapshot display_snapshot;
+  display_snapshot.set_modes(modes.get());
+  display_snapshot.set_native_mode(modes[0]);
+  DisplayConfigurator::DisplayState output;
+  output.display = &display_snapshot;
+
+  DisplayInfo info;
+  info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
+  info.set_device_scale_factor(2.0f);
+
+  std::vector<DisplayMode> display_modes =
+      DisplayChangeObserver::GetInternalDisplayModeList(info, output);
+  ASSERT_EQ(8u, display_modes.size());
+  EXPECT_EQ("2560x1700", display_modes[0].size.ToString());
+  EXPECT_FALSE(display_modes[0].native);
+  EXPECT_NEAR(display_modes[0].ui_scale, 0.5, 0.01);
+  EXPECT_EQ(display_modes[0].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[1].size.ToString());
+  EXPECT_FALSE(display_modes[1].native);
+  EXPECT_NEAR(display_modes[1].ui_scale, 0.625, 0.01);
+  EXPECT_EQ(display_modes[1].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[2].size.ToString());
+  EXPECT_FALSE(display_modes[2].native);
+  EXPECT_NEAR(display_modes[2].ui_scale, 0.8, 0.01);
+  EXPECT_EQ(display_modes[2].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[3].size.ToString());
+  EXPECT_FALSE(display_modes[3].native);
+  EXPECT_NEAR(display_modes[3].ui_scale, 1.0, 0.01);
+  EXPECT_EQ(display_modes[3].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[4].size.ToString());
+  EXPECT_FALSE(display_modes[4].native);
+  EXPECT_NEAR(display_modes[4].ui_scale, 1.125, 0.01);
+  EXPECT_EQ(display_modes[4].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[5].size.ToString());
+  EXPECT_FALSE(display_modes[5].native);
+  EXPECT_NEAR(display_modes[5].ui_scale, 1.25, 0.01);
+  EXPECT_EQ(display_modes[5].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[6].size.ToString());
+  EXPECT_FALSE(display_modes[6].native);
+  EXPECT_NEAR(display_modes[6].ui_scale, 1.5, 0.01);
+  EXPECT_EQ(display_modes[6].refresh_rate, 60);
+
+  EXPECT_EQ("2560x1700", display_modes[7].size.ToString());
+  EXPECT_TRUE(display_modes[7].native);
+  EXPECT_NEAR(display_modes[7].ui_scale, 2.0, 0.01);
+  EXPECT_EQ(display_modes[7].refresh_rate, 60);
+}
+
+TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
+  ScopedVector<const ui::DisplayMode> modes;
+  // Data picked from peppy.
+  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+
+  ui::TestDisplaySnapshot display_snapshot;
+  display_snapshot.set_modes(modes.get());
+  display_snapshot.set_native_mode(modes[0]);
+  DisplayConfigurator::DisplayState output;
+  output.display = &display_snapshot;
+
+  DisplayInfo info;
+  info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
+  info.set_device_scale_factor(1.25);
+
+  std::vector<DisplayMode> display_modes =
+      DisplayChangeObserver::GetInternalDisplayModeList(info, output);
+  ASSERT_EQ(5u, display_modes.size());
+  EXPECT_EQ("1920x1080", display_modes[0].size.ToString());
+  EXPECT_FALSE(display_modes[0].native);
+  EXPECT_NEAR(display_modes[0].ui_scale, 0.5, 0.01);
+  EXPECT_EQ(display_modes[0].refresh_rate, 60);
+
+  EXPECT_EQ("1920x1080", display_modes[1].size.ToString());
+  EXPECT_FALSE(display_modes[1].native);
+  EXPECT_NEAR(display_modes[1].ui_scale, 0.625, 0.01);
+  EXPECT_EQ(display_modes[1].refresh_rate, 60);
+
+  EXPECT_EQ("1920x1080", display_modes[2].size.ToString());
+  EXPECT_FALSE(display_modes[2].native);
+  EXPECT_NEAR(display_modes[2].ui_scale, 0.8, 0.01);
+  EXPECT_EQ(display_modes[2].refresh_rate, 60);
+
+  EXPECT_EQ("1920x1080", display_modes[3].size.ToString());
+  EXPECT_FALSE(display_modes[3].native);
+  EXPECT_NEAR(display_modes[3].ui_scale, 1.0, 0.01);
+  EXPECT_EQ(display_modes[3].refresh_rate, 60);
+
+  EXPECT_EQ("1920x1080", display_modes[4].size.ToString());
+  EXPECT_TRUE(display_modes[4].native);
+  EXPECT_NEAR(display_modes[4].ui_scale, 1.25, 0.01);
+  EXPECT_EQ(display_modes[4].refresh_rate, 60);
+}
+
 TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
   ScopedVector<const ui::DisplayMode> modes;
   modes.push_back(new ui::DisplayMode(gfx::Size(3840, 2160), false, 30));

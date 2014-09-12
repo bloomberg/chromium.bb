@@ -123,6 +123,7 @@ bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
 
 base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
                                                  const ash::DisplayMode& mode) {
+  bool is_internal = GetDisplayManager()->IsInternalDisplayId(display_id);
   base::DictionaryValue* result = new base::DictionaryValue();
   gfx::Size size_dip = mode.GetSizeInDIP();
   result->SetInteger("width", size_dip.width());
@@ -132,7 +133,9 @@ base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
   result->SetDouble("deviceScaleFactor", mode.device_scale_factor);
   result->SetDouble("scale", mode.ui_scale);
   result->SetDouble("refreshRate", mode.refresh_rate);
-  result->SetBoolean("isBest", mode.native);
+  result->SetBoolean(
+      "isBest", is_internal ? (mode.ui_scale == 1.0f) : mode.native);
+  result->SetBoolean("isNative", mode.native);
   result->SetBoolean(
       "selected", mode.IsEquivalent(
           GetDisplayManager()->GetActiveModeForDisplayId(display_id)));
@@ -178,6 +181,8 @@ void DisplayOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY));
   localized_strings->SetString("annotateBest", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_BEST));
+  localized_strings->SetString("annotateNative", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_NATIVE));
   localized_strings->SetString("orientation0", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION));
   localized_strings->SetString("orientation90", l10n_util::GetStringUTF16(
