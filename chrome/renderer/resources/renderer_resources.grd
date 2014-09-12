@@ -44,6 +44,8 @@
         file="extensions\chrome_direct_setting.js" type="BINDATA" />
         <include name="IDR_CHROME_SETTING_JS" file="extensions\chrome_setting.js" type="BINDATA" />
         <include name="IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\chrome_web_view_internal_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_CHROME_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\chrome_web_view_experimental.js" type="BINDATA" />
+        <include name="IDR_CHROME_WEB_VIEW_JS" file="extensions\chrome_web_view.js" type="BINDATA" />
         <include name="IDR_CONTENT_SETTING_JS" file="extensions\content_setting.js" type="BINDATA" />
         <include name="IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS" file="extensions\declarative_content_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS" file="extensions\declarative_webrequest_custom_bindings.js" type="BINDATA" />
@@ -85,10 +87,6 @@
         <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_request_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_DENY_JS" file="extensions\web_view_deny.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_EVENTS_JS" file="extensions\web_view_events.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\web_view_experimental.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_JS" file="extensions\web_view.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_view_request_custom_bindings.js" type="BINDATA" />
 
         <!-- Platform app support. -->

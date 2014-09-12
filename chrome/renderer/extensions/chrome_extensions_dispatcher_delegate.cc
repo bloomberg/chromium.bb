@@ -242,16 +242,12 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
-  // Note: webView not webview so that this doesn't interfere with the
-  // chrome.webview API bindings.
-  source_map->RegisterSource("webView", IDR_WEB_VIEW_JS);
-  source_map->RegisterSource("webViewEvents", IDR_WEB_VIEW_EVENTS_JS);
-  source_map->RegisterSource("webViewExperimental",
-                             IDR_WEB_VIEW_EXPERIMENTAL_JS);
+  source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
+  source_map->RegisterSource("chromeWebViewExperimental",
+                             IDR_CHROME_WEB_VIEW_EXPERIMENTAL_JS);
   source_map->RegisterSource("webViewRequest",
                              IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("denyAppView", IDR_APP_VIEW_DENY_JS);
-  source_map->RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
   source_map->RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
 
@@ -275,9 +271,11 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
   if (context->GetAvailability("webViewInternal").is_available()) {
-    module_system->Require("webView");
-    if (context->GetAvailability("webViewExperimentalInternal").is_available())
-      module_system->Require("webViewExperimental");
+    module_system->Require("chromeWebView");
+    if (context->GetAvailability("webViewExperimentalInternal")
+            .is_available()) {
+      module_system->Require("chromeWebViewExperimental");
+    }
   } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("denyWebView");
   }

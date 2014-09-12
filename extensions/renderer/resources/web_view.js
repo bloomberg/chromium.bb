@@ -10,7 +10,6 @@ var DocumentNatives = requireNative('document_natives');
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
-var ChromeWebView = require('chromeWebViewInternal').ChromeWebView
 // TODO(lazyboy): Rename this to WebViewInternal and call WebViewInternal
 // something else.
 var WebView = require('webViewInternal').WebView;
@@ -1012,6 +1011,12 @@ window.addEventListener('readystatechange', function listener(event) {
 }, useCapture);
 
 /**
+ * Implemented when the ChromeWebView API is available.
+ * @private
+ */
+WebViewInternal.prototype.maybeGetChromeWebViewEvents = function() {};
+
+/**
  * Implemented when the experimental API is available.
  * @private
  */
@@ -1026,24 +1031,11 @@ WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
 };
 
 /**
- * Calls to show contextmenu right away instead of dispatching a 'contextmenu'
- * event.
- * This will be overridden in web_view_experimental.js to implement contextmenu
- * API.
- */
-WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
-  var requestId = e.requestId;
-  // Setting |params| = undefined will show the context menu unmodified, hence
-  // the 'contextmenu' API is disabled for stable channel.
-  var params = undefined;
-  ChromeWebView.showContextMenu(this.guestInstanceId, requestId, params);
-};
-
-/**
  * Implemented when the experimental API is available.
  * @private
  */
-WebViewInternal.prototype.setupExperimentalContextMenus = function() {};
+WebViewInternal.prototype.setupExperimentalContextMenus = function() {
+};
 
 exports.WebView = WebView;
 exports.WebViewInternal = WebViewInternal;

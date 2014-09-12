@@ -50,14 +50,6 @@ var WEB_VIEW_EVENTS = {
     evt: CreateEvent('webViewInternal.onContentLoad'),
     fields: []
   },
-  'contextmenu': {
-    evt: CreateEvent('chromeWebViewInternal.contextmenu'),
-    cancelable: true,
-    customHandler: function(handler, event, webViewEvent) {
-      handler.handleContextMenu(event, webViewEvent);
-    },
-    fields: ['items']
-  },
   'dialog': {
     cancelable: true,
     customHandler: function(handler, event, webViewEvent) {
@@ -283,6 +275,10 @@ WebViewEvents.prototype.getEvents = function() {
   for (var eventName in experimentalEvents) {
     WEB_VIEW_EVENTS[eventName] = experimentalEvents[eventName];
   }
+  var chromeEvents = this.webViewInternal.maybeGetChromeWebViewEvents();
+  for (var eventName in chromeEvents) {
+    WEB_VIEW_EVENTS[eventName] = chromeEvents[eventName];
+  }
   return WEB_VIEW_EVENTS;
 };
 
@@ -308,11 +304,6 @@ WebViewEvents.prototype.setupEvent = function(name, info) {
   this.webViewInternal.setupEventProperty(name);
 };
 
-
-// Event handlers.
-WebViewEvents.prototype.handleContextMenu = function(e, webViewEvent) {
-  this.webViewInternal.maybeHandleContextMenu(e, webViewEvent);
-};
 
 WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   var showWarningMessage = function(dialogType) {

@@ -5,8 +5,8 @@
 // This module implements experimental API for <webview>.
 // See web_view.js for details.
 //
-// <webview> Experimental API is only available on canary and dev channels of
-// Chrome.
+// <webview> Chrome Experimental API is only available on canary and dev
+// channels of Chrome.
 
 var ContextMenusSchema =
     requireNative('schema_registry').GetSchema('contextMenus');
@@ -127,26 +127,6 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.
   } //  else we will ignore showing the context menu completely.
-};
-
-WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
-  return {};
-};
-
-/** @private */
-WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
-  return [];
-};
-
-/** @private */
-WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
-  WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
-};
-
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
-  proto.captureVisibleRegion = function(spec, callback) {
-    privates(this).internal.captureVisibleRegion(spec, callback);
-  };
 };
 
 /** @private */
