@@ -1384,8 +1384,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
     const char kDisabledAllGroupName[] = "DisabledAll";
 
-    base::StringPiece sdch_trial_group =
+    // Store in a string on return to keep underlying storage for
+    // StringPiece stable.
+    std::string sdch_trial_group_string =
         base::FieldTrialList::FindFullName(kSdchFieldTrialName);
+    base::StringPiece sdch_trial_group(sdch_trial_group_string);
     if (sdch_trial_group.starts_with(kEnabledAllGroupName)) {
       net::SdchManager::EnableSecureSchemeSupport(true);
       net::SdchManager::EnableSdchSupport(true);
