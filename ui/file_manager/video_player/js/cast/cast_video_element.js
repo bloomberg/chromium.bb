@@ -149,9 +149,6 @@ CastVideoElement.prototype = {
   set volume(volume) {
     var VOLUME_EPS = 0.01;  // Threshold for ignoring a small change.
 
-    // Ignores < 1% change.
-    if (Math.abs(this.castSession_.receiver.volume.level - volume) < VOLUME_EPS)
-      return;
 
     if (this.castSession_.receiver.volume.muted) {
       if (volume < VOLUME_EPS)
@@ -166,6 +163,11 @@ CastVideoElement.prototype = {
           function() {},
           this.onCastCommandError_.wrap(this));
     } else {
+      // Ignores < 1% change.
+      var diff = this.castSession_.receiver.volume.level - volume;
+      if (Math.abs(diff) < VOLUME_EPS)
+        return;
+
       if (volume < VOLUME_EPS) {
         this.castSession_.setReceiverMuted(true,
             function() {},
