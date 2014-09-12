@@ -89,6 +89,8 @@ class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
+  using extensions::api::file_system_provider::GetMetadataRequestedOptions;
+
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -113,24 +115,16 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
-  base::DictionaryValue* options = NULL;
-  ASSERT_TRUE(event_args->GetDictionary(0, &options));
+  const base::DictionaryValue* options_as_value = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  std::string event_file_system_id;
-  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
-  EXPECT_EQ(kFileSystemId, event_file_system_id);
-
-  int event_request_id = -1;
-  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
-  EXPECT_EQ(kRequestId, event_request_id);
-
-  std::string event_entry_path;
-  EXPECT_TRUE(options->GetString("entryPath", &event_entry_path));
-  EXPECT_EQ(kDirectoryPath, event_entry_path);
-
-  bool event_thumbnail;
-  EXPECT_TRUE(options->GetBoolean("thumbnail", &event_thumbnail));
-  EXPECT_TRUE(event_thumbnail);
+  GetMetadataRequestedOptions options;
+  ASSERT_TRUE(
+      GetMetadataRequestedOptions::Populate(*options_as_value, &options));
+  EXPECT_EQ(kFileSystemId, options.file_system_id);
+  EXPECT_EQ(kRequestId, options.request_id);
+  EXPECT_EQ(kDirectoryPath, options.entry_path);
+  EXPECT_TRUE(options.thumbnail);
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {

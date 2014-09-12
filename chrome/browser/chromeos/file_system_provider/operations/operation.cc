@@ -44,13 +44,7 @@ void Operation::SetDispatchEventImplForTesting(
 
 bool Operation::SendEvent(int request_id,
                           const std::string& event_name,
-                          scoped_ptr<base::DictionaryValue> options) {
-  options->SetString("fileSystemId", file_system_info_.file_system_id());
-  options->SetInteger("requestId", request_id);
-
-  scoped_ptr<base::ListValue> event_args(new base::ListValue);
-  event_args->Append(options.release());
-
+                          scoped_ptr<base::ListValue> event_args) {
   return dispatch_event_impl_.Run(
       make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
 }

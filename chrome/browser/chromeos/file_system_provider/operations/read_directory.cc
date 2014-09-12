@@ -66,12 +66,19 @@ ReadDirectory::~ReadDirectory() {
 }
 
 bool ReadDirectory::Execute(int request_id) {
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("directoryPath", directory_path_.AsUTF8Unsafe());
-  return SendEvent(request_id,
-                   extensions::api::file_system_provider::
-                       OnReadDirectoryRequested::kEventName,
-                   values.Pass());
+  using extensions::api::file_system_provider::ReadDirectoryRequestedOptions;
+
+  ReadDirectoryRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.directory_path = directory_path_.AsUTF8Unsafe();
+
+  return SendEvent(
+      request_id,
+      extensions::api::file_system_provider::OnReadDirectoryRequested::
+          kEventName,
+      extensions::api::file_system_provider::OnReadDirectoryRequested::Create(
+          options));
 }
 
 void ReadDirectory::OnSuccess(int /* request_id */,

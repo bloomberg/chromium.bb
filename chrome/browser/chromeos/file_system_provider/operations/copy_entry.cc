@@ -28,17 +28,22 @@ CopyEntry::~CopyEntry() {
 }
 
 bool CopyEntry::Execute(int request_id) {
+  using extensions::api::file_system_provider::CopyEntryRequestedOptions;
+
   if (!file_system_info_.writable())
     return false;
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("sourcePath", source_path_.AsUTF8Unsafe());
-  values->SetString("targetPath", target_path_.AsUTF8Unsafe());
+  CopyEntryRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.source_path = source_path_.AsUTF8Unsafe();
+  options.target_path = target_path_.AsUTF8Unsafe();
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnCopyEntryRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnCopyEntryRequested::Create(
+          options));
 }
 
 void CopyEntry::OnSuccess(int /* request_id */,

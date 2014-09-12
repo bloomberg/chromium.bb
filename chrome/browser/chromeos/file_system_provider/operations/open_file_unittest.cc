@@ -84,6 +84,8 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
+  using extensions::api::file_system_provider::OpenFileRequestedOptions;
+
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -107,27 +109,16 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
-  base::DictionaryValue* options = NULL;
-  ASSERT_TRUE(event_args->GetDictionary(0, &options));
+  const base::DictionaryValue* options_as_value = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  std::string event_file_system_id;
-  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
-  EXPECT_EQ(kFileSystemId, event_file_system_id);
-
-  int event_request_id = -1;
-  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
-  EXPECT_EQ(kRequestId, event_request_id);
-
-  std::string event_file_path;
-  EXPECT_TRUE(options->GetString("filePath", &event_file_path));
-  EXPECT_EQ(kFilePath, event_file_path);
-
-  std::string event_file_open_mode;
-  EXPECT_TRUE(options->GetString("mode", &event_file_open_mode));
-  const std::string expected_file_open_mode =
-      extensions::api::file_system_provider::ToString(
-          extensions::api::file_system_provider::OPEN_FILE_MODE_READ);
-  EXPECT_EQ(expected_file_open_mode, event_file_open_mode);
+  OpenFileRequestedOptions options;
+  ASSERT_TRUE(OpenFileRequestedOptions::Populate(*options_as_value, &options));
+  EXPECT_EQ(kFileSystemId, options.file_system_id);
+  EXPECT_EQ(kRequestId, options.request_id);
+  EXPECT_EQ(kFilePath, options.file_path);
+  EXPECT_EQ(extensions::api::file_system_provider::OPEN_FILE_MODE_READ,
+            options.mode);
 }
 
 TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {

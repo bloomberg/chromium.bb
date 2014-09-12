@@ -14,7 +14,7 @@
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace base {
-class DictionaryValue;
+class ListValue;
 }  // namespace base
 
 namespace extensions {
@@ -50,12 +50,11 @@ class Operation : public RequestManager::HandlerInterface {
       const DispatchEventImplCallback& callback);
 
  protected:
-  // Sends an event to the providing extension. Automatically adds the file
-  // system id and the request id fields. Returns false, if the providing
+  // Sends an event to the providing extension. Returns false, if the providing
   // extension does not handle the |event_name| event.
   bool SendEvent(int request_id,
                  const std::string& event_name,
-                 scoped_ptr<base::DictionaryValue> options);
+                 scoped_ptr<base::ListValue> event_args);
 
   ProvidedFileSystemInfo file_system_info_;
 

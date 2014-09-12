@@ -300,25 +300,28 @@ namespace fileSystemProvider {
   [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
 
   // Callback to be called by the providing extension in case of a success.
-  callback ProviderSuccessCallback = void();
+  [nocompile] callback ProviderSuccessCallback = void();
 
   // Callback to be called by the providing extension in case of an error.
-  callback ProviderErrorCallback = void(ProviderError error);
+  [nocompile] callback ProviderErrorCallback = void(ProviderError error);
 
   // Success callback for the <code>onGetMetadataRequested</code> event.
-  callback MetadataCallback = void(EntryMetadata metadata);
+  [nocompile] callback MetadataCallback = void(
+      EntryMetadata metadata);
 
   // Success callback for the <code>onReadDirectoryRequested</code> event. If
   // more entries will be returned, then <code>hasMore</code> must be true, and
   // it has to be called again with additional entries. If no more entries are
   // available, then <code>hasMore</code> must be set to false.
-  callback EntriesCallback = void(EntryMetadata[] entries, boolean hasMore);
+  [nocompile] callback EntriesCallback = void(
+      EntryMetadata[] entries, boolean hasMore);
 
   // Success callback for the <code>onReadFileRequested</code> event. If more
   // data will be returned, then <code>hasMore</code> must be true, and it
   // has to be called again with additional entries. If no more data is
   // available, then <code>hasMore</code> must be set to false.
-  callback FileDataCallback = void(ArrayBuffer data, boolean hasMore);
+  [nocompile] callback FileDataCallback = void(
+      ArrayBuffer data, boolean hasMore);
 
   interface Functions {
     // Mounts a file system with the given <code>fileSystemId</code> and <code>

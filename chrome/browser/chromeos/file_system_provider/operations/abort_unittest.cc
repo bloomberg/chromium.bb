@@ -49,6 +49,8 @@ class FileSystemProviderOperationsAbortTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsAbortTest, Execute) {
+  using extensions::api::file_system_provider::AbortRequestedOptions;
+
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
@@ -69,21 +71,14 @@ TEST_F(FileSystemProviderOperationsAbortTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
-  base::DictionaryValue* options = NULL;
-  ASSERT_TRUE(event_args->GetDictionary(0, &options));
+  const base::DictionaryValue* options_as_value = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  std::string event_file_system_id;
-  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
-  EXPECT_EQ(kFileSystemId, event_file_system_id);
-
-  int event_request_id = -1;
-  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
-  EXPECT_EQ(kRequestId, event_request_id);
-
-  int event_operation_request_id;
-  EXPECT_TRUE(
-      options->GetInteger("operationRequestId", &event_operation_request_id));
-  EXPECT_EQ(kOperationRequestId, event_operation_request_id);
+  AbortRequestedOptions options;
+  ASSERT_TRUE(AbortRequestedOptions::Populate(*options_as_value, &options));
+  EXPECT_EQ(kFileSystemId, options.file_system_id);
+  EXPECT_EQ(kRequestId, options.request_id);
+  EXPECT_EQ(kOperationRequestId, options.operation_request_id);
 }
 
 TEST_F(FileSystemProviderOperationsAbortTest, Execute_NoListener) {

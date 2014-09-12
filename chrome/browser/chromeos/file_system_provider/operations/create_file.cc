@@ -26,16 +26,21 @@ CreateFile::~CreateFile() {
 }
 
 bool CreateFile::Execute(int request_id) {
+  using extensions::api::file_system_provider::CreateFileRequestedOptions;
+
   if (!file_system_info_.writable())
     return false;
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("filePath", file_path_.AsUTF8Unsafe());
+  CreateFileRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.file_path = file_path_.AsUTF8Unsafe();
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnCreateFileRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnCreateFileRequested::Create(
+          options));
 }
 
 void CreateFile::OnSuccess(int /* request_id */,

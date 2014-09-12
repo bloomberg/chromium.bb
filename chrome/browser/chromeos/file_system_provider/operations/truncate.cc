@@ -28,17 +28,22 @@ Truncate::~Truncate() {
 }
 
 bool Truncate::Execute(int request_id) {
+  using extensions::api::file_system_provider::TruncateRequestedOptions;
+
   if (!file_system_info_.writable())
     return false;
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("filePath", file_path_.AsUTF8Unsafe());
-  values->SetDouble("length", length_);
+  TruncateRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.file_path = file_path_.AsUTF8Unsafe();
+  options.length = length_;
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnTruncateRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnTruncateRequested::Create(
+          options));
 }
 
 void Truncate::OnSuccess(int /* request_id */,

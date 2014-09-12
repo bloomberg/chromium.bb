@@ -26,13 +26,17 @@ Abort::~Abort() {
 }
 
 bool Abort::Execute(int request_id) {
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetInteger("operationRequestId", operation_request_id_);
+  using extensions::api::file_system_provider::AbortRequestedOptions;
+
+  AbortRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.operation_request_id = operation_request_id_;
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnAbortRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnAbortRequested::Create(options));
 }
 
 void Abort::OnSuccess(int /* request_id */,

@@ -28,17 +28,22 @@ DeleteEntry::~DeleteEntry() {
 }
 
 bool DeleteEntry::Execute(int request_id) {
+  using extensions::api::file_system_provider::DeleteEntryRequestedOptions;
+
   if (!file_system_info_.writable())
     return false;
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("entryPath", entry_path_.AsUTF8Unsafe());
-  values->SetBoolean("recursive", recursive_);
+  DeleteEntryRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.entry_path = entry_path_.AsUTF8Unsafe();
+  options.recursive = recursive_;
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnDeleteEntryRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnDeleteEntryRequested::Create(
+          options));
 }
 
 void DeleteEntry::OnSuccess(int /* request_id */,

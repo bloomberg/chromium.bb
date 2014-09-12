@@ -29,33 +29,33 @@ OpenFile::~OpenFile() {
 }
 
 bool OpenFile::Execute(int request_id) {
+  using extensions::api::file_system_provider::OpenFileRequestedOptions;
+
   if (!file_system_info_.writable() &&
       mode_ == ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE) {
     return false;
   }
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("filePath", file_path_.AsUTF8Unsafe());
+  OpenFileRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.file_path = file_path_.AsUTF8Unsafe();
 
   switch (mode_) {
     case ProvidedFileSystemInterface::OPEN_FILE_MODE_READ:
-      values->SetString(
-          "mode",
-          extensions::api::file_system_provider::ToString(
-              extensions::api::file_system_provider::OPEN_FILE_MODE_READ));
+      options.mode = extensions::api::file_system_provider::OPEN_FILE_MODE_READ;
       break;
     case ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE:
-      values->SetString(
-          "mode",
-          extensions::api::file_system_provider::ToString(
-              extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE));
+      options.mode =
+          extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE;
       break;
   }
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnOpenFileRequested::Create(
+          options));
 }
 
 void OpenFile::OnSuccess(int request_id,

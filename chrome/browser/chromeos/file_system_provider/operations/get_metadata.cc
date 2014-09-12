@@ -83,16 +83,20 @@ GetMetadata::~GetMetadata() {
 }
 
 bool GetMetadata::Execute(int request_id) {
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetString("entryPath", entry_path_.AsUTF8Unsafe());
-  values->SetBoolean(
-      "thumbnail",
-      (fields_ & ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL) != 0);
+  using extensions::api::file_system_provider::GetMetadataRequestedOptions;
+
+  GetMetadataRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.entry_path = entry_path_.AsUTF8Unsafe();
+  options.thumbnail =
+      fields_ & ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL;
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnGetMetadataRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnGetMetadataRequested::Create(
+          options));
 }
 
 void GetMetadata::OnSuccess(int /* request_id */,

@@ -33,24 +33,32 @@ WriteFile::~WriteFile() {
 
 bool WriteFile::Execute(int request_id) {
   TRACE_EVENT0("file_system_provider", "WriteFile::Execute");
+  using extensions::api::file_system_provider::WriteFileRequestedOptions;
 
   if (!file_system_info_.writable())
     return false;
 
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetInteger("openRequestId", file_handle_);
-  values->SetDouble("offset", offset_);
+  WriteFileRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.open_request_id = file_handle_;
+  options.offset = offset_;
   // Length is not passed directly since it can be accessed via data.byteLength.
 
+  // Set the data directly on base::Value() to avoid an extra string copy.
   DCHECK(buffer_.get());
-  values->Set(
+  scoped_ptr<base::DictionaryValue> options_as_value = options.ToValue();
+  options_as_value->Set(
       "data",
       base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), length_));
+
+  scoped_ptr<base::ListValue> event_args(new base::ListValue);
+  event_args->Append(options_as_value.release());
 
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnWriteFileRequested::kEventName,
-      values.Pass());
+      event_args.Pass());
 }
 
 void WriteFile::OnSuccess(int /* request_id */,

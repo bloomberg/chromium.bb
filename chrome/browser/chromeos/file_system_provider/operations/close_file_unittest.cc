@@ -48,6 +48,8 @@ class FileSystemProviderOperationsCloseFileTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsCloseFileTest, Execute) {
+  using extensions::api::file_system_provider::CloseFileRequestedOptions;
+
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
@@ -69,20 +71,14 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
-  base::DictionaryValue* options = NULL;
-  ASSERT_TRUE(event_args->GetDictionary(0, &options));
+  const base::DictionaryValue* options_as_value = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  std::string event_file_system_id;
-  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
-  EXPECT_EQ(kFileSystemId, event_file_system_id);
-
-  int event_request_id = -1;
-  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
-  EXPECT_EQ(kRequestId, event_request_id);
-
-  int event_open_request_id = -1;
-  EXPECT_TRUE(options->GetInteger("openRequestId", &event_open_request_id));
-  EXPECT_EQ(kOpenRequestId, event_open_request_id);
+  CloseFileRequestedOptions options;
+  ASSERT_TRUE(CloseFileRequestedOptions::Populate(*options_as_value, &options));
+  EXPECT_EQ(kFileSystemId, options.file_system_id);
+  EXPECT_EQ(kRequestId, options.request_id);
+  EXPECT_EQ(kOpenRequestId, options.open_request_id);
 }
 
 TEST_F(FileSystemProviderOperationsCloseFileTest, Execute_NoListener) {

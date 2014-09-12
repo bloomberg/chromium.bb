@@ -63,15 +63,21 @@ ReadFile::~ReadFile() {
 }
 
 bool ReadFile::Execute(int request_id) {
+  using extensions::api::file_system_provider::ReadFileRequestedOptions;
   TRACE_EVENT0("file_system_provider", "ReadFile::Execute");
-  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
-  values->SetInteger("openRequestId", file_handle_);
-  values->SetDouble("offset", offset_);
-  values->SetInteger("length", length_);
+
+  ReadFileRequestedOptions options;
+  options.file_system_id = file_system_info_.file_system_id();
+  options.request_id = request_id;
+  options.open_request_id = file_handle_;
+  options.offset = offset_;
+  options.length = length_;
+
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnReadFileRequested::kEventName,
-      values.Pass());
+      extensions::api::file_system_provider::OnReadFileRequested::Create(
+          options));
 }
 
 void ReadFile::OnSuccess(int /* request_id */,
