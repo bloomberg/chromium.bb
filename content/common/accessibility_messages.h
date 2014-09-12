@@ -17,6 +17,14 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 
+// Singly-included section for custom types.
+#ifndef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
+#define CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
+
+typedef std::map<int32, int> FrameIDMap;
+
+#endif  // CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -50,8 +58,6 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate)
   IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
   IPC_STRUCT_TRAITS_MEMBER(nodes)
 IPC_STRUCT_TRAITS_END()
-
-typedef std::map<int32, int> FrameIDMap;
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // The tree update.
