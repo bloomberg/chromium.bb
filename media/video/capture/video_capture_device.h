@@ -232,22 +232,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     virtual void OnLog(const std::string& message) {}
   };
 
-  // Creates a VideoCaptureDevice object.
-  // Return NULL if the hardware is not available.
-  static VideoCaptureDevice* Create(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const Name& device_name);
   virtual ~VideoCaptureDevice();
-
-  // Gets the names of all video capture devices connected to this computer.
-  static void GetDeviceNames(Names* device_names);
-
-  // Gets the supported formats of a particular device attached to the system.
-  // This method should be called before allocating or starting a device. In
-  // case format enumeration is not supported, or there was a problem, the
-  // formats array will be empty.
-  static void GetDeviceSupportedFormats(const Name& device,
-                                        VideoCaptureFormats* supported_formats);
 
   // Prepares the camera for use. After this function has been called no other
   // applications can use the camera. StopAndDeAllocate() must be called before
