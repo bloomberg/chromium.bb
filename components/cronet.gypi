@@ -350,12 +350,18 @@
           'type': 'none',
           'dependencies': [
             'cronet',
+            'cronet_stub',
           ],
           'variables': {
             'apk_name': 'CronetSample',
             'java_in_dir': 'cronet/android/sample',
             'resource_dir': 'cronet/android/sample/res',
             'native_lib_target': 'libcronet',
+            'proguard_enabled': 'true',
+            'proguard_flags_paths': [
+              'cronet/android/proguard.cfg',
+              'cronet/android/sample/javatests/proguard.cfg',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
@@ -376,13 +382,11 @@
           'target_name': 'cronet_sample_test_apk',
           'type': 'none',
           'dependencies': [
+            'cronet',
             'cronet_sample_apk_java',
+            'cronet_stub',
             '../base/base.gyp:base_java',
-            '../base/base.gyp:base_javatests',
             '../base/base.gyp:base_java_test_support',
-            # TODO(mef): Figure out why some tests are failing.
-            #'../net/net.gyp:net_javatests',
-            #'../net/net.gyp:net_java_test_support',
           ],
           'variables': {
             'apk_name': 'CronetSampleTest',

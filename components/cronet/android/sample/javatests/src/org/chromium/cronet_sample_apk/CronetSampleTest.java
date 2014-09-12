@@ -8,18 +8,19 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.base.test.util.UrlUtils;
+import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base test class for all CronetSample based tests.
  */
-public class CronetSampleTestBase extends
+public class CronetSampleTest extends
         ActivityInstrumentationTestCase2<CronetSampleActivity> {
 
     /**
@@ -31,8 +32,23 @@ public class CronetSampleTestBase extends
     protected static final long
             WAIT_PAGE_LOADING_TIMEOUT_SECONDS = scaleTimeout(15);
 
-    public CronetSampleTestBase() {
+    // URL used for base tests.
+    private static final String URL = "http://127.0.0.1:8000";
+
+    public CronetSampleTest() {
         super(CronetSampleActivity.class);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testLoadUrl() throws Exception {
+        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+        // Make sure that the URL is set as expected.
+        assertEquals(URL, activity.getUrl());
+        assertEquals(200, activity.getHttpStatusCode());
     }
 
     /**
@@ -65,39 +81,6 @@ public class CronetSampleTestBase extends
         }
         setActivityIntent(intent);
         return getActivity();
-    }
-
-    // TODO(cjhopman): These functions are inconsistent with
-    // launchCronetSample***. Should be startCronetSample*** and should use the
-    // url exactly without the getTestFileUrl call. Possibly these two ways of
-    // starting the activity (launch* and start*) should be merged into one.
-    /**
-     * Starts the content shell activity with the provided test url. The url is
-     * synchronously loaded.
-     *
-     * @param url Test url to load.
-     */
-    protected void startActivityWithTestUrl(String url) throws Throwable {
-        launchCronetSampleWithUrl(UrlUtils.getTestFileUrl(url));
-        assertNotNull(getActivity());
-        assertTrue(waitForActiveShellToBeDoneLoading());
-        assertEquals(UrlUtils.getTestFileUrl(url), getActivity().getUrl());
-    }
-
-    /**
-     * Starts the content shell activity with the provided test url and optional
-     * command line arguments to append. The url is synchronously loaded.
-     *
-     * @param url Test url to load.
-     * @param commandLineArgs Optional command line args to append when
-     *            launching the activity.
-     */
-    protected void startActivityWithTestUrlAndCommandLineArgs(String url,
-            String[] commandLineArgs) throws Throwable {
-        launchCronetSampleWithUrlAndCommandLineArgs(
-                UrlUtils.getTestFileUrl(url), commandLineArgs);
-        assertNotNull(getActivity());
-        assertTrue(waitForActiveShellToBeDoneLoading());
     }
 
     /**
