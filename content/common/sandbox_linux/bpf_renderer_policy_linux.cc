@@ -34,7 +34,6 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_clock_getres:
     case __NR_fdatasync:
     case __NR_fsync:
-    case __NR_getpriority:
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_getrlimit:
 #endif
@@ -50,7 +49,6 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sched_getparam:
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
-    case __NR_setpriority:
     case __NR_sysinfo:
     case __NR_times:
     case __NR_uname:

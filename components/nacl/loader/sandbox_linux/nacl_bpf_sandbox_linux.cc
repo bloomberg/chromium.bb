@@ -92,7 +92,6 @@ sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     case __NR_sched_getparam:
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
-    case __NR_setpriority:
     case __NR_sysinfo:
     // __NR_times needed as clock() is called by CommandBufferHelper, which is
     // used by NaCl applications that use Pepper's 3D interfaces.
