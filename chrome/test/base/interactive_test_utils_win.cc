@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/interactive_test_utils.h"
 
+#include <Psapi.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -51,9 +53,23 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
     return true;
 
   wchar_t window_title[256];
+  std::wstring path_str;
+  if (foreground_window) {
+    DWORD process_id = 0;
+    GetWindowThreadProcessId(foreground_window, &process_id);
+    HANDLE process_handle = OpenProcess(
+        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+    if (process_handle) {
+      wchar_t path[MAX_PATH];
+      if (GetModuleFileNameEx(process_handle, NULL, path, MAX_PATH))
+        path_str = path;
+      CloseHandle(process_handle);
+    }
+  }
   GetWindowText(foreground_window, window_title, arraysize(window_title));
-  LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window text: " <<
-      window_title;
+  LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window: "
+             << foreground_window << ", title: " << window_title << ", path: "
+             << path_str;
   return false;
 }
 
