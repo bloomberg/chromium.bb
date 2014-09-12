@@ -123,6 +123,12 @@ String StylePropertySerializer::asText() const
             if (!shorthandPropertyID)
                 shorthandPropertyID = borderFallbackShorthandProperty;
             break;
+        case CSSPropertyBorderTopLeftRadius:
+        case CSSPropertyBorderTopRightRadius:
+        case CSSPropertyBorderBottomLeftRadius:
+        case CSSPropertyBorderBottomRightRadius:
+            shorthandPropertyID = CSSPropertyBorderRadius;
+            break;
         case CSSPropertyWebkitBorderHorizontalSpacing:
         case CSSPropertyWebkitBorderVerticalSpacing:
             shorthandPropertyID = CSSPropertyBorderSpacing;
