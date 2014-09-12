@@ -19,6 +19,7 @@
 
 #define TEST_DIRECTORY "test_directory"
 #define TEST_FILE "test_file.txt"
+#define TEST_FILE2 "test_file2.txt"
 #define TEST_TIME_VALUE 20
 
 static const char TEST_TEXT[] = "test text";
@@ -124,7 +125,7 @@ static int do_fopenclose_test(struct file_desc_environment *file_desc_env) {
   struct inode_data *file_node = NULL;
 
   fp = fopen(TEST_FILE, "w");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_fopenclose_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -163,7 +164,7 @@ static int do_fwriteread_test(struct file_desc_environment *file_desc_env) {
   struct inode_data *file_node = NULL;
 
   fp = fopen(TEST_FILE, "w+");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_fwriteread_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -289,7 +290,7 @@ static int do_stat_test(struct file_desc_environment *file_desc_env) {
   file_desc_env->current_time = TEST_TIME_VALUE;
 
   FILE *fp = fopen(TEST_FILE, "w+");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_stat_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -333,7 +334,7 @@ static int do_stat_test(struct file_desc_environment *file_desc_env) {
 
 static int do_chmod_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = fopen(TEST_FILE, "w+");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_chmod_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -381,7 +382,7 @@ static int do_chmod_test(struct file_desc_environment *file_desc_env) {
 
 static int do_access_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = fopen(TEST_FILE, "w+");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_access_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -414,7 +415,7 @@ static int do_utimes_test(struct file_desc_environment *file_desc_env) {
   file_desc_env->current_time = TEST_TIME_VALUE;
 
   FILE *fp = fopen(TEST_FILE, "w+");
-  if (fp == NULL ) {
+  if (fp == NULL) {
     irt_ext_test_print("do_utimes_test: fopen was not successful - %s.\n",
                        strerror(errno));
     return 1;
@@ -471,6 +472,178 @@ static int do_utimes_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_link_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_link_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_link_test: did not create inode.\n");
+    return 1;
+  }
+
+  if(0 != link(TEST_FILE, TEST_FILE2)) {
+    irt_ext_test_print("do_link_test: link was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *link_node_parent = NULL;
+  struct inode_data *link_node = find_inode_path(file_desc_env, TEST_FILE2,
+                                                 &link_node_parent);
+  if (link_node == NULL) {
+    irt_ext_test_print("do_link_test: did not create link inode.\n");
+    return 1;
+  }
+
+  if (link_node->link != file_node) {
+    irt_ext_test_print("do_link_test: link was not established.\n");
+    return 1;
+  }
+
+  if (S_ISLNK(link_node->mode)) {
+    irt_ext_test_print("do_link_test: hard link was marked as symlink.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_symlink_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_symlink_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *file_node_parent = NULL;
+  struct inode_data *file_node = find_inode_path(file_desc_env, TEST_FILE,
+                                                 &file_node_parent);
+  if (file_node == NULL) {
+    irt_ext_test_print("do_symlink_test: did not create inode.\n");
+    return 1;
+  }
+
+  if(0 != symlink(TEST_FILE, TEST_FILE2)) {
+    irt_ext_test_print("do_symlink_test: symlink was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *link_node_parent = NULL;
+  struct inode_data *link_node = find_inode_path(file_desc_env, TEST_FILE2,
+                                                 &link_node_parent);
+  if (link_node == NULL) {
+    irt_ext_test_print("do_symlink_test: did not create symlink inode.\n");
+    return 1;
+  }
+
+  if (link_node->link != file_node) {
+    irt_ext_test_print("do_symlink_test: symlink was not established.\n");
+    return 1;
+  }
+
+  if (!S_ISLNK(link_node->mode)) {
+    irt_ext_test_print("do_symlink_test: symlink was marked as hard link.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_lstat_test(struct file_desc_environment *file_desc_env) {
+  file_desc_env->current_time = TEST_TIME_VALUE;
+
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_lstat_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if(0 != symlink(TEST_FILE, TEST_FILE2)) {
+    irt_ext_test_print("do_lstat_test: symlink was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *link_node_parent = NULL;
+  struct inode_data *link_node = find_inode_path(file_desc_env, TEST_FILE2,
+                                                 &link_node_parent);
+  if (link_node == NULL) {
+    irt_ext_test_print("do_lstat_test: did not create symlink inode.\n");
+    return 1;
+  }
+
+  struct stat stat_result;
+  if (0 != lstat(TEST_FILE2, &stat_result)) {
+    irt_ext_test_print("do_lstat_test: lstat was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (!S_ISLNK(stat_result.st_mode)) {
+    irt_ext_test_print("do_lstat_test: lstat did not retrieve symlink stat.\n");
+    return 1;
+  }
+
+  if (stat_result.st_ctime == TEST_TIME_VALUE) {
+    irt_ext_test_print("do_lstat_test: lstat returned original file time.\n");
+    return 1;
+  }
+
+  if (stat_result.st_ctime != link_node->ctime) {
+    irt_ext_test_print("do_lstat_test: lstat did not return link file time.\n"
+                       "  Expected time: %d\n"
+                       "  Retrieved time: %d\n",
+                       (int) link_node->ctime,
+                       (int) stat_result.st_ctime);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_readlink_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_readlink_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if(0 != symlink(TEST_FILE, TEST_FILE2)) {
+    irt_ext_test_print("do_readlink_test: symlink was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  char buffer[32] = {'\0'};
+  ssize_t len = readlink(TEST_FILE2, buffer, sizeof(buffer));
+  if (len < 0) {
+    irt_ext_test_print("do_readlink_test: readlink was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (strcmp(buffer, "/" TEST_FILE) != 0) {
+    irt_ext_test_print("do_readlink_test: readlink returned unexpected value:\n"
+                       "  Expected: /" TEST_FILE "\n"
+                       "  Retrieved: %s\n",
+                       buffer);
+    return 1;
+  }
+
+  return 0;
+}
+
 /*
  * These tests should not be in alphabetical order but ordered by complexity,
  * simpler tests should break first. For example, changing to a directory
@@ -498,6 +671,12 @@ static const TYPE_file_test g_file_tests[] = {
   do_chmod_test,
   do_access_test,
   do_utimes_test,
+
+  /* Link tests. */
+  do_link_test,
+  do_symlink_test,
+  do_lstat_test,
+  do_readlink_test,
 };
 
 static void setup(struct file_desc_environment *file_desc_env) {

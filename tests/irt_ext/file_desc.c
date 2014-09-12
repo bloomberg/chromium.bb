@@ -291,9 +291,12 @@ static int my_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
       }
     }
 
-    if (path_item && (oflag & O_NOFOLLOW) == 0) {
+    if (path_item) {
       int follow_count = 0;
       while (path_item->link) {
+        if (S_ISLNK(path_item->mode) && (0 != (oflag & O_NOFOLLOW)))
+          break;
+
         path_item = path_item->link;
 
         follow_count++;
@@ -327,10 +330,6 @@ static int my_stat(const char *pathname, struct stat *buf) {
     int fd = -1;
     int ret = 0;
 
-    /*
-     * Usually this must work when the file descriptor table is full as well,
-     * but because this is only for testing we can just reuse the open function.
-     */
     ret = my_open(pathname, O_RDONLY, 0, &fd);
     if (ret != 0)
       return ret;
@@ -462,10 +461,74 @@ static int my_truncate(const char *pathname, nacl_irt_off_t length) {
 }
 
 static int my_lstat(const char *pathname, struct stat *buf) {
+  if (g_activated_env) {
+    int fd = -1;
+    int ret = 0;
+
+    ret = my_open(pathname, O_RDONLY | O_NOFOLLOW, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    ret = my_fstat(fd, buf);
+    if (ret != 0)
+      return ret;
+
+    return my_close(fd);
+  }
   return ENOSYS;
 }
 
 static int my_link(const char *oldpath, const char *newpath) {
+  if (g_activated_env) {
+    int old_fd = -1;
+    int new_fd = -1;
+    int ret = 1;
+    int old_close_ret = 0;
+    int new_close_ret = 0;
+
+    struct file_descriptor *fd_table = g_activated_env->file_descs;
+    int try_fd;
+    ret = my_open(oldpath, O_RDONLY, 0, &try_fd);
+    if (ret != 0)
+      goto cleanup;
+
+    old_fd = try_fd;
+    struct inode_data *old_path_item = fd_table[old_fd].data;
+
+    if (S_ISDIR(old_path_item->mode)) {
+      ret = EPERM;
+      goto cleanup;
+    }
+
+    ret = my_open(newpath, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR,
+                  &try_fd);
+    if (ret != 0)
+      goto cleanup;
+
+    new_fd = try_fd;
+    struct inode_data *new_path_item = fd_table[new_fd].data;
+
+    new_path_item->link = old_path_item;
+
+ cleanup:
+    if (old_fd != -1) {
+      old_close_ret = my_close(old_fd);
+    }
+
+    if (new_fd != -1) {
+      new_close_ret = my_close(new_fd);
+    }
+
+    if (ret != 0)
+      return ret;
+    else if (old_close_ret != 0)
+      return old_close_ret;
+    else if (new_close_ret != 0)
+      return new_close_ret;
+
+    return 0;
+  }
+
   return ENOSYS;
 }
 
@@ -474,8 +537,24 @@ static int my_rename(const char *oldpath, const char *newpath) {
 }
 
 static int my_symlink(const char *oldpath, const char *newpath) {
-  /* For the purposes of this simple module, link and symlink are the same. */
-  return my_link(oldpath, newpath);
+  /*
+   * For the purposes of this test harness, the only difference between link()
+   * and symlink() is that symlnk() sets S_IFLNK.
+   */
+  if (g_activated_env) {
+    int ret = my_link(oldpath, newpath);
+    if (ret != 0)
+      return ret;
+
+    struct inode_data *link_node_parent = NULL;
+    struct inode_data *link_node = find_inode_path(g_activated_env, newpath,
+                                                   &link_node_parent);
+
+    link_node->mode |= S_IFLNK;
+    return 0;
+  }
+
+  return ENOSYS;
 }
 
 static int my_chmod(const char *path, mode_t mode) {
@@ -483,10 +562,6 @@ static int my_chmod(const char *path, mode_t mode) {
     int fd = -1;
     int ret = 0;
 
-    /*
-     * Usually this must work when the file descriptor table is full as well,
-     * but because this is only for testing we can just reuse the open function.
-     */
     ret = my_open(path, O_RDONLY, 0, &fd);
     if (ret != 0)
       return ret;
@@ -526,8 +601,31 @@ static int my_access(const char *path, int amode) {
   return 0;
 }
 
-static int my_readlink(const char *path, char *buf, size_t count,
+static int my_readlink(const char *pathname, char *buf, size_t count,
                        size_t *nread) {
+  if (g_activated_env) {
+    int fd;
+    int ret = my_open(pathname, O_RDONLY, 0, &fd);
+    if (ret != 0)
+      return ret;
+
+    struct inode_data *file_item = g_activated_env->file_descs[fd].data;
+
+    int written_len;
+    if (file_item->parent_dir == &g_root_dir) {
+      written_len = snprintf(buf, count, "/%s", file_item->name);
+    } else {
+      written_len = snprintf(buf, count, "/%s/%s",
+                             file_item->parent_dir->name, file_item->name);
+    }
+
+    if (written_len >= count) {
+      return ENAMETOOLONG;
+    }
+
+    *nread = written_len;
+    return my_close(fd);
+  }
   return ENOSYS;
 }
 
@@ -539,10 +637,6 @@ static int my_utimes(const char *path, const struct timeval *times) {
     int fd = -1;
     int ret = 0;
 
-    /*
-     * Usually this must work when the file descriptor table is full as well,
-     * but because this is only for testing we can just reuse the open function.
-     */
     ret = my_open(path, O_WRONLY, 0, &fd);
     if (ret != 0)
       return ret;

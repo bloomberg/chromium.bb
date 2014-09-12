@@ -27,6 +27,13 @@
  * will need to be. Because these tests are only testing if the functions are
  * hooked into the standard libraries properly, it is expected that all the
  * tests will run on a single thread.
+ *
+ * In order to reuse the logic in creating and opening files, many of the
+ * file path functions simply create a file descriptor using the internal open()
+ * function. In a real file system implementation this would not be acceptable
+ * since many of the functions must work when the file descriptor table is
+ * already full, but since this is just a test harness we are accepting this
+ * simplification.
  */
 
 #ifndef NATIVE_CLIENT_TESTS_IRT_EXT_FILE_DESC_H
@@ -52,6 +59,11 @@ struct inode_data {
   time_t atime;
   time_t mtime;
   time_t ctime;
+
+  /*
+   * Symbolic Links will have S_IFLNK be set along with link.
+   * Hard links will just have link set.
+   */
   struct inode_data *link;
   struct inode_data *parent_dir;
 
