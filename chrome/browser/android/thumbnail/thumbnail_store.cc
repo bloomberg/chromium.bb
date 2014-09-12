@@ -569,7 +569,7 @@ void ThumbnailStore::CompressionTask(
                                          kUnknown_SkColorType,
                                          kUnpremul_SkAlphaType);
     skia::RefPtr<SkData> etc1_pixel_data = skia::AdoptRef(
-        SkData::NewFromMalloc(new uint8_t[encoded_bytes], encoded_bytes));
+        SkData::NewUninitialized(encoded_bytes));
     skia::RefPtr<SkMallocPixelRef> etc1_pixel_ref = skia::AdoptRef(
         SkMallocPixelRef::NewWithData(info, 0, NULL, etc1_pixel_data.get()));
 
@@ -682,13 +682,12 @@ bool ReadFromFile(base::File& file,
     return false;
   }
 
-  skia::RefPtr<SkData> etc1_pixel_data;
   int data_size = etc1_get_encoded_data_size(raw_width, raw_height);
-  scoped_ptr<uint8_t[]> raw_data =
-      scoped_ptr<uint8_t[]>(new uint8_t[data_size]);
+  skia::RefPtr<SkData> etc1_pixel_data =
+      skia::AdoptRef(SkData::NewUninitialized(data_size));
 
   int pixel_bytes_read = file.ReadAtCurrentPos(
-      reinterpret_cast<char*>(raw_data.get()),
+      reinterpret_cast<char*>(etc1_pixel_data->writable_data()),
       data_size);
 
   if (pixel_bytes_read != data_size)
@@ -698,9 +697,6 @@ bool ReadFromFile(base::File& file,
                                        raw_height,
                                        kUnknown_SkColorType,
                                        kUnpremul_SkAlphaType);
-
-  etc1_pixel_data = skia::AdoptRef(
-      SkData::NewFromMalloc(raw_data.release(), data_size));
 
   *out_pixels = skia::AdoptRef(
       SkMallocPixelRef::NewWithData(info,
