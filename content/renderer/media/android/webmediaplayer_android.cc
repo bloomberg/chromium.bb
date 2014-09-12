@@ -31,6 +31,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
 // TODO(xhwang): Remove when we remove prefixed EME implementation.
@@ -143,12 +144,12 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       video_frame_provider_client_(NULL),
       pending_playback_(false),
       player_type_(MEDIA_PLAYER_TYPE_URL),
-      current_time_(0),
       is_remote_(false),
       media_log_(media_log),
       web_cdm_(NULL),
       allow_stored_credentials_(false),
       is_local_resource_(false),
+      interpolator_(&default_tick_clock_),
       weak_factory_(this) {
   DCHECK(player_manager_);
   DCHECK(cdm_manager_);
@@ -168,6 +169,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   }
 #endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
+  interpolator_.SetUpperBound(base::TimeDelta());
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -465,7 +467,9 @@ double WebMediaPlayerAndroid::currentTime() const {
         pending_seek_time_.InSecondsF() : seek_time_.InSecondsF();
   }
 
-  return current_time_;
+  return std::min(
+      (const_cast<media::TimeDeltaInterpolator*>(
+          &interpolator_))->GetInterpolatedTime(), duration_).InSecondsF();
 }
 
 WebSize WebMediaPlayerAndroid::naturalSize() const {
@@ -718,7 +722,8 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
   // cause duration() query.
   if (!ignore_metadata_duration_change_ && duration_ != duration) {
     duration_ = duration;
-
+    if (is_local_resource_)
+      buffered_[0].end = duration_.InSecondsF();
     // Client readyState transition from HAVE_NOTHING to HAVE_METADATA
     // already triggers a durationchanged event. If this is a different
     // transition, remember to signal durationchanged.
@@ -751,7 +756,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // at a time which is smaller than the duration. This makes webkit never
   // know that the playback has finished. To solve this, we set the
   // current time to media duration when OnPlaybackComplete() get called.
-  OnTimeUpdate(duration_);
+  interpolator_.SetBounds(duration_, duration_);
   client_->timeChanged();
 
   // if the loop attribute is set, timeChanged() will update the current time
@@ -783,8 +788,7 @@ void WebMediaPlayerAndroid::OnSeekComplete(
     seek(pending_seek_time_.InSecondsF());
     return;
   }
-
-  OnTimeUpdate(current_time);
+  interpolator_.SetBounds(current_time, current_time);
 
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
@@ -868,11 +872,24 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   client_->timeChanged();
 }
 
-void WebMediaPlayerAndroid::OnTimeUpdate(const base::TimeDelta& current_time) {
+void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
+                                         base::TimeTicks current_time_ticks) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  current_time_ = current_time.InSecondsF();
-  if (is_local_resource_ && current_time_ <= duration())
-    buffered_[0].end = current_time_;
+  // Compensate the current_timestamp with the IPC latency.
+  base::TimeDelta lower_bound =
+      base::TimeTicks::Now() - current_time_ticks + current_timestamp;
+  base::TimeDelta upper_bound = lower_bound;
+  // We should get another time update in about |kTimeUpdateInterval|
+  // milliseconds.
+  if (is_playing_) {
+    upper_bound += base::TimeDelta::FromMilliseconds(
+        media::kTimeUpdateInterval);
+  }
+  // if the lower_bound is smaller than the current time, just use the current
+  // time so that the timer is always progressing.
+  lower_bound =
+      std::min(lower_bound, base::TimeDelta::FromSecondsD(currentTime()));
+  interpolator_.SetBounds(lower_bound, upper_bound);
 }
 
 void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
@@ -1293,6 +1310,10 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
   if (!delegate_ || was_playing == is_playing_)
     return;
+  if (is_playing)
+    interpolator_.StartInterpolating();
+  else
+    interpolator_.StopInterpolating();
   if (is_playing)
     delegate_->DidPlay(this);
   else

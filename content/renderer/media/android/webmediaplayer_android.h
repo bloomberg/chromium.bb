@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/media/media_player_messages_enums_android.h"
@@ -26,6 +27,7 @@
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
+#include "media/base/time_delta_interpolator.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -185,7 +187,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnDurationChanged(const base::TimeDelta& duration);
 
   // Called to update the current time.
-  void OnTimeUpdate(const base::TimeDelta& current_time);
+  void OnTimeUpdate(base::TimeDelta current_timestamp,
+                    base::TimeTicks current_time_ticks);
 
   // Functions called when media player status changes.
   void OnConnectedToRemoteDevice(const std::string& remote_playback_message);
@@ -455,11 +458,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   MediaPlayerHostMsg_Initialize_Type player_type_;
 
-  // The current playing time. Because the media player is in the browser
-  // process, it will regularly update the |current_time_| by calling
-  // OnTimeUpdate().
-  double current_time_;
-
   // Whether the browser is currently connected to a remote media player.
   bool is_remote_;
 
@@ -495,6 +493,13 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Whether the resource is local.
   bool is_local_resource_;
+
+  // base::TickClock used by |interpolator_|.
+  base::DefaultTickClock default_tick_clock_;
+
+  // Tracks the most recent media time update and provides interpolated values
+  // as playback progresses.
+  media::TimeDeltaInterpolator interpolator_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

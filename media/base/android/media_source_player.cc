@@ -358,7 +358,9 @@ void MediaSourcePlayer::UpdateTimestamps(
     base::TimeDelta max_presentation_timestamp) {
   interpolator_.SetBounds(current_presentation_timestamp,
                           max_presentation_timestamp);
-  manager()->OnTimeUpdate(player_id(), GetCurrentTime());
+  manager()->OnTimeUpdate(player_id(),
+                          GetCurrentTime(),
+                          base::TimeTicks::Now());
 }
 
 void MediaSourcePlayer::ProcessPendingEvents() {

@@ -168,11 +168,13 @@ void RendererMediaPlayerManager::OnVideoSizeChanged(int player_id,
     player->OnVideoSizeChanged(width, height);
 }
 
-void RendererMediaPlayerManager::OnTimeUpdate(int player_id,
-                                              base::TimeDelta current_time) {
+void RendererMediaPlayerManager::OnTimeUpdate(
+    int player_id,
+    base::TimeDelta current_timestamp,
+    base::TimeTicks current_time_ticks) {
   WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
   if (player)
-    player->OnTimeUpdate(current_time);
+    player->OnTimeUpdate(current_timestamp, current_time_ticks);
 }
 
 void RendererMediaPlayerManager::OnMediaPlayerReleased(int player_id) {

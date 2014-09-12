@@ -56,7 +56,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return NULL;
   }
   virtual void OnTimeUpdate(int player_id,
-                            base::TimeDelta current_time) OVERRIDE {
+                            base::TimeDelta current_time,
+                            base::TimeTicks current_time_ticks) OVERRIDE {
     timestamp_updated_ = true;
   }
   virtual void OnMediaMetadataChanged(

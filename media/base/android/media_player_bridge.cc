@@ -11,15 +11,13 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "jni/MediaPlayerBridge_jni.h"
+#include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/android/media_url_interceptor.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
-
-// Time update happens every 250ms.
-const int kTimeUpdateInterval = 250;
 
 namespace media {
 
@@ -509,7 +507,8 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
 }
 
 void MediaPlayerBridge::OnTimeUpdateTimerFired() {
-  manager()->OnTimeUpdate(player_id(), GetCurrentTime());
+  manager()->OnTimeUpdate(
+      player_id(), GetCurrentTime(), base::TimeTicks::Now());
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {

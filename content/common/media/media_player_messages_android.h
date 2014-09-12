@@ -153,9 +153,10 @@ IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaVideoSizeChanged,
                     int /* height */)
 
 // The current play time has updated.
-IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaTimeUpdate,
+IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaTimeUpdate,
                     int /* player_id */,
-                    base::TimeDelta /* current_time */)
+                    base::TimeDelta /* current_timestamp */,
+                    base::TimeTicks /* current_time_ticks */)
 
 // The player has been released.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaPlayerReleased,

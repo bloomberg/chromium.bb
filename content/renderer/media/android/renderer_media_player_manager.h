@@ -131,10 +131,13 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnMediaPlaybackCompleted(int player_id);
   void OnMediaBufferingUpdate(int player_id, int percent);
   void OnSeekRequest(int player_id, const base::TimeDelta& time_to_seek);
-  void OnSeekCompleted(int player_id, const base::TimeDelta& current_time);
+  void OnSeekCompleted(int player_id,
+                       const base::TimeDelta& current_timestamp);
   void OnMediaError(int player_id, int error);
   void OnVideoSizeChanged(int player_id, int width, int height);
-  void OnTimeUpdate(int player_id, base::TimeDelta current_time);
+  void OnTimeUpdate(int player_id,
+                    base::TimeDelta current_timestamp,
+                    base::TimeTicks current_time_ticks);
   void OnMediaPlayerReleased(int player_id);
   void OnConnectedToRemoteDevice(int player_id,
       const std::string& remote_playback_message);

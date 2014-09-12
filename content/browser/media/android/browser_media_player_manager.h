@@ -75,7 +75,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // media::MediaPlayerManager overrides.
   virtual void OnTimeUpdate(
-      int player_id, base::TimeDelta current_time) OVERRIDE;
+      int player_id,
+      base::TimeDelta current_timestamp,
+      base::TimeTicks current_time_ticks) OVERRIDE;
   virtual void OnMediaMetadataChanged(
       int player_id,
       base::TimeDelta duration,

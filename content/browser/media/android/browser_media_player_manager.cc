@@ -193,10 +193,12 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
     player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
-void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
-                                             base::TimeDelta current_time) {
-  Send(
-      new MediaPlayerMsg_MediaTimeUpdate(RoutingID(), player_id, current_time));
+void BrowserMediaPlayerManager::OnTimeUpdate(
+    int player_id,
+    base::TimeDelta current_timestamp,
+    base::TimeTicks current_time_ticks) {
+  Send(new MediaPlayerMsg_MediaTimeUpdate(
+      RoutingID(), player_id, current_timestamp, current_time_ticks));
 }
 
 void BrowserMediaPlayerManager::SetVideoSurface(
