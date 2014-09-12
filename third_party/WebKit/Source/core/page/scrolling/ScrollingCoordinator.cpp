@@ -158,14 +158,13 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
     // The mainFrame view doesn't get included in the FrameTree below, so we
     // update its size separately.
     if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : 0) {
-        scrollingWebLayer->setBounds(frameView->contentsSize());
-        // If there is a fullscreen element, set the scroll clip layer to 0 so main frame won't scroll.
+        // If there is a fullscreen element, set the scroll bounds to empty so the main frame won't scroll.
         Document* mainFrameDocument = m_page->deprecatedLocalMainFrame()->document();
         Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*mainFrameDocument);
         if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
-            scrollingWebLayer->setScrollClipLayer(0);
+            scrollingWebLayer->setBounds(IntSize());
         else
-            scrollingWebLayer->setScrollClipLayer(toWebLayer(frameView->layerForContainer()));
+            scrollingWebLayer->setBounds(frameView->contentsSize());
     }
 
     const FrameTree& tree = m_page->mainFrame()->tree();

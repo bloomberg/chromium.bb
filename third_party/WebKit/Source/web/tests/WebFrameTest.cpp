@@ -5748,17 +5748,17 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
-    // Verify that the main frame is not scrollable.
+    // Verify that the main frame bounds are empty.
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_FALSE(webScrollLayer->scrollable());
+    ASSERT_EQ(WebSize(), webScrollLayer->bounds());
 
     // Verify that the main frame is scrollable upon exiting fullscreen.
     webViewImpl->didExitFullScreen();
     webViewImpl->layout();
     ASSERT_FALSE(Fullscreen::isFullScreen(*document));
     webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_NE(WebSize(), webScrollLayer->bounds());
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
