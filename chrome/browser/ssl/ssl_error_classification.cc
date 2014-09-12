@@ -65,6 +65,20 @@ enum SSLInterstitialCauseCaptivePortal {
   UNUSED_CAPTIVE_PORTAL_EVENT,
 };
 
+void RecordSSLInterstitialSeverityScore(float ssl_severity_score,
+                                        int cert_error) {
+  if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
+      SSLErrorInfo::CERT_DATE_INVALID) {
+    UMA_HISTOGRAM_COUNTS_100("interstitial.ssl.severity_score.date_invalid",
+                             static_cast<int>(ssl_severity_score * 100));
+  } else if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
+      SSLErrorInfo::CERT_COMMON_NAME_INVALID) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "interstitial.ssl.severity_score.common_name_invalid",
+        static_cast<int>(ssl_severity_score * 100));
+  }
+}
+
 // Scores/weights which will be constant through all the SSL error types.
 static const float kServerWeight = 0.5f;
 static const float kClientWeight = 0.5f;
@@ -207,8 +221,8 @@ void SSLErrorClassification::InvalidDateSeverityScore() {
   }
   if (current_time_ < cert_.valid_start())
     severity_date_score += kServerWeight * kNotYetValidWeight;
-  // TODO(felt): Record the severity score in a histogram. This will be
-  // in the next CL - just called the function in ssl_blocking_page.cc.
+
+  RecordSSLInterstitialSeverityScore(severity_date_score, cert_error_);
 }
 
 void SSLErrorClassification::InvalidCommonNameSeverityScore() {
@@ -246,9 +260,8 @@ void SSLErrorClassification::InvalidCommonNameSeverityScore() {
 
   severity_name_score += kClientWeight * kEnvironmentWeight *
       CalculateScoreEnvironments();
-  // TODO(felt): Record the severity score in a histogram. Same as above
-  // - this will be in the next CL. So just called the function in the
-  // ssl_blocking_page.cc.
+
+  RecordSSLInterstitialSeverityScore(severity_name_score, cert_error_);
 }
 
 void SSLErrorClassification::RecordUMAStatistics(

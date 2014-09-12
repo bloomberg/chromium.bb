@@ -10519,6 +10519,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.severity_score.common_name_invalid" units="%">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The likelihood of a |CERT_COMMON_NAME_INVALID| error being an attack.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.severity_score.date_invalid" units="%">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The likelihood of a |CERT_DATE_INVALID| error being an attack.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl_accept_time" units="milliseconds">
   <obsolete>
     Removed on 8/1/13.
