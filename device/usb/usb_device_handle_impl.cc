@@ -15,9 +15,9 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/usb/usb_context.h"
+#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_impl.h"
 #include "device/usb/usb_error.h"
-#include "device/usb/usb_interface.h"
 #include "device/usb/usb_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -182,18 +182,16 @@ void UsbDeviceHandleImpl::Transfer::Complete(UsbTransferStatus status,
   }
 }
 
-UsbDeviceHandleImpl::UsbDeviceHandleImpl(
-    scoped_refptr<UsbContext> context,
-    UsbDeviceImpl* device,
-    PlatformUsbDeviceHandle handle,
-    scoped_refptr<UsbConfigDescriptor> interfaces)
+UsbDeviceHandleImpl::UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
+                                         UsbDeviceImpl* device,
+                                         PlatformUsbDeviceHandle handle,
+                                         const UsbConfigDescriptor& config)
     : device_(device),
       handle_(handle),
-      interfaces_(interfaces),
+      config_(config),
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(handle) << "Cannot create device with NULL handle.";
-  DCHECK(interfaces_.get()) << "Unable to list interfaces";
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
@@ -661,16 +659,23 @@ void UsbDeviceHandleImpl::IsochronousTransfer(
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   endpoint_map_.clear();
-  for (ClaimedInterfaceMap::iterator it = claimed_interfaces_.begin();
-       it != claimed_interfaces_.end();
-       ++it) {
-    scoped_refptr<const UsbInterfaceAltSettingDescriptor> interface_desc =
-        interfaces_->GetInterface(it->first)
-            ->GetAltSetting(it->second->alternate_setting());
-    for (size_t i = 0; i < interface_desc->GetNumEndpoints(); i++) {
-      scoped_refptr<const UsbEndpointDescriptor> endpoint =
-          interface_desc->GetEndpoint(i);
-      endpoint_map_[endpoint->GetAddress()] = it->first;
+  for (ClaimedInterfaceMap::iterator claimedIt = claimed_interfaces_.begin();
+       claimedIt != claimed_interfaces_.end();
+       ++claimedIt) {
+    for (UsbInterfaceDescriptor::Iterator ifaceIt = config_.interfaces.begin();
+         ifaceIt != config_.interfaces.end();
+         ++ifaceIt) {
+      if (ifaceIt->interface_number == claimedIt->first &&
+          ifaceIt->alternate_setting ==
+              claimedIt->second->alternate_setting()) {
+        for (UsbEndpointDescriptor::Iterator endpointIt =
+                 ifaceIt->endpoints.begin();
+             endpointIt != ifaceIt->endpoints.end();
+             ++endpointIt) {
+          endpoint_map_[endpointIt->address] = claimedIt->first;
+        }
+        break;
+      }
     }
   }
 }

@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "device/usb/usb_device_handle.h"
-#include "device/usb/usb_interface.h"
 #include "net/base/io_buffer.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -24,7 +23,7 @@ class SingleThreadTaskRunner;
 namespace device {
 
 class UsbContext;
-class UsbConfigDescriptor;
+struct UsbConfigDescriptor;
 class UsbDeviceImpl;
 
 typedef libusb_device_handle* PlatformUsbDeviceHandle;
@@ -89,7 +88,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
                       UsbDeviceImpl* device,
                       PlatformUsbDeviceHandle handle,
-                      scoped_refptr<UsbConfigDescriptor> interfaces);
+                      const UsbConfigDescriptor& config);
 
   virtual ~UsbDeviceHandleImpl();
 
@@ -143,7 +142,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   PlatformUsbDeviceHandle handle_;
 
-  scoped_refptr<UsbConfigDescriptor> interfaces_;
+  const UsbConfigDescriptor& config_;
 
   std::vector<uint16> languages_;
   std::map<uint8, base::string16> strings_;
