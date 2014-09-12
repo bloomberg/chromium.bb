@@ -2107,13 +2107,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (void)enterHTML5FullscreenForURL:(const GURL&)url
                         bubbleType:(FullscreenExitBubbleType)bubbleType {
-  if (!chrome::mac::SupportsSystemFullscreen()) {
-    [self enterImmersiveFullscreen];
-    if (!url.is_empty())
-      [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
-  } else {
-    [self enterPresentationModeForURL:url bubbleType:bubbleType];
-  }
+  [self enterImmersiveFullscreen];
+  if (!url.is_empty())
+    [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
 }
 
 - (void)exitAnyFullscreen {

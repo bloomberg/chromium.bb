@@ -495,7 +495,7 @@ class Command;
 - (void)enterPresentationModeForURL:(const GURL&)url
                          bubbleType:(FullscreenExitBubbleType)bubbleType;
 
-// Tries to use AppKit Fullscreen, falls back to Immersive Fullscreen.
+// Enters Immersive Fullscreen for the given URL.
 - (void)enterHTML5FullscreenForURL:(const GURL&)url
                         bubbleType:(FullscreenExitBubbleType)bubbleType;
 
