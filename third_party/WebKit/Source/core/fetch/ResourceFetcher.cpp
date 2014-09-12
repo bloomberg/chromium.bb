@@ -51,6 +51,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/SubstituteData.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -568,7 +569,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
             effectiveFrame = toLocalFrame(frame()->tree().parent());
     }
 
-    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url);
+    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest.requestContext(), resourceRequest.frameType(), url);
 }
 
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
@@ -1194,6 +1195,7 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
 
     request.setCharset(encoding);
     request.setForPreload(true);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextPrefetch);
 
     ResourcePtr<Resource> resource;
     // Loading images involves several special cases, so use dedicated fetch method instead.
