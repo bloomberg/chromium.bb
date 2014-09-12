@@ -392,13 +392,32 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
           NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_SENT,
           base::Bind(&NetLogQuicStreamFrameCallback, frame.stream_frame));
       break;
-    case ACK_FRAME:
+    case ACK_FRAME: {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
-      if (frame.ack_frame->is_truncated)
-        ++num_truncated_acks_sent_;
+      const SequenceNumberSet& missing_packets =
+          frame.ack_frame->missing_packets;
+      const uint8 max_ranges = std::numeric_limits<uint8>::max();
+      // Compute an upper bound on the number of NACK ranges. If the bound
+      // is below the max, then it clearly isn't truncated.
+      if (missing_packets.size() < max_ranges ||
+          (*missing_packets.rbegin() - *missing_packets.begin() -
+           missing_packets.size() + 1) < max_ranges) {
+        break;
+      }
+      size_t num_ranges = 0;
+      QuicPacketSequenceNumber last_missing = 0;
+      for (SequenceNumberSet::const_iterator it = missing_packets.begin();
+           it != missing_packets.end(); ++it) {
+        if (*it != last_missing + 1 && ++num_ranges >= max_ranges) {
+          ++num_truncated_acks_sent_;
+          break;
+        }
+        last_missing = *it;
+      }
       break;
+    }
     case CONGESTION_FEEDBACK_FRAME:
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_SENT,

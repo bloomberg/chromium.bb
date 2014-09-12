@@ -14,6 +14,9 @@
 #include "net/quic/quic_protocol.h"
 
 namespace net {
+namespace test {
+class QuicConnectionLoggerPeer;
+}  // namespace test
 
 class CryptoHandshakeMessage;
 class CertVerifyResult;
@@ -81,6 +84,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnCertificateVerified(const CertVerifyResult& result);
 
  private:
+  friend class test::QuicConnectionLoggerPeer;
+
   // Do a factory get for a histogram for recording data, about individual
   // packet sequence numbers, that was gathered in the vectors
   // received_packets_ and received_acks_. |statistic_name| identifies which

@@ -1527,6 +1527,7 @@
       'quic/quic_clock_test.cc',
       'quic/quic_config_test.cc',
       'quic/quic_connection_helper_test.cc',
+      'quic/quic_connection_logger_unittest.cc',
       'quic/quic_connection_test.cc',
       'quic/quic_crypto_client_stream_test.cc',
       'quic/quic_crypto_server_stream_test.cc',
