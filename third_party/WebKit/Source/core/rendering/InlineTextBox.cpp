@@ -32,8 +32,9 @@
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
@@ -968,7 +969,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     context->setStrokeThickness(textDecorationThickness);
 
     bool antialiasDecoration = shouldSetDecorationAntialias(overline.style, underline.style, linethrough.style)
-        && RenderBoxModelObject::shouldAntialiasLines(context);
+        && BoxPainter::shouldAntialiasLines(context);
 
     // Offset between lines - always non-zero, so lines never cross each other.
     float doubleOffset = textDecorationThickness + 1.f;

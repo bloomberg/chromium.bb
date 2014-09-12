@@ -1142,7 +1142,7 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     borders.addBorder(rightVal, BSRight, renderRight, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), rightStyle);
 
     GraphicsContext* graphicsContext = paintInfo.context;
-    bool antialias = shouldAntialiasLines(graphicsContext);
+    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     for (CollapsedBorder* border = borders.nextBorder(); border; border = borders.nextBorder()) {
         if (border->borderValue.isSameIgnoringColor(*table()->currentBorderValue())) {
@@ -1198,17 +1198,17 @@ void RenderTableCell::paintBoxDecorationBackground(PaintInfo& paintInfo, const L
         return;
 
     LayoutRect paintRect = LayoutRect(paintOffset, pixelSnappedSize());
-    paintBoxShadow(paintInfo, paintRect, style(), Normal);
+    BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Normal);
 
     // Paint our cell background.
     paintBackgroundsBehindCell(paintInfo, paintOffset, this);
 
-    paintBoxShadow(paintInfo, paintRect, style(), Inset);
+    BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Inset);
 
     if (!style()->hasBorder() || tableElt->collapseBorders())
         return;
 
-    paintBorder(paintInfo, paintRect, style());
+    BoxPainter::paintBorder(*this, paintInfo, paintRect, style());
 }
 
 void RenderTableCell::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

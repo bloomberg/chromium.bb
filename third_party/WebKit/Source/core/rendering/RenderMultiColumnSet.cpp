@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
@@ -454,7 +455,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
     if (colCount <= 1)
         return;
 
-    bool antialias = shouldAntialiasLines(paintInfo.context);
+    bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
 
     bool leftToRight = style()->isLeftToRightDirection();
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : contentLogicalWidth();

@@ -27,6 +27,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
@@ -1450,7 +1451,7 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
     int outlineWidth = styleToUse->outlineWidth();
     EBorderStyle outlineStyle = styleToUse->outlineStyle();
 
-    bool antialias = shouldAntialiasLines(graphicsContext);
+    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     int offset = style()->outlineOffset();
 

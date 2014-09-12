@@ -164,9 +164,9 @@ void RenderFieldset::paintBoxDecorationBackground(PaintInfo& paintInfo, const La
     BoxDecorationData boxDecorationData(*style(), canRenderBorderImage(), backgroundHasOpaqueTopLayer(), paintInfo.context);
 
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)
-        paintBoxShadow(paintInfo, paintRect, style(), Normal);
+        BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Normal);
     BoxPainter(*this).paintFillLayers(paintInfo, boxDecorationData.backgroundColor, style()->backgroundLayers(), paintRect);
-    paintBoxShadow(paintInfo, paintRect, style(), Inset);
+    BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Inset);
 
     if (!boxDecorationData.hasBorder)
         return;
@@ -188,7 +188,7 @@ void RenderFieldset::paintBoxDecorationBackground(PaintInfo& paintInfo, const La
         graphicsContext->clipOut(pixelSnappedIntRect(clipLeft, paintRect.y() + legend->y(), clipWidth, legend->height()));
     }
 
-    paintBorder(paintInfo, paintRect, style());
+    BoxPainter::paintBorder(*this, paintInfo, paintRect, style());
 }
 
 void RenderFieldset::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

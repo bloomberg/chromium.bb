@@ -36,8 +36,9 @@
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
@@ -1816,7 +1817,7 @@ void RenderBlock::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pain
     ColumnInfo* colInfo = columnInfo();
     unsigned colCount = columnCount(colInfo);
 
-    bool antialias = shouldAntialiasLines(paintInfo.context);
+    bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
 
     if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
         bool leftToRight = style()->isLeftToRightDirection();

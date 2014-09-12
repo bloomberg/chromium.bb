@@ -1081,6 +1081,9 @@ public:
     void doNotUseInvalidatePaintForWholeRendererSynchronously() const { invalidatePaintForWholeRenderer(); }
     virtual LayoutRect viewRect() const;
 
+    // FIXME: make this not public.
+    void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
+
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 
@@ -1093,8 +1096,6 @@ protected:
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
     virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
 
-    void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide,
-                            Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
     void drawDashedOrDottedBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
         BoxSide, Color, int thickness, EBorderStyle, bool antialias);
     void drawDoubleBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
