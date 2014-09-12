@@ -1136,7 +1136,7 @@ void CompositedLayerMapping::updateScrollingBlockSelection()
 
     const IntRect blockSelectionGapsBounds = m_owningLayer.blockSelectionGapsBounds();
     const bool shouldDrawContent = !blockSelectionGapsBounds.isEmpty();
-    m_scrollingBlockSelectionLayer->setDrawsContent(shouldDrawContent);
+    m_scrollingBlockSelectionLayer->setDrawsContent(!paintsIntoCompositedAncestor() && shouldDrawContent);
     if (!shouldDrawContent)
         return;
 
@@ -1158,7 +1158,7 @@ void CompositedLayerMapping::updateDrawsContent()
         // m_scrollingLayer never has backing store.
         // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
         m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(renderer()->hasBackground() || paintsChildren());
-        m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
+        m_scrollingContentsLayer->setDrawsContent(!paintsIntoCompositedAncestor() && !m_scrollingContentsAreEmpty);
         updateScrollingBlockSelection();
     }
 
@@ -1181,6 +1181,12 @@ void CompositedLayerMapping::updateDrawsContent()
 
     if (m_backgroundLayer)
         m_backgroundLayer->setDrawsContent(hasPaintedContent);
+
+    if (m_maskLayer)
+        m_maskLayer->setDrawsContent(!paintsIntoCompositedAncestor());
+
+    if (m_childClippingMaskLayer)
+        m_childClippingMaskLayer->setDrawsContent(!paintsIntoCompositedAncestor());
 }
 
 void CompositedLayerMapping::updateChildrenTransform()
@@ -1457,7 +1463,6 @@ bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
     if (needsForegroundLayer) {
         if (!m_foregroundLayer) {
             m_foregroundLayer = createGraphicsLayer(CompositingReasonLayerForForeground);
-            m_foregroundLayer->setDrawsContent(true);
             m_foregroundLayer->setPaintingPhase(GraphicsLayerPaintForeground);
             layerChanged = true;
         }
@@ -1476,7 +1481,6 @@ bool CompositedLayerMapping::updateBackgroundLayer(bool needsBackgroundLayer)
     if (needsBackgroundLayer) {
         if (!m_backgroundLayer) {
             m_backgroundLayer = createGraphicsLayer(CompositingReasonLayerForBackground);
-            m_backgroundLayer->setDrawsContent(true);
             m_backgroundLayer->setTransformOrigin(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
 #if !OS(ANDROID)
@@ -1508,7 +1512,6 @@ bool CompositedLayerMapping::updateMaskLayer(bool needsMaskLayer)
     if (needsMaskLayer) {
         if (!m_maskLayer) {
             m_maskLayer = createGraphicsLayer(CompositingReasonLayerForMask);
-            m_maskLayer->setDrawsContent(true);
             m_maskLayer->setPaintingPhase(GraphicsLayerPaintMask);
             layerChanged = true;
         }
@@ -1526,7 +1529,6 @@ bool CompositedLayerMapping::updateClippingMaskLayers(bool needsChildClippingMas
     if (needsChildClippingMaskLayer) {
         if (!m_childClippingMaskLayer) {
             m_childClippingMaskLayer = createGraphicsLayer(CompositingReasonLayerForClippingMask);
-            m_childClippingMaskLayer->setDrawsContent(true);
             m_childClippingMaskLayer->setPaintingPhase(GraphicsLayerPaintChildClippingMask);
             layerChanged = true;
         }
@@ -1551,7 +1553,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
 
             // Inner layer which renders the content that scrolls.
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
-            m_scrollingContentsLayer->setDrawsContent(true);
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 
             m_scrollingBlockSelectionLayer = createGraphicsLayer(CompositingReasonLayerForScrollingBlockSelection);
