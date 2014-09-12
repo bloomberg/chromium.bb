@@ -252,7 +252,7 @@ class Builder(object):
       self.compile_options.append('-g')
 
     # Set up optimization level.
-    if options.build_config.startswith('Debug') or options.fast_build != '0':
+    if options.build_config.startswith('Debug'):
       self.compile_options.append('-O0')
       if (self.is_pnacl_toolchain
           and (self.outtype == 'nlib'
