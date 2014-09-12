@@ -96,4 +96,13 @@ typedef struct { uint_t atomic; } atomic_t;
 #error libdrm requires atomic operations, please define them for your CPU/compiler.
 #endif
 
+static inline int atomic_add_unless(atomic_t *v, int add, int unless)
+{
+	int c, old;
+	c = atomic_read(v);
+	while (c != unless && (old = atomic_cmpxchg(v, c, c + add)) != c)
+		c = old;
+	return c == unless;
+}
+
 #endif
