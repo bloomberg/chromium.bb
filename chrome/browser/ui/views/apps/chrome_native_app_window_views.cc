@@ -648,6 +648,7 @@ void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
     if (had_shape)
       native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
   }
+  widget()->OnSizeConstraintsChanged();
 }
 
 bool ChromeNativeAppWindowViews::HasFrameColor() const {
