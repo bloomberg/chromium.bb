@@ -155,6 +155,7 @@ class SCMTestBase(unittest.TestCase):
         self._svn_commit('add trunk')
 
         self._rmtree(svn_checkout_path)
+        self._chdir(self.original_cwd)
 
         self._set_up_svn_test_commits(svn_repo_url + "/trunk")
         return svn_repo_path
@@ -197,6 +198,7 @@ class SCMTestBase(unittest.TestCase):
         # svn does not seem to update after commit as I would expect.
         self._run(['svn', 'update'])
         self._rmtree(svn_checkout_path)
+        self._chdir(self.original_cwd)
 
     def _tear_down_svn_checkout(self):
         self._rmtree(self.temp_directory)
