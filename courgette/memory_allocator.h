@@ -333,6 +333,12 @@ class NoThrowBuffer {
     if (size < kStartSize)
       size = kStartSize;
 
+    // Use a size 1% higher than requested. In practice, this makes Courgette as
+    // much as 5x faster on typical Chrome update payloads as a lot of future
+    // reserve() calls will become no-ops instead of costly resizes that copy
+    // all the data. Note that doing this here instead of outside the function
+    // is more efficient, since it's after the no-op early return checks above.
+    size *= 1.01;
     T* new_buffer = alloc_.allocate(size);
     if (!new_buffer) {
       clear();
