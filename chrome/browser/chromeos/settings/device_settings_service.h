@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "components/ownership/owner_settings_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "crypto/scoped_nss_types.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -81,6 +80,48 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
     // Gets call after updates to the device settings.
     virtual void DeviceSettingsUpdated() = 0;
+  };
+
+  class PrivateKeyDelegate {
+   public:
+    typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
+    typedef base::Callback<void(std::string policy_blob)>
+        AssembleAndSignPolicyCallback;
+
+    virtual ~PrivateKeyDelegate() {}
+
+    // Returns whether current user is owner or not. When this method
+    // is called too early, incorrect result can be returned because
+    // private key loading may be in progress.
+    virtual bool IsOwner() = 0;
+
+    // Determines whether current user is owner or not, responds via
+    // |callback|.
+    virtual void IsOwnerAsync(const IsOwnerCallback& callback) = 0;
+
+    // Assembles and signs |policy|, responds via |callback|.
+    virtual bool AssembleAndSignPolicyAsync(
+        scoped_ptr<enterprise_management::PolicyData> policy,
+        const AssembleAndSignPolicyCallback& callback) = 0;
+
+    // Signs |settings| with the private half of the owner key and sends
+    // the resulting policy blob to session manager for storage. The
+    // result of the operation is reported through |callback|. If
+    // successful, the updated device settings are present in
+    // policy_data() and device_settings() when the callback runs.
+    virtual void SignAndStoreAsync(
+        scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> settings,
+        const base::Closure& callback) = 0;
+
+    // Sets the management related settings in PolicyData. Note that if
+    // |management_mode| is NOT_MANAGED, |request_token| and |device_id|
+    // should be empty strings. The result of the operation is reported
+    // through |callback|.
+    virtual void SetManagementSettingsAsync(
+        enterprise_management::PolicyData::ManagementMode management_mode,
+        const std::string& request_token,
+        const std::string& device_id,
+        const base::Closure& callback) = 0;
   };
 
   // Manage singleton instance.
@@ -164,9 +205,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Sets the identity of the user that's interacting with the service. This is
   // relevant only for writing settings through SignAndStore().
   void InitOwner(const std::string& username,
-                 const base::WeakPtr<ownership::OwnerSettingsService>&
-                     owner_settings_service);
-
+                 const base::WeakPtr<PrivateKeyDelegate>& delegate);
   const std::string& GetUsername() const;
 
   // Adds an observer.
@@ -179,7 +218,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   virtual void PropertyChangeComplete(bool success) OVERRIDE;
 
  private:
-  friend class OwnerSettingsServiceChromeOS;
+  friend class OwnerSettingsService;
 
   // Enqueues a new operation. Takes ownership of |operation| and starts it
   // right away if there is no active operation currently.
@@ -226,7 +265,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   std::string username_;
   scoped_refptr<ownership::PublicKey> public_key_;
-  base::WeakPtr<ownership::OwnerSettingsService> owner_settings_service_;
+  base::WeakPtr<PrivateKeyDelegate> delegate_;
 
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
   scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;

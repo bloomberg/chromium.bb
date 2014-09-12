@@ -251,23 +251,22 @@ SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
 SignAndStoreSettingsOperation::~SignAndStoreSettingsOperation() {}
 
 void SignAndStoreSettingsOperation::Run() {
-  if (!owner_settings_service_) {
+  if (!delegate_) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
-  owner_settings_service_->IsOwnerAsync(
+  delegate_->IsOwnerAsync(
       base::Bind(&SignAndStoreSettingsOperation::StartSigning,
                  weak_factory_.GetWeakPtr()));
 }
 
 void SignAndStoreSettingsOperation::StartSigning(bool is_owner) {
-  if (!owner_settings_service_ || !is_owner) {
+  if (!delegate_ || !is_owner) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
 
-  bool rv = owner_settings_service_->AssembleAndSignPolicyAsync(
-      content::BrowserThread::GetBlockingPool(),
+  bool rv = delegate_->AssembleAndSignPolicyAsync(
       new_policy_.Pass(),
       base::Bind(&SignAndStoreSettingsOperation::StoreDeviceSettingsBlob,
                  weak_factory_.GetWeakPtr()));

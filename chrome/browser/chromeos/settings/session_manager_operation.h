@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "components/ownership/owner_settings_service.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace enterprise_management {
@@ -70,9 +69,9 @@ class SessionManagerOperation {
 
   void set_username(const std::string& username) { username_ = username; }
 
-  void set_owner_settings_service(const base::WeakPtr<
-      ownership::OwnerSettingsService>& owner_settings_service) {
-    owner_settings_service_ = owner_settings_service;
+  void set_delegate(const base::WeakPtr<
+      DeviceSettingsService::PrivateKeyDelegate>& delegate) {
+    delegate_ = delegate;
   }
 
  protected:
@@ -93,7 +92,7 @@ class SessionManagerOperation {
     return session_manager_client_;
   }
 
-  base::WeakPtr<ownership::OwnerSettingsService> owner_settings_service_;
+  base::WeakPtr<DeviceSettingsService::PrivateKeyDelegate> delegate_;
 
  private:
   // Loads the owner key from disk. Must be run on a thread that can do I/O.
