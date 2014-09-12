@@ -682,9 +682,14 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
     }
 }
 
-Scrollbar* ScrollView::scrollbarAtPoint(const IntPoint& windowPoint)
+Scrollbar* ScrollView::scrollbarAtWindowPoint(const IntPoint& windowPoint)
 {
     IntPoint viewPoint = convertFromContainingWindow(windowPoint);
+    return scrollbarAtViewPoint(viewPoint);
+}
+
+Scrollbar* ScrollView::scrollbarAtViewPoint(const IntPoint& viewPoint)
+{
     if (m_horizontalScrollbar && m_horizontalScrollbar->shouldParticipateInHitTesting() && m_horizontalScrollbar->frameRect().contains(viewPoint))
         return m_horizontalScrollbar.get();
     if (m_verticalScrollbar && m_verticalScrollbar->shouldParticipateInHitTesting() && m_verticalScrollbar->frameRect().contains(viewPoint))

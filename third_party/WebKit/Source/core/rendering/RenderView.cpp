@@ -102,7 +102,15 @@ bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     // Note that Document::updateLayout calls its parent's updateLayout.
     // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
     frameView()->updateLayoutAndStyleIfNeededRecursive();
-    return layer()->hitTest(request, location, result);
+
+    bool hitLayer = layer()->hitTest(request, location, result);
+
+    // ScrollView scrollbars are not the same as RenderLayer scrollbars tested by RenderLayer::hitTestOverflowControls,
+    // so we need to test ScrollView scrollbars separately here.
+    if (Scrollbar* frameScrollbar = frameView()->scrollbarAtViewPoint(location.roundedPoint()))
+        result.setScrollbar(frameScrollbar);
+
+    return hitLayer;
 }
 
 void RenderView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const

@@ -204,7 +204,8 @@ public:
     virtual void setFrameRect(const IntRect&) OVERRIDE;
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
-    Scrollbar* scrollbarAtPoint(const IntPoint& windowPoint);
+    Scrollbar* scrollbarAtWindowPoint(const IntPoint& windowPoint);
+    Scrollbar* scrollbarAtViewPoint(const IntPoint& viewPoint);
 
     virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const OVERRIDE
     {

@@ -1432,9 +1432,6 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode())
         m_resizeScrollableArea->resize(mouseEvent, m_offsetFromResizeCorner);
     else {
-        if (FrameView* view = m_frame->view())
-            scrollbar = view->scrollbarAtPoint(mouseEvent.position());
-
         if (!scrollbar)
             scrollbar = mev.scrollbar();
 
@@ -1876,7 +1873,7 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
     if (FrameView* view = m_frame->view()) {
-        if (view->scrollbarAtPoint(mouseEvent.position()))
+        if (view->scrollbarAtWindowPoint(mouseEvent.position()))
             return false;
     }
 
@@ -2158,8 +2155,6 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
         m_previousGestureScrolledNode = nullptr;
 
         if (!scrollbar)
-            scrollbar = view->scrollbarAtPoint(gestureEvent.position());
-        if (!scrollbar)
             scrollbar = result.scrollbar();
     }
 
@@ -2205,6 +2200,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 {
     RefPtr<FrameView> protector(m_frame->view());
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
+    HitTestRequest::HitTestRequestType hitType = getHitTypeForGestureType(gestureEvent.type());
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
@@ -2236,7 +2232,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     // could have seen the event anyway).
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
     if (currentHitTest.innerNode())
-        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
+        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     m_clickNode = currentHitTest.innerNode();
     if (m_clickNode && m_clickNode->isTextNode())
         m_clickNode = NodeRenderingTraversal::parent(m_clickNode.get());
@@ -2252,7 +2248,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
     if (currentHitTest.innerNode())
-        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
+        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
@@ -2584,14 +2580,6 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
     }
     HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, padding);
 
-    // Hit-test the main frame scrollbars (in addition to the child-frame and RenderLayer
-    // scroll bars checked by the hit-test code.
-    if (!hitTestResult.scrollbar()) {
-        if (FrameView* view = m_frame->view()) {
-            hitTestResult.setScrollbar(view->scrollbarAtPoint(gestureEvent.position()));
-        }
-    }
-
     // Adjust the location of the gesture to the most likely nearby node, as appropriate for the
     // type of event.
     PlatformGestureEvent adjustedEvent = gestureEvent;
@@ -2606,12 +2594,6 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
         if (!hitFrame)
             hitFrame = m_frame;
         hitTestResult = hitTestResultInFrame(hitFrame, hitFrame->view()->windowToContents(adjustedEvent.position()), hitType | HitTestRequest::ReadOnly);
-        // FIXME: HitTest entry points should really check for main frame scrollbars themselves.
-        if (!hitTestResult.scrollbar()) {
-            if (FrameView* view = m_frame->view()) {
-                hitTestResult.setScrollbar(view->scrollbarAtPoint(gestureEvent.position()));
-            }
-        }
     }
 
     // If we did a rect-based hit test it must be resolved to the best single node by now to
@@ -2635,7 +2617,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
 
 HitTestRequest::HitTestRequestType EventHandler::getHitTypeForGestureType(PlatformEvent::Type type)
 {
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent | HitTestRequest::AllowFrameScrollbars;
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
     switch (type) {
     case PlatformEvent::GestureShowPress:
     case PlatformEvent::GestureTapUnconfirmed:
@@ -3459,14 +3441,7 @@ void EventHandler::setFrameWasScrolledByUser()
 
 bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev)
 {
-    // First try to use the frame scrollbar.
-    FrameView* view = m_frame->view();
-    Scrollbar* scrollbar = view ? view->scrollbarAtPoint(mev.event().position()) : 0;
-
-    // Then try the scrollbar in the hit test.
-    if (!scrollbar)
-        scrollbar = mev.scrollbar();
-
+    Scrollbar* scrollbar = mev.scrollbar();
     updateLastScrollbarUnderMouse(scrollbar, true);
 
     if (!scrollbar || !scrollbar->enabled())
@@ -3519,7 +3494,7 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
     if (!frame || !frame->contentRenderer())
         return result;
     if (frame->view()) {
-        IntRect rect = frame->view()->visibleContentRect();
+        IntRect rect = frame->view()->visibleContentRect(IncludeScrollbars);
         if (!rect.contains(roundedIntPoint(point)))
             return result;
     }

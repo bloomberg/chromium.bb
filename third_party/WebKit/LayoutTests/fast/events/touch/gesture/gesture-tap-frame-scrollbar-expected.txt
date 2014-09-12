@@ -6,17 +6,26 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test case: Tap on consistent scrollbar
 Sending GestureTap
+Received mousemove in child frame
+Received mousedown in child frame
+Received mouseup in child frame
+Received click in child frame
 
 Test case: Add scrollbars during mousemove
 Sending GestureTap
 Received mousemove in child frame
 Adding scrollbars to iframe
+Received mousedown in child frame
+Received mouseup in child frame
+Received click in child frame
 
 Test case: Add scrollbars during mousedown
 Sending GestureTap
 Received mousemove in child frame
 Received mousedown in child frame
 Adding scrollbars to iframe
+Received mouseup in child frame
+Received click in child frame
 
 Test case: Add scrollbars during mouseup
 Sending GestureTap
