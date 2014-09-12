@@ -15,14 +15,15 @@
                  "recent emacsen), not from the older and less maintained "
                  "python-mode.el")))
 
-(defadvice python-calculate-indentation (after ami-outdent-closing-parens
-                                               activate)
+(defadvice python-indent-calculate-levels (after gyp-outdent-closing-parens
+                                                 activate)
   "De-indent closing parens, braces, and brackets in gyp-mode."
-  (if (and (eq major-mode 'gyp-mode)
-           (string-match "^ *[])}][],)}]* *$"
-                         (buffer-substring-no-properties
-                          (line-beginning-position) (line-end-position))))
-      (setq ad-return-value (- ad-return-value 2))))
+  (when (and (eq major-mode 'gyp-mode)
+             (string-match "^ *[])}][],)}]* *$"
+                           (buffer-substring-no-properties
+                            (line-beginning-position) (line-end-position))))
+    (setf (first python-indent-levels)
+          (- (first python-indent-levels) python-indent-offset))))
 
 (define-derived-mode gyp-mode python-mode "Gyp"
   "Major mode for editing .gyp files. See http://code.google.com/p/gyp/"
@@ -36,8 +37,8 @@
 (defun gyp-set-indentation ()
   "Hook function to configure python indentation to suit gyp mode."
   (setq python-continuation-offset 2
-        python-indent 2
-        python-guess-indent nil))
+        python-indent-offset 2
+        python-indent-guess-indent-offset nil))
 
 (add-hook 'gyp-mode-hook 'gyp-set-indentation)
 
@@ -218,8 +219,8 @@
     ;; Top-level keywords
     (list (concat "['\"]\\("
               (regexp-opt (list "action" "action_name" "actions" "cflags"
-                                "conditions" "configurations" "copies" "defines"
-                                "dependencies" "destination"
+                                "cflags_cc" "conditions" "configurations"
+                                "copies" "defines" "dependencies" "destination"
                                 "direct_dependent_settings"
                                 "export_dependent_settings" "extension" "files"
                                 "include_dirs" "includes" "inputs" "libraries"
