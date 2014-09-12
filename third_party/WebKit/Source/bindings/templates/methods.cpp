@@ -91,9 +91,6 @@ RefPtr<{{argument.idl_type}}> {{argument.name}}
 {%- else %}
 OwnPtrWillBeRawPtr<{{argument.idl_type}}> {{argument.name}} = nullptr;
 {%- endif %}{# argument.idl_type == 'EventListener' #}
-{%- elif argument.is_clamp %}{# argument.is_callback_interface #}
-{# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
-{{argument.cpp_type}} {{argument.name}} = 0
 {%- else %}
 {{argument.cpp_type}} {{argument.name}}
 {%- endif %}
@@ -162,18 +159,6 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
 {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
-{% elif argument.is_clamp %}{# argument.is_callback_interface #}
-{# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
-double {{argument.name}}NativeValue;
-{% if method.idl_type == 'Promise' %}
-TONATIVE_VOID_PROMISE_INTERNAL({{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue(), info);
-{% else %}
-TONATIVE_VOID_INTERNAL({{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
-{% endif %}
-if (!std::isnan({{argument.name}}NativeValue))
-    {# IDL type is used for clamping, for the right bounds, since different
-       IDL integer types have same internal C++ type (int or unsigned) #}
-    {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
 {% elif argument.idl_type == 'SerializedScriptValue' %}
 {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, exceptionState, info.GetIsolate());
 if (exceptionState.hadException()) {

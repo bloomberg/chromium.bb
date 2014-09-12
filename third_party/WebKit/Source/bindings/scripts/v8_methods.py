@@ -54,7 +54,6 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 
 def argument_needs_try_catch(method, argument):
     return_promise = method.idl_type and method.idl_type.name == 'Promise'
-    is_clamp = 'Clamp' in argument.extended_attributes
     idl_type = argument.idl_type
     base_type = idl_type.base_type
 
@@ -74,8 +73,7 @@ def argument_needs_try_catch(method, argument):
         # exceptions via it, and doesn't need/use a TryCatch, except if the
         # argument has [Clamp], in which case it uses a separate code path in
         # Source/bindings/templates/methods.cpp, which *does* use a TryCatch.
-        (idl_type.v8_conversion_needs_exception_state and
-         not is_clamp))
+        idl_type.v8_conversion_needs_exception_state)
 
 
 def use_local_result(method):
@@ -254,7 +252,6 @@ def argument_context(interface, method, argument, index):
         'idl_type': idl_type.base_type,
         'idl_type_object': idl_type,
         'index': index,
-        'is_clamp': 'Clamp' in extended_attributes,
         'is_callback_interface': idl_type.is_callback_interface,
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,

@@ -497,6 +497,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
+    elif 'Clamp' in extended_attributes:
+        arguments = ', '.join([v8_value, 'Clamp', 'exceptionState'])
     elif idl_type.v8_conversion_needs_exception_state:
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:

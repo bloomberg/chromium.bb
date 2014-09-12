@@ -197,6 +197,8 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
             exceptionState.throwTypeError("Value is outside the '" + String(typeName) + "' value range.");
             return 0;
         }
+        if (configuration == Clamp)
+            return clampTo<T>(result);
         result %= LimitsTrait::numberOfValues;
         return static_cast<T>(result > LimitsTrait::maxValue ? result - LimitsTrait::numberOfValues : result);
     }
@@ -215,7 +217,13 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
         return enforceRange(numberObject->Value(), LimitsTrait::minValue, LimitsTrait::maxValue, typeName, exceptionState);
 
     double numberValue = numberObject->Value();
-    if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
+    if (std::isnan(numberValue) || !numberValue)
+        return 0;
+
+    if (configuration == Clamp)
+        return clampTo<T>(numberValue);
+
+    if (std::isinf(numberValue))
         return 0;
 
     numberValue = numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
@@ -238,6 +246,8 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
             exceptionState.throwTypeError("Value is outside the '" + String(typeName) + "' value range.");
             return 0;
         }
+        if (configuration == Clamp)
+            return clampTo<T>(result);
         return static_cast<T>(result);
     }
 
@@ -254,13 +264,16 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue, typeName, exceptionState);
 
-    // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
-    if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
+
+    if (std::isnan(numberValue) || !numberValue)
         return 0;
 
     if (configuration == Clamp)
-        return clampTo<T>(numberObject->Value());
+        return clampTo<T>(numberValue);
+
+    if (std::isinf(numberValue))
+        return 0;
 
     numberValue = numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
     return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
@@ -329,13 +342,16 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, "long", exceptionState);
 
-    // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
-    if (std::isnan(numberValue) || std::isinf(numberValue))
+
+    if (std::isnan(numberValue))
         return 0;
 
     if (configuration == Clamp)
-        return clampTo<int32_t>(numberObject->Value());
+        return clampTo<int32_t>(numberValue);
+
+    if (std::isinf(numberValue))
+        return 0;
 
     return numberObject->Int32Value();
 }
@@ -361,6 +377,8 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
             exceptionState.throwTypeError("Value is outside the 'unsigned long' value range.");
             return 0;
         }
+        if (configuration == Clamp)
+            return clampTo<uint32_t>(result);
         return result;
     }
 
@@ -377,13 +395,16 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), 0, kMaxUInt32, "unsigned long", exceptionState);
 
-    // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
-    if (std::isnan(numberValue) || std::isinf(numberValue))
+
+    if (std::isnan(numberValue))
         return 0;
 
     if (configuration == Clamp)
-        return clampTo<uint32_t>(numberObject->Value());
+        return clampTo<uint32_t>(numberValue);
+
+    if (std::isinf(numberValue))
+        return 0;
 
     return numberObject->Uint32Value();
 }
@@ -396,6 +417,9 @@ uint32_t toUInt32(v8::Handle<v8::Value> value)
 
 int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
+    // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
+    ASSERT(configuration != Clamp);
+
     // Fast case. The value is a 32-bit integer.
     if (value->IsInt32())
         return value->Int32Value();
@@ -410,18 +434,17 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
 
     ASSERT(!numberObject.IsEmpty());
 
-    double x = numberObject->Value();
+    double numberValue = numberObject->Value();
 
     if (configuration == EnforceRange)
-        return enforceRange(x, -kJSMaxInteger, kJSMaxInteger, "long long", exceptionState);
+        return enforceRange(numberValue, -kJSMaxInteger, kJSMaxInteger, "long long", exceptionState);
 
-    // Does the value convert to nan or to an infinity?
-    if (std::isnan(x) || std::isinf(x))
+    if (std::isnan(numberValue) || std::isinf(numberValue))
         return 0;
 
     // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
     unsigned long long integer;
-    doubleToInteger(x, integer);
+    doubleToInteger(numberValue, integer);
     return integer;
 }
 
@@ -446,6 +469,8 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
             exceptionState.throwTypeError("Value is outside the 'unsigned long long' value range.");
             return 0;
         }
+        if (configuration == Clamp)
+            return clampTo<uint64_t>(result);
         return result;
     }
 
@@ -459,18 +484,23 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
 
     ASSERT(!numberObject.IsEmpty());
 
-    double x = numberObject->Value();
+    double numberValue = numberObject->Value();
 
     if (configuration == EnforceRange)
-        return enforceRange(x, 0, kJSMaxInteger, "unsigned long long", exceptionState);
+        return enforceRange(numberValue, 0, kJSMaxInteger, "unsigned long long", exceptionState);
 
-    // Does the value convert to nan or to an infinity?
-    if (std::isnan(x) || std::isinf(x))
+    if (std::isnan(numberValue))
+        return 0;
+
+    if (configuration == Clamp)
+        return clampTo<uint64_t>(numberValue);
+
+    if (std::isinf(numberValue))
         return 0;
 
     // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
     unsigned long long integer;
-    doubleToInteger(x, integer);
+    doubleToInteger(numberValue, integer);
     return integer;
 }
 

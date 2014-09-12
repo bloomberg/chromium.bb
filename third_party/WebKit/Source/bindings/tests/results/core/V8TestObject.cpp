@@ -8310,14 +8310,9 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    unsigned clampUnsignedShortArg = 0;
+    unsigned clampUnsignedShortArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        double clampUnsignedShortArgNativeValue;
-        TONATIVE_VOID_INTERNAL(clampUnsignedShortArgNativeValue, info[0]->NumberValue());
-        if (!std::isnan(clampUnsignedShortArgNativeValue))
-            clampUnsignedShortArg = clampTo<unsigned short>(clampUnsignedShortArgNativeValue);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(clampUnsignedShortArg, toUInt16(info[0], Clamp, exceptionState), exceptionState);
     }
     impl->voidMethodClampUnsignedShortArg(clampUnsignedShortArg);
 }
@@ -8338,14 +8333,9 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    unsigned clampUnsignedLongArg = 0;
+    unsigned clampUnsignedLongArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        double clampUnsignedLongArgNativeValue;
-        TONATIVE_VOID_INTERNAL(clampUnsignedLongArgNativeValue, info[0]->NumberValue());
-        if (!std::isnan(clampUnsignedLongArgNativeValue))
-            clampUnsignedLongArg = clampTo<unsigned long>(clampUnsignedLongArgNativeValue);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(clampUnsignedLongArg, toUInt32(info[0], Clamp, exceptionState), exceptionState);
     }
     impl->voidMethodClampUnsignedLongArg(clampUnsignedLongArg);
 }
