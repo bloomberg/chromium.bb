@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_power_monitor.h"
@@ -51,11 +52,6 @@
 //
 
 namespace media {
-
-// Only do power monitoring for non-mobile platforms that need it for the UI.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#define AUDIO_POWER_MONITORING
-#endif
 
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
@@ -109,6 +105,16 @@ class MEDIA_EXPORT AudioOutputController
       AudioManager* audio_manager, EventHandler* event_handler,
       const AudioParameters& params, const std::string& output_device_id,
       SyncReader* sync_reader);
+
+  // Indicates whether audio power level analysis will be performed.  If false,
+  // ReadCurrentPowerAndClip() can not be called.
+  static bool will_monitor_audio_levels() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    return false;
+#else
+    return true;
+#endif
+  }
 
   // Methods to control playback of the stream.
 
@@ -178,6 +184,10 @@ class MEDIA_EXPORT AudioOutputController
     kError,
   };
 
+  // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments
+  // for semantics.  This value was arbitrarily chosen, but seems to work well.
+  enum { kPowerMeasurementTimeConstantMillis = 10 };
+
   friend class base::RefCountedThreadSafe<AudioOutputController>;
   virtual ~AudioOutputController();
 
@@ -235,10 +245,8 @@ class MEDIA_EXPORT AudioOutputController
   // The message loop of audio manager thread that this object runs on.
   const scoped_refptr<base::SingleThreadTaskRunner> message_loop_;
 
-#if defined(AUDIO_POWER_MONITORING)
   // Scans audio samples from OnMoreData() as input to compute power levels.
   AudioPowerMonitor power_monitor_;
-#endif
 
   // Flags when we've asked for a stream to start but it never did.
   base::AtomicRefCount on_more_io_data_called_;

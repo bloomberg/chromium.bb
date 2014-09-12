@@ -15,5 +15,4 @@ per-file cast_*=mikhal@chromium.org
 per-file cast_*=pwestin@google.com
 
 # For changes related to the tab media indicators.
-per-file audio_stream_monitor*=miu@chromium.org
 per-file media_stream_capture_indicator*=miu@chromium.org

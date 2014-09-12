@@ -38,6 +38,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/midi_dispatcher_host.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
@@ -376,7 +377,8 @@ WebContentsImpl::WebContentsImpl(
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
       accessibility_mode_(
-          BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()) {
+          BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
+      audio_stream_monitor_(this) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
   frame_tree_.SetFrameRemoveListener(
@@ -1009,6 +1011,18 @@ bool WebContentsImpl::IsBeingDestroyed() const {
 
 void WebContentsImpl::NotifyNavigationStateChanged(
     InvalidateTypes changed_flags) {
+  // Create and release the audio power save blocker depending on whether the
+  // tab is actively producing audio or not.
+  if (changed_flags == INVALIDATE_TYPE_TAB &&
+      AudioStreamMonitor::monitoring_available()) {
+    if (WasRecentlyAudible()) {
+      if (!audio_power_save_blocker_)
+        CreateAudioPowerSaveBlocker();
+    } else {
+      audio_power_save_blocker_.reset();
+    }
+  }
+
   if (delegate_)
     delegate_->NavigationStateChanged(this, changed_flags);
 }
@@ -1042,6 +1056,10 @@ void WebContentsImpl::WasShown() {
     rvh->ResizeRectChanged(GetRootWindowResizerRect());
   }
 
+  // Restore power save blocker if there are active video players running.
+  if (!active_video_players_.empty() && !video_power_save_blocker_)
+    CreateVideoPowerSaveBlocker();
+
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
 
   should_normally_be_visible_ = true;
@@ -1064,6 +1082,9 @@ void WebContentsImpl::WasHidden() {
       if (*iter)
         (*iter)->Hide();
     }
+
+    // Release any video power save blockers held as video is not visible.
+    video_power_save_blocker_.reset();
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasHidden());
@@ -2388,6 +2409,10 @@ void WebContentsImpl::InsertCSS(const std::string& css) {
       GetMainFrame()->GetRoutingID(), css));
 }
 
+bool WebContentsImpl::WasRecentlyAudible() {
+  return audio_stream_monitor_.WasRecentlyAudible();
+}
+
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(url::kAboutBlankURL))
@@ -3001,43 +3026,70 @@ void WebContentsImpl::OnUpdateFaviconURL(
                     DidUpdateFaviconURL(candidates));
 }
 
+void WebContentsImpl::CreateAudioPowerSaveBlocker() {
+  // ChromeOS has its own way of handling power save blocks for media.
+#if !defined(OS_CHROMEOS)
+  DCHECK(!audio_power_save_blocker_);
+  audio_power_save_blocker_ = PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension, "Playing Audio");
+#endif
+}
+
+void WebContentsImpl::CreateVideoPowerSaveBlocker() {
+  // ChromeOS has its own way of handling power save blocks for media.
+#if !defined(OS_CHROMEOS)
+  DCHECK(!video_power_save_blocker_);
+  DCHECK(!active_video_players_.empty());
+  video_power_save_blocker_ = PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep, "Playing Video");
+#if defined(OS_ANDROID)
+  static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
+      ->InitDisplaySleepBlocker(GetView()->GetNativeView());
+#endif
+#endif
+}
+
+void WebContentsImpl::MaybeReleasePowerSaveBlockers() {
+  // If there are no more audio players and we don't have audio stream
+  // monitoring, release the audio power save blocker here instead of during
+  // NotifyNavigationStateChanged().
+  if (active_audio_players_.empty() &&
+      !AudioStreamMonitor::monitoring_available()) {
+    audio_power_save_blocker_.reset();
+  }
+
+  // If there are no more video players, clear the video power save blocker.
+  if (active_video_players_.empty())
+    video_power_save_blocker_.reset();
+}
+
 void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
                                                  bool has_video,
                                                  bool has_audio) {
-#if !defined(OS_CHROMEOS)
-  scoped_ptr<PowerSaveBlocker> blocker;
-  if (has_video) {
-    blocker = PowerSaveBlocker::Create(
-        PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep, "Playing video");
-#if defined(OS_ANDROID)
-    static_cast<PowerSaveBlockerImpl*>(blocker.get())
-        ->InitDisplaySleepBlocker(GetView()->GetNativeView());
-#endif
-  } else if (has_audio) {
-    blocker = PowerSaveBlocker::Create(
-        PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension, "Playing audio");
+  if (has_audio) {
+    AddMediaPlayerEntry(player_cookie, &active_audio_players_);
+
+    // If we don't have audio stream monitoring, allocate the audio power save
+    // blocker here instead of during NotifyNavigationStateChanged().
+    if (!audio_power_save_blocker_ &&
+        !AudioStreamMonitor::monitoring_available()) {
+      CreateAudioPowerSaveBlocker();
+    }
   }
 
-  if (blocker) {
-    uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_message_source_);
-    if (!power_save_blockers_.contains(key)) {
-      power_save_blockers_.add(key,
-                               make_scoped_ptr(new PowerSaveBlockerMapEntry));
-    }
-    PowerSaveBlockerMapEntry* map_entry =
-        power_save_blockers_.get(key);
-    map_entry->set(player_cookie, blocker.Pass());
+  if (has_video) {
+    AddMediaPlayerEntry(player_cookie, &active_video_players_);
+
+    // If we're not hidden and have just created a player, create a blocker.
+    if (!video_power_save_blocker_ && !IsHidden())
+      CreateVideoPowerSaveBlocker();
   }
-#endif  // !defined(OS_CHROMEOS)
 }
 
 void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
-#if !defined(OS_CHROMEOS)
-  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_message_source_);
-  PowerSaveBlockerMapEntry* map_entry = power_save_blockers_.get(key);
-  if (map_entry)
-    map_entry->erase(player_cookie);
-#endif  // !defined(OS_CHROMEOS)
+  RemoveMediaPlayerEntry(player_cookie, &active_audio_players_);
+  RemoveMediaPlayerEntry(player_cookie, &active_video_players_);
+  MaybeReleasePowerSaveBlockers();
 }
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
@@ -3054,7 +3106,6 @@ void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     BeforeFormRepostWarningShow());
 }
-
 
 void WebContentsImpl::ActivateAndShowRepostFormWarningDialog() {
   Activate();
@@ -4204,19 +4255,16 @@ BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
 
 void WebContentsImpl::ClearPowerSaveBlockers(
     RenderFrameHost* render_frame_host) {
-#if !defined(OS_CHROMEOS)
-  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
-  scoped_ptr<PowerSaveBlockerMapEntry> map_entry =
-      power_save_blockers_.take_and_erase(key);
-  if (map_entry)
-    map_entry->clear();
-#endif
+  RemoveAllMediaPlayerEntries(render_frame_host, &active_audio_players_);
+  RemoveAllMediaPlayerEntries(render_frame_host, &active_video_players_);
+  MaybeReleasePowerSaveBlockers();
 }
 
 void WebContentsImpl::ClearAllPowerSaveBlockers() {
-#if !defined(OS_CHROMEOS)
-  power_save_blockers_.clear();
-#endif
+  active_audio_players_.clear();
+  active_video_players_.clear();
+  audio_power_save_blocker_.reset();
+  video_power_save_blocker_.reset();
 }
 
 gfx::Size WebContentsImpl::GetSizeForNewRenderView() {
@@ -4239,6 +4287,45 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
   const gfx::Size new_size = GetPreferredSize();
   if (new_size != old_size)
     delegate_->UpdatePreferredSize(this, new_size);
+}
+
+void WebContentsImpl::AddMediaPlayerEntry(int64 player_cookie,
+                                          ActiveMediaPlayerMap* player_map) {
+  const uintptr_t key =
+      reinterpret_cast<uintptr_t>(render_frame_message_source_);
+  DCHECK(std::find((*player_map)[key].begin(),
+                   (*player_map)[key].end(),
+                   player_cookie) == (*player_map)[key].end());
+  (*player_map)[key].push_back(player_cookie);
+}
+
+void WebContentsImpl::RemoveMediaPlayerEntry(int64 player_cookie,
+                                             ActiveMediaPlayerMap* player_map) {
+  const uintptr_t key =
+      reinterpret_cast<uintptr_t>(render_frame_message_source_);
+  ActiveMediaPlayerMap::iterator it = player_map->find(key);
+  if (it == player_map->end())
+    return;
+
+  // Remove the player.
+  PlayerList::iterator player_it =
+      std::find(it->second.begin(), it->second.end(), player_cookie);
+  if (player_it != it->second.end())
+    it->second.erase(player_it);
+
+  // If there are no players left, remove the map entry.
+  if (it->second.empty())
+    player_map->erase(it);
+}
+
+void WebContentsImpl::RemoveAllMediaPlayerEntries(
+    RenderFrameHost* render_frame_host,
+    ActiveMediaPlayerMap* player_map) {
+  ActiveMediaPlayerMap::iterator it =
+      player_map->find(reinterpret_cast<uintptr_t>(render_frame_host));
+  if (it == player_map->end())
+    return;
+  player_map->erase(it);
 }
 
 void WebContentsImpl::ResumeResponseDeferredAtStart() {

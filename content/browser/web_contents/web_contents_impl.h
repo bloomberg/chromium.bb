@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
+#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/accessibility_mode_enums.h"
@@ -329,6 +330,7 @@ class CONTENT_EXPORT WebContentsImpl
                     const blink::WebFindOptions& options) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
+  virtual bool WasRecentlyAudible() OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;
@@ -669,6 +671,18 @@ class CONTENT_EXPORT WebContentsImpl
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
 
+  AudioStreamMonitor* audio_stream_monitor() {
+    return &audio_stream_monitor_;
+  }
+
+  bool has_audio_power_save_blocker_for_testing() const {
+    return audio_power_save_blocker_;
+  }
+
+  bool has_video_power_save_blocker_for_testing() const {
+    return video_power_save_blocker_;
+  }
+
  private:
   friend class TestNavigationObserver;
   friend class WebContentsAddedObserver;
@@ -904,11 +918,21 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
-  // Clear |render_frame_host|'s PowerSaveBlockers.
+  // Clear |render_frame_host|'s tracking entry for its power save blockers.
   void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
 
-  // Clear all PowerSaveBlockers, leave |power_save_blocker_| empty.
+  // Clear tracking entries for all RenderFrameHosts, clears
+  // |audio_power_save_blocker_| and |video_power_save_blocker_|.
   void ClearAllPowerSaveBlockers();
+
+  // Creates an audio or video power save blocker respectively.
+  void CreateAudioPowerSaveBlocker();
+  void CreateVideoPowerSaveBlocker();
+
+  // Releases the audio power save blockers if |active_audio_players_| is empty.
+  // Likewise, releases the video power save blockers if |active_video_players_|
+  // is empty.
+  void MaybeReleasePowerSaveBlockers();
 
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
   gfx::Size GetSizeForNewRenderView();
@@ -919,6 +943,18 @@ class CONTENT_EXPORT WebContentsImpl
   // |preferred_size_for_capture_| changes, to propagate the new value to the
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
+
+  // Helper methods for adding or removing player entries in |player_map| under
+  // the key |render_frame_message_source_|.
+  typedef std::vector<int64> PlayerList;
+  typedef std::map<uintptr_t, PlayerList> ActiveMediaPlayerMap;
+  void AddMediaPlayerEntry(int64 player_cookie,
+                           ActiveMediaPlayerMap* player_map);
+  void RemoveMediaPlayerEntry(int64 player_cookie,
+                              ActiveMediaPlayerMap* player_map);
+  // Removes all entries from |player_map| for |render_frame_host|.
+  void RemoveAllMediaPlayerEntries(RenderFrameHost* render_frame_host,
+                                   ActiveMediaPlayerMap* player_map);
 
   // Adds/removes a callback called on creation of each new WebContents.
   // Deprecated, about to remove.
@@ -974,18 +1010,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Helper classes ------------------------------------------------------------
 
-#if !defined(OS_CHROMEOS)
-  // Maps the RenderFrameHost to its media_player_cookie and PowerSaveBlocker
-  // pairs. Key is the RenderFrameHost, value is the map which maps
-  // player_cookie on to PowerSaveBlocker.
-  //
-  // ChromeOS does its own detection of audio and video.
-  typedef base::ScopedPtrHashMap<int64, PowerSaveBlocker>
-      PowerSaveBlockerMapEntry;
-  typedef base::ScopedPtrHashMap<uintptr_t, PowerSaveBlockerMapEntry>
-      PowerSaveBlockerMap;
-  PowerSaveBlockerMap power_save_blockers_;
-#endif
+  // Tracking variables and associated power save blockers for media playback.
+  ActiveMediaPlayerMap active_audio_players_;
+  ActiveMediaPlayerMap active_video_players_;
+  scoped_ptr<PowerSaveBlocker> audio_power_save_blocker_;
+  scoped_ptr<PowerSaveBlocker> video_power_save_blocker_;
 
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
@@ -1202,6 +1231,9 @@ class CONTENT_EXPORT WebContentsImpl
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.
   AccessibilityMode accessibility_mode_;
+
+  // Monitors power levels for audio streams associated with this WebContents.
+  AudioStreamMonitor audio_stream_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

@@ -631,8 +631,6 @@
       'browser/mac/relauncher.h',
       'browser/mac/security_wrappers.cc',
       'browser/mac/security_wrappers.h',
-      'browser/media/audio_stream_monitor.cc',
-      'browser/media/audio_stream_monitor.h',
       'browser/media/cast_transport_host_filter.cc',
       'browser/media/cast_transport_host_filter.h',
       'browser/media/desktop_media_list.h',

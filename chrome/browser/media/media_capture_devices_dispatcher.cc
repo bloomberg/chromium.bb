@@ -54,12 +54,6 @@
 #include "ash/shell.h"
 #endif  // defined(OS_CHROMEOS)
 
-// Only do audio stream monitoring for platforms that use it for the tab media
-// indicator UI or the OOM killer.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#define AUDIO_STREAM_MONITORING
-#include "chrome/browser/media/audio_stream_monitor.h"
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
@@ -195,43 +189,6 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
 
   return ui.Pass();
 }
-
-#if defined(AUDIO_STREAM_MONITORING)
-
-AudioStreamMonitor* AudioStreamMonitorFromRenderFrame(
-    int render_process_id,
-    int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::WebContents* const web_contents =
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id, render_frame_id));
-  if (!web_contents)
-    return NULL;
-  return AudioStreamMonitor::FromWebContents(web_contents);
-}
-
-void StartAudioStreamMonitoringOnUIThread(
-    int render_process_id,
-    int render_frame_id,
-    int stream_id,
-    const AudioStreamMonitor::ReadPowerAndClipCallback& read_power_callback) {
-  AudioStreamMonitor* const audio_stream_monitor =
-      AudioStreamMonitorFromRenderFrame(render_process_id, render_frame_id);
-  if (audio_stream_monitor)
-    audio_stream_monitor->StartMonitoringStream(stream_id, read_power_callback);
-}
-
-void StopAudioStreamMonitoringOnUIThread(
-    int render_process_id,
-    int render_frame_id,
-    int stream_id) {
-  AudioStreamMonitor* const audio_stream_monitor =
-      AudioStreamMonitorFromRenderFrame(render_process_id, render_frame_id);
-  if (audio_stream_monitor)
-    audio_stream_monitor->StopMonitoringStream(stream_id);
-}
-
-#endif  // defined(AUDIO_STREAM_MONITORING)
 
 #if !defined(OS_ANDROID)
 // Find browser or app window from a given |web_contents|.
@@ -937,40 +894,6 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
           page_request_id, security_origin, stream_type, state));
 }
 
-void MediaCaptureDevicesDispatcher::OnAudioStreamPlaying(
-    int render_process_id,
-    int render_frame_id,
-    int stream_id,
-    const ReadPowerAndClipCallback& read_power_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-#if defined(AUDIO_STREAM_MONITORING)
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&StartAudioStreamMonitoringOnUIThread,
-                 render_process_id,
-                 render_frame_id,
-                 stream_id,
-                 read_power_callback));
-#endif
-}
-
-void MediaCaptureDevicesDispatcher::OnAudioStreamStopped(
-    int render_process_id,
-    int render_frame_id,
-    int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-#if defined(AUDIO_STREAM_MONITORING)
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&StopAudioStreamMonitoringOnUIThread,
-                 render_process_id,
-                 render_frame_id,
-                 stream_id));
-#endif
-}
-
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
     int render_process_id,
     int render_frame_id) {
@@ -1069,23 +992,12 @@ void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnCreatingAudioStream(render_process_id, render_frame_id));
-#if defined(AUDIO_STREAM_MONITORING)
-  content::WebContents* const web_contents =
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id, render_frame_id));
-  if (web_contents) {
-    // Note: Calling CreateForWebContents() multiple times is valid (see usage
-    // info for content::WebContentsUserData).
-    AudioStreamMonitor::CreateForWebContents(web_contents);
-  }
-#endif
 }
 
 bool MediaCaptureDevicesDispatcher::IsDesktopCaptureInProgress() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return desktop_capture_sessions_.size() > 0;
 }
-
 
 void MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices(
     const MediaStreamDevices& devices) {

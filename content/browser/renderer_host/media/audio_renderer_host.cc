@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -265,28 +266,25 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
       is_playing ? media::AudioOutputIPCDelegate::kPlaying
                  : media::AudioOutputIPCDelegate::kPaused));
 
-  MediaObserver* const media_observer =
-      GetContentClient()->browser()->GetMediaObserver();
-  if (media_observer) {
-    if (is_playing) {
-      media_observer->OnAudioStreamPlaying(
-          render_process_id_,
-          entry->render_frame_id(),
-          entry->stream_id(),
-          base::Bind(&media::AudioOutputController::ReadCurrentPowerAndClip,
-                     entry->controller()));
-      if (!entry->playing()) {
-        entry->set_playing(true);
-        base::AtomicRefCountInc(&num_playing_streams_);
-      }
-    } else {
-      media_observer->OnAudioStreamStopped(render_process_id_,
-                                           entry->render_frame_id(),
-                                           entry->stream_id());
-      if (entry->playing()) {
-        entry->set_playing(false);
-        base::AtomicRefCountDec(&num_playing_streams_);
-      }
+  if (is_playing) {
+    AudioStreamMonitor::StartMonitoringStream(
+        render_process_id_,
+        entry->render_frame_id(),
+        entry->stream_id(),
+        base::Bind(&media::AudioOutputController::ReadCurrentPowerAndClip,
+                   entry->controller()));
+    // TODO(dalecurtis): See about using AudioStreamMonitor instead.
+    if (!entry->playing()) {
+      entry->set_playing(true);
+      base::AtomicRefCountInc(&num_playing_streams_);
+    }
+  } else {
+    AudioStreamMonitor::StopMonitoringStream(
+        render_process_id_, entry->render_frame_id(), entry->stream_id());
+    // TODO(dalecurtis): See about using AudioStreamMonitor instead.
+    if (entry->playing()) {
+      entry->set_playing(false);
+      base::AtomicRefCountDec(&num_playing_streams_);
     }
   }
 }
@@ -454,17 +452,10 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
 
 void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // At this point, make the final "say" in audio playback state.
-  MediaObserver* const media_observer =
-      GetContentClient()->browser()->GetMediaObserver();
-  if (media_observer) {
-    media_observer->OnAudioStreamStopped(render_process_id_,
-                                         entry->render_frame_id(),
-                                         entry->stream_id());
-    if (entry->playing())
-      base::AtomicRefCountDec(&num_playing_streams_);
-  }
+  AudioStreamMonitor::StopMonitoringStream(
+      render_process_id_, entry->render_frame_id(), entry->stream_id());
+  if (entry->playing())
+    base::AtomicRefCountDec(&num_playing_streams_);
 }
 
 void AudioRendererHost::ReportErrorAndClose(int stream_id) {

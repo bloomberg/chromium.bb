@@ -833,6 +833,8 @@
       'browser/media/android/media_drm_credential_manager.h',
       'browser/media/android/media_resource_getter_impl.cc',
       'browser/media/android/media_resource_getter_impl.h',
+      'browser/media/audio_stream_monitor.cc',
+      'browser/media/audio_stream_monitor.h',
       'browser/media/capture/audio_mirroring_manager.cc',
       'browser/media/capture/audio_mirroring_manager.h',
       'browser/media/capture/content_video_capture_device_core.cc',
