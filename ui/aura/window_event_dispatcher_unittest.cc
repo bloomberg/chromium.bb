@@ -462,6 +462,7 @@ class EventFilterRecorder : public ui::EventHandler {
   const EventLocations& mouse_locations() const { return mouse_locations_; }
   gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
   const EventLocations& touch_locations() const { return touch_locations_; }
+  const EventLocations& gesture_locations() const { return gesture_locations_; }
   const EventFlags& mouse_event_flags() const { return mouse_event_flags_; }
 
   void WaitUntilReceivedEvent(ui::EventType type) {
@@ -480,6 +481,7 @@ class EventFilterRecorder : public ui::EventHandler {
     events_.clear();
     mouse_locations_.clear();
     touch_locations_.clear();
+    gesture_locations_.clear();
     mouse_event_flags_.clear();
   }
 
@@ -502,6 +504,10 @@ class EventFilterRecorder : public ui::EventHandler {
     touch_locations_.push_back(event->location());
   }
 
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    gesture_locations_.push_back(event->location());
+  }
+
   bool HasReceivedEvent(ui::EventType type) {
     return std::find(events_.begin(), events_.end(), type) != events_.end();
   }
@@ -513,6 +519,7 @@ class EventFilterRecorder : public ui::EventHandler {
   Events events_;
   EventLocations mouse_locations_;
   EventLocations touch_locations_;
+  EventLocations gesture_locations_;
   EventFlags mouse_event_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
@@ -2281,6 +2288,62 @@ TEST_F(WindowEventDispatcherTest,
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder_second.events()[0]);
   EXPECT_EQ(event_location.ToString(),
             recorder_second.mouse_locations()[0].ToString());
+}
+
+class AsyncWindowDelegate : public test::TestWindowDelegate {
+ public:
+  AsyncWindowDelegate(WindowEventDispatcher* dispatcher)
+      : dispatcher_(dispatcher) {}
+
+  void set_window(Window* window) {
+    window_ = window;
+  }
+ private:
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    // Convert touch event back to root window coordinates.
+    event->ConvertLocationToTarget(window_, window_->GetRootWindow());
+    dispatcher_->ProcessedTouchEvent(event, window_, ui::ER_UNHANDLED);
+    event->StopPropagation();
+  }
+
+  WindowEventDispatcher* dispatcher_;
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncWindowDelegate);
+};
+
+// Tests that gesture events dispatched through the asynchronous flow have
+// co-ordinates in the right co-ordinate space.
+TEST_F(WindowEventDispatcherTest, GestureEventCoordinates) {
+  const float kX = 67.3f;
+  const float kY = 97.8f;
+
+  const int kWindowOffset = 50;
+  EventFilterRecorder recorder;
+  root_window()->AddPreTargetHandler(&recorder);
+  AsyncWindowDelegate delegate(host()->dispatcher());
+  HoldPointerOnScrollHandler handler(host()->dispatcher(), &recorder);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate,
+      1,
+      gfx::Rect(kWindowOffset, kWindowOffset, 100, 100),
+      root_window()));
+  window->AddPreTargetHandler(&handler);
+
+  delegate.set_window(window.get());
+
+  ui::TouchEvent touch_pressed_event(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(kX, kY), 0, ui::EventTimeForNow());
+
+  DispatchEventUsingWindowDispatcher(&touch_pressed_event);
+
+  ASSERT_EQ(1u, recorder.touch_locations().size());
+  EXPECT_EQ(gfx::Point(kX - kWindowOffset, kY - kWindowOffset).ToString(),
+            recorder.touch_locations()[0].ToString());
+
+  ASSERT_EQ(2u, recorder.gesture_locations().size());
+  EXPECT_EQ(gfx::Point(kX - kWindowOffset, kY - kWindowOffset).ToString(),
+            recorder.gesture_locations()[0].ToString());
 }
 
 }  // namespace aura
