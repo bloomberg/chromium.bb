@@ -39,7 +39,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorTraceEvents.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"

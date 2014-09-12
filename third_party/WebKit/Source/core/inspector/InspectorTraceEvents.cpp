@@ -30,6 +30,8 @@
 
 namespace blink {
 
+static const unsigned maxInvalidationTrackingCallstackSize = 5;
+
 namespace {
 
 class JSCallStack : public TraceEvent::ConvertableToTraceFormat  {
@@ -48,7 +50,7 @@ private:
     String m_serialized;
 };
 
-String toHexString(void* p)
+String toHexString(const void* p)
 {
     return String::format("0x%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(p)));
 }
@@ -107,6 +109,21 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     } else {
         ASSERT_NOT_REACHED();
     }
+    return value;
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrackingEvent::data(const RenderObject* renderer)
+{
+    ASSERT(renderer);
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(renderer->frame()));
+    value->setString("rendererId", toHexString(renderer));
+    if (Node* generatingNode = renderer->generatingNode()) {
+        value->setString("nodeName", generatingNode->debugName());
+        value->setInteger("nodeId", InspectorNodeIds::idForNode(generatingNode));
+    }
+    RefPtr<ScriptCallStack> callstack = createScriptCallStack(maxInvalidationTrackingCallstackSize, true);
+    value->setString("callstack", callstack ? callstack->buildInspectorArray()->toJSONString() : "[]");
     return value;
 }
 

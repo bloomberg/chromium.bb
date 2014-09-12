@@ -32,6 +32,7 @@
 #include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/html/HTMLElement.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PaintInvalidationState.h"
 #include "core/rendering/PaintPhase.h"
@@ -1409,6 +1410,11 @@ inline bool RenderObject::isBeforeOrAfterContent() const
 // setNeedsLayoutAndFullPaintInvalidation() does. Otherwise the two methods are identical.
 inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
+    TRACE_EVENT_INSTANT1(
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+        "LayoutInvalidationTracking",
+        "data",
+        InspectorLayoutInvalidationTrackingEvent::data(this));
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
     setSelfNeedsLayout(true);

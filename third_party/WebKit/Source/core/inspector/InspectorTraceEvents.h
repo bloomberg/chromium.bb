@@ -35,6 +35,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(RenderObject* rootForThisLayout);
 };
 
+class InspectorLayoutInvalidationTrackingEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*);
+};
+
 class InspectorSendRequestEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
