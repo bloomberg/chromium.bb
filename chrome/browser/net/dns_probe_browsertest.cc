@@ -30,9 +30,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_failed_job.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_test_util.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -47,7 +47,7 @@ using base::MessageLoop;
 using base::Unretained;
 using chrome_common_net::DnsProbeStatus;
 using content::BrowserThread;
-using content::URLRequestFailedJob;
+using net::URLRequestFailedJob;
 using net::URLRequestMockHTTPJob;
 using content::WebContents;
 using google_util::LinkDoctorBaseURL;

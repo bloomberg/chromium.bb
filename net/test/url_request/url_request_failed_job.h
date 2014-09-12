@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
-#define CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
+#ifndef NET_TEST_URL_REQUEST_URL_REQUEST_FAILED_JOB_H_
+#define NET_TEST_URL_REQUEST_URL_REQUEST_FAILED_JOB_H_
 
 #include <string>
 
@@ -12,19 +12,19 @@
 #include "net/url_request/url_request_job.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace net {
 
 // This class simulates a URLRequestJob failing with a given error code while
 // trying to connect.
-class URLRequestFailedJob : public net::URLRequestJob {
+class URLRequestFailedJob : public URLRequestJob {
  public:
-  URLRequestFailedJob(net::URLRequest* request,
-                      net::NetworkDelegate* network_delegate,
+  URLRequestFailedJob(URLRequest* request,
+                      NetworkDelegate* network_delegate,
                       int net_error);
 
   virtual void Start() OVERRIDE;
 
-  // Adds the testing URLs to the net::URLRequestFilter.
+  // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();
   static void AddUrlHandlerForHostname(const std::string& hostname);
 
@@ -45,9 +45,9 @@ class URLRequestFailedJob : public net::URLRequestJob {
   virtual ~URLRequestFailedJob();
 
  private:
-  static net::URLRequestJob* Factory(net::URLRequest* request,
-                                     net::NetworkDelegate* network_delegate,
-                                     const std::string& scheme);
+  static URLRequestJob* Factory(URLRequest* request,
+                                NetworkDelegate* network_delegate,
+                                const std::string& scheme);
 
   // Simulate a failure.
   void StartAsync();
@@ -59,6 +59,6 @@ class URLRequestFailedJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestFailedJob);
 };
 
-}  // namespace content
+}  // namespace net
 
-#endif  // CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
+#endif  // NET_TEST_URL_REQUEST_URL_REQUEST_FAILED_JOB_H_

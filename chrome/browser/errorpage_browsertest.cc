@@ -37,12 +37,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/net/url_request_failed_job.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -55,7 +55,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
-using content::URLRequestFailedJob;
+using net::URLRequestFailedJob;
 using net::URLRequestTestJob;
 
 namespace {
@@ -974,10 +974,10 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   // Adds a filter that causes all correction service requests to fail with
   // ERR_ADDRESS_UNREACHABLE.
   //
-  // Also adds the content::URLRequestFailedJob filter.
+  // Also adds the net::URLRequestFailedJob filter.
   static void AddFilters() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    content::URLRequestFailedJob::AddUrlHandler();
+    URLRequestFailedJob::AddUrlHandler();
 
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         google_util::LinkDoctorBaseURL(),
@@ -1076,7 +1076,7 @@ class ErrorPageForIDNTest : public InProcessBrowserTest {
  private:
   static void AddFilters() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    content::URLRequestFailedJob::AddUrlHandlerForHostname(kHostname);
+    URLRequestFailedJob::AddUrlHandlerForHostname(kHostname);
   }
 
   static void RemoveFilters() {

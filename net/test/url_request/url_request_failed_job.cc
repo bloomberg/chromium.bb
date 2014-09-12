@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/net/url_request_failed_job.h"
+#include "net/test/url_request/url_request_failed_job.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -12,7 +12,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 
-namespace content {
+namespace net {
 namespace {
 
 const char kMockHostname[] = "mock.failed.request";
@@ -107,4 +107,4 @@ void URLRequestFailedJob::StartAsync() {
                                          net_error_));
 }
 
-}  // namespace content
+}  // namespace net

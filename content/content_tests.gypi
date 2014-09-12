@@ -126,8 +126,6 @@
       'test/mock_weburlloader.h',
       'test/net/url_request_abort_on_end_job.cc',
       'test/net/url_request_abort_on_end_job.h',
-      'test/net/url_request_failed_job.cc',
-      'test/net/url_request_failed_job.h',
       'test/net/url_request_slow_download_job.cc',
       'test/net/url_request_slow_download_job.h',
       'test/ppapi_unittest.cc',

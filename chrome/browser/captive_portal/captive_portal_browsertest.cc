@@ -41,9 +41,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/net/url_request_failed_job.h"
 #include "net/base/net_errors.h"
 #include "net/http/transport_security_state.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -55,8 +55,8 @@
 
 using captive_portal::CaptivePortalResult;
 using content::BrowserThread;
-using content::URLRequestFailedJob;
 using content::WebContents;
+using net::URLRequestFailedJob;
 using net::URLRequestMockHTTPJob;
 
 namespace {
