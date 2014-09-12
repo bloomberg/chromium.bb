@@ -14,16 +14,10 @@ namespace gin {
 
 class PerIsolateData;
 
-// To embed Gin, first create an instance of IsolateHolder to hold the
-// v8::Isolate in which you will execute JavaScript. You might wish to subclass
-// IsolateHolder if you want to tie more state to the lifetime of the isolate.
-//
-// You can use gin in two modes: either gin manages V8, or the gin-embedder
-// manages gin. If gin manages V8, use the IsolateHolder constructor that does
-// not take an v8::Isolate parameter, otherwise, the gin-embedder needs to
-// create v8::Isolates and pass them to IsolateHolder.
-//
-// It is not possible to mix the two.
+// To embed Gin, first initialize gin using IsolateHolder::Initialize and then
+// create an instance of IsolateHolder to hold the v8::Isolate in which you
+// will execute JavaScript. You might wish to subclass IsolateHolder if you
+// want to tie more state to the lifetime of the isolate.
 class GIN_EXPORT IsolateHolder {
  public:
   // Controls whether or not V8 should only accept strict mode scripts.
@@ -33,9 +27,6 @@ class GIN_EXPORT IsolateHolder {
   };
 
   IsolateHolder();
-  // Deprecated.
-  IsolateHolder(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
-
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
@@ -46,9 +37,6 @@ class GIN_EXPORT IsolateHolder {
   v8::Isolate* isolate() { return isolate_; }
 
  private:
-  void Init(v8::ArrayBuffer::Allocator* allocator);
-
-  bool isolate_owner_;
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
 

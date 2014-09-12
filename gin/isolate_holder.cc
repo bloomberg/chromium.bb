@@ -18,6 +18,7 @@
 namespace gin {
 
 namespace {
+
 v8::ArrayBuffer::Allocator* g_array_buffer_allocator = NULL;
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
@@ -25,47 +26,29 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   return true;
 }
 
-void EnsureV8Initialized(bool gin_managed) {
-  static bool v8_is_initialized = false;
-  static bool v8_is_gin_managed = false;
-  if (v8_is_initialized) {
-    CHECK_EQ(v8_is_gin_managed, gin_managed);
-    return;
-  }
-  v8_is_initialized = true;
-  v8_is_gin_managed = gin_managed;
-}
-
 }  // namespace
 
-IsolateHolder::IsolateHolder()
-  : isolate_owner_(true) {
-  EnsureV8Initialized(true);
+IsolateHolder::IsolateHolder() {
+  CHECK(g_array_buffer_allocator)
+      << "You need to invoke gin::IsolateHolder::Initialize first";
   isolate_ = v8::Isolate::New();
   v8::ResourceConstraints constraints;
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                 base::SysInfo::AmountOfVirtualMemory(),
                                 base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
-  Init(g_array_buffer_allocator);
-}
-
-IsolateHolder::IsolateHolder(v8::Isolate* isolate,
-                             v8::ArrayBuffer::Allocator* allocator)
-    : isolate_owner_(false), isolate_(isolate) {
-  EnsureV8Initialized(false);
-  Init(allocator);
+  isolate_data_.reset(new PerIsolateData(isolate_, g_array_buffer_allocator));
 }
 
 IsolateHolder::~IsolateHolder() {
   isolate_data_.reset();
-  if (isolate_owner_)
-    isolate_->Dispose();
+  isolate_->Dispose();
 }
 
 // static
 void IsolateHolder::Initialize(ScriptMode mode,
                                v8::ArrayBuffer::Allocator* allocator) {
+  CHECK(allocator);
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
@@ -79,12 +62,6 @@ void IsolateHolder::Initialize(ScriptMode mode,
   v8::V8::SetEntropySource(&GenerateEntropy);
   v8::V8::Initialize();
   v8_is_initialized = true;
-}
-
-void IsolateHolder::Init(v8::ArrayBuffer::Allocator* allocator) {
-  v8::Isolate::Scope isolate_scope(isolate_);
-  v8::HandleScope handle_scope(isolate_);
-  isolate_data_.reset(new PerIsolateData(isolate_, allocator));
 }
 
 }  // namespace gin
