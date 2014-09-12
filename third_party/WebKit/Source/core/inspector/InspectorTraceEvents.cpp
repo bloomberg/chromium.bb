@@ -16,6 +16,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -272,6 +273,24 @@ static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect
     quad->setP2(view->contentsToRootView(roundedIntPoint(absolute.p2())));
     quad->setP3(view->contentsToRootView(roundedIntPoint(absolute.p3())));
     quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
+}
+
+const char InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated[] = "Squashing layer geometry was updated.";
+const char InspectorLayerInvalidationTrackingEvent::AddedToSquashingLayer[] = "The layer may have been added to an already-existing squashing layer.";
+const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] = "Removed the layer from a squashing layer.";
+const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change.";
+const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer.";
+const char InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer[] = "A new composited layer is needed based on the RenderLayer's compositing ancestor's properties.";
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const RenderLayer* layer, const char* reason)
+{
+    const RenderObject* paintInvalidationContainer = layer->renderer()->containerForPaintInvalidation();
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(paintInvalidationContainer->frame()));
+    setGeneratingNodeId(value.get(), "paintId", paintInvalidationContainer);
+    value->setString("reason", reason);
+    return value;
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(RenderObject* renderer, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)

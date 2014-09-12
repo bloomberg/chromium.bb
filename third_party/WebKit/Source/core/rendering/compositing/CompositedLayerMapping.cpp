@@ -607,6 +607,8 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromRenderer;
         if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer) {
             layers[i].renderLayer->paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
+
+            TRACE_LAYER_INVALIDATION(layers[i].renderLayer, InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated);
             layersNeedingPaintInvalidation.append(layers[i].renderLayer);
         }
         layers[i].offsetFromRenderer = newOffsetFromRenderer;

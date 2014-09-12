@@ -20,8 +20,9 @@ class GraphicsLayer;
 class KURL;
 class LayoutRect;
 class LocalFrame;
-class RenderObject;
 class RenderImage;
+class RenderLayer;
+class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
 class ScriptSourceCode;
@@ -104,6 +105,24 @@ class InspectorXhrLoadEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
 };
+
+class InspectorLayerInvalidationTrackingEvent {
+public:
+    static const char SquashingLayerGeometryWasUpdated[];
+    static const char AddedToSquashingLayer[];
+    static const char RemovedFromSquashingLayer[];
+    static const char ReflectionLayerChanged[];
+    static const char NewCompositedLayer[];
+    static const char AncestorRequiresNewLayer[];
+
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderLayer*, const char* reason);
+};
+#define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
+    TRACE_EVENT_INSTANT1( \
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeine.invalidationTracking"), \
+        "LayerInvalidationTracking", \
+        "data", \
+        InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)))
 
 class InspectorPaintEvent {
 public:

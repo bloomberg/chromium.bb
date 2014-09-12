@@ -28,6 +28,7 @@
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
 #include "core/rendering/RenderPart.h"
@@ -98,6 +99,7 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
             ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
             if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer)) {
+                TRACE_LAYER_INVALIDATION(&layer, InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer);
                 layersNeedingPaintInvalidation.append(&layer);
                 updateType = ForceUpdate;
             }
