@@ -35,7 +35,11 @@ PointerProperties::PointerProperties(float x, float y)
 }
 
 MotionEventGeneric::MotionEventGeneric()
-    : action_(ACTION_CANCEL), id_(0), action_index_(0), button_state_(0) {
+    : action_(ACTION_CANCEL),
+      id_(0),
+      action_index_(0),
+      button_state_(0),
+      flags_(0) {
 }
 
 MotionEventGeneric::MotionEventGeneric(Action action,
@@ -45,7 +49,8 @@ MotionEventGeneric::MotionEventGeneric(Action action,
       event_time_(event_time),
       id_(0),
       action_index_(0),
-      button_state_(0) {
+      button_state_(0),
+      flags_(0) {
   PushPointer(pointer);
 }
 
@@ -55,6 +60,7 @@ MotionEventGeneric::MotionEventGeneric(const MotionEventGeneric& other)
       id_(other.id_),
       action_index_(other.action_index_),
       button_state_(other.button_state_),
+      flags_(other.flags_),
       pointers_(other.pointers_) {
 }
 
@@ -130,6 +136,10 @@ MotionEvent::ToolType MotionEventGeneric::GetToolType(
 
 int MotionEventGeneric::GetButtonState() const {
   return button_state_;
+}
+
+int MotionEventGeneric::GetFlags() const {
+  return flags_;
 }
 
 base::TimeTicks MotionEventGeneric::GetEventTime() const {

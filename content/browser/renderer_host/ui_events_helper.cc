@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/ui_events_helper.h"
 
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event.h"
@@ -240,31 +241,6 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
   gesture_event.timeStampSeconds = event.time_stamp().InSecondsF();
 
   return gesture_event;
-}
-
-int EventFlagsToWebEventModifiers(int flags) {
-  int modifiers = 0;
-
-  if (flags & ui::EF_SHIFT_DOWN)
-    modifiers |= blink::WebInputEvent::ShiftKey;
-  if (flags & ui::EF_CONTROL_DOWN)
-    modifiers |= blink::WebInputEvent::ControlKey;
-  if (flags & ui::EF_ALT_DOWN)
-    modifiers |= blink::WebInputEvent::AltKey;
-  if (flags & ui::EF_COMMAND_DOWN)
-    modifiers |= blink::WebInputEvent::MetaKey;
-
-  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-    modifiers |= blink::WebInputEvent::LeftButtonDown;
-  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    modifiers |= blink::WebInputEvent::MiddleButtonDown;
-  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    modifiers |= blink::WebInputEvent::RightButtonDown;
-  if (flags & ui::EF_CAPS_LOCK_DOWN)
-    modifiers |= blink::WebInputEvent::CapsLockOn;
-  if (flags & ui::EF_IS_REPEAT)
-    modifiers |= blink::WebInputEvent::IsAutoRepeat;
-  return modifiers;
 }
 
 blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(

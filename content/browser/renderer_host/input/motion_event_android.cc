@@ -4,9 +4,12 @@
 
 #include "content/browser/renderer_host/input/motion_event_android.h"
 
+#include <android/input.h>
+
 #include "base/android/jni_android.h"
 #include "base/float_util.h"
 #include "jni/MotionEvent_jni.h"
+#include "ui/events/event_constants.h"
 
 using base::android::AttachCurrentThread;
 using namespace JNI_MotionEvent;
@@ -89,6 +92,21 @@ int FromAndroidButtonState(int button_state) {
   return result;
 }
 
+int FromAndroidMetaState(int meta_state) {
+  int flags = ui::EF_NONE;
+  if ((meta_state & AMETA_SHIFT_ON) != 0)
+    flags |= ui::EF_SHIFT_DOWN;
+  if ((meta_state & AMETA_CTRL_ON) != 0)
+    flags |= ui::EF_CONTROL_DOWN;
+  if ((meta_state & AMETA_ALT_ON) != 0)
+    flags |= ui::EF_ALT_DOWN;
+  if ((meta_state & AMETA_META_ON) != 0)
+    flags |= ui::EF_COMMAND_DOWN;
+  if ((meta_state & AMETA_CAPS_LOCK_ON) != 0)
+    flags |= ui::EF_CAPS_LOCK_DOWN;
+  return flags;
+}
+
 int64 ToAndroidTime(base::TimeTicks time) {
   return (time - base::TimeTicks()).InMilliseconds();
 }
@@ -127,13 +145,15 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
                                        jfloat raw_pos_y_pixels,
                                        jint android_tool_type_0,
                                        jint android_tool_type_1,
-                                       jint android_button_state)
+                                       jint android_button_state,
+                                       jint meta_state)
     : cached_time_(FromAndroidTime(time_ms)),
       cached_action_(FromAndroidAction(android_action)),
       cached_pointer_count_(pointer_count),
       cached_history_size_(history_size),
       cached_action_index_(action_index),
       cached_button_state_(FromAndroidButtonState(android_button_state)),
+      cached_flags_(FromAndroidMetaState(meta_state)),
       pix_to_dip_(pix_to_dip),
       should_recycle_(false) {
   DCHECK_GT(pointer_count, 0);
@@ -170,6 +190,8 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
       cached_action_index_(Java_MotionEvent_getActionIndex(env, event)),
       cached_button_state_(
           FromAndroidButtonState(Java_MotionEvent_getButtonState(env, event))),
+      cached_flags_(
+          FromAndroidMetaState(Java_MotionEvent_getMetaState(env, event))),
       pix_to_dip_(pix_to_dip),
       should_recycle_(true) {
   event_.Reset(env, event);
@@ -213,6 +235,7 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& other)
       cached_action_index_(other.cached_action_index_),
       cached_raw_position_offset_(other.cached_raw_position_offset_),
       cached_button_state_(other.cached_button_state_),
+      cached_flags_(other.cached_flags_),
       pix_to_dip_(other.pix_to_dip_),
       should_recycle_(true) {
   DCHECK(event_.obj());
@@ -353,6 +376,10 @@ ui::MotionEvent::ToolType MotionEventAndroid::GetToolType(
 
 int MotionEventAndroid::GetButtonState() const {
   return cached_button_state_;
+}
+
+int MotionEventAndroid::GetFlags() const {
+  return cached_flags_;
 }
 
 scoped_ptr<ui::MotionEvent> MotionEventAndroid::Clone() const {

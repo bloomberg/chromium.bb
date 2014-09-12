@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
 namespace ui {
@@ -37,6 +38,9 @@ TEST(MotionEventGenericTest, Basic) {
 
   event.set_button_state(MotionEvent::BUTTON_PRIMARY);
   EXPECT_EQ(MotionEvent::BUTTON_PRIMARY, event.GetButtonState());
+
+  event.set_flags(EF_ALT_DOWN | EF_SHIFT_DOWN);
+  EXPECT_EQ(EF_ALT_DOWN | EF_SHIFT_DOWN, event.GetFlags());
 
   event.set_action_index(1);
   EXPECT_EQ(1, event.GetActionIndex());

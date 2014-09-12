@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 
 using blink::WebInputEvent;
@@ -156,6 +157,10 @@ ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
 int MotionEventWeb::GetButtonState() const {
   NOTIMPLEMENTED();
   return 0;
+}
+
+int MotionEventWeb::GetFlags() const {
+  return WebEventModifiersToEventFlags(event_.modifiers);
 }
 
 scoped_ptr<ui::MotionEvent> MotionEventWeb::Clone() const {

@@ -39,6 +39,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;
+  virtual int GetFlags() const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
 
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
@@ -73,6 +74,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
       const base::TimeTicks& last_touch_time,
       Action cached_action,
       int cached_action_index,
+      int flags,
       const PointData (&active_touches)[MotionEvent::MAX_TOUCH_POINT_COUNT]);
 
   static PointData GetPointDataFromTouchEvent(const TouchEvent& touch);
@@ -87,6 +89,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   // The index of the touch responsible for last ACTION_POINTER_DOWN or
   // ACTION_POINTER_UP. -1 if no such action has occurred.
   int cached_action_index_;
+  int flags_;
 
   // We want constant time indexing by pointer_index, and fast indexing by id.
   PointData active_touches_[MotionEvent::MAX_TOUCH_POINT_COUNT];

@@ -1149,6 +1149,7 @@ public class ContentViewCore
                     event.getToolType(0),
                     pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
                     event.getButtonState(),
+                    event.getMetaState(),
                     isTouchHandleEvent);
 
             if (offset != null) offset.recycle();
@@ -3151,7 +3152,8 @@ public class ContentViewCore
             float touchMinor0, float touchMinor1,
             float orientation0, float orientation1,
             float rawX, float rawY,
-            int androidToolType0, int androidToolType1, int androidButtonState,
+            int androidToolType0, int androidToolType1,
+            int androidButtonState, int androidMetaState,
             boolean isTouchHandleEvent);
 
     private native int nativeSendMouseMoveEvent(

@@ -23,11 +23,13 @@ MotionEventAura::MotionEventAura(
     const base::TimeTicks& last_touch_time,
     Action cached_action,
     int cached_action_index,
+    int flags,
     const PointData (&active_touches)[MotionEvent::MAX_TOUCH_POINT_COUNT])
     : pointer_count_(pointer_count),
       last_touch_time_(last_touch_time),
       cached_action_(cached_action),
-      cached_action_index_(cached_action_index) {
+      cached_action_index_(cached_action_index),
+      flags_(flags) {
   DCHECK(pointer_count_);
   for (size_t i = 0; i < pointer_count; ++i)
     active_touches_[i] = active_touches[i];
@@ -97,6 +99,7 @@ void MotionEventAura::OnTouch(const TouchEvent& touch) {
   }
 
   UpdateCachedAction(touch);
+  flags_ = touch.flags();
   last_touch_time_ = touch.time_stamp() + base::TimeTicks();
 }
 
@@ -174,6 +177,10 @@ int MotionEventAura::GetButtonState() const {
   return 0;
 }
 
+int MotionEventAura::GetFlags() const {
+  return flags_;
+}
+
 base::TimeTicks MotionEventAura::GetEventTime() const {
   return last_touch_time_;
 }
@@ -183,11 +190,12 @@ scoped_ptr<MotionEvent> MotionEventAura::Clone() const {
                                                      last_touch_time_,
                                                      cached_action_,
                                                      cached_action_index_,
+                                                     flags_,
                                                      active_touches_));
 }
 scoped_ptr<MotionEvent> MotionEventAura::Cancel() const {
   return scoped_ptr<MotionEvent>(new MotionEventAura(
-      pointer_count_, last_touch_time_, ACTION_CANCEL, -1, active_touches_));
+      pointer_count_, last_touch_time_, ACTION_CANCEL, -1, 0, active_touches_));
 }
 
 void MotionEventAura::CleanupRemovedTouchPoints(const TouchEvent& event) {

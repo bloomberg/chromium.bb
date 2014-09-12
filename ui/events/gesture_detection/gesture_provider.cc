@@ -221,7 +221,8 @@ class GestureProvider::GestureListenerImpl
                          detector.GetFocusX() + e.GetRawOffsetX(),
                          detector.GetFocusY() + e.GetRawOffsetY(),
                          e.GetPointerCount(),
-                         GetBoundingBox(e, ET_GESTURE_PINCH_BEGIN)));
+                         GetBoundingBox(e, ET_GESTURE_PINCH_BEGIN),
+                         e.GetFlags()));
     }
 
     if (std::abs(detector.GetCurrentSpan() - detector.GetPreviousSpan()) <
@@ -255,7 +256,8 @@ class GestureProvider::GestureListenerImpl
                        detector.GetFocusX() + e.GetRawOffsetX(),
                        detector.GetFocusY() + e.GetRawOffsetY(),
                        e.GetPointerCount(),
-                       GetBoundingBox(e, pinch_details.type())));
+                       GetBoundingBox(e, pinch_details.type()),
+                       e.GetFlags()));
     return true;
   }
 
@@ -305,7 +307,8 @@ class GestureProvider::GestureListenerImpl
                          e1.GetRawX(),
                          e1.GetRawY(),
                          e2.GetPointerCount(),
-                         GetBoundingBox(e2, scroll_details.type())));
+                         GetBoundingBox(e2, scroll_details.type()),
+                         e2.GetFlags()));
       DCHECK(scroll_event_sent_);
     }
 
@@ -333,7 +336,8 @@ class GestureProvider::GestureListenerImpl
                          raw_center.x(),
                          raw_center.y(),
                          e2.GetPointerCount(),
-                         bounding_box));
+                         bounding_box,
+                         e2.GetFlags()));
     }
 
     return true;
@@ -393,7 +397,8 @@ class GestureProvider::GestureListenerImpl
                        e1.GetRawX(),
                        e1.GetRawY(),
                        e2.GetPointerCount(),
-                       GetBoundingBox(e2, two_finger_tap_details.type())));
+                       GetBoundingBox(e2, two_finger_tap_details.type()),
+                       e2.GetFlags()));
     return true;
   }
 
@@ -490,7 +495,8 @@ class GestureProvider::GestureListenerImpl
                                  float raw_x,
                                  float raw_y,
                                  size_t touch_point_count,
-                                 const gfx::RectF& bounding_box) {
+                                 const gfx::RectF& bounding_box,
+                                 int flags) {
     return GestureEventData(details,
                             motion_event_id,
                             primary_tool_type,
@@ -500,7 +506,8 @@ class GestureProvider::GestureListenerImpl
                             raw_x,
                             raw_y,
                             touch_point_count,
-                            bounding_box);
+                            bounding_box,
+                            flags);
   }
 
   GestureEventData CreateGesture(EventType type,
@@ -512,7 +519,8 @@ class GestureProvider::GestureListenerImpl
                                  float raw_x,
                                  float raw_y,
                                  size_t touch_point_count,
-                                 const gfx::RectF& bounding_box) {
+                                 const gfx::RectF& bounding_box,
+                                 int flags) {
     return GestureEventData(GestureEventDetails(type, 0, 0),
                             motion_event_id,
                             primary_tool_type,
@@ -522,7 +530,8 @@ class GestureProvider::GestureListenerImpl
                             raw_x,
                             raw_y,
                             touch_point_count,
-                            bounding_box);
+                            bounding_box,
+                            flags);
   }
 
   GestureEventData CreateGesture(const GestureEventDetails& details,
@@ -536,7 +545,8 @@ class GestureProvider::GestureListenerImpl
                             event.GetRawX(),
                             event.GetRawY(),
                             event.GetPointerCount(),
-                            GetBoundingBox(event, details.type()));
+                            GetBoundingBox(event, details.type()),
+                            event.GetFlags());
   }
 
   GestureEventData CreateGesture(EventType type, const MotionEvent& event) {
@@ -756,7 +766,8 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
             event.GetRawX(action_index),
             event.GetRawY(action_index),
             event.GetPointerCount(),
-            gesture_listener_->GetBoundingBox(event, ET_GESTURE_BEGIN)));
+            gesture_listener_->GetBoundingBox(event, ET_GESTURE_BEGIN),
+            event.GetFlags()));
       }
       break;
     case MotionEvent::ACTION_POINTER_UP:

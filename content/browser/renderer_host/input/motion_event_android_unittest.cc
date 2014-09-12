@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <android/input.h>
+
 #include "base/android/jni_android.h"
 #include "base/float_util.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_constants.h"
 
 using ui::MotionEvent;
 
@@ -13,9 +16,9 @@ namespace content {
 namespace {
 const float kPixToDip = 0.5f;
 
-// Corresponds to ACTION_DOWN, see
-// developer.android.com/reference/android/view/MotionEvent.html#ACTION_DOWN.
-int kAndroidActionDown = 0;
+int kAndroidActionDown = AMOTION_EVENT_ACTION_DOWN;
+
+int kAndroidAltKeyDown = AMETA_ALT_ON;
 
 // Corresponds to TOOL_TYPE_FINGER, see
 // developer.android.com/reference/android/view/MotionEvent.html
@@ -77,7 +80,8 @@ TEST(MotionEventAndroidTest, Constructor) {
                            y0 - raw_offset,
                            kAndroidToolTypeFinger,
                            kAndroidToolTypeFinger,
-                           kAndroidButtonPrimary);
+                           kAndroidButtonPrimary,
+                           kAndroidAltKeyDown);
 
   EXPECT_EQ(MotionEvent::ACTION_DOWN, event.GetAction());
   EXPECT_EQ(event_time, event.GetEventTime());
@@ -100,6 +104,7 @@ TEST(MotionEventAndroidTest, Constructor) {
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
   EXPECT_EQ(MotionEvent::BUTTON_PRIMARY, event.GetButtonState());
+  EXPECT_EQ(ui::EF_ALT_DOWN, event.GetFlags());
   EXPECT_EQ(static_cast<size_t>(pointer_count), event.GetPointerCount());
   EXPECT_EQ(static_cast<size_t>(history_size), event.GetHistorySize());
   EXPECT_EQ(action_index, event.GetActionIndex());
@@ -145,6 +150,7 @@ TEST(MotionEventAndroidTest, Clone) {
                            y,
                            0,
                            0,
+                           0,
                            0);
 
   scoped_ptr<MotionEvent> clone = event.Clone();
@@ -185,6 +191,7 @@ TEST(MotionEventAndroidTest, Cancel) {
                            0.f,
                            x,
                            y,
+                           0,
                            0,
                            0,
                            0);

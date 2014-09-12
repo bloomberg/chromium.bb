@@ -880,6 +880,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                            jint android_tool_type_0,
                                            jint android_tool_type_1,
                                            jint android_button_state,
+                                           jint android_meta_state,
                                            jboolean is_touch_handle_event) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   // Avoid synthesizing a touch event if it cannot be forwarded.
@@ -910,7 +911,8 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                            raw_pos_y,
                            android_tool_type_0,
                            android_tool_type_1,
-                           android_button_state);
+                           android_button_state,
+                           android_meta_state);
 
   return is_touch_handle_event ? rwhv->OnTouchHandleEvent(event)
                                : rwhv->OnTouchEvent(event);

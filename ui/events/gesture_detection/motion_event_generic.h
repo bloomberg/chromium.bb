@@ -54,6 +54,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;
+  virtual int GetFlags() const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
@@ -65,6 +66,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   void set_id(int id) { id_ = id; }
   void set_action_index(int action_index) { action_index_ = action_index; }
   void set_button_state(int button_state) { button_state_ = button_state; }
+  void set_flags(int flags) { flags_ = flags; }
 
  protected:
   MotionEventGeneric();
@@ -84,6 +86,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   int id_;
   int action_index_;
   int button_state_;
+  int flags_;
   base::StackVector<PointerProperties, kTypicalMaxPointerCount> pointers_;
 };
 

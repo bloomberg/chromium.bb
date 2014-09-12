@@ -32,6 +32,10 @@ CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
 CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
     const ui::GestureEventData& data);
 
+int EventFlagsToWebEventModifiers(int flags);
+
+int WebEventModifiersToEventFlags(int modifiers);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_

@@ -44,7 +44,6 @@ bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
     return false;
   }
 
-  last_touch_event_flags_ = event.flags();
   last_touch_event_latency_info_ = *event.latency();
   pointer_state_.OnTouch(event);
 
@@ -83,7 +82,7 @@ void GestureProviderAura::OnGestureEvent(
   scoped_ptr<ui::GestureEvent> event(
       new ui::GestureEvent(gesture.x,
                            gesture.y,
-                           last_touch_event_flags_,
+                           gesture.flags,
                            gesture.time - base::TimeTicks(),
                            details));
 

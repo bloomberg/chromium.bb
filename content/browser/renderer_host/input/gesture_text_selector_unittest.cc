@@ -70,7 +70,8 @@ class GestureTextSelectorTest : public testing::Test,
                             x,
                             y,
                             1,
-                            gfx::RectF(0, 0, 0, 0));
+                            gfx::RectF(0, 0, 0, 0),
+                            0);
   }
 
   scoped_ptr<GestureTextSelector> selector_;

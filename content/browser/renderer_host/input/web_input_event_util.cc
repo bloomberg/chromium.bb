@@ -11,6 +11,7 @@
 
 #include "base/strings/string_util.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -265,6 +266,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
       (event.GetEventTime() - base::TimeTicks()).InSecondsF(),
       &result);
 
+  result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
   result.touchesLength =
       std::min(event.GetPointerCount(),
                static_cast<size_t>(WebTouchEvent::touchesLengthCap));
@@ -279,6 +281,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
 WebGestureEvent CreateWebGestureEventFromGestureEventData(
     const ui::GestureEventData& data) {
   WebGestureEvent gesture;
+  gesture.modifiers = EventFlagsToWebEventModifiers(data.flags);
   gesture.x = data.x;
   gesture.y = data.y;
   gesture.globalX = data.raw_x;
@@ -373,6 +376,58 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
   }
 
   return gesture;
+}
+
+int EventFlagsToWebEventModifiers(int flags) {
+  int modifiers = 0;
+
+  if (flags & ui::EF_SHIFT_DOWN)
+    modifiers |= blink::WebInputEvent::ShiftKey;
+  if (flags & ui::EF_CONTROL_DOWN)
+    modifiers |= blink::WebInputEvent::ControlKey;
+  if (flags & ui::EF_ALT_DOWN)
+    modifiers |= blink::WebInputEvent::AltKey;
+  if (flags & ui::EF_COMMAND_DOWN)
+    modifiers |= blink::WebInputEvent::MetaKey;
+
+  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::LeftButtonDown;
+  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::MiddleButtonDown;
+  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::RightButtonDown;
+  if (flags & ui::EF_CAPS_LOCK_DOWN)
+    modifiers |= blink::WebInputEvent::CapsLockOn;
+  if (flags & ui::EF_IS_REPEAT)
+    modifiers |= blink::WebInputEvent::IsAutoRepeat;
+
+  return modifiers;
+}
+
+int WebEventModifiersToEventFlags(int modifiers) {
+  int flags = 0;
+
+  if (modifiers & blink::WebInputEvent::ShiftKey)
+    flags |= ui::EF_SHIFT_DOWN;
+  if (modifiers & blink::WebInputEvent::ControlKey)
+    flags |= ui::EF_CONTROL_DOWN;
+  if (modifiers & blink::WebInputEvent::AltKey)
+    flags |= ui::EF_ALT_DOWN;
+  if (modifiers & blink::WebInputEvent::MetaKey)
+    flags |= ui::EF_COMMAND_DOWN;
+
+  if (modifiers & blink::WebInputEvent::LeftButtonDown)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::MiddleButtonDown)
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::RightButtonDown)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::CapsLockOn)
+    flags |= ui::EF_CAPS_LOCK_DOWN;
+  if (modifiers & blink::WebInputEvent::IsAutoRepeat)
+    flags |= ui::EF_IS_REPEAT;
+
+  return flags;
 }
 
 }  // namespace content

@@ -19,6 +19,8 @@ GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
                                MotionEvent::ToolType primary_tool_type,
                                const GestureEventDataPacket& packet) {
+  // As the event is purely synthetic, we needn't be strict with event flags.
+  int flags = EF_NONE;
   return GestureEventData(GestureEventDetails(type, 0, 0),
                           motion_event_id,
                           primary_tool_type,
@@ -28,7 +30,8 @@ GestureEventData CreateGesture(EventType type,
                           packet.raw_touch_location().x(),
                           packet.raw_touch_location().y(),
                           1,
-                          gfx::RectF(packet.touch_location(), gfx::SizeF()));
+                          gfx::RectF(packet.touch_location(), gfx::SizeF()),
+                          flags);
 }
 
 enum RequiredTouches {

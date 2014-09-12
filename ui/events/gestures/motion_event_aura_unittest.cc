@@ -405,4 +405,19 @@ TEST(MotionEventAuraTest, ToolType) {
   EXPECT_EQ(MotionEvent::TOOL_TYPE_UNKNOWN, event.GetToolType(0));
 }
 
+TEST(MotionEventAuraTest, Flags) {
+  int ids[] = {7, 11};
+  MotionEventAura event;
+
+  TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
+  press0.set_flags(EF_CONTROL_DOWN);
+  event.OnTouch(press0);
+  EXPECT_EQ(EF_CONTROL_DOWN, event.GetFlags());
+
+  TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
+  press1.set_flags(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN);
+  event.OnTouch(press1);
+  EXPECT_EQ(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN, event.GetFlags());
+}
+
 }  // namespace ui

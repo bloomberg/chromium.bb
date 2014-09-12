@@ -63,6 +63,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetPressure(size_t pointer_index) const = 0;
   virtual ToolType GetToolType(size_t pointer_index) const = 0;
   virtual int GetButtonState() const = 0;
+  virtual int GetFlags() const = 0;
   virtual base::TimeTicks GetEventTime() const = 0;
 
   // Optional historical data, default implementation provides an empty history.

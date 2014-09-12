@@ -11,6 +11,11 @@
 using ui::test::MockMotionEvent;
 
 namespace ui {
+namespace {
+
+const int kDefaultEventFlags = EF_ALT_DOWN | EF_SHIFT_DOWN;
+
+}  // namespace
 
 class TouchDispositionGestureFilterTest
     : public testing::Test,
@@ -23,6 +28,7 @@ class TouchDispositionGestureFilterTest
   // testing::Test
   virtual void SetUp() OVERRIDE {
     queue_.reset(new TouchDispositionGestureFilter(this));
+    touch_event_.set_flags(kDefaultEventFlags);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -32,10 +38,8 @@ class TouchDispositionGestureFilterTest
   // TouchDispositionGestureFilterClient
   virtual void ForwardGestureEvent(const GestureEventData& event) OVERRIDE {
     ++sent_gesture_count_;
-    last_sent_gesture_time_ = event.time;
+    last_sent_gesture_.reset(new GestureEventData(event));
     sent_gestures_.push_back(event.type());
-    last_sent_gesture_location_ = gfx::PointF(event.x, event.y);
-    last_sent_gesture_raw_location_ = gfx::PointF(event.raw_x, event.raw_y);
     if (event.type() == ET_GESTURE_SHOW_PRESS)
       show_press_bounding_box_ = event.details.bounding_box();
     if (cancel_after_next_gesture_) {
@@ -178,7 +182,8 @@ class TouchDispositionGestureFilterTest
   bool GesturesSent() const { return !sent_gestures_.empty(); }
 
   base::TimeTicks LastSentGestureTime() const {
-    return last_sent_gesture_time_;
+    CHECK(last_sent_gesture_);
+    return last_sent_gesture_->time;
   }
 
   base::TimeTicks CurrentTouchTime() const {
@@ -193,12 +198,19 @@ class TouchDispositionGestureFilterTest
     return sent_gestures;
   }
 
-  const gfx::PointF& LastSentGestureLocation() const {
-    return last_sent_gesture_location_;
+  gfx::PointF LastSentGestureLocation() const {
+    CHECK(last_sent_gesture_);
+    return gfx::PointF(last_sent_gesture_->x, last_sent_gesture_->y);
   }
 
-  const gfx::PointF& LastSentGestureRawLocation() const {
-    return last_sent_gesture_raw_location_;
+  gfx::PointF LastSentGestureRawLocation() const {
+    CHECK(last_sent_gesture_);
+    return gfx::PointF(last_sent_gesture_->raw_x, last_sent_gesture_->raw_y);
+  }
+
+  int LastSentGestureFlags() const {
+    CHECK(last_sent_gesture_);
+    return last_sent_gesture_->flags;
   }
 
   const gfx::RectF& ShowPressBoundingBox() const {
@@ -227,7 +239,8 @@ class TouchDispositionGestureFilterTest
         touch_event_.GetRawX(0),
         touch_event_.GetRawY(0),
         1,
-        gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter));
+        gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter),
+        kDefaultEventFlags);
   }
 
  private:
@@ -236,11 +249,9 @@ class TouchDispositionGestureFilterTest
   MockMotionEvent touch_event_;
   GestureEventDataPacket pending_gesture_packet_;
   size_t sent_gesture_count_;
-  base::TimeTicks last_sent_gesture_time_;
   GestureList sent_gestures_;
   gfx::Vector2dF raw_offset_;
-  gfx::PointF last_sent_gesture_location_;
-  gfx::PointF last_sent_gesture_raw_location_;
+  scoped_ptr<GestureEventData> last_sent_gesture_;
   gfx::RectF show_press_bounding_box_;
 };
 
@@ -1120,6 +1131,23 @@ TEST_F(TouchDispositionGestureFilterTest, TapCancelledBeforeGestureEnd) {
   SendTouchNotConsumedAck();
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL, ET_GESTURE_END),
                             GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, EventFlagPropagation) {
+  // Real gestures should propagate flags from their causal touches.
+  PushGesture(ET_GESTURE_TAP_DOWN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN), GetAndResetSentGestures()));
+  EXPECT_EQ(kDefaultEventFlags, LastSentGestureFlags());
+
+  // Synthetic gestures lack flags.
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL),
+                            GetAndResetSentGestures()));
+  EXPECT_EQ(0, LastSentGestureFlags());
 }
 
 }  // namespace ui

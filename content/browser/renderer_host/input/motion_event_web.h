@@ -33,6 +33,7 @@ class MotionEventWeb : public ui::MotionEvent {
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;
+  virtual int GetFlags() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 

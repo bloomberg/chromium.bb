@@ -25,7 +25,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    float raw_x,
                    float raw_y,
                    size_t touch_point_count,
-                   const gfx::RectF& bounding_box);
+                   const gfx::RectF& bounding_box,
+                   int flags);
   GestureEventData(EventType type, const GestureEventData&);
 
   EventType type() const { return details.type(); }
@@ -38,6 +39,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
   float y;
   float raw_x;
   float raw_y;
+  int flags;
 
  private:
   friend class GestureEventDataPacket;

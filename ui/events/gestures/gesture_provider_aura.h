@@ -47,7 +47,6 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   MotionEventAura pointer_state_;
   FilteredGestureProvider filtered_gesture_provider_;
 
-  int last_touch_event_flags_;
   ui::LatencyInfo last_touch_event_latency_info_;
   bool handling_event_;
   ScopedVector<GestureEvent> pending_gestures_;

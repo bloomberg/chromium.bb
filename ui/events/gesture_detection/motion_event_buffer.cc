@@ -231,6 +231,8 @@ class CompoundMotionEvent : public ui::MotionEvent {
     return latest().GetButtonState();
   }
 
+  virtual int GetFlags() const OVERRIDE { return latest().GetFlags(); }
+
   virtual base::TimeTicks GetEventTime() const OVERRIDE {
     return latest().GetEventTime();
   }
