@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/notifications/Notification.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -39,26 +38,22 @@
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
+#include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 
 namespace blink {
 
-Notification* Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
+Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options)
 {
     NotificationClient& client = NotificationController::clientFrom(context);
     Notification* notification = adoptRefCountedGarbageCollectedWillBeNoop(new Notification(title, context, &client));
 
-    String argument;
-    if (DictionaryHelper::get(options, "body", argument))
-        notification->setBody(argument);
-    if (DictionaryHelper::get(options, "tag", argument))
-        notification->setTag(argument);
-    if (DictionaryHelper::get(options, "lang", argument))
-        notification->setLang(argument);
-    if (DictionaryHelper::get(options, "dir", argument))
-        notification->setDir(argument);
-    if (DictionaryHelper::get(options, "icon", argument)) {
-        KURL iconUrl = argument.isEmpty() ? KURL() : context->completeURL(argument);
+    notification->setBody(options.body());
+    notification->setTag(options.tag());
+    notification->setLang(options.lang());
+    notification->setDir(options.dir());
+    if (options.hasIcon()) {
+        KURL iconUrl = options.icon().isEmpty() ? KURL() : context->completeURL(options.icon());
         if (!iconUrl.isEmpty() && iconUrl.isValid())
             notification->setIconUrl(iconUrl);
     }

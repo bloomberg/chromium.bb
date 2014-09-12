@@ -43,8 +43,8 @@
 
 namespace blink {
 
-class Dictionary;
 class ExecutionContext;
+class NotificationOptions;
 class NotificationPermissionCallback;
 
 class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData {
@@ -52,7 +52,7 @@ class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFina
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:
-    static Notification* create(ExecutionContext*, const String& title, const Dictionary& options);
+    static Notification* create(ExecutionContext*, const String& title, const NotificationOptions&);
 
     virtual ~Notification();
 

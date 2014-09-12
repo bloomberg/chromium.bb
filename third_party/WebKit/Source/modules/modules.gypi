@@ -276,6 +276,7 @@
       'websockets/CloseEvent.idl',
     ],
     'modules_dictionary_idl_files': [
+      'notifications/NotificationOptions.idl',
       'webmidi/MIDIOptions.idl',
     ],
     'generated_modules_files': [
@@ -290,6 +291,8 @@
       '<(blink_modules_output_dir)/IndexedDBNames.h',
     ],
     'generated_modules_dictionary_files': [
+      '<(blink_modules_output_dir)/notifications/NotificationOptions.cpp',
+      '<(blink_modules_output_dir)/notifications/NotificationOptions.h',
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.cpp',
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.h',
     ],

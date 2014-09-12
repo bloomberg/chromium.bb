@@ -32,7 +32,7 @@
 [
     GarbageCollected,
     ActiveDOMObject,
-    Constructor(DOMString title, [Default=Undefined] optional Dictionary options),
+    Constructor(DOMString title, optional NotificationOptions options),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=Notifications,
 ] interface Notification : EventTarget {
