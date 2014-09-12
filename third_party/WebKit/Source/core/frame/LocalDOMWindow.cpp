@@ -140,6 +140,7 @@ public:
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
+    LocalDOMWindow* source() const { return m_source.get(); }
 
 private:
     virtual void fired() OVERRIDE
@@ -879,7 +880,8 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
     // Give the embedder a chance to intercept this postMessage because this
     // LocalDOMWindow might be a proxy for another in browsers that support
     // postMessage calls across WebKit instances.
-    if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get())) {
+    LocalFrame* source = timer->source()->document() ? timer->source()->document()->frame() : 0;
+    if (m_frame->client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get(), source)) {
         m_postMessageTimers.remove(timer);
         return;
     }

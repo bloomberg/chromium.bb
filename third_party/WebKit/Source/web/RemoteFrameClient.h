@@ -26,6 +26,8 @@ public:
     virtual Frame* firstChild() const OVERRIDE;
     virtual Frame* lastChild() const OVERRIDE;
 
+    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const OVERRIDE;
+
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 
 private:

@@ -197,9 +197,6 @@ namespace blink {
 
         virtual blink::WebCookieJar* cookieJar() const = 0;
 
-        // Returns true if the embedder intercepted the postMessage call
-        virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*) const { return false; }
-
         virtual void didChangeName(const String&) { }
 
         virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) { }

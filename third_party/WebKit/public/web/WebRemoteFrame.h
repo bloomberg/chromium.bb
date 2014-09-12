@@ -8,13 +8,14 @@
 #include "public/web/WebFrame.h"
 
 namespace blink {
+class WebRemoteFrameClient;
 
 class WebRemoteFrame : public WebFrame {
 public:
-    BLINK_EXPORT static WebRemoteFrame* create(WebFrameClient*);
+    BLINK_EXPORT static WebRemoteFrame* create(WebRemoteFrameClient*);
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) = 0;
-    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) = 0;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) = 0;
 };
 
 } // namespace blink

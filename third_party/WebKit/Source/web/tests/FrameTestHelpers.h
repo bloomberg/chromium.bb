@@ -34,6 +34,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHistoryItem.h"
+#include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include "wtf/PassOwnPtr.h"
@@ -106,6 +107,18 @@ public:
 
 private:
     int m_loadsInProgress;
+};
+
+// Minimal implementation of WebRemoteFrameClient needed for unit tests that load remote frames. Tests that load
+// frames and need further specialization of WebFrameClient behavior should subclass this.
+class TestWebRemoteFrameClient : public WebRemoteFrameClient {
+public:
+    // Notifies the embedder that a postMessage was issued to a remote frame.
+    virtual void postMessageEvent(
+        WebLocalFrame* sourceFrame,
+        WebRemoteFrame* targetFrame,
+        WebSecurityOrigin targetOrigin,
+        WebDOMMessageEvent) { }
 };
 
 class TestWebViewClient : public WebViewClient {

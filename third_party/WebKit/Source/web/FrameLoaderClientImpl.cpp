@@ -739,16 +739,12 @@ WebCookieJar* FrameLoaderClientImpl::cookieJar() const
 }
 
 bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
-    SecurityOrigin* target, MessageEvent* event) const
+    SecurityOrigin* target, MessageEvent* event, LocalFrame* sourceFrame) const
 {
     if (!m_webFrame->client())
         return false;
-
-    WebLocalFrame* source = 0;
-    if (event && event->source() && event->source()->toDOMWindow() && event->source()->toDOMWindow()->document())
-        source = WebLocalFrameImpl::fromFrame(event->source()->toDOMWindow()->document()->frame());
     return m_webFrame->client()->willCheckAndDispatchMessageEvent(
-        source, m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
+        WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
 }
 
 void FrameLoaderClientImpl::didChangeName(const String& name)

@@ -6,6 +6,7 @@
 #define WebRemoteFrameImpl_h
 
 #include "public/web/WebRemoteFrame.h"
+#include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -19,7 +20,7 @@ class RemoteFrame;
 
 class WebRemoteFrameImpl : public WebRemoteFrame, public RefCounted<WebRemoteFrameImpl> {
 public:
-    WebRemoteFrameImpl();
+    WebRemoteFrameImpl(WebRemoteFrameClient*);
     virtual ~WebRemoteFrameImpl();
 
     // WebRemoteFrame methods.
@@ -173,18 +174,21 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const OVERRIDE;
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) OVERRIDE;
-    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) OVERRIDE;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) OVERRIDE;
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
     void setCoreFrame(PassRefPtr<RemoteFrame>);
     RemoteFrame* frame() const { return m_frame.get(); }
 
+    WebRemoteFrameClient* client() const { return m_client; }
+
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
 private:
     RemoteFrameClient m_frameClient;
     RefPtr<RemoteFrame> m_frame;
+    WebRemoteFrameClient* m_client;
 
     HashMap<WebFrame*, OwnPtr<FrameOwner> > m_ownersForChildren;
 };

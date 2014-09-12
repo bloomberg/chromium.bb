@@ -5,11 +5,14 @@
 #ifndef WebRemoteFrameClient_h
 #define WebRemoteFrameClient_h
 
-#include "public/web/WebFrameClient.h"
+#include "public/web/WebDOMMessageEvent.h"
+#include "public/web/WebSecurityOrigin.h"
 
 namespace blink {
+class WebLocalFrame;
+class WebRemoteFrame;
 
-class WebRemoteFrameClient : public WebFrameClient {
+class WebRemoteFrameClient {
 public:
     // Notifies the embedder that a postMessage was issued to a remote frame.
     virtual void postMessageEvent(

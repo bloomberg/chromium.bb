@@ -5,6 +5,8 @@
 #include "config.h"
 #include "web/RemoteFrameClient.h"
 
+#include "platform/weborigin/SecurityOrigin.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -52,6 +54,14 @@ Frame* RemoteFrameClient::firstChild() const
 Frame* RemoteFrameClient::lastChild() const
 {
     return toCoreFrame(m_webFrame->lastChild());
+}
+
+bool RemoteFrameClient::willCheckAndDispatchMessageEvent(
+    SecurityOrigin* target, MessageEvent* event, LocalFrame* sourceFrame) const
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->postMessageEvent(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
+    return true;
 }
 
 } // namespace blink

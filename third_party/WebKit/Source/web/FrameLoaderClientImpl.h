@@ -142,7 +142,7 @@ public:
     virtual void didNotAllowPlugins() OVERRIDE;
 
     virtual WebCookieJar* cookieJar() const OVERRIDE;
-    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*) const OVERRIDE;
+    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const OVERRIDE;
     virtual void didChangeName(const String&) OVERRIDE;
 
     virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) OVERRIDE;

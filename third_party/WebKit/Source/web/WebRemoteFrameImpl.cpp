@@ -92,13 +92,14 @@ void PlaceholderFrameOwner::dispatchLoad()
 
 } // namespace
 
-WebRemoteFrame* WebRemoteFrame::create(WebFrameClient*)
+WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
 {
-    return adoptRef(new WebRemoteFrameImpl()).leakRef();
+    return adoptRef(new WebRemoteFrameImpl(client)).leakRef();
 }
 
-WebRemoteFrameImpl::WebRemoteFrameImpl()
+WebRemoteFrameImpl::WebRemoteFrameImpl(WebRemoteFrameClient* client)
     : m_frameClient(this)
+    , m_client(client)
 {
 }
 
@@ -811,7 +812,7 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
     m_frame->tree().setName(name, nullAtom);
 }
 
-WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebFrameClient* client)
+WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(client));
     HashMap<WebFrame*, OwnPtr<FrameOwner> >::AddResult result =
