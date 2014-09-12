@@ -18,11 +18,13 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
@@ -245,6 +247,21 @@ ResultExpr RestrictGetSetpriority(pid_t target_pid) {
   return If(which == PRIO_PROCESS,
             If(who == 0 || who == target_pid, Allow()).Else(Error(EPERM)))
       .Else(CrashSIGSYS());
+}
+
+ResultExpr RestrictClockID() {
+  COMPILE_ASSERT(4 == sizeof(clockid_t), clockid_is_not_32bit);
+  const Arg<clockid_t> clockid(0);
+  return If(
+#if defined(OS_CHROMEOS)
+             // Allow the special clock for Chrome OS used by Chrome tracing.
+             clockid == base::TimeTicks::kClockSystemTrace ||
+#endif
+                 clockid == CLOCK_MONOTONIC ||
+                 clockid == CLOCK_PROCESS_CPUTIME_ID ||
+                 clockid == CLOCK_REALTIME ||
+                 clockid == CLOCK_THREAD_CPUTIME_ID,
+             Allow()).Else(CrashSIGSYS());
 }
 
 }  // namespace sandbox.

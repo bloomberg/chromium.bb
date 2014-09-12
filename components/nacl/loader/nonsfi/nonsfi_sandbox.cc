@@ -22,6 +22,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
@@ -65,26 +66,6 @@ ResultExpr RestrictFcntlCommands() {
   return If((cmd == F_SETFD && long_arg == FD_CLOEXEC) || cmd == F_GETFL ||
                 (cmd == F_SETFL && (long_arg & denied_mask) == 0),
             Allow()).Else(CrashSIGSYS());
-}
-
-ResultExpr RestrictClockID() {
-  // We allow accessing only CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID,
-  // CLOCK_REALTIME, and CLOCK_THREAD_CPUTIME_ID.  In particular, this disallows
-  // access to arbitrary per-{process,thread} CPU-time clock IDs (such as those
-  // returned by {clock,pthread}_getcpuclockid), which can leak information
-  // about the state of the host OS.
-  COMPILE_ASSERT(4 == sizeof(clockid_t), clockid_is_not_32bit);
-  const Arg<clockid_t> clockid(0);
-  return If(
-#if defined(OS_CHROMEOS)
-             // Allow the special clock for Chrome OS used by Chrome tracing.
-             clockid == base::TimeTicks::kClockSystemTrace ||
-#endif
-                 clockid == CLOCK_MONOTONIC ||
-                 clockid == CLOCK_PROCESS_CPUTIME_ID ||
-                 clockid == CLOCK_REALTIME ||
-                 clockid == CLOCK_THREAD_CPUTIME_ID,
-             Allow()).Else(CrashSIGSYS());
 }
 
 ResultExpr RestrictClone() {
@@ -259,7 +240,7 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
 
     case __NR_clock_getres:
     case __NR_clock_gettime:
-      return RestrictClockID();
+      return sandbox::RestrictClockID();
 
     case __NR_clone:
       return RestrictClone();

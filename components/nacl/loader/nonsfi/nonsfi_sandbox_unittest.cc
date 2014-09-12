@@ -431,6 +431,10 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   BPF_ASSERT_EQ(ENOMEM, errno);
 }
 
+// clockid restrictions are mostly tested in sandbox/ with the
+// RestrictClockID() unittests. Some basic tests are duplicated here as
+// a precaution.
+
 void CheckClock(clockid_t clockid) {
   struct timespec ts;
   ts.tv_sec = ts.tv_nsec = -1;
@@ -454,67 +458,6 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-}
-
-#if defined(OS_CHROMEOS)
-
-// A custom BPF tester delegate to run IsRunningOnChromeOS() before
-// the sandbox is enabled because we cannot run it with non-SFI BPF
-// sandbox enabled.
-class ClockSystemTesterDelegate : public sandbox::BPFTesterDelegate {
- public:
-  ClockSystemTesterDelegate()
-      : is_running_on_chromeos_(base::SysInfo::IsRunningOnChromeOS()) {}
-  virtual ~ClockSystemTesterDelegate() {}
-
-  virtual scoped_ptr<sandbox::SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
-    return scoped_ptr<sandbox::SandboxBPFPolicy>(
-        new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy());
-  }
-  virtual void RunTestFunction() OVERRIDE {
-    if (is_running_on_chromeos_) {
-      CheckClock(base::TimeTicks::kClockSystemTrace);
-    } else {
-      struct timespec ts;
-      // kClockSystemTrace is 11, which is CLOCK_THREAD_CPUTIME_ID of
-      // the init process (pid=1). If kernel supports this feature,
-      // this may succeed even if this is not running on Chrome OS. We
-      // just check this clock_gettime call does not crash.
-      clock_gettime(base::TimeTicks::kClockSystemTrace, &ts);
-    }
-  }
-
- private:
-  const bool is_running_on_chromeos_;
-  DISALLOW_COPY_AND_ASSIGN(ClockSystemTesterDelegate);
-};
-
-BPF_TEST_D(BPFTest, BPFTestWithDelegateClass, ClockSystemTesterDelegate);
-
-#else
-
-BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
-                 clock_gettime_crash_system_trace,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
-                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  struct timespec ts;
-  clock_gettime(base::TimeTicks::kClockSystemTrace, &ts);
-}
-
-#endif  // defined(OS_CHROMEOS)
-
-BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
-                 clock_gettime_crash_cpu_clock,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
-                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  // We can't use clock_getcpuclockid() because it's not implemented in newlib,
-  // and it might not work inside the sandbox anyway.
-  const pid_t kInitPID = 1;
-  const clockid_t kInitCPUClockID =
-      MAKE_PROCESS_CPUCLOCK(kInitPID, CPUCLOCK_SCHED);
-
-  struct timespec ts;
-  clock_gettime(kInitCPUClockID, &ts);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,

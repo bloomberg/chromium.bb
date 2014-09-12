@@ -66,6 +66,15 @@ bpf_dsl::ResultExpr RestrictFutex();
 // |target_pid| while calling setpriority(2) / getpriority(2).
 bpf_dsl::ResultExpr RestrictGetSetpriority(pid_t target_pid);
 
+// Restrict |clk_id| for clock_getres(), clock_gettime() and clock_settime().
+// We allow accessing only CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID,
+// CLOCK_REALTIME, and CLOCK_THREAD_CPUTIME_ID.  In particular, this disallows
+// access to arbitrary per-{process,thread} CPU-time clock IDs (such as those
+// returned by {clock,pthread}_getcpuclockid), which can leak information
+// about the state of the host OS.
+// On Chrome OS, base::TimeTicks::kClockSystemTrace is also allowed.
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_
