@@ -350,7 +350,7 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   // We try here to put arbitrary limit on max number of fonts that could
   // be loaded, otherwise we fallback to restricted set of fonts.
-  const UINT32 kMaxFontThreshold = 1000;
+  const UINT32 kMaxFontThreshold = 1750;
   HRESULT hr = E_FAIL;
   if (g_font_loader->GetFontMapSize() < kMaxFontThreshold) {
     hr = factory->CreateCustomFontCollection(
