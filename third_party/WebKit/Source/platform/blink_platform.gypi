@@ -91,6 +91,8 @@
       'PlatformKeyboardEvent.cpp',
       'PlatformKeyboardEvent.h',
       'PlatformMouseEvent.h',
+      'PlatformResourceLoader.cpp',
+      'PlatformResourceLoader.h',
       'PlatformScreen.cpp',
       'PlatformScreen.h',
       'PlatformThreadData.cpp',

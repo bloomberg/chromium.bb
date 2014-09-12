@@ -183,6 +183,7 @@
            'action': [
              'python',
              '../build/scripts/make_private_script_source.py',
+             '--for-testing',
              '<@(_outputs)',
              '<@(_private_script_files)'
            ],
