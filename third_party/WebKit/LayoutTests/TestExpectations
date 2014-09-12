@@ -1155,7 +1155,6 @@ crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pa
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win ] http/tests/images/drag-image-to-desktop.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/inspector/network/long-script-content.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
 crbug.com/30536 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
