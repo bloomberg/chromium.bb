@@ -50,7 +50,6 @@ class OpenSSLInitSingleton {
   OpenSSLInitSingleton() {
     SSL_load_error_strings();
     SSL_library_init();
-    OpenSSL_add_all_algorithms();
     int num_locks = CRYPTO_num_locks();
     locks_.reserve(num_locks);
     for (int i = 0; i < num_locks; ++i)

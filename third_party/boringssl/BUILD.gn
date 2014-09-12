@@ -31,7 +31,10 @@ component("boringssl") {
   direct_dependent_configs = [ ":openssl_config" ]
 
   cflags = []
-  defines = [ "BORINGSSL_IMPLEMENTATION" ]
+  defines = [
+    "BORINGSSL_IMPLEMENTATION",
+    "BORINGSSL_NO_STATIC_INITIALIZER",
+  ]
   if (is_component_build) {
     defines += [
       "BORINGSSL_SHARED_LIBRARY",

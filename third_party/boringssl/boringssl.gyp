@@ -13,7 +13,10 @@
       'sources': [
         '<@(boringssl_lib_sources)',
       ],
-      'defines': [ 'BORINGSSL_IMPLEMENTATION' ],
+      'defines': [
+        'BORINGSSL_IMPLEMENTATION',
+        'BORINGSSL_NO_STATIC_INITIALIZER',
+      ],
       'conditions': [
         ['component == "shared_library"', {
           'defines': [

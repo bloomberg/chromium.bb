@@ -100,6 +100,7 @@
       'src/crypto/conf/conf_error.c',
       'src/crypto/cpu-arm.c',
       'src/crypto/cpu-intel.c',
+      'src/crypto/crypto.c',
       'src/crypto/crypto_error.c',
       'src/crypto/des/des.c',
       'src/crypto/dh/check.c',
