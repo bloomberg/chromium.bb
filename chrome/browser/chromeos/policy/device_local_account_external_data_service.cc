@@ -73,7 +73,7 @@ scoped_refptr<DeviceLocalAccountExternalDataManager>
         CloudPolicyStore* policy_store) {
   scoped_refptr<DeviceLocalAccountExternalDataManager>& external_data_manager =
       external_data_managers_[account_id];
-  if (!external_data_manager) {
+  if (!external_data_manager.get()) {
     external_data_manager = new DeviceLocalAccountExternalDataManager(
         account_id,
         base::Bind(&GetChromePolicyDetails),

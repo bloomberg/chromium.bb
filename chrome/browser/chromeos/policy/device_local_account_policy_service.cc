@@ -274,7 +274,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
 }
 
 DeviceLocalAccountPolicyService::~DeviceLocalAccountPolicyService() {
-  DCHECK(!request_context_);
+  DCHECK(!request_context_.get());
   DCHECK(policy_brokers_.empty());
 }
 

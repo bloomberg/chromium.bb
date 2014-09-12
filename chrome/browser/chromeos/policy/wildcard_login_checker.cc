@@ -44,7 +44,7 @@ void WildcardLoginChecker::Start(
 
   callback_ = callback;
   token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
-      signin_context,
+      signin_context.get(),
       g_browser_process->system_request_context(),
       base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
                  base::Unretained(this))));

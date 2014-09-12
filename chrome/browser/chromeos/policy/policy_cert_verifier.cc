@@ -57,7 +57,7 @@ void PolicyCertVerifier::InitializeOnIOThread(
         << "Additional trust anchors not supported on the current platform!";
   }
   net::MultiThreadedCertVerifier* verifier =
-      new net::MultiThreadedCertVerifier(verify_proc);
+      new net::MultiThreadedCertVerifier(verify_proc.get());
   verifier->SetCertTrustAnchorProvider(this);
   delegate_.reset(verifier);
 }

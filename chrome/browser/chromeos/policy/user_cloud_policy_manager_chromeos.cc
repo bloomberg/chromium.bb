@@ -112,7 +112,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   DCHECK(local_state);
   local_state_ = local_state;
   scoped_refptr<net::URLRequestContextGetter> request_context;
-  if (system_request_context) {
+  if (system_request_context.get()) {
     // |system_request_context| can be null for tests.
     // Use the system request context here instead of a context derived
     // from the Profile because Connect() is called before the profile is

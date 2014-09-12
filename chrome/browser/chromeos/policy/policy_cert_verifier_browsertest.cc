@@ -51,9 +51,9 @@ class PolicyCertVerifierTest : public testing::Test {
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
-    ASSERT_TRUE(test_ca_cert_);
+    ASSERT_TRUE(test_ca_cert_.get());
     test_server_cert_ = LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-    ASSERT_TRUE(test_server_cert_);
+    ASSERT_TRUE(test_server_cert_.get());
     test_ca_cert_list_.push_back(test_ca_cert_);
   }
 

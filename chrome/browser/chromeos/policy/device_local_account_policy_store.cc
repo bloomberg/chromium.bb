@@ -141,7 +141,7 @@ void DeviceLocalAccountPolicyStore::Validate(
       device_settings_service_->policy_data();
   scoped_refptr<ownership::PublicKey> key =
       device_settings_service_->GetPublicKey();
-  if (!key || !key->is_loaded() || !device_policy_data) {
+  if (!key.get() || !key->is_loaded() || !device_policy_data) {
     status_ = CloudPolicyStore::STATUS_BAD_STATE;
     NotifyStoreLoaded();
     return;
