@@ -223,7 +223,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           true,
           false,
           render_surface_layer_list,
-          1) {
+          0) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
 }
@@ -247,7 +247,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           true,
           false,
           render_surface_layer_list,
-          1) {
+          0) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
 }

@@ -123,8 +123,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       total_frames_used_for_lcd_text_metrics_(0),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       next_commit_forces_redraw_(false),
-      shared_bitmap_manager_(manager),
-      render_surface_layer_list_id_(0) {
+      shared_bitmap_manager_(manager) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   rendering_stats_instrumentation_->set_record_rendering_stats(
@@ -828,7 +827,10 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
     bool can_render_to_separate_surface = true;
-    ++render_surface_layer_list_id_;
+    // TODO(vmpstr): Passing 0 as the current render surface layer list id means
+    // that we won't be able to detect if a layer is part of |update_list|.
+    // Change this if this information is required.
+    int render_surface_layer_list_id = 0;
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer,
         device_viewport_size(),
@@ -841,7 +843,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         can_render_to_separate_surface,
         settings_.layer_transforms_should_scale_layer_contents,
         &update_list,
-        render_surface_layer_list_id_);
+        render_surface_layer_list_id);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     if (total_frames_used_for_lcd_text_metrics_ <=

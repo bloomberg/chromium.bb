@@ -456,10 +456,6 @@ class CC_EXPORT LayerTreeHost {
   ScopedPtrVector<SwapPromise> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
-  // We associate work done in CalculateDrawProperties with a sequence number
-  // to avoid having to do extra walks to clear values.
-  int render_surface_layer_list_id_;
-
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
 
