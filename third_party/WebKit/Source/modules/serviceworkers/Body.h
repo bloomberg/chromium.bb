@@ -50,6 +50,11 @@ public:
 
     virtual void trace(Visitor*) { }
 
+protected:
+    // Sets the bodyUsed flag to true. This signifies that the contents of the
+    // body have been consumed and cannot be accessed again.
+    void setBodyUsed();
+
 private:
     ScriptPromise readAsync(ScriptState*, ResponseType);
     void resolveJSON();

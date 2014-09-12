@@ -97,6 +97,10 @@ test(function() {
             assert_equals(request1.mode, mode1 ? mode1 : 'cors', 'Request.mode should match');
             METHODS.forEach(function(method2) {
                 MODES.forEach(function(mode2) {
+                    // We need to construct a new request1 because as soon as it
+                    // is used in a constructor it will be flagged as 'used',
+                    // and we can no longer construct objects with it.
+                    request1 = new Request(URL, init1);
                     var init2 = {};
                     if (method2 != undefined) { init2['method'] = method2; }
                     if (mode2 != undefined) { init2['mode'] = mode2; }
@@ -132,6 +136,7 @@ test(function() {
         request1 = new Request(request1);
         assert_equals(request1.credentials, credentials1 ? credentials1 : 'omit', 'Request.credentials should match');
         CREDENTIALS.forEach(function(credentials2) {
+            request1 = new Request(URL, init1);
             var init2 = {};
             if (credentials2 != undefined) { init2['credentials'] = credentials2; }
             request2 = new Request(request1, init2);
@@ -283,6 +288,21 @@ test(function() {
                   'method should not be changed when normalized: ' + method);
   });
 }, 'Request method names are normalized');
+
+
+test(function() {
+    var req = new Request(URL);
+    assert_false(req.bodyUsed,
+      "Request should not be flagged as used if it has not been consumed.");
+    var req2 = new Request(req);
+    assert_true(req.bodyUsed,
+      "Request should be flagged as used if it is used as a construction " +
+      "argument of another Request.");
+    assert_false(req2.bodyUsed,
+      "Request should not be flagged as used if it has not been consumed.");
+    assert_throws(new TypeError(), function() { new Request(req); },
+      "Request cannot be constructed with a request that has been flagged as used.");
+  }, 'Request construction behavior regarding "used" body flag and exceptions.');
 
 async_test(function(t) {
     var getContentType = function(headers) {

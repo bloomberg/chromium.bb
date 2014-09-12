@@ -107,6 +107,11 @@ bool Body::bodyUsed() const
     return m_bodyUsed;
 }
 
+void Body::setBodyUsed()
+{
+    m_bodyUsed = true;
+}
+
 void Body::stop()
 {
     // Canceling the load will call didFail which will remove the resolver.

@@ -46,9 +46,9 @@ private:
 
 Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestData* request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
-    // "6. Let |mode| be |init|'s mode member if it is present, and
+    // "7. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
-    // "7. If |mode| is non-null, set |request|'s mode to |mode|."
+    // "8. If |mode| is non-null, set |request|'s mode to |mode|."
     if (init.mode == "same-origin") {
         request->setMode(FetchRequestData::SameOriginMode);
     } else if (init.mode == "no-cors") {
@@ -61,9 +61,9 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         request->setMode(mode);
     }
 
-    // "8. Let |credentials| be |init|'s credentials member if it is present,
+    // "9. Let |credentials| be |init|'s credentials member if it is present,
     // and |fallbackCredentials| otherwise."
-    // "9. If |credentials| is non-null, set |request|'s credentials mode to
+    // "10. If |credentials| is non-null, set |request|'s credentials mode to
     // |credentials|.
     if (init.credentials == "omit") {
         request->setCredentials(FetchRequestData::OmitCredentials);
@@ -77,7 +77,7 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         request->setCredentials(credentials);
     }
 
-    // "10. If |init|'s method member is present, let |method| be it and run
+    // "11. If |init|'s method member is present, let |method| be it and run
     // these substeps:"
     if (!init.method.isEmpty()) {
         // "1. If |method| is not a useful method, throw a TypeError."
@@ -93,12 +93,12 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         // "3. Set |request|'s method to |method|."
         request->setMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(AtomicString(init.method)));
     }
-    // "11. Let |r| be a new Request object associated with |request|, Headers
+    // "12. Let |r| be a new Request object associated with |request|, Headers
     // object."
     Request* r = Request::create(context, request);
 
-    // "12. Let |headers| be a copy of |r|'s Headers object."
-    // "13. If |init|'s headers member is present, set |headers| to |init|'s
+    // "13. Let |headers| be a copy of |r|'s Headers object."
+    // "14. If |init|'s headers member is present, set |headers| to |init|'s
     // headers member."
     // We don't create a copy of r's Headers object when init's headers member
     // is present.
@@ -106,10 +106,10 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
     if (!init.headers && init.headersDictionary.isUndefinedOrNull()) {
         headers = r->headers()->createCopy();
     }
-    // "14. Empty |r|'s request's header list."
+    // "15. Empty |r|'s request's header list."
     r->request()->headerList()->clearList();
 
-    // "15. If |r|'s request's mode is no CORS, run these substeps:
+    // "16. If |r|'s request's mode is no CORS, run these substeps:
     if (r->request()->mode() == FetchRequestData::NoCORSMode) {
         // "1. If |r|'s request's method is not a simple method, throw a
         // TypeError."
@@ -121,7 +121,7 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         r->headers()->setGuard(Headers::RequestNoCORSGuard);
     }
 
-    // "16. Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
+    // "17. Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
     if (init.headers) {
         ASSERT(init.headersDictionary.isUndefinedOrNull());
         r->headers()->fillWith(init.headers.get(), exceptionState);
@@ -133,7 +133,7 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
     }
     if (exceptionState.hadException())
         return 0;
-    // "17. If |init|'s body member is present, run these substeps:"
+    // "18. If |init|'s body member is present, run these substeps:"
     if (init.bodyBlobHandle) {
         // "1. Let |stream| and |Content-Type| be the result of extracting
         // |init|'s body member."
@@ -149,11 +149,11 @@ Request* createRequestWithRequestData(ExecutionContext* context, FetchRequestDat
         if (exceptionState.hadException())
             return 0;
     }
-    // "18. Set |r|'s MIME type to the result of extracting a MIME type from
+    // "19. Set |r|'s MIME type to the result of extracting a MIME type from
     // |r|'s request's header list."
     // FIXME: We don't have MIME type in Request object yet.
 
-    // "19. Return |r|."
+    // "20. Return |r|."
     return r;
 }
 
@@ -166,12 +166,12 @@ Request* Request::create(ExecutionContext* context, const String& input, Excepti
 
 Request* Request::create(ExecutionContext* context, const String& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    // "1. Let |request| be |input|'s associated request, if |input| is a
+    // "2. Let |request| be |input|'s associated request, if |input| is a
     // Request object, and a new request otherwise."
     FetchRequestData* request(FetchRequestData::create(context));
-    // "2. Set |request| to a restricted copy of itself."
+    // "3. Set |request| to a restricted copy of itself."
     request = request->createRestrictedCopy(context, SecurityOrigin::create(context->url()));
-    // "5. If |input| is a string, run these substeps:"
+    // "6. If |input| is a string, run these substeps:"
     // "1. Let |parsedURL| be the result of parsing |input| with entry settings
     // object's API base URL."
     KURL parsedURL = context->completeURL(input);
@@ -194,12 +194,21 @@ Request* Request::create(ExecutionContext* context, Request* input, ExceptionSta
 
 Request* Request::create(ExecutionContext* context, Request* input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    // "1. Let |request| be |input|'s associated request, if |input| is a
+    // "1. If input is a Request object, run these substeps:"
+    // "  1. If input's used flag is set, throw a TypeError."
+    // "  2. Set input's used flag."
+    if (input->bodyUsed()) {
+        exceptionState.throwTypeError(
+            "Cannot construct a Request with a Request object that has already been used.");
+        return 0;
+    }
+    input->setBodyUsed();
+    // "2. Let |request| be |input|'s associated request, if |input| is a
     // Request object, and a new request otherwise."
-    // "2. Set |request| to a restricted copy of itself."
+    // "3. Set |request| to a restricted copy of itself."
     FetchRequestData* request(input->request()->createRestrictedCopy(context, SecurityOrigin::create(context->url())));
-    // "3. Let |fallbackMode| be null."
-    // "4. Let |fallbackCredentials| be null."
+    // "4. Let |fallbackMode| be null."
+    // "5. Let |fallbackCredentials| be null."
     // Instead of using null as a special fallback value, just pass the current
     // mode and credentials; it has the same effect.
     const FetchRequestData::Mode currentMode = request->mode();
