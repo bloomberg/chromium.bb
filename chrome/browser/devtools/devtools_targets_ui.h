@@ -32,10 +32,7 @@ class DevToolsTargetsUIHandler {
 
   std::string source_id() const { return source_id_; }
 
-  static scoped_ptr<DevToolsTargetsUIHandler> CreateForRenderers(
-      const Callback& callback);
-
-  static scoped_ptr<DevToolsTargetsUIHandler> CreateForWorkers(
+  static scoped_ptr<DevToolsTargetsUIHandler> CreateForLocal(
       const Callback& callback);
 
   static scoped_ptr<DevToolsTargetsUIHandler> CreateForAdb(

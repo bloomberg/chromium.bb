@@ -137,21 +137,20 @@ function populateServiceWorkers(partition_id, workers) {
 }
 
 function populateTargets(source, data) {
-  if (source == 'renderers')
-    populateWebContentsTargets(data);
-  else if (source == 'workers')
-    populateWorkerTargets(data);
-  else if (source == 'adb')
+  if (source == 'local')
+    populateLocalTargets(data);
+  else if (source == 'remote')
     populateRemoteTargets(data);
   else
     console.error('Unknown source type: ' + source);
 }
 
-function populateWebContentsTargets(data) {
+function populateLocalTargets(data) {
   removeChildren('pages-list');
   removeChildren('extensions-list');
   removeChildren('apps-list');
   removeChildren('others-list');
+  removeChildren('workers-list');
 
   for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
@@ -160,16 +159,11 @@ function populateWebContentsTargets(data) {
       addToExtensionsList(data[i]);
     else if (data[i].type === 'app')
       addToAppsList(data[i]);
+    else if (data[i].type === 'worker')
+      addToWorkersList(data[i]);
     else
       addToOthersList(data[i]);
   }
-}
-
-function populateWorkerTargets(data) {
-  removeChildren('workers-list');
-
-  for (var i = 0; i < data.length; i++)
-    addToWorkersList(data[i]);
 }
 
 function showIncognitoWarning() {

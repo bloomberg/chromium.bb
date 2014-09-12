@@ -187,6 +187,64 @@ void WorkerTarget::Inspect(Profile* profile) const {
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, GetAgentHost());
 }
 
+// Enumeration ----------------------------------------------------------------
+
+DevToolsTargetImpl::List EnumerateWebContentsTargets() {
+  std::set<WebContents*> tab_web_contents;
+  for (TabContentsIterator it; !it.done(); it.Next())
+    tab_web_contents.insert(*it);
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DevToolsTargetImpl::List result;
+  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
+  for (DevToolsAgentHost::List::iterator it = agents.begin();
+       it != agents.end(); ++it) {
+    if (WebContents* web_contents = (*it)->GetWebContents()) {
+      bool is_tab =
+          tab_web_contents.find(web_contents) != tab_web_contents.end();
+      result.push_back(new WebContentsTarget(web_contents, is_tab));
+    }
+  }
+  return result;
+}
+
+void CreateWorkerTargets(
+    const std::vector<WorkerService::WorkerInfo>& worker_info,
+    DevToolsTargetImpl::Callback callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DevToolsTargetImpl::List result;
+  for (size_t i = 0; i < worker_info.size(); ++i) {
+    result.push_back(new WorkerTarget(worker_info[i]));
+  }
+  callback.Run(result);
+}
+
+void EnumerateWorkerTargets(DevToolsTargetImpl::Callback callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CreateWorkerTargets,
+                 WorkerService::GetInstance()->GetWorkers(),
+                 callback));
+}
+
+void CollectAllTargets(
+    DevToolsTargetImpl::Callback callback,
+    const DevToolsTargetImpl::List& worker_targets) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DevToolsTargetImpl::List result = EnumerateWebContentsTargets();
+  result.insert(result.end(), worker_targets.begin(), worker_targets.end());
+
+  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
+  for (DevToolsAgentHost::List::iterator it = agents.begin();
+      it != agents.end(); ++it) {
+    if ((*it)->GetType() == DevToolsAgentHost::TYPE_SERVICE_WORKER)
+      result.push_back(new WorkerTarget(*it));
+  }
+  callback.Run(result);
+}
+
 }  // namespace
 
 // DevToolsTargetImpl ----------------------------------------------------------
@@ -277,70 +335,11 @@ scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWebContents(
 }
 
 // static
-DevToolsTargetImpl::List DevToolsTargetImpl::EnumerateWebContentsTargets() {
-  std::set<WebContents*> tab_web_contents;
-  for (TabContentsIterator it; !it.done(); it.Next())
-    tab_web_contents.insert(*it);
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DevToolsTargetImpl::List result;
-  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
-  for (DevToolsAgentHost::List::iterator it = agents.begin();
-       it != agents.end(); ++it) {
-    if (WebContents* web_contents = (*it)->GetWebContents()) {
-      bool is_tab =
-          tab_web_contents.find(web_contents) != tab_web_contents.end();
-      result.push_back(new WebContentsTarget(web_contents, is_tab));
-    }
-  }
-  return result;
-}
-
-static void CreateWorkerTargets(
-    const std::vector<WorkerService::WorkerInfo>& worker_info,
-    DevToolsTargetImpl::Callback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DevToolsTargetImpl::List result;
-  for (size_t i = 0; i < worker_info.size(); ++i) {
-    result.push_back(new WorkerTarget(worker_info[i]));
-  }
-  callback.Run(result);
-}
-
-// static
-void DevToolsTargetImpl::EnumerateWorkerTargets(Callback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CreateWorkerTargets,
-                 WorkerService::GetInstance()->GetWorkers(),
-                 callback));
-}
-
-static void CollectAllTargets(
-    DevToolsTargetImpl::Callback callback,
-    const DevToolsTargetImpl::List& worker_targets) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DevToolsTargetImpl::List result =
-      DevToolsTargetImpl::EnumerateWebContentsTargets();
-  result.insert(result.end(), worker_targets.begin(), worker_targets.end());
-
-  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
-  for (DevToolsAgentHost::List::iterator it = agents.begin();
-      it != agents.end(); ++it) {
-    if ((*it)->GetType() == DevToolsAgentHost::TYPE_SERVICE_WORKER)
-      result.push_back(new WorkerTarget(*it));
-  }
-  callback.Run(result);
-}
-
-// static
 void DevToolsTargetImpl::EnumerateAllTargets(Callback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&DevToolsTargetImpl::EnumerateWorkerTargets,
+      base::Bind(&EnumerateWorkerTargets,
                  base::Bind(&CollectAllTargets, callback)));
 }

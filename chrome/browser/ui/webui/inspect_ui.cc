@@ -371,9 +371,7 @@ void InspectUI::StartListeningNotifications() {
       base::Bind(&InspectUI::PopulateTargets, base::Unretained(this));
 
   AddTargetUIHandler(
-      DevToolsTargetsUIHandler::CreateForRenderers(callback));
-  AddTargetUIHandler(
-      DevToolsTargetsUIHandler::CreateForWorkers(callback));
+      DevToolsTargetsUIHandler::CreateForLocal(callback));
   if (profile->IsOffTheRecord()) {
     ShowIncognitoWarning();
   } else {

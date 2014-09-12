@@ -84,8 +84,6 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   typedef std::vector<DevToolsTargetImpl*> List;
   typedef base::Callback<void(const List&)> Callback;
 
-  static List EnumerateWebContentsTargets();
-  static void EnumerateWorkerTargets(Callback callback);
   static void EnumerateAllTargets(Callback callback);
 
  private:
