@@ -114,6 +114,10 @@ class PaygenStage(artifact_stages.ArchivingStage):
     if issubclass(exc_type, PaygenNoPaygenConfigForBoard):
       return self._HandleExceptionAsWarning(exc_info)
 
+    # Warn so people look at ArchiveStage for the real error.
+    if issubclass(exc_type, MissingInstructionException):
+      return self._HandleExceptionAsWarning(exc_info)
+
     # If the exception is a TestLabFailure that means we couldn't schedule the
     # test. We don't fail the build for that. We do the CompoundFailure dance,
     # because that's how we'll get failures from background processes returned
@@ -239,7 +243,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
     # A value of None signals an error in PushImage.
     if instruction_urls_per_channel is None:
-      raise MissingInstructionException('PushImage results not available.')
+      raise MissingInstructionException(
+          'ArchiveStage: PushImage failed. No images means no Paygen.')
 
     return instruction_urls_per_channel
 
