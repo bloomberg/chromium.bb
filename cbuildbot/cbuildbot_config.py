@@ -2441,7 +2441,10 @@ _release.add_config('stumpy_moblab-release',
   paygen_skip_testing=True,
   important=True,
   afdo_use=False,
-  hw_tests=HWTestConfig.DefaultList(warn_only=True)
+  hw_tests=[HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                         warn_only=True, num=1),
+            HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                         warn_only=True, num=1)],
 )
 
 _release.add_config('rush-release',
