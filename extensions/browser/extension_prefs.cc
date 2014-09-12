@@ -1813,27 +1813,6 @@ bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
   return has_incognito_pref_value;
 }
 
-URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
-  URLPatternSet result;
-  const base::ListValue* list =
-      prefs_->GetList(pref_names::kAllowedInstallSites);
-  CHECK(list);
-
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    std::string entry_string;
-    URLPattern entry(URLPattern::SCHEME_ALL);
-    if (!list->GetString(i, &entry_string) ||
-        entry.Parse(entry_string) != URLPattern::PARSE_SUCCESS) {
-      LOG(ERROR) << "Invalid value for preference: "
-                 << pref_names::kAllowedInstallSites << "." << i;
-      continue;
-    }
-    result.AddPattern(entry);
-  }
-
-  return result;
-}
-
 const base::DictionaryValue* ExtensionPrefs::GetGeometryCache(
     const std::string& extension_id) const {
   const base::DictionaryValue* extension_prefs = GetExtensionPref(extension_id);

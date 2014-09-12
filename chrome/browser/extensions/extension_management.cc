@@ -17,6 +17,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/url_pattern.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -92,6 +93,23 @@ scoped_ptr<base::DictionaryValue> ExtensionManagement::GetForceInstallList()
 
 bool ExtensionManagement::IsInstallationAllowed(const ExtensionId& id) const {
   return ReadById(id).installation_mode != INSTALLATION_BLOCKED;
+}
+
+bool ExtensionManagement::IsOffstoreInstallAllowed(const GURL& url,
+                                                   const GURL& referrer_url) {
+  // No allowed install sites specified, disallow by default.
+  if (!global_settings_.has_restricted_install_sources)
+    return false;
+
+  const extensions::URLPatternSet& url_patterns =
+      global_settings_.install_sources;
+
+  if (!url_patterns.MatchesURL(url))
+    return false;
+
+  // The referrer URL must also be whitelisted, unless the URL has the file
+  // scheme (there's no referrer for those URLs).
+  return url.SchemeIsFile() || url_patterns.MatchesURL(referrer_url);
 }
 
 const ExtensionManagement::IndividualSettings& ExtensionManagement::ReadById(

@@ -22,6 +22,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/url_pattern_set.h"
 
+class GURL;
 class PrefService;
 
 namespace content {
@@ -116,6 +117,9 @@ class ExtensionManagement : public KeyedService {
 
   // Returns if an extension with id |id| is allowed to install or not.
   bool IsInstallationAllowed(const ExtensionId& id) const;
+
+  // Returns true if an extension download should be allowed to proceed.
+  bool IsOffstoreInstallAllowed(const GURL& url, const GURL& referrer_url);
 
   // Helper function to read |settings_by_id_| with |id| as key. Returns a
   // constant reference to default settings if |id| does not exist.

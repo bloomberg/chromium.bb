@@ -529,10 +529,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // The underlying AppSorting.
   AppSorting* app_sorting() const { return app_sorting_.get(); }
 
-  // Describes the URLs that are able to install extensions. See
-  // pref_names::kAllowedInstallSites for more information.
-  URLPatternSet GetAllowedInstallSites();
-
   // Schedules garbage collection of an extension's on-disk data on the next
   // start of this ExtensionService. Applies only to extensions with isolated
   // storage.

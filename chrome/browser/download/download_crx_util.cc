@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/user_script.h"
 
@@ -131,21 +131,11 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile);
-  CHECK(prefs);
-
-  extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
-
-  if (!url_patterns.MatchesURL(item.GetURL()))
-    return false;
-
-  // The referrer URL must also be whitelisted, unless the URL has the file
-  // scheme (there's no referrer for those URLs).
   // TODO(aa): RefererURL is cleared in some cases, for example when going
   // between secure and non-secure URLs. It would be better if DownloadItem
   // tracked the initiating page explicitly.
-  return url_patterns.MatchesURL(item.GetReferrerUrl()) ||
-         item.GetURL().SchemeIsFile();
+  return extensions::ExtensionManagementFactory::GetForBrowserContext(profile)
+      ->IsOffstoreInstallAllowed(item.GetURL(), item.GetReferrerUrl());
 }
 
 }  // namespace download_crx_util

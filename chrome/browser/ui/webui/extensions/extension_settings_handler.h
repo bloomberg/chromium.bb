@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "content/public/browser/navigation_controller.h"
@@ -71,6 +71,7 @@ class ExtensionSettingsHandler
       public content::WebContentsObserver,
       public ErrorConsole::Observer,
       public ExtensionInstallPrompt::Delegate,
+      public ExtensionManagement::Observer,
       public ExtensionPrefsObserver,
       public ExtensionRegistryObserver,
       public ExtensionUninstallDialog::Delegate,
@@ -133,6 +134,9 @@ class ExtensionSettingsHandler
   // ExtensionPrefsObserver implementation.
   virtual void OnExtensionDisableReasonsChanged(const std::string& extension_id,
                                                 int disable_reasons) OVERRIDE;
+
+  // ExtensionManagement::Observer implementation.
+  virtual void OnExtensionManagementSettingsChanged() OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
@@ -276,8 +280,6 @@ class ExtensionSettingsHandler
 
   content::NotificationRegistrar registrar_;
 
-  PrefChangeRegistrar pref_registrar_;
-
   // This will not be empty when a requirements check is in progress. Doing
   // another Check() before the previous one is complete will cause the first
   // one to abort.
@@ -299,6 +301,9 @@ class ExtensionSettingsHandler
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  ScopedObserver<ExtensionManagement, ExtensionManagement::Observer>
+      extension_management_observer_;
 
   // Whether we found any DISABLE_NOT_VERIFIED extensions and want to kick off
   // a verification check to try and rescue them.

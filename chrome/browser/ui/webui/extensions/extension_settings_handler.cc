@@ -173,6 +173,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       error_console_observer_(this),
       extension_prefs_observer_(this),
       extension_registry_observer_(this),
+      extension_management_observer_(this),
       should_do_verification_check_(false) {
 }
 
@@ -192,6 +193,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       error_console_observer_(this),
       extension_prefs_observer_(this),
       extension_registry_observer_(this),
+      extension_management_observer_(this),
       should_do_verification_check_(false) {
 }
 
@@ -751,6 +753,10 @@ void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
   MaybeUpdateAfterNotification();
 }
 
+void ExtensionSettingsHandler::OnExtensionManagementSettingsChanged() {
+  MaybeUpdateAfterNotification();
+}
+
 void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
   DCHECK(!extension_id_prompting_.empty());
 
@@ -1265,12 +1271,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   error_console_observer_.Add(ErrorConsole::Get(profile));
 
-  base::Closure callback = base::Bind(
-      &ExtensionSettingsHandler::MaybeUpdateAfterNotification,
-      AsWeakPtr());
-
-  pref_registrar_.Init(profile->GetPrefs());
-  pref_registrar_.Add(pref_names::kInstallDenyList, callback);
+  extension_management_observer_.Add(
+      ExtensionManagementFactory::GetForBrowserContext(profile));
 }
 
 std::vector<ExtensionPage>
