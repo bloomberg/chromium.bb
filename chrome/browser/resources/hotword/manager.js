@@ -43,10 +43,15 @@
     // user has enabled always-on hotwording. But for now, always signal the
     // start of a hotwording session. This allows this extension to work with
     // the app launcher in the current state.
-    chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
+    stateManager.startSession(
+        hotword.constants.SessionSource.LAUNCHER,
+        function() {
+          chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
+        });
   });
 
   chrome.hotwordPrivate.onHotwordSessionStopped.addListener(function() {
+    stateManager.stopSession(hotword.constants.SessionSource.LAUNCHER);
     chrome.hotwordPrivate.setHotwordSessionState(false, function() {});
   });
 }());

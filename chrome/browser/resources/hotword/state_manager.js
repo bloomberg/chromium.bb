@@ -31,6 +31,18 @@ cr.define('hotword', function() {
      */
     this.pluginManager_ = null;
 
+    /**
+     * Source of the current hotword session.
+     * @private {?hotword.constants.SessionSource}
+     */
+    this.sessionSource_ = null;
+
+    /**
+     * Callback to run when the hotword detector has successfully started.
+     * @private {!function()}
+     */
+    this.sessionStartedCb_ = null;
+
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
   }
@@ -72,11 +84,26 @@ cr.define('hotword', function() {
      * @private
      */
     updateStateFromStatus_: function() {
+      if (!this.hotwordStatus_)
+        return;
+
       if (this.hotwordStatus_.enabled) {
-        // Hotwording is enabled.
-        // TODO(amistry): Have a separate alwaysOnEnabled flag. For now, treat
-        // "enabled" as "always on enabled".
-        this.startDetector_();
+        // Start the detector if there's a session, and shut it down if there
+        // isn't.
+        // TODO(amistry): Support stacking sessions. This can happen when the
+        // user opens google.com or the NTP, then opens the launcher. Opening
+        // google.com will create one session, and opening the launcher will
+        // create the second. Closing the launcher should re-activate the
+        // google.com session.
+        // NOTE(amistry): With always-on, we want a different behaviour with
+        // sessions since the detector should always be running. The exception
+        // being when the user triggers by saying 'Ok Google'. In that case, the
+        // detector stops, so starting/stopping the launcher session should
+        // restart the detector.
+        if (this.sessionSource_)
+          this.startDetector_();
+        else
+          this.shutdownDetector_();
       } else {
         // Not enabled. Shut down if running.
         this.shutdownDetector_();
@@ -126,8 +153,24 @@ cr.define('hotword', function() {
         }.bind(this));
       } else if (this.state_ != State_.STARTING) {
         // Don't try to start a starting detector.
+        this.startRecognizer_();
+      }
+    },
+
+    /**
+     * Start the recognizer plugin. Assumes the plugin has been loaded and is
+     * ready to start.
+     * @private
+     */
+    startRecognizer_: function() {
+      assert(this.pluginManager_);
+      if (this.state_ != State_.RUNNING) {
         this.state_ = State_.RUNNING;
         this.pluginManager_.startRecognizer();
+      }
+      if (this.sessionStartedCb_) {
+        this.sessionStartedCb_();
+        this.sessionStartedCb_ = null;
       }
     },
 
@@ -163,8 +206,7 @@ cr.define('hotword', function() {
         this.shutdownPluginManager_();
         return;
       }
-      this.state_ = State_.RUNNING;
-      this.pluginManager_.startRecognizer();
+      this.startRecognizer_();
     },
 
     /**
@@ -186,6 +228,35 @@ cr.define('hotword', function() {
       this.state_ = State_.STOPPED;
 
       chrome.hotwordPrivate.notifyHotwordRecognition('search', function() {});
+
+      // Implicitly clear the session. A session needs to be started in order to
+      // restart the detector.
+      this.sessionSource_ = null;
+      this.sessionStartedCb_ = null;
+    },
+
+    /**
+     * Start a hotwording session.
+     * @param {!hotword.constants.SessionSource} source Source of the hotword
+     *     session request.
+     * @param {!function()} startedCb Callback invoked when the session has
+     *     been started successfully.
+     */
+    startSession: function(source, startedCb) {
+      this.sessionSource_ = source;
+      this.sessionStartedCb_ = startedCb;
+      this.updateStateFromStatus_();
+    },
+
+    /**
+     * Stops a hotwording session.
+     * @param {!hotword.constants.SessionSource} source Source of the hotword
+     *     session request.
+     */
+    stopSession: function(source) {
+      this.sessionSource_ = null;
+      this.sessionStartedCb_ = null;
+      this.updateStateFromStatus_();
     }
   };
 

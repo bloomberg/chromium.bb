@@ -5,7 +5,6 @@
 cr.define('hotword.constants', function() {
 'use strict';
 
-
 /**
  * Hotword data shared module extension's ID.
  * @const {string}
@@ -13,13 +12,11 @@ cr.define('hotword.constants', function() {
  */
 var SHARED_MODULE_ID = 'bepbmhgboaologfdajaanbcjmnhjmhfn';
 
-
 /**
  * Path to shared module data.
  * @const {string}
  */
 var SHARED_MODULE_ROOT = '_modules/' + SHARED_MODULE_ID;
-
 
 /**
  * Time to wait for expected messages, in milliseconds.
@@ -31,7 +28,6 @@ var TimeoutMs = {
   LONG: 2000
 };
 
-
 /**
  * The URL of the files used by the plugin.
  * @enum {string}
@@ -39,7 +35,6 @@ var TimeoutMs = {
 var File = {
   RECOGNIZER_CONFIG: 'hotword.data',
 };
-
 
 /**
  * Errors emitted by the NaClManager.
@@ -50,7 +45,6 @@ var Error = {
   TIMEOUT: 'timeout',
 };
 
-
 /**
  * Event types supported by NaClManager.
  * @enum {string}
@@ -60,7 +54,6 @@ var Event = {
   TRIGGER: 'trigger',
   ERROR: 'error',
 };
-
 
 /**
  * Messages for communicating with the NaCl recognizer plugin. These must match
@@ -80,6 +73,13 @@ var NaClPlugin = {
   MS_CONFIGURED: 'ms_configured'
 };
 
+/**
+ * Source of a hotwording session request.
+ * @enum {string}
+ */
+var SessionSource = {
+  LAUNCHER: 'launcher'
+};
 
 /**
  * The browser UI language.
@@ -96,6 +96,7 @@ return {
   Error: Error,
   Event: Event,
   NaClPlugin: NaClPlugin,
+  SessionSource: SessionSource,
   UI_LANGUAGE: UI_LANGUAGE
 };
 
