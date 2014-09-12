@@ -76,8 +76,9 @@ using content::ChildProcessData;
 using content::ChildProcessHost;
 using ppapi::proxy::SerializedHandle;
 
-#if defined(OS_WIN)
+namespace nacl {
 
+#if defined(OS_WIN)
 namespace {
 
 // Looks for the largest contiguous unallocated region of address
@@ -119,8 +120,6 @@ bool IsInPath(const std::string& path_env_var, const std::string& dir) {
 
 }  // namespace
 
-namespace nacl {
-
 // Allocates |size| bytes of address space in the given process at a
 // randomised address.
 void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size) {
@@ -138,18 +137,18 @@ void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size) {
                         MEM_RESERVE, PAGE_NOACCESS);
 }
 
-}  // namespace nacl
-
-#endif  // defined(OS_WIN)
-
 namespace {
 
-#if defined(OS_WIN)
 bool RunningOnWOW64() {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_ENABLED);
 }
-#endif
+
+}  // namespace
+
+#endif  // defined(OS_WIN)
+
+namespace {
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class NaClSandboxedProcessLauncherDelegate
@@ -233,19 +232,6 @@ bool ShareHandleToSelLdr(
 
 }  // namespace
 
-namespace nacl {
-
-struct NaClProcessHost::NaClInternal {
-  NaClHandle socket_for_renderer;
-  NaClHandle socket_for_sel_ldr;
-
-  NaClInternal()
-    : socket_for_renderer(NACL_INVALID_HANDLE),
-      socket_for_sel_ldr(NACL_INVALID_HANDLE) { }
-};
-
-// -----------------------------------------------------------------------------
-
 unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
@@ -273,7 +259,6 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
 #if defined(OS_WIN)
       debug_exception_handler_requested_(false),
 #endif
-      internal_(new NaClInternal()),
       uses_irt_(uses_irt),
       uses_nonsfi_mode_(uses_nonsfi_mode),
       enable_debug_stub_(false),
@@ -311,18 +296,6 @@ NaClProcessHost::~NaClProcessHost() {
       LOG(ERROR) << message;
     }
     NaClBrowser::GetInstance()->OnProcessEnd(process_->GetData().id);
-  }
-
-  if (internal_->socket_for_renderer != NACL_INVALID_HANDLE) {
-    if (NaClClose(internal_->socket_for_renderer) != 0) {
-      NOTREACHED() << "NaClClose() failed";
-    }
-  }
-
-  if (internal_->socket_for_sel_ldr != NACL_INVALID_HANDLE) {
-    if (NaClClose(internal_->socket_for_sel_ldr) != 0) {
-      NOTREACHED() << "NaClClose() failed";
-    }
   }
 
   if (reply_msg_) {
@@ -468,8 +441,8 @@ void NaClProcessHost::Launch(
       delete this;
       return;
     }
-    internal_->socket_for_renderer = pair[0];
-    internal_->socket_for_sel_ldr = pair[1];
+    socket_for_renderer_ = base::File(pair[0]);
+    socket_for_sel_ldr_ = base::File(pair[1]);
     SetCloseOnExec(pair[0]);
     SetCloseOnExec(pair[1]);
   }
@@ -721,8 +694,7 @@ bool NaClProcessHost::ReplyToRenderer(
   // Copy the handle into the renderer process.
   HANDLE handle_in_renderer;
   if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                       reinterpret_cast<HANDLE>(
-                           internal_->socket_for_renderer),
+                       socket_for_renderer_.TakePlatformFile(),
                        nacl_host_message_filter_->PeerHandle(),
                        &handle_in_renderer,
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
@@ -737,7 +709,7 @@ bool NaClProcessHost::ReplyToRenderer(
   // No need to dup the imc_handle - we don't pass it anywhere else so
   // it cannot be closed.
   FileDescriptor imc_handle;
-  imc_handle.fd = internal_->socket_for_renderer;
+  imc_handle.fd = socket_for_renderer_.TakePlatformFile();
   imc_handle.auto_close = true;
   imc_handle_for_renderer = imc_handle;
 #endif
@@ -759,7 +731,6 @@ bool NaClProcessHost::ReplyToRenderer(
                        data.id,
                        crash_info_shmem_renderer_handle),
       std::string() /* error_message */);
-  internal_->socket_for_renderer = NACL_INVALID_HANDLE;
 
   // Now that the crash information shmem handles have been shared with the
   // plugin and the renderer, the browser can close its handle.
@@ -844,7 +815,7 @@ bool NaClProcessHost::StartNaClExecution() {
 #if defined(OS_LINUX)
     // In non-SFI mode, we do not use SRPC. Make sure that the socketpair is
     // not created.
-    DCHECK_EQ(internal_->socket_for_sel_ldr, NACL_INVALID_HANDLE);
+    DCHECK(!socket_for_sel_ldr_.IsValid());
 #endif
   } else {
     params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
@@ -863,7 +834,8 @@ bool NaClProcessHost::StartNaClExecution() {
 
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,
-                             internal_->socket_for_sel_ldr, true,
+                             socket_for_sel_ldr_.TakePlatformFile(),
+                             true,
                              &params.handles)) {
       return false;
     }
@@ -910,10 +882,6 @@ bool NaClProcessHost::StartNaClExecution() {
       }
     }
 #endif
-  }
-
-  if (!uses_nonsfi_mode_) {
-    internal_->socket_for_sel_ldr = NACL_INVALID_HANDLE;
   }
 
   params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
