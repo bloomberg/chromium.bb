@@ -86,7 +86,10 @@ test("sandbox_linux_unittests") {
     "//testing/gtest",
   ]
 
-  libs = [ "rt" ]
+  if (is_linux) {
+    # Don't use this on Android.
+    libs = [ "rt" ]
+  }
 
   if (compile_suid_client) {
     sources += [
