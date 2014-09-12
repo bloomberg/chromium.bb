@@ -1788,7 +1788,7 @@ WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
         (delayed ? GetWallpaperLoadDelay()
                  : base::TimeDelta::FromMilliseconds(0)),
         user_id));
-    pending_inactive_ = loading_.back();
+    pending_inactive_ = loading_.back().get();
   }
   return pending_inactive_;
 }

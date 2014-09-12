@@ -243,7 +243,7 @@ class JsConditionWaiter {
   }
 
   void OnTimer() {
-    DCHECK(runner_);
+    DCHECK(runner_.get());
     if (CheckJs())
       runner_->Quit();
   }
@@ -1092,7 +1092,7 @@ class KioskUpdateTest : public KioskTest {
     virtual void OnKioskAppExternalUpdateComplete(bool success) OVERRIDE {
       quit_ = true;
       update_success_ = success;
-      if (runner_)
+      if (runner_.get())
         runner_->Quit();
     }
 
@@ -1144,7 +1144,7 @@ class KioskUpdateTest : public KioskTest {
         return;
       loaded_ = true;
       quit_ = true;
-      if (runner_)
+      if (runner_.get())
         runner_->Quit();
     }
 
@@ -1152,7 +1152,7 @@ class KioskUpdateTest : public KioskTest {
         const std::string& app_id) OVERRIDE {
       loaded_ = false;
       quit_ = true;
-      if (runner_)
+      if (runner_.get())
         runner_->Quit();
     }
 

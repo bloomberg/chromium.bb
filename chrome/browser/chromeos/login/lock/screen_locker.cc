@@ -461,7 +461,7 @@ ScreenLocker::~ScreenLocker() {
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
 
-  if (saved_ime_state_) {
+  if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
   }
 }

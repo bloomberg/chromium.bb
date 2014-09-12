@@ -105,7 +105,7 @@ bool ScreenshotTester::SaveImage(const std::string& file_name,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath screenshot_path =
       screenshot_dir.AppendASCII(test_name_ + "_" + file_name + ".png");
-  if (!png_data) {
+  if (!png_data.get()) {
     LOG(ERROR) << "Can't take a screenshot";
     return false;
   }

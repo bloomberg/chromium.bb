@@ -1008,7 +1008,7 @@ scoped_refptr<input_method::InputMethodManager::State>
 UserSessionManager::GetDefaultIMEState(Profile* profile) {
   scoped_refptr<input_method::InputMethodManager::State> state =
       default_ime_states_[profile];
-  if (!state) {
+  if (!state.get()) {
     // Profile can be NULL in tests.
     state = input_method::InputMethodManager::Get()->CreateNewState(profile);
     default_ime_states_[profile] = state;

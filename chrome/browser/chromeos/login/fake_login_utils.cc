@@ -120,7 +120,7 @@ bool FakeLoginUtils::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
 
 void FakeLoginUtils::SetExpectedCredentials(const UserContext& user_context) {
   expected_user_context_ = user_context;
-  if (authenticator_) {
+  if (authenticator_.get()) {
     static_cast<MockAuthenticator*>(authenticator_.get())->
         SetExpectedCredentials(user_context);
   }
