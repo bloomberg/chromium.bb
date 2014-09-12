@@ -1783,6 +1783,7 @@ drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo)
 drm_public void
 drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 {
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int i;
 	struct timespec time;
@@ -1790,7 +1791,10 @@ drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 	clock_gettime(CLOCK_MONOTONIC, &time);
 
 	assert(bo_gem->reloc_count >= start);
+
 	/* Unreference the cleared target buffers */
+	pthread_mutex_lock(&bufmgr_gem->lock);
+
 	for (i = start; i < bo_gem->reloc_count; i++) {
 		drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) bo_gem->reloc_target_info[i].bo;
 		if (&target_bo_gem->bo != bo) {
@@ -1800,6 +1804,9 @@ drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 		}
 	}
 	bo_gem->reloc_count = start;
+
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
 }
 
 /**
