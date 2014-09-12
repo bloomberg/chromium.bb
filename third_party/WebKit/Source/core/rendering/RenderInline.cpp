@@ -1026,37 +1026,11 @@ LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLay
         return LayoutRect();
 
     LayoutRect paintInvalidationRect(linesVisualOverflowBoundingBox());
-    bool hitPaintInvalidationContainer = false;
-
-    // We need to add in the in-flow position offsets of any inlines (including us) up to our
-    // containing block.
-    RenderBlock* cb = containingBlock();
-    for (const RenderObject* inlineFlow = this; inlineFlow && inlineFlow->isRenderInline() && inlineFlow != cb;
-         inlineFlow = inlineFlow->parent()) {
-        if (inlineFlow == paintInvalidationContainer) {
-            hitPaintInvalidationContainer = true;
-            break;
-        }
-        if (inlineFlow->style()->hasInFlowPosition() && inlineFlow->hasLayer())
-            paintInvalidationRect.move(toRenderInline(inlineFlow)->layer()->offsetForInFlowPosition());
-    }
 
     LayoutUnit outlineSize = style()->outlineSize();
     paintInvalidationRect.inflate(outlineSize);
 
-    if (hitPaintInvalidationContainer || !cb)
-        return paintInvalidationRect;
-
-    if (cb->hasColumns())
-        cb->adjustRectForColumns(paintInvalidationRect);
-
-    if (cb->hasOverflowClip())
-        cb->applyCachedClipAndScrollOffsetForPaintInvalidation(paintInvalidationRect);
-
-    // FIXME: Passing paintInvalidationState directly to mapRectToPaintInvalidationBacking causes incorrect invalidations.
-    // Should avoid slowRectMapping by properly adjusting paintInvalidationState. crbug.com/402994.
-    ForceHorriblySlowRectMapping slowRectMapping(paintInvalidationState);
-    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
