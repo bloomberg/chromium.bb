@@ -199,7 +199,7 @@ class SpdyFramerTestUtil {
     }
 
     virtual bool OnUnknownFrame(SpdyStreamId stream_id,
-                                int frame_type) override {
+                                int frame_type) OVERRIDE {
       LOG(FATAL);
       return false;
     }
@@ -452,7 +452,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++priority_count_;
   }
 
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE {
     DLOG(INFO) << "Unknown frame type " << frame_type;
     return on_unknown_frame_result_;
   }
