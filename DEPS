@@ -118,12 +118,6 @@ deps = {
   'src/third_party/WebKit':
    Var('chromium_git') + '/chromium/blink.git' + '@' +  Var('webkit_revision'),
 
-  'src/third_party/WebKit/LayoutTests/w3c/web-platform-tests':
-   Var('chromium_git') + '/external/w3c/web-platform-tests.git' + '@' + '3e0f28376857901b2d3eefda82a3b622bbcabd41',
-
-  'src/third_party/WebKit/LayoutTests/w3c/csswg-test':
-   Var('chromium_git') + '/external/w3c/csswg-test.git' + '@' + '0b12ea22689ee2179f3e9bff389db22f4efd6ed5',
-
   'src/third_party/icu':
    Var('chromium_git') + '/chromium/deps/icu52.git' + '@' + '89831135d5f76413fcdd3852f8de7f344b3fa40c', # from svn revision 291781
 
