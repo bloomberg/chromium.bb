@@ -57,6 +57,8 @@ config("blink_headers_config") {
 source_set("blink_headers") {
   direct_dependent_configs = [
     ":blink_headers_config",
+    # Blink exposes icu headers in the public API.
+    "//third_party/icu:icu_config",
     # Blink exposes NPAPI headers in the public API.
     "//third_party/npapi:npapi_config",
   ]
