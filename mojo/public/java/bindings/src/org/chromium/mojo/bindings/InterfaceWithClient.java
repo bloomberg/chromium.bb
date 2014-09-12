@@ -6,6 +6,7 @@ package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.system.Pair;
 
 /**
  * Base class for mojo generated interfaces that have a client.
@@ -86,6 +87,19 @@ public interface InterfaceWithClient<CI extends Interface> extends Interface {
             handlers.addConnectionErrorHandler(proxy);
             router.start();
             return proxy;
+        }
+
+        /**
+         * Constructs a new |InterfaceRequest| for the interface. This method returns a Pair where
+         * the first element is a proxy, and the second element is the request. The proxy can be
+         * used immediately.
+         *
+         * @param client the implementation of the client interface.
+         */
+        public final Pair<P, InterfaceRequest<I>> getInterfaceRequest(Core core, CI client) {
+            Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
+            P proxy = attachProxy(handles.first, client);
+            return Pair.create(proxy, new InterfaceRequest<I>(handles.second));
         }
 
         /**
