@@ -447,7 +447,6 @@
             ['android_webview_build == 0', {
               'dependencies': [
                 '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
-                '../third_party/guava/guava.gyp:guava_javalib',
               ],
             }],
           ],

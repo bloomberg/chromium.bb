@@ -8,12 +8,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;

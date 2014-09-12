@@ -13,12 +13,11 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.HashSet;
 import java.util.List;

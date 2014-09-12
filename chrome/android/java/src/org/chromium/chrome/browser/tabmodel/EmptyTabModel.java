@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import com.google.common.annotations.VisibleForTesting;
-
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
 

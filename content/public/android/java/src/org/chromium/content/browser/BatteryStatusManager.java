@@ -12,10 +12,9 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Android implementation of the battery status APIs.

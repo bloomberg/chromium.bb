@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.text.TextUtils;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 

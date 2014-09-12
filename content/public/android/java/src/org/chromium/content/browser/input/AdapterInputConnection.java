@@ -17,7 +17,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * InputConnection is created by ContentView.onCreateInputConnection.

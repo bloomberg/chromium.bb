@@ -35,7 +35,6 @@ android_library("content_java") {
     "//media/base/android:media_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
-    "//third_party/guava:guava_javalib",
     "//third_party/jsr-305:jsr_305_javalib",
 
 #"//content:content_common",
@@ -58,7 +57,6 @@ android_library("content_java") {
   if (!is_android_webview_build) {
     deps += [
       "//third_party/eyesfree:eyesfree_java",
-      "//third_party/guava:guava_javalib",
     ]
   }
 }

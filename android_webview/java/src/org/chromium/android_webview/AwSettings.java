@@ -14,11 +14,10 @@ import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.PluginState;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.

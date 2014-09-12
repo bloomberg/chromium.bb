@@ -11,9 +11,10 @@ import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
+
+import org.chromium.base.VisibleForTesting;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -79,7 +80,9 @@ public class InvalidationPreferences {
     private final Context mContext;
 
     public InvalidationPreferences(Context context) {
-        this.mContext = Preconditions.checkNotNull(context.getApplicationContext());
+        Context appContext = context.getApplicationContext();
+        if (appContext == null) throw new NullPointerException("Unable to get application context");
+        mContext = appContext;
     }
 
     /** Returns a new {@link EditContext} to modify the preferences managed by this class. */

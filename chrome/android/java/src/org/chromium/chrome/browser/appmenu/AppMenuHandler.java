@@ -15,8 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
-import com.google.common.annotations.VisibleForTesting;
-
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.UmaBridge;
 
 import java.util.ArrayList;

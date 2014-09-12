@@ -7,10 +7,9 @@ package org.chromium.content.browser;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Manages oom bindings used to bound child services.

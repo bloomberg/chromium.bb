@@ -14,10 +14,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 

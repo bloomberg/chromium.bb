@@ -7,8 +7,7 @@ package org.chromium.chrome.browser.identity;
 import android.content.Context;
 import android.provider.Settings;
 
-import com.google.common.annotations.VisibleForTesting;
-
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.HashUtil;
 
 import javax.annotation.Nullable;

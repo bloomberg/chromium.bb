@@ -8,12 +8,10 @@ import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationClientNameProvider;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
@@ -119,7 +117,9 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      */
     @VisibleForTesting
     InvalidationController(Context context) {
-        mContext = Preconditions.checkNotNull(context.getApplicationContext());
+        Context appContext = context.getApplicationContext();
+        if (appContext == null) throw new NullPointerException("Unable to get application context");
+        mContext = appContext;
         ApplicationStatus.registerApplicationStateListener(this);
     }
 

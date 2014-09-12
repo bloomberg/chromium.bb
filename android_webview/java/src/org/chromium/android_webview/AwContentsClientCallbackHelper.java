@@ -10,7 +10,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.concurrent.Callable;
 

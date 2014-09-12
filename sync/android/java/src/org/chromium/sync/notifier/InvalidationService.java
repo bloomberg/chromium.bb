@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;
 import com.google.ipc.invalidation.external.client.types.ErrorInfo;
@@ -21,6 +20,7 @@ import com.google.protos.ipc.invalidation.Types.ClientType;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
 import org.chromium.sync.signin.AccountManagerHelper;

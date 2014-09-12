@@ -12,16 +12,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
+
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 public class DelayedSyncControllerTest extends ChromeShellTestBase {
     private static final Account TEST_ACCOUNT =

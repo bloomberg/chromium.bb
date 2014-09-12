@@ -15,10 +15,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**

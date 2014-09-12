@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.UUID;
 

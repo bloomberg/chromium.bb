@@ -11,10 +11,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 

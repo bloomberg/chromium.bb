@@ -37,12 +37,11 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.widget.OverScroller;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentSettings;

@@ -13,9 +13,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 

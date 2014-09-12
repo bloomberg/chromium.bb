@@ -10,11 +10,11 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.SyncSwitches;
 
 public class ChromeSigninController {

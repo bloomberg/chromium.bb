@@ -13,11 +13,10 @@ import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.PathUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.io.File;
 import java.io.IOException;

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.text.TextUtils;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Container class with information about each omnibox suggestion item.

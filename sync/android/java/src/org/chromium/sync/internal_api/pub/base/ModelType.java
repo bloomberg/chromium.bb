@@ -6,11 +6,11 @@ package org.chromium.sync.internal_api.pub.base;
 
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.FieldTrialList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 
 import java.util.Collection;

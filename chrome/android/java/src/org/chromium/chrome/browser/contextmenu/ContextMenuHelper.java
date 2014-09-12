@@ -13,9 +13,8 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
 
 /**

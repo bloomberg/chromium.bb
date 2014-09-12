@@ -15,9 +15,8 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.List;

@@ -6,10 +6,9 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.concurrent.FutureTask;
 

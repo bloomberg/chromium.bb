@@ -10,9 +10,8 @@ import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.os.StrictMode;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 

@@ -17,12 +17,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.lang.CharSequence;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Adapts and plumbs android IME service onto the chrome text input API.
