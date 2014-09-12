@@ -703,6 +703,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../cc/cc.gyp:cc_surfaces',
+            '../skia/skia.gyp:skia',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/events/events.gyp:events',
             '../ui/events/events.gyp:events_base',
