@@ -17,6 +17,7 @@
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/services/html_viewer/weblayertreeview_impl.h"
+#include "mojo/services/html_viewer/webmediaplayer_factory.h"
 #include "mojo/services/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -87,12 +88,14 @@ HTMLDocumentView::HTMLDocumentView(
     URLResponsePtr response,
     InterfaceRequest<ServiceProvider> service_provider_request,
     Shell* shell,
-    scoped_refptr<base::MessageLoopProxy> compositor_thread)
+    scoped_refptr<base::MessageLoopProxy> compositor_thread,
+    WebMediaPlayerFactory* web_media_player_factory)
     : shell_(shell),
       web_view_(NULL),
       root_(NULL),
       view_manager_client_factory_(shell, this),
       compositor_thread_(compositor_thread),
+      web_media_player_factory_(web_media_player_factory),
       weak_factory_(this) {
   ServiceProviderImpl* exported_services = new ServiceProviderImpl();
   exported_services->AddService(&view_manager_client_factory_);
@@ -168,6 +171,13 @@ void HTMLDocumentView::initializeLayerTreeView() {
 
 blink::WebLayerTreeView* HTMLDocumentView::layerTreeView() {
   return web_layer_tree_view_impl_.get();
+}
+
+blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
+    blink::WebLocalFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client) {
+  return web_media_player_factory_->CreateMediaPlayer(frame, url, client);
 }
 
 blink::WebFrame* HTMLDocumentView::createChildFrame(

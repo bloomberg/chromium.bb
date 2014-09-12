@@ -23,6 +23,7 @@ class MessageLoopProxy;
 
 namespace mojo {
 
+class WebMediaPlayerFactory;
 class ViewManager;
 class View;
 class WebLayerTreeViewImpl;
@@ -44,7 +45,8 @@ class HTMLDocumentView : public blink::WebViewClient,
   HTMLDocumentView(URLResponsePtr response,
                    InterfaceRequest<ServiceProvider> service_provider_request,
                    Shell* shell,
-                   scoped_refptr<base::MessageLoopProxy> compositor_thread);
+                   scoped_refptr<base::MessageLoopProxy> compositor_thread,
+                   WebMediaPlayerFactory* web_media_player_factory);
   virtual ~HTMLDocumentView();
 
  private:
@@ -56,6 +58,10 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual blink::WebLayerTreeView* layerTreeView();
 
   // WebFrameClient methods:
+  virtual blink::WebMediaPlayer* createMediaPlayer(
+      blink::WebLocalFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client);
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
                                             const blink::WebString& frameName);
   virtual void frameDetached(blink::WebFrame*);
@@ -100,6 +106,7 @@ class HTMLDocumentView : public blink::WebViewClient,
   ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
+  WebMediaPlayerFactory* web_media_player_factory_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);

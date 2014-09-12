@@ -32,11 +32,12 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   // callback must always return a valid EncryptedMediaPlayerSupport object.
   typedef base::Callback<scoped_ptr<EncryptedMediaPlayerSupport>(
       blink::WebMediaPlayerClient*)> EncryptedMediaPlayerSupportCreateCB;
+  typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
 
   // |defer_load_cb|, |audio_renderer_sink|, and |compositor_task_runner| may be
   // null.
   WebMediaPlayerParams(
-      const base::Callback<void(const base::Closure&)>& defer_load_cb,
+      const DeferLoadCB& defer_load_cb,
       const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
       const AudioHardwareConfig& audio_hardware_config,
       const scoped_refptr<MediaLog>& media_log,

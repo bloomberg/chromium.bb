@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
+#include "mojo/services/html_viewer/webmediaplayer_factory.h"
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
@@ -22,8 +23,11 @@ class HTMLViewer;
 class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  public:
   ContentHandlerImpl(Shell* shell,
-                     scoped_refptr<base::MessageLoopProxy> compositor_thread)
-      : shell_(shell), compositor_thread_(compositor_thread) {}
+                     scoped_refptr<base::MessageLoopProxy> compositor_thread,
+                     WebMediaPlayerFactory* web_media_player_factory)
+      : shell_(shell),
+        compositor_thread_(compositor_thread),
+        web_media_player_factory_(web_media_player_factory) {}
   virtual ~ContentHandlerImpl() {}
 
  private:
@@ -35,11 +39,13 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
     new HTMLDocumentView(response.Pass(),
                          service_provider_request.Pass(),
                          shell_,
-                         compositor_thread_);
+                         compositor_thread_,
+                         web_media_player_factory_);
   }
 
   Shell* shell_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
+  WebMediaPlayerFactory* web_media_player_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
@@ -58,6 +64,8 @@ class HTMLViewer : public ApplicationDelegate,
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
     compositor_thread_.Start();
+    web_media_player_factory_.reset(new WebMediaPlayerFactory(
+        compositor_thread_.message_loop_proxy()));
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
@@ -70,13 +78,15 @@ class HTMLViewer : public ApplicationDelegate,
   virtual void Create(ApplicationConnection* connection,
                       InterfaceRequest<ContentHandler> request) OVERRIDE {
     BindToRequest(
-        new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy()),
+        new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy(),
+                               web_media_player_factory_.get()),
         &request);
   }
 
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
   Shell* shell_;
   base::Thread compositor_thread_;
+  scoped_ptr<WebMediaPlayerFactory> web_media_player_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
