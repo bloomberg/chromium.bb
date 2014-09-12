@@ -415,10 +415,8 @@ String ImageBuffer::toDataURL(const String& mimeType, const double* quality) con
     Vector<char> encodedImage;
     if (!isSurfaceValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
         return "data:,";
-    Vector<char> base64Data;
-    base64Encode(encodedImage, base64Data);
 
-    return "data:" + mimeType + ";base64," + base64Data;
+    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
 }
 
 String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeType, const double* quality)
@@ -429,10 +427,7 @@ String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeTy
     if (!encodeImage(imageData, mimeType, quality, &encodedImage))
         return "data:,";
 
-    Vector<char> base64Data;
-    base64Encode(encodedImage, base64Data);
-
-    return "data:" + mimeType + ";base64," + base64Data;
+    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
 }
 
 } // namespace blink

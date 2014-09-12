@@ -53,6 +53,7 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/text/Base64.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -383,7 +384,11 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
         *errorString = "Image encoding failed";
         return;
     }
-    *dataURL = "data:image/png;base64," + *base64Data;
+    StringBuilder url;
+    url.appendLiteral("data:image/png;base64,");
+    url.reserveCapacity(url.length() + base64Data->size());
+    url.append(base64Data->begin(), base64Data->size());
+    *dataURL = url.toString();
 }
 
 void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
