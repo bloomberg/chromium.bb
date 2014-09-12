@@ -30,11 +30,22 @@ FocusRingLayer::~FocusRingLayer() {}
 
 void FocusRingLayer::Set(aura::Window* root_window, const gfx::Rect& bounds) {
   focus_ring_ = bounds;
+  CreateOrUpdateLayer(root_window, "FocusRing");
+
+  // Update the layer bounds.
+  gfx::Rect layer_bounds = bounds;
+  int inset = -(kShadowRadius + 2);
+  layer_bounds.Inset(inset, inset, inset, inset);
+  layer_->SetBounds(layer_bounds);
+}
+
+void FocusRingLayer::CreateOrUpdateLayer(
+    aura::Window* root_window, const char* layer_name) {
   if (!layer_ || root_window != root_window_) {
     root_window_ = root_window;
     ui::Layer* root_layer = root_window->layer();
     layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
-    layer_->set_name("FocusRing");
+    layer_->set_name(layer_name);
     layer_->set_delegate(this);
     layer_->SetFillsBoundsOpaquely(false);
     root_layer->Add(layer_.get());
@@ -43,12 +54,6 @@ void FocusRingLayer::Set(aura::Window* root_window, const gfx::Rect& bounds) {
   // Keep moving it to the top in case new layers have been added
   // since we created this layer.
   layer_->parent()->StackAtTop(layer_.get());
-
-  // Update the layer bounds.
-  gfx::Rect layer_bounds = bounds;
-  int inset = -(kShadowRadius + 2);
-  layer_bounds.Inset(inset, inset, inset, inset);
-  layer_->SetBounds(layer_bounds);
 }
 
 void FocusRingLayer::OnPaintLayer(gfx::Canvas* canvas) {

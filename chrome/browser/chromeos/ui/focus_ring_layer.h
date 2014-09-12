@@ -39,6 +39,14 @@ class FocusRingLayer : public ui::LayerDelegate {
   // the given root window.
   void Set(aura::Window* root_window, const gfx::Rect& bounds);
 
+  ui::Layer* layer() { return layer_.get(); }
+
+ protected:
+  // Updates |root_window_| and creates |layer_| if it doesn't exist,
+  // or if the root window has changed. Moves the layer to the top if
+  // it wasn't there already.
+  void CreateOrUpdateLayer(aura::Window* root_window, const char* layer_name);
+
  private:
   // ui::LayerDelegate overrides:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
@@ -53,12 +61,12 @@ class FocusRingLayer : public ui::LayerDelegate {
   // The current root window containing the focused object.
   aura::Window* root_window_;
 
+  // The current layer.
+  scoped_ptr<ui::Layer> layer_;
+
   // The bounding rectangle of the focused object, in |root_window_|
   // coordinates.
   gfx::Rect focus_ring_;
-
-  // The current layer.
-  scoped_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRingLayer);
 };
