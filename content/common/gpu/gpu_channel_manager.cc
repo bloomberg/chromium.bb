@@ -80,8 +80,7 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
                                      base::MessageLoopProxy* io_message_loop,
                                      base::WaitableEvent* shutdown_event,
                                      IPC::SyncChannel* channel)
-    : weak_factory_(this),
-      io_message_loop_(io_message_loop),
+    : io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
       router_(router),
       gpu_memory_manager_(
@@ -92,7 +91,8 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
       gpu_memory_buffer_factory_(GpuMemoryBufferFactory::Create()),
       channel_(channel),
       filter_(new GpuChannelManagerMessageFilter(
-          gpu_memory_buffer_factory_.get())) {
+          gpu_memory_buffer_factory_.get())),
+      weak_factory_(this) {
   DCHECK(router_);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);

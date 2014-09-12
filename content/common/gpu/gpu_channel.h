@@ -217,8 +217,6 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   bool handle_messages_scheduled_;
   IPC::Message* currently_processing_message_;
 
-  base::WeakPtrFactory<GpuChannel> weak_factory_;
-
   scoped_refptr<GpuChannelMessageFilter> filter_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   scoped_ptr<DevToolsGpuAgent> devtools_gpu_agent_;
@@ -226,6 +224,11 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   size_t num_stubs_descheduled_;
 
   bool allow_future_sync_points_;
+
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to Controller are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<GpuChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

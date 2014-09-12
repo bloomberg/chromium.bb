@@ -410,9 +410,9 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       software_(software),
       handle_messages_scheduled_(false),
       currently_processing_message_(NULL),
-      weak_factory_(this),
       num_stubs_descheduled_(0),
-      allow_future_sync_points_(allow_future_sync_points) {
+      allow_future_sync_points_(allow_future_sync_points),
+      weak_factory_(this) {
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
 

@@ -96,8 +96,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       active_url_(active_url),
       gpu_preference_(attributes.preferDiscreteGPU ? gfx::PreferDiscreteGpu
                                                    : gfx::PreferIntegratedGpu),
-      weak_ptr_factory_(this),
-      mem_limits_(limits) {
+      mem_limits_(limits),
+      weak_ptr_factory_(this) {
   if (share_context) {
     DCHECK(!attributes_.shareResources);
     share_group_ = share_context->share_group_;

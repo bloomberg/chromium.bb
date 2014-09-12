@@ -81,8 +81,6 @@ class GpuChannelManager : public IPC::Listener,
 
   void LoseAllContexts();
 
-  base::WeakPtrFactory<GpuChannelManager> weak_factory_;
-
   int GenerateRouteID();
   void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
@@ -152,6 +150,11 @@ class GpuChannelManager : public IPC::Listener,
   scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   IPC::SyncChannel* channel_;
   scoped_refptr<IPC::MessageFilter> filter_;
+
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to Controller are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<GpuChannelManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };
