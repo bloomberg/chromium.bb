@@ -3346,11 +3346,14 @@
         ],
         'core_dictionary_idl_files': [
           'css/FontFaceDescriptors.idl',
+          'dom/DOMPointInit.idl',
           'page/EventSourceInit.idl',
         ],
         'generated_core_dictionary_files': [
           '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
           '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
+          '<(blink_core_output_dir)/dom/DOMPointInit.cpp',
+          '<(blink_core_output_dir)/dom/DOMPointInit.h',
           '<(blink_core_output_dir)/page/EventSourceInit.cpp',
           '<(blink_core_output_dir)/page/EventSourceInit.h',
         ],

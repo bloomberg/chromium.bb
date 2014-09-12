@@ -4,26 +4,13 @@
 
 #include "config.h"
 #include "core/dom/DOMPoint.h"
+#include "core/dom/DOMPointInit.h"
 
 namespace blink {
 
-DOMPoint* DOMPoint::create(const Dictionary& point)
+DOMPoint* DOMPoint::create(const DOMPointInit& point)
 {
-    double x = 0;
-    double y = 0;
-    double z = 0;
-    double w = 0;
-
-    if (!DictionaryHelper::get(point, "x", x))
-        x = 0;
-    if (!DictionaryHelper::get(point, "y", y))
-        y = 0;
-    if (!DictionaryHelper::get(point, "z", z))
-        z = 0;
-    if (!DictionaryHelper::get(point, "w", w))
-        w = 1;
-
-    return new DOMPoint(x, y, z, w);
+    return new DOMPoint(point.x(), point.y(), point.z(), point.w());
 }
 
 DOMPoint* DOMPoint::create(double x, double y, double z, double w)

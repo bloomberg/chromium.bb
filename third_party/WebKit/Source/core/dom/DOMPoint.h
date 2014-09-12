@@ -5,14 +5,15 @@
 #ifndef DOMPoint_h
 #define DOMPoint_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMPointReadOnly.h"
 
 namespace blink {
 
+class DOMPointInit;
+
 class DOMPoint FINAL : public DOMPointReadOnly {
 public:
-    static DOMPoint* create(const Dictionary&);
+    static DOMPoint* create(const DOMPointInit&);
     static DOMPoint* create(double x, double y, double z = 0, double w = 1);
 
     void setX(double x) { m_x = x; }

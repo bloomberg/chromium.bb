@@ -2,17 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// FIXME: Blink doesn't currently support dictionary definitions.
-// For now, we can use Dictionary interface. See http://crbug.com/321462.
-// dictionary DOMPointInit {
-//     unrestricted double x = 0;
-//     unrestricted double y = 0;
-//     unrestricted double z = 0;
-//     unrestricted double w = 1;
-// };
-
 [
-    Constructor(optional Dictionary point),
+    Constructor(optional DOMPointInit point),
     Constructor(unrestricted double x, unrestricted double y,
                 optional unrestricted double z = 0, optional unrestricted double w = 1),
     RuntimeEnabled=GeometryInterfaces,
