@@ -309,6 +309,13 @@ views::Widget* BrowserActionView::GetParentForContextMenu() {
       GetWidget();
 }
 
+ExtensionActionViewController*
+BrowserActionView::GetPreferredPopupViewController() {
+  return delegate_->ShownInsideMenu() ?
+      delegate_->GetMainViewForExtension(extension())->view_controller() :
+      view_controller();
+}
+
 views::View* BrowserActionView::GetReferenceViewForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow

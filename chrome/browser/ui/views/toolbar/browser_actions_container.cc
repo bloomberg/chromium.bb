@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
@@ -283,10 +284,11 @@ void BrowserActionsContainer::OnBrowserActionViewDragDone() {
 }
 
 views::View* BrowserActionsContainer::GetOverflowReferenceView() {
-  // We should only need an overflow reference when using the traditional
-  // chevron overflow.
-  DCHECK(chevron_);
-  return chevron_;
+  // With traditional overflow, the reference is the chevron. With the
+  // redesign, we use the wrench menu instead.
+  return chevron_ ?
+      chevron_ :
+      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
 }
 
 void BrowserActionsContainer::SetPopupOwner(BrowserActionView* popup_owner) {
@@ -298,6 +300,13 @@ void BrowserActionsContainer::SetPopupOwner(BrowserActionView* popup_owner) {
 void BrowserActionsContainer::HideActivePopup() {
   if (popup_owner_)
     popup_owner_->view_controller()->HidePopup();
+}
+
+BrowserActionView* BrowserActionsContainer::GetMainViewForExtension(
+    const Extension* extension) {
+  return in_overflow_mode() ?
+      main_container_->GetViewForExtension(extension) :
+      GetViewForExtension(extension);
 }
 
 void BrowserActionsContainer::AddObserver(

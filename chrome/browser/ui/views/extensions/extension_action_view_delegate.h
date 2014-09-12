@@ -15,6 +15,8 @@ class View;
 class Widget;
 }
 
+class ExtensionActionViewController;
+
 // The view that surrounds an ExtensionAction and owns the
 // ExtensionActionViewController. Since different actions can subclass
 // different views, we don't derive views::View directly here.
@@ -32,6 +34,11 @@ class ExtensionActionViewDelegate {
 
   // Returns the parent for the associated context menu.
   virtual views::Widget* GetParentForContextMenu() = 0;
+
+  // In some cases (such as when an action is shown in a menu), a substitute
+  // ExtensionActionViewController should be used for showing popups. This
+  // returns the preferred control.
+  virtual ExtensionActionViewController* GetPreferredPopupViewController() = 0;
 
   // Returns the reference view for the extension action's popup.
   virtual views::View* GetReferenceViewForPopup() = 0;

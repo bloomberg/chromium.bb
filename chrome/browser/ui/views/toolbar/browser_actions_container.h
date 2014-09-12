@@ -236,6 +236,8 @@ class BrowserActionsContainer
   virtual views::View* GetOverflowReferenceView() OVERRIDE;
   virtual void SetPopupOwner(BrowserActionView* popup_owner) OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
+  virtual BrowserActionView* GetMainViewForExtension(
+      const extensions::Extension* extension) OVERRIDE;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*

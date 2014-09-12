@@ -64,6 +64,11 @@ class BrowserActionView : public views::MenuButton,
     // Hides the active popup of the delegate, if one exists.
     virtual void HideActivePopup() = 0;
 
+    // Returns the primary BrowserActionView associated with the given
+    // |extension|.
+    virtual BrowserActionView* GetMainViewForExtension(
+        const extensions::Extension* extension) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -159,6 +164,8 @@ class BrowserActionView : public views::MenuButton,
   virtual bool IsShownInMenu() OVERRIDE;
   virtual views::FocusManager* GetFocusManagerForAccelerator() OVERRIDE;
   virtual views::Widget* GetParentForContextMenu() OVERRIDE;
+  virtual ExtensionActionViewController* GetPreferredPopupViewController()
+      OVERRIDE;
   virtual views::View* GetReferenceViewForPopup() OVERRIDE;
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
