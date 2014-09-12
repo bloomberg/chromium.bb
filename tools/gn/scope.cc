@@ -309,7 +309,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
       const Template* existing_template = dest->GetTemplate(i->first);
       // Since templates are refcounted, we can check if it's the same one by
       // comparing pointers.
-      if (existing_template && i->second != existing_template) {
+      if (existing_template && i->second.get() != existing_template) {
         // Rule present in both the source and the dest, and they're not the
         // same one.
         std::string desc_string(desc_for_err);
