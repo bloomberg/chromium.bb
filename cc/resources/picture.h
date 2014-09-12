@@ -63,7 +63,6 @@ class CC_EXPORT Picture
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
   gfx::Rect LayerRect() const { return layer_rect_; }
-  gfx::Rect OpaqueRect() const { return opaque_rect_; }
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }
@@ -135,12 +134,9 @@ class CC_EXPORT Picture
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,
           const gfx::Rect& layer_rect,
-          const gfx::Rect& opaque_rect,
           const PixelRefMap& pixel_refs);
   // This constructor will call AdoptRef on the SkPicture.
-  Picture(SkPicture*,
-          const gfx::Rect& layer_rect,
-          const gfx::Rect& opaque_rect);
+  Picture(SkPicture*, const gfx::Rect& layer_rect);
   ~Picture();
 
   // Record a paint operation. To be able to safely use this SkPicture for
@@ -153,7 +149,6 @@ class CC_EXPORT Picture
   void GatherPixelRefs(const SkTileGridFactory::TileGridInfo& tile_grid_info);
 
   gfx::Rect layer_rect_;
-  gfx::Rect opaque_rect_;
   skia::RefPtr<SkPicture> picture_;
   scoped_ptr<const EXPERIMENTAL::SkPlayback> playback_;
 

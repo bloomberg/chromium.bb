@@ -122,9 +122,7 @@ scoped_refptr<Picture> Picture::CreateFromSkpValue(const base::Value* value) {
     return NULL;
 
   gfx::Rect layer_rect(skpicture->width(), skpicture->height());
-  gfx::Rect opaque_rect(skpicture->width(), skpicture->height());
-
-  return make_scoped_refptr(new Picture(skpicture, layer_rect, opaque_rect));
+  return make_scoped_refptr(new Picture(skpicture, layer_rect));
 }
 
 scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
@@ -149,37 +147,24 @@ scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
   if (!MathUtil::FromValue(layer_rect_value, &layer_rect))
     return NULL;
 
-  const base::Value* opaque_rect_value = NULL;
-  if (!value->Get("params.opaque_rect", &opaque_rect_value))
-    return NULL;
-
-  gfx::Rect opaque_rect;
-  if (!MathUtil::FromValue(opaque_rect_value, &opaque_rect))
-    return NULL;
-
   // Read the picture. This creates an empty picture on failure.
   SkPicture* skpicture = SkPicture::CreateFromStream(&stream, &DecodeBitmap);
   if (skpicture == NULL)
     return NULL;
 
-  return make_scoped_refptr(new Picture(skpicture, layer_rect, opaque_rect));
+  return make_scoped_refptr(new Picture(skpicture, layer_rect));
 }
 
-Picture::Picture(SkPicture* picture,
-                 const gfx::Rect& layer_rect,
-                 const gfx::Rect& opaque_rect) :
-    layer_rect_(layer_rect),
-    opaque_rect_(opaque_rect),
-    picture_(skia::AdoptRef(picture)),
-    cell_size_(layer_rect.size()) {
+Picture::Picture(SkPicture* picture, const gfx::Rect& layer_rect)
+    : layer_rect_(layer_rect),
+      picture_(skia::AdoptRef(picture)),
+      cell_size_(layer_rect.size()) {
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
                  const gfx::Rect& layer_rect,
-                 const gfx::Rect& opaque_rect,
                  const PixelRefMap& pixel_refs) :
     layer_rect_(layer_rect),
-    opaque_rect_(opaque_rect),
     picture_(picture),
     pixel_refs_(pixel_refs),
     cell_size_(layer_rect.size()) {
@@ -286,8 +271,6 @@ void Picture::Record(ContentLayerClient* painter,
     canvas.clear();
     playback_.reset(recording->releasePlayback());
   }
-
-  opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
 
   EmitTraceSnapshot();
 }
@@ -417,7 +400,6 @@ scoped_ptr<base::Value> Picture::AsValue() const {
   // Encode the picture as base64.
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   res->Set("params.layer_rect", MathUtil::AsValue(layer_rect_).release());
-  res->Set("params.opaque_rect", MathUtil::AsValue(opaque_rect_).release());
 
   size_t serialized_size = stream.bytesWritten();
   scoped_ptr<char[]> serialized_picture(new char[serialized_size]);
