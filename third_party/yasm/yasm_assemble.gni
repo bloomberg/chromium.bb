@@ -84,6 +84,7 @@ if (is_mac || is_ios) {
 # Default yasm include dirs. Make it match the native build (source root and
 # root generated code directory).
 _yasm_flags += [
+  "-I.",
   # Using "//." will produce a relative path "../.." which looks better than
   # "../../" which will result from using "//" as the base (although both
   # work). This is because rebase_path will terminate the result in a slash if

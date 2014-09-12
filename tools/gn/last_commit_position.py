@@ -93,7 +93,7 @@ git_directory = sys.argv[1]
 output_file = sys.argv[2]
 header_guard = sys.argv[3]
 
-value = FetchCommitPosition(".")
+value = FetchCommitPosition(git_directory)
 if not value:
   print "Could not get last commit position."
   sys.exit(1)
