@@ -562,13 +562,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveMetaTagContent,
                     GURL /* expected_url */)
 #endif  // defined(OS_ANDROID)
 
-// This message indicates the error appeared in the frame.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
-                    int /* error */)
-
-// This message indicates the monitored frame loading had completed.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FrameLoadingCompleted)
-
 // Logs events from InstantExtended New Tab Pages.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,
                     int /* page_seq_no */,
