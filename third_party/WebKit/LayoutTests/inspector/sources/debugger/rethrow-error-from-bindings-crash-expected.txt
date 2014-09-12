@@ -1,0 +1,21 @@
+CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+CONSOLE ERROR: line 20: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+CONSOLE ERROR: line 20: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+CONSOLE ERROR: line 20: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+CONSOLE ERROR: line 20: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+Tests that pausing on uncaught exceptions thrown from C++ bindings will not crash.
+
+Set timer for test function.
+rethrow-error-from-bindings-crash.html:11 Console was cleared
+rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
+rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+
