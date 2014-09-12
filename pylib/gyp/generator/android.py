@@ -50,6 +50,8 @@ generator_supports_multiple_toolsets = True
 generator_additional_non_configuration_keys = [
     # Boolean to declare that this target does not want its name mangled.
     'android_unmangled_name',
+    # Map of android build system variables to set.
+    'aosp_build_settings',
 ]
 generator_additional_path_sections = []
 generator_extra_sources_for_rules = []
@@ -828,6 +830,16 @@ class AndroidMkWriter(object):
 
     if self.type != 'none':
       self.WriteTargetFlags(spec, configs, link_deps)
+
+    settings = spec.get('aosp_build_settings', {})
+    if settings:
+      self.WriteLn('### Set directly by aosp_build_settings.')
+      for k, v in settings.iteritems():
+        if isinstance(v, list):
+          self.WriteList(v, k)
+        else:
+          self.WriteLn('%s := %s' % (k, make.QuoteIfNecessary(v)))
+      self.WriteLn('')
 
     # Add to the set of targets which represent the gyp 'all' target. We use the
     # name 'gyp_all_modules' as the Android build system doesn't allow the use
