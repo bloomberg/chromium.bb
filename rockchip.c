@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#ifdef GBM_ROCKCHIP
+
+#include <string.h>
+#include <xf86drm.h>
+#include <rockchip_drm.h>
+
+#include "gbm_priv.h"
+
+int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+{
+	size_t size = width * height * ;
+	struct drm_rockchip_gem_create gem_create;
+	int ret;
+
+	memset(&gem_create, 0, sizeof(gem_create));
+	gem_create.size = size;
+
+	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE, &gem_create);
+	if (ret)
+		return ret;
+
+	bo->handle.u32 = gem_create.handle;
+	bo->size = size;
+
+	return 0;
+}
+
+struct gbm_driver gbm_driver_rockchip =
+{
+	.name = "rockchip",
+	.bo_create = gbm_rockchip_bo_create,
+	.bo_destroy = gbm_gem_bo_destroy,
+	.format_list = {
+		{GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING | GBM_BO_USE_WRITE},
+		{GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING | GBM_BO_USE_WRITE},
+	}
+};
+
+#endif
