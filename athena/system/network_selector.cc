@@ -311,8 +311,8 @@ class NetworkRow : public views::View {
 
   ui::NetworkInfo network_;
   views::View* container_;
-  base::WeakPtrFactory<NetworkRow> weak_ptr_;
   scoped_ptr<views::View> password_view_;
+  base::WeakPtrFactory<NetworkRow> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkRow);
 };
