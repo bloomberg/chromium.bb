@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/dom/MutationObserver.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/MutationCallback.h"
+#include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"
@@ -75,7 +75,7 @@ MutationObserver::~MutationObserver()
         InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
 }
 
-void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& exceptionState)
+void MutationObserver::observe(Node* node, const MutationObserverInit& observerInit, ExceptionState& exceptionState)
 {
     if (!node) {
         exceptionState.throwDOMException(NotFoundError, "The provided node was null.");
@@ -84,37 +84,32 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
 
     MutationObserverOptions options = 0;
 
-    bool attributeOldValue = false;
-    bool attributeOldValuePresent = DictionaryHelper::get(optionsDictionary, "attributeOldValue", attributeOldValue);
-    if (attributeOldValue)
+    if (observerInit.hasAttributeOldValue() && observerInit.attributeOldValue())
         options |= AttributeOldValue;
 
     HashSet<AtomicString> attributeFilter;
-    bool attributeFilterPresent = DictionaryHelper::get(optionsDictionary, "attributeFilter", attributeFilter);
-    if (attributeFilterPresent)
+    if (observerInit.hasAttributeFilter()) {
+        const Vector<String>& sequence = observerInit.attributeFilter();
+        for (unsigned i = 0; i < sequence.size(); ++i)
+            attributeFilter.add(AtomicString(sequence[i]));
         options |= AttributeFilter;
+    }
 
-    bool attributes = false;
-    bool attributesPresent = DictionaryHelper::get(optionsDictionary, "attributes", attributes);
-    if (attributes || (!attributesPresent && (attributeOldValuePresent || attributeFilterPresent)))
+    bool attributes = observerInit.hasAttributes() && observerInit.attributes();
+    if (attributes || (!observerInit.hasAttributes() && (observerInit.hasAttributeOldValue() || observerInit.hasAttributeFilter())))
         options |= Attributes;
 
-    bool characterDataOldValue = false;
-    bool characterDataOldValuePresent = DictionaryHelper::get(optionsDictionary, "characterDataOldValue", characterDataOldValue);
-    if (characterDataOldValue)
+    if (observerInit.hasCharacterDataOldValue() && observerInit.characterDataOldValue())
         options |= CharacterDataOldValue;
 
-    bool characterData = false;
-    bool characterDataPresent = DictionaryHelper::get(optionsDictionary, "characterData", characterData);
-    if (characterData || (!characterDataPresent && characterDataOldValuePresent))
+    bool characterData = observerInit.hasCharacterData() && observerInit.characterData();
+    if (characterData || (!observerInit.hasCharacterData() && observerInit.hasCharacterDataOldValue()))
         options |= CharacterData;
 
-    bool childListValue = false;
-    if (DictionaryHelper::get(optionsDictionary, "childList", childListValue) && childListValue)
+    if (observerInit.childList())
         options |= ChildList;
 
-    bool subtreeValue = false;
-    if (DictionaryHelper::get(optionsDictionary, "subtree", subtreeValue) && subtreeValue)
+    if (observerInit.subtree())
         options |= Subtree;
 
     if (!(options & Attributes)) {

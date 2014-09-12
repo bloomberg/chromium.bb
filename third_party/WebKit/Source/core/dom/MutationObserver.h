@@ -46,6 +46,7 @@ class Dictionary;
 class ExceptionState;
 class MutationCallback;
 class MutationObserver;
+class MutationObserverInit;
 class MutationObserverRegistration;
 class MutationRecord;
 class Node;
@@ -85,7 +86,7 @@ public:
 
     ~MutationObserver();
 
-    void observe(Node*, const Dictionary&, ExceptionState&);
+    void observe(Node*, const MutationObserverInit&, ExceptionState&);
     WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > takeRecords();
     void disconnect();
     void observationStarted(MutationObserverRegistration*);

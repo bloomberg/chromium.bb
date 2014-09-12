@@ -33,7 +33,7 @@
     Custom=VisitDOMWrapper,
     WillBeGarbageCollected,
 ] interface MutationObserver {
-    [RaisesException] void observe(Node target, Dictionary options);
+    [RaisesException] void observe(Node target, MutationObserverInit options);
     sequence<MutationRecord> takeRecords();
     void disconnect();
 };
