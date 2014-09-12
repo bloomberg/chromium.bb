@@ -40,11 +40,13 @@ namespace {
 const int kHideKeyboardDelayMs = 100;
 
 // The virtual keyboard show/hide animation duration.
-const int kAnimationDurationMs = 200;
+const int kShowAnimationDurationMs = 350;
+const int kHideAnimationDurationMs = 100;
 
 // The opacity of virtual keyboard container when show animation starts or
 // hide animation finishes.
-const float kAnimationStartOrAfterHideOpacity = 0.2f;
+// TODO(rsadam@): Investigate why setting this to zero crashes.
+const float kAnimationStartOrAfterHideOpacity = 0.01f;
 
 // Event targeter for the keyboard container.
 class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
@@ -364,9 +366,9 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   container_animator->AddObserver(animation_observer_.get());
 
   ui::ScopedLayerAnimationSettings settings(container_animator);
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
+  settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(kHideAnimationDurationMs));
   gfx::Transform transform;
   transform.Translate(0, proxy_->GetKeyboardWindow()->bounds().height());
   container_->SetTransform(transform);
@@ -542,9 +544,9 @@ void KeyboardController::ShowKeyboardInternal() {
     // ShowKeyboardContainer with these settings. The container should become
     // visible immediately.
     ui::ScopedLayerAnimationSettings settings(container_animator);
-    settings.SetTweenType(gfx::Tween::EASE_IN);
+    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+        base::TimeDelta::FromMilliseconds(kShowAnimationDurationMs));
     container_->SetTransform(gfx::Transform());
     container_->layer()->SetOpacity(1.0);
   }
