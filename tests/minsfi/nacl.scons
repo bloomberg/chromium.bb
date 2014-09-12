@@ -18,10 +18,13 @@ def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0,
     ptrsize = 24 if trusted_env.Bit('build_x86_32') else 32
 
   bc_env = env.Clone()
-  bc_env.Replace(CCFLAGS=[], LINKFLAGS=[])
   if support_lib:
     bc_env.Append(LIBS=['minsfi_support'])
   bc_env.Append(LIBS=['c'])
+
+  # Force the bitcode linker to group libraries.
+  bc_env['_LIBFLAGS'] = '-Wl,--start-group ' + bc_env['_LIBFLAGS'] + \
+                        ' -Wl,--end-group'
 
   # Compile the untrusted file.
   # We cannot pass the source file directly to the ComponentProgram call
@@ -46,6 +49,7 @@ def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0,
       '-pnacl-abi-simplify-preopt '
       '-pnacl-abi-simplify-postopt '
       '-minsfi '
+      '-pnaclabi-allow-minsfi-syscalls '
       '-minsfi-ptrsize=%d '
       '${SOURCES} -o ${TARGET}'
        % ptrsize)
@@ -76,3 +80,5 @@ CompileSandbox('initializer', 'test_initializer.c', 'sandbox_dummy.c',
 CompileSandbox('pointer_conversion', 'test_pointer_conversion.c',
                'sandbox_dummy.c', support_lib=False)
 CompileSandbox('invoke_args', 'test_invoke_args.c', 'sandbox_invoke_args.c')
+CompileSandbox('sysconf', 'test_sysconf.c', 'sandbox_sysconf.c')
+CompileSandbox('heap_alloc', 'test_heap_alloc.c', 'sandbox_heap_alloc.c')

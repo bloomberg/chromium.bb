@@ -50,7 +50,7 @@ sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb) {
   int arg_index;
   size_t arg_length, info_length;
   sfiptr_t *info;
-  char *stack_base, *stack_ptr;
+  sfiptr_t stack_base, stack_ptr;
 
   if (argc < 0)
     return 0;
@@ -61,7 +61,7 @@ sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb) {
   info[0] = argc;
 
   /* Compute the bounds of the stack. */
-  stack_base = sb->mem_base + sb->mem_layout.stack.offset;
+  stack_base = sb->mem_layout.stack.offset;
   stack_ptr = stack_base + sb->mem_layout.stack.length;
 
   /* Copy the argv[*] strings onto the stack. Return NULL if the stack is not
@@ -74,8 +74,8 @@ sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb) {
       return 0;
     }
 
-    memcpy(stack_ptr, argv[arg_index], arg_length);
-    info[arg_index + 1] = ToMinsfiPtr(stack_ptr, sb);
+    MinsfiCopyToSandbox(stack_ptr, argv[arg_index], arg_length, sb);
+    info[arg_index + 1] = stack_ptr;
   }
 
   /* Copy the info data structure across. */
@@ -84,13 +84,13 @@ sfiptr_t MinsfiCopyArguments(int argc, char *argv[], const MinsfiSandbox *sb) {
     free(info);
     return 0;
   }
-  memcpy(stack_ptr, (char*) info, info_length);
+  MinsfiCopyToSandbox(stack_ptr, info, info_length, sb);
 
   /* Clean up. */
   free(info);
 
   /* Return untrusted pointer to the beginning of the data structure. */
-  return ToMinsfiPtr(stack_ptr, sb);
+  return stack_ptr;
 }
 
 int MinsfiInvokeSandbox(int argc, char *argv[]) {

@@ -7,4 +7,11 @@ Import('env')
 if not env.Bit('bitcode') or not env.Bit('minsfi'):
   Return()
 
-env.ComponentLibrary('minsfi_support', ['start.c'])
+env.ComponentLibrary('minsfi_support', [
+    '_exit.c',
+    'malloc.c',
+    'sbrk.c',
+    'sched_yield.c',
+    'start.c',
+    'sysconf.c',
+  ])

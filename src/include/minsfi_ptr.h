@@ -8,6 +8,7 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_MINSFI_PTR_H_
 
 #include <assert.h>
+#include <string.h>
 
 #include "native_client/src/include/minsfi_priv.h"
 
@@ -47,6 +48,21 @@ static inline sfiptr_t ToMinsfiPtr(const char *ptr, const MinsfiSandbox *sb) {
   }
 
   return sb_ptr;
+}
+
+/*
+ * Copy data into the untrusted memory region. We must sandbox both the
+ * untrusted pointer and the data length in order to guarantee that memcpy
+ * will not write beyond the memory mapped for the sandbox. This is analogous
+ * to the sandboxing of memory intrinsics in the SandboxMemoryAccesses compiler
+ * pass.
+ *
+ * Note that this is not a thread-safe operation.
+ */
+static inline void MinsfiCopyToSandbox(sfiptr_t sb_to, const void *from,
+                                       uint32_t len, const MinsfiSandbox *sb) {
+  uint32_t sandboxed_len = len & sb->ptr_mask;
+  memcpy(FromMinsfiPtr(sb_to, sb), from, sandboxed_len);
 }
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_MINSFI_PTR_H_

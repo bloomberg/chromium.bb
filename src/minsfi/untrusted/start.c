@@ -6,7 +6,9 @@
 
 #include <unistd.h>
 
-extern int main(int argc, char **argv);
+void __newlib_thread_init(void);
+
+int main(int argc, char **argv);
 
 /*
  * This is the true entry point for untrusted code.
@@ -16,6 +18,8 @@ extern int main(int argc, char **argv);
 int _start(uint32_t info[]) {
   int argc = info[0];
   char **argv = (char**) (info + 1);
+
+  __newlib_thread_init();
 
   return main(argc, argv);
 }
