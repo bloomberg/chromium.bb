@@ -115,7 +115,7 @@ private:
 };
 
 template<>
-class StringTypeAdapter<char*> {
+class WTF_EXPORT StringTypeAdapter<char*> {
 public:
     StringTypeAdapter<char*>(char* buffer)
         : m_buffer(buffer)
@@ -127,19 +127,9 @@ public:
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        for (unsigned i = 0; i < m_length; ++i)
-            destination[i] = static_cast<LChar>(m_buffer[i]);
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        for (unsigned i = 0; i < m_length; ++i) {
-            unsigned char c = m_buffer[i];
-            destination[i] = c;
-        }
-    }
+    void writeTo(UChar* destination);
 
 private:
     const char* m_buffer;
@@ -147,27 +137,17 @@ private:
 };
 
 template<>
-class StringTypeAdapter<LChar*> {
+class WTF_EXPORT StringTypeAdapter<LChar*> {
 public:
-    StringTypeAdapter<LChar*>(LChar* buffer)
-    : m_buffer(buffer)
-    , m_length(strlen(reinterpret_cast<char*>(buffer)))
-    {
-    }
+    StringTypeAdapter<LChar*>(LChar* buffer);
 
     unsigned length() { return m_length; }
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        memcpy(destination, m_buffer, m_length * sizeof(LChar));
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        StringImpl::copyChars(destination, m_buffer, m_length);
-    }
+    void writeTo(UChar* destination);
 
 private:
     const LChar* m_buffer;
@@ -175,19 +155,9 @@ private:
 };
 
 template<>
-class StringTypeAdapter<const UChar*> {
+class WTF_EXPORT StringTypeAdapter<const UChar*> {
 public:
-    StringTypeAdapter<const UChar*>(const UChar* buffer)
-        : m_buffer(buffer)
-    {
-        size_t len = 0;
-        while (m_buffer[len] != UChar(0))
-            ++len;
-
-        RELEASE_ASSERT(len <= std::numeric_limits<unsigned>::max());
-
-        m_length = len;
-    }
+    StringTypeAdapter(const UChar* buffer);
 
     unsigned length() { return m_length; }
 
@@ -198,10 +168,7 @@ public:
         RELEASE_ASSERT(false);
     }
 
-    void writeTo(UChar* destination)
-    {
-        memcpy(destination, m_buffer, m_length * sizeof(UChar));
-    }
+    void writeTo(UChar* destination);
 
 private:
     const UChar* m_buffer;
@@ -209,30 +176,17 @@ private:
 };
 
 template<>
-class StringTypeAdapter<const char*> {
+class WTF_EXPORT StringTypeAdapter<const char*> {
 public:
-    StringTypeAdapter<const char*>(const char* buffer)
-        : m_buffer(buffer)
-        , m_length(strlen(buffer))
-    {
-    }
+    StringTypeAdapter<const char*>(const char* buffer);
 
     unsigned length() { return m_length; }
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        memcpy(destination, m_buffer, static_cast<size_t>(m_length) * sizeof(LChar));
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        for (unsigned i = 0; i < m_length; ++i) {
-            unsigned char c = m_buffer[i];
-            destination[i] = c;
-        }
-    }
+    void writeTo(UChar* destination);
 
 private:
     const char* m_buffer;
@@ -240,27 +194,17 @@ private:
 };
 
 template<>
-class StringTypeAdapter<const LChar*> {
+class WTF_EXPORT StringTypeAdapter<const LChar*> {
 public:
-    StringTypeAdapter<const LChar*>(const LChar* buffer)
-        : m_buffer(buffer)
-        , m_length(strlen(reinterpret_cast<const char*>(buffer)))
-    {
-    }
+    StringTypeAdapter<const LChar*>(const LChar* buffer);
 
     unsigned length() { return m_length; }
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        memcpy(destination, m_buffer, static_cast<size_t>(m_length) * sizeof(LChar));
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        StringImpl::copyChars(destination, m_buffer, m_length);
-    }
+    void writeTo(UChar* destination);
 
 private:
     const LChar* m_buffer;
@@ -268,7 +212,7 @@ private:
 };
 
 template<>
-class StringTypeAdapter<Vector<char> > {
+class WTF_EXPORT StringTypeAdapter<Vector<char> > {
 public:
     StringTypeAdapter<Vector<char> >(const Vector<char>& buffer)
         : m_buffer(buffer)
@@ -279,17 +223,9 @@ public:
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        for (size_t i = 0; i < m_buffer.size(); ++i)
-            destination[i] = static_cast<unsigned char>(m_buffer[i]);
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        for (size_t i = 0; i < m_buffer.size(); ++i)
-            destination[i] = static_cast<unsigned char>(m_buffer[i]);
-    }
+    void writeTo(UChar* destination);
 
 private:
     const Vector<char>& m_buffer;
@@ -307,24 +243,16 @@ public:
 
     bool is8Bit() { return true; }
 
-    void writeTo(LChar* destination)
-    {
-        for (size_t i = 0; i < m_buffer.size(); ++i)
-            destination[i] = m_buffer[i];
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        for (size_t i = 0; i < m_buffer.size(); ++i)
-            destination[i] = m_buffer[i];
-    }
+    void writeTo(UChar* destination);
 
 private:
     const Vector<LChar>& m_buffer;
 };
 
 template<>
-class StringTypeAdapter<String> {
+class WTF_EXPORT StringTypeAdapter<String> {
 public:
     StringTypeAdapter<String>(const String& string)
         : m_buffer(string)
@@ -335,34 +263,9 @@ public:
 
     bool is8Bit() { return m_buffer.isNull() || m_buffer.is8Bit(); }
 
-    void writeTo(LChar* destination)
-    {
-        unsigned length = m_buffer.length();
+    void writeTo(LChar* destination);
 
-        ASSERT(is8Bit());
-        const LChar* data = m_buffer.characters8();
-        for (unsigned i = 0; i < length; ++i)
-            destination[i] = data[i];
-
-        WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
-    }
-
-    void writeTo(UChar* destination)
-    {
-        unsigned length = m_buffer.length();
-
-        if (is8Bit()) {
-            const LChar* data = m_buffer.characters8();
-            for (unsigned i = 0; i < length; ++i)
-                destination[i] = data[i];
-        } else {
-            const UChar* data = m_buffer.characters16();
-            for (unsigned i = 0; i < length; ++i)
-                destination[i] = data[i];
-        }
-
-        WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
-    }
+    void writeTo(UChar* destination);
 
 private:
     const String& m_buffer;

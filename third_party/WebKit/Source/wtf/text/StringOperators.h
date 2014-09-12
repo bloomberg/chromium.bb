@@ -22,62 +22,85 @@
 #ifndef StringOperators_h
 #define StringOperators_h
 
+#include "StringConcatenate.h"
+
 namespace WTF {
 
 template<typename StringType1, typename StringType2>
 class StringAppend {
 public:
-    StringAppend(StringType1 string1, StringType2 string2)
-        : m_string1(string1)
-        , m_string2(string2)
-    {
-    }
+    StringAppend(StringType1 string1, StringType2 string2);
 
-    operator String() const
-    {
-        return String(makeString(m_string1, m_string2));
-    }
+    operator String() const;
 
-    operator AtomicString() const
-    {
-        return AtomicString(makeString(m_string1, m_string2));
-    }
+    operator AtomicString() const;
 
-    bool is8Bit()
-    {
-        StringTypeAdapter<StringType1> adapter1(m_string1);
-        StringTypeAdapter<StringType2> adapter2(m_string2);
-        return adapter1.is8Bit() && adapter2.is8Bit();
-    }
+    bool is8Bit();
 
-    void writeTo(LChar* destination)
-    {
-        ASSERT(is8Bit());
-        StringTypeAdapter<StringType1> adapter1(m_string1);
-        StringTypeAdapter<StringType2> adapter2(m_string2);
-        adapter1.writeTo(destination);
-        adapter2.writeTo(destination + adapter1.length());
-    }
+    void writeTo(LChar* destination);
 
-    void writeTo(UChar* destination)
-    {
-        StringTypeAdapter<StringType1> adapter1(m_string1);
-        StringTypeAdapter<StringType2> adapter2(m_string2);
-        adapter1.writeTo(destination);
-        adapter2.writeTo(destination + adapter1.length());
-    }
+    void writeTo(UChar* destination);
 
-    unsigned length()
-    {
-        StringTypeAdapter<StringType1> adapter1(m_string1);
-        StringTypeAdapter<StringType2> adapter2(m_string2);
-        return adapter1.length() + adapter2.length();
-    }
+    unsigned length();
 
 private:
     StringType1 m_string1;
     StringType2 m_string2;
 };
+
+template<typename StringType1, typename StringType2>
+StringAppend<StringType1, StringType2>::StringAppend(StringType1 string1, StringType2 string2)
+    : m_string1(string1)
+    , m_string2(string2)
+{
+}
+
+template<typename StringType1, typename StringType2>
+StringAppend<StringType1, StringType2>::operator String() const
+{
+    return String(makeString(m_string1, m_string2));
+}
+
+template<typename StringType1, typename StringType2>
+StringAppend<StringType1, StringType2>::operator AtomicString() const
+{
+    return AtomicString(makeString(m_string1, m_string2));
+}
+
+template<typename StringType1, typename StringType2>
+bool StringAppend<StringType1, StringType2>::is8Bit()
+{
+    StringTypeAdapter<StringType1> adapter1(m_string1);
+    StringTypeAdapter<StringType2> adapter2(m_string2);
+    return adapter1.is8Bit() && adapter2.is8Bit();
+}
+
+template<typename StringType1, typename StringType2>
+void StringAppend<StringType1, StringType2>::writeTo(LChar* destination)
+{
+    ASSERT(is8Bit());
+    StringTypeAdapter<StringType1> adapter1(m_string1);
+    StringTypeAdapter<StringType2> adapter2(m_string2);
+    adapter1.writeTo(destination);
+    adapter2.writeTo(destination + adapter1.length());
+}
+
+template<typename StringType1, typename StringType2>
+void StringAppend<StringType1, StringType2>::writeTo(UChar* destination)
+{
+    StringTypeAdapter<StringType1> adapter1(m_string1);
+    StringTypeAdapter<StringType2> adapter2(m_string2);
+    adapter1.writeTo(destination);
+    adapter2.writeTo(destination + adapter1.length());
+}
+
+template<typename StringType1, typename StringType2>
+unsigned StringAppend<StringType1, StringType2>::length()
+{
+    StringTypeAdapter<StringType1> adapter1(m_string1);
+    StringTypeAdapter<StringType2> adapter2(m_string2);
+    return adapter1.length() + adapter2.length();
+}
 
 template<typename StringType1, typename StringType2>
 class StringTypeAdapter<StringAppend<StringType1, StringType2> > {
