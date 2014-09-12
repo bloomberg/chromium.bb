@@ -69,35 +69,43 @@ class MockExtensionInstallPrompt : public ExtensionInstallPrompt {
   ExtensionInstallPrompt::Prompt* prompt_;
 };
 
-class ScrollbarTest : public ExtensionBrowserTest {
+class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
  protected:
-  ScrollbarTest();
-  virtual ~ScrollbarTest() {}
+  explicit ExtensionInstallDialogViewTestBase(
+      ExtensionInstallPrompt::PromptType prompt_type);
+  virtual ~ExtensionInstallDialogViewTestBase() {}
 
   virtual void SetUpOnMainThread() OVERRIDE;
+
+  ExtensionInstallPrompt::Prompt* prompt() { return prompt_.get(); }
+  content::WebContents* web_contents() { return web_contents_; }
+  MockExtensionInstallPromptDelegate* delegate() { return &delegate_; }
 
   void SetPromptPermissions(std::vector<base::string16> permissions);
   void SetPromptDetails(std::vector<base::string16> details);
   void SetPromptRetainedFiles(std::vector<base::FilePath> files);
-
-  bool IsScrollbarVisible();
 
  private:
   const extensions::Extension* extension_;
   MockExtensionInstallPrompt* install_prompt_;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
   content::WebContents* web_contents_;
+  MockExtensionInstallPromptDelegate delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTestBase);
 };
 
-ScrollbarTest::ScrollbarTest() :
-  extension_(NULL),
-  install_prompt_(NULL),
-  prompt_(new ExtensionInstallPrompt::Prompt(
-      ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
-  web_contents_(NULL) {}
+ExtensionInstallDialogViewTestBase::ExtensionInstallDialogViewTestBase(
+    ExtensionInstallPrompt::PromptType prompt_type)
+    : extension_(NULL),
+      install_prompt_(NULL),
+      prompt_(new ExtensionInstallPrompt::Prompt(prompt_type)),
+      web_contents_(NULL) {
+}
 
-void ScrollbarTest::SetUpOnMainThread() {
+void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
+
   extension_ = ExtensionBrowserTest::LoadExtension(test_data_dir_.AppendASCII(
       "install_prompt/permissions_scrollbar_regression"));
 
@@ -118,26 +126,41 @@ void ScrollbarTest::SetUpOnMainThread() {
   this->SetPromptRetainedFiles(std::vector<base::FilePath>());
 }
 
-void ScrollbarTest::SetPromptPermissions(
+void ExtensionInstallDialogViewTestBase::SetPromptPermissions(
     std::vector<base::string16> permissions) {
   prompt_->SetPermissions(permissions);
 }
 
-void ScrollbarTest::SetPromptDetails(
+void ExtensionInstallDialogViewTestBase::SetPromptDetails(
     std::vector<base::string16> details) {
   prompt_->SetPermissionsDetails(details);
 }
 
-void ScrollbarTest::SetPromptRetainedFiles(
+void ExtensionInstallDialogViewTestBase::SetPromptRetainedFiles(
     std::vector<base::FilePath> files) {
   prompt_->set_retained_files(files);
 }
 
+class ScrollbarTest : public ExtensionInstallDialogViewTestBase {
+ protected:
+  ScrollbarTest();
+  virtual ~ScrollbarTest() {}
+
+  bool IsScrollbarVisible();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarTest);
+};
+
+ScrollbarTest::ScrollbarTest()
+    : ExtensionInstallDialogViewTestBase(
+          ExtensionInstallPrompt::PERMISSIONS_PROMPT) {
+}
+
 bool ScrollbarTest::IsScrollbarVisible() {
-  ExtensionInstallPrompt::ShowParams show_params(web_contents_);
-  MockExtensionInstallPromptDelegate delegate;
-  ExtensionInstallDialogView* dialog =
-      new ExtensionInstallDialogView(show_params.navigator, &delegate, prompt_);
+  ExtensionInstallPrompt::ShowParams show_params(web_contents());
+  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
+      show_params.navigator, delegate(), prompt());
 
   // Create the modal view around the install dialog view.
   views::Widget* modal =
@@ -177,4 +200,62 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, ScrollbarRegression) {
   details.push_back(base::string16());
   this->SetPromptDetails(details);
   ASSERT_FALSE(IsScrollbarVisible()) << "Scrollbar is visible";
+}
+
+class ExtensionInstallDialogViewTest
+    : public ExtensionInstallDialogViewTestBase {
+ protected:
+  ExtensionInstallDialogViewTest()
+      : ExtensionInstallDialogViewTestBase(
+            ExtensionInstallPrompt::INSTALL_PROMPT) {}
+  virtual ~ExtensionInstallDialogViewTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTest);
+};
+
+// Verifies that the delegate is notified when the user selects to accept or
+// cancel the install.
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
+  {
+    // The user confirms the install.
+    MockExtensionInstallPromptDelegate delegate;
+    scoped_ptr<ExtensionInstallDialogView> dialog(
+        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+    views::DialogDelegateView* delegate_view = dialog.get();
+
+    delegate_view->Accept();
+    delegate_view->OnClosed();
+    dialog.reset();
+
+    EXPECT_EQ(0, delegate.abort_count());
+    EXPECT_EQ(1, delegate.proceed_count());
+  }
+
+  {
+    // The user cancels the install.
+    MockExtensionInstallPromptDelegate delegate;
+    scoped_ptr<ExtensionInstallDialogView> dialog(
+        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+    views::DialogDelegateView* delegate_view = dialog.get();
+
+    delegate_view->Cancel();
+    delegate_view->OnClosed();
+    dialog.reset();
+
+    EXPECT_EQ(1, delegate.abort_count());
+    EXPECT_EQ(0, delegate.proceed_count());
+  }
+
+  {
+    // Corner case: Dialog is closed without the user explicitly choosing to
+    // proceed or cancel.
+    MockExtensionInstallPromptDelegate delegate;
+    scoped_ptr<ExtensionInstallDialogView> dialog(
+        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+    dialog.reset();
+
+    EXPECT_EQ(1, delegate.abort_count());
+    EXPECT_EQ(0, delegate.proceed_count());
+  }
 }

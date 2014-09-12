@@ -195,7 +195,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scrollable_header_only_(NULL),
       show_details_link_(NULL),
       checkbox_info_label_(NULL),
-      unchecked_boxes_(0) {
+      unchecked_boxes_(0),
+      handled_result_(false) {
   // Possible grid layouts without ExtensionPermissionDialog experiment:
   // Inline install
   //      w/ permissions                 no permissions
@@ -588,7 +589,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 
-ExtensionInstallDialogView::~ExtensionInstallDialogView() {}
+ExtensionInstallDialogView::~ExtensionInstallDialogView() {
+  if (!handled_result_)
+    delegate_->InstallUIAbort(true);
+}
 
 views::GridLayout* ExtensionInstallDialogView::CreateLayout(
     views::View* parent,
@@ -714,16 +718,23 @@ int ExtensionInstallDialogView::GetDefaultDialogButton() const {
 }
 
 bool ExtensionInstallDialogView::Cancel() {
+  if (handled_result_)
+    return true;
+
+  handled_result_ = true;
   UpdateInstallResultHistogram(false);
-  if (sampling_event_.get())
+  if (sampling_event_)
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   delegate_->InstallUIAbort(true);
   return true;
 }
 
 bool ExtensionInstallDialogView::Accept() {
+  DCHECK(!handled_result_);
+
+  handled_result_ = true;
   UpdateInstallResultHistogram(true);
-  if (sampling_event_.get())
+  if (sampling_event_)
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   delegate_->InstallUIProceed();
   return true;

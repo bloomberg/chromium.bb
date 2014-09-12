@@ -149,6 +149,10 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // ExperienceSampling: Track this UI event.
   scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
+  // Set to true once the user's selection has been received and the
+  // |delegate_| has been notified.
+  bool handled_result_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
