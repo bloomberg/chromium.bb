@@ -107,6 +107,8 @@ component("ash") {
     sources -= [
       "touch/touch_transformer_controller.cc",
       "touch/touch_transformer_controller.h",
+      "touch/touchscreen_util.cc",
+      "touch/touchscreen_util.h",
     ]
   }
 
@@ -321,6 +323,7 @@ test("ash_unittests") {
     sources -= [
       "display/resolution_notification_controller_unittest.cc",
       "touch/touch_transformer_controller_unittest.cc",
+      "touch/touchscreen_util_unittest.cc",
     ]
   }
 

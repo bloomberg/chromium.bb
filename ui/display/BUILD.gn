@@ -8,8 +8,6 @@ component("display") {
   sources = [
     "chromeos/display_configurator.cc",
     "chromeos/display_configurator.h",
-    "chromeos/touchscreen_delegate_impl.cc",
-    "chromeos/touchscreen_delegate_impl.h",
     "chromeos/ozone/display_configurator_ozone.cc",
     "chromeos/x11/display_configurator_x11.cc",
     "chromeos/x11/display_mode_x11.cc",
@@ -44,7 +42,6 @@ component("display") {
       "//build/config/linux:xrandr",
     ]
     deps += [
-      "//ui/events:events_base",
       "//ui/events/platform",
     ]
   }
@@ -81,7 +78,6 @@ component("test_util") {
 test("display_unittests") {
   sources = [
     "chromeos/display_configurator_unittest.cc",
-    "chromeos/touchscreen_delegate_impl_unittest.cc",
     "chromeos/x11/display_util_x11_unittest.cc",
     "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
     "util/display_util_unittest.cc",

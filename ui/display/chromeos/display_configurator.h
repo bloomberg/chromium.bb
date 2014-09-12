@@ -42,9 +42,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     DisplaySnapshot* display;  // Not owned.
 
-    // XInput device ID or 0 if this display isn't a touchscreen.
-    int touch_device_id;
-
     // User-selected mode for the display.
     const DisplayMode* selected_mode;
 
@@ -95,18 +92,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // Called when the hardware mirroring failed.
     virtual void SetSoftwareMirroring(bool enabled) = 0;
     virtual bool SoftwareMirroringEnabled() const = 0;
-  };
-
-  class TouchscreenDelegate {
-   public:
-    virtual ~TouchscreenDelegate() {}
-
-    // Searches for touchscreens among input devices,
-    // and tries to match them up to screens in |displays|.
-    // |displays| is an array of detected screens.
-    // If a touchscreen with same resolution as a display's native mode
-    // is detected, its id will be stored in this display.
-    virtual void AssociateTouchscreens(std::vector<DisplayState>* displays) = 0;
   };
 
   // Helper class used by tests.
@@ -165,12 +150,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     mirroring_controller_ = controller;
   }
 
-  // Replaces |native_display_delegate_| and |touchscreen_delegate_| with the 2
-  // delegates passed in and sets |configure_display_| to true. Should be called
-  // before Init().
-  void SetDelegatesForTesting(
-      scoped_ptr<NativeDisplayDelegate> display_delegate,
-      scoped_ptr<TouchscreenDelegate> touchscreen_delegate);
+  // Replaces |native_display_delegate_| with the delegate passed in and sets
+  // |configure_display_| to true. Should be called before Init().
+  void SetDelegateForTesting(
+      scoped_ptr<NativeDisplayDelegate> display_delegate);
 
   // Sets the initial value of |power_state_|.  Must be called before Start().
   void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
@@ -321,7 +304,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<NativeDisplayDelegate> native_display_delegate_;
-  scoped_ptr<TouchscreenDelegate> touchscreen_delegate_;
 
   // Used to enable modes which rely on panel fitting.
   bool is_panel_fitting_enabled_;

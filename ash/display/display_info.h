@@ -176,6 +176,10 @@ class ASH_EXPORT DisplayInfo {
     display_modes_.swap(display_modes);
   }
 
+  // Returns the native mode size. If a native mode is not present, return an
+  // empty size.
+  gfx::Size GetNativeModeSize() const;
+
   ui::ColorCalibrationProfile color_profile() const {
     return color_profile_;
   }

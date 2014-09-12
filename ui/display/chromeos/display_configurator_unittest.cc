@@ -133,36 +133,6 @@ class ActionLogger {
   DISALLOW_COPY_AND_ASSIGN(ActionLogger);
 };
 
-class TestTouchscreenDelegate
-    : public DisplayConfigurator::TouchscreenDelegate {
- public:
-  // Ownership of |log| remains with the caller.
-  explicit TestTouchscreenDelegate(ActionLogger* log)
-      : log_(log),
-        configure_touchscreens_(false) {}
-  virtual ~TestTouchscreenDelegate() {}
-
-  void set_configure_touchscreens(bool state) {
-    configure_touchscreens_ = state;
-  }
-
-  // DisplayConfigurator::TouchscreenDelegate implementation:
-  virtual void AssociateTouchscreens(
-      DisplayConfigurator::DisplayStateList* outputs) OVERRIDE {
-    if (configure_touchscreens_) {
-      for (size_t i = 0; i < outputs->size(); ++i)
-        (*outputs)[i].touch_device_id = i + 1;
-    }
-  }
-
- private:
-  ActionLogger* log_;  // Not owned.
-
-  bool configure_touchscreens_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTouchscreenDelegate);
-};
-
 class TestNativeDisplayDelegate : public NativeDisplayDelegate {
  public:
   // Ownership of |log| remains with the caller.
@@ -373,11 +343,8 @@ class DisplayConfiguratorTest : public testing::Test {
     log_.reset(new ActionLogger());
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
-    touchscreen_delegate_ = new TestTouchscreenDelegate(log_.get());
-    configurator_.SetDelegatesForTesting(
-        scoped_ptr<NativeDisplayDelegate>(native_display_delegate_),
-        scoped_ptr<DisplayConfigurator::TouchscreenDelegate>(
-            touchscreen_delegate_));
+    configurator_.SetDelegateForTesting(
+        scoped_ptr<NativeDisplayDelegate>(native_display_delegate_));
 
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
@@ -457,7 +424,6 @@ class DisplayConfiguratorTest : public testing::Test {
   TestObserver observer_;
   scoped_ptr<ActionLogger> log_;
   TestNativeDisplayDelegate* native_display_delegate_;  // not owned
-  TestTouchscreenDelegate* touchscreen_delegate_;       // not owned
   DisplayConfigurator::TestApi test_api_;
 
   TestDisplaySnapshot outputs_[2];

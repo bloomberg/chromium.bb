@@ -25,7 +25,6 @@ DisplayManager* GetDisplayManager() {
 
 }  // namespace
 
-
 // This is to compute the scale ratio for the TouchEvent's radius. The
 // configured resolution of the display is not always the same as the touch
 // screen's reporting resolution, e.g. the display could be set as
@@ -96,18 +95,20 @@ bool TouchTransformerController::ShouldComputeMirrorModeTouchTransformer(
   if (touch_display.touch_device_id() == 0)
     return false;
 
-  const ui::DisplayConfigurator::DisplayState* state = NULL;
-  const std::vector<ui::DisplayConfigurator::DisplayState>& cached_displays =
-      Shell::GetInstance()->display_configurator()->cached_displays();
-  for (size_t i = 0; i < cached_displays.size(); i++) {
-    if (cached_displays[i].touch_device_id == touch_display.touch_device_id()) {
-      state = &cached_displays[i];
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  const std::vector<gfx::Display>& displays = display_manager->displays();
+  const DisplayInfo* info = NULL;
+  for (size_t i = 0; i < displays.size(); i++) {
+    const DisplayInfo& current_info =
+        display_manager->GetDisplayInfo(displays[i].id());
+    if (current_info.touch_device_id() == touch_display.touch_device_id()) {
+      info = &current_info;
       break;
     }
   }
 
-  if (!state || state->mirror_mode == state->display->native_mode() ||
-      !state->display->is_aspect_preserving_scaling()) {
+  if (!info || info->size_in_pixel() == info->GetNativeModeSize() ||
+      !info->is_aspect_preserving_scaling()) {
     return false;
   }
   return true;

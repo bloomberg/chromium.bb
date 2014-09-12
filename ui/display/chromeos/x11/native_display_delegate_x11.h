@@ -41,7 +41,6 @@ namespace ui {
 
 class DisplayModeX11;
 class DisplaySnapshotX11;
-class InputDeviceEventObserver;
 class NativeDisplayEventDispatcherX11;
 
 class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
@@ -148,9 +147,6 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   // Processes X11 display events associated with the root window and notifies
   // |observers_| when a display change has occurred.
   scoped_ptr<NativeDisplayEventDispatcherX11> platform_event_dispatcher_;
-
-  // Processes X11 display events that have no X11 window associated with it.
-  scoped_ptr<InputDeviceEventObserver> input_hotplug_observer_;
 
   // List of observers waiting for display configuration change events.
   ObserverList<NativeDisplayObserver> observers_;

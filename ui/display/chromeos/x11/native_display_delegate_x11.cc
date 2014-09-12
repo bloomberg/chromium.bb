@@ -20,8 +20,6 @@
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 #include "ui/display/types/chromeos/native_display_observer.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
-#include "ui/events/device_data_manager.h"
-#include "ui/events/input_device_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -72,24 +70,6 @@ XRRCrtcGamma* ResampleGammaRamp(XRRCrtcGamma* gamma_ramp, int gamma_ramp_size) {
   return resampled;
 }
 
-class InputHotplugEventObserver : public InputDeviceEventObserver {
- public:
-  explicit InputHotplugEventObserver(
-      NativeDisplayDelegateX11::HelperDelegate* delegate)
-      : delegate_(delegate) {}
-  virtual ~InputHotplugEventObserver() {}
-
-  // InputDeviceEventObserver:
-  virtual void OnInputDeviceConfigurationChanged() OVERRIDE {
-    delegate_->NotifyDisplayObservers();
-  }
-
- private:
-  NativeDisplayDelegateX11::HelperDelegate* delegate_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(InputHotplugEventObserver);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,11 +116,6 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
         platform_event_dispatcher_.get());
   }
 
-  if (input_hotplug_observer_) {
-    ui::DeviceDataManager::GetInstance()->RemoveObserver(
-        input_hotplug_observer_.get());
-  }
-
   STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
 }
 
@@ -152,10 +127,6 @@ void NativeDisplayDelegateX11::Initialize() {
   helper_delegate_.reset(new HelperDelegateX11(this));
   platform_event_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
       helper_delegate_.get(), xrandr_event_base));
-  input_hotplug_observer_.reset(
-      new InputHotplugEventObserver(helper_delegate_.get()));
-  ui::DeviceDataManager::GetInstance()->AddObserver(
-      input_hotplug_observer_.get());
 
   if (ui::PlatformEventSource::GetInstance()) {
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(

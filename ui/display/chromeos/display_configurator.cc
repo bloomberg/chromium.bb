@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "ui/display/chromeos/touchscreen_delegate_impl.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
@@ -104,7 +103,6 @@ DisplayConfigurator::kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
 
 DisplayConfigurator::DisplayState::DisplayState()
     : display(NULL),
-      touch_device_id(0),
       selected_mode(NULL),
       mirror_mode(NULL) {}
 
@@ -170,14 +168,11 @@ DisplayConfigurator::~DisplayConfigurator() {
     native_display_delegate_->RemoveObserver(this);
 }
 
-void DisplayConfigurator::SetDelegatesForTesting(
-    scoped_ptr<NativeDisplayDelegate> display_delegate,
-    scoped_ptr<TouchscreenDelegate> touchscreen_delegate) {
+void DisplayConfigurator::SetDelegateForTesting(
+    scoped_ptr<NativeDisplayDelegate> display_delegate) {
   DCHECK(!native_display_delegate_);
-  DCHECK(!touchscreen_delegate_);
 
   native_display_delegate_ = display_delegate.Pass();
-  touchscreen_delegate_ = touchscreen_delegate.Pass();
   configure_display_ = true;
 }
 
@@ -192,15 +187,12 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
-  // If the delegates are already initialized don't update them (For example,
-  // tests set their own delegates).
+  // If the delegate is already initialized don't update it (For example, tests
+  // set their own delegates).
   if (!native_display_delegate_) {
     native_display_delegate_ = CreatePlatformNativeDisplayDelegate();
     native_display_delegate_->AddObserver(this);
   }
-
-  if (!touchscreen_delegate_)
-    touchscreen_delegate_.reset(new TouchscreenDelegateImpl());
 }
 
 void DisplayConfigurator::ForceInitialConfigure(
@@ -573,8 +565,6 @@ void DisplayConfigurator::UpdateCachedDisplays() {
     display_state.display = snapshots[i];
     cached_displays_.push_back(display_state);
   }
-
-  touchscreen_delegate_->AssociateTouchscreens(&cached_displays_);
 
   // Set |selected_mode| fields.
   for (size_t i = 0; i < cached_displays_.size(); ++i) {

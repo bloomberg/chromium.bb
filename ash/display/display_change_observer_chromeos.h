@@ -9,6 +9,7 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "ui/display/chromeos/display_configurator.h"
+#include "ui/events/input_device_event_observer.h"
 
 namespace ash {
 
@@ -19,6 +20,7 @@ struct DisplayMode;
 // update DisplayManagers.
 class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
                               public ui::DisplayConfigurator::Observer,
+                              public ui::InputDeviceEventObserver,
                               public ShellObserver {
  public:
   // Returns the mode list for internal display.
@@ -42,6 +44,9 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   // Overriden from ui::DisplayConfigurator::Observer:
   virtual void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
+
+  // Overriden from ui::InputDeviceEventObserver:
+  virtual void OnInputDeviceConfigurationChanged() OVERRIDE;
 
   // Overriden from ShellObserver:
   virtual void OnAppTerminating() OVERRIDE;

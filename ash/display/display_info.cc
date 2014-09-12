@@ -328,6 +328,15 @@ gfx::Insets DisplayInfo::GetOverscanInsetsInPixel() const {
   return overscan_insets_in_dip_.Scale(device_scale_factor_);
 }
 
+gfx::Size DisplayInfo::GetNativeModeSize() const {
+  for (size_t i = 0; i < display_modes_.size(); ++i) {
+    if (display_modes_[i].native)
+      return display_modes_[i].size;
+  }
+
+  return gfx::Size();
+}
+
 std::string DisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(rotation_) * 90;
   return base::StringPrintf(

@@ -481,6 +481,8 @@
       'touch/touch_transformer_controller.h',
       'touch/touch_uma.cc',
       'touch/touch_uma.h',
+      'touch/touchscreen_util.cc',
+      'touch/touchscreen_util.h',
       'volume_control_delegate.h',
       'wm/app_list_controller.cc',
       'wm/app_list_controller.h',
@@ -832,6 +834,7 @@
       'tooltips/tooltip_controller_unittest.cc',
       'touch/touch_observer_hud_unittest.cc',
       'touch/touch_transformer_controller_unittest.cc',
+      'touch/touchscreen_util_unittest.cc',
       'wm/app_list_controller_unittest.cc',
       'wm/ash_native_cursor_manager_unittest.cc',
       'wm/dock/docked_window_layout_manager_unittest.cc',
@@ -971,6 +974,8 @@
             'system/tray/media_security/multi_profile_media_tray_item.h',
             'touch/touch_transformer_controller.cc',
             'touch/touch_transformer_controller.h',
+            'touch/touchscreen_util.cc',
+            'touch/touchscreen_util.h',
           ],
         }],
       ],
@@ -1147,6 +1152,7 @@
           'sources!': [
             'display/resolution_notification_controller_unittest.cc',
             'touch/touch_transformer_controller_unittest.cc',
+            'touch/touchscreen_util_unittest.cc',
           ],
         }],
         ['OS=="linux" and component=="shared_library" and use_allocator!="none"', {

@@ -47,8 +47,6 @@
         # Note: file list duplicated in GN build.
         'chromeos/display_configurator.cc',
         'chromeos/display_configurator.h',
-        'chromeos/touchscreen_delegate_impl.cc',
-        'chromeos/touchscreen_delegate_impl.h',
         'chromeos/ozone/display_configurator_ozone.cc',
         'chromeos/x11/display_configurator_x11.cc',
         'chromeos/x11/display_mode_x11.cc',
@@ -72,7 +70,6 @@
             '../../build/linux/system.gyp:xext',
             '../../build/linux/system.gyp:xi',
             '../../build/linux/system.gyp:xrandr',
-            '../../ui/events/events.gyp:events_base',
             '../../ui/events/platform/events_platform.gyp:events_platform',
           ],
         }],
@@ -163,7 +160,6 @@
       ],
       'sources': [
         'chromeos/display_configurator_unittest.cc',
-        'chromeos/touchscreen_delegate_impl_unittest.cc',
         'chromeos/x11/display_util_x11_unittest.cc',
         'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',
         'util/display_util_unittest.cc',
@@ -175,7 +171,6 @@
             'display',
             'display_test_util',
             'display_types',
-            '../../ui/events/events.gyp:events_base',
           ],
         }],
       ],
