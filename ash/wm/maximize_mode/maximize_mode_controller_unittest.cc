@@ -12,8 +12,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/test_lock_state_controller_delegate.h"
-#include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -411,34 +409,6 @@ TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
-#if defined(OS_CHROMEOS)
-// Tests that a screenshot can be taken in maximize mode by holding volume down
-// and pressing power.
-TEST_F(MaximizeModeControllerTest, Screenshot) {
-  Shell::GetInstance()->lock_state_controller()->SetDelegate(
-      new test::TestLockStateControllerDelegate);
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  ui::test::EventGenerator event_generator(root, root);
-  test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
-  delegate->set_can_take_screenshot(true);
-
-  // Open up 270 degrees.
-  OpenLidToAngle(270.0f);
-  ASSERT_TRUE(IsMaximizeModeStarted());
-
-  // Pressing power alone does not take a screenshot.
-  event_generator.PressKey(ui::VKEY_POWER, 0);
-  event_generator.ReleaseKey(ui::VKEY_POWER, 0);
-  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
-
-  // Holding volume down and pressing power takes a screenshot.
-  event_generator.PressKey(ui::VKEY_VOLUME_DOWN, 0);
-  event_generator.PressKey(ui::VKEY_POWER, 0);
-  event_generator.ReleaseKey(ui::VKEY_POWER, 0);
-  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  event_generator.ReleaseKey(ui::VKEY_VOLUME_DOWN, 0);
-}
-#endif  // OS_CHROMEOS
 
 TEST_F(MaximizeModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no

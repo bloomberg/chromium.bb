@@ -7,19 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
-#include "ui/aura/window.h"
-#include "ui/compositor/layer_animation_observer.h"
-
-namespace gfx {
-class Rect;
-class Size;
-}
-
-namespace ui {
-class Layer;
-}
+#include "base/callback.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -98,78 +87,135 @@ class ASH_EXPORT SessionStateAnimator {
     // Multiple system layers belong here like status, menu, tooltip
     // and overlay layers.
     LOCK_SCREEN_RELATED_CONTAINERS = 1 << 5,
-  };
 
-  // Helper class used by tests to access internal state.
-  class ASH_EXPORT TestApi {
-   public:
-    explicit TestApi(SessionStateAnimator* animator)
-        : animator_(animator) {}
-
-    // Returns true if containers of a given |container_mask|
-    // were last animated with |type| (probably; the analysis is fairly ad-hoc).
-    // |container_mask| is a bitfield of a Container.
-    bool ContainersAreAnimated(int container_mask, AnimationType type) const;
-
-    // Returns true if root window was last animated with |type| (probably;
-    // the analysis is fairly ad-hoc).
-    bool RootWindowIsAnimated(AnimationType type) const;
-
-   private:
-    SessionStateAnimator* animator_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
+    // The primary root window.
+    ROOT_CONTAINER = 1 << 6,
   };
 
   // A bitfield mask including LOCK_SCREEN_WALLPAPER,
   // LOCK_SCREEN_CONTAINERS, and LOCK_SCREEN_RELATED_CONTAINERS.
-  const static int kAllLockScreenContainersMask;
+  static const int kAllLockScreenContainersMask;
 
-  // A bitfield mask of all containers.
-  const static int kAllContainersMask;
+  // A bitfield mask of all containers except the ROOT_CONTAINER.
+  static const int kAllNonRootContainersMask;
+
+  // The AnimationSequence groups together multiple animations and invokes a
+  // callback once all contained animations are completed successfully.
+  // Subclasses of AnimationSequence should call one of OnAnimationCompleted or
+  // OnAnimationAborted once and behaviour is undefined if called multiple
+  // times.
+  // AnimationSequences will destroy themselves once EndSquence and one of
+  // OnAnimationCompleted or OnAnimationAborted has been called.
+  //
+  // Typical usage:
+  //  AnimationSequence* animation_sequence =
+  //      session_state_animator->BeginAnimationSequence(some_callback);
+  //  animation_sequence->StartAnimation(
+  //      SessionStateAnimator::LAUNCHER,
+  //      SessionStateAnimator::ANIMATION_FADE_IN,
+  //      SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  //  animation_sequence->StartAnimation(
+  //      SessionStateAnimator::LAUNCHER,
+  //      SessionStateAnimator::ANIMATION_FADE_IN,
+  //      SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  //  animation_sequence->EndSequence();
+  //  // some_callback won't be called until here even if the animations
+  //  // were completed before the EndSequence call.
+  //
+  class ASH_EXPORT AnimationSequence {
+   public:
+    virtual ~AnimationSequence();
+
+    // Apply animation |type| to all containers included in |container_mask|
+    // with specified |speed|.
+    virtual void StartAnimation(int container_mask,
+                                AnimationType type,
+                                AnimationSpeed speed) = 0;
+
+    // Ends the animation sequence and enables the callback to be invoked
+    // when the animation sequence has completed.  No more animations should be
+    // started after EndSequence is called because the AnimationSequenceObserver
+    // may have destroyed itself.
+    // NOTE: Clients of AnimationSequence should not access it after EndSequence
+    // has been called.
+    virtual void EndSequence();
+
+   protected:
+    // AnimationSequence should not be instantiated directly, only through
+    // subclasses.
+    explicit AnimationSequence(base::Closure callback);
+
+    // Subclasses should call this when the contained animations completed
+    // successfully.
+    // NOTE: This should NOT be accessed after OnAnimationCompleted has been
+    // called.
+    virtual void OnAnimationCompleted();
+
+    // Subclasses should call this when the contained animations did NOT
+    // complete successfully.
+    // NOTE: This should NOT be accessed after OnAnimationAborted has been
+    // called.
+    virtual void OnAnimationAborted();
+
+   private:
+    // Destroys this and calls the callback if the contained animations
+    // completed successfully.
+    void CleanupIfSequenceCompleted();
+
+    // Tracks whether the sequence has ended.
+    bool sequence_ended_;
+
+    // Track whether the contained animations have completed or not, both
+    // successfully and unsuccessfully.
+    bool animation_completed_;
+
+    // Flag to specify whether the callback should be invoked once the sequence
+    // has completed.
+    bool invoke_callback_;
+
+    // Callback to be called.
+    base::Closure callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(AnimationSequence);
+  };
 
   SessionStateAnimator();
   virtual ~SessionStateAnimator();
 
   // Reports animation duration for |speed|.
-  static base::TimeDelta GetDuration(AnimationSpeed speed);
-
-  // Fills |containers| with the containers included in |container_mask|.
-  static void GetContainers(int container_mask,
-                            aura::Window::Windows* containers);
+  virtual base::TimeDelta GetDuration(AnimationSpeed speed);
 
   // Apply animation |type| to all containers included in |container_mask| with
   // specified |speed|.
-  void StartAnimation(int container_mask,
-                      AnimationType type,
-                      AnimationSpeed speed);
+  virtual void StartAnimation(int container_mask,
+                              AnimationType type,
+                              AnimationSpeed speed) = 0;
 
   // Apply animation |type| to all containers included in |container_mask| with
   // specified |speed| and call a |callback| at the end of the animation, if it
   // is not null.
-  void StartAnimationWithCallback(int container_mask,
-                                  AnimationType type,
-                                  AnimationSpeed speed,
-                                  base::Callback<void(void)>& callback);
+  virtual void StartAnimationWithCallback(
+      int container_mask,
+      AnimationType type,
+      AnimationSpeed speed,
+      base::Closure callback) = 0;
 
-//  Apply animation |type| to all containers included in |container_mask| with
-// specified |speed| and add |observer| to all animations.
-  void StartAnimationWithObserver(int container_mask,
-                                  AnimationType type,
-                                  AnimationSpeed speed,
-                                  ui::LayerAnimationObserver* observer);
+  // Begins an animation sequence.  Use this when you need to be notified when
+  // a group of animations are completed.  See AnimationSequence documentation
+  // for more details.
+  virtual AnimationSequence* BeginAnimationSequence(
+      base::Closure callback) = 0;
 
-  // Applies animation |type| whith specified |speed| to the root container.
-  void StartGlobalAnimation(AnimationType type,
-                            AnimationSpeed speed);
+  // Retruns true if the background is hidden.
+  virtual bool IsBackgroundHidden() const = 0;
 
-  // Apply animation |type| to window |window| with |speed| and add |observer|
-  // if it is not NULL to the last animation sequence.
-  void RunAnimationForWindow(aura::Window* window,
-                             AnimationType type,
-                             AnimationSpeed speed,
-                             ui::LayerAnimationObserver* observer);
+  // Shows the background immediately.
+  virtual void ShowBackground() = 0;
 
+  // Hides the background immediately.
+  virtual void HideBackground() = 0;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateAnimator);
 };
 

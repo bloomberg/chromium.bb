@@ -5,9 +5,13 @@
 #ifndef ASH_WM_POWER_BUTTON_CONTROLLER_H_
 #define ASH_WM_POWER_BUTTON_CONTROLLER_H_
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_export.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/basictypes.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/events/event_handler.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
@@ -30,13 +34,14 @@ class PowerButtonControllerTest;
 
 class LockStateController;
 
-// Displays onscreen animations and locks or suspends the system in response to
-// the power button being pressed or released.
-class ASH_EXPORT PowerButtonController
+// Handles power & lock button events which may result in the locking or
+// shutting down of the system as well as taking screen shots while in maximize
+// mode.
+class ASH_EXPORT PowerButtonController : ui::EventHandler
 // TODO(derat): Remove these ifdefs after DisplayConfigurator becomes
 // cross-platform.
 #if defined(OS_CHROMEOS)
-    : public ui::DisplayConfigurator::Observer
+      , public ui::DisplayConfigurator::Observer
 #endif
       {
  public:
@@ -47,12 +52,19 @@ class ASH_EXPORT PowerButtonController
     has_legacy_power_button_ = legacy;
   }
 
+  void set_enable_quick_lock_for_test(bool enable_quick_lock) {
+    enable_quick_lock_ = enable_quick_lock;
+  }
+
   // Called when the current screen brightness changes.
   void OnScreenBrightnessChanged(double percent);
 
   // Called when the power or lock buttons are pressed or released.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
+
+  // ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // Overriden from ui::DisplayConfigurator::Observer:
@@ -67,6 +79,9 @@ class ASH_EXPORT PowerButtonController
   bool power_button_down_;
   bool lock_button_down_;
 
+  // True when the volume down button is being held down.
+  bool volume_down_pressed_;
+
   // Has the screen brightness been reduced to 0%?
   bool brightness_is_zero_;
 
@@ -79,7 +94,10 @@ class ASH_EXPORT PowerButtonController
   // that misreports power button releases?
   bool has_legacy_power_button_;
 
-  LockStateController* controller_; // Not owned.
+  // Enables quick, non-cancellable locking of the screen when in maximize mode.
+  bool enable_quick_lock_;
+
+  LockStateController* controller_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

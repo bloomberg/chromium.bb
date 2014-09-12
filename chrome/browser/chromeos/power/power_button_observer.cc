@@ -15,6 +15,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_service.h"
 
+namespace ash {
+class LockStateControllerDelegate;
+}
+
 namespace chromeos {
 
 namespace {
@@ -30,7 +34,8 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
 
 PowerButtonObserver::PowerButtonObserver() {
   ash::Shell::GetInstance()->lock_state_controller()->
-      SetDelegate(new SessionStateControllerDelegateChromeos);
+      SetDelegate(scoped_ptr<ash::LockStateControllerDelegate>(
+          new SessionStateControllerDelegateChromeos));
 
   registrar_.Add(
       this,

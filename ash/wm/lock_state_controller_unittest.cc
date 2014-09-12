@@ -4,36 +4,26 @@
 
 #include "ash/wm/lock_state_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_lock_state_controller_delegate.h"
+#include "ash/test/test_screenshot_delegate.h"
+#include "ash/test/test_session_state_animator.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "ui/aura/env.h"
-#include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/types/display_constants.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #endif
 
 namespace ash {
@@ -49,66 +39,35 @@ void CheckCalledCallback(bool* flag) {
     (*flag) = true;
 }
 
-aura::Window* GetContainer(int container ) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  return Shell::GetContainer(root_window, container);
-}
-
-bool IsBackgroundHidden() {
-  return !GetContainer(kShellWindowId_DesktopBackgroundContainer)->IsVisible();
-}
-
-void HideBackground() {
-  ui::ScopedLayerAnimationSettings settings(
-      GetContainer(kShellWindowId_DesktopBackgroundContainer)
-          ->layer()
-          ->GetAnimator());
-  settings.SetTransitionDuration(base::TimeDelta());
-  GetContainer(kShellWindowId_DesktopBackgroundContainer)->Hide();
-}
-
-} // namespace
+}  // namespace
 
 class LockStateControllerTest : public AshTestBase {
  public:
-  LockStateControllerTest() : controller_(NULL), delegate_(NULL) {}
+  LockStateControllerTest() : power_button_controller_(NULL),
+                              lock_state_controller_(NULL),
+                              lock_state_controller_delegate_(NULL),
+                              test_animator_(NULL) {
+  }
   virtual ~LockStateControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
 
-    // We would control animations in a fine way:
-    animation_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION));
-    // TODO(antrim) : restore
-    // animator_helper_ = ui::test::CreateLayerAnimatorHelperForTest();
+    scoped_ptr<LockStateControllerDelegate> lock_state_controller_delegate(
+        lock_state_controller_delegate_ = new TestLockStateControllerDelegate);
+    test_animator_ = new TestSessionStateAnimator;
 
-    // Temporary disable animations so that observer is always called, and
-    // no leaks happen during tests.
-    animation_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-    // TODO(antrim): once there is a way to mock time and run animations, make
-    // sure that animations are finished even in simple tests.
+    lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
+    lock_state_controller_->SetDelegate(lock_state_controller_delegate.Pass());
+    lock_state_controller_->set_animator_for_test(test_animator_);
 
-    delegate_ = new TestLockStateControllerDelegate;
-    controller_ = Shell::GetInstance()->power_button_controller();
-    lock_state_controller_ = static_cast<LockStateController*>(
-        Shell::GetInstance()->lock_state_controller());
-    lock_state_controller_->SetDelegate(delegate_);  // transfers ownership
     test_api_.reset(new LockStateController::TestApi(lock_state_controller_));
-    animator_api_.reset(
-        new SessionStateAnimator::TestApi(lock_state_controller_->
-            animator_.get()));
+
+    power_button_controller_ = Shell::GetInstance()->power_button_controller();
+    session_state_delegate_ = Shell::GetInstance()->session_state_delegate();
+
     shell_delegate_ = reinterpret_cast<TestShellDelegate*>(
         ash::Shell::GetInstance()->delegate());
-    session_state_delegate_ = Shell::GetInstance()->session_state_delegate();
-  }
-
-  virtual void TearDown() {
-    // TODO(antrim) : restore
-    // animator_helper_->AdvanceUntilDone();
-    window_.reset();
-    AshTestBase::TearDown();
   }
 
  protected:
@@ -118,241 +77,260 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   int NumShutdownRequests() {
-    return delegate_->num_shutdown_requests() +
-           shell_delegate_->num_exit_requests();
+    return lock_state_controller_delegate_->num_shutdown_requests() +
+        shell_delegate_->num_exit_requests();
   }
 
   void Advance(SessionStateAnimator::AnimationSpeed speed) {
-    // TODO (antrim) : restore
-    // animator_helper_->Advance(SessionStateAnimator::GetDuration(speed));
+    test_animator_->Advance(test_animator_->GetDuration(speed));
   }
 
   void AdvancePartially(SessionStateAnimator::AnimationSpeed speed,
                         float factor) {
-// TODO (antrim) : restore
-//  base::TimeDelta duration = SessionStateAnimator::GetDuration(speed);
-//  base::TimeDelta partial_duration =
-//      base::TimeDelta::FromInternalValue(duration.ToInternalValue() * factor);
-//  animator_helper_->Advance(partial_duration);
+    base::TimeDelta duration = test_animator_->GetDuration(speed);
+    base::TimeDelta partial_duration =
+        base::TimeDelta::FromInternalValue(duration.ToInternalValue() * factor);
+    test_animator_->Advance(partial_duration);
   }
 
   void ExpectPreLockAnimationStarted() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectPreLockAnimationStarted");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_LIFT));
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LAUNCHER,
             SessionStateAnimator::ANIMATION_FADE_OUT));
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
     EXPECT_TRUE(test_api_->is_animating_lock());
   }
 
-  void ExpectPreLockAnimationCancel() {
+  void ExpectPreLockAnimationRunning() {
+    SCOPED_TRACE("Failure in ExpectPreLockAnimationRunning");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-            SessionStateAnimator::ANIMATION_DROP));
+            SessionStateAnimator::ANIMATION_LIFT));
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::LAUNCHER,
+            SessionStateAnimator::ANIMATION_FADE_OUT));
+    EXPECT_TRUE(test_api_->is_animating_lock());
+  }
+
+  void ExpectPreLockAnimationCancel() {
+    SCOPED_TRACE("Failure in ExpectPreLockAnimationCancel");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
+    EXPECT_TRUE(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+            SessionStateAnimator::ANIMATION_UNDO_LIFT));
+    EXPECT_TRUE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LAUNCHER,
             SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectPreLockAnimationFinished() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    SCOPED_TRACE("Failure in ExpectPreLockAnimationFinished");
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_LIFT));
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LAUNCHER,
             SessionStateAnimator::ANIMATION_FADE_OUT));
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   }
 
   void ExpectPostLockAnimationStarted() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectPostLockAnimationStarted");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
   }
 
-  void ExpectPastLockAnimationFinished() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+  void ExpectPostLockAnimationFinished() {
+    SCOPED_TRACE("Failure in ExpectPostLockAnimationFinished");
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
   }
 
   void ExpectUnlockBeforeUIDestroyedAnimationStarted() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectUnlockBeforeUIDestroyedAnimationStarted");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_LIFT));
   }
 
   void ExpectUnlockBeforeUIDestroyedAnimationFinished() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    SCOPED_TRACE("Failure in ExpectUnlockBeforeUIDestroyedAnimationFinished");
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_LIFT));
   }
 
   void ExpectUnlockAfterUIDestroyedAnimationStarted() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectUnlockAfterUIDestroyedAnimationStarted");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_DROP));
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LAUNCHER,
             SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectUnlockAfterUIDestroyedAnimationFinished() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    SCOPED_TRACE("Failure in ExpectUnlockAfterUIDestroyedAnimationFinished");
+    EXPECT_EQ(0u, test_animator_->GetAnimationCount());
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
             SessionStateAnimator::ANIMATION_DROP));
-    EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::LAUNCHER,
             SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectShutdownAnimationStarted() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectShutdownAnimationStarted");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->RootWindowIsAnimated(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::ROOT_CONTAINER,
             SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
   }
 
-  void ExpectShutdownAnimationFinished()  {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(
-        animator_api_->RootWindowIsAnimated(
+  void ExpectShutdownAnimationFinished() {
+    SCOPED_TRACE("Failure in ExpectShutdownAnimationFinished");
+    EXPECT_EQ(0u, test_animator_->GetAnimationCount());
+    EXPECT_FALSE(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::ROOT_CONTAINER,
             SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
   }
 
   void ExpectShutdownAnimationCancel() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectShutdownAnimationCancel");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->RootWindowIsAnimated(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::ROOT_CONTAINER,
             SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS));
   }
 
   void ExpectBackgroundIsShowing() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectBackgroundIsShowing");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::DESKTOP_BACKGROUND,
             SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectBackgroundIsHiding() {
-    //TODO (antrim) : restore EXPECT_TRUE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectBackgroundIsHiding");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(
-        animator_api_->ContainersAreAnimated(
+        test_animator_->AreContainersAnimated(
             SessionStateAnimator::DESKTOP_BACKGROUND,
             SessionStateAnimator::ANIMATION_FADE_OUT));
   }
 
+  void ExpectRestoringBackgroundVisibility() {
+    SCOPED_TRACE("Failure in ExpectRestoringBackgroundVisibility");
+    EXPECT_LT(0u, test_animator_->GetAnimationCount());
+    EXPECT_TRUE(
+        test_animator_->AreContainersAnimated(
+            SessionStateAnimator::DESKTOP_BACKGROUND,
+            SessionStateAnimator::ANIMATION_FADE_IN));
+  }
+
   void ExpectUnlockedState() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectUnlockedState");
+    EXPECT_EQ(0u, test_animator_->GetAnimationCount());
     EXPECT_FALSE(session_state_delegate_->IsScreenLocked());
-
-    aura::Window::Windows containers;
-
-    SessionStateAnimator::GetContainers(
-        SessionStateAnimator::LAUNCHER |
-        SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-        &containers);
-    for (aura::Window::Windows::const_iterator it = containers.begin();
-         it != containers.end(); ++it) {
-      aura::Window* window = *it;
-      ui::Layer* layer = window->layer();
-      EXPECT_EQ(1.0f, layer->opacity());
-      EXPECT_EQ(0.0f, layer->layer_brightness());
-      EXPECT_EQ(0.0f, layer->layer_saturation());
-      EXPECT_EQ(gfx::Transform(), layer->transform());
-    }
   }
 
   void ExpectLockedState() {
-    //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
+    SCOPED_TRACE("Failure in ExpectLockedState");
+    EXPECT_EQ(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(session_state_delegate_->IsScreenLocked());
+  }
 
-    aura::Window::Windows containers;
-
-    SessionStateAnimator::GetContainers(
-        SessionStateAnimator::LOCK_SCREEN_RELATED_CONTAINERS |
-        SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-        &containers);
-    for (aura::Window::Windows::const_iterator it = containers.begin();
-         it != containers.end(); ++it) {
-      aura::Window* window = *it;
-      ui::Layer* layer = window->layer();
-      EXPECT_EQ(1.0f, layer->opacity());
-      EXPECT_EQ(0.0f, layer->layer_brightness());
-      EXPECT_EQ(0.0f, layer->layer_saturation());
-      EXPECT_EQ(gfx::Transform(), layer->transform());
-    }
+  void HideBackground() {
+    test_animator_->HideBackground();
   }
 
   void PressPowerButton() {
-    controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
-    //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
+    power_button_controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
   }
 
   void ReleasePowerButton() {
-    controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
-    //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
+    power_button_controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
   }
 
   void PressLockButton() {
-    controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+    power_button_controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
   }
 
   void ReleaseLockButton() {
-    controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+    power_button_controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  }
+
+  void PressVolumeDown() {
+    GetEventGenerator().PressKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  }
+
+  void ReleaseVolumeDown() {
+    GetEventGenerator().ReleaseKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   }
 
   void SystemLocks() {
     lock_state_controller_->OnLockStateChanged(true);
     session_state_delegate_->LockScreen();
-    //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
   void SuccessfulAuthentication(bool* call_flag) {
     base::Closure closure = base::Bind(&CheckCalledCallback, call_flag);
     lock_state_controller_->OnLockScreenHide(closure);
-    //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
   void SystemUnlocks() {
     lock_state_controller_->OnLockStateChanged(false);
     session_state_delegate_->UnlockScreen();
-    //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
+  }
+
+  void EnableMaximizeMode(bool enable) {
+    Shell::GetInstance()->maximize_mode_controller()->
+        EnableMaximizeModeWindowManager(enable);
   }
 
   void Initialize(bool legacy_button, user::LoginStatus status) {
-    controller_->set_has_legacy_power_button_for_test(legacy_button);
+    power_button_controller_->set_has_legacy_power_button_for_test(
+        legacy_button);
     lock_state_controller_->OnLoginStateChanged(status);
     SetUserLoggedIn(status != user::LOGGED_IN_NONE);
     if (status == user::LOGGED_IN_GUEST)
@@ -360,32 +338,14 @@ class LockStateControllerTest : public AshTestBase {
     lock_state_controller_->OnLockStateChanged(false);
   }
 
-  void CreateWindowForLockscreen() {
-    window_.reset(new aura::Window(&window_delegate_));
-    window_->SetBounds(gfx::Rect(0, 0, 100, 100));
-    window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window_->Init(aura::WINDOW_LAYER_TEXTURED);
-    window_->SetName("WINDOW");
-    aura::Window* container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_LockScreenContainer);
-    ASSERT_TRUE(container);
-    container->AddChild(window_.get());
-    window_->Show();
-  }
-
-  PowerButtonController* controller_;  // not owned
+  PowerButtonController* power_button_controller_;  // not owned
   LockStateController* lock_state_controller_;  // not owned
-  TestLockStateControllerDelegate* delegate_;  // not owned
-  TestShellDelegate* shell_delegate_;  // not owned
+  TestLockStateControllerDelegate*
+      lock_state_controller_delegate_;  // not owned
+  TestSessionStateAnimator* test_animator_;  // not owned
   SessionStateDelegate* session_state_delegate_;  // not owned
-
-  aura::test::TestWindowDelegate window_delegate_;
-  scoped_ptr<aura::Window> window_;
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration_mode_;
   scoped_ptr<LockStateController::TestApi> test_api_;
-  scoped_ptr<SessionStateAnimator::TestApi> animator_api_;
-  // TODO(antrim) : restore
-//  scoped_ptr<ui::test::AnimationContainerTestHelper> animator_helper_;
+  TestShellDelegate* shell_delegate_;  // not owned
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTest);
@@ -395,8 +355,7 @@ class LockStateControllerTest : public AshTestBase {
 // correctly report power button releases.  We should lock immediately the first
 // time the button is pressed and shut down when it's pressed from the locked
 // state.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_LegacyLockAndShutDown) {
+TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
   Initialize(true, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -405,26 +364,23 @@ TEST_F(LockStateControllerTest, DISABLED_LegacyLockAndShutDown) {
   // power button get pressed.
   PressPowerButton();
 
-  ExpectPreLockAnimationStarted();
-
   EXPECT_FALSE(test_api_->is_lock_cancellable());
 
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-
+  ExpectPreLockAnimationStarted();
+  test_animator_->CompleteAllAnimations(true);
   ExpectPreLockAnimationFinished();
-  EXPECT_EQ(1, delegate_->num_lock_requests());
+
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
 
   // Notify that we locked successfully.
   lock_state_controller_->OnStartingLock();
-  // We had that animation already.
-  //TODO (antrim) : restore
-  //  EXPECT_FALSE(animator_helper_->IsAnimating());
+  EXPECT_EQ(0u, test_animator_->GetAnimationCount());
 
   SystemLocks();
 
   ExpectPostLockAnimationStarted();
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  ExpectPastLockAnimationFinished();
+  test_animator_->CompleteAllAnimations(true);
+  ExpectPostLockAnimationFinished();
 
   // We shouldn't progress towards the shutdown state, however.
   EXPECT_FALSE(test_api_->lock_to_shutdown_timer_is_running());
@@ -510,8 +466,7 @@ TEST_F(LockStateControllerTest, ShutdownWhenNotLoggedIn) {
 }
 
 // Test that we lock the screen and deal with unlocking correctly.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_LockAndUnlock) {
+TEST_F(LockStateControllerTest, LockAndUnlock) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -522,23 +477,23 @@ TEST_F(LockStateControllerTest, DISABLED_LockAndUnlock) {
 
   ExpectPreLockAnimationStarted();
   EXPECT_TRUE(test_api_->is_lock_cancellable());
-  EXPECT_EQ(0, delegate_->num_lock_requests());
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 
-  Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  test_animator_->CompleteAllAnimations(true);
   ExpectPreLockAnimationFinished();
 
-  EXPECT_EQ(1, delegate_->num_lock_requests());
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
 
   // Notify that we locked successfully.
   lock_state_controller_->OnStartingLock();
   // We had that animation already.
-  //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
+  EXPECT_EQ(0u, test_animator_->GetAnimationCount());
 
   SystemLocks();
 
   ExpectPostLockAnimationStarted();
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  ExpectPastLockAnimationFinished();
+  test_animator_->CompleteAllAnimations(true);
+  ExpectPostLockAnimationFinished();
 
   // When we release the power button, the lock-to-shutdown timer should be
   // stopped.
@@ -555,7 +510,7 @@ TEST_F(LockStateControllerTest, DISABLED_LockAndUnlock) {
 
   ExpectUnlockBeforeUIDestroyedAnimationStarted();
   EXPECT_FALSE(called);
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  test_animator_->CompleteAllAnimations(true);
   ExpectUnlockBeforeUIDestroyedAnimationFinished();
 
   EXPECT_TRUE(called);
@@ -563,15 +518,14 @@ TEST_F(LockStateControllerTest, DISABLED_LockAndUnlock) {
   SystemUnlocks();
 
   ExpectUnlockAfterUIDestroyedAnimationStarted();
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  test_animator_->CompleteAllAnimations(true);
   ExpectUnlockAfterUIDestroyedAnimationFinished();
 
   ExpectUnlockedState();
 }
 
 // Test that we deal with cancelling lock correctly.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_LockAndCancel) {
+TEST_F(LockStateControllerTest, LockAndCancel) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -586,28 +540,18 @@ TEST_F(LockStateControllerTest, DISABLED_LockAndCancel) {
   // forward only half way through
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);
 
-  gfx::Transform transform_before_button_released =
-      GetContainer(kShellWindowId_DefaultContainer)->layer()->transform();
-
   // Release the button before the lock timer fires.
   ReleasePowerButton();
 
   ExpectPreLockAnimationCancel();
-
-  gfx::Transform transform_after_button_released =
-      GetContainer(kShellWindowId_DefaultContainer)->layer()->transform();
-  // Expect no flickering, animation should proceed from mid-state.
-  EXPECT_EQ(transform_before_button_released, transform_after_button_released);
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   ExpectUnlockedState();
-  EXPECT_EQ(0, delegate_->num_lock_requests());
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 }
 
 // Test that we deal with cancelling lock correctly.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest,
-       DISABLED_LockAndCancelAndLockAgain) {
+TEST_F(LockStateControllerTest, LockAndCancelAndLockAgain) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -626,7 +570,8 @@ TEST_F(LockStateControllerTest,
   ReleasePowerButton();
   ExpectPreLockAnimationCancel();
 
-  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, 0.5f);
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
+                   0.5f);
 
   PressPowerButton();
   ExpectPreLockAnimationStarted();
@@ -634,17 +579,15 @@ TEST_F(LockStateControllerTest,
 
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.6f);
 
-  EXPECT_EQ(0, delegate_->num_lock_requests());
-  ExpectPreLockAnimationStarted();
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.6f);
   ExpectPreLockAnimationFinished();
-  EXPECT_EQ(1, delegate_->num_lock_requests());
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
 }
 
 // Hold the power button down from the unlocked state to eventual shutdown.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_LockToShutdown) {
+TEST_F(LockStateControllerTest, LockToShutdown) {
   Initialize(false, user::LOGGED_IN_USER);
 
   // Hold the power button and lock the screen.
@@ -699,13 +642,11 @@ TEST_F(LockStateControllerTest, CancelLockToShutdown) {
   EXPECT_FALSE(test_api_->shutdown_timer_is_running());
 }
 
+// TODO(bruthig): Investigate why this hangs on Windows 8 and whether it can be
+// safely enabled on OS_WIN.
+#ifndef OS_WIN
 // Test that we handle the case where lock requests are ignored.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_Lock) {
-  // We require animations to have a duration for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-
+TEST_F(LockStateControllerTest, Lock) {
   Initialize(false, user::LOGGED_IN_USER);
 
   // Hold the power button and lock the screen.
@@ -714,20 +655,16 @@ TEST_F(LockStateControllerTest, DISABLED_Lock) {
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
 
-  EXPECT_EQ(1, delegate_->num_lock_requests());
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
   EXPECT_TRUE(test_api_->lock_fail_timer_is_running());
   // We shouldn't start the lock-to-shutdown timer until the screen has actually
   // been locked and this was animated.
   EXPECT_FALSE(test_api_->lock_to_shutdown_timer_is_running());
 
-  // Act as if the request timed out.  We should restore the windows.
-  test_api_->trigger_lock_fail_timeout();
-
-  ExpectUnlockAfterUIDestroyedAnimationStarted();
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  ExpectUnlockAfterUIDestroyedAnimationFinished();
-  ExpectUnlockedState();
+  // Act as if the request timed out.
+  EXPECT_DEATH(test_api_->trigger_lock_fail_timeout(), "");
 }
+#endif
 
 // Test the basic operation of the lock button (not logged in).
 TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {
@@ -737,7 +674,7 @@ TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {
   PressLockButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
   ReleaseLockButton();
-  EXPECT_EQ(0, delegate_->num_lock_requests());
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 }
 
 // Test the basic operation of the lock button (guest).
@@ -748,12 +685,11 @@ TEST_F(LockStateControllerTest, LockButtonBasicGuest) {
   PressLockButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
   ReleaseLockButton();
-  EXPECT_EQ(0, delegate_->num_lock_requests());
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 }
 
 // Test the basic operation of the lock button.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_LockButtonBasic) {
+TEST_F(LockStateControllerTest, LockButtonBasic) {
   // If we're logged in as a regular user, we should start the lock timer and
   // the pre-lock animation.
   Initialize(false, user::LOGGED_IN_USER);
@@ -768,14 +704,14 @@ TEST_F(LockStateControllerTest, DISABLED_LockButtonBasic) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
 
   ExpectUnlockedState();
-  EXPECT_EQ(0, delegate_->num_lock_requests());
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 
   // Press the button again and let the lock timeout fire.  We should request
   // that the screen be locked.
   PressLockButton();
   ExpectPreLockAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
-  EXPECT_EQ(1, delegate_->num_lock_requests());
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
 
   // Pressing the lock button while we have a pending lock request shouldn't do
   // anything.
@@ -793,30 +729,34 @@ TEST_F(LockStateControllerTest, DISABLED_LockButtonBasic) {
   ExpectPostLockAnimationStarted();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  ExpectPastLockAnimationFinished();
+  ExpectPostLockAnimationFinished();
 
   PressLockButton();
   ReleaseLockButton();
-  ExpectPastLockAnimationFinished();
+  ExpectPostLockAnimationFinished();
 }
 
 // Test that the power button takes priority over the lock button.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest,
-    DISABLED_PowerButtonPreemptsLockButton) {
+TEST_F(LockStateControllerTest, PowerButtonPreemptsLockButton) {
   Initialize(false, user::LOGGED_IN_USER);
 
   // While the lock button is down, hold the power button.
   PressLockButton();
   ExpectPreLockAnimationStarted();
-  PressPowerButton();
-  ExpectPreLockAnimationStarted();
 
-  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.1f);
+  ExpectPreLockAnimationRunning();
+
+  PressPowerButton();
+  ExpectPreLockAnimationRunning();
+
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.1f);
+  ExpectPreLockAnimationRunning();
 
   // The lock timer shouldn't be stopped when the lock button is released.
   ReleaseLockButton();
-  ExpectPreLockAnimationStarted();
+  ExpectPreLockAnimationRunning();
+
   ReleasePowerButton();
   ExpectPreLockAnimationCancel();
 
@@ -826,14 +766,20 @@ TEST_F(LockStateControllerTest,
   // Now press the power button first and then the lock button.
   PressPowerButton();
   ExpectPreLockAnimationStarted();
-  PressLockButton();
-  ExpectPreLockAnimationStarted();
 
-  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.1f);
+
+  PressLockButton();
+  ExpectPreLockAnimationRunning();
+
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.1f);
 
   // Releasing the power button should stop the lock timer.
   ReleasePowerButton();
   ExpectPreLockAnimationCancel();
+
+  AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.1f);
+
   ReleaseLockButton();
   ExpectPreLockAnimationCancel();
 }
@@ -847,10 +793,10 @@ TEST_F(LockStateControllerTest, LockWithoutButton) {
 
   ExpectPreLockAnimationStarted();
   EXPECT_FALSE(test_api_->is_lock_cancellable());
+  EXPECT_LT(0u, test_animator_->GetAnimationCount());
 
-  // TODO(antrim): After time-faking is fixed, let the pre-lock animation
-  // complete here and check that delegate_->num_lock_requests() is 0 to
-  // prevent http://crbug.com/172487 from regressing.
+  test_animator_->CompleteAllAnimations(true);
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
 }
 
 // When we hear that the process is exiting but we haven't had a chance to
@@ -860,8 +806,8 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
   lock_state_controller_->OnAppTerminating();
 
   EXPECT_TRUE(
-      animator_api_->ContainersAreAnimated(
-          SessionStateAnimator::kAllContainersMask,
+      test_animator_->AreContainersAnimated(
+          SessionStateAnimator::kAllNonRootContainersMask,
           SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
@@ -871,7 +817,6 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
 // outside request to shut down (e.g. from the login or lock screen).
 TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
   Initialize(false, user::LOGGED_IN_NONE);
-  CreateWindowForLockscreen();
 
   lock_state_controller_->RequestShutdown();
 
@@ -891,9 +836,9 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   Initialize(false, user::LOGGED_IN_USER);
 
   SystemLocks();
-  CreateWindowForLockscreen();
+
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
-  ExpectPastLockAnimationFinished();
+  ExpectPostLockAnimationFinished();
 
   lock_state_controller_->RequestShutdown();
 
@@ -909,9 +854,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_EQ(1, NumShutdownRequests());
 }
 
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest,
-       DISABLED_RequestAndCancelShutdownFromLockScreen) {
+TEST_F(LockStateControllerTest, RequestAndCancelShutdownFromLockScreen) {
   Initialize(false, user::LOGGED_IN_USER);
 
   SystemLocks();
@@ -927,9 +870,6 @@ TEST_F(LockStateControllerTest,
 
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN, 0.5f);
 
-  float grayscale_before_button_release =
-      Shell::GetPrimaryRootWindow()->layer()->layer_grayscale();
-
   // Release the power button before the shutdown timer fires.
   ReleasePowerButton();
 
@@ -937,12 +877,7 @@ TEST_F(LockStateControllerTest,
 
   ExpectShutdownAnimationCancel();
 
-  float grayscale_after_button_release =
-      Shell::GetPrimaryRootWindow()->layer()->layer_grayscale();
-  // Expect no flickering in undo animation.
-  EXPECT_EQ(grayscale_before_button_release, grayscale_after_button_release);
-
-  Advance(SessionStateAnimator::ANIMATION_SPEED_REVERT);
+  Advance(SessionStateAnimator::ANIMATION_SPEED_REVERT_SHUTDOWN);
   ExpectLockedState();
 }
 
@@ -952,14 +887,14 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 
   // When the screen brightness is at 0%, we shouldn't do anything in response
   // to power button presses.
-  controller_->OnScreenBrightnessChanged(0.0);
+  power_button_controller_->OnScreenBrightnessChanged(0.0);
   PressPowerButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
   ReleasePowerButton();
 
   // After increasing the brightness to 10%, we should start the timer like
   // usual.
-  controller_->OnScreenBrightnessChanged(10.0);
+  power_button_controller_->OnScreenBrightnessChanged(10.0);
   PressPowerButton();
   EXPECT_TRUE(test_api_->is_animating_lock());
   ReleasePowerButton();
@@ -988,12 +923,12 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 
   // When all of the displays are turned off (e.g. due to user inactivity), the
   // power button should be ignored.
-  controller_->OnScreenBrightnessChanged(0.0);
+  power_button_controller_->OnScreenBrightnessChanged(0.0);
   static_cast<ui::TestDisplaySnapshot*>(outputs[0].display)
       ->set_current_mode(NULL);
   static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
       ->set_current_mode(NULL);
-  controller_->OnDisplayModeChanged(outputs);
+  power_button_controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
   ReleasePowerButton();
@@ -1003,7 +938,7 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   // brightness to 0%), the power button should still be handled.
   static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
       ->set_current_mode(modes[0]);
-  controller_->OnDisplayModeChanged(outputs);
+  power_button_controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_TRUE(test_api_->is_animating_lock());
   ReleasePowerButton();
@@ -1011,17 +946,14 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 #endif
 
 // Test that hidden background appears and revers correctly on lock/cancel.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockCancel) {
+TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
   Initialize(false, user::LOGGED_IN_USER);
   HideBackground();
 
-  EXPECT_TRUE(IsBackgroundHidden());
   ExpectUnlockedState();
   PressPowerButton();
 
   ExpectPreLockAnimationStarted();
-  EXPECT_FALSE(IsBackgroundHidden());
   ExpectBackgroundIsShowing();
 
   // Forward only half way through.
@@ -1031,21 +963,23 @@ TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockCancel) {
   ReleasePowerButton();
   ExpectPreLockAnimationCancel();
   ExpectBackgroundIsHiding();
-  EXPECT_FALSE(IsBackgroundHidden());
 
-  Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  Advance(SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
+
+  // When the CancelPrelockAnimation sequence finishes it queues up a
+  // restore background visibilty sequence when the background is hidden.
+  ExpectRestoringBackgroundVisibility();
+
+  Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
 
   ExpectUnlockedState();
-  EXPECT_TRUE(IsBackgroundHidden());
 }
 
 // Test that hidden background appears and revers correctly on lock/unlock.
-// TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockUnlock) {
+TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
   Initialize(false, user::LOGGED_IN_USER);
   HideBackground();
 
-  EXPECT_TRUE(IsBackgroundHidden());
   ExpectUnlockedState();
 
   // Press the power button and check that the lock timer is started and that we
@@ -1053,7 +987,6 @@ TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockUnlock) {
   PressPowerButton();
 
   ExpectPreLockAnimationStarted();
-  EXPECT_FALSE(IsBackgroundHidden());
   ExpectBackgroundIsShowing();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
@@ -1066,7 +999,7 @@ TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockUnlock) {
 
   ExpectPostLockAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  ExpectPastLockAnimationFinished();
+  ExpectPostLockAnimationFinished();
 
   ExpectLockedState();
 
@@ -1080,13 +1013,103 @@ TEST_F(LockStateControllerTest, DISABLED_TestHiddenBackgroundLockUnlock) {
 
   ExpectUnlockAfterUIDestroyedAnimationStarted();
   ExpectBackgroundIsHiding();
-  EXPECT_FALSE(IsBackgroundHidden());
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+
+  // When the StartUnlockAnimationAfterUIDestroyed sequence finishes it queues
+  // up a restore background visibilty sequence when the background is hidden.
+  ExpectRestoringBackgroundVisibility();
+
+  Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+
   ExpectUnlockAfterUIDestroyedAnimationFinished();
-  EXPECT_TRUE(IsBackgroundHidden());
 
   ExpectUnlockedState();
+}
+
+TEST_F(LockStateControllerTest, Screenshot) {
+  test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+  delegate->set_can_take_screenshot(true);
+
+  EnableMaximizeMode(false);
+
+  // Screenshot handling should not be active when not in maximize mode.
+  ASSERT_EQ(0, delegate->handle_take_screenshot_count());
+  PressVolumeDown();
+  PressPowerButton();
+  ReleasePowerButton();
+  ReleaseVolumeDown();
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  EnableMaximizeMode(true);
+
+  // Pressing power alone does not take a screenshot.
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  // Press & release volume then pressing power does not take a screenshot.
+  ASSERT_EQ(0, delegate->handle_take_screenshot_count());
+  PressVolumeDown();
+  ReleaseVolumeDown();
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  // Pressing power and then volume does not take a screenshot.
+  ASSERT_EQ(0, delegate->handle_take_screenshot_count());
+  PressPowerButton();
+  ReleasePowerButton();
+  PressVolumeDown();
+  ReleaseVolumeDown();
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  // Holding volume down and pressing power takes a screenshot.
+  ASSERT_EQ(0, delegate->handle_take_screenshot_count());
+  PressVolumeDown();
+  PressPowerButton();
+  ReleasePowerButton();
+  ReleaseVolumeDown();
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+}
+
+// Tests that a lock action is cancellable when quick lock is turned on and
+// maximize mode is not active.
+TEST_F(LockStateControllerTest, QuickLockWhileNotInMaximizeMode) {
+  Initialize(false, user::LOGGED_IN_USER);
+  power_button_controller_->set_enable_quick_lock_for_test(true);
+  EnableMaximizeMode(false);
+
+  PressPowerButton();
+
+  ExpectPreLockAnimationStarted();
+  EXPECT_TRUE(test_api_->is_animating_lock());
+  EXPECT_TRUE(lock_state_controller_->CanCancelLockAnimation());
+
+  ReleasePowerButton();
+
+  EXPECT_EQ(0, lock_state_controller_delegate_->num_lock_requests());
+}
+
+// Tests that a lock action is not cancellable when quick lock is turned on and
+// maximize mode is active.
+TEST_F(LockStateControllerTest, QuickLockWhileInMaximizeMode) {
+  Initialize(false, user::LOGGED_IN_USER);
+  power_button_controller_->set_enable_quick_lock_for_test(true);
+  EnableMaximizeMode(true);
+
+  PressPowerButton();
+
+  ExpectPreLockAnimationStarted();
+  EXPECT_TRUE(test_api_->is_animating_lock());
+  EXPECT_FALSE(lock_state_controller_->CanCancelLockAnimation());
+
+  ReleasePowerButton();
+
+  ExpectPreLockAnimationStarted();
+
+  test_animator_->CompleteAllAnimations(true);
+  EXPECT_EQ(1, lock_state_controller_delegate_->num_lock_requests());
 }
 
 }  // namespace test

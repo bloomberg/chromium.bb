@@ -58,6 +58,10 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshDisableTextFilteringInOverviewMode[] =
     "ash-disable-text-filtering-in-overview-mode";
 
+// Enables quick, non-cancellable locking of the screen when in maximize mode.
+const char kAshEnablePowerButtonQuickLock[] =
+    "ash-enable-power-button-quick-lock";
+
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 

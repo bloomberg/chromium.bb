@@ -9,10 +9,12 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/events/event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
@@ -21,21 +23,26 @@ PowerButtonController::PowerButtonController(
     LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
+      volume_down_pressed_(false),
       brightness_is_zero_(false),
       internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
+      enable_quick_lock_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnablePowerButtonQuickLock)),
       controller_(controller) {
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif
+  Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 PowerButtonController::~PowerButtonController() {
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
 #endif
+  Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
@@ -55,6 +62,14 @@ void PowerButtonController::OnPowerButtonEvent(
   if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
     return;
 
+  if (volume_down_pressed_ && down &&
+      Shell::GetInstance()->maximize_mode_controller()->
+        IsMaximizeModeWindowManagerEnabled()) {
+    Shell::GetInstance()->accelerator_controller()->PerformAction(
+        ash::TAKE_SCREENSHOT, ui::Accelerator());
+    return;
+  }
+
   const SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   if (has_legacy_power_button_) {
@@ -65,7 +80,7 @@ void PowerButtonController::OnPowerButtonEvent(
       if (session_state_delegate->CanLockScreen() &&
           !session_state_delegate->IsScreenLocked() &&
           !controller_->LockRequested()) {
-        controller_->StartLockAnimationAndLockImmediately();
+        controller_->StartLockAnimationAndLockImmediately(false);
       } else {
         controller_->RequestShutdown();
       }
@@ -78,7 +93,11 @@ void PowerButtonController::OnPowerButtonEvent(
 
       if (session_state_delegate->CanLockScreen() &&
           !session_state_delegate->IsScreenLocked()) {
-        controller_->StartLockAnimation(true);
+        if (Shell::GetInstance()->maximize_mode_controller()->
+            IsMaximizeModeWindowManagerEnabled() && enable_quick_lock_)
+          controller_->StartLockAnimationAndLockImmediately(true);
+        else
+          controller_->StartLockAnimation(true);
       } else {
         controller_->StartShutdownAnimation();
       }
@@ -104,9 +123,7 @@ void PowerButtonController::OnLockButtonEvent(
     return;
   }
 
-  // Give the power button precedence over the lock button (we don't expect both
-  // buttons to be present, so this is just making sure that we don't do
-  // something completely stupid if that assumption changes later).
+  // Give the power button precedence over the lock button.
   if (power_button_down_)
     return;
 
@@ -114,6 +131,13 @@ void PowerButtonController::OnLockButtonEvent(
     controller_->StartLockAnimation(false);
   else
     controller_->CancelLockAnimation();
+}
+
+void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
+    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED ||
+                           event->type() == ui::ET_TRANSLATED_KEY_PRESS;
+  }
 }
 
 #if defined(OS_CHROMEOS)

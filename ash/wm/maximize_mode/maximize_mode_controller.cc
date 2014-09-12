@@ -19,7 +19,6 @@
 #include "base/time/tick_clock.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
-#include "ui/events/event_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -112,47 +111,6 @@ float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
     angle = 360.0f - angle;
   return angle;
 }
-
-#if defined(OS_CHROMEOS)
-
-// An event handler which listens for a volume down + power keypress and
-// triggers a screenshot when this is seen.
-class ScreenshotActionHandler : public ui::EventHandler {
- public:
-  ScreenshotActionHandler();
-  virtual ~ScreenshotActionHandler();
-
-  // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-
- private:
-  bool volume_down_pressed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenshotActionHandler);
-};
-
-ScreenshotActionHandler::ScreenshotActionHandler()
-    : volume_down_pressed_(false) {
-  Shell::GetInstance()->PrependPreTargetHandler(this);
-}
-
-ScreenshotActionHandler::~ScreenshotActionHandler() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-}
-
-void ScreenshotActionHandler::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
-    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED ||
-                           event->type() == ui::ET_TRANSLATED_KEY_PRESS;
-  } else if (volume_down_pressed_ &&
-             event->key_code() == ui::VKEY_POWER &&
-             event->type() == ui::ET_KEY_PRESSED) {
-    Shell::GetInstance()->accelerator_controller()->PerformAction(
-        ash::TAKE_SCREENSHOT, ui::Accelerator());
-  }
-}
-
-#endif  // OS_CHROMEOS
 
 }  // namespace
 
@@ -447,9 +405,6 @@ void MaximizeModeController::EnterMaximizeMode() {
 #if defined(USE_X11)
   event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
 #endif
-#if defined(OS_CHROMEOS)
-  event_handler_.reset(new ScreenshotActionHandler);
-#endif
   Shell::GetInstance()->display_controller()->AddObserver(this);
 }
 
@@ -467,7 +422,6 @@ void MaximizeModeController::LeaveMaximizeMode() {
     SetRotationLocked(false);
   EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
-  event_handler_.reset();
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
