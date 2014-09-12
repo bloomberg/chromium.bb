@@ -272,6 +272,10 @@ void AppListSyncableService::BuildModel() {
     drive_app_provider_.reset(new DriveAppProvider(profile_));
 }
 
+void AppListSyncableService::ResetDriveAppProviderForTest() {
+  drive_app_provider_.reset();
+}
+
 void AppListSyncableService::Shutdown() {
   // DriveAppProvider touches other KeyedServices in its dtor and needs be
   // released in shutdown stage.

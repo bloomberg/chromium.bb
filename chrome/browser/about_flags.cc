@@ -1476,11 +1476,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kDisableAppInfo)
   },
   {
-    "enable-drive-apps-in-app-list",
-    IDS_FLAGS_ENABLE_DRIVE_APPS_IN_APP_LIST_NAME,
-    IDS_FLAGS_ENABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableDriveAppsInAppList)
+    "disable-drive-apps-in-app-list",
+    IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME,
+    IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kDisableDriveAppsInAppList)
   },
 #endif
 #if defined(OS_ANDROID)

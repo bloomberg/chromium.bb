@@ -12,14 +12,14 @@ namespace switches {
 // If set, the app info context menu item is not available in the app list UI.
 const char kDisableAppInfo[] = "disable-app-list-app-info";
 
+// If set, Drive apps will not be shown side-by-side with Chrome apps.
+const char kDisableDriveAppsInAppList[] = "disable-drive-apps-in-app-list";
+
 // Disables syncing of the app list independent of extensions.
 const char kDisableSyncAppList[] = "disable-sync-app-list";
 
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
-
-// If set, Drive apps of the user shows side-by-side with Chrome apps.
-const char kEnableDriveAppsInAppList[] = "enable-drive-apps-in-app-list";
 
 // If set, the experimental app list will be used. Implies
 // --enable-centered-app-list.
@@ -73,7 +73,12 @@ bool IsCenteredAppListEnabled() {
 }
 
 bool IsDriveAppsInAppListEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableDriveAppsInAppList);
+#if defined(OS_CHROMEOS)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableDriveAppsInAppList);
+#else
+  return false;
+#endif
 }
 
 }  // namespace switches

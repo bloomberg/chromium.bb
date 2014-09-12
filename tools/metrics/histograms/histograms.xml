@@ -44604,6 +44604,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
+  <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1407625309"
       label="disable-minimize-on-second-launcher-item-click"/>
