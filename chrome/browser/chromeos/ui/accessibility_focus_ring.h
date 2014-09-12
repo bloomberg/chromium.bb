@@ -44,13 +44,13 @@ namespace chromeos {
 // The 36 points are defined as follows:
 //
 //          2 3------------------------------4 5
-//           /                                \
+//           /                                |
 //          1                                  6
 //          |      First line of paragraph     |
 //          0                                  7
-//         /                                    \
+//         /                                    |
 // 32 33-34 35                                 8 9---------------10 11
-//   /                                                             \
+//   /                                                             |
 // 31      Middle line of paragraph..........................       12
 // |                                                                |
 // |                                                                |
@@ -58,13 +58,13 @@ namespace chromeos {
 // |                                                                |
 // |                                                                |
 // 30      Middle line of paragraph..........................       13
-//   \                                                             /
+//   |                                                             |
 // 29 28---------27 26                             17 16---------15 14
-//                 \                                 /
+//                 |                                 |
 //                  25                             18
 //                  |    Last line of paragraph    |
 //                  24                             19
-//                    \                           /
+//                    |                           |
 //                  23 22-----------------------21 20
 
 struct AccessibilityFocusRing {
