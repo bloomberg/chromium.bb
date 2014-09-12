@@ -575,7 +575,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_input_task_runner_;
 
   // Compositor settings
   bool is_gpu_rasterization_enabled_;

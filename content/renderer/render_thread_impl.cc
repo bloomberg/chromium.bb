@@ -651,7 +651,6 @@ void RenderThreadImpl::Shutdown() {
   main_thread_indexed_db_dispatcher_.reset();
 
   main_thread_compositor_task_runner_ = NULL;
-  main_thread_input_task_runner_ = NULL;
 
   if (webkit_platform_support_)
     blink::shutdown();
@@ -835,10 +834,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   blink::initialize(webkit_platform_support_.get());
-  // TODO(skyostil): Forward compositor tasks to the Blink scheduler.
-  main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
-  main_thread_input_task_runner_ = make_scoped_refptr(
-      new SchedulerProxyTaskRunner<&blink::WebSchedulerProxy::postInputTask>());
+  main_thread_compositor_task_runner_ =
+      make_scoped_refptr(new SchedulerProxyTaskRunner<
+          &blink::WebSchedulerProxy::postCompositorTask>());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
@@ -878,8 +876,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     }
 #endif
     if (!input_handler_manager_client) {
-      input_event_filter_ = new InputEventFilter(
-          this, main_thread_input_task_runner_, compositor_message_loop_proxy_);
+      input_event_filter_ =
+          new InputEventFilter(this,
+                               main_thread_compositor_task_runner_,
+                               compositor_message_loop_proxy_);
       AddFilter(input_event_filter_.get());
       input_handler_manager_client = input_event_filter_.get();
     }
