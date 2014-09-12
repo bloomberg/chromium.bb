@@ -28,39 +28,43 @@
 #include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
-ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents,
-                                 const base::string16& title,
-                                 int launcher_large_icon_size)
-    : launcher_large_icon_size_(launcher_large_icon_size),
-      shortcut_type_(BOOKMARK) {
-  Observe(web_contents);
-  url_ = web_contents->GetURL();
-  if (title.length() > 0)
-    title_ = title;
-  else
-    title_ = web_contents->GetTitle();
+jlong Initialize(JNIEnv* env, jobject obj, jlong tab_android_ptr) {
+  TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
 
+  ShortcutHelper* shortcut_helper =
+      new ShortcutHelper(env, obj, tab->web_contents());
+  shortcut_helper->Initialize();
+
+  return reinterpret_cast<intptr_t>(shortcut_helper);
+}
+
+ShortcutHelper::ShortcutHelper(JNIEnv* env,
+                               jobject obj,
+                               content::WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      java_ref_(env, obj),
+      url_(web_contents->GetURL()),
+      shortcut_type_(BOOKMARK) {
+}
+
+void ShortcutHelper::Initialize() {
   // Send a message to the renderer to retrieve information about the page.
   Send(new ChromeViewMsg_RetrieveWebappInformation(routing_id(), url_));
 }
 
-void ShortcutBuilder::OnDidRetrieveWebappInformation(
+ShortcutHelper::~ShortcutHelper() {
+}
+
+void ShortcutHelper::OnDidRetrieveWebappInformation(
     bool success,
     bool is_mobile_webapp_capable,
     bool is_apple_mobile_webapp_capable,
     const GURL& expected_url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  Observe(NULL);
-
+  // This should silently fail.
   if (!success) {
     LOG(ERROR) << "Failed to parse webpage.";
-    Destroy();
-    return;
   } else if (expected_url != url_) {
     LOG(ERROR) << "Unexpected URL returned.";
-    Destroy();
-    return;
   }
 
   if (is_apple_mobile_webapp_capable && !is_mobile_webapp_capable) {
@@ -70,6 +74,36 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   } else {
     shortcut_type_ = BOOKMARK;
   }
+
+  title_ = web_contents()->GetTitle();
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  ScopedJavaLocalRef<jstring> j_title =
+      base::android::ConvertUTF16ToJavaString(env, title_);
+
+  Java_ShortcutHelper_onInitialized(env, j_obj.obj(), j_title.obj());
+}
+
+void ShortcutHelper::TearDown(JNIEnv*, jobject) {
+  Destroy();
+}
+
+void ShortcutHelper::Destroy() {
+  delete this;
+}
+
+void ShortcutHelper::AddShortcut(
+    JNIEnv* env,
+    jobject obj,
+    jstring jtitle,
+    jint launcher_large_icon_size) {
+  base::string16 title = base::android::ConvertJavaStringToUTF16(env, jtitle);
+  if (!title.empty())
+    title_ = title;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   // Grab the best, largest icon we can find to represent this bookmark.
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
@@ -86,50 +120,44 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   int threshold_to_get_any_largest_icon = launcher_large_icon_size_ - 1;
   favicon_service->GetLargestRawFaviconForPageURL(url_, icon_types,
       threshold_to_get_any_largest_icon,
-      base::Bind(&ShortcutBuilder::FinishAddingShortcut,
+      base::Bind(&ShortcutHelper::FinishAddingShortcut,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
-void ShortcutBuilder::FinishAddingShortcut(
+void ShortcutHelper::FinishAddingShortcut(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  icon_ = bitmap_result;
+
+  // Stop observing so we don't get destroyed while doing the last steps.
+  Observe(NULL);
+
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackground,
                  url_,
                  title_,
                  shortcut_type_,
-                 bitmap_result),
+                 icon_),
       true);
+
   Destroy();
 }
 
-bool ShortcutBuilder::OnMessageReceived(const IPC::Message& message) {
+bool ShortcutHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ShortcutBuilder, message)
+
+  IPC_BEGIN_MESSAGE_MAP(ShortcutHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidRetrieveWebappInformation,
                         OnDidRetrieveWebappInformation)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
-void ShortcutBuilder::WebContentsDestroyed() {
+void ShortcutHelper::WebContentsDestroyed() {
   Destroy();
-}
-
-void ShortcutBuilder::Destroy() {
-  if (cancelable_task_tracker_.HasTrackedTasks()) {
-    cancelable_task_tracker_.TryCancelAll();
-  }
-  delete this;
-}
-
-void ShortcutHelper::AddShortcut(content::WebContents* web_contents,
-                                 const base::string16& title,
-                                 int launcher_large_icon_size) {
-  // The ShortcutBuilder deletes itself when it's done.
-  new ShortcutBuilder(web_contents, title, launcher_large_icon_size);
 }
 
 bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
@@ -139,7 +167,7 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
 void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
-    ShortcutBuilder::ShortcutType shortcut_type,
+    ShortcutType shortcut_type,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
@@ -175,39 +203,23 @@ void ShortcutHelper::AddShortcutInBackground(
                                   r_value,
                                   g_value,
                                   b_value,
-                                  shortcut_type != ShortcutBuilder::BOOKMARK);
+                                  shortcut_type != BOOKMARK);
 
   // Record what type of shortcut was added by the user.
   switch (shortcut_type) {
-    case ShortcutBuilder::APP_SHORTCUT:
+    case APP_SHORTCUT:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
       break;
-    case ShortcutBuilder::APP_SHORTCUT_APPLE:
+    case APP_SHORTCUT_APPLE:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
       break;
-    case ShortcutBuilder::BOOKMARK:
+    case BOOKMARK:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
       break;
     default:
       NOTREACHED();
   }
-}
-
-// Adds a shortcut to the current URL to the Android home screen, firing
-// background tasks to pull all the data required.
-// Note that we don't actually care about the tab here -- we just want
-// its otherwise inaccessible WebContents.
-static void AddShortcut(JNIEnv* env,
-                        jclass clazz,
-                        jlong tab_android_ptr,
-                        jstring title,
-                        jint launcher_large_icon_size) {
-  TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
-  ShortcutHelper::AddShortcut(
-      tab->web_contents(),
-      base::android::ConvertJavaStringToUTF16(env, title),
-      launcher_large_icon_size);
 }

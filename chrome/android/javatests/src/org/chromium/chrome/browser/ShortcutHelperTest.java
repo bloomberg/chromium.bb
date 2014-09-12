@@ -15,6 +15,9 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+/**
+ * Tests org.chromium.chrome.browser.ShortcutHelper and it's C++ counterpart.
+ */
 public class ShortcutHelperTest extends ChromeShellTestBase {
     private static final String WEBAPP_ACTION_NAME = "WEBAPP_ACTION";
 
@@ -158,8 +161,16 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                ShortcutHelper.addShortcut(mActivity.getApplicationContext(),
-                        mActivity.getActiveTab(), title);
+                final ShortcutHelper shortcutHelper = new ShortcutHelper(
+                        mActivity.getApplicationContext(), mActivity.getActiveTab());
+                // Calling initialize() isn't strictly required but it is
+                // testing this code path.
+                shortcutHelper.initialize(new ShortcutHelper.OnInitialized() {
+                    @Override
+                    public void onInitialized(String t) {
+                        shortcutHelper.addShortcut(title);
+                    }
+                });
             }
         });
 

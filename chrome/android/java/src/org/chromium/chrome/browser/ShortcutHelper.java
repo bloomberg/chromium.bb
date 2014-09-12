@@ -38,19 +38,78 @@ public class ShortcutHelper {
     }
 
     /**
+     * Callback to be passed to the initialized() method.
+     */
+    public interface OnInitialized {
+        public void onInitialized(String title);
+    }
+
+    private final Context mAppContext;
+    private final Tab mTab;
+
+    private OnInitialized mCallback;
+    private boolean mIsInitialized;
+    private long mNativeShortcutHelper;
+
+    public ShortcutHelper(Context appContext, Tab tab) {
+        mAppContext = appContext;
+        mTab = tab;
+    }
+
+    /**
+     * Gets all the information required to initialize the UI, the passed
+     * callback will be run when those information will be available.
+     * @param callback Callback to be run when initialized.
+     */
+    public void initialize(OnInitialized callback) {
+        mCallback = callback;
+        mNativeShortcutHelper = nativeInitialize(mTab.getNativePtr());
+    }
+
+    /**
+     * Returns whether the object is initialized.
+     */
+    public boolean isInitialized() {
+        return mIsInitialized;
+    }
+
+    /**
+     * Puts the object in a state where it is safe to be destroyed.
+     */
+    public void tearDown() {
+        nativeTearDown(mNativeShortcutHelper);
+
+        // Make sure the callback isn't run if the tear down happens before
+        // onInitialized() is called.
+        mCallback = null;
+        mNativeShortcutHelper = 0;
+    }
+
+    @CalledByNative
+    private void onInitialized(String title) {
+        mIsInitialized = true;
+
+        if (mCallback != null) {
+            mCallback.onInitialized(title);
+        }
+    }
+
+    /**
      * Adds a shortcut for the current Tab.
-     * @param appContext The application context.
-     * @param tab Tab to create a shortcut for.
      * @param userRequestedTitle Updated title for the shortcut.
      */
-    public static void addShortcut(Context appContext, Tab tab, String userRequestedTitle) {
+    public void addShortcut(String userRequestedTitle) {
         if (TextUtils.isEmpty(sFullScreenAction)) {
             Log.e("ShortcutHelper", "ShortcutHelper is uninitialized.  Aborting.");
             return;
         }
-        ActivityManager am = (ActivityManager) appContext.getSystemService(
+        ActivityManager am = (ActivityManager) mAppContext.getSystemService(
                 Context.ACTIVITY_SERVICE);
-        nativeAddShortcut(tab.getNativePtr(), userRequestedTitle, am.getLauncherLargeIconSize());
+        nativeAddShortcut(mNativeShortcutHelper, userRequestedTitle, am.getLauncherLargeIconSize());
+
+        // The C++ instance is no longer owned by the Java object.
+        mCallback = null;
+        mNativeShortcutHelper = 0;
     }
 
     /**
@@ -106,6 +165,8 @@ public class ShortcutHelper {
         context.startActivity(homeIntent);
     }
 
-    private static native void nativeAddShortcut(long tabAndroidPtr, String userRequestedTitle,
+    private native long nativeInitialize(long tabAndroidPtr);
+    private native void nativeAddShortcut(long nativeShortcutHelper, String userRequestedTitle,
             int launcherLargeIconSize);
+    private native void nativeTearDown(long nativeShortcutHelper);
 }
