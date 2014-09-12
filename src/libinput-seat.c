@@ -260,9 +260,10 @@ libinput_log_func(struct libinput *libinput,
 }
 
 int
-udev_input_init(struct udev_input *input, struct weston_compositor *c, struct udev *udev,
-		const char *seat_id)
+udev_input_init(struct udev_input *input, struct weston_compositor *c,
+		struct udev *udev, const char *seat_id)
 {
+	enum libinput_log_priority priority = LIBINPUT_LOG_PRIORITY_INFO;
 	const char *log_priority = NULL;
 
 	memset(input, 0, sizeof *input);
@@ -281,16 +282,15 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c, struct ud
 
 	if (log_priority) {
 		if (strcmp(log_priority, "debug") == 0) {
-			libinput_log_set_priority(input->libinput,
-						  LIBINPUT_LOG_PRIORITY_DEBUG);
+			priority = LIBINPUT_LOG_PRIORITY_DEBUG;
 		} else if (strcmp(log_priority, "info") == 0) {
-			libinput_log_set_priority(input->libinput,
-						  LIBINPUT_LOG_PRIORITY_INFO);
+			priority = LIBINPUT_LOG_PRIORITY_INFO;
 		} else if (strcmp(log_priority, "error") == 0) {
-			libinput_log_set_priority(input->libinput,
-						  LIBINPUT_LOG_PRIORITY_ERROR);
+			priority = LIBINPUT_LOG_PRIORITY_ERROR;
 		}
 	}
+
+	libinput_log_set_priority(input->libinput, priority);
 
 	if (libinput_udev_assign_seat(input->libinput, seat_id) != 0) {
 		libinput_unref(input->libinput);
