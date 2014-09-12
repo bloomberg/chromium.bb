@@ -1367,6 +1367,40 @@ function testReload() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the reload method on webview functions as expected.
+function testReloadAfterTerminate() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  var step = 1;
+  webview.addEventListener('loadstop', function(e) {
+    switch (step) {
+      case 1:
+        webview.terminate();
+        break;
+      case 2:
+        setTimeout(function() { embedder.test.succeed(); }, 0);
+        break;
+      default:
+        window.console.log('Unexpected loadstop event, step = ' + step);
+        embedder.test.fail();
+        break;
+    }
+    ++step;
+  });
+
+  webview.addEventListener('exit', function(e) {
+    // Trigger a focus state change of the guest to test for
+    // http://crbug.com/413874.
+    webview.blur();
+    webview.focus();
+    setTimeout(function() { webview.reload(); }, 0);
+  });
+
+  webview.src = triggerNavUrl;
+  document.body.appendChild(webview);
+}
+
 // This test verifies that a <webview> is torn down gracefully when removed from
 // the DOM on exit.
 
@@ -1834,6 +1868,7 @@ embedder.test.testList = {
   'testNavigateAfterResize': testNavigateAfterResize,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testReload': testReload,
+  'testReloadAfterTerminate': testReloadAfterTerminate,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,

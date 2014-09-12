@@ -109,13 +109,16 @@ base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
 
 void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh, bool focused) {
   focused_ = focused;
+  if (!rwh)
+    return;
+
   rwh->Send(new InputMsg_SetFocus(rwh->GetRoutingID(), focused));
   if (!focused && mouse_locked_)
     OnUnlockMouse();
 
   // Restore the last seen state of text input to the view.
   RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
-      web_contents()->GetRenderWidgetHostView());
+      rwh->GetView());
   if (rwhv) {
     ViewHostMsg_TextInputState_Params params;
     params.type = last_text_input_type_;
@@ -718,9 +721,8 @@ void BrowserPluginGuest::OnResizeGuest(
 
 void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
                                     bool focused) {
-
-  RenderWidgetHost* rwh = web_contents()->GetRenderWidgetHostView()->
-      GetRenderWidgetHost();
+  RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
+  RenderWidgetHost* rwh = rwhv ? rwhv->GetRenderWidgetHost() : NULL;
   SetFocus(rwh, focused);
 }
 
