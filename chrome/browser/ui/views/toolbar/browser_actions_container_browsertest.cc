@@ -11,12 +11,15 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
+#include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
+#include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/view.h"
 
@@ -82,21 +85,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 // move (that's in the toolbar model tests), but just to check our ui.
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest,
                        MoveBrowserActions) {
+  base::FilePath data_dir =
+      test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
   // Load three extensions with browser actions.
   const extensions::Extension* extension_a =
-      LoadExtension(test_data_dir_.AppendASCII("api_test")
-                                  .AppendASCII("browser_action")
-                                  .AppendASCII("basics"));
+      LoadExtension(data_dir.AppendASCII("basics"));
   ASSERT_TRUE(extension_a);
   const extensions::Extension* extension_b =
-      LoadExtension(test_data_dir_.AppendASCII("api_test")
-                                  .AppendASCII("browser_action")
-                                  .AppendASCII("add_popup"));
+      LoadExtension(data_dir.AppendASCII("add_popup"));
   ASSERT_TRUE(extension_b);
   const extensions::Extension* extension_c =
-      LoadExtension(test_data_dir_.AppendASCII("api_test")
-                                  .AppendASCII("browser_action")
-                                  .AppendASCII("remove_popup"));
+      LoadExtension(data_dir.AppendASCII("remove_popup"));
   ASSERT_TRUE(extension_c);
 
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
@@ -128,6 +127,116 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest,
   EXPECT_EQ(extension_c->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_a->id(), browser_actions_bar()->GetExtensionId(2));
+}
+
+// Test that dragging browser actions works, and that dragging a browser action
+// from the overflow menu results in it "popping" out (growing the container
+// size by 1), rather than just reordering the extensions.
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DragBrowserActions) {
+  base::FilePath data_dir =
+      test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
+  // Load three extensions with browser actions.
+  const extensions::Extension* extension_a =
+      LoadExtension(data_dir.AppendASCII("basics"));
+  ASSERT_TRUE(extension_a);
+  const extensions::Extension* extension_b =
+      LoadExtension(data_dir.AppendASCII("add_popup"));
+  ASSERT_TRUE(extension_b);
+  const extensions::Extension* extension_c =
+      LoadExtension(data_dir.AppendASCII("remove_popup"));
+  ASSERT_TRUE(extension_c);
+
+  // Sanity check: All extensions showing; order is A B C.
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(extension_a->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_c->id(), browser_actions_bar()->GetExtensionId(2));
+
+  BrowserActionsContainer* container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()->browser_actions();
+
+  // Simulate a drag and drop to the right.
+  ui::OSExchangeData drop_data;
+  // Drag extension A from index 0...
+  BrowserActionDragData browser_action_drag_data(extension_a->id(), 0u);
+  browser_action_drag_data.Write(profile(), &drop_data);
+  BrowserActionView* view = container->GetViewForExtension(extension_b);
+  // ...to the right of extension B.
+  gfx::Point location(view->x() + view->width(), view->y());
+  ui::DropTargetEvent target_event(
+      drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  // Drag and drop.
+  container->OnDragUpdated(target_event);
+  container->OnPerformDrop(target_event);
+
+  // The order should now be B A C, since A was dragged to the right of B.
+  EXPECT_EQ(extension_b->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_a->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_c->id(), browser_actions_bar()->GetExtensionId(2));
+
+  // This order should be reflected in the underlying model.
+  extensions::ExtensionToolbarModel* model =
+      extensions::ExtensionToolbarModel::Get(profile());
+  EXPECT_EQ(extension_b, model->toolbar_items()[0]);
+  EXPECT_EQ(extension_a, model->toolbar_items()[1]);
+  EXPECT_EQ(extension_c, model->toolbar_items()[2]);
+
+  // Simulate a drag and drop to the left.
+  ui::OSExchangeData drop_data2;
+  // Drag extension A from index 1...
+  BrowserActionDragData browser_action_drag_data2(extension_a->id(), 1u);
+  browser_action_drag_data2.Write(profile(), &drop_data2);
+  // ...to the left of extension B (which is now at index 0).
+  location = gfx::Point(view->x(), view->y());
+  ui::DropTargetEvent target_event2(
+      drop_data2, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  // Drag and drop.
+  container->OnDragUpdated(target_event2);
+  container->OnPerformDrop(target_event2);
+
+  // Order should be restored to A B C.
+  EXPECT_EQ(extension_a->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_c->id(), browser_actions_bar()->GetExtensionId(2));
+
+  // Shrink the size of the container so we have an overflow menu.
+  model->SetVisibleIconCountForTest(2u);
+  EXPECT_EQ(2u, container->VisibleBrowserActions());
+  ASSERT_TRUE(container->chevron());
+  EXPECT_TRUE(container->chevron()->visible());
+
+  // Simulate a drag and drop from the overflow menu.
+  ui::OSExchangeData drop_data3;
+  // Drag extension C from index 2 (in the overflow menu)...
+  BrowserActionDragData browser_action_drag_data3(extension_c->id(), 2u);
+  browser_action_drag_data3.Write(profile(), &drop_data3);
+  // ...to the left of extension B (which is back in index 1 on the main bar).
+  location = gfx::Point(view->x(), view->y());
+  ui::DropTargetEvent target_event3(
+      drop_data3, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  // Drag and drop.
+  container->OnDragUpdated(target_event3);
+  container->OnPerformDrop(target_event3);
+
+  // The order should have changed *and* the container should have grown to
+  // accommodate extension C. The new order should be A C B, and all three
+  // extensions should be visible, with no overflow menu.
+  EXPECT_EQ(extension_a->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_c->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_b->id(), browser_actions_bar()->GetExtensionId(2));
+  EXPECT_EQ(3u, container->VisibleBrowserActions());
+  EXPECT_FALSE(container->chevron()->visible());
+  EXPECT_EQ(-1, model->GetVisibleIconCount());
+
+  // TODO(devlin): Ideally, we'd also have tests for dragging from the legacy
+  // overflow menu (i.e., chevron) to the main bar, but this requires either
+  // having a fairly complicated interactive UI test or finding a good way to
+  // mock up the BrowserActionOverflowMenuController.
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
@@ -495,4 +604,83 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_EQ(extension_a, main_bar()->GetBrowserActionViewAt(1)->extension());
   EXPECT_EQ(extension_b, main_bar()->GetBrowserActionViewAt(2)->extension());
   EXPECT_TRUE(VerifyVisibleCount(1u));
+}
+
+// Test drag and drop between the overflow container and the main container.
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
+                       TestOverflowDragging) {
+  base::FilePath test_data_path =
+      test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
+  const extensions::Extension* extension_a =
+      LoadExtension(test_data_path.AppendASCII("basics"));
+  const extensions::Extension* extension_b =
+      LoadExtension(test_data_path.AppendASCII("add_popup"));
+  const extensions::Extension* extension_c =
+      LoadExtension(test_data_path.AppendASCII("remove_popup"));
+
+  // Start with one extension in overflow.
+  model()->SetVisibleIconCountForTest(2u);
+  overflow_bar()->Layout();
+
+  // Verify starting state is A B [C].
+  ASSERT_EQ(3u, main_bar()->num_browser_actions());
+  EXPECT_EQ(extension_a, main_bar()->GetBrowserActionViewAt(0)->extension());
+  EXPECT_EQ(extension_b, main_bar()->GetBrowserActionViewAt(1)->extension());
+  EXPECT_EQ(extension_c, main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_TRUE(VerifyVisibleCount(2u));
+
+  // Drag extension A (on the main bar) to the left of extension C (in
+  // overflow).
+  ui::OSExchangeData drop_data;
+  BrowserActionDragData browser_action_drag_data(extension_a->id(), 0u);
+  browser_action_drag_data.Write(profile(), &drop_data);
+  BrowserActionView* view = overflow_bar()->GetViewForExtension(extension_c);
+  gfx::Point location(view->x(), view->y());
+  ui::DropTargetEvent target_event(
+      drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  overflow_bar()->OnDragUpdated(target_event);
+  overflow_bar()->OnPerformDrop(target_event);
+  overflow_bar()->Layout();
+
+  // Order should now be B [A C].
+  EXPECT_EQ(extension_b, main_bar()->GetBrowserActionViewAt(0)->extension());
+  EXPECT_EQ(extension_a, main_bar()->GetBrowserActionViewAt(1)->extension());
+  EXPECT_EQ(extension_c, main_bar()->GetBrowserActionViewAt(2)->extension());
+  VerifyVisibleCount(1u);
+
+  // Drag extension A back from overflow to the main bar.
+  ui::OSExchangeData drop_data2;
+  BrowserActionDragData browser_action_drag_data2(extension_a->id(), 1u);
+  browser_action_drag_data2.Write(profile(), &drop_data2);
+  view = main_bar()->GetViewForExtension(extension_b);
+  location = gfx::Point(view->x(), view->y());
+  ui::DropTargetEvent target_event2(
+      drop_data2, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  main_bar()->OnDragUpdated(target_event2);
+  main_bar()->OnPerformDrop(target_event2);
+
+  // Order should be A B [C] again.
+  EXPECT_EQ(extension_a, main_bar()->GetBrowserActionViewAt(0)->extension());
+  EXPECT_EQ(extension_b, main_bar()->GetBrowserActionViewAt(1)->extension());
+  EXPECT_EQ(extension_c, main_bar()->GetBrowserActionViewAt(2)->extension());
+  VerifyVisibleCount(2u);
+
+  // Drag extension C from overflow to the main bar (before extension B).
+  ui::OSExchangeData drop_data3;
+  BrowserActionDragData browser_action_drag_data3(extension_c->id(), 2u);
+  browser_action_drag_data3.Write(profile(), &drop_data3);
+  location = gfx::Point(view->x(), view->y());
+  ui::DropTargetEvent target_event3(
+      drop_data3, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  main_bar()->OnDragUpdated(target_event3);
+  main_bar()->OnPerformDrop(target_event3);
+
+  // Order should be A C B, and there should be no extensions in overflow.
+  EXPECT_EQ(extension_a, main_bar()->GetBrowserActionViewAt(0)->extension());
+  EXPECT_EQ(extension_c, main_bar()->GetBrowserActionViewAt(1)->extension());
+  EXPECT_EQ(extension_b, main_bar()->GetBrowserActionViewAt(2)->extension());
+  VerifyVisibleCount(3u);
 }

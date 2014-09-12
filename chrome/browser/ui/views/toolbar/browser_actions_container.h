@@ -187,6 +187,10 @@ class BrowserActionsContainer
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
+  // Notify the browser action container that an extension has been moved to
+  // the overflow container.
+  void NotifyActionMovedToOverflow();
+
   // Add or remove an observer.
   void AddObserver(BrowserActionsContainerObserver* observer);
   void RemoveObserver(BrowserActionsContainerObserver* observer);
@@ -352,6 +356,9 @@ class BrowserActionsContainer
   // Whether this container is in overflow mode (as opposed to in 'main'
   // mode). See class comments for details on the difference.
   bool in_overflow_mode() const { return main_container_ != NULL; }
+
+  // Whether or not the container has been initialized.
+  bool initialized_;
 
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in

@@ -227,11 +227,20 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
       drop_data.index() < owner_->VisibleBrowserActions())
     --drop_index;
 
+  // Move the extension in the model.
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(browser_->profile())->
           enabled_extensions().GetByID(drop_data.id());
-  extensions::ExtensionToolbarModel::Get(browser_->profile())->
-      MoveExtensionIcon(extension, drop_index);
+  extensions::ExtensionToolbarModel* toolbar_model =
+      extensions::ExtensionToolbarModel::Get(browser_->profile());
+  if (browser_->profile()->IsOffTheRecord())
+    drop_index = toolbar_model->IncognitoIndexToOriginal(drop_index);
+  toolbar_model->MoveExtensionIcon(extension, drop_index);
+
+  // If the extension was moved to the overflow menu from the main bar, notify
+  // the owner.
+  if (drop_index >= owner_->VisibleBrowserActions())
+    owner_->NotifyActionMovedToOverflow();
 
   if (for_drop_)
     delete this;

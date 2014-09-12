@@ -126,7 +126,8 @@ BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
     View* owner_view,
     BrowserActionsContainer* main_container)
-    : profile_(browser->profile()),
+    : initialized_(false),
+      profile_(browser->profile()),
       browser_(browser),
       owner_view_(owner_view),
       main_container_(main_container),
@@ -197,6 +198,8 @@ void BrowserActionsContainer::Init() {
     container_width_ = GetPreferredWidth();
     SetChevronVisibility();
   }
+
+  initialized_ = true;
 }
 
 BrowserActionView* BrowserActionsContainer::GetViewForExtension(
@@ -270,14 +273,21 @@ void BrowserActionsContainer::ExecuteExtensionCommand(
                                                  command.accelerator());
 }
 
+void BrowserActionsContainer::NotifyActionMovedToOverflow() {
+  // When an action is moved to overflow, we shrink the size of the container
+  // by 1.
+  if (!profile_->IsOffTheRecord())
+    model_->SetVisibleIconCount(model_->GetVisibleIconCount() - 1);
+  Animate(gfx::Tween::EASE_OUT,
+          VisibleBrowserActionsAfterAnimation() - 1);
+}
+
 bool BrowserActionsContainer::ShownInsideMenu() const {
   return in_overflow_mode();
 }
 
 void BrowserActionsContainer::OnBrowserActionViewDragDone() {
-  // We notify here as well as in OnPerformDrop because the dragged view is
-  // removed in OnPerformDrop, so it will never get its OnDragDone() call.
-  // TODO(devlin): we should see about fixing that.
+  ToolbarVisibleCountChanged();
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionDragDone());
@@ -433,7 +443,7 @@ bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
 int BrowserActionsContainer::OnDragUpdated(
     const ui::DropTargetEvent& event) {
   // First check if we are above the chevron (overflow) menu.
-  if (GetEventHandlerForPoint(event.location()) == chevron_) {
+  if (chevron_ && GetEventHandlerForPoint(event.location()) == chevron_) {
     if (!show_menu_task_factory_.HasWeakPtrs() && !overflow_menu_)
       StartShowFolderDropMenuTimer();
     return ui::DragDropTypes::DRAG_MOVE;
@@ -546,13 +556,28 @@ int BrowserActionsContainer::OnPerformDrop(
   if (profile_->IsOffTheRecord())
     i = model_->IncognitoIndexToOriginal(i);
 
+  // If this was a drag between containers, we will have to adjust the number of
+  // visible icons.
+  bool drag_between_containers =
+      !browser_action_views_[data.index()]->visible();
   model_->MoveExtensionIcon(
       browser_action_views_[data.index()]->extension(), i);
 
+  if (drag_between_containers) {
+    // Add one for the dropped icon.
+    size_t new_icon_count = VisibleBrowserActionsAfterAnimation() + 1;
+
+    // Let the main container update the model.
+    if (in_overflow_mode())
+      main_container_->NotifyActionMovedToOverflow();
+    else if (!profile_->IsOffTheRecord())  // This is the main container.
+      model_->SetVisibleIconCount(model_->GetVisibleIconCount() + 1);
+
+    // The size changed, so we need to animate.
+    Animate(gfx::Tween::EASE_OUT, new_icon_count);
+  }
+
   OnDragExited();  // Perform clean up after dragging.
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionDragDone());
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
@@ -634,7 +659,6 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   int visible_icons = WidthToIconCount(container_width_);
   if (!profile_->IsOffTheRecord())
     model_->SetVisibleIconCount(visible_icons);
-
   Animate(gfx::Tween::EASE_OUT, visible_icons);
 }
 
@@ -680,7 +704,8 @@ extensions::ActiveTabPermissionGranter*
 }
 
 size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
-  return in_overflow_mode() ? model_->GetVisibleIconCount() : 0;
+  return in_overflow_mode() ?
+      main_container_->VisibleBrowserActionsAfterAnimation() : 0;
 }
 
 ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
@@ -688,11 +713,7 @@ ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
-  model_->SetVisibleIconCount(icons);
-  chevron_->SetVisible(icons < browser_action_views_.size());
-  container_width_ = IconCountToWidth(icons, chevron_->visible());
-  Layout();
-  SchedulePaint();
+  model_->SetVisibleIconCountForTest(icons);
 }
 
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
@@ -961,6 +982,11 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   if (owner_view_) {
     owner_view_->Layout();
     owner_view_->SchedulePaint();
+  } else {
+    // In overflow mode, we don't have an owner view, but we still have to
+    // update ourselves.
+    Layout();
+    SchedulePaint();
   }
 }
 
@@ -972,8 +998,10 @@ int BrowserActionsContainer::GetPreferredWidth() {
 }
 
 void BrowserActionsContainer::SetChevronVisibility() {
-  if (chevron_)
-    chevron_->SetVisible(GetIconCount() < browser_action_views_.size());
+  if (chevron_) {
+    chevron_->SetVisible(
+        VisibleBrowserActionsAfterAnimation() < browser_action_views_.size());
+  }
 }
 
 void BrowserActionsContainer::CloseOverflowMenu() {
@@ -1026,11 +1054,12 @@ size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
   if (pixels >= IconCountToWidth(-1, false))
     return browser_action_views_.size();
 
-  // We need to reserve space for the resize area, chevron, and the spacing on
-  // either side of the chevron.
-  int available_space = pixels - ToolbarView::kStandardSpacing -
-      (chevron_ ? chevron_->GetPreferredSize().width() : 0) -
-      kChevronSpacing - ToolbarView::kStandardSpacing;
+  // We reserve space for the padding on either side of the toolbar...
+  int available_space = pixels - (ToolbarView::kStandardSpacing * 2);
+  // ... and, if the chevron is enabled, the chevron.
+  if (chevron_)
+    available_space -= (chevron_->GetPreferredSize().width() + kChevronSpacing);
+
   // Now we add an extra between-item padding value so the space can be divided
   // evenly by (size of icon with padding).
   return static_cast<size_t>(
@@ -1071,22 +1100,37 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
 size_t BrowserActionsContainer::GetIconCount() const {
   if (!model_)
     return 0u;
+
+  const extensions::ExtensionList& extensions = model_->toolbar_items();
+
+  // Find the absolute value for the model's visible count.
+  int model_visible_size = model_->GetVisibleIconCount();
+  size_t absolute_model_visible_size =
+      model_visible_size == -1 ? extensions.size() : model_visible_size;
+
   // Find the number of icons which could be displayed.
   size_t displayable_icon_count = 0u;
-  const extensions::ExtensionList& extensions = model_->toolbar_items();
-  for (extensions::ExtensionList::const_iterator iter = extensions.begin();
-       iter != extensions.end(); ++iter) {
-    displayable_icon_count += ShouldDisplayBrowserAction(iter->get()) ? 1u : 0u;
+  size_t main_displayed = 0u;
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    // Should there be an icon for this extension at all?
+    if (ShouldDisplayBrowserAction(extensions[i].get())) {
+      ++displayable_icon_count;
+      // Should we display it on the main bar? If this is an incognito window,
+      // icons have the same overflow status they do in a regular window.
+      main_displayed += i < absolute_model_visible_size ? 1u : 0u;
+    }
   }
-  // Find the absolute value for the model's visible count.
-  int model_size = model_->GetVisibleIconCount();
-  size_t absolute_model_size =
-      model_size == -1 ? extensions.size() : model_size;
 
-  // The main container will try to show |model_size| icons, but reduce if there
-  // aren't enough displayable icons to do so.
-  size_t main_displayed = std::min(displayable_icon_count, absolute_model_size);
-  // The overflow will display the extras, if any.
+  // If this is an existing (initialized) container from an incognito profile,
+  // we can't trust the model (because the incognito bars don't adjust model
+  // settings). Instead, we go off what we currently have displayed.
+  if (initialized_ && profile_->IsOffTheRecord()) {
+    main_displayed = in_overflow_mode() ?
+        main_container_->VisibleBrowserActionsAfterAnimation() :
+        VisibleBrowserActionsAfterAnimation();
+  }
+
+  // The overflow displays any (displayable) icons not shown by the main bar.
   return in_overflow_mode() ?
       displayable_icon_count - main_displayed : main_displayed;
 }
