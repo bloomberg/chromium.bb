@@ -12,6 +12,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -63,6 +64,7 @@ class TestEnvironment {
 
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(new TestWebKitPlatformSupport);
+    content_initializer_.reset(new content::TestContentClientInitializer());
   }
 
   ~TestEnvironment() {
@@ -75,6 +77,7 @@ class TestEnvironment {
  private:
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
+  scoped_ptr<TestContentClientInitializer> content_initializer_;
 };
 
 TestEnvironment* test_environment;

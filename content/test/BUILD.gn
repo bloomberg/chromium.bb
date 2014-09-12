@@ -48,6 +48,7 @@ static_library("test_support") {
       "//content/gpu",
       "//content/public/renderer:renderer_sources",
       "//content/public/utility:utility_sources",
+      "//content/shell:pak",
       "//cc",
       "//cc:test_support",
       "//media",

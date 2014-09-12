@@ -263,6 +263,7 @@
             'content.gyp:content_ppapi_plugin',
             'content.gyp:content_renderer',
             'content.gyp:content_utility',
+            'content_shell_and_tests.gyp:content_shell_pak',
             '../cc/blink/cc_blink.gyp:cc_blink',
             '../cc/cc.gyp:cc',
             '../cc/cc_tests.gyp:cc_test_support',

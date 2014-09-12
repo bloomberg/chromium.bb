@@ -11,10 +11,17 @@
         ],
       },
     }],
-    ['OS=="android" or OS=="mac" or OS=="win"', {
+    ['OS=="android"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
+        ],
+      },
+    }],
+    ['OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/content_shell.pak',
         ],
       },
     }],

@@ -163,7 +163,7 @@ blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
         "\x82";
     return blink::WebData(red_square, arraysize(red_square));
   }
-  return blink::WebData();
+  return BlinkPlatformImpl::loadResource(name);
 }
 
 blink::WebString TestWebKitPlatformSupport::queryLocalizedString(

@@ -14,20 +14,20 @@ namespace content {
 
 TestContentClient::TestContentClient()
     : data_pack_(ui::SCALE_FACTOR_100P) {
-  // content_resources.pak is not built on iOS as it is not required.
+  // content_shell.pak is not built on iOS as it is not required.
 #if !defined(OS_IOS)
-  base::FilePath content_resources_pack_path;
+  base::FilePath content_shell_pack_path;
 #if defined(OS_ANDROID)
   // on Android all pak files are inside the paks folder.
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &content_resources_pack_path);
-  content_resources_pack_path = content_resources_pack_path.Append(
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
+  content_shell_pack_path = content_shell_pack_path.Append(
       FILE_PATH_LITERAL("paks"));
 #else
-  PathService::Get(base::DIR_MODULE, &content_resources_pack_path);
+  PathService::Get(base::DIR_MODULE, &content_shell_pack_path);
 #endif
-  content_resources_pack_path = content_resources_pack_path.Append(
-      FILE_PATH_LITERAL("content_resources.pak"));
-  data_pack_.LoadFromPath(content_resources_pack_path);
+  content_shell_pack_path = content_shell_pack_path.Append(
+      FILE_PATH_LITERAL("content_shell.pak"));
+  data_pack_.LoadFromPath(content_shell_pack_path);
 #endif
 }
 
