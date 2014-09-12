@@ -80,6 +80,7 @@ def GetWindowsEnvironment():
       self.env[key] = value
 
   context = FakeContext()
+  context['gyp_vars'] = []
   buildbot_standard.SetupWindowsEnvironment(context)
 
   # buildbot_standard.SetupWindowsEnvironment adds the directory which contains
