@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,16 +13,15 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.chromium.base.PathUtils;
-import org.chromium.ui.base.LocalizationUtils;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
@@ -67,7 +66,7 @@ public class ResourceExtractor {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             HashSet<String> filenames = (HashSet<String>) prefs.getStringSet(
                     PAK_FILENAMES, new HashSet<String>());
-            String currentLocale = LocalizationUtils.getDefaultLocale();
+            String currentLocale = LocaleUtils.getDefaultLocale();
             String currentLanguage = currentLocale.split("-", 2)[0];
 
             if (prefs.getString(LAST_LANGUAGE, "").equals(currentLanguage)
@@ -263,10 +262,30 @@ public class ResourceExtractor {
      *         the users currently selected locale and try to extract only the
      *         pak files specified in sMandatoryPaks.
      */
+    @VisibleForTesting
     public static void setExtractImplicitLocaleForTesting(boolean extract) {
         assert (sInstance == null || sInstance.mExtractTask == null)
                 : "Must be called before startExtractingResources is called";
         sExtractImplicitLocalePak = extract;
+    }
+
+    /**
+     * Marks all the 'pak' resources, packaged as assets, for extraction during
+     * running the tests.
+     */
+    @VisibleForTesting
+    public void setExtractAllPaksForTesting() {
+        List<String> pakFileAssets = new ArrayList<String>();
+        AssetManager manager = mContext.getResources().getAssets();
+        try {
+            String[] files = manager.list("");
+            for (String file : files) {
+                if (file.endsWith(".pak")) pakFileAssets.add(file);
+            }
+        } catch (IOException e) {
+            Log.w(LOGTAG, "Exception while accessing assets: " + e.getMessage(), e);
+        }
+        setMandatoryPaksToExtract(pakFileAssets.toArray(new String[pakFileAssets.size()]));
     }
 
     private ResourceExtractor(Context context) {

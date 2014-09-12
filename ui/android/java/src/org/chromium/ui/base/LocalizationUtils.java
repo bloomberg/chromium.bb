@@ -11,6 +11,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.LocaleUtils;
 
 import java.util.Locale;
 
@@ -35,22 +36,8 @@ public class LocalizationUtils {
      */
     @CalledByNative
     public static String getDefaultLocale() {
-        Locale locale = Locale.getDefault();
-        String language = locale.getLanguage();
-        String country = locale.getCountry();
-
-        // Android uses deprecated lanuages codes for Hebrew and Indonesian but Chromium uses the
-        // updated codes. Also, Android uses "tl" while Chromium uses "fil" for Tagalog/Filipino.
-        // So apply a mapping.
-        // See http://developer.android.com/reference/java/util/Locale.html
-        if ("iw".equals(language)) {
-            language = "he";
-        } else if ("in".equals(language)) {
-            language = "id";
-        } else if ("tl".equals(language)) {
-            language = "fil";
-        }
-        return country.isEmpty() ? language : language + "-" + country;
+        // TODO(vivekg): Native callers should use LocaleUtils directly instead of the redirection.
+        return LocaleUtils.getDefaultLocale();
     }
 
     @CalledByNative

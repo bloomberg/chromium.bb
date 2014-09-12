@@ -5,8 +5,9 @@
 package org.chromium.content_shell_apk;
 
 import org.chromium.base.PathUtils;
+import org.chromium.base.ResourceExtractor;
+
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.ResourceExtractor;
 
 /**
  * Entry point for the content shell application.  Handles initialization of information that needs

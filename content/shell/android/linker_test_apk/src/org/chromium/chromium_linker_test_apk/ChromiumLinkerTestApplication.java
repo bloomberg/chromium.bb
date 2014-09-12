@@ -7,7 +7,7 @@ package org.chromium.chromium_linker_test_apk;
 import android.app.Application;
 
 import org.chromium.base.PathUtils;
-import org.chromium.content.browser.ResourceExtractor;
+import org.chromium.base.ResourceExtractor;
 
 /**
  * Application for testing the Chromium Linker

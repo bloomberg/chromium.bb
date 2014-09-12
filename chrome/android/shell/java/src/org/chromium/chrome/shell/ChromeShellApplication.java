@@ -9,12 +9,12 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
+import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
-import org.chromium.content.browser.ResourceExtractor;
 
 import java.util.ArrayList;
 

@@ -11,8 +11,8 @@ import android.util.Log;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ResourceExtractor;
 import org.chromium.base.TraceEvent;
-import org.chromium.content.browser.ResourceExtractor;
 
 /**
  * The android_webview shell Application subclass.
