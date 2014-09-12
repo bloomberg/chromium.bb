@@ -49,6 +49,15 @@
     ],
     "versions": [
       {
+        "version": "0",
+        "status": "requires_authorization",
+        "comment": "Newer versions of Java don't have a standard version number anymore."
+      },
+      {
+        "version": "12",
+        "status": "out_of_date"
+      },
+      {
         "version": "12.8.0",
         "status": "requires_authorization",
         "comment": "Leopard"
