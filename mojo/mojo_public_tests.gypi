@@ -7,7 +7,6 @@
     {
       # GN version: //mojo/public/c/test_support
       'target_name': 'mojo_test_support',
-      'type': 'shared_library',
       'defines': [
         'MOJO_TEST_SUPPORT_IMPLEMENTATION',
       ],
@@ -27,6 +26,11 @@
         'public/tests/test_support_private.h',
       ],
       'conditions': [
+        ['OS=="ios"', {
+          'type': 'static_library',
+        }, {
+          'type': 'shared_library',
+        }],
         ['OS=="mac"', {
           'xcode_settings': {
             # Make it a run-path dependent library.

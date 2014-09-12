@@ -41,6 +41,7 @@ class ChannelThread {
   DISALLOW_COPY_AND_ASSIGN(ChannelThread);
 };
 
+#if !defined(OS_IOS)
 class MultiprocessMessagePipeTestBase : public testing::Test {
  public:
   MultiprocessMessagePipeTestBase();
@@ -59,6 +60,7 @@ class MultiprocessMessagePipeTestBase : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTestBase);
 };
+#endif
 
 }  // namespace test
 }  // namespace system

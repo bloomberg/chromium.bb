@@ -16,6 +16,11 @@
       'target_name': 'mojo_base',
       'type': 'none',
       'dependencies': [
+        # NOTE: If adding a new dependency here, please consider whether it
+        # should also be added to the list of Mojo-related dependencies of
+        # build/all.gyp:All on iOS, as All cannot depend on the mojo_base
+        # target on iOS due to the presence of the js targets, which cause v8
+        # to be built.
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_cpp_bindings',
@@ -228,6 +233,14 @@
         'system/waiter_test_utils.h',
         'system/waiter_unittest.cc',
       ],
+      'conditions': [
+        ['OS=="ios"', {
+          'sources!': [
+            'embedder/embedder_unittest.cc',
+            'system/multiprocess_message_pipe_unittest.cc',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //mojo/system:mojo_message_pipe_perftests
@@ -309,6 +322,13 @@
         'common/test/test_utils_posix.cc',
         'common/test/test_utils_win.cc',
       ],
+      'conditions': [
+        ['OS=="ios"', {
+          'sources!': [
+            'common/test/multiprocess_test_helper.cc',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //mojo/common:mojo_common_unittests
@@ -331,6 +351,13 @@
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
         'common/test/multiprocess_test_helper_unittest.cc',
+      ],
+      'conditions': [
+        ['OS=="ios"', {
+          'sources!': [
+            'common/test/multiprocess_test_helper_unittest.cc',
+          ],
+        }],
       ],
     },
     {

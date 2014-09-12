@@ -39,6 +39,21 @@
         ['OS=="ios"', {
           'dependencies': [
             '../ios/ios.gyp:*',
+            # NOTE: This list of targets is present because
+            # mojo_base.gyp:mojo_base cannot be built on iOS, as
+            # javascript-related targets cause v8 to be built.
+            '../mojo/mojo_base.gyp:mojo_common_lib',
+            '../mojo/mojo_base.gyp:mojo_common_unittests',
+            '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+            '../mojo/mojo_base.gyp:mojo_public_bindings_unittests',
+            '../mojo/mojo_base.gyp:mojo_public_environment_unittests',
+            '../mojo/mojo_base.gyp:mojo_public_system_perftests',
+            '../mojo/mojo_base.gyp:mojo_public_system_unittests',
+            '../mojo/mojo_base.gyp:mojo_public_test_utils',
+            '../mojo/mojo_base.gyp:mojo_public_utility_unittests',
+            '../mojo/mojo_base.gyp:mojo_system',
+            '../mojo/mojo_base.gyp:mojo_system_impl',
+            '../mojo/mojo_base.gyp:mojo_system_unittests',
             '../ui/base/ui_base_tests.gyp:ui_unittests',
             '../ui/ios/ui_ios_tests.gyp:ui_ios_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',

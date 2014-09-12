@@ -94,6 +94,7 @@ void ChannelThread::ShutdownChannelOnIOThread() {
   channel_ = NULL;
 }
 
+#if !defined(OS_IOS)
 MultiprocessMessagePipeTestBase::MultiprocessMessagePipeTestBase()
     : channel_thread_(&platform_support_) {
 }
@@ -104,6 +105,7 @@ MultiprocessMessagePipeTestBase::~MultiprocessMessagePipeTestBase() {
 void MultiprocessMessagePipeTestBase::Init(scoped_refptr<MessagePipe> mp) {
   channel_thread_.Start(helper_.server_platform_handle.Pass(), mp);
 }
+#endif
 
 }  // namespace test
 }  // namespace system

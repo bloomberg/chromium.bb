@@ -379,7 +379,6 @@ deps_os = {
     'src/third_party/libexif/sources': None,
     'src/third_party/libjpeg_turbo': None,
     'src/third_party/libsrtp': None,
-    'src/third_party/mesa/src': None,
     'src/third_party/opus/src': None,
     'src/third_party/openmax_dl': None,
     'src/third_party/ots': None,
@@ -398,7 +397,6 @@ deps_os = {
     'src/third_party/WebKit/LayoutTests/w3c/csswg-test': None,
     'src/third_party/yasm/source/patched-yasm': None,
     'src/tools/page_cycler/acid3': None,
-    'src/v8': None,
   },
   'mac': {
     'src/chrome/tools/test/reference_build/chrome_mac':
