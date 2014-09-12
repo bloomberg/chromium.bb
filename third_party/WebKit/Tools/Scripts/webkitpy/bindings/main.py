@@ -26,6 +26,7 @@ from contextlib import contextmanager
 import filecmp
 import fnmatch
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -91,6 +92,16 @@ def TemporaryDirectory():
         shutil.rmtree(name)
 
 
+COMPONENT_PATH_PATTERN = re.compile(r'/(core|modules)(/|$)')
+
+
+def detect_component_dir(path):
+    match = COMPONENT_PATH_PATTERN.search(os.path.dirname(path))
+    if match:
+        return match.group(1)
+    raise AssertionError('"%s" is not placed under known component_dir, core or modules.' % path)
+
+
 def generate_interface_dependencies():
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
@@ -122,8 +133,15 @@ def generate_interface_dependencies():
     # for each new component) and doesn't test the code generator any better
     # than using a single component.
     for idl_filename in idl_paths_recursive(source_path):
-        compute_info_individual(idl_filename, 'tests')
+        compute_info_individual(idl_filename, detect_component_dir(idl_filename))
     info_individuals = [info_individual()]
+    # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
+    # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.
+    # So the files will be generated under output_dir/core/bindings/tests/idls/core.
+    # To avoid this issue, we need to clear relative_dir here.
+    for info in info_individuals:
+        for value in info['interfaces_info'].itervalues():
+            value['relative_dir'] = ''
     compute_interfaces_info_overall(info_individuals)
 
 

@@ -13,7 +13,7 @@
 #include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "core/HTMLNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"

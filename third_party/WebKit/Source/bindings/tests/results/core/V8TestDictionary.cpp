@@ -9,9 +9,9 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/tests/v8/V8TestInterface.h"
-#include "bindings/tests/v8/V8TestInterfaceGarbageCollected.h"
-#include "bindings/tests/v8/V8TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/core/v8/V8TestInterface.h"
+#include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
+#include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 
 namespace blink {
 
