@@ -242,6 +242,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   bool did_initialize_visible_tile_;
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
+  bool did_oom_on_last_assign_;
 
   typedef base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask> >
       PixelRefTaskMap;

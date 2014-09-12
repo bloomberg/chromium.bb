@@ -379,6 +379,7 @@ TileManager::TileManager(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
+      did_oom_on_last_assign_(false),
       ready_to_activate_check_notifier_(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfReadyToActivate,
@@ -726,6 +727,7 @@ TileManager::BasicStateAsValue() const {
 
 void TileManager::BasicStateAsValueInto(base::debug::TracedValue* state) const {
   state->SetInteger("tile_count", tiles_.size());
+  state->SetBoolean("did_oom_on_last_assign", did_oom_on_last_assign_);
   state->BeginDictionary("global_state");
   global_state_.AsValueInto(state);
   state->EndDictionary();
@@ -892,6 +894,7 @@ void TileManager::AssignGpuMemoryToTiles(
                       "over",
                       bytes_that_exceeded_memory_budget);
   }
+  did_oom_on_last_assign_ = oomed_hard;
   UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget", oomed_hard);
   memory_stats_from_last_assign_.total_budget_in_bytes =
       global_state_.hard_memory_limit_in_bytes;
