@@ -115,9 +115,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onSaveToClipboard(params.getLinkText(), false);
         } else if (itemId == R.id.contextmenu_save_image ||
                 itemId == R.id.contextmenu_save_video) {
-            if (mDelegate.startDownload(false)) helper.startContextMenuDownload(false);
+            if (mDelegate.startDownload(params.getSrcUrl(), false)) {
+                helper.startContextMenuDownload(false);
+            }
         } else if (itemId == R.id.contextmenu_save_link_as) {
-            if (mDelegate.startDownload(true)) helper.startContextMenuDownload(true);
+            if (mDelegate.startDownload(params.getUnfilteredLinkUrl(), true)) {
+                helper.startContextMenuDownload(true);
+            }
         } else if (itemId == R.id.contextmenu_search_by_image) {
             mDelegate.onSearchByImageInNewTab();
         } else if (itemId == R.id.contextmenu_copy_image) {

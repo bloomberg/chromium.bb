@@ -31,10 +31,11 @@ public interface ChromeContextMenuItemDelegate {
 
     /**
      * Called when the context menu is trying to start a download.
+     * @param url Url of the download item.
      * @param isLink Whether or not the download is a link (as opposed to an image/video).
      * @return       Whether or not a download should actually be started.
      */
-    boolean startDownload(boolean isLink);
+    boolean startDownload(String url, boolean isLink);
 
     /**
      * Called when the {@code url} should be opened in a new tab with the same incognito state as

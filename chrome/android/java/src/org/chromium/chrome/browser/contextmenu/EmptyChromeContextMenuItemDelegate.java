@@ -27,7 +27,7 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
-    public boolean startDownload(boolean isLink) {
+    public boolean startDownload(String url, boolean isLink) {
         return false;
     }
 
