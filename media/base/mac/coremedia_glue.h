@@ -28,9 +28,20 @@ class MEDIA_EXPORT CoreMediaGlue {
     CMTimeEpoch epoch;
   } CMTime;
 
+  // Originally from CMBlockBuffer.h
+  typedef uint32_t CMBlockBufferFlags;
+  typedef struct OpaqueCMBlockBuffer* CMBlockBufferRef;
+  typedef struct {
+    uint32_t version;
+    void* (*AllocateBlock)(void*, size_t);
+    void (*FreeBlock)(void*, void*, size_t);
+    void* refCon;
+  } CMBlockBufferCustomBlockSource;
+
   // Originally from CMFormatDescription.h.
   typedef const struct opaqueCMFormatDescription* CMFormatDescriptionRef;
   typedef CMFormatDescriptionRef CMVideoFormatDescriptionRef;
+  typedef FourCharCode CMVideoCodecType;
   typedef struct {
     int32_t width;
     int32_t height;
@@ -40,6 +51,12 @@ class MEDIA_EXPORT CoreMediaGlue {
   };
   enum {
     kCMVideoCodecType_JPEG_OpenDML = 'dmb1',
+    kCMVideoCodecType_H264 = 'avc1',
+  };
+
+  // Originally from CMFormatDescriptionBridge.h
+  enum {
+    kCMFormatDescriptionBridgeError_InvalidParameter = -12712,
   };
 
   // Originally from CMSampleBuffer.h.
@@ -48,15 +65,50 @@ class MEDIA_EXPORT CoreMediaGlue {
   // Originally from CMTime.h.
   static CMTime CMTimeMake(int64_t value, int32_t timescale);
 
+  // Originally from CMBlockBuffer.h
+  static OSStatus CMBlockBufferCreateContiguous(
+      CFAllocatorRef structureAllocator,
+      CMBlockBufferRef sourceBuffer,
+      CFAllocatorRef blockAllocator,
+      const CMBlockBufferCustomBlockSource* customBlockSource,
+      size_t offsetToData,
+      size_t dataLength,
+      CMBlockBufferFlags flags,
+      CMBlockBufferRef* newBBufOut);
+  static size_t CMBlockBufferGetDataLength(CMBlockBufferRef theBuffer);
+  static OSStatus CMBlockBufferGetDataPointer(CMBlockBufferRef theBuffer,
+                                              size_t offset,
+                                              size_t* lengthAtOffset,
+                                              size_t* totalLength,
+                                              char** dataPointer);
+  static Boolean CMBlockBufferIsRangeContiguous(CMBlockBufferRef theBuffer,
+                                                size_t offset,
+                                                size_t length);
+
   // Originally from CMSampleBuffer.h.
+  static CMBlockBufferRef CMSampleBufferGetDataBuffer(CMSampleBufferRef sbuf);
+  static CMFormatDescriptionRef CMSampleBufferGetFormatDescription(
+      CMSampleBufferRef sbuf);
   static CVImageBufferRef CMSampleBufferGetImageBuffer(
       CMSampleBufferRef buffer);
+  static CFArrayRef CMSampleBufferGetSampleAttachmentsArray(
+      CMSampleBufferRef sbuf,
+      Boolean createIfNecessary);
+  static CFStringRef kCMSampleAttachmentKey_NotSync();
 
   // Originally from CMFormatDescription.h.
   static FourCharCode CMFormatDescriptionGetMediaSubType(
       CMFormatDescriptionRef desc);
   static CMVideoDimensions CMVideoFormatDescriptionGetDimensions(
       CMVideoFormatDescriptionRef videoDesc);
+  static OSStatus CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+      CMFormatDescriptionRef videoDesc,
+      size_t parameterSetIndex,
+      const uint8_t** parameterSetPointerOut,
+      size_t* parameterSetSizeOut,
+      size_t* parameterSetCountOut,
+      int* NALUnitHeaderLengthOut)
+      /*__OSX_AVAILABLE_STARTING(__MAC_10_9,__IPHONE_7_0)*/;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(CoreMediaGlue);

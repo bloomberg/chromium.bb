@@ -11,6 +11,9 @@ source_set("mac") {
     "avfoundation_glue.mm",
     "coremedia_glue.h",
     "coremedia_glue.mm",
+    "corevideo_glue.h",
+    "videotoolbox_glue.h",
+    "videotoolbox_glue.mm",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
 }
