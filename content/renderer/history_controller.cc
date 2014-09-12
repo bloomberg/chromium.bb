@@ -60,7 +60,7 @@ void HistoryController::GoToEntry(scoped_ptr<HistoryEntry> target_entry,
 
   provisional_entry_ = target_entry.Pass();
 
-  WebFrame* main_frame = render_view_->main_render_frame()->GetWebFrame();
+  WebFrame* main_frame = render_view_->GetMainRenderFrame()->GetWebFrame();
   if (current_entry_) {
     RecursiveGoToEntry(
         main_frame, same_document_loads, different_document_loads);

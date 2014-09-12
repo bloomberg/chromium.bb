@@ -502,7 +502,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
-  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view_page_id());
@@ -515,7 +515,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -573,7 +573,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
@@ -1557,7 +1557,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   frame()->OnNavigate(params);
 
   // An error occurred.
-  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
+  view()->GetMainRenderFrame()->didFailProvisionalLoad(web_frame, error);
   // Frame should exit view-source mode.
   EXPECT_FALSE(web_frame->isViewSourceModeEnabled());
 }
@@ -1580,7 +1580,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   frame()->OnNavigate(params);
 
   // A cancellation occurred.
-  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
+  view()->GetMainRenderFrame()->didFailProvisionalLoad(web_frame, error);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
 }
@@ -2166,7 +2166,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   frame()->OnNavigate(params);
 
   // An error occurred.
-  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
+  view()->GetMainRenderFrame()->didFailProvisionalLoad(web_frame, error);
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("",
             base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
@@ -2196,7 +2196,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   frame()->OnNavigate(params);
 
   // An error occurred.
-  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
+  view()->GetMainRenderFrame()->didFailProvisionalLoad(web_frame, error);
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(frame()).Wait();
   const int kMaxOutputCharacters = 22;

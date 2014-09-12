@@ -313,7 +313,7 @@ bool WebPluginDelegateProxy::Initialize(
       // shouldn't happen, since if we got here the plugin should exist) or the
       // plugin crashed on initialization.
       if (!info_.path.empty()) {
-        render_view_->main_render_frame()->PluginCrashed(
+        render_view_->GetMainRenderFrame()->PluginCrashed(
             info_.path, base::kNullProcessId);
         LOG(ERROR) << "Plug-in crashed on start";
 
@@ -487,7 +487,7 @@ void WebPluginDelegateProxy::OnChannelError() {
     plugin_->Invalidate();
   }
   if (channel_host_.get() && !channel_host_->expecting_shutdown()) {
-    render_view_->main_render_frame()->PluginCrashed(
+    render_view_->GetMainRenderFrame()->PluginCrashed(
         info_.path, channel_host_->peer_pid());
   }
 

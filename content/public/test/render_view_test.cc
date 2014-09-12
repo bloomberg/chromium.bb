@@ -340,8 +340,8 @@ void RenderViewTest::Reload(const GURL& url) {
   params.url = url;
   params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->main_render_frame()->OnNavigate(params);
-  FrameLoadWaiter(impl->main_render_frame()).Wait();
+  impl->GetMainRenderFrame()->OnNavigate(params);
+  FrameLoadWaiter(impl->GetMainRenderFrame()).Wait();
 }
 
 uint32 RenderViewTest::GetNavigationIPCType() {
@@ -372,7 +372,7 @@ void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.initialize();
-  impl->main_render_frame()->didNavigateWithinPage(
+  impl->GetMainRenderFrame()->didNavigateWithinPage(
       frame,
       item,
       is_new_navigation ? blink::WebStandardCommit
@@ -419,9 +419,9 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   navigate_params.page_state = state;
   navigate_params.request_time = base::Time::Now();
 
-  FrameMsg_Navigate navigate_message(impl->main_render_frame()->GetRoutingID(),
+  FrameMsg_Navigate navigate_message(impl->GetMainRenderFrame()->GetRoutingID(),
                                      navigate_params);
-  impl->main_render_frame()->OnMessageReceived(navigate_message);
+  impl->GetMainRenderFrame()->OnMessageReceived(navigate_message);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

@@ -189,7 +189,7 @@ HistoryEntry* HistoryEntry::CloneAndReplace(const WebHistoryItem& new_item,
                              new_item,
                              clone_children_of_target,
                              target_frame,
-                             render_view->main_render_frame()));
+                             render_view->GetMainRenderFrame()));
   return new_entry;
 }
 

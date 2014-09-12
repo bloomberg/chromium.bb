@@ -212,8 +212,6 @@ class CONTENT_EXPORT RenderViewImpl
     send_content_state_immediately_ = value;
   }
 
-  RenderFrameImpl* main_render_frame() { return main_render_frame_.get(); }
-
   MouseLockDispatcher* mouse_lock_dispatcher() {
     return mouse_lock_dispatcher_;
   }
@@ -463,7 +461,7 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderView implementation -------------------------------------------------
 
   virtual bool Send(IPC::Message* message) OVERRIDE;
-  virtual RenderFrame* GetMainRenderFrame() OVERRIDE;
+  virtual RenderFrameImpl* GetMainRenderFrame() OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual WebPreferences& GetWebkitPreferences() OVERRIDE;

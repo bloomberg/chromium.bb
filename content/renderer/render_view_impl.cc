@@ -1966,7 +1966,7 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 
   // TODO(dmazzoni): this should be part of RenderFrameObserver.
-  main_render_frame()->FocusedNodeChanged(node);
+  GetMainRenderFrame()->FocusedNodeChanged(node);
 }
 
 void RenderViewImpl::didUpdateLayout() {
@@ -2463,7 +2463,7 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
 }
 
-RenderFrame* RenderViewImpl::GetMainRenderFrame() {
+RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
   return main_render_frame_.get();
 }
 
@@ -4038,7 +4038,7 @@ bool RenderViewImpl::didTapMultipleTargets(
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
   AccessibilityMode accessibility_mode =
-      main_render_frame()->accessibility_mode();
+      GetMainRenderFrame()->accessibility_mode();
   bool matches_accessibility_mode_complete =
       (accessibility_mode & AccessibilityModeComplete) ==
           AccessibilityModeComplete;

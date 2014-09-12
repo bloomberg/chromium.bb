@@ -30,7 +30,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
   }
 
   RenderFrameImpl* frame() {
-    return view()->main_render_frame();
+    return view()->GetMainRenderFrame();
   }
 
   virtual void SetUp() {
