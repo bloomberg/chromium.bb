@@ -4,6 +4,8 @@
 
 #include "gin/modules/module_runner_delegate.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "gin/modules/module_registry.h"
 #include "gin/object_template_builder.h"
 #include "gin/public/context_holder.h"
@@ -20,6 +22,11 @@ ModuleRunnerDelegate::~ModuleRunnerDelegate() {
 
 void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
                                             ModuleGetter getter) {
+  builtin_modules_[id] = base::Bind(getter);
+}
+
+void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
+    const ModuleGetterCallback& getter) {
   builtin_modules_[id] = getter;
 }
 
@@ -46,9 +53,10 @@ void ModuleRunnerDelegate::DidCreateContext(ShellRunner* runner) {
   ModuleRegistry* registry = ModuleRegistry::From(context);
 
   v8::Isolate* isolate = runner->GetContextHolder()->isolate();
+
   for (BuiltinModuleMap::const_iterator it = builtin_modules_.begin();
        it != builtin_modules_.end(); ++it) {
-    registry->AddBuiltinModule(isolate, it->first, it->second(isolate));
+    registry->AddBuiltinModule(isolate, it->first, it->second.Run(isolate));
   }
 }
 

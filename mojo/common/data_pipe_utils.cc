@@ -14,20 +14,17 @@
 
 namespace mojo {
 namespace common {
+namespace {
 
-bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
-                        const base::FilePath& destination) {
-  base::ScopedFILE fp(base::OpenFile(destination, "wb"));
-  if (!fp)
-    return false;
-
+bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
+    const base::Callback<size_t(const void*, uint32_t)>& write_bytes) {
   for (;;) {
     const void* buffer;
     uint32_t num_bytes;
-    MojoResult result = BeginReadDataRaw(source.get(), &buffer, &num_bytes,
-                                         MOJO_READ_DATA_FLAG_NONE);
+    MojoResult result = BeginReadDataRaw(
+        source.get(), &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_OK) {
-      size_t bytes_written = fwrite(buffer, 1, num_bytes, fp.get());
+      size_t bytes_written = write_bytes.Run(buffer, num_bytes);
       result = EndReadDataRaw(source.get(), num_bytes);
       if (bytes_written < num_bytes || result != MOJO_RESULT_OK)
         return false;
@@ -51,9 +48,35 @@ bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
   return false;
 }
 
-void CompleteBlockingCopyToFile(const base::Callback<void(bool)>& callback,
-                                bool result) {
-  callback.Run(result);
+size_t CopyToStringHelper(
+    std::string* result, const void* buffer, uint32_t num_bytes) {
+  result->append(static_cast<const char*>(buffer), num_bytes);
+  return num_bytes;
+}
+
+size_t CopyToFileHelper(FILE* fp, const void* buffer, uint32_t num_bytes) {
+  return fwrite(buffer, 1, num_bytes, fp);
+}
+
+} // namespace
+
+
+// TODO(hansmuller): Add a max_size parameter.
+bool BlockingCopyToString(ScopedDataPipeConsumerHandle source,
+                          std::string* result) {
+  CHECK(result);
+  result->clear();
+  return BlockingCopyHelper(
+      source.Pass(), base::Bind(&CopyToStringHelper, result));
+}
+
+bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
+                        const base::FilePath& destination) {
+  base::ScopedFILE fp(base::OpenFile(destination, "wb"));
+  if (!fp)
+    return false;
+  return BlockingCopyHelper(
+      source.Pass(), base::Bind(&CopyToFileHelper, fp.get()));
 }
 
 void CopyToFile(ScopedDataPipeConsumerHandle source,

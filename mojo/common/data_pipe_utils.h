@@ -5,6 +5,8 @@
 #ifndef MOJO_SHELL_DATA_PIPE_UTILS_H_
 #define MOJO_SHELL_DATA_PIPE_UTILS_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/public/cpp/system/core.h"
@@ -25,6 +27,13 @@ void MOJO_COMMON_EXPORT CopyToFile(
     const base::FilePath& destination,
     base::TaskRunner* task_runner,
     const base::Callback<void(bool /*success*/)>& callback);
+
+// Copies the data from |source| into |contents| and returns true on success and
+// false on error.  In case of I/O error, |contents| holds the data that could
+// be read from source before the error occurred.
+bool MOJO_COMMON_EXPORT BlockingCopyToString(
+    ScopedDataPipeConsumerHandle source,
+    std::string* contents);
 
 }  // namespace common
 }  // namespace mojo

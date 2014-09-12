@@ -188,9 +188,9 @@ define("mojo/public/js/bindings/validator", [
     return structClass.validate(this, structOffset);
   }
 
-  Validator.prototype.validateStringPointer = function(offset) {
+  Validator.prototype.validateStringPointer = function(offset, nullable) {
     return this.validateArrayPointer(
-        offset, codec.Uint8.encodedSize, 0, codec.Uint8);
+        offset, codec.Uint8.encodedSize, 0, codec.Uint8, nullable);
   }
 
   // Similar to Array_Data<T>::Validate()
