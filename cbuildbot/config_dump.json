@@ -20615,7 +20615,7 @@
         "binhost_base_url": null,
         "binhost_bucket": null,
         "binhost_key": null,
-        "board_replace": true,
+        "board_replace": false,
         "boards": [
             "daisy_spring"
         ],
@@ -20625,7 +20625,7 @@
         "build_tests": true,
         "build_type": "paladin",
         "child_configs": [],
-        "chrome_binhost_only": true,
+        "chrome_binhost_only": false,
         "chrome_rev": null,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
@@ -48560,7 +48560,7 @@
         "binhost_base_url": null,
         "binhost_bucket": null,
         "binhost_key": null,
-        "board_replace": false,
+        "board_replace": true,
         "boards": [
             "nyan"
         ],
@@ -48570,7 +48570,7 @@
         "build_tests": true,
         "build_type": "paladin",
         "child_configs": [],
-        "chrome_binhost_only": false,
+        "chrome_binhost_only": true,
         "chrome_rev": null,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,

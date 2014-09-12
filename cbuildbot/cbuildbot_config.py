@@ -1991,7 +1991,6 @@ internal_notest_paladin.add_config('daisy_freon-paladin',
 )
 
 internal_notest_paladin.add_config('daisy_spring-paladin',
-  full_paladin,
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
@@ -2004,6 +2003,7 @@ internal_notest_paladin.add_config('peach_pit-paladin',
 )
 
 internal_notest_paladin.add_config('nyan-paladin',
+  full_paladin,
   boards=['nyan'],
   paladin_builder_name='nyan paladin',
 )
