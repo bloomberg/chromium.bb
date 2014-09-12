@@ -1401,22 +1401,8 @@ void RenderFrameHostManager::CommitPending() {
           linked_ptr<RenderFrameHostImpl>(old_render_frame_host.release());
     }
   } else {
-    // In --site-per-process, delete the proxy for the SiteInstance we are
-    // committing. In the case of main frame, the proxy wraps the
-    // |old_render_frame_host|, so it must be left intact.
-    // TODO(nasko): When committing into an existing process, the proxy
-    // should be swapped in the frame tree with the real frame, but this is
-    // not yet the case. Revisit this to ensure the necessary context is
-    // preserved.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess) && !is_main_frame) {
-      RenderFrameProxyHostMap::iterator iter =
-          proxy_hosts_.find(render_frame_host_->GetSiteInstance()->GetId());
-      if (iter != proxy_hosts_.end()) {
-        delete iter->second;
-        proxy_hosts_.erase(iter);
-      }
-    }
+    CHECK(proxy_hosts_.find(render_frame_host_->GetSiteInstance()->GetId()) ==
+          proxy_hosts_.end());
 
     // Capture the active view count on the old RFH SiteInstance, since the
     // ownership might be passed into the proxy and the pointer will be
@@ -1451,11 +1437,6 @@ void RenderFrameHostManager::CommitPending() {
       }
     }
   }
-
-  // After all is done, there must never be a proxy in the list which has the
-  // same SiteInstance as the current RenderFrameHost.
-  CHECK(proxy_hosts_.find(render_frame_host_->GetSiteInstance()->GetId()) ==
-        proxy_hosts_.end());
 }
 
 void RenderFrameHostManager::ShutdownRenderFrameProxyHostsInSiteInstance(
