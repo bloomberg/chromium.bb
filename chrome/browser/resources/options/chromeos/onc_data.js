@@ -155,7 +155,7 @@ cr.define('cr.onc', function() {
       return security;
     },
 
-   /**
+    /**
      * Updates the properties of |data_| from the properties in |update|.
      * Note: this only looks at top level entries, so if a dictionary is
      * updated the entire dictionary is written over. TODO(stevenjb):

@@ -86,7 +86,7 @@ cr.define('options.internet', function() {
    * @param {string} prefixLength The ONC routing prefix length.
    * @return {string} The corresponding netmask.
    */
-  function PrefixLengthToNetmask(prefixLength) {
+  function prefixLengthToNetmask(prefixLength) {
     // Return the empty string for invalid inputs.
     if (prefixLength < 0 || prefixLength > 32)
       return '';
@@ -117,9 +117,15 @@ cr.define('options.internet', function() {
    * @constructor
    */
   function DetailsInternetPage() {
+    // Cached Apn properties
     this.userApnIndex_ = -1;
     this.selectedApnIndex_ = -1;
     this.userApn_ = {};
+    // We show the Proxy configuration tab for remembered networks and when
+    // configuring a proxy from the login screen.
+    this.showProxy_ = false;
+    // TODO(stevenjb): Use networkingPrivate.getNetworks to set this.
+    this.deviceConnected_ = false;
     Page.call(this, 'detailsInternetPage', null, 'details-internet-page');
   }
 
@@ -386,11 +392,12 @@ cr.define('options.internet', function() {
       // Only show ipconfig section if network is connected OR if nothing on
       // this device is connected. This is so that you can fix the ip configs
       // if you can't connect to any network.
-      // TODO(chocobo): Once ipconfig is moved to flimflam service objects,
-      //   we need to redo this logic to allow configuration of all networks.
+      // TODO(stevenjb): Support IP configuration (and improve the display)
+      // for non connected networks.
+
       var connected = onc.getActiveValue('ConnectionState') == 'Connected';
-      $('ipconfig-section').hidden = !connected && this.deviceConnected;
-      $('ipconfig-dns-section').hidden = !connected && this.deviceConnected;
+      $('ipconfig-section').hidden = !connected && this.deviceConnected_;
+      $('ipconfig-dns-section').hidden = !connected && this.deviceConnected_;
 
       // Network type related.
       updateHidden('#details-internet-page .cellular-details',
@@ -400,16 +407,16 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wimax-details',
                    this.type_ != 'Wimax');
       updateHidden('#details-internet-page .vpn-details', this.type_ != 'VPN');
-      updateHidden('#details-internet-page .proxy-details', !this.showProxy);
+      updateHidden('#details-internet-page .proxy-details', !this.showProxy_);
 
       // Cellular
-
-      // Conditionally call updateHidden on .gsm-only, so that we don't unhide
-      // a previously hidden element.
-      if (this.gsm)
-        updateHidden('#details-internet-page .cdma-only', true);
-      else
-        updateHidden('#details-internet-page .gsm-only', true);
+      if (this.type_ == 'Cellular') {
+        // Hide gsm/cdma specific elements.
+        if (onc.getActiveValue('Cellular.Family') == 'GSM')
+          updateHidden('#details-internet-page .cdma-only', true);
+        else
+          updateHidden('#details-internet-page .gsm-only', true);
+      }
 
       // Wifi
 
@@ -589,6 +596,44 @@ cr.define('options.internet', function() {
       }
     },
 
+    updateDetails_: function(data) {
+      var onc = this.onc_;
+
+      if ('deviceConnected' in data)
+        this.deviceConnected_ = data.deviceConnected;
+
+      var connectionStateString = onc.getTranslatedValue('ConnectionState');
+      $('connection-state').textContent = connectionStateString;
+
+      var type = this.type_;
+      var showViewAccount = false;
+      var showActivate = false;
+      if (type == 'WiFi') {
+        $('wifi-connection-state').textContent = connectionStateString;
+      } else if (type == 'Wimax') {
+        $('wimax-connection-state').textContent = connectionStateString;
+      } else if (type == 'Cellular') {
+        $('activation-state').textContent =
+            onc.getTranslatedValue('Cellular.ActivationState');
+        if (onc.getActiveValue('Cellular.Family') == 'GSM') {
+          var lockEnabled =
+              onc.getActiveValue('Cellular.SIMLockStatus.LockEnabled');
+          $('sim-card-lock-enabled').checked = lockEnabled;
+          $('change-pin').hidden = !lockEnabled;
+        }
+        showViewAccount = data.showViewAccountButton;
+        var activationState = onc.getActiveValue('Cellular.ActivationState');
+        showActivate = activationState == 'NotActivated' ||
+            activationState == 'PartiallyActivated';
+      }
+
+      $('view-account-details').hidden = !showViewAccount;
+      $('activate-details').hidden = !showActivate;
+      // If activation is not complete, hide the login button.
+      if (showActivate)
+        $('details-internet-login').hidden = true;
+    },
+
     populateHeader_: function() {
       var onc = this.onc_;
 
@@ -596,6 +641,7 @@ cr.define('options.internet', function() {
       var connectionState = onc.getActiveValue('ConnectionState');
       var connectionStateString = onc.getTranslatedValue('ConnectionState');
       $('network-details-subtitle-status').textContent = connectionStateString;
+
       var typeKey;
       var type = this.type_;
       if (type == 'Ethernet')
@@ -838,7 +884,7 @@ cr.define('options.internet', function() {
     $('activate-details').hidden = true;
     $('view-account-details').hidden = true;
     $('web-proxy-auto-discovery').hidden = true;
-    detailsPage.showProxy = true;
+    detailsPage.showProxy_ = true;
     updateHidden('#internet-tab', true);
     updateHidden('#details-tab-strip', true);
     updateHidden('#details-internet-page .action-area', true);
@@ -1021,36 +1067,8 @@ cr.define('options.internet', function() {
     onc.updateData(update);
 
     detailsPage.populateHeader_();
-
-    var connectionState = onc.getActiveValue('ConnectionState');
-    var connectionStateString = onc.getTranslatedValue('ConnectionState');
-    if ('deviceConnected' in update)
-      detailsPage.deviceConnected = update.deviceConnected;
-    $('connection-state').textContent = connectionStateString;
-
     detailsPage.updateConnectionButtonVisibilty_();
-
-    var type = detailsPage.type_;
-    if (type == 'WiFi') {
-      $('wifi-connection-state').textContent = connectionStateString;
-    } else if (type == 'Wimax') {
-      $('wimax-connection-state').textContent = connectionStateString;
-    } else if (type == 'Cellular') {
-      $('activation-state').textContent =
-          onc.getTranslatedValue('Cellular.ActivationState');
-      // These properties are only defined if they are true.
-      $('view-account-details').hidden = !update.showViewAccountButton;
-      $('activate-details').hidden = !update.showActivateButton;
-      if (update.showActivateButton)
-        $('details-internet-login').hidden = true;
-
-      if (detailsPage.gsm) {
-        var lockEnabled =
-            onc.getActiveValue('Cellular.SIMLockStatus.LockEnabled');
-        $('sim-card-lock-enabled').checked = lockEnabled;
-        $('change-pin').hidden = !lockEnabled;
-      }
-    }
+    detailsPage.updateDetails_(update);
   };
 
   DetailsInternetPage.showDetailedInfo = function(data) {
@@ -1063,27 +1081,24 @@ cr.define('options.internet', function() {
     detailsPage.servicePath_ = data.servicePath;
 
     detailsPage.populateHeader_();
-
-    $('activate-details').hidden = true;
-    $('view-account-details').hidden = true;
-
     detailsPage.updateConnectionButtonVisibilty_();
+    detailsPage.updateDetails_(data);
 
-    $('web-proxy-auto-discovery').hidden = true;
-
-    detailsPage.deviceConnected = data.deviceConnected;
+    // TODO(stevenjb): Some of the setup below should be moved to
+    // updateDetails_() so that updates are reflected in the UI.
 
     // Only show proxy for remembered networks.
     var remembered = onc.getSource() != 'None';
     if (remembered) {
-      detailsPage.showProxy = true;
+      detailsPage.showProxy_ = true;
+      // Inform Chrome which network to use for proxy configuration.
       chrome.send('selectNetwork', [detailsPage.servicePath_]);
     } else {
-      detailsPage.showProxy = false;
+      detailsPage.showProxy_ = false;
     }
 
-    var connectionStateString = onc.getTranslatedValue('ConnectionState');
-    $('connection-state').textContent = connectionStateString;
+    $('web-proxy-auto-discovery').hidden = true;
+
     var restricted = onc.getActiveValue('RestrictedConnectivity');
     var restrictedString = loadTimeData.getString(
         restricted ? 'restrictedYes' : 'restrictedNo');
@@ -1106,7 +1121,7 @@ cr.define('options.internet', function() {
         var address = ipconfig['IPAddress'];
         inetAddress.automatic = address;
         inetAddress.value = address;
-        var netmask = PrefixLengthToNetmask(ipconfig['RoutingPrefix']);
+        var netmask = prefixLengthToNetmask(ipconfig['RoutingPrefix']);
         inetNetmask.automatic = netmask;
         inetNetmask.value = netmask;
         var gateway = ipconfig['Gateway'];
@@ -1136,7 +1151,7 @@ cr.define('options.internet', function() {
     }
     var savedPrefix = onc.getActiveValue('SavedIPConfig.RoutingPrefix');
     if (savedPrefix != undefined) {
-      var savedNetmask = PrefixLengthToNetmask(savedPrefix);
+      var savedNetmask = prefixLengthToNetmask(savedPrefix);
       inetNetmask.automatic = savedNetmask;
       inetNetmask.value = savedNetmask;
     }
@@ -1162,7 +1177,7 @@ cr.define('options.internet', function() {
     }
     var staticPrefix = onc.getActiveValue('StaticIPConfig.RoutingPrefix');
     if (staticPrefix != undefined) {
-      var staticNetmask = PrefixLengthToNetmask(staticPrefix);
+      var staticNetmask = prefixLengthToNetmask(staticPrefix);
       inetNetmask.user = staticNetmask;
       inetNetmask.value = staticNetmask;
     }
@@ -1252,8 +1267,6 @@ cr.define('options.internet', function() {
 
     if (type == 'WiFi') {
       OptionsPage.showTab($('wifi-network-nav-tab'));
-      detailsPage.gsm = false;
-      $('wifi-connection-state').textContent = connectionStateString;
       $('wifi-restricted-connectivity').textContent = restrictedString;
       var ssid = onc.getActiveValue('WiFi.SSID');
       $('wifi-ssid').textContent = ssid ? ssid : networkName;
@@ -1280,8 +1293,6 @@ cr.define('options.internet', function() {
       $('auto-connect-network-wifi').disabled = !remembered;
     } else if (type == 'Wimax') {
       OptionsPage.showTab($('wimax-network-nav-tab'));
-      detailsPage.gsm = false;
-      $('wimax-connection-state').textContent = connectionStateString;
       $('wimax-restricted-connectivity').textContent = restrictedString;
       $('auto-connect-network-wimax').checked =
           onc.getActiveValue('AutoConnect');
@@ -1307,8 +1318,6 @@ cr.define('options.internet', function() {
 
       $('network-technology').textContent =
           onc.getActiveValue('Cellular.NetworkTechnology');
-      $('activation-state').textContent =
-          onc.getTranslatedValue('Cellular.ActivationState');
       $('roaming-state').textContent =
           onc.getTranslatedValue('Cellular.RoamingState');
       $('cellular-restricted-connectivity').textContent = restrictedString;
@@ -1347,28 +1356,16 @@ cr.define('options.internet', function() {
       setOrHideParent('min', onc.getActiveValue('Cellular.MIN'));
       setOrHideParent('prl-version', onc.getActiveValue('Cellular.PRLVersion'));
 
-      var family = onc.getActiveValue('Cellular.Family');
-      detailsPage.gsm = family == 'GSM';
-      if (detailsPage.gsm) {
+      if (onc.getActiveValue('Cellular.Family') == 'GSM') {
         $('iccid').textContent = onc.getActiveValue('Cellular.ICCID');
         $('imsi').textContent = onc.getActiveValue('Cellular.IMSI');
         detailsPage.initializeApnList_(onc);
-        var lockEnabled =
-            onc.getActiveValue('Cellular.SIMLockStatus.LockEnabled');
-        $('sim-card-lock-enabled').checked = lockEnabled;
-        $('change-pin').hidden = !lockEnabled;
       }
       $('auto-connect-network-cellular').checked =
           onc.getActiveValue('AutoConnect');
       $('auto-connect-network-cellular').disabled = false;
-
-      $('view-account-details').hidden = !data.showViewAccountButton;
-      $('activate-details').hidden = !data.showActivateButton;
-      if (data.showActivateButton)
-        $('details-internet-login').hidden = true;
     } else if (type == 'VPN') {
       OptionsPage.showTab($('vpn-nav-tab'));
-      detailsPage.gsm = false;
       $('inet-service-name').textContent = networkName;
       $('inet-provider-type').textContent =
           onc.getTranslatedValue('VPN.Type');

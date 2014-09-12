@@ -112,7 +112,6 @@ const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 const char kTagActivate[] = "activate";
 const char kTagAddConnection[] = "add";
 const char kTagCarrierSelectFlag[] = "showCarrierSelect";
-const char kTagCarrierUrl[] = "carrierUrl";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
@@ -126,7 +125,6 @@ const char kTagOptions[] = "options";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagCarriers[] = "carriers";
 const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
-const char kTagShowActivateButton[] = "showActivateButton";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 const char kTagTrue[] = "true";
 const char kTagVpnList[] = "vpnList";
@@ -235,13 +233,6 @@ void PopulateCellularDetails(const NetworkState* cellular,
     carrier_id = device->home_provider_id();
     device_properties.GetStringWithoutPathExpansion(shill::kMdnProperty, &mdn);
 
-    MobileConfig* config = MobileConfig::GetInstance();
-    if (config->IsReady()) {
-      const MobileConfig::Carrier* carrier = config->GetCarrier(carrier_id);
-      if (carrier && !carrier->top_up_url().empty())
-        dictionary->SetString(kTagCarrierUrl, carrier->top_up_url());
-    }
-
     const base::ListValue* supported_carriers;
     if (device_properties.GetListWithoutPathExpansion(
             shill::kSupportedCarriersProperty, &supported_carriers)) {
@@ -256,17 +247,8 @@ void PopulateCellularDetails(const NetworkState* cellular,
     }
   }
 
-  // Don't show any account management related buttons if the activation
-  // state is unknown.
-  if (cellular->activation_state() == shill::kActivationStateUnknown) {
-    VLOG(2) << "Activation state unknown. Don't display buttons.";
-    return;
-  }
-
-  if (cellular->activation_state() != shill::kActivationStateActivating &&
-      cellular->activation_state() != shill::kActivationStateActivated) {
-    dictionary->SetBoolean(kTagShowActivateButton, true);
-  } else {
+  if (cellular->activation_state() == shill::kActivationStateActivating ||
+      cellular->activation_state() == shill::kActivationStateActivated) {
     // TODO(stevenjb): Determine if we actually need this check. The payment url
     // property is commented as 'Deprecated' in service_constants.h and appears
     // to be unset in Shill, but we still reference it in mobile_setup.cc.
