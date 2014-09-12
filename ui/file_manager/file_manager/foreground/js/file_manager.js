@@ -823,13 +823,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var dm = this.directoryModel_;
     dm.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
+
+    var listBeingUpdated = null;
     dm.addEventListener('begin-update-files', function() {
       self.currentList_.startBatchUpdates();
+      // Remember the list which was used when updating files started, so
+      // endBatchUpdates() is called on the same list.
+      listBeingUpdated = self.currentList_;
     });
     dm.addEventListener('end-update-files', function() {
       self.restoreItemBeingRenamed_();
-      self.currentList_.endBatchUpdates();
+      listBeingUpdated.endBatchUpdates();
+      listBeingUpdated = null;
     });
+
     dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
     dm.addEventListener('scan-completed', this.onScanCompleted_.bind(this));
     dm.addEventListener('scan-failed', this.onScanCancelled_.bind(this));
