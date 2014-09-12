@@ -2972,6 +2972,25 @@ void WebViewImpl::setDeviceScaleFactor(float scaleFactor)
         updateLayerTreeDeviceScaleFactor();
 }
 
+void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile)
+{
+    if (!page())
+        return;
+
+    Vector<char> deviceProfile;
+    deviceProfile.append(colorProfile.data(), colorProfile.size());
+
+    page()->setDeviceColorProfile(deviceProfile);
+}
+
+void WebViewImpl::resetDeviceColorProfile()
+{
+    if (!page())
+        return;
+
+    page()->resetDeviceColorProfile();
+}
+
 void WebViewImpl::enableAutoResizeMode(const WebSize& minSize, const WebSize& maxSize)
 {
     m_shouldAutoResize = true;

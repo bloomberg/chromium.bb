@@ -41,6 +41,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebView.h"
@@ -194,6 +195,8 @@ public:
 
     virtual float deviceScaleFactor() const OVERRIDE;
     virtual void setDeviceScaleFactor(float) OVERRIDE;
+    virtual void setDeviceColorProfile(const WebVector<char>&) OVERRIDE;
+    virtual void resetDeviceColorProfile() OVERRIDE;
 
     virtual void setFixedLayoutSize(const WebSize&) OVERRIDE;
 

@@ -288,6 +288,9 @@ public:
     // Sets the ratio as computed by computePageScaleConstraints.
     virtual void setDeviceScaleFactor(float) = 0;
 
+    // Set and reset the device color profile.
+    virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
+    virtual void resetDeviceColorProfile() = 0;
 
     // Fixed Layout --------------------------------------------------------
 

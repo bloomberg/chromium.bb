@@ -382,6 +382,16 @@ void Page::setDeviceScaleFactor(float scaleFactor)
     }
 }
 
+void Page::setDeviceColorProfile(const Vector<char>& profile)
+{
+    // FIXME: implement.
+}
+
+void Page::resetDeviceColorProfile()
+{
+    // FIXME: implement.
+}
+
 void Page::allVisitedStateChanged()
 {
     HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
