@@ -632,7 +632,8 @@ protected:
     virtual void updateFromStyle() OVERRIDE;
 
     // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
-    bool getBackgroundPaintedExtent(LayoutRect&) const;
+    // FIXME: make this a const method once the RenderBox reference in BoxPainter is const.
+    bool getBackgroundPaintedExtent(LayoutRect&);
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() OVERRIDE;
 

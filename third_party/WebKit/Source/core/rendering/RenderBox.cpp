@@ -40,6 +40,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
@@ -1088,7 +1089,7 @@ void RenderBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutP
 }
 
 
-bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
+bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
 {
     ASSERT(hasBackground());
     LayoutRect backgroundRect = pixelSnappedIntRect(borderBoxRect());
@@ -1105,7 +1106,7 @@ bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
     }
 
     BackgroundImageGeometry geometry;
-    calculateBackgroundImageGeometry(0, style()->backgroundLayers(), backgroundRect, geometry);
+    BoxPainter::calculateBackgroundImageGeometry(*this, 0, style()->backgroundLayers(), backgroundRect, geometry);
     if (geometry.hasNonLocalGeometry())
         return false;
     paintedExtent = geometry.destRect();

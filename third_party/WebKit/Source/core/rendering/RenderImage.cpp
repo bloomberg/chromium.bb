@@ -39,6 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
@@ -449,7 +450,7 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect
     HTMLImageElement* imageElt = isHTMLImageElement(node()) ? toHTMLImageElement(node()) : 0;
     CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
     Image* image = img.get();
-    InterpolationQuality interpolationQuality = chooseInterpolationQuality(context, image, image, alignedRect.size());
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(*this, context, image, image, alignedRect.size());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(*this));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.

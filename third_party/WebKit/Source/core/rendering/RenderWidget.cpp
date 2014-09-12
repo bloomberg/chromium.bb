@@ -28,6 +28,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
@@ -225,7 +226,7 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         paintInfo.context->save();
         RoundedRect roundedInnerRect = style()->getRoundedInnerBorderFor(borderRect,
             paddingTop() + borderTop(), paddingBottom() + borderBottom(), paddingLeft() + borderLeft(), paddingRight() + borderRight(), true, true);
-        clipRoundedInnerRect(paintInfo.context, borderRect, roundedInnerRect);
+        BoxPainter::clipRoundedInnerRect(paintInfo.context, borderRect, roundedInnerRect);
     }
 
     Widget* widget = this->widget();

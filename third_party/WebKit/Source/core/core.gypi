@@ -1484,6 +1484,8 @@
             'paint/BoxDecorationData.cpp',
             'paint/BoxPainter.cpp',
             'paint/BoxPainter.h',
+            'paint/BackgroundImageGeometry.h',
+            'paint/BackgroundImageGeometry.cpp',
             'plugins/DOMMimeType.cpp',
             'plugins/DOMMimeType.h',
             'plugins/DOMMimeTypeArray.cpp',

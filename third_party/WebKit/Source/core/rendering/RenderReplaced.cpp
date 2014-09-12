@@ -25,6 +25,7 @@
 #include "core/rendering/RenderReplaced.h"
 
 #include "core/editing/PositionWithAffinity.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
@@ -148,7 +149,7 @@ void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             paintInfo.context->save();
             RoundedRect roundedInnerRect = style()->getRoundedInnerBorderFor(paintRect,
                 paddingTop() + borderTop(), paddingBottom() + borderBottom(), paddingLeft() + borderLeft(), paddingRight() + borderRight(), true, true);
-            clipRoundedInnerRect(paintInfo.context, paintRect, roundedInnerRect);
+            BoxPainter::clipRoundedInnerRect(paintInfo.context, paintRect, roundedInnerRect);
         }
     }
 

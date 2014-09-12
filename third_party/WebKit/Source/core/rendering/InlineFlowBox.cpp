@@ -22,6 +22,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
+#include "core/paint/BoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -1184,11 +1185,11 @@ void InlineFlowBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, c
     StyleImage* img = fillLayer.image();
     bool hasFillImage = img && img->canRender(renderer(), renderer().style()->effectiveZoom());
     if ((!hasFillImage && !renderer().style()->hasBorderRadius()) || (!prevLineBox() && !nextLineBox()) || !parent()) {
-        boxModelObject()->paintFillLayerExtended(paintInfo, c, fillLayer, rect, BackgroundBleedNone, this, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, this, rect.size(), op);
     } else if (renderer().style()->boxDecorationBreak() == DCLONE) {
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), width(), height()));
-        boxModelObject()->paintFillLayerExtended(paintInfo, c, fillLayer, rect, BackgroundBleedNone, this, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, this, rect.size(), op);
     } else {
         // We have a fill image that spans multiple lines.
         // We need to adjust tx and ty by the width of all previous lines.
@@ -1218,7 +1219,7 @@ void InlineFlowBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, c
 
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), width(), height()));
-        boxModelObject()->paintFillLayerExtended(paintInfo, c, fillLayer, LayoutRect(stripX, stripY, stripWidth, stripHeight), BackgroundBleedNone, this, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModelObject(), paintInfo, c, fillLayer, LayoutRect(stripX, stripY, stripWidth, stripHeight), BackgroundBleedNone, this, rect.size(), op);
     }
 }
 

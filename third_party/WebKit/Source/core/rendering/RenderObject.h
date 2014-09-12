@@ -1079,6 +1079,7 @@ public:
 
     // FIXME: This is temporary for cases that setShouldDoFullPaintInvalidation(true) doesn't work yet.
     void doNotUseInvalidatePaintForWholeRendererSynchronously() const { invalidatePaintForWholeRenderer(); }
+    virtual LayoutRect viewRect() const;
 
 protected:
     inline bool layerCreationAllowedForSubtree() const;
@@ -1106,8 +1107,6 @@ protected:
     void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
     void paintOutline(PaintInfo&, const LayoutRect&);
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const;
-
-    virtual LayoutRect viewRect() const;
 
     void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();
