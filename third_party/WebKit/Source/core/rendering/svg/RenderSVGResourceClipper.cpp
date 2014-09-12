@@ -129,7 +129,7 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
         }
     }
     // Only one visible shape/path was found. Directly continue clipping and transform the content to userspace if necessary.
-    if (toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
@@ -162,8 +162,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
     // In this case, we need to apply the zoom scale explicitly - but only for clips with
     // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
-    if (!target->isSVG()
-        && toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    if (!target->isSVG() && clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         ASSERT(style());
         animatedLocalTransform.scale(style()->effectiveZoom());
     }
@@ -237,8 +236,7 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
     ASSERT(context);
 
     AffineTransform contentTransformation;
-    SVGUnitTypes::SVGUnitType contentUnits = toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue();
-    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
         context->concatCTM(contentTransformation);
@@ -331,15 +329,14 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     if (!SVGRenderSupport::pointInClippingArea(this, point))
         return false;
 
-    SVGClipPathElement* clipPathElement = toSVGClipPathElement(element());
-    if (clipPathElement->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
         point = transform.inverse().mapPoint(point);
     }
 
-    AffineTransform animatedLocalTransform = clipPathElement->animatedLocalTransform();
+    AffineTransform animatedLocalTransform = toSVGClipPathElement(element())->animatedLocalTransform();
     if (!animatedLocalTransform.isInvertible())
         return false;
 
@@ -369,7 +366,7 @@ FloatRect RenderSVGResourceClipper::resourceBoundingBox(const RenderObject* obje
     if (m_clipBoundaries.isEmpty())
         calculateClipContentPaintInvalidationRect();
 
-    if (toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         FloatRect objectBoundingBox = object->objectBoundingBox();
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
