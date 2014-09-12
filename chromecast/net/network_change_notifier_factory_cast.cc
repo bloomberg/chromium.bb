@@ -4,28 +4,16 @@
 
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 
-#include "base/lazy_instance.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 
 namespace chromecast {
 
-namespace {
-
-base::LazyInstance<NetworkChangeNotifierCast> g_network_change_notifier_cast =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 net::NetworkChangeNotifier* NetworkChangeNotifierFactoryCast::CreateInstance() {
-  return g_network_change_notifier_cast.Pointer();
+  // Caller assumes ownership.
+  return new NetworkChangeNotifierCast();
 }
 
 NetworkChangeNotifierFactoryCast::~NetworkChangeNotifierFactoryCast() {
-}
-
-// static
-NetworkChangeNotifierCast* NetworkChangeNotifierFactoryCast::GetInstance() {
-  return g_network_change_notifier_cast.Pointer();
 }
 
 }  // namespace chromecast

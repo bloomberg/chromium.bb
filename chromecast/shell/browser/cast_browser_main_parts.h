@@ -9,10 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
-
-namespace content {
-struct MainFunctionParams;
-}
+#include "content/public/common/main_function_params.h"
 
 namespace chromecast {
 namespace shell {
@@ -36,7 +33,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 
  private:
   scoped_ptr<CastBrowserProcess> cast_browser_process_;
-
+  const content::MainFunctionParams parameters_; // For running browser tests.
   URLRequestContextFactory* const url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);

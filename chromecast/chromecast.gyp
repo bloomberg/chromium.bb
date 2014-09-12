@@ -394,18 +394,17 @@
       ],  # end of targets
     }, {  # OS != "android"
       'targets': [
-        # This target includes all dependencies that cannot be built on Android.
+        # This target contains all of the primary code of |cast_shell|, except
+        # for |main|. This allows end-to-end tests using |cast_shell|.
+        # This also includes all targets that cannot be built on Android.
         {
-          'target_name': 'cast_shell',
-          'type': 'executable',
+          'target_name': 'cast_shell_core',
+          'type': '<(component)',
           'dependencies': [
             'cast_net',
             'cast_shell_common',
             'media/media.gyp:cast_media',
             '../ui/aura/aura.gyp:aura_test_support',
-          ],
-          'sources': [
-            'shell/app/cast_main.cc',
           ],
           'conditions': [
             ['chromecast_branding=="Chrome"', {
@@ -417,6 +416,47 @@
                 '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
               ],
             }],
+          ],
+        },
+        {
+          'target_name': 'cast_shell',
+          'type': 'executable',
+          'dependencies': [
+            'cast_shell_core',
+          ],
+          'sources': [
+            'shell/app/cast_main.cc',
+          ],
+        },
+        {
+          'target_name': 'cast_shell_browser_test',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'cast_shell_test_support',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'defines': [
+            'HAS_OUT_OF_PROC_TEST_RUNNER',
+          ],
+          'sources': [
+            'shell/browser/test/chromecast_shell_browser_test.cc',
+          ],
+        },
+        {
+          'target_name': 'cast_shell_test_support',
+          'type': '<(component)',
+          'defines': [
+            'HAS_OUT_OF_PROC_TEST_RUNNER',
+          ],
+          'dependencies': [
+            'cast_shell_core',
+            '../content/content_shell_and_tests.gyp:content_browser_test_support',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'sources': [
+            'shell/browser/test/chromecast_browser_test.cc',
+            'shell/browser/test/chromecast_browser_test.h',
+            'shell/browser/test/chromecast_browser_test_runner.cc',
           ],
         },
       ],  # end of targets

@@ -14,6 +14,7 @@
 #include "chromecast/shell/browser/cast_browser_process.h"
 #include "chromecast/shell/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,6 +31,10 @@ CastContentBrowserClient::CastContentBrowserClient()
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      url_request_context_factory_.release());
 }
 
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(

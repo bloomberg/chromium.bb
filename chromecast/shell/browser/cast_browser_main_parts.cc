@@ -56,6 +56,7 @@ CastBrowserMainParts::CastBrowserMainParts(
     URLRequestContextFactory* url_request_context_factory)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
+      parameters_(parameters),
       url_request_context_factory_(url_request_context_factory) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
@@ -104,7 +105,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 }
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  base::MessageLoopForUI::current()->Run();
+  // If parameters_.ui_task is not NULL, we are running browser tests. In this
+  // case, the browser's main message loop will not run.
+  if (parameters_.ui_task) {
+    parameters_.ui_task->Run();
+  } else {
+    base::MessageLoopForUI::current()->Run();
+  }
   return true;
 }
 

@@ -52,6 +52,10 @@ CastBrowserContext::CastBrowserContext(
 }
 
 CastBrowserContext::~CastBrowserContext() {
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      resource_context_.release());
 }
 
 void CastBrowserContext::InitWhileIOAllowed() {
