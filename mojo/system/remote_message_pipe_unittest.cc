@@ -939,6 +939,231 @@ TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
   }
 }
 
+// Tests passing an end of a message pipe over a remote message pipe, and then
+// passing that end back.
+// TODO(vtl): Also test passing a message pipe across two remote message pipes.
+TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
+  static const char kHello[] = "hello";
+  static const char kWorld[] = "world";
+  Waiter waiter;
+  HandleSignalsState hss;
+  uint32_t context = 0;
+
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
+  ConnectMessagePipes(mp0, mp1);
+
+  // We'll try to pass this dispatcher.
+  scoped_refptr<MessagePipeDispatcher> dispatcher(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipe> local_mp(MessagePipe::CreateLocalLocal());
+  dispatcher->Init(local_mp, 0);
+
+  // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
+  // it later, it might already be readable.)
+  waiter.Init();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
+
+  // Write to MP 0, port 0.
+  {
+    DispatcherTransport transport(
+        test::DispatcherTryStartTransport(dispatcher.get()));
+    EXPECT_TRUE(transport.is_valid());
+
+    std::vector<DispatcherTransport> transports;
+    transports.push_back(transport);
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kHello),
+                                sizeof(kHello),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+    transport.End();
+
+    // |dispatcher| should have been closed. This is |DCHECK()|ed when the
+    // |dispatcher| is destroyed.
+    EXPECT_TRUE(dispatcher->HasOneRef());
+    dispatcher = NULL;
+  }
+
+  // Wait.
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
+
+  // Read from MP 1, port 1.
+  char read_buffer[100] = {0};
+  uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  DispatcherVector read_dispatchers;
+  uint32_t read_num_dispatchers = 10;  // Maximum to get.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(kHello, read_buffer);
+  EXPECT_EQ(1u, read_dispatchers.size());
+  EXPECT_EQ(1u, read_num_dispatchers);
+  ASSERT_TRUE(read_dispatchers[0].get());
+  EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
+
+  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
+  read_dispatchers.clear();
+
+  // Now pass it back.
+
+  // Prepare to wait on MP 0, port 0. (Add the waiter now. Otherwise, if we do
+  // it later, it might already be readable.)
+  waiter.Init();
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mp0->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456, NULL));
+
+  // Write to MP 1, port 1.
+  {
+    DispatcherTransport transport(
+        test::DispatcherTryStartTransport(dispatcher.get()));
+    EXPECT_TRUE(transport.is_valid());
+
+    std::vector<DispatcherTransport> transports;
+    transports.push_back(transport);
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp1->WriteMessage(1,
+                                UserPointer<const void>(kWorld),
+                                sizeof(kWorld),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+    transport.End();
+
+    // |dispatcher| should have been closed. This is |DCHECK()|ed when the
+    // |dispatcher| is destroyed.
+    EXPECT_TRUE(dispatcher->HasOneRef());
+    dispatcher = NULL;
+  }
+
+  // Wait.
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(456u, context);
+  hss = HandleSignalsState();
+  mp0->RemoveWaiter(0, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
+
+  // Read from MP 0, port 0.
+  read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  read_num_dispatchers = 10;  // Maximum to get.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->ReadMessage(0,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(kWorld, read_buffer);
+  EXPECT_EQ(1u, read_dispatchers.size());
+  EXPECT_EQ(1u, read_num_dispatchers);
+  ASSERT_TRUE(read_dispatchers[0].get());
+  EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
+
+  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
+  read_dispatchers.clear();
+
+  // Add the waiter now, before it becomes readable to avoid a race.
+  waiter.Init();
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, NULL));
+
+  // Write to "local_mp", port 1.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1,
+                                   UserPointer<const void>(kHello),
+                                   sizeof(kHello),
+                                   NULL,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Wait for the dispatcher to become readable.
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(789u, context);
+  hss = HandleSignalsState();
+  dispatcher->RemoveWaiter(&waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
+
+  // Read from the dispatcher.
+  memset(read_buffer, 0, sizeof(read_buffer));
+  read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->ReadMessage(UserPointer<void>(read_buffer),
+                                    MakeUserPointer(&read_buffer_size),
+                                    0,
+                                    NULL,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(kHello, read_buffer);
+
+  // Prepare to wait on "local_mp", port 1.
+  waiter.Init();
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      local_mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, NULL));
+
+  // Write to the dispatcher.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->WriteMessage(UserPointer<const void>(kHello),
+                                     sizeof(kHello),
+                                     NULL,
+                                     MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Wait.
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(789u, context);
+  hss = HandleSignalsState();
+  local_mp->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
+
+  // Read from "local_mp", port 1.
+  memset(read_buffer, 0, sizeof(read_buffer));
+  read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->ReadMessage(1,
+                                  UserPointer<void>(read_buffer),
+                                  MakeUserPointer(&read_buffer_size),
+                                  NULL,
+                                  NULL,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(kHello, read_buffer);
+
+  // TODO(vtl): Also test the cases where messages are written and read (at
+  // various points) on the message pipe being passed around.
+
+  // Close everything that belongs to us.
+  mp0->Close(0);
+  mp1->Close(1);
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
+  // Note that |local_mp|'s port 0 belong to |dispatcher|, which was closed.
+  local_mp->Close(1);
+}
+
 }  // namespace
 }  // namespace system
 }  // namespace mojo

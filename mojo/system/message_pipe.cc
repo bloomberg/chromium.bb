@@ -155,12 +155,15 @@ void MessagePipe::ConvertLocalToProxy(unsigned port) {
 
   bool is_peer_open = !!endpoints_[GetPeerPort(port)];
 
-  // TODO(vtl): Hopefully this will work if the peer has been closed and when
-  // the peer is local. If the peer is remote, we should do something more
-  // sophisticated.
-  DCHECK(!is_peer_open ||
-         endpoints_[GetPeerPort(port)]->GetType() ==
-             MessagePipeEndpoint::kTypeLocal);
+  // TODO(vtl): Allowing this case is a temporary hack. It'll set up a
+  // |MessagePipe| with two proxy endpoints, which will then act as a proxy
+  // (rather than trying to connect the two ends directly).
+  DLOG_IF(WARNING,
+          is_peer_open &&
+              endpoints_[GetPeerPort(port)]->GetType() !=
+                  MessagePipeEndpoint::kTypeLocal)
+      << "Direct message pipe passing across multiple channels not yet "
+         "implemented; will proxy";
 
   scoped_ptr<MessagePipeEndpoint> replacement_endpoint(
       new ProxyMessagePipeEndpoint(
