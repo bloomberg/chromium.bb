@@ -166,7 +166,7 @@ class ServerDelegate : public PacketDroppingTestWriter::Delegate {
       : writer_factory_(writer_factory),
         dispatcher_(dispatcher) {}
   virtual ~ServerDelegate() {}
-  virtual void OnPacketSent(WriteResult result) override {
+  virtual void OnPacketSent(WriteResult result) OVERRIDE {
     writer_factory_->OnPacketSent(result);
   }
   virtual void OnCanWrite() OVERRIDE { dispatcher_->OnCanWrite(); }

@@ -229,7 +229,7 @@ class NiceMockPacketWriterFactory
   virtual ~NiceMockPacketWriterFactory() {}
 
   virtual QuicPacketWriter* Create(
-      QuicConnection* /*connection*/) const override {
+      QuicConnection* /*connection*/) const OVERRIDE {
     return new testing::NiceMock<MockPacketWriter>();
   }
 

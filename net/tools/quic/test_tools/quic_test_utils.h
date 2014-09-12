@@ -169,7 +169,7 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
   virtual ~TestWriterFactory();
 
   virtual QuicPacketWriter* Create(QuicPacketWriter* writer,
-                                   QuicConnection* connection) override;
+                                   QuicConnection* connection) OVERRIDE;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
   // packet writers created by this factory.
