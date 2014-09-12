@@ -58,7 +58,7 @@ SlowTraceSource::~SlowTraceSource() {}
 void SlowTraceSource::OnGetTraceData(
     const content::URLDataSource::GotDataCallback& callback,
     scoped_refptr<base::RefCountedString> trace_data) {
-  callback.Run(trace_data);
+  callback.Run(trace_data.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

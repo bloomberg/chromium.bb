@@ -203,7 +203,7 @@ void HIDDetectionScreenHandler::HandleOnContinue() {
 
   // Switch off BT adapter if it was off before the screen and no BT device
   // connected.
-  if (adapter_ && adapter_->IsPresent() && adapter_->IsPowered() &&
+  if (adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered() &&
       !(pointing_device_connect_type_ == InputDeviceInfo::TYPE_BLUETOOTH ||
         keyboard_device_connect_type_ == InputDeviceInfo::TYPE_BLUETOOTH) &&
       adapter_initially_powered_ && !(*adapter_initially_powered_)) {
@@ -405,7 +405,7 @@ void HIDDetectionScreenHandler::UpdateDevices() {
 }
 
 void HIDDetectionScreenHandler::UpdateBTDevices() {
-  if (!adapter_ || !adapter_->IsPresent() || !adapter_->IsPowered())
+  if (!adapter_.get() || !adapter_->IsPresent() || !adapter_->IsPowered())
     return;
 
   // If no connected devices found as pointing device and keyboard, we try to
@@ -446,7 +446,7 @@ void HIDDetectionScreenHandler::ProcessConnectedDevicesList(
 
 void HIDDetectionScreenHandler::TryInitiateBTDevicesUpdate() {
   if ((pointing_device_id_.empty() || keyboard_device_id_.empty()) &&
-      adapter_) {
+      adapter_.get()) {
     if (!adapter_->IsPresent()) {
       // Switch on BT adapter later when it's available.
       switch_on_adapter_when_ready_ = true;

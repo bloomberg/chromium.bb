@@ -392,7 +392,7 @@ void CoreOobeHandler::OnAccessibilityStatusChanged(
 }
 
 void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
-  if (!help_app_)
+  if (!help_app_.get())
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));

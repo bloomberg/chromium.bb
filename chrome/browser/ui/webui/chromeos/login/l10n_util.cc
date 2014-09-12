@@ -483,7 +483,7 @@ void GetKeyboardLayoutsForLocale(
   std::string (*get_application_locale)(const std::string&, bool) =
       &l10n_util::GetApplicationLocale;
   base::PostTaskAndReplyWithResult(
-      background_task_runner,
+      background_task_runner.get(),
       FROM_HERE,
       base::Bind(get_application_locale, locale, false /* set_icu_locale */),
       base::Bind(&GetKeyboardLayoutsForResolvedLocale, callback));

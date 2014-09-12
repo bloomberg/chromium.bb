@@ -20,7 +20,7 @@ AuthenticatedUserEmailRetriever::AuthenticatedUserEmailRetriever(
     : callback_(callback),
       gaia_auth_fetcher_(this,
                          GaiaConstants::kChromeSource,
-                         url_request_context_getter) {
+                         url_request_context_getter.get()) {
   gaia_auth_fetcher_.StartListAccounts();
 }
 
