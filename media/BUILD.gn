@@ -648,6 +648,7 @@ component("shared_memory_support") {
     "base/vector_math.h",
   ]
   configs += [ ":media_config" ]
+  defines = [ "MEDIA_IMPLEMENTATION" ]
   deps = [ "//base" ]
 }
 
