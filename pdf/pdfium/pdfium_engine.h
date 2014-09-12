@@ -509,6 +509,24 @@ class PDFiumEngine : public PDFEngine,
   // True if we're in the middle of selection.
   bool selecting_;
 
+  // Used to store mouse down state to handle it in other mouse event handlers.
+  struct MouseDownState {
+    MouseDownState() {};
+    MouseDownState(PDFiumPage::Area area, PDFiumPage::LinkTarget target)
+        : area_(area), target_(target) {};
+    PDFiumPage::Area area_;
+    PDFiumPage::LinkTarget target_;
+
+    bool operator==(const MouseDownState& rhs) const {
+      return (area_ == rhs.area_) && (target_.url == rhs.target_.url);
+    }
+
+    bool operator!=(const MouseDownState rhs) const {
+      return (area_ != rhs.area_) || (target_.url != rhs.target_.url);
+    }
+  };
+  MouseDownState mouse_down_state_;
+
   // Used for searching.
   typedef std::vector<PDFiumRange> FindResults;
   FindResults find_results_;

@@ -1291,12 +1291,12 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area = GetCharIndex(event, &page_index,
                                        &char_index, &target);
-  if (area == PDFiumPage::WEBLINK_AREA) {
-    bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier);
-    client_->NavigateTo(target.url, open_in_new_tab);
-    client_->FormTextFieldFocusChange(false);
+  mouse_down_state_ = MouseDownState(area, target);
+
+  // Decide whether to open link or not based on user action in mouse up and
+  // mouse move events.
+  if (area == PDFiumPage::WEBLINK_AREA)
     return true;
-  }
 
   if (area == PDFiumPage::DOCLINK_AREA) {
     client_->ScrollToPage(target.page);
@@ -1374,7 +1374,20 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
 
   int page_index = -1;
   int char_index = -1;
-  GetCharIndex(event, &page_index, &char_index, NULL);
+  PDFiumPage::LinkTarget target;
+  PDFiumPage::Area area =
+      GetCharIndex(event, &page_index, &char_index, &target);
+
+  // Open link on mouse up for same link for which mouse down happened earlier.
+  if (mouse_down_state_ == MouseDownState(area, target)) {
+    if (area == PDFiumPage::WEBLINK_AREA) {
+      bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier);
+      client_->NavigateTo(target.url, open_in_new_tab);
+      client_->FormTextFieldFocusChange(false);
+      return true;
+    }
+  }
+
   if (page_index != -1) {
     double page_x, page_y;
     pp::Point point = event.GetPosition();
@@ -1393,7 +1406,15 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
 bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
   int page_index = -1;
   int char_index = -1;
-  PDFiumPage::Area area = GetCharIndex(event, &page_index, &char_index, NULL);
+  PDFiumPage::LinkTarget target;
+  PDFiumPage::Area area =
+      GetCharIndex(event, &page_index, &char_index, &target);
+
+  // Clear |mouse_down_state_| if mouse moves away from where the mouse down
+  // happened.
+  if (mouse_down_state_ != MouseDownState(area, target))
+    mouse_down_state_ = MouseDownState();
+
   if (!selecting_) {
     PP_CursorType_Dev cursor;
     switch (area) {
