@@ -8,13 +8,16 @@
 #include "net/socket/ssl_client_socket_openssl.h"
 
 #include <errno.h>
+#include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/environment.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
@@ -131,6 +134,11 @@ ScopedX509Stack OSCertHandlesToOpenSSL(
   return stack.Pass();
 }
 
+int LogErrorCallback(const char* str, size_t len, void* context) {
+  LOG(ERROR) << base::StringPiece(str, len);
+  return 1;
+}
+
 }  // namespace
 
 class SSLClientSocketOpenSSL::SSLContext {
@@ -169,6 +177,20 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
     ssl_ctx_->tlsext_channel_id_enabled_new = 1;
+
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::string ssl_keylog_file;
+    if (env->GetVar("SSLKEYLOGFILE", &ssl_keylog_file) &&
+        !ssl_keylog_file.empty()) {
+      crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+      BIO* bio = BIO_new_file(ssl_keylog_file.c_str(), "a");
+      if (!bio) {
+        LOG(ERROR) << "Failed to open " << ssl_keylog_file;
+        ERR_print_errors_cb(&LogErrorCallback, NULL);
+      } else {
+        SSL_CTX_set_keylog_bio(ssl_ctx_.get(), bio);
+      }
+    }
   }
 
   static std::string GetSessionCacheKey(const SSL* ssl) {
