@@ -116,8 +116,9 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   scoped_ptr<net::HttpResponseInfo> response_info_;
   scoped_ptr<Delegate> delegate_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
-  base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };

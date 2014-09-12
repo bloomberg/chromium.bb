@@ -78,11 +78,11 @@ SharedRendererState::SharedRendererState(
     BrowserViewRendererClient* client)
     : ui_loop_(ui_loop),
       client_on_ui_(client),
-      weak_factory_on_ui_thread_(this),
-      ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
-      inside_hardware_release_(false) {
+      inside_hardware_release_(false),
+      weak_factory_on_ui_thread_(this){
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
+  ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
   ResetRequestDrawGLCallback();
 }
 

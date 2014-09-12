@@ -79,7 +79,6 @@ class SharedRendererState {
 
   scoped_refptr<base::MessageLoopProxy> ui_loop_;
   BrowserViewRendererClient* client_on_ui_;
-  base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;
   base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 
@@ -90,6 +89,8 @@ class SharedRendererState {
   ParentCompositorDrawConstraints parent_draw_constraints_;
   cc::ReturnedResourceArray returned_resources_;
   base::Closure request_draw_gl_closure_;
+
+  base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedRendererState);
 };

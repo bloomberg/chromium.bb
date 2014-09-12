@@ -77,9 +77,10 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
   void QuotaUsageCallbackImpl(
       int jcallback_id, bool is_quota, int64 usage, int64 quota);
 
-  base::WeakPtrFactory<AwQuotaManagerBridgeImpl> weak_factory_;
   AwBrowserContext* browser_context_;
   JavaObjectWeakGlobalRef java_ref_;
+
+  base::WeakPtrFactory<AwQuotaManagerBridgeImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwQuotaManagerBridgeImpl);
 };
