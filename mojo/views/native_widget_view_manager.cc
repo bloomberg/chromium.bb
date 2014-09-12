@@ -139,7 +139,6 @@ void NativeWidgetViewManager::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, view_);
   view->RemoveObserver(this);
   view_ = NULL;
-  window_tree_host_.reset();
 }
 
 void NativeWidgetViewManager::OnViewBoundsChanged(View* view,

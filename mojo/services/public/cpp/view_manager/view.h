@@ -39,6 +39,8 @@ class View {
   // Destroys this view and all its children.
   void Destroy();
 
+  ViewManager* view_manager() { return manager_; }
+
   // Configuration.
   Id id() const { return id_; }
 

@@ -745,12 +745,17 @@
           'type': 'loadable_module',
           'dependencies': [
             '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
+            '../ui/views/views.gyp:views',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_core_window_manager_lib',
             'mojo_view_manager_lib',
+            'mojo_views_support',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
+            'examples/wm_flow/wm/frame_controller.cc',
+            'examples/wm_flow/wm/frame_controller.h',
             'examples/wm_flow/wm/wm.cc',
           ],
         },

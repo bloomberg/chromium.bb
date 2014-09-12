@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/examples/wm_flow/wm/frame_controller.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -13,6 +14,7 @@
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/window_manager/window_manager_app.h"
+#include "mojo/views/views_init.h"
 
 namespace examples {
 
@@ -65,25 +67,16 @@ class SimpleWM : public mojo::ApplicationDelegate,
       const mojo::String& url,
       mojo::InterfaceRequest<mojo::ServiceProvider> service_provider)
           MOJO_OVERRIDE {
-    mojo::View* frame_view = mojo::View::Create(view_manager_);
+    mojo::View* app_view = NULL;
+    mojo::View* frame_view = CreateTopLevelWindow(&app_view);
     window_container_->AddChild(frame_view);
-    frame_view->SetBounds(gfx::Rect(next_window_origin_, gfx::Size(400, 400)));
-    frame_view->SetColor(SK_ColorBLUE);
-    frame_view->AddObserver(this);
-
-    mojo::View* embed_view = mojo::View::Create(view_manager_);
-    gfx::Rect client_bounds(frame_view->bounds().size());
-    client_bounds.Inset(10, 30, 10, 10);
-    embed_view->SetBounds(client_bounds);
-    frame_view->AddChild(embed_view);
 
     // TODO(beng): We're dropping the |service_provider| passed from the client
     //             on the floor here and passing our own. Seems like we should
     //             be sending both. I'm not yet sure how this sould work for
     //             N levels of proxying.
-    embed_view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
+    app_view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
         new mojo::ServiceProviderImpl).Pass());
-    next_window_origin_.Offset(50, 50);
   }
   virtual void DispatchEvent(mojo::EventPtr event) MOJO_OVERRIDE {}
 
@@ -107,6 +100,15 @@ class SimpleWM : public mojo::ApplicationDelegate,
     next_window_origin_.Offset(-50, -50);
   }
 
+  mojo::View* CreateTopLevelWindow(mojo::View** app_view) {
+    mojo::View* frame_view = mojo::View::Create(view_manager_);
+    frame_view->SetBounds(gfx::Rect(next_window_origin_, gfx::Size(400, 400)));
+    next_window_origin_.Offset(50, 50);
+
+    new FrameController(frame_view, app_view);
+    return frame_view;
+  }
+
   scoped_ptr<mojo::WindowManagerApp> window_manager_app_;
 
   mojo::ViewManager* view_manager_;
@@ -121,6 +123,7 @@ class SimpleWM : public mojo::ApplicationDelegate,
 }  // namespace examples
 
 MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ViewsInit views_init;
   mojo::ApplicationRunnerChromium runner(new examples::SimpleWM);
   return runner.Run(shell_handle);
 }

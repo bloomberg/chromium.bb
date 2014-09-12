@@ -252,6 +252,15 @@ void ConnectionManager::OnViewHierarchyChanged(const ServerView* view,
                                                const ServerView* old_parent) {
   if (!display_manager_.in_setup())
     ProcessViewHierarchyChanged(view, new_parent, old_parent);
+  // TODO(beng): optimize.
+  if (old_parent) {
+    display_manager_.SchedulePaint(old_parent,
+                                   gfx::Rect(old_parent->bounds().size()));
+  }
+  if (new_parent) {
+    display_manager_.SchedulePaint(new_parent,
+                                   gfx::Rect(new_parent->bounds().size()));
+  }
 }
 
 void ConnectionManager::OnViewBoundsChanged(const ServerView* view,
