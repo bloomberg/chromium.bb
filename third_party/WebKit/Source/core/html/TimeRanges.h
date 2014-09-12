@@ -109,7 +109,7 @@ public:
 
     bool contain(double time) const;
 
-    double nearest(double time) const;
+    double nearest(double newPlaybackPosition, double currentPlaybackPosition) const;
 
     void trace(Visitor*);
 

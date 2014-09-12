@@ -298,3 +298,23 @@ TEST(TimeRanges, IntersectWith_Gaps3)
     ASSERT_RANGE("{ [1,2) [4,5) [6,7) [8,9) }", rangesA);
     ASSERT_RANGE("{ [1,5) [6,9) }", rangesB);
 }
+
+TEST(TimeRanges, Nearest)
+{
+    RefPtrWillBeRawPtr<TimeRanges> ranges = TimeRanges::create();
+    ranges->add(0, 2);
+    ranges->add(5, 7);
+
+    ASSERT_EQ(0, ranges->nearest(0, 0));
+    ASSERT_EQ(1, ranges->nearest(1, 0));
+    ASSERT_EQ(2, ranges->nearest(2, 0));
+    ASSERT_EQ(2, ranges->nearest(3, 0));
+    ASSERT_EQ(5, ranges->nearest(4, 0));
+    ASSERT_EQ(5, ranges->nearest(5, 0));
+    ASSERT_EQ(7, ranges->nearest(8, 0));
+
+    ranges->add(9, 11);
+    ASSERT_EQ(7, ranges->nearest(8, 6));
+    ASSERT_EQ(7, ranges->nearest(8, 8));
+    ASSERT_EQ(9, ranges->nearest(8, 10));
+}

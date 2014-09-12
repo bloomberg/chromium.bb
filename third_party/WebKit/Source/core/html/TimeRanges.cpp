@@ -182,21 +182,33 @@ bool TimeRanges::contain(double time) const
     return false;
 }
 
-double TimeRanges::nearest(double time) const
+double TimeRanges::nearest(double newPlaybackPosition, double currentPlaybackPosition) const
 {
-    double closest = 0;
     unsigned count = length();
+    double bestMatch = 0;
+    double bestDelta = std::numeric_limits<double>::infinity();
     for (unsigned ndx = 0; ndx < count; ndx++) {
         double startTime = start(ndx, IGNORE_EXCEPTION);
         double endTime = end(ndx, IGNORE_EXCEPTION);
-        if (time >= startTime && time <= endTime)
-            return time;
-        if (fabs(startTime - time) < closest)
-            closest = fabs(startTime - time);
-        else if (fabs(endTime - time) < closest)
-            closest = fabs(endTime - time);
+        if (newPlaybackPosition >= startTime && newPlaybackPosition <= endTime)
+            return newPlaybackPosition;
+
+        double delta, match;
+        if (newPlaybackPosition < startTime) {
+            delta = startTime - newPlaybackPosition;
+            match = startTime;
+        } else {
+            delta = newPlaybackPosition - endTime;
+            match = endTime;
+        }
+
+        if (delta < bestDelta || (delta == bestDelta
+            && std::abs(currentPlaybackPosition - match) < std::abs(currentPlaybackPosition - bestMatch))) {
+            bestDelta = delta;
+            bestMatch = match;
+        }
     }
-    return closest;
+    return bestMatch;
 }
 
 void TimeRanges::trace(Visitor* visitor)

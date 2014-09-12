@@ -1992,7 +1992,7 @@ void HTMLMediaElement::seek(double time)
         m_seeking = false;
         return;
     }
-    time = seekableRanges->nearest(time);
+    time = seekableRanges->nearest(time, now);
 
     if (m_playing) {
         if (m_lastSeekTime < now)
