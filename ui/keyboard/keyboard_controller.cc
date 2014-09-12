@@ -149,7 +149,7 @@ aura::Window *GetFrameWindow(aura::Window *window) {
   // of a container window.
   if (!window)
     return NULL;
-  while(window->parent() && window->parent()->id() < 0) {
+  while (window->parent() && window->parent()->id() < 0) {
     window = window->parent();
   }
   return window;
@@ -225,9 +225,9 @@ void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
 }
 
 void WindowBoundsChangeObserver::OnWindowDestroyed(aura::Window* window) {
-   if (window->HasObserver(this))
-     window->RemoveObserver(this);
-   observed_windows_.erase(window);
+  if (window->HasObserver(this))
+    window->RemoveObserver(this);
+  observed_windows_.erase(window);
 }
 
 void WindowBoundsChangeObserver::AddObservedWindow(aura::Window* window) {
