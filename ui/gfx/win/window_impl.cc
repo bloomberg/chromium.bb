@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,6 +51,8 @@ class ClassRegistrar {
 
   static ClassRegistrar* GetInstance();
 
+  void UnregisterClasses();
+
   // Returns the atom identifying the class matching |class_info|,
   // creating and registering a new class if the class is not yet known.
   ATOM RetrieveClassAtom(const ClassInfo& class_info);
@@ -57,13 +60,22 @@ class ClassRegistrar {
  private:
   // Represents a registered window class.
   struct RegisteredClass {
-    RegisteredClass(const ClassInfo& info, ATOM atom);
+    RegisteredClass(const ClassInfo& info,
+                    const base::string16& name,
+                    ATOM atom,
+                    HINSTANCE instance);
 
     // Info used to create the class.
     ClassInfo info;
 
+    // The name given to the window class
+    base::string16 name;
+
     // The atom identifying the window class.
     ATOM atom;
+
+    // The handle of the module containing the window proceedure.
+    HMODULE instance;
   };
 
   ClassRegistrar();
@@ -85,7 +97,19 @@ ClassRegistrar::~ClassRegistrar() {}
 // static
 ClassRegistrar* ClassRegistrar::GetInstance() {
   return Singleton<ClassRegistrar,
-                   LeakySingletonTraits<ClassRegistrar> >::get();
+      LeakySingletonTraits<ClassRegistrar> >::get();
+}
+
+void ClassRegistrar::UnregisterClasses() {
+  for (RegisteredClasses::iterator i = registered_classes_.begin();
+        i != registered_classes_.end(); ++i) {
+     if (UnregisterClass(MAKEINTATOM(i->atom), i->instance)) {
+       registered_classes_.erase(i);
+     } else {
+       LOG(ERROR) << "Failed to unregister class " << i->name
+                  << ". Error = " << GetLastError();
+     }
+   }
 }
 
 ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
@@ -117,15 +141,20 @@ ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
   ATOM atom = RegisterClassEx(&window_class);
   CHECK(atom) << GetLastError();
 
-  registered_classes_.push_back(RegisteredClass(class_info, atom));
+  registered_classes_.push_back(RegisteredClass(
+      class_info, name, atom, instance));
 
   return atom;
 }
 
 ClassRegistrar::RegisteredClass::RegisteredClass(const ClassInfo& info,
-                                                 ATOM atom)
+                                                 const base::string16& name,
+                                                 ATOM atom,
+                                                 HMODULE instance)
     : info(info),
-      atom(atom) {}
+      name(name),
+      atom(atom),
+      instance(instance) {}
 
 ClassRegistrar::ClassRegistrar() : registered_count_(0) {}
 
@@ -147,6 +176,13 @@ WindowImpl::~WindowImpl() {
   if (destroyed_)
     *destroyed_ = true;
   ClearUserData();
+}
+
+// static
+void WindowImpl::UnregisterClassesAtExit() {
+  base::AtExitManager::RegisterTask(
+      base::Bind(&ClassRegistrar::UnregisterClasses,
+                 base::Unretained(ClassRegistrar::GetInstance())));
 }
 
 void WindowImpl::Init(HWND parent, const Rect& bounds) {

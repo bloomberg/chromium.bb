@@ -41,6 +41,11 @@ class GFX_EXPORT WindowImpl : public MessageMapInterface {
   WindowImpl();
   virtual ~WindowImpl();
 
+  // Causes all generated windows classes to be unregistered at exit.
+  // This can cause result in errors for tests that don't destroy all instances
+  // of windows, but is necessary if the tests unload the classes WndProc.
+  static void UnregisterClassesAtExit();
+
   // Initializes the Window with a parent and an initial desired size.
   void Init(HWND parent, const gfx::Rect& bounds);
 
