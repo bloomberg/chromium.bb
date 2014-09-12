@@ -3,8 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 from buildbot_lib import (
-    BuildContext, BuildStatus, ParseStandardCommandLine,
+    BuildContext, BuildStatus, Command, ParseStandardCommandLine,
     RemoveSconsBuildDirectories, RunBuild, SetupLinuxEnvironment,
     SetupMacEnvironment, SetupWindowsEnvironment, SCons, Step )
 
@@ -13,6 +15,10 @@ def RunSconsTests(status, context):
   # Clean out build directories.
   with Step('clobber scons', status):
     RemoveSconsBuildDirectories()
+
+  # Run checkdeps script to vet #includes.
+  with Step('checkdeps', status):
+    Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
 
   # Unlike their arm counterparts we do not run trusted tests on x86 bots.
   # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
