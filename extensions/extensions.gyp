@@ -470,6 +470,8 @@
         'browser/api/system_storage/storage_info_provider.h',
         'browser/api/system_storage/system_storage_api.cc',
         'browser/api/system_storage/system_storage_api.h',
+        'browser/api/web_request/web_request_api_constants.cc',
+        'browser/api/web_request/web_request_api_constants.h',
         'browser/api/web_request/web_request_api_utils.cc',
         'browser/api/web_request/web_request_api_utils.h',
         'browser/api/test/test_api.cc',

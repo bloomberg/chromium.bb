@@ -492,8 +492,6 @@
       'browser/extensions/api/web_request/upload_data_presenter.h',
       'browser/extensions/api/web_request/web_request_api.cc',
       'browser/extensions/api/web_request/web_request_api.h',
-      'browser/extensions/api/web_request/web_request_api_constants.cc',
-      'browser/extensions/api/web_request/web_request_api_constants.h',
       'browser/extensions/api/web_request/web_request_api_helpers.cc',
       'browser/extensions/api/web_request/web_request_api_helpers.h',
       'browser/extensions/api/web_request/web_request_permissions.cc',
