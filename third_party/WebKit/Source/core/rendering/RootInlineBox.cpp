@@ -292,8 +292,8 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
     return result;
 }
 
-GapRects RootInlineBox::lineSelectionGap(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                                         LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo)
+GapRects RootInlineBox::lineSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+                                         LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo) const
 {
     RenderObject::SelectionState lineState = selectionState();
 
@@ -346,7 +346,7 @@ GapRects RootInlineBox::lineSelectionGap(RenderBlock* rootBlock, const LayoutPoi
     return result;
 }
 
-RenderObject::SelectionState RootInlineBox::selectionState()
+RenderObject::SelectionState RootInlineBox::selectionState() const
 {
     // Walk over all of the selected boxes.
     RenderObject::SelectionState state = RenderObject::SelectionNone;
@@ -370,7 +370,7 @@ RenderObject::SelectionState RootInlineBox::selectionState()
     return state;
 }
 
-InlineBox* RootInlineBox::firstSelectedBox()
+InlineBox* RootInlineBox::firstSelectedBox() const
 {
     for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
         if (box->selectionState() != RenderObject::SelectionNone)
@@ -380,7 +380,7 @@ InlineBox* RootInlineBox::firstSelectedBox()
     return 0;
 }
 
-InlineBox* RootInlineBox::lastSelectedBox()
+InlineBox* RootInlineBox::lastSelectedBox() const
 {
     for (InlineBox* box = lastLeafChild(); box; box = box->prevLeafChild()) {
         if (box->selectionState() != RenderObject::SelectionNone)

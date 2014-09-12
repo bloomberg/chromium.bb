@@ -49,7 +49,7 @@ public:
 private:
     void paintMarkupBox(PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle*);
     int height() const { return m_height; }
-    virtual RenderObject::SelectionState selectionState() OVERRIDE { return m_selectionState; }
+    virtual RenderObject::SelectionState selectionState() const OVERRIDE { return m_selectionState; }
     void paintSelection(GraphicsContext*, const FloatPoint&, RenderStyle*, const Font&);
     InlineBox* markupBox() const;
 

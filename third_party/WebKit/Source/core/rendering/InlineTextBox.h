@@ -111,7 +111,7 @@ public:
 
     virtual LayoutRect localSelectionRect(int startPos, int endPos);
     bool isSelected(int startPos, int endPos) const;
-    void selectionStartEnd(int& sPos, int& ePos);
+    void selectionStartEnd(int& sPos, int& ePos) const;
 
 protected:
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
@@ -123,7 +123,7 @@ private:
     virtual void attachLine() OVERRIDE FINAL;
 
 public:
-    virtual RenderObject::SelectionState selectionState() OVERRIDE FINAL;
+    virtual RenderObject::SelectionState selectionState() const OVERRIDE FINAL;
 
 private:
     virtual void clearTruncation() OVERRIDE FINAL { m_truncation = cNoTruncation; }

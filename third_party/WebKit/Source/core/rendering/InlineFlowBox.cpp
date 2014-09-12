@@ -1448,7 +1448,7 @@ InlineBox* InlineFlowBox::lastLeafChild() const
     return leaf;
 }
 
-RenderObject::SelectionState InlineFlowBox::selectionState()
+RenderObject::SelectionState InlineFlowBox::selectionState() const
 {
     return RenderObject::SelectionNone;
 }

@@ -282,7 +282,7 @@ InlineBox* InlineBox::prevLeafChildIgnoringLineBreak() const
     return leaf;
 }
 
-RenderObject::SelectionState InlineBox::selectionState()
+RenderObject::SelectionState InlineBox::selectionState() const
 {
     return renderer().selectionState();
 }

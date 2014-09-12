@@ -118,11 +118,11 @@ public:
     using InlineBox::hasSelectedChildren;
     using InlineBox::setHasSelectedChildren;
 
-    virtual RenderObject::SelectionState selectionState() OVERRIDE FINAL;
-    InlineBox* firstSelectedBox();
-    InlineBox* lastSelectedBox();
+    virtual RenderObject::SelectionState selectionState() const OVERRIDE FINAL;
+    InlineBox* firstSelectedBox() const;
+    InlineBox* lastSelectedBox() const;
 
-    GapRects lineSelectionGap(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*);
+    GapRects lineSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*) const;
 
     RenderBlockFlow& block() const;
 

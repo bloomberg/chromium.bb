@@ -148,7 +148,7 @@ bool InlineTextBox::isSelected(int startPos, int endPos) const
     return (sPos < ePos);
 }
 
-RenderObject::SelectionState InlineTextBox::selectionState()
+RenderObject::SelectionState InlineTextBox::selectionState() const
 {
     RenderObject::SelectionState state = renderer().selectionState();
     if (state == RenderObject::SelectionStart || state == RenderObject::SelectionEnd || state == RenderObject::SelectionBoth) {
@@ -627,7 +627,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         context->concatCTM(rotation(boxRect, Counterclockwise));
 }
 
-void InlineTextBox::selectionStartEnd(int& sPos, int& ePos)
+void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
 {
     int startPos, endPos;
     if (renderer().selectionState() == RenderObject::SelectionInside) {

@@ -2126,7 +2126,7 @@ void RenderBlockFlow::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paint
     }
 }
 
-void RenderBlockFlow::clipOutFloatingObjects(RenderBlock* rootBlock, const PaintInfo* paintInfo, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock)
+void RenderBlockFlow::clipOutFloatingObjects(const RenderBlock* rootBlock, const PaintInfo* paintInfo, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
 {
     if (m_floatingObjects) {
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -2735,8 +2735,8 @@ LayoutUnit RenderBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
     return fixedOffset;
 }
 
-GapRects RenderBlockFlow::inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo)
+GapRects RenderBlockFlow::inlineSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo) const
 {
     GapRects result;
 
@@ -2808,13 +2808,13 @@ bool RenderBlockFlow::avoidsFloats() const
     return RenderBox::avoidsFloats() || !style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth();
 }
 
-LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(RenderBlock* rootBlock, LayoutUnit position)
+LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const
 {
     LayoutUnit logicalLeft = logicalLeftOffsetForLine(position, false);
     if (logicalLeft == logicalLeftOffsetForContent())
         return RenderBlock::logicalLeftSelectionOffset(rootBlock, position);
 
-    RenderBlock* cb = this;
+    const RenderBlock* cb = this;
     while (cb != rootBlock) {
         logicalLeft += cb->logicalLeft();
         cb = cb->containingBlock();
@@ -2822,13 +2822,13 @@ LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(RenderBlock* rootBlock, L
     return logicalLeft;
 }
 
-LayoutUnit RenderBlockFlow::logicalRightSelectionOffset(RenderBlock* rootBlock, LayoutUnit position)
+LayoutUnit RenderBlockFlow::logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const
 {
     LayoutUnit logicalRight = logicalRightOffsetForLine(position, false);
     if (logicalRight == logicalRightOffsetForContent())
         return RenderBlock::logicalRightSelectionOffset(rootBlock, position);
 
-    RenderBlock* cb = this;
+    const RenderBlock* cb = this;
     while (cb != rootBlock) {
         logicalRight += cb->logicalLeft();
         cb = cb->containingBlock();

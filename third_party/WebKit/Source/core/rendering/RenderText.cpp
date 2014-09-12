@@ -1609,7 +1609,7 @@ const RenderLayerModelObject* RenderText::containerForPaintInvalidation() const
     return 0;
 }
 
-LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)
+LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent) const
 {
     ASSERT(!needsLayout());
 
