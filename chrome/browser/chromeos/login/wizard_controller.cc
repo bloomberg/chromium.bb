@@ -108,9 +108,14 @@ bool CanShowHIDDetectionScreen() {
         chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
+// Checks if we are a remora waiting for a shark.
 bool ShouldShowHostPairingScreen() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  const bool is_remora =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+      GetDeviceCloudPolicyManager()->IsRemoraRequisition();
+  const bool pairing_demo = CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kShowHostPairingDemo);
+  return is_remora && pairing_demo;
 }
 
 bool IsResumableScreen(const std::string& screen) {
@@ -261,9 +266,11 @@ void WizardController::Init(
     }
   }
 
+  // Use the saved screen preference from Local State.
   const std::string screen_pref =
       GetLocalState()->GetString(prefs::kOobeScreenPending);
-  if (is_out_of_box_ && !screen_pref.empty() && (first_screen_name.empty() ||
+  if (is_out_of_box_ && !screen_pref.empty() &&
+      !ShouldShowHostPairingScreen() && (first_screen_name.empty() ||
       first_screen_name == WizardController::kTestNoScreenName)) {
     first_screen_name_ = screen_pref;
   }
@@ -572,8 +579,6 @@ void WizardController::OnUpdateCompleted() {
 
   if (is_shark) {
     ShowControllerPairingScreen();
-  } else if (ShouldShowHostPairingScreen()) {
-    ShowHostPairingScreen();
   } else if (!auth_token_.empty()) {
     // TODO(achuith): There is an issue with the auto enrollment check and
     // remote enrollment. crbug.com/403147.
@@ -898,7 +903,9 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-      if (CanShowHIDDetectionScreen()) {
+      if (ShouldShowHostPairingScreen()) {
+        ShowHostPairingScreen();
+      } else if (CanShowHIDDetectionScreen()) {
         base::Callback<void(bool)> on_check = base::Bind(
             &WizardController::OnHIDScreenNecessityCheck,
             weak_factory_.GetWeakPtr());
