@@ -718,6 +718,27 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   SimulateResponseFromPasswordStore(&manager_creds, result);
   Mock::VerifyAndClearExpectations(client()->GetMockDriver());
 
+  // There are cases, such as when a form is explicitly for creating a new
+  // password, where we may ignore saved credentials. Make sure that we still
+  // allow generation in that case.
+  PasswordForm signup_form(*observed_form());
+  signup_form.new_password_element = base::ASCIIToUTF16("new_password_field");
+
+  PasswordFormManager manager_dropped_creds(&password_manager,
+                                            client(),
+                                            client()->GetDriver(),
+                                            signup_form,
+                                            false);
+  EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
+      .Times(1);
+  EXPECT_CALL(*(client()->GetMockDriver()), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_dropped_creds);
+  result.clear();
+  result.push_back(CreateSavedMatch(false));
+  SimulateResponseFromPasswordStore(&manager_dropped_creds, result);
+  Mock::VerifyAndClearExpectations(client()->GetMockDriver());
+
   // Signing up on a previously visited site. Credentials are found in the
   // password store, but they are blacklisted. AllowPasswordGenerationForForm
   // should not be called and no "not blacklisted" message sent.

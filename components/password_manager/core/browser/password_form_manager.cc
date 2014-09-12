@@ -441,7 +441,13 @@ void PasswordFormManager::OnRequestDone(
 
   client_->AutofillResultsComputed();
 
+  // TODO(gcasto): Change this to check that best_matches_ is empty. This should
+  // be equivalent for the moment, but it's less clear and may not be
+  // equivalent in the future.
   if (best_score <= 0) {
+    // If no saved forms can be used, then it isn't blacklisted and generation
+    // should be allowed.
+    driver_->AllowPasswordGenerationForForm(observed_form_);
     return;
   }
 
