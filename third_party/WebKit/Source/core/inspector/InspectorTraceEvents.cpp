@@ -122,7 +122,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
         value->setString("nodeName", generatingNode->debugName());
         value->setInteger("nodeId", InspectorNodeIds::idForNode(generatingNode));
     }
-    RefPtr<ScriptCallStack> callstack = createScriptCallStack(maxInvalidationTrackingCallstackSize, true);
+    RefPtrWillBeRawPtr<ScriptCallStack> callstack = createScriptCallStack(maxInvalidationTrackingCallstackSize, true);
     value->setString("callstack", callstack ? callstack->buildInspectorArray()->toJSONString() : "[]");
     return value;
 }
