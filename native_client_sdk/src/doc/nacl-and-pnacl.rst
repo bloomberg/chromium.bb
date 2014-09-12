@@ -17,7 +17,7 @@ Native Client (NaCl)
 
 Native Client enables the execution of native code securely inside web
 applications through the use of advanced `Software Fault Isolation (SFI)
-techniques </native-client/community/talks#research>`_.  Since its launch in
+techniques <http://research.google.com/pubs/pub35649.html>`_.  Since its launch in
 2011, Native Client has provided developers with the ability to harness a
 client machine's computational power to a much fuller extent than traditional
 web technologies, by running compiled C and C++ code at near-native speeds and
