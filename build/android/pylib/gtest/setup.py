@@ -213,6 +213,11 @@ def _GetTests(test_options, test_package, devices):
   """
   def TestListerRunnerFactory(device, _shard_index):
     class TestListerRunner(test_runner.TestRunner):
+      #override
+      def PushDataDeps(self):
+        pass
+
+      #override
       def RunTest(self, _test):
         result = base_test_result.BaseTestResult(
             'gtest_list_tests', base_test_result.ResultType.PASS)
