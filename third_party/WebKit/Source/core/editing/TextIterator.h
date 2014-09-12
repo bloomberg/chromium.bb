@@ -232,6 +232,7 @@ class SimplifiedBackwardsTextIterator {
     STACK_ALLOCATED();
 public:
     explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
@@ -258,6 +259,7 @@ public:
     Position startPosition() const;
 
 private:
+    void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
     void exitNode();
     bool handleTextNode();
     RenderText* handleFirstLetter(int& startOffset, int& offsetInNode);
@@ -354,6 +356,7 @@ class BackwardsCharacterIterator {
     STACK_ALLOCATED();
 public:
     explicit BackwardsCharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    BackwardsCharacterIterator(const Position&, const Position&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int);
 

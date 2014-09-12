@@ -803,12 +803,14 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         // shouldEraseMarkersAfterChangeSelection is true, we cause synchronous
         // layout.
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
-            if (RefPtrWillBeRawPtr<Range> wordRange = newAdjacentWords.toNormalizedRange())
-                m_frame.document()->markers().removeMarkers(wordRange.get(), DocumentMarker::Spelling);
+            Position start, end;
+            if (newAdjacentWords.toNormalizedPositions(start, end))
+                m_frame.document()->markers().removeMarkers(start, end, DocumentMarker::Spelling);
         }
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
-            if (RefPtrWillBeRawPtr<Range> sentenceRange = newSelectedSentence.toNormalizedRange())
-                m_frame.document()->markers().removeMarkers(sentenceRange.get(), DocumentMarker::Grammar);
+            Position start, end;
+            if (newSelectedSentence.toNormalizedPositions(start, end))
+                m_frame.document()->markers().removeMarkers(start, end, DocumentMarker::Grammar);
         }
     }
 

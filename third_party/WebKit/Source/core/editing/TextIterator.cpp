@@ -1289,6 +1289,46 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     int startOffset = r->startOffset();
     int endOffset = r->endOffset();
 
+    init(startNode, endNode, startOffset, endOffset);
+}
+
+SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+    : m_node(nullptr)
+    , m_offset(0)
+    , m_handledNode(false)
+    , m_handledChildren(false)
+    , m_startNode(nullptr)
+    , m_startOffset(0)
+    , m_endNode(nullptr)
+    , m_endOffset(0)
+    , m_positionNode(nullptr)
+    , m_positionStartOffset(0)
+    , m_positionEndOffset(0)
+    , m_textOffset(0)
+    , m_textLength(0)
+    , m_lastTextNode(nullptr)
+    , m_lastCharacter(0)
+    , m_singleCharacterBuffer(0)
+    , m_havePassedStartNode(false)
+    , m_shouldHandleFirstLetter(false)
+    , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
+    , m_shouldStop(false)
+    , m_emitsOriginalText(false)
+{
+    ASSERT(behavior == TextIteratorDefaultBehavior || behavior == TextIteratorStopsOnFormControls);
+
+    Node* startNode = start.deprecatedNode();
+    if (!startNode)
+        return;
+    Node* endNode = end.deprecatedNode();
+    int startOffset = start.deprecatedEditingOffset();
+    int endOffset = end.deprecatedEditingOffset();
+
+    init(startNode, endNode, startOffset, endOffset);
+}
+
+void SimplifiedBackwardsTextIterator::init(Node* startNode, Node* endNode, int startOffset, int endOffset)
+{
     if (!startNode->offsetInCharacters() && startOffset >= 0) {
         // NodeTraversal::childAt() will return 0 if the offset is out of range. We rely on this behavior
         // instead of calling countChildren() to avoid traversing the children twice.
@@ -1708,6 +1748,16 @@ BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextI
     , m_runOffset(0)
     , m_atBreak(true)
     , m_textIterator(range, behavior)
+{
+    while (!atEnd() && !m_textIterator.length())
+        m_textIterator.advance();
+}
+
+BackwardsCharacterIterator::BackwardsCharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+    : m_offset(0)
+    , m_runOffset(0)
+    , m_atBreak(true)
+    , m_textIterator(start, end, behavior)
 {
     while (!atEnd() && !m_textIterator.length())
         m_textIterator.advance();

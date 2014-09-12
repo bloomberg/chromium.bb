@@ -204,8 +204,16 @@ bool VisibleSelection::intersectsNode(Node* node) const
 
 PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 {
+    Position start, end;
+    if (toNormalizedPositions(start, end))
+        return Range::create(*start.document(), start, end);
+    return nullptr;
+}
+
+bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) const
+{
     if (isNone())
-        return nullptr;
+        return false;
 
     // Make sure we have an updated layout since this function is called
     // in the course of running edit commands which modify the DOM.
@@ -215,15 +223,14 @@ PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
-        return nullptr;
+        return false;
 
-    Position s, e;
     if (isCaret()) {
         // If the selection is a caret, move the range start upstream. This helps us match
         // the conventions of text editors tested, which make style determinations based
         // on the character before the caret, if any.
-        s = m_start.upstream().parentAnchoredEquivalent();
-        e = s;
+        start = m_start.upstream().parentAnchoredEquivalent();
+        end = start;
     } else {
         // If the selection is a range, select the minimum range that encompasses the selection.
         // Again, this is to match the conventions of text editors tested, which make style
@@ -237,25 +244,23 @@ PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
         //                       ^ selected
         //
         ASSERT(isRange());
-        s = m_start.downstream();
-        e = m_end.upstream();
-        if (comparePositions(s, e) > 0) {
+        start = m_start.downstream();
+        end = m_end.upstream();
+        if (comparePositions(start, end) > 0) {
             // Make sure the start is before the end.
             // The end can wind up before the start if collapsed whitespace is the only thing selected.
-            Position tmp = s;
-            s = e;
-            e = tmp;
+            Position tmp = start;
+            start = end;
+            end = tmp;
         }
-        s = s.parentAnchoredEquivalent();
-        e = e.parentAnchoredEquivalent();
+        start = start.parentAnchoredEquivalent();
+        end = end.parentAnchoredEquivalent();
     }
 
-    if (!s.containerNode() || !e.containerNode())
-        return nullptr;
+    if (!start.containerNode() || !end.containerNode())
+        return false;
 
-    // VisibleSelections are supposed to always be valid.  This constructor will ASSERT
-    // if a valid range could not be created, which is fine for this callsite.
-    return Range::create(*s.document(), s, e);
+    return true;
 }
 
 bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)

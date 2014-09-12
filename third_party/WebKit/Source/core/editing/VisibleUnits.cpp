@@ -457,7 +457,6 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Document& d = boundary->document();
     Position start = createLegacyEditingPosition(boundary, 0).parentAnchoredEquivalent();
     Position end = pos.parentAnchoredEquivalent();
-    RefPtrWillBeRawPtr<Range> searchRange = Range::create(d);
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
@@ -480,14 +479,11 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         }
     }
 
-    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), exceptionState);
-    searchRange->setEnd(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
-
     ASSERT(!exceptionState.hadException());
     if (exceptionState.hadException())
         return VisiblePosition();
 
-    SimplifiedBackwardsTextIterator it(searchRange.get());
+    SimplifiedBackwardsTextIterator it(start, end);
     unsigned next = 0;
     bool needMoreContext = false;
     while (!it.atEnd()) {
@@ -522,7 +518,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         return VisiblePosition(createLegacyEditingPosition(node, next), DOWNSTREAM);
 
     // Use the character iterator to translate the next value into a DOM position.
-    BackwardsCharacterIterator charIt(searchRange.get());
+    BackwardsCharacterIterator charIt(start, end);
     charIt.advance(string.size() - suffixLength - next);
     // FIXME: charIt can get out of shadow host.
     return VisiblePosition(charIt.endPosition(), DOWNSTREAM);
@@ -536,7 +532,6 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         return VisiblePosition();
 
     Document& d = boundary->document();
-    RefPtrWillBeRawPtr<Range> searchRange(d.createRange());
     Position start(pos.parentAnchoredEquivalent());
 
     Vector<UChar, 1024> string;
@@ -559,9 +554,11 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    searchRange->selectNodeContents(boundary, IGNORE_EXCEPTION);
-    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
-    TextIterator it(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+    Position searchStart = createLegacyEditingPosition(start.deprecatedNode(), start.deprecatedEditingOffset());
+    RangeBoundaryPoint searchEndPoint(boundary);
+    searchEndPoint.setToEndOfNode(*boundary);
+    Position searchEnd = searchEndPoint.toPosition();
+    TextIterator it(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     const unsigned invalidOffset = static_cast<unsigned>(-1);
     unsigned next = invalidOffset;
     bool needMoreContext = false;
@@ -593,7 +590,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         pos = it.startPosition();
     } else if (next != invalidOffset && next != prefixLength) {
         // Use the character iterator to translate the next value into a DOM position.
-        CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+        CharacterIterator charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
         charIt.advance(next - prefixLength - 1);
         pos = charIt.endPosition();
 

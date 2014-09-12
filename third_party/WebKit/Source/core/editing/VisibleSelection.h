@@ -98,10 +98,12 @@ public:
 
     bool intersectsNode(Node*) const;
 
-    // FIXME: Most callers probably don't want this function, but are using it
-    // for historical reasons.  toNormalizedRange contracts the range around
-    // text, and moves the caret upstream before returning the range.
+    // FIXME: Most callers probably don't want these functions, but
+    // are using them for historical reasons. toNormalizedRange and
+    // toNormalizedPositions contracts the range around text, and
+    // moves the caret upstream before returning the range/positions.
     PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
+    bool toNormalizedPositions(Position& start, Position& end) const;
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;

@@ -147,9 +147,9 @@ void DocumentMarkerController::prepareForDestruction()
     clear();
 }
 
-void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
+void DocumentMarkerController::removeMarkers(TextIterator& markedText, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
 {
-    for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
+    for (; !markedText.atEnd(); markedText.advance()) {
         if (!possiblyHasMarkers(markerTypes))
             return;
         ASSERT(!m_markers.isEmpty());
@@ -158,6 +158,18 @@ void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::Marke
         int endOffset = markedText.endOffset();
         removeMarkers(markedText.startContainer(), startOffset, endOffset - startOffset, markerTypes, shouldRemovePartiallyOverlappingMarker);
     }
+}
+
+void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
+{
+    TextIterator markedText(range);
+    DocumentMarkerController::removeMarkers(markedText, markerTypes, shouldRemovePartiallyOverlappingMarker);
+}
+
+void DocumentMarkerController::removeMarkers(const Position& start, const Position& end, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
+{
+    TextIterator markedText(start, end);
+    DocumentMarkerController::removeMarkers(markedText, markerTypes, shouldRemovePartiallyOverlappingMarker);
 }
 
 static bool startsFurther(const OwnPtrWillBeMember<RenderedDocumentMarker>& lhv, const DocumentMarker* rhv)
