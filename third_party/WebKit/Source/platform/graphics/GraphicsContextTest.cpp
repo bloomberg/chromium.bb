@@ -243,6 +243,7 @@ TEST(GraphicsContextTest, trackImageMask)
     context.beginTransparencyLayer(1);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
+    EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
     context.setCompositeOperation(CompositeSourceOver);
@@ -280,6 +281,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     context.beginTransparencyLayer(1);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
+    EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
     context.setCompositeOperation(CompositeSourceOver);

@@ -131,6 +131,8 @@ static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBu
     if (!surface->isValid())
         return false;
     OwnPtr<ImageBuffer> image = ImageBuffer::create(surface.release());
+    if (!image)
+        return false;
 
     GraphicsContext* imageContext = image->context();
     ASSERT(imageContext);

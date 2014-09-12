@@ -84,6 +84,7 @@ protected:
         // We create an ImageBuffer in order for the testSurface to be
         // properly initialized with a GraphicsContext
         m_imageBuffer = ImageBuffer::create(testSurface.release());
+        EXPECT_FALSE(!m_imageBuffer);
         m_fakeImageBufferClient = adoptPtr(new FakeImageBufferClient(m_imageBuffer.get()));
         m_imageBuffer->setClient(m_fakeImageBufferClient.get());
     }
