@@ -366,7 +366,7 @@
     "location": "component"
   },
   "embeddedExtensionOptions": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["extension"]
   },
   "enterprise.platformKeys": {

@@ -50,9 +50,6 @@ ExtensionOptionsGuest::~ExtensionOptionsGuest() {
 extensions::GuestViewBase* ExtensionOptionsGuest::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id) {
-  if (!extensions::FeatureSwitch::embedded_extension_options()->IsEnabled()) {
-    return NULL;
-  }
   return new ExtensionOptionsGuest(browser_context, guest_instance_id);
 }
 

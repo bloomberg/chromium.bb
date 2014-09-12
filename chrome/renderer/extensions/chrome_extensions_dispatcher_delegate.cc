@@ -287,8 +287,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     module_system->Require("denyAppView");
   }
 
-  if (extensions::FeatureSwitch::embedded_extension_options()->IsEnabled() &&
-      context->GetAvailability("extensionOptionsInternal").is_available()) {
+  if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     module_system->Require("extensionOptions");
   }
 }
