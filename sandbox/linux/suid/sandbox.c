@@ -30,7 +30,6 @@
 #include <unistd.h>
 
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
-#include "sandbox/linux/suid/linux_util.h"
 #include "sandbox/linux/suid/process_util.h"
 
 #if !defined(CLONE_NEWPID)
@@ -433,34 +432,8 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  // In the SUID sandbox, if we succeed in calling MoveToNewNamespaces()
-  // below, then the zygote and all the renderers are in an alternate PID
-  // namespace and do not know their real PIDs. As such, they report the wrong
-  // PIDs to the task manager.
-  //
-  // To fix this, when the zygote spawns a new renderer, it gives the renderer
-  // a dummy socket, which has a unique inode number. Then it asks the sandbox
-  // host to find the PID of the process holding that fd by searching /proc.
-  //
-  // Since the zygote and renderers are all spawned by this setuid executable,
-  // their entries in /proc are owned by root and only readable by root. In
-  // order to search /proc for the fd we want, this setuid executable has to
-  // double as a helper and perform the search. The code block below does this
-  // when you call it with --find-inode INODE_NUMBER.
-  if (argc == 3 && (0 == strcmp(argv[1], kFindInodeSwitch))) {
-    pid_t pid;
-    char* endptr = NULL;
-    errno = 0;
-    ino_t inode = strtoull(argv[2], &endptr, 10);
-    if (inode == ULLONG_MAX || !endptr || *endptr || errno != 0)
-      return 1;
-    if (!FindProcessHoldingSocket(&pid, inode))
-      return 1;
-    printf("%d\n", pid);
-    return 0;
-  }
-  // Likewise, we cannot adjust /proc/pid/oom_adj for sandboxed renderers
-  // because those files are owned by root. So we need another helper here.
+  // We cannot adjust /proc/pid/oom_adj for sandboxed renderers
+  // because those files are owned by root. So we need a helper here.
   if (argc == 4 && (0 == strcmp(argv[1], kAdjustOOMScoreSwitch))) {
     char* endptr = NULL;
     long score;

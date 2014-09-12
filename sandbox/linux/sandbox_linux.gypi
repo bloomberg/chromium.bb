@@ -187,8 +187,6 @@
       'sources': [
         'suid/common/sandbox.h',
         'suid/common/suid_unsafe_environment_variables.h',
-        'suid/linux_util.c',
-        'suid/linux_util.h',
         'suid/process_util.h',
         'suid/process_util_linux.c',
         'suid/sandbox.c',

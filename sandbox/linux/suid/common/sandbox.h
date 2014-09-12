@@ -11,6 +11,7 @@ namespace sandbox {
 
 // These are command line switches that may be used by other programs
 // (e.g. Chrome) to construct a command line for the sandbox.
+static const char kSuidSandboxGetApiSwitch[] = "--get-api";
 static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
 
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
