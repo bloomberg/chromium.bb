@@ -43,6 +43,26 @@ enum Source {
   SOURCE_UNKNOWN, // This must be last.
 };
 
+// Enum values used for Android signin promo actions.
+enum AndroidSigninPromoAction {
+  // The promo was enabled.
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_ENABLED = 0,
+
+  // The promo was shown.
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_SHOWN,
+
+  // The promo was declined.
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_DECLINED,
+
+  // The promo was accepted.
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_ACCEPTED,
+
+  // The promo was accepted and user clicked the settings link.
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_ACCEPTED_WITH_ADVANCED,
+
+  HISTOGRAM_ANDROID_SIGNIN_PROMO_MAX,
+};
+
 // Returns true if the sign in promo should be visible.
 // |profile| is the profile of the tab the promo would be shown on.
 bool ShouldShowPromo(Profile* profile);

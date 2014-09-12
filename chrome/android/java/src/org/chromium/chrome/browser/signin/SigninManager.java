@@ -16,6 +16,7 @@ import android.util.Log;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
@@ -398,6 +399,22 @@ public class SigninManager {
      */
     public static boolean isNewProfileManagementEnabled() {
         return nativeIsNewProfileManagementEnabled();
+    }
+
+    /**
+     * @return Experiment group for the android signin promo that the current user falls into.
+     * -1 if the sigin promo experiment is disabled, otherwise an integer between 0 and 7.
+     * TODO(guohui): instead of group names, it is better to use experiment params to control
+     * the variations.
+     */
+    public static int getAndroidSigninPromoExperimentGroup() {
+        String fieldTrialValue =
+                FieldTrialList.findFullName("AndroidSigninPromo");
+        try {
+            return Integer.parseInt(fieldTrialValue);
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
     }
 
     @CalledByNative

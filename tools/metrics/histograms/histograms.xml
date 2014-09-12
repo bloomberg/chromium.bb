@@ -29372,6 +29372,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidSigninPromo" enum="AndroidSigninPromoAction">
+  <owner>guohui@chromium.org</owner>
+  <summary>Track how a user interfacts with the android signin promo.</summary>
+</histogram>
+
 <histogram name="Signin.DuringFirstRun">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -37716,6 +37721,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AndroidSigninPromoAction" type="int">
+  <int value="0" label="Promo enabled">
+    The Android signin promo was enabled to show on next startup.
+  </int>
+  <int value="1" label="Promo shown">The Android signin promo was shown.</int>
+  <int value="2" label="Promo declined">
+    User declined the Android signin promo.
+  </int>
+  <int value="3" label="Promo accepted">
+    User completed signin through the Android signin promo flow successfully.
+  </int>
+  <int value="4" label="Promo accepted with advanced settings">
+    User completed signin through the Android signin promo flow successfully and
+    chose to configure sync settings.
+  </int>
 </enum>
 
 <enum name="AndroidTabCloseUndoToastEvent" type="int">
