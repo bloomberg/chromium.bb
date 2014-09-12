@@ -7,10 +7,9 @@
 #include "native_client/tests/irt_ext/basic_calls.h"
 #include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/file_desc.h"
-#include "native_client/tests/irt_ext/mem_calls.h"
 #include "native_client/tests/irt_ext/libc/libc_test.h"
-
-#include <stdio.h>
+#include "native_client/tests/irt_ext/mem_calls.h"
+#include "native_client/tests/irt_ext/threading.h"
 
 /* Declare a macro we can later use for EXPAND_TEST_OPERATION. */
 #define RUN_TESTS(TEST_NAME) errors += TEST_FUNC_NAME(TEST_NAME)();
@@ -25,6 +24,7 @@ int main(void) {
   init_basic_calls_module();
   init_file_desc_module();
   init_mem_calls_module();
+  init_threading_module();
 
   /* Run tests. */
   EXPAND_TEST_OPERATION(RUN_TESTS);

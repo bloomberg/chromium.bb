@@ -16,6 +16,7 @@ IRT_EXT_TEST_SRCS = [
     'error_report.c',
     'file_desc.c',
     'mem_calls.c',
+    'threading.c',
     ]
 
 IRT_EXT_LIBC_TEST_SRCS = [
@@ -23,16 +24,28 @@ IRT_EXT_LIBC_TEST_SRCS = [
     'libc/file_tests.c',
     'libc/libc_test.c',
     'libc/mem_tests.c',
+    'libc/thread_tests.c',
     ]
 
-irt_ext_libc_test_nexe = env.ComponentProgram('irt_ext_libc_test',
-                                              (IRT_EXT_TEST_SRCS +
-                                               IRT_EXT_LIBC_TEST_SRCS),
-                                              EXTRA_LIBS=['${NONIRT_LIBS}'],
-                                              )
+irt_ext_libc_test_nexe = env.ComponentProgram(
+    'irt_ext_libc_test',
+    (IRT_EXT_TEST_SRCS +
+     IRT_EXT_LIBC_TEST_SRCS),
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('irt_ext_libc_test.out',
                                  irt_ext_libc_test_nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_irt_ext_libc_test')
+
+irt_ext_no_pthread_nexe = env.ComponentProgram(
+    'irt_ext_no_pthread_test',
+    'no_pthread_test/no_pthread_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('irt_ext_no_pthread_test.out',
+                                 irt_ext_no_pthread_nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_irt_ext_no_pthread_test')

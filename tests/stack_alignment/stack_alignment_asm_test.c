@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 
 
@@ -17,7 +18,6 @@
  * suitably aligned, as per architecture-specific ABI requirements.
  */
 
-static struct nacl_irt_thread irt_thread;
 /* We use 'volatile' because we spin waiting for these variables to be set. */
 static volatile int32_t g_stack_in_use;
 static char *volatile g_stack_ptr;
@@ -90,11 +90,11 @@ void ThreadStart(char *stack_ptr) {
    * the main thread check it.
    */
   g_stack_ptr = stack_ptr;
-  irt_thread.thread_exit((int32_t *) &g_stack_in_use);
+  __libnacl_irt_thread.thread_exit((int32_t *) &g_stack_in_use);
 }
 
 int main(void) {
-  __nc_initialize_interfaces(&irt_thread);
+  __nc_initialize_interfaces();
 
   int offset;
   for (offset = 0; offset <= 32; offset++) {
@@ -103,7 +103,8 @@ int main(void) {
     g_stack_ptr = NULL;
     g_stack_in_use = 1;
     void *dummy_tls = &dummy_tls;
-    int rc = irt_thread.thread_create(ThreadStartWrapper, stack_top, dummy_tls);
+    int rc = __libnacl_irt_thread.thread_create(ThreadStartWrapper, stack_top,
+                                                dummy_tls);
     assert(rc == 0);
     /* Spin until the thread exits. */
     while (g_stack_in_use) {

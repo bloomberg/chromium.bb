@@ -21,7 +21,7 @@ void __nc_initialize_globals(void);
 
 void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb);
 
-void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread);
+void __nc_initialize_interfaces(void);
 
 void __nc_tsd_exit(void);
 

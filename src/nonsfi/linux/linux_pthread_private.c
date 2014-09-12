@@ -10,6 +10,7 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/nonsfi/linux/linux_syscalls.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 
@@ -148,11 +149,11 @@ static int nacl_irt_thread_nice(const int nice) {
   return 0;
 }
 
-void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread) {
+void __nc_initialize_interfaces(void) {
   const struct nacl_irt_thread init = {
     nacl_irt_thread_create,
     nacl_irt_thread_exit,
     nacl_irt_thread_nice,
   };
-  *irt_thread = init;
+  __libnacl_irt_thread = init;
 }

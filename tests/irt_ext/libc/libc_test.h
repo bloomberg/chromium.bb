@@ -7,6 +7,9 @@
 #ifndef NATIVE_CLIENT_TESTS_IRT_EXT_LIBC_TEST_H
 #define NATIVE_CLIENT_TESTS_IRT_EXT_LIBC_TEST_H
 
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/tests/irt_ext/error_report.h"
+
 /*
  * This macro is used to expand macros for declaring and running the test
  * functions. It also serves as a central location where all the tests are
@@ -19,7 +22,8 @@
 #define EXPAND_TEST_OPERATION(OP) \
   OP(Basic);                      \
   OP(File);                       \
-  OP(Mem);
+  OP(Mem);                        \
+  OP(Thread);
 
 /* This macro specifies the format of our test function name. */
 #define TEST_FUNC_NAME(TEST_NAME) run_##TEST_NAME##_tests

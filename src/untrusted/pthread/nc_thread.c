@@ -33,9 +33,10 @@
 #endif
 
 /*
- * ABI tables for underyling NaCl thread interfaces.
+ * ABI tables for underyling NaCl thread interfaces. This is declared to be
+ * global so that a user will be able to override it using the irt_ext API.
  */
-static struct nacl_irt_thread irt_thread;
+struct nacl_irt_thread __libnacl_irt_thread;
 
 /*
  * These days, the thread_create() syscall/IRT call will align the
@@ -261,7 +262,7 @@ void __nc_initialize_globals(void) {
   /*
    * Fetch the ABI tables from the IRT.  If we don't have these, all is lost.
    */
-  __nc_initialize_interfaces(&irt_thread);
+  __nc_initialize_interfaces();
 
   if (pthread_mutex_init(&__nc_thread_management_lock, NULL) != 0)
     __builtin_trap();
@@ -425,7 +426,7 @@ int pthread_create(pthread_t *thread_id,
   memset(esp, 0, kStackPadBelowAlign);
 
   /* Start the thread. */
-  retval = irt_thread.thread_create(nc_thread_starter, esp, new_tp);
+  retval = __libnacl_irt_thread.thread_create(nc_thread_starter, esp, new_tp);
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */
@@ -544,7 +545,7 @@ void pthread_exit(void *retval) {
   }
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
-  irt_thread.thread_exit(is_used);
+  __libnacl_irt_thread.thread_exit(is_used);
   __builtin_trap();
 }
 
@@ -644,7 +645,7 @@ int pthread_setschedprio(pthread_t thread_id, int prio) {
      */
     return EPERM;
   }
-  return irt_thread.thread_nice(prio);
+  return __libnacl_irt_thread.thread_nice(prio);
 }
 
 int pthread_attr_init(pthread_attr_t *attr) {

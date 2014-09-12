@@ -15,6 +15,7 @@
 
 extern TYPE_nacl_irt_query __nacl_irt_query;
 
+/* These declarations are defined within libnacl. */
 extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
 extern struct nacl_irt_dev_fdio __libnacl_irt_dev_fdio;
@@ -23,6 +24,9 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
 extern struct nacl_irt_tls __libnacl_irt_tls;
 extern struct nacl_irt_clock __libnacl_irt_clock;
 extern struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
+
+/* This declaration is defined within libpthread. */
+extern struct nacl_irt_thread __libnacl_irt_thread;
 
 extern int __libnacl_irt_query(const char *interface,
                                void *table, size_t table_size);
