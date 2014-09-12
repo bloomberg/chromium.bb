@@ -23,7 +23,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
-#include "printing/metafile.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device_skia.h"
@@ -1603,7 +1602,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 
 #if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    Metafile* metafile,
+    PdfMetafileSkia* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   scoped_ptr<base::SharedMemory> shared_buf(
@@ -1742,7 +1741,7 @@ bool PrintWebViewHelper::CheckForCancel() {
 }
 
 bool PrintWebViewHelper::PreviewPageRendered(int page_number,
-                                             Metafile* metafile) {
+                                             PdfMetafileSkia* metafile) {
   DCHECK_GE(page_number, FIRST_PAGE_INDEX);
 
   // For non-modifiable files, |metafile| should be NULL, so do not bother

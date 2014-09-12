@@ -9,7 +9,6 @@
 #include "base/process/process_handle.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "printing/pdf_metafile_skia.h"
@@ -29,8 +28,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
   page_params.page_number = page_number;
-  scoped_ptr<Metafile> draft_metafile;
-  Metafile* initial_render_metafile = print_preview_context_.metafile();
+  scoped_ptr<PdfMetafileSkia> draft_metafile;
+  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
     draft_metafile.reset(new PdfMetafileSkia);
     initial_render_metafile = draft_metafile.get();
@@ -149,7 +148,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame,
-    Metafile* metafile,
+    PdfMetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi) {
   PageSizeMargins page_layout_in_points;
@@ -221,7 +220,8 @@ void PrintWebViewHelper::PrintPageInternal(
 }
 
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    Metafile* metafile, base::SharedMemoryHandle* shared_mem_handle) {
+    PdfMetafileSkia* metafile,
+    base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;
   // Allocate a shared memory buffer to hold the generated metafile data.

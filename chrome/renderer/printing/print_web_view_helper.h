@@ -217,12 +217,12 @@ class PrintWebViewHelper
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
-                         Metafile* metafile);
+                         PdfMetafileSkia* metafile);
 #elif defined(OS_WIN)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
-                         Metafile* metafile,
+                         PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
 #else
@@ -241,7 +241,7 @@ class PrintWebViewHelper
                   int page_number,
                   blink::WebFrame* frame,
                   bool is_preview,
-                  Metafile* metafile,
+                  PdfMetafileSkia* metafile,
                   gfx::Size* page_size,
                   gfx::Rect* content_rect);
 #endif  // defined(OS_MACOSX)
@@ -259,7 +259,7 @@ class PrintWebViewHelper
 
   // Helper methods -----------------------------------------------------------
 
-  bool CopyMetafileDataToSharedMem(Metafile* metafile,
+  bool CopyMetafileDataToSharedMem(PdfMetafileSkia* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
 
   // Helper method to get page layout in points and fit to page if needed.
@@ -305,7 +305,7 @@ class PrintWebViewHelper
   // For a valid |page_number| with modifiable content,
   // |metafile| is the rendered page. Otherwise |metafile| is NULL.
   // Returns true if print preview should continue, false on failure.
-  bool PreviewPageRendered(int page_number, Metafile* metafile);
+  bool PreviewPageRendered(int page_number, PdfMetafileSkia* metafile);
 
   void SetPrintPagesParams(const PrintMsg_PrintPages_Params& settings);
 

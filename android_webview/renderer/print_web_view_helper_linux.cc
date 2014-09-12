@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_thread.h"
-#include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "printing/pdf_metafile_skia.h"
@@ -34,8 +33,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
   page_params.page_number = page_number;
-  scoped_ptr<Metafile> draft_metafile;
-  Metafile* initial_render_metafile = print_preview_context_.metafile();
+  scoped_ptr<PdfMetafileSkia> draft_metafile;
+  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
     draft_metafile.reset(new PdfMetafileSkia);
     initial_render_metafile = draft_metafile.get();
@@ -154,7 +153,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame,
-    Metafile* metafile) {
+    PdfMetafileSkia* metafile) {
   PageSizeMargins page_layout_in_points;
   double scale_factor = 1.0f;
   ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,

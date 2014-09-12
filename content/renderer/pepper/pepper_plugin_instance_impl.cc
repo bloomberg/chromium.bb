@@ -92,8 +92,8 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
+#include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
@@ -1973,13 +1973,13 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 
   bool ret = false;
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
-  printing::Metafile* metafile =
+  printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   DCHECK(metafile != NULL);
   if (metafile)
     ret = metafile->InitFromData(mapper.data(), mapper.size());
 #elif defined(OS_WIN)
-  printing::Metafile* metafile =
+  printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   if (metafile) {
     // We only have a metafile when doing print preview, so we just want to

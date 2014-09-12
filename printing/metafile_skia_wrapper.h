@@ -12,26 +12,27 @@ class SkCanvas;
 
 namespace printing {
 
-class Metafile;
+class PdfMetafileSkia;
 
-// A wrapper class with static methods to set and retrieve a Metafile
+// A wrapper class with static methods to set and retrieve a PdfMetafileSkia
 // on an SkCanvas.  The ownership of the metafile is not affected and it
 // is the caller's responsibility to ensure that the metafile remains valid
 // as long as the canvas.
 class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
  public:
-  static void SetMetafileOnCanvas(const SkCanvas& canvas, Metafile* metafile);
+  static void SetMetafileOnCanvas(const SkCanvas& canvas,
+                                  PdfMetafileSkia* metafile);
 
-  static Metafile* GetMetafileFromCanvas(const SkCanvas& canvas);
+  static PdfMetafileSkia* GetMetafileFromCanvas(const SkCanvas& canvas);
 
   // Methods to set and retrieve custom scale factor for metafile from canvas.
   static void SetCustomScaleOnCanvas(const SkCanvas& canvas, double scale);
   static bool GetCustomScaleOnCanvas(const SkCanvas& canvas, double* scale);
 
  private:
-  explicit MetafileSkiaWrapper(Metafile* metafile);
+  explicit MetafileSkiaWrapper(PdfMetafileSkia* metafile);
 
-  Metafile* metafile_;
+  PdfMetafileSkia* metafile_;
 };
 
 }  // namespace printing

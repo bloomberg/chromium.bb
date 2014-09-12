@@ -240,13 +240,13 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
 }
 
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(printing::Metafile* metafile,
+void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  metafile->SaveTo(path);
-  // |metafile| must be deleted on the UI thread.
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, metafile);
+  printing::PdfMetafileSkia metafile;
+  metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
+  metafile.SaveTo(path);
   if (!pdf_file_saved_closure.is_null())
     pdf_file_saved_closure.Run();
 }
@@ -1315,14 +1315,12 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
     NOTREACHED() << "Preview data was checked before file dialog.";
     return;
   }
-  scoped_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia);
-  metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintToPdfCallback,
-                 metafile.release(),
-                 print_to_pdf_path_,
-                 pdf_file_saved_closure_));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&PrintToPdfCallback,
+                                     data,
+                                     print_to_pdf_path_,
+                                     pdf_file_saved_closure_));
   print_to_pdf_path_ = base::FilePath();
   ClosePreviewDialog();
 }

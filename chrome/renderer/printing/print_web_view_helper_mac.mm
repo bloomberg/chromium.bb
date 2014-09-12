@@ -10,7 +10,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/print_messages.h"
-#include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "skia/ext/platform_device.h"
@@ -57,8 +56,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
   PrintMsg_Print_Params printParams = print_params;
-  scoped_ptr<Metafile> draft_metafile;
-  Metafile* initial_render_metafile = print_preview_context_.metafile();
+  scoped_ptr<PdfMetafileSkia> draft_metafile;
+  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
 
   bool render_to_draft = print_preview_context_.IsModifiable() &&
                          is_print_ready_metafile_sent_;
@@ -94,10 +93,13 @@ bool PrintWebViewHelper::RenderPreviewPage(
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
-void PrintWebViewHelper::RenderPage(
-    const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
-    bool is_preview, Metafile* metafile, gfx::Size* page_size,
-    gfx::Rect* content_rect) {
+void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
+                                    int page_number,
+                                    WebFrame* frame,
+                                    bool is_preview,
+                                    PdfMetafileSkia* metafile,
+                                    gfx::Size* page_size,
+                                    gfx::Rect* content_rect) {
   double scale_factor = 1.0f;
   double webkit_shrink_factor = frame->getPrintPageShrink(page_number);
   PageSizeMargins page_layout_in_points;

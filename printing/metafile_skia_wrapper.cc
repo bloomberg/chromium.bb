@@ -20,7 +20,7 @@ const char* kCustomScaleKey = "CrCustomScale";
 
 // static
 void MetafileSkiaWrapper::SetMetafileOnCanvas(const SkCanvas& canvas,
-                                              Metafile* metafile) {
+                                              PdfMetafileSkia* metafile) {
   skia::RefPtr<MetafileSkiaWrapper> wrapper;
   if (metafile)
     wrapper = skia::AdoptRef(new MetafileSkiaWrapper(metafile));
@@ -30,7 +30,8 @@ void MetafileSkiaWrapper::SetMetafileOnCanvas(const SkCanvas& canvas,
 }
 
 // static
-Metafile* MetafileSkiaWrapper::GetMetafileFromCanvas(const SkCanvas& canvas) {
+PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
+    const SkCanvas& canvas) {
   SkMetaData& meta = skia::getMetaData(canvas);
   SkRefCnt* value;
   if (!meta.findRefCnt(kMetafileKey, &value) || !value)
@@ -58,7 +59,7 @@ bool MetafileSkiaWrapper::GetCustomScaleOnCanvas(const SkCanvas& canvas,
   return true;
 }
 
-MetafileSkiaWrapper::MetafileSkiaWrapper(Metafile* metafile)
+MetafileSkiaWrapper::MetafileSkiaWrapper(PdfMetafileSkia* metafile)
     : metafile_(metafile) {
 }
 
