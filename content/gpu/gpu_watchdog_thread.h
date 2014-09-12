@@ -88,13 +88,13 @@ class GpuWatchdogThread : public base::Thread,
   // the task was posted.
   base::Time suspension_timeout_;
 
-  base::WeakPtrFactory<GpuWatchdogThread> weak_factory_;
-
   bool suspended_;
 
 #if defined(OS_CHROMEOS)
   FILE* tty_file_;
 #endif
+
+  base::WeakPtrFactory<GpuWatchdogThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
 };

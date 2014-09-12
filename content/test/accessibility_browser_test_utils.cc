@@ -23,8 +23,8 @@ namespace content {
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(Shell* shell)
     : event_to_wait_for_(ui::AX_EVENT_NONE),
       loop_runner_(new MessageLoopRunner()),
-      weak_factory_(this),
-      event_target_id_(0) {
+      event_target_id_(0),
+      weak_factory_(this) {
   WebContents* web_contents = shell->web_contents();
   frame_host_ = static_cast<RenderFrameHostImpl*>(
       web_contents->GetMainFrame());
@@ -39,8 +39,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     ui::AXEvent event_type)
     : event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
-      weak_factory_(this),
-      event_target_id_(0) {
+      event_target_id_(0),
+      weak_factory_(this) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell->web_contents());
   frame_host_ = static_cast<RenderFrameHostImpl*>(
@@ -57,8 +57,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : frame_host_(frame_host),
       event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
-      weak_factory_(this),
-      event_target_id_(0) {
+      event_target_id_(0),
+      weak_factory_(this) {
   frame_host_->SetAccessibilityCallbackForTesting(
       base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));

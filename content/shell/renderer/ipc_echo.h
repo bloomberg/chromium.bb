@@ -41,12 +41,14 @@ class IPCEcho : public base::SupportsWeakPtr<IPCEcho> {
   int last_echo_id() const { return last_echo_id_; }
   int last_echo_size() const { return last_echo_size_; }
 
-  base::WeakPtrFactory<IPCEcho> weak_factory_;
   blink::WebDocument document_;
   IPC::Sender* sender_;
   int routing_id_;
   int last_echo_id_;
   int last_echo_size_;
+
+  base::WeakPtrFactory<IPCEcho> weak_factory_;
+
 };
 
 }  // namespace content

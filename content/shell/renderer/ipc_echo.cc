@@ -82,9 +82,9 @@ void IPCEchoBindings::Install(base::WeakPtr<IPCEcho> echo,
 IPCEcho::IPCEcho(blink::WebDocument document,
                  IPC::Sender* sender,
                  int routing_id)
-    : weak_factory_(this),
-      document_(document), sender_(sender), routing_id_(routing_id),
-      last_echo_id_(0) {
+    : document_(document), sender_(sender), routing_id_(routing_id),
+      last_echo_id_(0),
+      weak_factory_(this) {
 }
 
 IPCEcho::~IPCEcho() {

@@ -57,8 +57,9 @@ class AccessibilityNotificationWaiter {
   RenderFrameHostImpl* frame_host_;
   ui::AXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
-  base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
   int event_target_id_;
+
+  base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNotificationWaiter);
 };
