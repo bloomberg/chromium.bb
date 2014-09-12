@@ -1,0 +1,70 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [500, 500],
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 500, 500],
+            [0, 0, 500, 500]
+          ],
+          "children": [
+            {
+              "bounds": [485, 485],
+              "children": [
+                {
+                  "bounds": [5000, 5000],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "repaintRects": [
+                    [2000, 2000, 3000, 3000],
+                    [0, 0, 5000, 5000]
+                  ],
+                  "children": [
+                    {
+                      "shouldFlattenTransform": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [485, 15],
+                  "repaintRects": [
+                    [0, 0, 485, 15],
+                    [0, 0, 485, 15],
+                    [0, 0, 485, 15]
+                  ]
+                },
+                {
+                  "position": [485, 0],
+                  "bounds": [15, 485],
+                  "repaintRects": [
+                    [0, 0, 15, 485],
+                    [0, 0, 15, 485],
+                    [0, 0, 15, 485]
+                  ]
+                },
+                {
+                  "position": [485, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
