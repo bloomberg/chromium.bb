@@ -12,6 +12,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
         '../ui/gfx/gfx.gyp:gfx',
@@ -19,10 +20,15 @@
         'bookmarks_browser',
         'enhanced_bookmarks_proto',
         'keyed_service_core',
+        'signin_core_browser',
       ],
       'sources': [
         'enhanced_bookmarks/bookmark_image_service.cc',
         'enhanced_bookmarks/bookmark_image_service.h',
+        'enhanced_bookmarks/bookmark_server_search_service.cc',
+        'enhanced_bookmarks/bookmark_server_search_service.h',
+        'enhanced_bookmarks/bookmark_server_service.cc',
+        'enhanced_bookmarks/bookmark_server_service.h',
         'enhanced_bookmarks/enhanced_bookmark_model.cc',
         'enhanced_bookmarks/enhanced_bookmark_model.h',
         'enhanced_bookmarks/enhanced_bookmark_utils.cc',
@@ -78,6 +84,7 @@
       'type': 'static_library',
       'sources': [
         'enhanced_bookmarks/proto/metadata.proto',
+        'enhanced_bookmarks/proto/search.proto',
       ],
       'variables': {
         'proto_in_dir': './enhanced_bookmarks/proto',

@@ -1,0 +1,30 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+package image.collections;
+
+// Contains the result of a full text search.
+message CorpusSearchResult {
+  // Encodes the status of the response.
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    FAILED_RPC = 2;
+    NO_VALID_BACKEND = 3;
+    INVALID_INPUT = 4;
+  }
+  optional Status status = 1;
+
+  // For each results returns the clip id, the title and a snippet highlighting
+  // the context of the match on the search term.
+  message ClipResult {
+    optional string clip_id = 1;
+    optional string title = 2;
+    optional string snippet = 3;
+  }
+  repeated ClipResult results = 2;
+}

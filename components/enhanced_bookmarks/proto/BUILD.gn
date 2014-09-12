@@ -7,5 +7,6 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "metadata.proto",
+    "search.proto",
   ]
 }

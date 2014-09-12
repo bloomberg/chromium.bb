@@ -1,6 +1,8 @@
 include_rules = [
   "+components/bookmarks",
   "+components/keyed_service",
+  "+components/signin",
+  "+google_apis/gaia",
   "+jni",
   "+net",
   "+sql",
