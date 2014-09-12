@@ -386,7 +386,8 @@ PassRefPtr<ArrayBuffer> SharedBuffer::getAsArrayBuffer() const
 PassRefPtr<SkData> SharedBuffer::getAsSkData() const
 {
     unsigned bufferLength = size();
-    char* buffer = static_cast<char*>(sk_malloc_throw(bufferLength));
+    SkData* data = SkData::NewUninitialized(bufferLength);
+    char* buffer = static_cast<char*>(data->writable_data());
     const char* segment = 0;
     unsigned position = 0;
     while (unsigned segmentSize = getSomeData(segment, position)) {
@@ -399,7 +400,7 @@ PassRefPtr<SkData> SharedBuffer::getAsSkData() const
         // Don't return the incomplete SkData.
         return nullptr;
     }
-    return adoptRef(SkData::NewFromMalloc(buffer, bufferLength));
+    return adoptRef(data);
 }
 
 bool SharedBuffer::lock()
