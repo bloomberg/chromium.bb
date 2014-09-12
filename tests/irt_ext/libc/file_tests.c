@@ -644,6 +644,153 @@ static int do_readlink_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_dup_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_dup_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int old_fd = fileno(fp);
+  if (old_fd < 0 ||
+      old_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[old_fd].valid) {
+    irt_ext_test_print("do_dup_test: created invalid file descriptor: %d\n",
+                       old_fd);
+    return 1;
+  }
+
+  int dup_fd = dup(old_fd);
+  if (dup_fd == -1) {
+    irt_ext_test_print("do_dup_test: dup was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (dup_fd < 0 ||
+      dup_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[dup_fd].valid) {
+    irt_ext_test_print("do_dup_test: duplicated invalid file descriptor: %d\n",
+                       dup_fd);
+    return 1;
+  }
+
+  const struct file_descriptor *fd_table = file_desc_env->file_descs;
+  if (fd_table[old_fd].data != fd_table[dup_fd].data) {
+    irt_ext_test_print("do_dup_test: file descriptors do not match.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_dup2_new_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_dup2_new_test: fopen was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int old_fd = fileno(fp);
+  if (old_fd < 0 ||
+      old_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[old_fd].valid) {
+    irt_ext_test_print("do_dup2_new_test: created invalid fd: %d\n",
+                       old_fd);
+    return 1;
+  }
+
+  /* Test dup2 using an unused file descriptor. */
+  int test_fd = old_fd + 1;
+  if (test_fd < 0 ||
+      test_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      file_desc_env->file_descs[test_fd].valid) {
+    irt_ext_test_print("do_dup2_new_test: invalid test file descriptor: %d\n",
+                       test_fd);
+    return 1;
+  }
+
+  if (test_fd != dup2(old_fd, test_fd)) {
+    irt_ext_test_print("do_dup2_new_test: dup2 was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (!file_desc_env->file_descs[test_fd].valid) {
+    irt_ext_test_print("do_dup2_new_test: dup file descriptor not valid.\n");
+    return 1;
+  }
+
+  const struct file_descriptor *fd_table = file_desc_env->file_descs;
+  if (fd_table[old_fd].data != fd_table[test_fd].data) {
+    irt_ext_test_print("do_dup2_new_test: file descriptors do not match.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_dup2_used_test(struct file_desc_environment *file_desc_env) {
+  FILE *fp = fopen(TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_dup2_used_test: fopen 1 was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int old_fd = fileno(fp);
+  if (old_fd < 0 ||
+      old_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[old_fd].valid) {
+    irt_ext_test_print("do_dup2_used_test: created invalid fd 1: %d\n",
+                       old_fd);
+    return 1;
+  }
+
+  /* Test dup2 using an open file descriptor. */
+  FILE *fp2 = fopen(TEST_FILE2, "w+");
+  if (fp2 == NULL) {
+    irt_ext_test_print("do_dup2_used_test: fopen 2 was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int new_fd = fileno(fp2);
+  if (new_fd < 0 ||
+      new_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[new_fd].valid) {
+    irt_ext_test_print("do_dup2_used_test: created invalid fd 2: %d\n",
+                       new_fd);
+    return 1;
+  }
+
+  const struct file_descriptor *fd_table = file_desc_env->file_descs;
+  if (fd_table[old_fd].data == fd_table[new_fd].data) {
+    irt_ext_test_print("do_dup2_used_test: file descriptors already match.\n");
+    return 1;
+  }
+
+  if (new_fd != dup2(old_fd, new_fd)) {
+    irt_ext_test_print("do_dup2_used_test: dup2 was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (!file_desc_env->file_descs[new_fd].valid) {
+    irt_ext_test_print("do_dup2_used_test: new file descriptor not valid.\n");
+    return 1;
+  }
+
+  if (fd_table[old_fd].data != fd_table[new_fd].data) {
+    irt_ext_test_print("do_dup2_used_test: file descriptors do not match.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 /*
  * These tests should not be in alphabetical order but ordered by complexity,
  * simpler tests should break first. For example, changing to a directory
@@ -677,6 +824,11 @@ static const TYPE_file_test g_file_tests[] = {
   do_symlink_test,
   do_lstat_test,
   do_readlink_test,
+
+  /* Duplicate file descriptor tests. */
+  do_dup_test,
+  do_dup2_new_test,
+  do_dup2_used_test,
 };
 
 static void setup(struct file_desc_environment *file_desc_env) {

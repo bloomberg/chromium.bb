@@ -69,10 +69,38 @@ static int my_close(int fd) {
 }
 
 static int my_dup(int fd, int *newfd) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid) {
+
+    int try_fd = allocate_file_descriptor(g_activated_env);
+    if (try_fd == -1) {
+      return EMFILE;
+    }
+
+    g_activated_env->file_descs[try_fd] = g_activated_env->file_descs[fd];
+    *newfd = try_fd;
+    return 0;
+  }
+
   return EBADF;
 }
 
 static int my_dup2(int fd, int newfd) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      newfd >= 0 &&
+      newfd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid) {
+    if (fd == newfd)
+      return 0;
+
+    g_activated_env->file_descs[newfd] = g_activated_env->file_descs[fd];
+    return 0;
+  }
+
   return EBADF;
 }
 
