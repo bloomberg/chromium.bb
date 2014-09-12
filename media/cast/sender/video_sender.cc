@@ -19,6 +19,16 @@
 namespace media {
 namespace cast {
 
+// The following two constants are used to adjust the target
+// playout delay (when allowed). They were calculated using
+// a combination of cast_benchmark runs and manual testing.
+
+// This is how many round trips we think we need on the network.
+const int kRoundTripsNeeded = 4;
+// This is an estimate of all the the constant time needed
+// independent of network quality.
+const int kConstantTimeMs = 75;
+
 // Note, we use a fixed bitrate value when external video encoder is used.
 // Some hardware encoder shows bad behavior if we set the bitrate too
 // frequently, e.g. quality drop, not abiding by target bitrate, etc.
@@ -29,7 +39,8 @@ VideoSender::VideoSender(
     const CastInitializationCallback& initialization_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-    CastTransportSender* const transport_sender)
+    CastTransportSender* const transport_sender,
+    const PlayoutDelayChangeCB& playout_delay_change_cb)
     : FrameSender(
         cast_environment,
         false,
@@ -38,11 +49,13 @@ VideoSender::VideoSender(
         kVideoFrequency,
         video_config.ssrc,
         video_config.max_frame_rate,
-        video_config.target_playout_delay,
+        video_config.min_playout_delay,
+        video_config.max_playout_delay,
         NewFixedCongestionControl(
             (video_config.min_bitrate + video_config.max_bitrate) / 2)),
       frames_in_encoder_(0),
       last_bitrate_(0),
+      playout_delay_change_cb_(playout_delay_change_cb),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_VIDEO_UNINITIALIZED;
   VLOG(1) << "max_unacked_frames is " << max_unacked_frames_
@@ -82,7 +95,11 @@ VideoSender::VideoSender(
   transport_config.ssrc = video_config.ssrc;
   transport_config.feedback_ssrc = video_config.incoming_feedback_ssrc;
   transport_config.rtp_payload_type = video_config.rtp_payload_type;
-  transport_config.stored_frames = max_unacked_frames_;
+  transport_config.stored_frames =
+      std::min(kMaxUnackedFrames,
+               1 + static_cast<int>(max_playout_delay_ *
+                                    max_frame_rate_ /
+                                    base::TimeDelta::FromSeconds(1)));
   transport_config.aes_key = video_config.aes_key;
   transport_config.aes_iv_mask = video_config.aes_iv_mask;
 
@@ -126,6 +143,14 @@ void VideoSender::InsertRawVideoFrame(
 
   if (ShouldDropNextFrame(capture_time)) {
     VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
+    base::TimeDelta new_target_delay = std::min(
+        current_round_trip_time_ * kRoundTripsNeeded +
+        base::TimeDelta::FromMilliseconds(kConstantTimeMs),
+        max_playout_delay_);
+    if (new_target_delay > target_playout_delay_) {
+      VLOG(1) << "New target delay: " << new_target_delay.InMilliseconds();
+      playout_delay_change_cb_.Run(new_target_delay);
+    }
     return;
   }
 

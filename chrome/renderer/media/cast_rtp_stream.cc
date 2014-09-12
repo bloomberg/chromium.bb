@@ -160,9 +160,16 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   if (config->ssrc == config->incoming_feedback_ssrc)
     return false;
-  config->target_playout_delay =
+  config->min_playout_delay =
+      base::TimeDelta::FromMilliseconds(
+          params.payload.min_latency_ms ?
+          params.payload.min_latency_ms :
+          params.payload.max_latency_ms);
+  config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  if (config->target_playout_delay <= base::TimeDelta())
+  if (config->min_playout_delay <= base::TimeDelta())
+    return false;
+  if (config->min_playout_delay > config->max_playout_delay)
     return false;
   config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
@@ -188,9 +195,16 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   if (config->ssrc == config->incoming_feedback_ssrc)
     return false;
-  config->target_playout_delay =
+  config->min_playout_delay =
+      base::TimeDelta::FromMilliseconds(
+          params.payload.min_latency_ms ?
+          params.payload.min_latency_ms :
+          params.payload.max_latency_ms);
+  config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  if (config->target_playout_delay <= base::TimeDelta())
+  if (config->min_playout_delay <= base::TimeDelta())
+    return false;
+  if (config->min_playout_delay > config->max_playout_delay)
     return false;
   config->rtp_payload_type = params.payload.payload_type;
   config->width = params.payload.width;
@@ -464,6 +478,7 @@ CastCodecSpecificParams::~CastCodecSpecificParams() {}
 CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),
       max_latency_ms(0),
+      min_latency_ms(0),
       ssrc(0),
       feedback_ssrc(0),
       clock_rate(0),

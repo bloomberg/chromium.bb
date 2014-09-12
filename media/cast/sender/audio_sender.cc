@@ -33,7 +33,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
         audio_config.frequency,
         audio_config.ssrc,
         kAudioFrameRate * 2.0, // We lie to increase max outstanding frames.
-        audio_config.target_playout_delay,
+        audio_config.min_playout_delay,
+        audio_config.max_playout_delay,
         NewFixedCongestionControl(audio_config.bitrate)),
       samples_in_encoder_(0),
       weak_factory_(this) {
@@ -61,9 +62,11 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   transport_config.ssrc = audio_config.ssrc;
   transport_config.feedback_ssrc = audio_config.incoming_feedback_ssrc;
   transport_config.rtp_payload_type = audio_config.rtp_payload_type;
-  // TODO(miu): AudioSender needs to be like VideoSender in providing an upper
-  // limit on the number of in-flight frames.
-  transport_config.stored_frames = max_unacked_frames_;
+  transport_config.stored_frames =
+      std::min(kMaxUnackedFrames,
+               1 + static_cast<int>(max_playout_delay_ *
+                                    max_frame_rate_ /
+                                    base::TimeDelta::FromSeconds(1)));
   transport_config.aes_key = audio_config.aes_key;
   transport_config.aes_iv_mask = audio_config.aes_iv_mask;
 

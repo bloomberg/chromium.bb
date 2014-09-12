@@ -133,7 +133,9 @@ void CastSenderImpl::InitializeVideo(
                  weak_factory_.GetWeakPtr(), cast_initialization_cb),
       create_vea_cb,
       create_video_encode_mem_cb,
-      transport_sender_));
+      transport_sender_,
+      base::Bind(&CastSenderImpl::SetTargetPlayoutDelay,
+                 weak_factory_.GetWeakPtr())));
   if (audio_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
            video_sender_->GetTargetPlayoutDelay());

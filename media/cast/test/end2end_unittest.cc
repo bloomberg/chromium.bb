@@ -474,7 +474,7 @@ class End2EndTest : public ::testing::Test {
                  int max_number_of_video_buffers_used) {
     audio_sender_config_.ssrc = 1;
     audio_sender_config_.incoming_feedback_ssrc = 2;
-    audio_sender_config_.target_playout_delay =
+    audio_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     audio_sender_config_.rtp_payload_type = 96;
     audio_sender_config_.use_external_encoder = false;
@@ -499,7 +499,7 @@ class End2EndTest : public ::testing::Test {
 
     video_sender_config_.ssrc = 3;
     video_sender_config_.incoming_feedback_ssrc = 4;
-    video_sender_config_.target_playout_delay =
+    video_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     video_sender_config_.rtp_payload_type = 97;
     video_sender_config_.use_external_encoder = false;
@@ -995,9 +995,9 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
   Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_OPUS, kDefaultAudioSamplingRate, 3);
   int target_delay = 300;
-  video_sender_config_.target_playout_delay =
+  video_sender_config_.max_playout_delay =
       base::TimeDelta::FromMilliseconds(target_delay);
-  audio_sender_config_.target_playout_delay =
+  audio_sender_config_.max_playout_delay =
       base::TimeDelta::FromMilliseconds(target_delay);
   video_receiver_config_.rtp_max_delay_ms = target_delay;
   Create();
@@ -1436,6 +1436,12 @@ TEST_F(End2EndTest, OldPacketNetwork) {
 
 TEST_F(End2EndTest, TestSetPlayoutDelay) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
+  video_sender_config_.min_playout_delay =
+      video_sender_config_.max_playout_delay;
+  audio_sender_config_.min_playout_delay =
+      audio_sender_config_.max_playout_delay;
+  video_sender_config_.max_playout_delay = base::TimeDelta::FromSeconds(1);
+  audio_sender_config_.max_playout_delay = base::TimeDelta::FromSeconds(1);
   Create();
   StartBasicPlayer();
   const int kNewDelay = 600;

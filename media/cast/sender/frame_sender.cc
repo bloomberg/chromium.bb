@@ -22,12 +22,16 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          int rtp_timebase,
                          uint32 ssrc,
                          double max_frame_rate,
-                         base::TimeDelta playout_delay,
+                         base::TimeDelta min_playout_delay,
+                         base::TimeDelta max_playout_delay,
                          CongestionControl* congestion_control)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
       rtcp_interval_(rtcp_interval),
+      min_playout_delay_(min_playout_delay == base::TimeDelta() ?
+                         max_playout_delay : min_playout_delay),
+      max_playout_delay_(max_playout_delay),
       max_frame_rate_(max_frame_rate),
       num_aggressive_rtcp_reports_sent_(0),
       last_sent_frame_id_(0),
@@ -40,7 +44,7 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
   DCHECK(transport_sender_);
   DCHECK_GT(rtp_timebase_, 0);
   DCHECK(congestion_control_);
-  SetTargetPlayoutDelay(playout_delay);
+  SetTargetPlayoutDelay(min_playout_delay_);
   send_target_playout_delay_ = false;
   memset(frame_rtp_timestamps_, 0, sizeof(frame_rtp_timestamps_));
 }
@@ -95,6 +99,10 @@ void FrameSender::OnMeasuredRoundTripTime(base::TimeDelta rtt) {
 
 void FrameSender::SetTargetPlayoutDelay(
     base::TimeDelta new_target_playout_delay) {
+  new_target_playout_delay = std::max(new_target_playout_delay,
+                                      min_playout_delay_);
+  new_target_playout_delay = std::min(new_target_playout_delay,
+                                      max_playout_delay_);
   target_playout_delay_ = new_target_playout_delay;
   max_unacked_frames_ =
       std::min(kMaxUnackedFrames,

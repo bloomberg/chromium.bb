@@ -62,7 +62,7 @@ AudioSenderConfig GetDefaultAudioSenderConfig() {
   config.channels = recv_config.channels;
   config.bitrate = kDefaultAudioEncoderBitrate;
   config.codec = recv_config.codec;
-  config.target_playout_delay =
+  config.max_playout_delay =
       base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs);
   return config;
 }
@@ -83,7 +83,7 @@ VideoSenderConfig GetDefaultVideoSenderConfig() {
   config.max_number_of_video_buffers_used = 1;
   config.codec = recv_config.codec;
   config.number_of_encode_threads = 2;
-  config.target_playout_delay =
+  config.max_playout_delay =
       base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs);
   return config;
 }

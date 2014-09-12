@@ -71,6 +71,8 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
                                    CastRtpPayloadParams* cast_params) {
   cast_params->payload_type = ext_params.payload_type;
   cast_params->max_latency_ms = ext_params.max_latency;
+  cast_params->min_latency_ms =
+      ext_params.min_latency ? *ext_params.min_latency : ext_params.max_latency;
   cast_params->codec_name = ext_params.codec_name;
   cast_params->ssrc = ext_params.ssrc;
   cast_params->feedback_ssrc = ext_params.feedback_ssrc;

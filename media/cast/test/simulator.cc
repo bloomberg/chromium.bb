@@ -219,28 +219,28 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Audio sender config.
   AudioSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
-  audio_sender_config.target_playout_delay =
+  audio_sender_config.max_playout_delay =
       base::TimeDelta::FromMilliseconds(kTargetDelay);
 
   // Audio receiver config.
   FrameReceiverConfig audio_receiver_config =
       GetDefaultAudioReceiverConfig();
   audio_receiver_config.rtp_max_delay_ms =
-      audio_sender_config.target_playout_delay.InMilliseconds();
+      audio_sender_config.max_playout_delay.InMilliseconds();
 
   // Video sender config.
   VideoSenderConfig video_sender_config = GetDefaultVideoSenderConfig();
   video_sender_config.max_bitrate = 2500000;
   video_sender_config.min_bitrate = 2000000;
   video_sender_config.start_bitrate = 2000000;
-  video_sender_config.target_playout_delay =
+  video_sender_config.max_playout_delay =
       base::TimeDelta::FromMilliseconds(kTargetDelay);
 
   // Video receiver config.
   FrameReceiverConfig video_receiver_config =
       GetDefaultVideoReceiverConfig();
   video_receiver_config.rtp_max_delay_ms =
-      video_sender_config.target_playout_delay.InMilliseconds();
+      video_sender_config.max_playout_delay.InMilliseconds();
 
   // Loopback transport.
   LoopBackTransport receiver_to_sender(receiver_env);

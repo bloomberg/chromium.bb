@@ -29,7 +29,8 @@ class FrameSender {
               int rtp_timebase,
               uint32 ssrc,
               double max_frame_rate,
-              base::TimeDelta playout_delay,
+              base::TimeDelta min_playout_delay,
+              base::TimeDelta max_playout_delay,
               CongestionControl* congestion_control);
   virtual ~FrameSender();
 
@@ -108,6 +109,8 @@ class FrameSender {
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
   base::TimeDelta target_playout_delay_;
+  base::TimeDelta min_playout_delay_;
+  base::TimeDelta max_playout_delay_;
 
   // If true, we transmit the target playout delay to the receiver.
   bool send_target_playout_delay_;
@@ -155,6 +158,9 @@ class FrameSender {
   // buffer doesn't overflow.
   scoped_ptr<CongestionControl> congestion_control_;
 
+  // The most recently measured round trip time.
+  base::TimeDelta current_round_trip_time_;
+
  private:
   const bool is_audio_;
 
@@ -163,9 +169,6 @@ class FrameSender {
   // through the Record/GetXXX() methods.
   base::TimeTicks frame_reference_times_[256];
   RtpTimestamp frame_rtp_timestamps_[256];
-
-  // The most recently measured round trip time.
-  base::TimeDelta current_round_trip_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;

@@ -38,12 +38,13 @@ struct AudioSenderConfig {
   int rtcp_interval;
 
   // The total amount of time between a frame's capture/recording on the sender
-  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
-  // a value large enough to give the system sufficient time to encode,
+  // and its playback on the receiver (i.e., shown to a user).  This should be
+  // set to a value large enough to give the system sufficient time to encode,
   // transmit/retransmit, receive, decode, and render; given its run-time
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
-  base::TimeDelta target_playout_delay;
+  base::TimeDelta min_playout_delay;
+  base::TimeDelta max_playout_delay;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
@@ -74,12 +75,13 @@ struct VideoSenderConfig {
   int rtcp_interval;
 
   // The total amount of time between a frame's capture/recording on the sender
-  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
-  // a value large enough to give the system sufficient time to encode,
+  // and its playback on the receiver (i.e., shown to a user).  This should be
+  // set to a value large enough to give the system sufficient time to encode,
   // transmit/retransmit, receive, decode, and render; given its run-time
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
-  base::TimeDelta target_playout_delay;
+  base::TimeDelta min_playout_delay;
+  base::TimeDelta max_playout_delay;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;

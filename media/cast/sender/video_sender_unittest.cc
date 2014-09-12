@@ -111,6 +111,8 @@ class TestPacketSender : public PacketSender {
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
 
+void IgnorePlayoutDelayChanges(base::TimeDelta unused_playout_delay) {
+}
 class PeerVideoSender : public VideoSender {
  public:
   PeerVideoSender(
@@ -125,7 +127,8 @@ class PeerVideoSender : public VideoSender {
                     initialization_cb,
                     create_vea_cb,
                     create_video_encode_mem_cb,
-                    transport_sender) {}
+                    transport_sender,
+                    base::Bind(&IgnorePlayoutDelayChanges)) {}
   using VideoSender::OnReceivedCastFeedback;
 };
 }  // namespace

@@ -25,6 +25,8 @@ namespace cast {
 class CastTransportSender;
 class VideoEncoder;
 
+typedef base::Callback<void(base::TimeDelta)> PlayoutDelayChangeCB;
+
 // Not thread safe. Only called from the main cast thread.
 // This class owns all objects related to sending video, objects that create RTP
 // packets, congestion control, video encoder, parsing and sending of
@@ -40,7 +42,8 @@ class VideoSender : public FrameSender,
               const CastInitializationCallback& initialization_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-              CastTransportSender* const transport_sender);
+              CastTransportSender* const transport_sender,
+              const PlayoutDelayChangeCB& playout_delay_change_cb);
 
   virtual ~VideoSender();
 
@@ -78,6 +81,8 @@ class VideoSender : public FrameSender,
   // Remember what we set the bitrate to before, no need to set it again if
   // we get the same value.
   uint32 last_bitrate_;
+
+  PlayoutDelayChangeCB playout_delay_change_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;

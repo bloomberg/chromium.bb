@@ -24,6 +24,9 @@ namespace cast.streaming.rtpStream {
     // playback at the cost of higher latency.
     long maxLatency;
 
+    // Minimum latency in milliseconds. Defaults to |maxLatency|.
+    long? minLatency;
+
     DOMString codecName;
 
     // Synchronization source identifier.
