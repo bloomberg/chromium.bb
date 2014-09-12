@@ -362,6 +362,7 @@ source_set("core_generated") {
     "$blink_core_output_dir/InputTypeNames.cpp",
     "$blink_core_output_dir/MathMLNames.cpp",
     "$blink_core_output_dir/SVGNames.cpp",
+    "$blink_core_output_dir/UserAgentStyleSheetsData.cpp",
     "$blink_core_output_dir/XLinkNames.cpp",
     "$blink_core_output_dir/XMLNSNames.cpp",
     "$blink_core_output_dir/XMLNames.cpp",
@@ -570,6 +571,7 @@ group("make_core_generated") {
     ":make_core_generated_event_names",
     ":make_core_generated_event_target_names",
     ":make_core_generated_math_ml_names",
+    ":make_core_generated_user_agent_style_sheets",
     ":make_core_generated_fetch_initiator_type_names",
     ":make_core_generated_event_type_names",
     ":make_core_generated_html_tokenizer_names",
@@ -978,6 +980,48 @@ action("make_core_generated_media_query_tokenizer_codepoints") {
   args = [
     "--output_dir", rel_blink_core_gen_dir,
   ]
+
+  deps = make_core_generated_deps
+}
+
+# "UserAgentStyleSheets" in make_core_generated from GYP.
+action("make_core_generated_user_agent_style_sheets") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
+  script = "../build/scripts/make-file-arrays.py"
+
+  inputs = [
+    "css/html.css",
+    "css/quirks.css",
+    "css/view-source.css",
+    "css/themeChromium.css",
+    "css/themeChromiumAndroid.css",
+    "css/themeChromiumLinux.css",
+    "css/themeChromiumSkia.css",
+    "css/themeInputMultipleFields.css",
+    "css/themeMac.css",
+    "css/themeWin.css",
+    "css/themeWinQuirks.css",
+    "css/svg.css",
+    "css/navigationTransitions.css",
+    "css/mathml.css",
+    "css/mediaControls.css",
+    "css/mediaControlsAndroid.css",
+    "css/fullscreen.css",
+    "css/xhtmlmp.css",
+    "css/viewportAndroid.css",
+  ]
+
+  outputs = [
+    "$blink_core_output_dir/UserAgentStyleSheets.h",
+    "$blink_core_output_dir/UserAgentStyleSheetsData.cpp",
+  ]
+
+  args =
+    [ "--namespace", "blink" ] +
+    [ "--out-h=" + rebase_path(outputs[0], root_build_dir) ] +
+    [ "--out-cpp=" + rebase_path(outputs[1], root_build_dir) ] +
+    rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
 }

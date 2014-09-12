@@ -224,6 +224,7 @@
         '<(blink_core_output_dir)/InputTypeNames.cpp',
         '<(blink_core_output_dir)/MathMLNames.cpp',
         '<(blink_core_output_dir)/SVGNames.cpp',
+        '<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
         '<(blink_core_output_dir)/XLinkNames.cpp',
         '<(blink_core_output_dir)/XMLNSNames.cpp',
         '<(blink_core_output_dir)/XMLNames.cpp',

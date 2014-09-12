@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/HTMLNames.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -73,7 +74,6 @@
 #include "core/page/Page.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
-#include "platform/PlatformResourceLoader.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -1418,7 +1418,7 @@ bool InspectorPageAgent::applyViewportStyleOverride(StyleResolver* resolver)
         return false;
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
-    styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
+    styleSheet->parseString(String(viewportAndroidCss, sizeof(viewportAndroidCss)));
     OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
     ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
     resolver->viewportStyleResolver()->collectViewportRules(ruleSet.get(), ViewportStyleResolver::UserAgentOrigin);
