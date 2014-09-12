@@ -66,6 +66,10 @@
     // app.content_security_policy whitelist).
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "description": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "incognito": [
     {
       "channel": "stable",

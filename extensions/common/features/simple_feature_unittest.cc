@@ -4,19 +4,12 @@
 
 #include "extensions/common/features/simple_feature.h"
 
-#include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
-#include "chrome/common/extensions/features/feature_channel.h"
+#include <string>
+
+#include "base/values.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using chrome::VersionInfo;
-using extensions::DictionaryBuilder;
-using extensions::Extension;
-using extensions::Feature;
-using extensions::ListBuilder;
-using extensions::Manifest;
-using extensions::ScopedCurrentChannel;
-using extensions::SimpleFeature;
 
 namespace extensions {
 
@@ -31,32 +24,22 @@ struct IsAvailableTestData {
   Feature::AvailabilityResult expected_result;
 };
 
+bool LocationIsAvailable(SimpleFeature::Location feature_location,
+                         Manifest::Location manifest_location) {
+  SimpleFeature feature;
+  feature.set_location(feature_location);
+  Feature::AvailabilityResult availability_result =
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    manifest_location,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result();
+  return availability_result == Feature::IS_AVAILABLE;
+}
+
 }  // namespace
 
-class ExtensionSimpleFeatureTest : public testing::Test {
- protected:
-  ExtensionSimpleFeatureTest()
-      : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {}
-  virtual ~ExtensionSimpleFeatureTest() {}
-
-  bool LocationIsAvailable(SimpleFeature::Location feature_location,
-                           Manifest::Location manifest_location) {
-    SimpleFeature feature;
-    feature.set_location(feature_location);
-    Feature::AvailabilityResult availability_result =
-        feature.IsAvailableToManifest(std::string(),
-                                      Manifest::TYPE_UNKNOWN,
-                                      manifest_location,
-                                      -1,
-                                      Feature::UNSPECIFIED_PLATFORM).result();
-    return availability_result == Feature::IS_AVAILABLE;
-  }
-
- private:
-  ScopedCurrentChannel current_channel_;
-};
-
-TEST_F(ExtensionSimpleFeatureTest, IsAvailableNullCase) {
+TEST(SimpleFeatureTest, IsAvailableNullCase) {
   const IsAvailableTestData tests[] = {
       {"", Manifest::TYPE_UNKNOWN, Manifest::INVALID_LOCATION,
        Feature::UNSPECIFIED_PLATFORM, -1, Feature::IS_AVAILABLE},
@@ -85,7 +68,7 @@ TEST_F(ExtensionSimpleFeatureTest, IsAvailableNullCase) {
   }
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Whitelist) {
+TEST(SimpleFeatureTest, Whitelist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
@@ -133,7 +116,7 @@ TEST_F(ExtensionSimpleFeatureTest, Whitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, HashedIdWhitelist) {
+TEST(SimpleFeatureTest, HashedIdWhitelist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
@@ -172,7 +155,7 @@ TEST_F(ExtensionSimpleFeatureTest, HashedIdWhitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Blacklist) {
+TEST(SimpleFeatureTest, Blacklist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
@@ -211,7 +194,7 @@ TEST_F(ExtensionSimpleFeatureTest, Blacklist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, HashedIdBlacklist) {
+TEST(SimpleFeatureTest, HashedIdBlacklist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
@@ -250,7 +233,7 @@ TEST_F(ExtensionSimpleFeatureTest, HashedIdBlacklist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, PackageType) {
+TEST(SimpleFeatureTest, PackageType) {
   SimpleFeature feature;
   feature.extension_types()->insert(Manifest::TYPE_EXTENSION);
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
@@ -286,7 +269,7 @@ TEST_F(ExtensionSimpleFeatureTest, PackageType) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Context) {
+TEST(SimpleFeatureTest, Context) {
   SimpleFeature feature;
   feature.set_name("somefeature");
   feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
@@ -377,7 +360,7 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
   feature.set_max_manifest_version(25);
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Location) {
+TEST(SimpleFeatureTest, Location) {
   // Component extensions can access any location.
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
                                   Manifest::COMPONENT));
@@ -413,7 +396,7 @@ TEST_F(ExtensionSimpleFeatureTest, Location) {
                                    Manifest::EXTERNAL_PREF_DOWNLOAD));
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Platform) {
+TEST(SimpleFeatureTest, Platform) {
   SimpleFeature feature;
   feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   EXPECT_EQ(Feature::IS_AVAILABLE,
@@ -431,7 +414,7 @@ TEST_F(ExtensionSimpleFeatureTest, Platform) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Version) {
+TEST(SimpleFeatureTest, ManifestVersion) {
   SimpleFeature feature;
   feature.set_min_manifest_version(5);
 
@@ -490,7 +473,7 @@ TEST_F(ExtensionSimpleFeatureTest, Version) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
+TEST(SimpleFeatureTest, ParseNull) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
@@ -503,7 +486,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
   EXPECT_EQ(0, feature->max_manifest_version());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParseWhitelist) {
+TEST(SimpleFeatureTest, ParseWhitelist) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* whitelist = new base::ListValue();
   whitelist->Append(new base::StringValue("foo"));
@@ -516,7 +499,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseWhitelist) {
   EXPECT_TRUE(feature->whitelist()->count("bar"));
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParsePackageTypes) {
+TEST(SimpleFeatureTest, ParsePackageTypes) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* extension_types = new base::ListValue();
   extension_types->Append(new base::StringValue("extension"));
@@ -543,7 +526,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParsePackageTypes) {
   EXPECT_EQ(*(feature->extension_types()), *(feature2->extension_types()));
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParseContexts) {
+TEST(SimpleFeatureTest, ParseContexts) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* contexts = new base::ListValue();
   contexts->Append(new base::StringValue("blessed_extension"));
@@ -568,7 +551,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseContexts) {
   EXPECT_EQ(*(feature->contexts()), *(feature2->contexts()));
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParseLocation) {
+TEST(SimpleFeatureTest, ParseLocation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("location", "component");
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
@@ -576,7 +559,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseLocation) {
   EXPECT_EQ(SimpleFeature::COMPONENT_LOCATION, feature->location());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParsePlatforms) {
+TEST(SimpleFeatureTest, ParsePlatforms) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   base::ListValue* platforms = new base::ListValue();
@@ -607,7 +590,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParsePlatforms) {
   EXPECT_EQ(expected_platforms, *feature->platforms());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ManifestVersion) {
+TEST(SimpleFeatureTest, ParseManifestVersion) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("min_manifest_version", 1);
   value->SetInteger("max_manifest_version", 5);
@@ -617,7 +600,7 @@ TEST_F(ExtensionSimpleFeatureTest, ManifestVersion) {
   EXPECT_EQ(5, feature->max_manifest_version());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
+TEST(SimpleFeatureTest, Inheritance) {
   SimpleFeature feature;
   feature.whitelist()->insert("foo");
   feature.extension_types()->insert(Manifest::TYPE_THEME);
@@ -664,88 +647,6 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
             feature.contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_EQ(2, feature.min_manifest_version());
   EXPECT_EQ(3, feature.max_manifest_version());
-}
-
-Feature::AvailabilityResult IsAvailableInChannel(
-    const std::string& channel, VersionInfo::Channel channel_for_testing) {
-  ScopedCurrentChannel current_channel(channel_for_testing);
-
-  SimpleFeature feature;
-  feature.AddFilter(scoped_ptr<extensions::SimpleFeatureFilter>(
-      new extensions::ChromeChannelFeatureFilter(&feature)));
-  if (!channel.empty()) {
-    base::DictionaryValue feature_value;
-    feature_value.SetString("channel", channel);
-    feature.Parse(&feature_value);
-  }
-
-  return feature.IsAvailableToManifest("random-extension",
-                                       Manifest::TYPE_UNKNOWN,
-                                       Manifest::INVALID_LOCATION,
-                                       -1,
-                                       Feature::GetCurrentPlatform()).result();
-}
-
-TEST_F(ExtensionSimpleFeatureTest, SupportedChannel) {
-  // stable supported.
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("stable", VersionInfo::CHANNEL_UNKNOWN));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("stable", VersionInfo::CHANNEL_CANARY));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("stable", VersionInfo::CHANNEL_DEV));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("stable", VersionInfo::CHANNEL_BETA));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("stable", VersionInfo::CHANNEL_STABLE));
-
-  // beta supported.
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("beta", VersionInfo::CHANNEL_UNKNOWN));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("beta", VersionInfo::CHANNEL_CANARY));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("beta", VersionInfo::CHANNEL_DEV));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("beta", VersionInfo::CHANNEL_BETA));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("beta", VersionInfo::CHANNEL_STABLE));
-
-  // dev supported.
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("dev", VersionInfo::CHANNEL_UNKNOWN));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("dev", VersionInfo::CHANNEL_CANARY));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("dev", VersionInfo::CHANNEL_DEV));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("dev", VersionInfo::CHANNEL_BETA));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("dev", VersionInfo::CHANNEL_STABLE));
-
-  // canary supported.
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("canary", VersionInfo::CHANNEL_UNKNOWN));
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("canary", VersionInfo::CHANNEL_CANARY));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("canary", VersionInfo::CHANNEL_DEV));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("canary", VersionInfo::CHANNEL_BETA));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("canary", VersionInfo::CHANNEL_STABLE));
-
-  // trunk supported.
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_UNKNOWN));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_CANARY));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_DEV));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_BETA));
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_STABLE));
 }
 
 }  // namespace extensions

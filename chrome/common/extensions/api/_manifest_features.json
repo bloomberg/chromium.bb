@@ -119,10 +119,6 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "description": {
-    "channel": "stable",
-    "extension_types": "all"
-  },
   "devtools_page": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

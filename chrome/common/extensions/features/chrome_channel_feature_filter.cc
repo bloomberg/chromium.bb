@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 
 #include <map>
+#include <string>
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
@@ -53,7 +54,10 @@ chrome::VersionInfo::Channel GetChannelValue(const std::string& name) {
 }  // namespace
 
 ChromeChannelFeatureFilter::ChromeChannelFeatureFilter(SimpleFeature* feature)
-    : SimpleFeatureFilter(feature), channel_has_been_set_(false) {}
+    : SimpleFeatureFilter(feature),
+      channel_has_been_set_(false),
+      channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
+}
 
 ChromeChannelFeatureFilter::~ChromeChannelFeatureFilter() {}
 
