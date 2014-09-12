@@ -827,9 +827,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
   } else {
     // Dialog text: warning and explanation.
-    titleText = l10n_util::GetNSStringF(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
-        base::IntToString16(downloadCount));
+    titleText = l10n_util::GetNSString(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE);
     explanationText = l10n_util::GetNSString(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
   }
