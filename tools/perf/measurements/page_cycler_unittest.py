@@ -38,17 +38,21 @@ class FakePage(object):
   """Used to mock loading a page."""
   def __init__(self, url):
     self.url = url
+    self.is_file = url.startswith('file://')
 
 
 class FakeTab(object):
   """Used to mock a browser tab."""
   def __init__(self):
     self.clear_cache_calls = 0
+    self.navigated_urls = []
   def ClearCache(self, force=False):
     assert force
     self.clear_cache_calls += 1
   def EvaluateJavaScript(self, _):
     return 1
+  def Navigate(self, url):
+    self.navigated_urls.append(url)
   def WaitForJavaScriptExpression(self, _, __):
     pass
   @property
@@ -72,6 +76,13 @@ class FakeBrowser(object):
   @property
   def platform(self):
     return FakePlatform()
+
+  @property
+  def http_server(self):
+    class FakeHttpServer(object):
+      def UrlOf(self, url_path):
+        return 'http://fakeserver:99999/%s' % url_path
+    return FakeHttpServer()
 
 
 class FakePlatform(object):
@@ -213,3 +224,16 @@ class PageCyclerUnitTest(unittest.TestCase):
           self.assertEqual(value.units, '%')
 
         cycler.DidNavigateToPage(page, tab)
+
+  def testLegacyPagesAvoidCrossRenderNavigation(self):
+    # For legacy page cyclers with file URLs, verify that WillNavigateToPage
+    # does an initial navigate to avoid paying for a cross-renderer navigation.
+    cycler = self.SetUpCycler([], True)
+    pages = [FakePage('file://fakepage1.com'), FakePage('file://fakepage2.com')]
+    tab = FakeTab()
+
+    self.assertEqual([], tab.navigated_urls)
+    for page in pages * 2:
+      cycler.WillNavigateToPage(page, tab)
+      self.assertEqual(
+          ['http://fakeserver:99999/nonexistent.html'], tab.navigated_urls)

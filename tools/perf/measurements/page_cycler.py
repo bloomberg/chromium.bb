@@ -45,6 +45,7 @@ class PageCycler(page_test.PageTest):
     self._cpu_metric = None
     self._v8_object_stats_metric = None
     self._has_loaded_page = collections.defaultdict(int)
+    self._initial_renderer_url = None  # to avoid cross-renderer navigation
 
   @classmethod
   def AddCommandLineArgs(cls, parser):
@@ -94,12 +95,15 @@ class PageCycler(page_test.PageTest):
     if self._record_v8_object_stats:
       self._v8_object_stats_metric = v8_object_stats.V8ObjectStatsMetric()
 
-  def DidStartHTTPServer(self, tab):
-    # Avoid paying for a cross-renderer navigation on the first page on legacy
-    # page cyclers which use the filesystem.
-    tab.Navigate(tab.browser.http_server.UrlOf('nonexistent.html'))
-
   def WillNavigateToPage(self, page, tab):
+    if page.is_file:
+      # For legacy page cyclers which use the filesystem, do an initial
+      # navigate to avoid paying for a cross-renderer navigation.
+      initial_url = tab.browser.http_server.UrlOf('nonexistent.html')
+      if self._initial_renderer_url != initial_url:
+        self._initial_renderer_url = initial_url
+        tab.Navigate(self._initial_renderer_url)
+
     page.script_to_evaluate_on_commit = self._page_cycler_js
     if self.ShouldRunCold(page.url):
       tab.ClearCache(force=True)
