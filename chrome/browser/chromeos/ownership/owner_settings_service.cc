@@ -377,7 +377,6 @@ void OwnerSettingsService::OwnerKeySet(bool success) {
 
 // static
 void OwnerSettingsService::IsOwnerForSafeModeAsync(
-    const std::string& user_id,
     const std::string& user_hash,
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const IsOwnerCallback& callback) {
@@ -389,7 +388,6 @@ void OwnerSettingsService::IsOwnerForSafeModeAsync(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
-                 user_id,
                  user_hash,
                  ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
       base::Bind(&DoesPrivateKeyExistAsync, owner_key_util, callback));

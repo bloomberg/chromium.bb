@@ -64,7 +64,6 @@ CRYPTO_EXPORT_PRIVATE void SetSystemKeySlotForTesting(ScopedPK11Slot slot);
 // Prepare per-user NSS slot mapping. It is safe to call this function multiple
 // times. Returns true if the user was added, or false if it already existed.
 CRYPTO_EXPORT bool InitializeNSSForChromeOSUser(
-    const std::string& email,
     const std::string& username_hash,
     const base::FilePath& path);
 

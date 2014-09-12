@@ -45,7 +45,6 @@ void ChromeCryptohomeAuthenticator::CheckSafeModeOwnership(
   }
 
   OwnerSettingsService::IsOwnerForSafeModeAsync(
-      context.GetUserID(),
       context.GetUserIDHash(),
       OwnerSettingsServiceFactory::GetInstance()->GetOwnerKeyUtil(),
       callback);

@@ -304,7 +304,7 @@ void StartNSSInitOnIOThread(const std::string& username,
            << "  hash:" << username_hash;
 
   // Make sure NSS is initialized for the user.
-  crypto::InitializeNSSForChromeOSUser(username, username_hash, path);
+  crypto::InitializeNSSForChromeOSUser(username_hash, path);
 
   // Check if it's OK to initialize TPM for the user before continuing. This
   // may not be the case if the TPM slot initialization was previously
