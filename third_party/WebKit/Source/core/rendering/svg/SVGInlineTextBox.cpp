@@ -48,7 +48,6 @@ namespace blink {
 struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
     float float1;
     uint32_t bitfields : 1;
-    void* pointer;
     Vector<SVGTextFragment> vector;
 };
 
@@ -58,7 +57,6 @@ SVGInlineTextBox::SVGInlineTextBox(RenderObject& object)
     : InlineTextBox(object)
     , m_logicalHeight(0)
     , m_startsNewTextChunk(false)
-    , m_paintingResource(0)
 {
 }
 
@@ -221,7 +219,6 @@ void SVGInlineTextBox::paintSelectionBackground(PaintInfo& paintInfo)
     unsigned textFragmentsSize = m_textFragments.size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
         SVGTextFragment& fragment = m_textFragments.at(i);
-        ASSERT(!m_paintingResource);
 
         fragmentStartPosition = startPosition;
         fragmentEndPosition = endPosition;
@@ -236,8 +233,6 @@ void SVGInlineTextBox::paintSelectionBackground(PaintInfo& paintInfo)
         paintInfo.context->setFillColor(backgroundColor);
         paintInfo.context->fillRect(selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style), backgroundColor);
     }
-
-    ASSERT(!m_paintingResource);
 }
 
 void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
@@ -297,7 +292,6 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     unsigned textFragmentsSize = m_textFragments.size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
         SVGTextFragment& fragment = m_textFragments.at(i);
-        ASSERT(!m_paintingResource);
 
         GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
         fragment.buildFragmentTransform(fragmentTransform);
@@ -346,24 +340,40 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     // finally, paint the outline if any
     if (style->hasOutline() && parentRenderer.isRenderInline())
         toRenderInline(parentRenderer).paintOutline(paintInfo, paintOffset);
-
-    ASSERT(!m_paintingResource);
 }
 
-bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float scalingFactor,
-    RenderObject* renderer, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
+class PaintingResourceScope {
+public:
+    PaintingResourceScope(RenderObject& renderer, TextRun::RenderingContext* renderingContext = 0)
+        : m_renderer(renderer)
+        , m_renderingContext(renderingContext)
+        , m_paintingResource(0)
+    {
+    }
+    ~PaintingResourceScope() { ASSERT(!m_paintingResource); }
+
+    bool acquirePaintingResource(GraphicsContext*&, float scalingFactor, RenderStyle*, RenderSVGResourceModeFlags);
+    void releasePaintingResource(GraphicsContext*&, const Path*, RenderSVGResourceModeFlags);
+
+private:
+    RenderObject& m_renderer;
+    TextRun::RenderingContext* m_renderingContext;
+    RenderSVGResource* m_paintingResource;
+};
+
+bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, float scalingFactor,
+    RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
 {
     // Callers must save the context state before calling when scalingFactor is not 1.
     ASSERT(scalingFactor);
-    ASSERT(renderer);
     ASSERT(style);
     ASSERT(resourceMode != ApplyToDefaultMode);
 
     bool hasFallback = false;
     if (resourceMode & ApplyToFillMode)
-        m_paintingResource = RenderSVGResource::fillPaintingResource(renderer, style, hasFallback);
+        m_paintingResource = RenderSVGResource::fillPaintingResource(&m_renderer, style, hasFallback);
     else if (resourceMode & ApplyToStrokeMode)
-        m_paintingResource = RenderSVGResource::strokePaintingResource(renderer, style, hasFallback);
+        m_paintingResource = RenderSVGResource::strokePaintingResource(&m_renderer, style, hasFallback);
     else {
         // We're either called for stroking or filling.
         ASSERT_NOT_REACHED();
@@ -372,54 +382,36 @@ bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float 
     if (!m_paintingResource)
         return false;
 
-    if (!m_paintingResource->applyResource(renderer, style, context, resourceMode)) {
+    if (!m_paintingResource->applyResource(&m_renderer, style, context, resourceMode)) {
         if (hasFallback) {
             m_paintingResource = RenderSVGResource::sharedSolidPaintingResource();
-            m_paintingResource->applyResource(renderer, style, context, resourceMode);
+            m_paintingResource->applyResource(&m_renderer, style, context, resourceMode);
         }
     }
 
     if (scalingFactor != 1 && resourceMode & ApplyToStrokeMode)
         context->setStrokeThickness(context->strokeThickness() * scalingFactor);
 
-    return true;
-}
-
-void SVGInlineTextBox::releasePaintingResource(GraphicsContext*& context, const Path* path,
-    RenderSVGResourceModeFlags resourceMode)
-{
-    ASSERT(m_paintingResource);
-
-    m_paintingResource->postApplyResource(&parent()->renderer(), context, resourceMode, path, 0);
-    m_paintingResource = 0;
-}
-
-bool SVGInlineTextBox::prepareGraphicsContextForTextPainting(GraphicsContext*& context,
-    float scalingFactor, TextRun& textRun, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
-{
-    bool acquiredResource = acquirePaintingResource(context, scalingFactor, &parent()->renderer(), style, resourceMode);
-    if (!acquiredResource)
-        return false;
-
 #if ENABLE(SVG_FONTS)
     // SVG Fonts need access to the painting resource used to draw the current text chunk.
-    TextRun::RenderingContext* renderingContext = textRun.renderingContext();
-    if (renderingContext)
-        static_cast<SVGTextRunRenderingContext*>(renderingContext)->setActivePaintingResource(m_paintingResource);
+    if (m_renderingContext)
+        static_cast<SVGTextRunRenderingContext*>(m_renderingContext)->setActivePaintingResource(m_paintingResource);
 #endif
 
     return true;
 }
 
-void SVGInlineTextBox::restoreGraphicsContextAfterTextPainting(GraphicsContext*& context,
-    TextRun& textRun, RenderSVGResourceModeFlags resourceMode)
+void PaintingResourceScope::releasePaintingResource(GraphicsContext*& context, const Path* path,
+    RenderSVGResourceModeFlags resourceMode)
 {
-    releasePaintingResource(context, 0, resourceMode);
+    ASSERT(m_paintingResource);
+
+    m_paintingResource->postApplyResource(&m_renderer, context, resourceMode, path, 0);
+    m_paintingResource = 0;
 
 #if ENABLE(SVG_FONTS)
-    TextRun::RenderingContext* renderingContext = textRun.renderingContext();
-    if (renderingContext)
-        static_cast<SVGTextRunRenderingContext*>(renderingContext)->setActivePaintingResource(0);
+    if (m_renderingContext)
+        static_cast<SVGTextRunRenderingContext*>(m_renderingContext)->setActivePaintingResource(0);
 #endif
 }
 
@@ -562,7 +554,6 @@ void SVGInlineTextBox::paintDecoration(GraphicsContext* context, TextDecoration 
 void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDecoration decoration,
     const SVGTextFragment& fragment, RenderObject* decorationRenderer, RenderSVGResourceModeFlags resourceMode)
 {
-    ASSERT(!m_paintingResource);
     ASSERT(resourceMode != ApplyToDefaultMode);
 
     RenderStyle* decorationStyle = decorationRenderer->style();
@@ -598,8 +589,9 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
 
     // acquirePaintingResource also modifies state if the scalingFactor is non-identity.
     // Above we have saved the state for this case.
-    if (acquirePaintingResource(context, scalingFactor, decorationRenderer, decorationStyle, resourceMode))
-        releasePaintingResource(context, &path, resourceMode);
+    PaintingResourceScope resourceScope(*decorationRenderer);
+    if (resourceScope.acquirePaintingResource(context, scalingFactor, decorationStyle, resourceMode))
+        resourceScope.releasePaintingResource(context, &path, resourceMode);
 }
 
 void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyle* style,
@@ -630,7 +622,8 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     if (hasShadow)
         context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha));
 
-    if (prepareGraphicsContextForTextPainting(context, scalingFactor, textRun, style, resourceMode)) {
+    PaintingResourceScope resourceScope(parent()->renderer(), textRun.renderingContext());
+    if (resourceScope.acquirePaintingResource(context, scalingFactor, style, resourceMode)) {
         TextRunPaintInfo textRunPaintInfo(textRun);
         textRunPaintInfo.from = startPosition;
         textRunPaintInfo.to = endPosition;
@@ -640,7 +633,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
             textSize.width(), textSize.height());
 
         scaledFont.drawText(context, textRunPaintInfo, textOrigin);
-        restoreGraphicsContextAfterTextPainting(context, textRun, resourceMode);
+        resourceScope.releasePaintingResource(context, 0, resourceMode);
     }
 
     if (scalingFactor != 1)
