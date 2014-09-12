@@ -269,9 +269,9 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
 ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
     : message_sender_(sender),
-      weak_factory_(this),
       delegate_(NULL),
-      io_timestamp_(base::TimeTicks()) {
+      io_timestamp_(base::TimeTicks()),
+      weak_factory_(this) {
 }
 
 ResourceDispatcher::~ResourceDispatcher() {

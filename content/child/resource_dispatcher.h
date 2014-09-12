@@ -210,12 +210,12 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // All pending requests issued to the host
   PendingRequestList pending_requests_;
 
-  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
-
   ResourceDispatcherDelegate* delegate_;
 
   // IO thread timestamp for ongoing IPC message.
   base::TimeTicks io_timestamp_;
+
+  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };
