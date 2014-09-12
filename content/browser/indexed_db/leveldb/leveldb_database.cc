@@ -25,6 +25,7 @@
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
 using base::StringPiece;
@@ -90,14 +91,18 @@ LevelDBDatabase::~LevelDBDatabase() {
   env_.reset();
 }
 
-static leveldb::Status OpenDB(leveldb::Comparator* comparator,
-                              leveldb::Env* env,
-                              const base::FilePath& path,
-                              leveldb::DB** db) {
+static leveldb::Status OpenDB(
+    leveldb::Comparator* comparator,
+    leveldb::Env* env,
+    const base::FilePath& path,
+    leveldb::DB** db,
+    scoped_ptr<const leveldb::FilterPolicy>* filter_policy) {
+  filter_policy->reset(leveldb::NewBloomFilterPolicy(10));
   leveldb::Options options;
   options.comparator = comparator;
   options.create_if_missing = true;
   options.paranoid_checks = true;
+  options.filter_policy = filter_policy->get();
   options.compression = leveldb::kSnappyCompression;
 
   // For info about the troubles we've run into with this parameter, see:
@@ -106,7 +111,9 @@ static leveldb::Status OpenDB(leveldb::Comparator* comparator,
   options.env = env;
 
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
-  return leveldb::DB::Open(options, path.AsUTF8Unsafe(), db);
+  leveldb::Status s = leveldb::DB::Open(options, path.AsUTF8Unsafe(), db);
+
+  return s;
 }
 
 leveldb::Status LevelDBDatabase::Destroy(const base::FilePath& file_name) {
@@ -270,8 +277,12 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
       new ComparatorAdapter(comparator));
 
   leveldb::DB* db;
-  const leveldb::Status s =
-      OpenDB(comparator_adapter.get(), leveldb::IDBEnv(), file_name, &db);
+  scoped_ptr<const leveldb::FilterPolicy> filter_policy;
+  const leveldb::Status s = OpenDB(comparator_adapter.get(),
+                                   leveldb::IDBEnv(),
+                                   file_name,
+                                   &db,
+                                   &filter_policy);
 
   if (!s.ok()) {
     HistogramLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", s);
@@ -295,6 +306,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
   (*result)->db_ = make_scoped_ptr(db);
   (*result)->comparator_adapter_ = comparator_adapter.Pass();
   (*result)->comparator_ = comparator;
+  (*result)->filter_policy_ = filter_policy.Pass();
 
   return s;
 }
@@ -306,8 +318,12 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   scoped_ptr<leveldb::Env> in_memory_env(leveldb::NewMemEnv(leveldb::IDBEnv()));
 
   leveldb::DB* db;
-  const leveldb::Status s = OpenDB(
-      comparator_adapter.get(), in_memory_env.get(), base::FilePath(), &db);
+  scoped_ptr<const leveldb::FilterPolicy> filter_policy;
+  const leveldb::Status s = OpenDB(comparator_adapter.get(),
+                                   in_memory_env.get(),
+                                   base::FilePath(),
+                                   &db,
+                                   &filter_policy);
 
   if (!s.ok()) {
     LOG(ERROR) << "Failed to open in-memory LevelDB database: " << s.ToString();
@@ -319,6 +335,7 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   result->db_ = make_scoped_ptr(db);
   result->comparator_adapter_ = comparator_adapter.Pass();
   result->comparator_ = comparator;
+  result->filter_policy_ = filter_policy.Pass();
 
   return result.Pass();
 }

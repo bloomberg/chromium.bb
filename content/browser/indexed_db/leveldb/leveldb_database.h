@@ -18,6 +18,7 @@
 namespace leveldb {
 class Comparator;
 class DB;
+class FilterPolicy;
 class Env;
 class Snapshot;
 }
@@ -104,6 +105,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::Comparator> comparator_adapter_;
   scoped_ptr<leveldb::DB> db_;
+  scoped_ptr<const leveldb::FilterPolicy> filter_policy_;
   const LevelDBComparator* comparator_;
 };
 
