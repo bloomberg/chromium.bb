@@ -11,12 +11,19 @@ function test()
         function testWikiParser(next)
         {
             var testCases = [
+                "{{A|text=&lt;code>it's not a code &lt;code>}}",
+                "{{A|Code={{=}} }}",
+                "{{ABC|Array={{A|B=c}}{{X|y=Z}}|text=blabla}}",
+                "{{A|B=C}}",
                 "{{A|B={{C|D=blablabla}}}}",
-                "{{CS|Init=black|Values={{CSS Property Value\n|Data Type=color\n|Description=[[css/color|CSS color value]]}}\n}}",
+                "{{A|B={{C|D=bla}}|x=y}}",
+                "{{CS|Init=black|Values={{CSS Property Value\n|Data Type=color\n|Description= [[css/color|CSS color value]]}}\n}}",
                 "{{A}}",
-                "{{A|B=bla<a=c>bla}}",
-                "{{A}}",
-                "{{AbC|xyz \n \t \r}}"];
+                "{{A|B= [[google.com{{!}}Google]]}}",
+                "{{AbC|xyz \n\t \r}}",
+                "{{Table|there is a table {{{!}}\n}}",
+                "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}",
+                "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"];
             for (var i = 0; i < testCases.length; i++) {
                 var wikiParser = new WebInspector.WikiParser(testCases[i]);
                 InspectorTest.addResult("\"" + testCases[i].replace("\r", "\\r") + "\" is parsed");
@@ -99,7 +106,7 @@ function test()
 
         function testLinkInsideCode(next)
         {
-            var linkInsideCode = "{{Summary_Section|<code> [[google.com|GOOGLE!]] < /code>}}";
+            var linkInsideCode = "{{Summary_Section|<code> [[google.com|GOOGLE!]] </code >}}";
             var article = WebInspector.JSArticle.parse(linkInsideCode);
             InspectorTest.addObject(article);
             next();
@@ -124,13 +131,16 @@ function test()
         function testLinkWithoutSpace(next)
         {
             var linkWithoutSpaceTest = "{{Summary_Section|[[http://wrong.com|WRONG_LINK]]}}";
-            var article = WebInspector.JSArticle.parse(linkWithoutSpaceTest);
-            InspectorTest.addObject(article);
+            try {
+                var article = WebInspector.JSArticle.parse(linkWithoutSpaceTest);
+                InspectorTest.addObject(article);
+            } catch (error) {
+                InspectorTest.addResult("Expected error: " + error);
+            }
             next();
         }
     ]);
 }
-
 </script>
 </head>
 

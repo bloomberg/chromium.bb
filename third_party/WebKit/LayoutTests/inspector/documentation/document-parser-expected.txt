@@ -1,51 +1,449 @@
 
 Running: testWikiParser
-"{{A|B={{C|D=blablabla}}}}" is parsed
+"{{A|text=&lt;code>it's not a code &lt;code>}}" is parsed
+{
+    A : {
+        text : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "<code>it's not a code <code>"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+    }
+}
+"{{A|Code={{=}} }}" is parsed
+{
+    A : {
+        Code : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "="
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+    }
+}
+"{{ABC|Array={{A|B=c}}{{X|y=Z}}|text=blabla}}" is parsed
+{
+    ABC : {
+        Array : [
+            {
+                title : "A"
+                values : {
+                    B : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "c"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
+            }
+            {
+                title : "X"
+                values : {
+                    y : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "Z"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
+            }
+        ]
+        text : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "blabla"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+    }
+}
+"{{A|B=C}}" is parsed
 {
     A : {
         B : {
-            C : {
-                D : "blablabla"
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "C"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+    }
+}
+"{{A|B={{C|D=blablabla}}}}" is parsed
+{
+    A : {
+        B : [
+            {
+                title : "C"
+                values : {
+                    D : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "blablabla"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
             }
+        ]
+    }
+}
+"{{A|B={{C|D=bla}}|x=y}}" is parsed
+{
+    A : {
+        B : [
+            {
+                title : "C"
+                values : {
+                    D : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "bla"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
+            }
+        ]
+        x : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "y"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
         }
     }
 }
 "{{CS|Init=black|Values={{CSS Property Value
 |Data Type=color
-|Description=[[css/color|CSS color value]]}}
+|Description= [[css/color|CSS color value]]}}
 }}" is parsed
 {
     CS : {
-        Init : "black"
-        Values : {
-            CSS Property Value : {
-                Data Type : "color"
-                Description : "[[css/color|CSS color value]]"
+        Init : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "black"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+        Values : [
+            {
+                title : "CSS Property Value"
+                values : {
+                    Data Type : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "color"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                    Description : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _children : [
+                                            {
+                                                _children : [
+                                                    {
+                                                        _isHighlighted : false
+                                                        _text : "CSS color value"
+                                                        _type : "PlainText"
+                                                    }
+                                                ]
+                                                _type : "Inline"
+                                            }
+                                        ]
+                                        _type : "Link"
+                                        _url : "css/color"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
             }
+        ]
+    }
+}
+"{{A}}" is parsed
+{
+    A : undefined
+}
+"{{A|B= [[google.com{{!}}Google]]}}" is parsed
+{
+    A : {
+        B : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _text : "Google"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _type : "Inline"
+                                }
+                            ]
+                            _type : "Link"
+                            _url : "google.com"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
         }
     }
 }
-"{{A}}" is parsed
-{
-    A : {
-    }
-}
-"{{A|B=bla<a=c>bla}}" is parsed
-{
-    A : {
-        B : "bla<a=c>bla"
-    }
-}
-"{{A}}" is parsed
-{
-    A : {
-    }
-}
 "{{AbC|xyz 
- 	 \r}}" is parsed
+	 \r}}" is parsed
 {
-    AbC : "xyz 
- 	 "
+    AbC : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "xyz"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+"{{Table|there is a table {{{!}}
+}}" is parsed
+{
+    Table : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "there is a table {{{!}}"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+"{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}" is parsed
+{
+    External_Attribution : {
+        HTML5Rocks_link : undefined
+        MSDN_link : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _text : "[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]"
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
+    }
+}
+"{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}
+}}" is parsed
+{
+    JS_Syntax : {
+        Formats : [
+            {
+                title : "JS Syntax Format"
+                values : {
+                    Format : {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : true
+                                        _text : "JSON.stringify("
+                                        _type : "PlainText"
+                                    }
+                                    {
+                                        _isHighlighted : false
+                                        _text : " value"
+                                        _type : "PlainText"
+                                    }
+                                    {
+                                        _children : [
+                                        ]
+                                        _type : "Link"
+                                        _url : " , replacer"
+                                    }
+                                    {
+                                        _children : [
+                                        ]
+                                        _type : "Link"
+                                        _url : " , space"
+                                    }
+                                    {
+                                        _isHighlighted : false
+                                        _text : " "
+                                        _type : "PlainText"
+                                    }
+                                    {
+                                        _isHighlighted : true
+                                        _text : ")"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _hasBullet : false
+                                _type : "Block"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                }
+            }
+        ]
+    }
 }
 
 Running: testJS
@@ -123,6 +521,7 @@ Running: testJS
         _hasBullet : false
         _type : "Block"
     }
+    summary : undefined
 }
 
 Running: testSmall
@@ -131,6 +530,7 @@ Running: testSmall
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -161,6 +561,7 @@ Running: testHighlightAndLink
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -269,6 +670,7 @@ Running: testNamedLink
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -305,6 +707,7 @@ Running: testBullet
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -444,6 +847,7 @@ console.log(Object.keys(my_array));
         _hasBullet : false
         _type : "Block"
     }
+    summary : undefined
 }
 
 Running: testComplexLinkName
@@ -452,6 +856,7 @@ Running: testComplexLinkName
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -498,6 +903,7 @@ Running: testCodeInsideBullet
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -528,7 +934,6 @@ Running: testCodeInsideBullet
 }
 
 Running: testInvalidInput
-error: Can't parse remarks
 [object Object]
 
 Running: testLinkInsideCode
@@ -537,6 +942,7 @@ Running: testLinkInsideCode
     ]
     parameters : [
     ]
+    remarks : null
     summary : {
         _children : [
             {
@@ -635,6 +1041,8 @@ Running: testExamples
     ]
     parameters : [
     ]
+    remarks : null
+    summary : undefined
 }
 
 Running: testJsMethod
@@ -691,15 +1099,10 @@ Running: testJsMethod
             optional : true
         }
     ]
+    remarks : null
+    summary : undefined
 }
 
 Running: testLinkWithoutSpace
-error: Can't parse summary
-{
-    examples : [
-    ]
-    parameters : [
-    ]
-    summary : null
-}
+Expected error: Error: Two closing braces expected; found WRONG_LINK
 
