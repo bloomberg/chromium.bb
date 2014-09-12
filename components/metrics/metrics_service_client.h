@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
 namespace metrics {
@@ -60,6 +61,10 @@ class MetricsServiceClient {
       const std::string& server_url,
       const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) = 0;
+
+  // Returns the name of a key under HKEY_CURRENT_USER that can be used to store
+  // backups of metrics data. Unused except on Windows.
+  virtual base::string16 GetRegistryBackupKey();
 };
 
 }  // namespace metrics

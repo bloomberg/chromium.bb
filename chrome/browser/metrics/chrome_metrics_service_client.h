@@ -71,6 +71,7 @@ class ChromeMetricsServiceClient
       const std::string& server_url,
       const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) OVERRIDE;
+  virtual base::string16 GetRegistryBackupKey() OVERRIDE;
 
   metrics::MetricsService* metrics_service() { return metrics_service_.get(); }
 

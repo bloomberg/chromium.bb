@@ -34797,6 +34797,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Whether the scroll is executed on main thread.</summary>
 </histogram>
 
+<histogram name="UMA.CleanExitBeaconConsistency" enum="UmaCleanExitConsistency">
+  <owner>erikwright@chromium.org</owner>
+  <summary>
+    Reports the combined state of distinct clean exit beacons stored in Local
+    State and the Windows registry. They are normally expected to be identical.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ClientIdBackupRecoveredWithAge" units="hours">
   <owner>gab@chromium.org</owner>
   <summary>
@@ -51208,6 +51216,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="34" label="Edge swipe"/>
   <int value="35" label="One-finger swipe"/>
   <int value="36" label="Tap unconfirmed"/>
+</enum>
+
+<enum name="UmaCleanExitConsistency" type="int">
+  <int value="0" label="Dirty/Dirty (Registry/Local State)"/>
+  <int value="1" label="Dirty/Clean (Registry/Local State)"/>
+  <int value="2" label="Clean/Dirty (Registry/Local State)"/>
+  <int value="3" label="Clean/Clean (Registry/Local State)"/>
+  <int value="4" label="Missing/Dirty (Registry/Local State)"/>
+  <int value="5" label="Missing/Clean (Registry/Local State)"/>
 </enum>
 
 <enum name="UmaInitSequence" type="int">

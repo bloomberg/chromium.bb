@@ -18,6 +18,8 @@
         'variations',
       ],
       'sources': [
+        'metrics/clean_exit_beacon.cc',
+        'metrics/clean_exit_beacon.h',
         'metrics/client_info.cc',
         'metrics/client_info.h',
         'metrics/cloned_install_detector.cc',
@@ -43,6 +45,7 @@
         'metrics/metrics_reporting_scheduler.h',
         'metrics/metrics_service.cc',
         'metrics/metrics_service.h',
+        'metrics/metrics_service_client.cc',
         'metrics/metrics_service_client.h',
         'metrics/metrics_state_manager.cc',
         'metrics/metrics_state_manager.h',

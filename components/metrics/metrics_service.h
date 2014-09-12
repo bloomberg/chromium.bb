@@ -22,6 +22,7 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
+#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_provider.h"
@@ -389,6 +390,8 @@ class MetricsService : public base::HistogramFlattener {
   ScopedVector<MetricsProvider> metrics_providers_;
 
   PrefService* local_state_;
+
+  CleanExitBeacon clean_exit_beacon_;
 
   base::ActionCallback action_callback_;
 

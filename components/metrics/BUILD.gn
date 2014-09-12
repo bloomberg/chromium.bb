@@ -5,6 +5,8 @@
 # GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
+    "clean_exit_beacon.cc",
+    "clean_exit_beacon.h",
     "client_info.cc",
     "client_info.h",
     "cloned_install_detector.cc",
@@ -30,6 +32,7 @@ source_set("metrics") {
     "metrics_reporting_scheduler.h",
     "metrics_service.cc",
     "metrics_service.h",
+    "metrics_service_client.cc",
     "metrics_service_client.h",
     "metrics_state_manager.cc",
     "metrics_state_manager.h",

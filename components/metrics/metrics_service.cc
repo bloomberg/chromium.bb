@@ -254,8 +254,9 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
-void MarkAppCleanShutdownAndCommit(PrefService* local_state) {
-  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
+                                   PrefService* local_state) {
+  clean_exit_beacon->WriteBeaconValue(true);
   local_state->SetInteger(metrics::prefs::kStabilityExecutionPhase,
                           MetricsService::SHUTDOWN_COMPLETE);
   // Start writing right away (write happens on a different thread).
@@ -315,6 +316,7 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       state_manager_(state_manager),
       client_(client),
       local_state_(local_state),
+      clean_exit_beacon_(client->GetRegistryBackupKey(), local_state),
       recording_active_(false),
       reporting_active_(false),
       test_mode_active_(false),
@@ -498,7 +500,7 @@ void MetricsService::RecordCompletedSessionEnd() {
 void MetricsService::OnAppEnterBackground() {
   scheduler_->Stop();
 
-  MarkAppCleanShutdownAndCommit(local_state_);
+  MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
 
   // At this point, there's no way of knowing when the process will be
   // killed, so this has to be treated similar to a shutdown, closing and
@@ -514,12 +516,12 @@ void MetricsService::OnAppEnterBackground() {
 }
 
 void MetricsService::OnAppEnterForeground() {
-  local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  clean_exit_beacon_.WriteBeaconValue(false);
   StartSchedulerIfNecessary();
 }
 #else
 void MetricsService::LogNeedForCleanShutdown() {
-  local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  clean_exit_beacon_.WriteBeaconValue(false);
   // Redundant setting to be sure we call for a clean shutdown.
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }
@@ -564,16 +566,15 @@ void MetricsService::InitializeMetricsState() {
   log_manager_.LoadPersistedUnsentLogs();
 
   session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
-  bool exited_cleanly = true;
-  if (!local_state_->GetBoolean(metrics::prefs::kStabilityExitedCleanly)) {
+
+  if (!clean_exit_beacon_.exited_cleanly()) {
     IncrementPrefValue(metrics::prefs::kStabilityCrashCount);
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
-    local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
-    exited_cleanly = false;
+    clean_exit_beacon_.WriteBeaconValue(true);
   }
 
-  if (!exited_cleanly || ProvidersHaveStabilityMetrics()) {
+  if (!clean_exit_beacon_.exited_cleanly() || ProvidersHaveStabilityMetrics()) {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
@@ -1166,13 +1167,14 @@ void MetricsService::RecordCurrentStabilityHistograms() {
 
 void MetricsService::LogCleanShutdown() {
   // Redundant hack to write pref ASAP.
-  MarkAppCleanShutdownAndCommit(local_state_);
+  MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
 
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
 
-  RecordBooleanPrefValue(metrics::prefs::kStabilityExitedCleanly, true);
+  clean_exit_beacon_.WriteBeaconValue(true);
+  RecordCurrentState(local_state_);
   local_state_->SetInteger(metrics::prefs::kStabilityExecutionPhase,
                            MetricsService::SHUTDOWN_COMPLETE);
 }

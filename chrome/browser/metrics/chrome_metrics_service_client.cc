@@ -272,6 +272,14 @@ ChromeMetricsServiceClient::CreateUploader(
           on_upload_complete));
 }
 
+base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
+#if defined(OS_WIN)
+  return L"Software\\" PRODUCT_STRING_PATH L"\\StabilityMetrics";
+#else
+  return base::string16();
+#endif
+}
+
 void ChromeMetricsServiceClient::LogPluginLoadingError(
     const base::FilePath& plugin_path) {
 #if defined(ENABLE_PLUGINS)
