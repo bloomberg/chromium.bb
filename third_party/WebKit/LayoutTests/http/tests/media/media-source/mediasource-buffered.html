@@ -38,7 +38,7 @@
                         {
                             mediaSource.addSourceBuffer(typeA);
                             mediaSource.addSourceBuffer(typeB);
-                            assert_equals(mediaSource.activeSourceBuffers.length, 2);
+                            assert_equals(mediaSource.sourceBuffers.length, 2);
 
                             callback(test, mediaElement, mediaSource, dataA, dataB);
                         });
@@ -46,27 +46,54 @@
                 }, description);
             };
 
-            function appendData(test, mediaSource, dataA, dataB, callback)
+            function appendDataAndVerifyAddedToActiveSourceBuffers(test, mediaSource, dataA, dataB, swapAppendBufferOrder, forceParsingOrder, callback)
             {
-                var sourceBufferA = mediaSource.activeSourceBuffers[0];
-                var sourceBufferB = mediaSource.activeSourceBuffers[1];
+                // Verification here assumes no prior initialization segment received for any of mediaSource's sourceBuffers.
+                assert_equals(mediaSource.sourceBuffers.length, 2, 'mediaSource sourceBuffers length before appends');
+                assert_equals(mediaSource.activeSourceBuffers.length, 0, 'mediaSource activeSourceBuffers length before appends');
+                var sourceBufferA = mediaSource.sourceBuffers[0];
+                var sourceBufferB = mediaSource.sourceBuffers[1];
 
-                test.expectEvent(sourceBufferA, 'update');
-                test.expectEvent(sourceBufferA, 'updateend');
-                sourceBufferA.appendBuffer(dataA);
+                var firstBuffer = swapAppendBufferOrder ? sourceBufferB : sourceBufferA;
+                var firstData = swapAppendBufferOrder ? dataB : dataA;
+                var secondBuffer = swapAppendBufferOrder ? sourceBufferA : sourceBufferB;
+                var secondData = swapAppendBufferOrder ? dataA : dataB;
 
-                test.expectEvent(sourceBufferB, 'update');
-                test.expectEvent(sourceBufferB, 'updateend');
-                sourceBufferB.appendBuffer(dataB);
+                test.expectEvent(firstBuffer, 'update');
+                test.expectEvent(firstBuffer, 'updateend');
+                firstBuffer.appendBuffer(firstData);
+
+                var doSecondAppend = function()
+                {
+                    test.expectEvent(secondBuffer, 'update');
+                    test.expectEvent(secondBuffer, 'updateend');
+                    secondBuffer.appendBuffer(secondData);
+                };
+
+                if (forceParsingOrder) {
+                    test.waitForExpectedEvents(function()
+                    {
+                        assert_equals(mediaSource.sourceBuffers.length, 2, 'mediaSource sourceBuffers length between completed appends');
+                        assert_equals(mediaSource.activeSourceBuffers.length, 1, 'mediaSource activeSourceBuffers length between completed appends');
+                        assert_equals(mediaSource.activeSourceBuffers[0], firstBuffer);
+                        doSecondAppend();
+                    });
+                } else {
+                    doSecondAppend();
+                }
 
                 test.waitForExpectedEvents(function()
                 {
-                     callback();
+                    assert_equals(mediaSource.sourceBuffers.length, 2, 'mediaSource sourceBuffers length after appends completed');
+                    assert_equals(mediaSource.activeSourceBuffers.length, 2, 'mediaSource activeSourceBuffers length after appends completed');
+                    assert_equals(mediaSource.activeSourceBuffers[0], sourceBufferA);
+                    assert_equals(mediaSource.activeSourceBuffers[1], sourceBufferB);
+                    callback();
                 });
             }
 
             mediaSourceDemuxedTest(function(test, mediaElement, mediaSource, dataA, dataB) {
-                appendData(test, mediaSource, dataA, dataB, function()
+                appendDataAndVerifyAddedToActiveSourceBuffers(test, mediaSource, dataA, dataB, false, false, function()
                 {
                     assertBufferedEquals(mediaSource.activeSourceBuffers[0], expectationsA[subType], 'mediaSource.activeSourceBuffers[0]');
                     assertBufferedEquals(mediaSource.activeSourceBuffers[1], expectationsB[subType], 'mediaSource.activeSourceBuffers[1]');
@@ -81,6 +108,26 @@
                     test.done();
                 });
             }, 'Demuxed content with different lengths');
+
+            mediaSourceDemuxedTest(function(test, mediaElement, mediaSource, dataA, dataB) {
+                appendDataAndVerifyAddedToActiveSourceBuffers(test, mediaSource, dataA, dataB, false, true, function()
+                {
+                    assertBufferedEquals(mediaSource.activeSourceBuffers[0], expectationsA[subType], 'mediaSource.activeSourceBuffers[0]');
+                    assertBufferedEquals(mediaSource.activeSourceBuffers[1], expectationsB[subType], 'mediaSource.activeSourceBuffers[1]');
+                    assertBufferedEquals(mediaElement, expectationsB[subType], 'mediaElement.buffered');
+                    test.done();
+                });
+            }, 'Process first init segment for sourceBuffer[0] first');
+
+            mediaSourceDemuxedTest(function(test, mediaElement, mediaSource, dataA, dataB) {
+                appendDataAndVerifyAddedToActiveSourceBuffers(test, mediaSource, dataA, dataB, true, true, function()
+                {
+                    assertBufferedEquals(mediaSource.activeSourceBuffers[0], expectationsA[subType], 'mediaSource.activeSourceBuffers[0]');
+                    assertBufferedEquals(mediaSource.activeSourceBuffers[1], expectationsB[subType], 'mediaSource.activeSourceBuffers[1]');
+                    assertBufferedEquals(mediaElement, expectationsB[subType], 'mediaElement.buffered');
+                    test.done();
+                });
+            }, 'Process first init segment for sourceBuffer[1] first');
 
             mediasource_test(function(test, mediaElement, mediaSource)
             {
@@ -118,9 +165,8 @@
                 });
             }, 'Muxed tracks with different lengths');
 
-
             mediaSourceDemuxedTest(function(test, mediaElement, mediaSource, dataA, dataB) {
-                appendData(test, mediaSource, dataA, dataB.subarray(0, 318), function()
+                appendDataAndVerifyAddedToActiveSourceBuffers(test, mediaSource, dataA, dataB.subarray(0, 318), false, false, function()
                 {
                     assertBufferedEquals(mediaSource.activeSourceBuffers[0], expectationsA[subType], 'mediaSource.activeSourceBuffers[0]');
                     assertBufferedEquals(mediaSource.activeSourceBuffers[1], '{ }', 'mediaSource.activeSourceBuffers[1]');
@@ -171,9 +217,7 @@
                 test.endOnEvent(mediaElement, 'ended');
 
                 var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
-                
-                // FIXME: verify activeSourceBuffers is empty until init segment with at least
-                // one active track is appended. 
+
                 assertBufferedEquals(mediaSource.sourceBuffers[0], '{ }', 'mediaSource.sourceBuffers[0]');
                 assertBufferedEquals(mediaElement, '{ }', 'mediaElement.buffered');
                 test.done();
@@ -183,9 +227,9 @@
             mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
             {
                 var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
-                
+
                 test.expectEvent(sourceBuffer, 'updateend', 'initSegment append ended.');
-                sourceBuffer.appendBuffer(initSegment);                
+                sourceBuffer.appendBuffer(initSegment);
                 test.waitForExpectedEvents(function()
                 {
                     assertBufferedEquals(mediaSource.sourceBuffers[0], '{ }', 'mediaSource.sourceBuffers[0]');
@@ -199,7 +243,7 @@
             mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
             {
                 test.expectEvent(mediaSource.sourceBuffers, 'removesourcebuffer', 'SourceBuffer removed.');
-                mediaSource.removeSourceBuffer(sourceBuffer);               
+                mediaSource.removeSourceBuffer(sourceBuffer);
 
                 test.waitForExpectedEvents(function()
                 {

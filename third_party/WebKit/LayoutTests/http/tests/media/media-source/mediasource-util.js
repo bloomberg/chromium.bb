@@ -325,16 +325,16 @@
     };
 
     window['MediaSourceUtil'] = MediaSourceUtil;
-    window['media_test'] = function(testFunction, description, options)
+    window['media_test'] = function(testFunction, description, properties)
     {
-        options = options || {};
+        properties = properties || {};
         return async_test(function(test)
         {
             addExtraTestMethods(test);
             testFunction(test);
-        }, description, options);
+        }, description, properties);
     };
-    window['mediasource_test'] = function(testFunction, description, options)
+    window['mediasource_test'] = function(testFunction, description, properties)
     {
         return media_test(function(test)
         {
@@ -357,10 +357,12 @@
             {
                 testFunction(test, mediaTag, mediaSource);
             });
-        }, description, options);
+        }, description, properties);
     };
 
-    window['mediasource_testafterdataloaded'] = function(testFunction, description, options)
+    // In addition to test harness's async_test() properties parameter, this
+    // function recognizes the property allow_media_element_error.
+    window['mediasource_testafterdataloaded'] = function(testFunction, description, properties)
     {
         mediasource_test(function(test, mediaElement, mediaSource)
         {
@@ -371,15 +373,16 @@
                 return;
             }
 
-            test.failOnEvent(mediaElement, 'error');
+            if (properties == null || properties.allow_media_element_error == null || !properties.allow_media_element_error)
+                test.failOnEvent(mediaElement, 'error');
 
             var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
             MediaSourceUtil.loadBinaryData(test, segmentInfo.url, function(mediaData)
             {
                 testFunction(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData);
             });
-        }, description, options);
-    }
+        }, description, properties);
+    };
 
     function timeRangesToString(ranges)
     {

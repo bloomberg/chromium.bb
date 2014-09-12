@@ -1,5 +1,7 @@
  
 PASS Demuxed content with different lengths 
+PASS Process first init segment for sourceBuffer[0] first 
+PASS Process first init segment for sourceBuffer[1] first 
 PASS Muxed tracks with different lengths 
 PASS Demuxed content with an empty buffered range on one SourceBuffer 
 PASS Muxed content empty buffered ranges. 

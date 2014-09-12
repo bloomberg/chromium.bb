@@ -155,7 +155,9 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     SourceBuffer* buffer = SourceBuffer::create(webSourceBuffer.release(), this, m_asyncEventQueue.get());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
-    m_activeSourceBuffers->add(buffer);
+    // FIXME: Remove the following once Chromium calls WebSourceBufferClient::InitSegmentReceived()
+    setSourceBufferActive(buffer);
+
     // 7. Return the new object to the caller.
     return buffer;
 }
@@ -478,6 +480,29 @@ void MediaSource::endOfStreamInternal(const WebMediaSource::EndOfStreamStatus eo
 bool MediaSource::isOpen() const
 {
     return readyState() == openKeyword();
+}
+
+void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
+{
+    if (m_activeSourceBuffers->contains(sourceBuffer))
+        return;
+
+    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-activeSourceBuffers
+    // SourceBuffer objects in SourceBuffer.activeSourceBuffers must appear in
+    // the same order as they appear in SourceBuffer.sourceBuffers.
+    // SourceBuffer transitions to active are not guaranteed to occur in the
+    // same order as buffers in |m_sourceBuffers|, so this method needs to
+    // insert |sourceBuffer| into |m_activeSourceBuffers|.
+    size_t indexInSourceBuffers = m_sourceBuffers->find(sourceBuffer);
+    ASSERT(indexInSourceBuffers != kNotFound);
+
+    size_t insertPosition = 0;
+    while (insertPosition < m_activeSourceBuffers->length()
+        && m_sourceBuffers->find(m_activeSourceBuffers->item(insertPosition)) < indexInSourceBuffers) {
+        ++insertPosition;
+    }
+
+    m_activeSourceBuffers->insert(insertPosition, sourceBuffer);
 }
 
 bool MediaSource::isClosed() const

@@ -100,6 +100,7 @@ public:
     // Used by SourceBuffer.
     void openIfInEndedState();
     bool isOpen() const;
+    void setSourceBufferActive(SourceBuffer*);
 
     // Used by MediaSourceRegistry.
     void addedToRegistry();

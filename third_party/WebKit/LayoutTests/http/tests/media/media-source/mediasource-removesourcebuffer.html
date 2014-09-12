@@ -55,17 +55,17 @@
               mediaSource.endOfStream();
               assert_true(mediaSource.readyState == 'ended', "MediaSource in ended state");
               mediaSource.removeSourceBuffer(sourceBuffer);
-              
+
               assert_true(mediaSource.sourceBuffers.length == 0, "MediaSource.sourceBuffers is empty");
               assert_true(mediaSource.activeSourceBuffers.length == 0, "MediaSource.activesourceBuffers is empty");
-              
+
               test.done();
           }, "Test calling removeSourceBuffer() in ended state.");
-          
+
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
-              
+
               test.expectEvent(sourceBuffer, 'updateend', 'initSegment append ended.');
               test.expectEvent(mediaElement, 'loadedmetadata', 'loadedmetadata done.');
               sourceBuffer.appendBuffer(initSegment);
@@ -80,7 +80,7 @@
                   test.expectEvent(mediaSource.sourceBuffers, 'removesourcebuffer', 'SourceBuffer removed.');
                   mediaSource.removeSourceBuffer(sourceBuffer);
               });
-                                   
+
               test.waitForExpectedEvents(function()
               {
                   assert_true(mediaSource.sourceBuffers.length == 0, "MediaSource.sourceBuffers is empty");

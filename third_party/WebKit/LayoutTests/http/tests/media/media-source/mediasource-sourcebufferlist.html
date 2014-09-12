@@ -13,24 +13,20 @@
           function verifySourceBufferLists(mediaSource, expected)
           {
               assert_equals(mediaSource.sourceBuffers.length, expected.length, "sourceBuffers length");
-              assert_equals(mediaSource.activeSourceBuffers.length, expected.length, "activeSourceBuffers length");
-              for (var i = 0; i < expected.length; ++i) {
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "activeSourceBuffers length");
+              for (var i = 0; i < expected.length; ++i)
                 assert_equals(mediaSource.sourceBuffers[i], expected[i], "Verifying mediaSource.sourceBuffers[" + i + "]");
-                assert_equals(mediaSource.activeSourceBuffers[i], expected[i], "Verifying mediaSource.activeSourceBuffers[" + i + "]");
-              }
           }
 
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               test.expectEvent(mediaSource.sourceBuffers, "addsourcebuffer", "sourceBuffers");
-              test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "activeSourceBuffers");
               var sourceBufferA = mediaSource.addSourceBuffer(MediaSourceUtil.VIDEO_ONLY_TYPE);
               var sourceBufferB = null;
 
               test.waitForExpectedEvents(function()
               {
                   test.expectEvent(mediaSource.sourceBuffers, "addsourcebuffer", "sourceBuffers");
-                  test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "activeSourceBuffers");
                   sourceBufferB = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
 
                   verifySourceBufferLists(mediaSource, [sourceBufferA, sourceBufferB]);
@@ -38,14 +34,12 @@
 
               test.waitForExpectedEvents(function()
               {
-                  test.expectEvent(mediaSource.activeSourceBuffers, "removesourcebuffer", "activeSourceBuffers");
                   test.expectEvent(mediaSource.sourceBuffers, "removesourcebuffer", "sourceBuffers");
                   mediaSource.removeSourceBuffer(sourceBufferA);
 
                   verifySourceBufferLists(mediaSource, [sourceBufferB]);
 
                   test.expectEvent(mediaSource.sourceBuffers, "addsourcebuffer", "sourceBuffers");
-                  test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "activeSourceBuffers");
                   sourceBufferA = mediaSource.addSourceBuffer(MediaSourceUtil.VIDEO_ONLY_TYPE);
 
                   verifySourceBufferLists(mediaSource, [sourceBufferB, sourceBufferA]);
@@ -60,9 +54,7 @@
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               test.expectEvent(mediaSource.sourceBuffers, "addsourcebuffer", "sourceBuffers");
-              test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "activeSourceBuffers");
               test.expectEvent(mediaSource.sourceBuffers, "addsourcebuffer", "sourceBuffers");
-              test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "activeSourceBuffers");
               var sourceBufferA = mediaSource.addSourceBuffer(MediaSourceUtil.VIDEO_ONLY_TYPE);
               var sourceBufferB = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
 
@@ -73,21 +65,53 @@
                   verifySourceBufferLists(mediaSource, [sourceBufferA, sourceBufferB]);
 
                   // Force the media element to close the MediaSource object.
-                  test.expectEvent(mediaSource.activeSourceBuffers, "removesourcebuffer", "activeSourceBuffers");
                   test.expectEvent(mediaSource.sourceBuffers, "removesourcebuffer", "sourceBuffers");
                   test.expectEvent(mediaSource, "sourceclose", "mediaSource closing");
+                  test.expectEvent(mediaElement, "error", "mediaElement error loading");
                   mediaElement.src = "";
               });
 
               test.waitForExpectedEvents(function()
               {
+                  assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED, "Expected error code");
                   assert_equals(mediaSource.readyState, "closed", "mediaSource is closed.");
 
                   verifySourceBufferLists(mediaSource, []);
                   test.done();
               });
-          }, "Test that only 1 removesourcebuffer event fires on each SourceBufferList when the MediaSource closes.");
+          }, "Test that only 1 removesourcebuffer event fires on sourceBuffers when the MediaSource closes.");
 
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              // FIXME: Test two activeSourceBuffers, either demuxed or once multitrack is supported.
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+
+              test.expectEvent(sourceBuffer, "updateend", "initSegment append ended.");
+              test.expectEvent(mediaElement, "loadedmetadata", "loadedmetadata done.");
+              sourceBuffer.appendBuffer(initSegment);
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaSource.sourceBuffers.length, 1, "mediaSource sourceBuffers");
+                  assert_equals(mediaSource.activeSourceBuffers.length, 1, "mediaSource activeSourceBuffers");
+
+                  // Force the media element to close the MediaSource object.
+                  test.expectEvent(mediaSource.sourceBuffers, "removesourcebuffer", "sourcebuffers");
+                  test.expectEvent(mediaSource.activeSourceBuffers, "removesourcebuffer", "activesourcebuffers");
+                  test.expectEvent(mediaSource, "sourceclose", "mediaSource closing");
+                  test.expectEvent(mediaElement, "error", "mediaElement error loading");
+                  mediaElement.src = "";
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED, "Expected error code");
+                  assert_equals(mediaSource.readyState, "closed", "mediaSource is closed.");
+                  assert_equals(mediaSource.sourceBuffers.length, 0, "mediaSource sourceBuffers");
+                  assert_equals(mediaSource.activeSourceBuffers.length, 0, "mediaSource activeSourceBuffers");
+                  test.done();
+              });
+          }, "Test removesourcebuffer event firing on sourceBuffers and activeSourceBuffers when MediaSource closes.", { allow_media_element_error: true } );
         </script>
     </body>
 </html>

@@ -36,6 +36,7 @@
 #include "modules/EventTargetModules.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebSourceBufferClient.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -50,7 +51,7 @@ class Stream;
 class TimeRanges;
 class WebSourceBuffer;
 
-class SourceBuffer FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
+class SourceBuffer FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient, public WebSourceBufferClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
@@ -92,6 +93,9 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    // WebSourceBufferClient interface
+    virtual void initializationSegmentReceived() OVERRIDE;
+
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
@@ -125,6 +129,7 @@ private:
     double m_timestampOffset;
     double m_appendWindowStart;
     double m_appendWindowEnd;
+    bool m_firstInitializationSegmentReceived;
 
     Vector<unsigned char> m_pendingAppendData;
     size_t m_pendingAppendDataOffset;

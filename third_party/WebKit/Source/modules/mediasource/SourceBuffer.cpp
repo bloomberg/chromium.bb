@@ -89,6 +89,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     , m_timestampOffset(0)
     , m_appendWindowStart(0)
     , m_appendWindowEnd(std::numeric_limits<double>::infinity())
+    , m_firstInitializationSegmentReceived(false)
     , m_pendingAppendDataOffset(0)
     , m_appendBufferAsyncPartRunner(this, &SourceBuffer::appendBufferAsyncPart)
     , m_pendingRemoveStart(-1)
@@ -100,6 +101,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
 {
     ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
+    m_webSourceBuffer->setClient(this);
 }
 
 SourceBuffer::~SourceBuffer()
@@ -111,6 +113,7 @@ SourceBuffer::~SourceBuffer()
     ASSERT(isRemoved());
     ASSERT(!m_loader);
     ASSERT(!m_stream);
+    ASSERT(!m_webSourceBuffer);
 #endif
 }
 
@@ -417,6 +420,29 @@ void SourceBuffer::removedFromMediaSource()
     m_webSourceBuffer.clear();
     m_source = nullptr;
     m_asyncEventQueue = 0;
+}
+
+void SourceBuffer::initializationSegmentReceived()
+{
+    ASSERT(m_source);
+    ASSERT(m_updating);
+
+    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#sourcebuffer-init-segment-received
+    // FIXME: Make steps 1-7 synchronous with this call.
+    // FIXME: Augment the interface to this method to implement compliant steps 4-7 here.
+    // Step 3 (if the first initialization segment received flag is true) is
+    // implemented by caller.
+
+    if (!m_firstInitializationSegmentReceived) {
+        // 5. If active track flag equals true, then run the following steps:
+        // 5.1. Add this SourceBuffer to activeSourceBuffers.
+        // 5.2. Queue a task to fire a simple event named addsourcebuffer at
+        // activesourcebuffers.
+        m_source->setSourceBufferActive(this);
+
+        // 6. Set first initialization segment received flag to true.
+        m_firstInitializationSegmentReceived = true;
+    }
 }
 
 bool SourceBuffer::hasPendingActivity() const

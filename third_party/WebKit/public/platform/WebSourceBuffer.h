@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class WebSourceBufferClient;
+
 class WebSourceBuffer {
 public:
     enum AppendMode {
@@ -43,6 +45,14 @@ public:
     };
 
     virtual ~WebSourceBuffer() { }
+
+    // This will only be called once and only with a non-null pointer to a
+    // client whose ownership is not transferred to this WebSourceBuffer.
+    virtual void setClient(WebSourceBufferClient*)
+    {
+        // FIXME: Remove default implementation once Chromium impl lands.
+    }
+
     virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
 
@@ -60,6 +70,8 @@ public:
     // Set presentation timestamp for the end of append window.
     virtual void setAppendWindowEnd(double) = 0;
 
+    // After this method is called, this WebSourceBuffer should never use the
+    // client pointer passed to setClient().
     virtual void removedFromMediaSource() = 0;
 };
 

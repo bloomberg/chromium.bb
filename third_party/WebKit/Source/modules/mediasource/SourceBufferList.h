@@ -55,7 +55,9 @@ public:
     SourceBuffer* item(unsigned long index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
 
     void add(SourceBuffer*);
+    void insert(size_t position, SourceBuffer*);
     void remove(SourceBuffer*);
+    size_t find(SourceBuffer* buffer) { return m_list.find(buffer); }
     bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != kNotFound; }
     void clear();
 

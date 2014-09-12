@@ -56,6 +56,12 @@ void SourceBufferList::add(SourceBuffer* buffer)
     scheduleEvent(EventTypeNames::addsourcebuffer);
 }
 
+void SourceBufferList::insert(size_t position, SourceBuffer* buffer)
+{
+    m_list.insert(position, buffer);
+    scheduleEvent(EventTypeNames::addsourcebuffer);
+}
+
 void SourceBufferList::remove(SourceBuffer* buffer)
 {
     size_t index = m_list.find(buffer);

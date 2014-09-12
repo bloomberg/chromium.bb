@@ -26,7 +26,7 @@
                           "addSourceBuffer() threw an exception when passed an empty string.");
               test.done();
           }, "Test addSourceBuffer() with empty type");
-          
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               assert_throws("NotSupportedError",
@@ -52,10 +52,10 @@
               var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
               assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBuffer is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with Vorbis and VP8");
-        
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               var videoMimetype = 'video/webm;codecs="vp8"';
@@ -67,9 +67,9 @@
               var sourceBufferA = mediaSource.addSourceBuffer(videoMimetype);
               var sourceBufferB = mediaSource.addSourceBuffer(audioMimetype);
               assert_equals(mediaSource.sourceBuffers[0], sourceBufferA, "sourceBufferA is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBufferA, "sourceBufferA is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBufferA is not in mediaSource.activeSourceBuffers");
               assert_equals(mediaSource.sourceBuffers[1], sourceBufferB, "sourceBufferB is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[1], sourceBufferB, "sourceBufferB is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBufferB is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with Vorbis and VP8 in separate SourceBuffers");
 
@@ -82,7 +82,7 @@
               var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
               assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBuffer is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() video only");
           
@@ -95,7 +95,7 @@
               var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
               assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBuffer is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() audio only");
 
@@ -108,7 +108,7 @@
               var sourceBuffer = mediaSource.addSourceBuffer(mimetype);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
               assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "SourceBuffer is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBuffer is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with AAC and H.264");
 
@@ -123,9 +123,9 @@
               var sourceBufferA = mediaSource.addSourceBuffer(videoMimetype);
               var sourceBufferB = mediaSource.addSourceBuffer(audioMimetype);
               assert_equals(mediaSource.sourceBuffers[0], sourceBufferA, "sourceBufferA is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[0], sourceBufferA, "sourceBufferA is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBufferA is not in mediaSource.activeSourceBuffers");
               assert_equals(mediaSource.sourceBuffers[1], sourceBufferB, "sourceBufferB is in mediaSource.sourceBuffers");
-              assert_equals(mediaSource.activeSourceBuffers[1], sourceBufferB, "sourceBufferB is in mediaSource.activeSourceBuffers");
+              assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBufferB is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() with AAC and H.264 in separate SourceBuffers");
 
