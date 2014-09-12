@@ -87,14 +87,15 @@ class Transport : public base::NonThreadSafe {
     virtual void OnTransportDeleted(Transport* transport) = 0;
   };
 
+  typedef base::Callback<void(scoped_ptr<net::Socket>)> ConnectedCallback;
+
   Transport() {}
   virtual ~Transport() {}
 
-  // Intialize the transport with the specified parameters.
-  // |authenticator| is used to secure and authenticate the connection.
-  virtual void Initialize(const std::string& name,
-                          Transport::EventHandler* event_handler,
-                          scoped_ptr<ChannelAuthenticator> authenticator) = 0;
+  // Connects the transport and calls the |callback| after that.
+  virtual void Connect(const std::string& name,
+                       Transport::EventHandler* event_handler,
+                       const ConnectedCallback& callback) = 0;
 
   // Adds |candidate| received from the peer.
   virtual void AddRemoteCandidate(const cricket::Candidate& candidate) = 0;
@@ -111,32 +112,6 @@ class Transport : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(Transport);
 };
 
-class StreamTransport : public Transport {
- public:
-  typedef base::Callback<void(scoped_ptr<net::StreamSocket>)> ConnectedCallback;
-
-  StreamTransport() { }
-  virtual ~StreamTransport() { }
-
-  virtual void Connect(const ConnectedCallback& callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StreamTransport);
-};
-
-class DatagramTransport : public Transport {
- public:
-  typedef base::Callback<void(scoped_ptr<net::Socket>)> ConnectedCallback;
-
-  DatagramTransport() { }
-  virtual ~DatagramTransport() { }
-
-  virtual void Connect(const ConnectedCallback& callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DatagramTransport);
-};
-
 class TransportFactory {
  public:
   TransportFactory() { }
@@ -148,8 +123,7 @@ class TransportFactory {
   // necessary while the session is being authenticated.
   virtual void PrepareTokens() = 0;
 
-  virtual scoped_ptr<StreamTransport> CreateStreamTransport() = 0;
-  virtual scoped_ptr<DatagramTransport> CreateDatagramTransport() = 0;
+  virtual scoped_ptr<Transport> CreateTransport() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportFactory);

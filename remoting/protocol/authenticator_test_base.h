@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +36,7 @@ class AuthenticatorTestBase : public testing::Test {
    public:
     MockChannelDoneCallback();
     ~MockChannelDoneCallback();
-    MOCK_METHOD1(OnDone, void(net::Error error));
+    MOCK_METHOD1(OnDone, void(int error));
   };
 
   static void ContinueAuthExchangeWith(Authenticator* sender,
@@ -49,9 +48,9 @@ class AuthenticatorTestBase : public testing::Test {
   void RunHostInitiatedAuthExchange();
   void RunChannelAuth(bool expected_fail);
 
-  void OnHostConnected(net::Error error,
+  void OnHostConnected(int error,
                        scoped_ptr<net::StreamSocket> socket);
-  void OnClientConnected(net::Error error,
+  void OnClientConnected(int error,
                          scoped_ptr<net::StreamSocket> socket);
 
   base::MessageLoop message_loop_;

@@ -78,6 +78,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
 
   void CheckDone(bool* callback_called);
   void NotifyError(int error);
+  void CallDoneCallback(int error, scoped_ptr<net::StreamSocket> socket);
 
   // The mutual secret used for authentication.
   std::string auth_key_;

@@ -8,22 +8,22 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/proto/mux.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
-#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/stream_channel_factory.h"
 
 namespace remoting {
 namespace protocol {
 
-class ChannelMultiplexer : public ChannelFactory {
+class ChannelMultiplexer : public StreamChannelFactory {
  public:
   static const char kMuxChannelName[];
 
   // |factory| is used to create the channel upon which to multiplex.
-  ChannelMultiplexer(ChannelFactory* factory,
+  ChannelMultiplexer(StreamChannelFactory* factory,
                      const std::string& base_channel_name);
   virtual ~ChannelMultiplexer();
 
-  // ChannelFactory interface.
+  // StreamChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
                              const ChannelCreatedCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
@@ -59,7 +59,7 @@ class ChannelMultiplexer : public ChannelFactory {
 
   // Factory used to create |base_channel_|. Set to NULL once creation is
   // finished or failed.
-  ChannelFactory* base_channel_factory_;
+  StreamChannelFactory* base_channel_factory_;
 
   // Name of the underlying channel.
   std::string base_channel_name_;

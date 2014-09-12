@@ -17,7 +17,7 @@ class IPEndPoint;
 namespace remoting {
 namespace protocol {
 
-class ChannelFactory;
+class StreamChannelFactory;
 struct TransportRoute;
 
 // Generic interface for Chromotocol connection used by both client and host.
@@ -99,8 +99,8 @@ class Session {
   // GetTransportChannelFactory() returns a factory that creates a new transport
   // channel for each logical channel. GetMultiplexedChannelFactory() channels
   // share a single underlying transport channel
-  virtual ChannelFactory* GetTransportChannelFactory() = 0;
-  virtual ChannelFactory* GetMultiplexedChannelFactory() = 0;
+  virtual StreamChannelFactory* GetTransportChannelFactory() = 0;
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called
   // after this method returns. Must be called before the object is

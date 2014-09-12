@@ -15,7 +15,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/authenticator.h"
-#include "remoting/protocol/channel_factory.h"
+#include "remoting/protocol/datagram_channel_factory.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
@@ -30,14 +30,17 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+class SecureChannelFactory;
 class ChannelMultiplexer;
 class JingleSessionManager;
+class PseudoTcpChannelFactory;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. Instances of this class are
 // created by the JingleSessionManager.
-class JingleSession : public Session,
-                      public ChannelFactory,
+class JingleSession : public base::NonThreadSafe,
+                      public Session,
+                      public DatagramChannelFactory,
                       public Transport::EventHandler {
  public:
   virtual ~JingleSession();
@@ -49,11 +52,11 @@ class JingleSession : public Session,
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
   virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual ChannelFactory* GetTransportChannelFactory() OVERRIDE;
-  virtual ChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
+  virtual StreamChannelFactory* GetTransportChannelFactory() OVERRIDE;
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  // ChannelFactory interface.
+  // DatagramChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
                              const ChannelCreatedCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
@@ -133,6 +136,9 @@ class JingleSession : public Session,
   // Called after the authenticating step is finished.
   void ContinueAuthenticationStep();
 
+  // Called when authentication is finished.
+  void OnAuthenticated();
+
   // Terminates the session and sends session-terminate if it is
   // necessary. |error| specifies the error code in case when the
   // session is being closed due to an error.
@@ -165,6 +171,8 @@ class JingleSession : public Session,
   std::list<IqRequest*> transport_info_requests_;
 
   ChannelsMap channels_;
+  scoped_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
+  scoped_ptr<SecureChannelFactory> secure_channel_factory_;
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
 
   base::OneShotTimer<JingleSession> transport_infos_timer_;

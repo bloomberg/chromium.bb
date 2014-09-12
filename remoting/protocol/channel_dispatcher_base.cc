@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "net/socket/stream_socket.h"
-#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/stream_channel_factory.h"
 
 namespace remoting {
 namespace protocol {
