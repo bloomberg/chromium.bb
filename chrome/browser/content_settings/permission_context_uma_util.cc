@@ -42,18 +42,18 @@ void RecordPermissionAction(
         break;
       case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
         UMA_HISTOGRAM_ENUMERATION(
-            "ContentSettings.PermisionActions_Notifications",
+            "ContentSettings.PermissionActions_Notifications",
             action,
             PERMISSION_ACTION_NUM);
         break;
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-        UMA_HISTOGRAM_ENUMERATION("ContentSettings.PermisionActions_MidiSysEx",
+        UMA_HISTOGRAM_ENUMERATION("ContentSettings.PermissionActions_MidiSysEx",
                                   action,
                                   PERMISSION_ACTION_NUM);
         break;
       case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
         UMA_HISTOGRAM_ENUMERATION(
-            "ContentSettings.PermisionActions_PushMessaging",
+            "ContentSettings.PermissionActions_PushMessaging",
             action,
             PERMISSION_ACTION_NUM);
         break;
