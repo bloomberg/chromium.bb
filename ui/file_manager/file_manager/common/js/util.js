@@ -356,8 +356,6 @@ util.bytesToString = function(bytes) {
                Math.pow(2, 50)];
 
   var str = function(n, u) {
-    // TODO(rginda): Switch to v8Locale's number formatter when it's
-    // available.
     return strf(u, n.toLocaleString());
   };
 
@@ -563,49 +561,11 @@ function strf(id, var_args) {
 }
 
 /**
- * Adapter object that abstracts away the the difference between Chrome app APIs
- * v1 and v2. Is only necessary while the migration to v2 APIs is in progress.
- * TODO(mtomasz): Clean up this. crbug.com/240606.
+ * @return {boolean} True if Files.app is running as an open files or a select
+ *     folder dialog. False otherwise.
  */
-util.platform = {
-  /**
-   * @return {boolean} True if Files.app is running as an open files or a select
-   *     folder dialog. False otherwise.
-   */
-  runningInBrowser: function() {
-    return !window.appID;
-  },
-
-  /**
-   * @param {function(Object)} callback Function accepting a preference map.
-   */
-  getPreferences: function(callback) {
-    chrome.storage.local.get(callback);
-  },
-
-  /**
-   * @param {string} key Preference name.
-   * @param {function(string)} callback Function accepting the preference value.
-   */
-  getPreference: function(key, callback) {
-    chrome.storage.local.get(key, function(items) {
-      callback(items[key]);
-    });
-  },
-
-  /**
-   * @param {string} key Preference name.
-   * @param {string|Object} value Preference value.
-   * @param {function()=} opt_callback Completion callback.
-   */
-  setPreference: function(key, value, opt_callback) {
-    if (typeof value != 'string')
-      value = JSON.stringify(value);
-
-    var items = {};
-    items[key] = value;
-    chrome.storage.local.set(items, opt_callback);
-  }
+util.runningInBrowser = function() {
+  return !window.appID;
 };
 
 /**
@@ -622,8 +582,12 @@ util.addPageLoadHandler = function(handler) {
  * Save app launch data to the local storage.
  */
 util.saveAppState = function() {
-  if (window.appState)
-    util.platform.setPreference(window.appID, window.appState);
+  if (!window.appState)
+    return;
+  var items = {};
+
+  items[window.appID] = JSON.stringify(window.appState);
+  chrome.storage.local.set(items);
 };
 
 /**
@@ -694,7 +658,8 @@ util.AppCache.update = function(key, value, opt_lifetime) {
  * @private
  */
 util.AppCache.read_ = function(callback) {
-  util.platform.getPreference(util.AppCache.KEY, function(json) {
+  chrome.storage.local.get(util.AppCache.KEY, function(values) {
+    var json = values[util.AppCache.KEY];
     if (json) {
       try {
         callback(JSON.parse(json));
@@ -711,7 +676,9 @@ util.AppCache.read_ = function(callback) {
  * @private
  */
 util.AppCache.write_ = function(map) {
-  util.platform.setPreference(util.AppCache.KEY, JSON.stringify(map));
+  var items = {};
+  items[util.AppCache.KEY] = JSON.stringify(map);
+  chrome.storage.local.set(items);
 };
 
 /**

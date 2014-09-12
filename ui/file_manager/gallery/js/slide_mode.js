@@ -128,10 +128,11 @@ SlideMode.prototype.initDom_ = function() {
       overwriteOriginalBox, '', 'input');
   this.overwriteOriginal_.type = 'checkbox';
   this.overwriteOriginal_.id = 'overwrite-checkbox';
-  util.platform.getPreference(SlideMode.OVERWRITE_KEY, function(value) {
+  chrome.storage.local.get(SlideMode.OVERWRITE_KEY, function(values) {
+    var value = values[SlideMode.OVERWRITE_KEY];
     // Out-of-the box default is 'true'
     this.overwriteOriginal_.checked =
-        (typeof value !== 'string' || value === 'true');
+        (value === 'false' || value === false) ? false : true;
   }.bind(this));
   this.overwriteOriginal_.addEventListener('click',
       this.onOverwriteOriginalClick_.bind(this));
@@ -729,14 +730,15 @@ SlideMode.prototype.loadItem_ = function(
     ImageUtil.setAttribute(this.options_, 'saved',
         !this.getSelectedItem().isOriginal());
 
-    util.platform.getPreference(SlideMode.OVERWRITE_BUBBLE_KEY,
-        function(value) {
-          var times = typeof value === 'string' ? parseInt(value, 10) : 0;
+    chrome.storage.local.get(SlideMode.OVERWRITE_BUBBLE_KEY,
+        function(values) {
+          var times = values[SlideMode.OVERWRITE_BUBBLE_KEY] || 0;
           if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
             this.bubble_.hidden = false;
             if (this.isEditing()) {
-              util.platform.setPreference(
-                  SlideMode.OVERWRITE_BUBBLE_KEY, times + 1);
+              var items = {};
+              items[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
+              chrome.storage.local.set(items);
             }
           }
         }.bind(this));
@@ -1040,7 +1042,9 @@ SlideMode.prototype.shouldOverwriteOriginal_ = function() {
  * @private
  */
 SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
-  util.platform.setPreference(SlideMode.OVERWRITE_KEY, event.target.checked);
+  var items = {};
+  items[SlideMode.OVERWRITE_KEY] = event.target.checked;
+  chrome.storage.local.set(items);
 };
 
 /**
@@ -1049,8 +1053,10 @@ SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
  */
 SlideMode.prototype.onCloseBubble_ = function() {
   this.bubble_.hidden = true;
-  util.platform.setPreference(SlideMode.OVERWRITE_BUBBLE_KEY,
-      SlideMode.OVERWRITE_BUBBLE_MAX_TIMES);
+  var items = {};
+  items[SlideMode.OVERWRITE_BUBBLE_KEY] =
+      SlideMode.OVERWRITE_BUBBLE_MAX_TIMES;
+  chrome.storage.local.set(items);
 };
 
 // Slideshow

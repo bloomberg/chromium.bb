@@ -767,7 +767,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Get startup preferences.
     group.add(function(done) {
-      util.platform.getPreference(this.startupPrefName_, function(value) {
+      chrome.storage.local.get(this.startupPrefName_, function(values) {
+        var value = values[this.startupPrefName_];
+        if (!value) {
+          done();
+          return;
+        }
         // Load the global default options.
         try {
           this.viewOptions_ = JSON.parse(value);
@@ -1030,7 +1035,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
 
-    if (util.platform.runningInBrowser()) {
+    if (util.runningInBrowser()) {
       // Suppresses the default context menu.
       this.dialogDom_.addEventListener('contextmenu', function(e) {
         e.preventDefault();
@@ -1188,9 +1193,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.backgroundPage_ = backgroundPage;
       this.backgroundPage_.background.ready(function() {
         loadTimeData.data = this.backgroundPage_.background.stringData;
-        if (util.platform.runningInBrowser()) {
+        if (util.runningInBrowser())
           this.backgroundPage_.registerDialog(window);
-        }
         callback();
       }.bind(this));
     }.bind(this));
@@ -1251,8 +1255,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.cancelButton_ = this.ui_.cancelButton;
 
     // Show the window as soon as the UI pre-initialization is done.
-    if (this.dialogType == DialogType.FULL_PAGE &&
-        !util.platform.runningInBrowser()) {
+    if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
       chrome.app.window.current().show();
       setTimeout(callback, 100);  // Wait until the animation is finished.
     } else {
@@ -1599,7 +1602,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       prefs.columns.push(cm.getWidth(i));
     }
     // Save the global default.
-    util.platform.setPreference(this.startupPrefName_, JSON.stringify(prefs));
+    var items = {};
+    items[this.startupPrefName_] = JSON.stringify(prefs);
+    chrome.storage.local.set(items);
 
     // Save the window-specific preference.
     if (window.appState) {

@@ -248,9 +248,9 @@ Background.prototype.navigateToVolume = function(volumeId) {
  *
  * Expects the following from the app scripts:
  * 1. The page load handler should initialize the app using |window.appState|
- *    and call |util.platform.saveAppState|.
+ *    and call |util.saveAppState|.
  * 2. Every time the app state changes the app should update |window.appState|
- *    and call |util.platform.saveAppState| .
+ *    and call |util.saveAppState| .
  * 3. The app may have |unload| function to persist the app state that does not
  *    fit into |window.appState|.
  *
