@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_frame_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace content {
@@ -241,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
   EXPECT_TRUE(observer.navigation_succeeded());
 
   // Ensure that we have created a new process for the subframe.
-  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, root->child_count());
   SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
   RenderViewHost* rvh = child->current_frame_host()->render_view_host();
   RenderProcessHost* rph = child->current_frame_host()->GetProcess();
@@ -274,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
 
   // Check again that a new process is created and is different from the
   // top level one and the previous one.
-  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, root->child_count());
   child = root->child_at(0);
   EXPECT_NE(shell()->web_contents()->GetRenderViewHost(),
             child->current_frame_host()->render_view_host());
@@ -565,6 +567,127 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // DidFailProvisionalLoad when navigating to client_redirect_http_url.
     EXPECT_EQ(observer.navigation_url(), client_redirect_http_url);
     EXPECT_FALSE(observer.navigation_succeeded());
+  }
+}
+
+// Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
+// created in the FrameTree skipping the subtree of the navigating frame.
+// TODO(nasko): Test is disabled on Android, because it times out. It should
+// be fixed together with CrossSiteIframe on that platform.
+#if defined(OS_ANDROID)
+#define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
+#else
+#define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_ProxyCreationSkipsSubtree) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  EXPECT_TRUE(root->child_at(1) != NULL);
+  EXPECT_EQ(2U, root->child_at(1)->child_count());
+
+  {
+    // Load same-site page into iframe.
+    SitePerProcessWebContentsObserver observer(shell()->web_contents());
+    GURL http_url(test_server()->GetURL("files/title1.html"));
+    NavigateFrameToURL(root->child_at(0), http_url);
+    EXPECT_EQ(http_url, observer.navigation_url());
+    EXPECT_TRUE(observer.navigation_succeeded());
+    RenderFrameProxyHost* proxy_to_parent =
+        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(
+            shell()->web_contents()->GetSiteInstance());
+    EXPECT_FALSE(proxy_to_parent);
+  }
+
+  // Create the cross-site URL to navigate to.
+  GURL::Replacements replace_host;
+  std::string foo_com("foo.com");
+  GURL cross_site_url(test_server()->GetURL("files/frame_tree/1-1.html"));
+  replace_host.SetHostStr(foo_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+
+  // Load cross-site page into the second iframe without waiting for the
+  // navigation to complete. Once LoadURLWithParams returns, we would expect
+  // proxies to have been created in the frame tree, but children of the
+  // navigating frame to still be present. The reason is that we don't run the
+  // message loop, so no IPCs that alter the frame tree can be processed.
+  FrameTreeNode* child = root->child_at(1);
+  SiteInstance* site;
+  {
+    SitePerProcessWebContentsObserver observer(shell()->web_contents());
+    TestFrameNavigationObserver navigation_observer(child);
+    NavigationController::LoadURLParams params(cross_site_url);
+    params.transition_type = PageTransitionFromInt(PAGE_TRANSITION_LINK);
+    params.frame_tree_node_id = child->frame_tree_node_id();
+    child->navigator()->GetController()->LoadURLWithParams(params);
+    EXPECT_TRUE(child->render_manager()->pending_frame_host());
+
+    site = child->render_manager()->pending_frame_host()->GetSiteInstance();
+    EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
+
+    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site));
+    EXPECT_TRUE(
+        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(site));
+    EXPECT_FALSE(child->render_manager()->GetRenderFrameProxyHost(site));
+    for (size_t i = 0; i < child->child_count(); ++i) {
+      EXPECT_FALSE(
+          child->child_at(i)->render_manager()->GetRenderFrameProxyHost(site));
+    }
+    // Now that the verification is done, run the message loop and wait for the
+    // navigation to complete.
+    navigation_observer.Wait();
+    EXPECT_FALSE(child->render_manager()->pending_frame_host());
+    EXPECT_EQ(cross_site_url, observer.navigation_url());
+    EXPECT_TRUE(observer.navigation_succeeded());
+  }
+
+  // Load another cross-site page into the same iframe.
+  cross_site_url = test_server()->GetURL("files/title2.html");
+  std::string bar_com("bar.com");
+  replace_host.SetHostStr(bar_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+
+  {
+    // Perform the same checks as the first cross-site navigation, since
+    // there have been issues in subsequent cross-site navigations. Also ensure
+    // that the SiteInstance has properly changed.
+    // TODO(nasko): Once we have proper cleanup of resources, add code to
+    // verify that the intermediate SiteInstance/RenderFrameHost have been
+    // properly cleaned up.
+    SitePerProcessWebContentsObserver observer(shell()->web_contents());
+    TestFrameNavigationObserver navigation_observer(child);
+    NavigationController::LoadURLParams params(cross_site_url);
+    params.transition_type = PageTransitionFromInt(PAGE_TRANSITION_LINK);
+    params.frame_tree_node_id = child->frame_tree_node_id();
+    child->navigator()->GetController()->LoadURLWithParams(params);
+    EXPECT_TRUE(child->render_manager()->pending_frame_host() != NULL);
+
+    SiteInstance* site2 =
+        child->render_manager()->pending_frame_host()->GetSiteInstance();
+    EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site2);
+    EXPECT_NE(site, site2);
+
+    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site2));
+    EXPECT_TRUE(
+        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(site2));
+    EXPECT_FALSE(child->render_manager()->GetRenderFrameProxyHost(site2));
+    for (size_t i = 0; i < child->child_count(); ++i) {
+      EXPECT_FALSE(
+          child->child_at(i)->render_manager()->GetRenderFrameProxyHost(site2));
+    }
+
+    navigation_observer.Wait();
+    EXPECT_EQ(cross_site_url, observer.navigation_url());
+    EXPECT_TRUE(observer.navigation_succeeded());
+    EXPECT_EQ(0U, child->child_count());
   }
 }
 

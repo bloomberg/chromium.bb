@@ -52,13 +52,8 @@ bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
   return true;
 }
 
-bool CreateProxyForSiteInstance(FrameTreeNode* source_node,
-                                const scoped_refptr<SiteInstance>& instance,
+bool CreateProxyForSiteInstance(const scoped_refptr<SiteInstance>& instance,
                                 FrameTreeNode* node) {
-  // Skip the node that initiated the creation.
-  if (source_node == node)
-    return true;
-
   node->render_manager()->CreateRenderFrameProxy(instance.get());
   return true;
 }
@@ -128,12 +123,21 @@ FrameTreeNode* FrameTree::FindByRoutingID(int routing_id, int process_id) {
 
 void FrameTree::ForEach(
     const base::Callback<bool(FrameTreeNode*)>& on_node) const {
+  ForEach(on_node, NULL);
+}
+
+void FrameTree::ForEach(
+    const base::Callback<bool(FrameTreeNode*)>& on_node,
+    FrameTreeNode* skip_this_subtree) const {
   std::queue<FrameTreeNode*> queue;
   queue.push(root_.get());
 
   while (!queue.empty()) {
     FrameTreeNode* node = queue.front();
     queue.pop();
+    if (skip_this_subtree == node)
+      continue;
+
     if (!on_node.Run(node))
       break;
 
@@ -193,7 +197,11 @@ void FrameTree::CreateProxiesForSiteInstance(
   }
 
   scoped_refptr<SiteInstance> instance(site_instance);
-  ForEach(base::Bind(&CreateProxyForSiteInstance, source, instance));
+
+  // Proxies are created in the FrameTree in response to a node navigating to a
+  // new SiteInstance. Since |source|'s navigation will replace the currently
+  // loaded document, the entire subtree under |source| will be removed.
+  ForEach(base::Bind(&CreateProxyForSiteInstance, instance), source);
 }
 
 void FrameTree::ResetForMainFrameSwap() {
