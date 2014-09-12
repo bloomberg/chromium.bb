@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_sample_apk;
+package org.chromium.cronet_test_apk;
 
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;

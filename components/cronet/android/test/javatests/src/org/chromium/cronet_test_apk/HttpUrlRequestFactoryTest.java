@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_sample_apk;
+package org.chromium.cronet_test_apk;
 
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
@@ -16,13 +15,24 @@ import java.util.regex.Pattern;
 /**
  * Tests for {@link HttpUrlRequestFactory}
  */
-public class HttpUrlRequestFactoryTest extends InstrumentationTestCase {
+public class HttpUrlRequestFactoryTest extends CronetTestBase {
+    // URL used for base tests.
+    private static final String URL = "http://127.0.0.1:8000";
+
     @SmallTest
     @Feature({"Cronet"})
-    public void testCreateFactory() {
+    public void testCreateFactory() throws Throwable {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
-                getInstrumentation().getContext(), config);
+        String[] commandLineArgs = {
+                CronetTestActivity.CONFIG_KEY, config.toString() };
+        CronetTestActivity activity =
+                launchCronetTestAppWithUrlAndCommandLineArgs(URL,
+                                                             commandLineArgs);
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+        waitForActiveShellToBeDoneLoading();
+
+        HttpUrlRequestFactory factory = activity.mRequestFactory;
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is " +
                            factory.getName(),

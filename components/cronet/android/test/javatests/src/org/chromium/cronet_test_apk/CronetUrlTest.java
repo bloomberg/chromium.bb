@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.cronet_sample_apk;
+package org.chromium.cronet_test_apk;
 
 import android.os.ConditionVariable;
 
@@ -19,14 +19,14 @@ import java.util.HashMap;
 /**
  * Example test that just starts the cronet sample.
  */
-public class CronetSampleUrlTest extends CronetSampleTestBase {
+public class CronetUrlTest extends CronetTestBase {
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";
 
     @SmallTest
     @Feature({"Cronet"})
     public void testLoadUrl() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+        CronetTestActivity activity = launchCronetTestAppWithUrl(URL);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
@@ -41,7 +41,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInvalidUrl() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(
+        CronetTestActivity activity = launchCronetTestAppWithUrl(
                 "127.0.0.1:8000");
 
         // Make sure the activity was created as expected.
@@ -57,10 +57,10 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     @Feature({"Cronet"})
     public void testPostData() throws Exception {
         String[] commandLineArgs = {
-                CronetSampleActivity.POST_DATA_KEY, "test" };
-        CronetSampleActivity activity =
-                launchCronetSampleWithUrlAndCommandLineArgs(URL,
-                                                            commandLineArgs);
+                CronetTestActivity.POST_DATA_KEY, "test" };
+        CronetTestActivity activity =
+                launchCronetTestAppWithUrlAndCommandLineArgs(URL,
+                                                             commandLineArgs);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
@@ -75,7 +75,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testNetLog() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(
+        CronetTestActivity activity = launchCronetTestAppWithUrl(
                 "127.0.0.1:8000");
 
         // Make sure the activity was created as expected.
@@ -120,7 +120,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testCalledByNativeException() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+        CronetTestActivity activity = launchCronetTestAppWithUrl(URL);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
@@ -143,7 +143,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testSetUploadDataWithNullContentType() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+        CronetTestActivity activity = launchCronetTestAppWithUrl(URL);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
@@ -172,10 +172,10 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         config.enableLegacyMode(true);
 
         String[] commandLineArgs = {
-                CronetSampleActivity.CONFIG_KEY, config.toString() };
-        CronetSampleActivity activity =
-                launchCronetSampleWithUrlAndCommandLineArgs(URL,
-                                                            commandLineArgs);
+                CronetTestActivity.CONFIG_KEY, config.toString() };
+        CronetTestActivity activity =
+                launchCronetTestAppWithUrlAndCommandLineArgs(URL,
+                                                             commandLineArgs);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
