@@ -250,12 +250,17 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
 
     ASSERT(m_parserBlockingScript.resource());
 
-    m_parserBlockingScriptAlreadyLoaded = m_parserBlockingScript.resource()->isLoaded();
+    // Exclude already loaded resources (from memory cache) and reloads from the
+    // computation of
+    // WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled (done after
+    // the script is compiled).
+    m_parserBlockingScriptAlreadyLoaded = m_parserBlockingScript.resource()->isLoaded() || m_parserBlockingScript.resource()->resourceToRevalidate();
     blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.AlreadyLoaded", m_parserBlockingScriptAlreadyLoaded ? 1 : 0, 2);
+
     // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
-    if (!m_parserBlockingScriptAlreadyLoaded)
+    if (!m_parserBlockingScript.resource()->isLoaded())
         m_parserBlockingScript.watchForLoad(this);
 }
 
