@@ -11,7 +11,6 @@ import fileinput
 import mox
 import os
 import sys
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
@@ -415,28 +414,87 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.assertTrue(portage_util.EBuild.GitRepoHasChanges(self.tempdir))
 
 
-class FindOverlaysTest(cros_test_lib.MockTestCase):
+class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to finding overlays."""
 
-  FAKE, MARIO = 'fake-board', 'x86-mario'
+  FAKE, PUB_PRIV, PUB_ONLY, PUB2_ONLY, PRIV_ONLY = (
+      'fake!board', 'pub-priv-board', 'pub-only-board', 'pub2-only-board',
+      'priv-only-board',
+  )
   PRIVATE = constants.PRIVATE_OVERLAYS
   PUBLIC = constants.PUBLIC_OVERLAYS
   BOTH = constants.BOTH_OVERLAYS
 
   def setUp(self):
-    """Fetch all overlays."""
+    # Create an overlay tree to run tests against and isolate ourselves from
+    # changes in the main tree.
+    D = cros_test_lib.Directory
+    overlay_files = (D('metadata', ('layout.conf',)),)
+    board_overlay_files = overlay_files + (
+        'make.conf',
+        'toolchain.conf',
+    )
+    file_layout = (
+        D('src', (
+            D('overlays', (
+                D('overlay-%s' % self.PUB_ONLY, board_overlay_files),
+                D('overlay-%s' % self.PUB2_ONLY, board_overlay_files),
+                D('overlay-%s' % self.PUB_PRIV, board_overlay_files),
+            )),
+            D('private-overlays', (
+                D('overlay-%s' % self.PUB_PRIV, board_overlay_files),
+                D('overlay-%s' % self.PRIV_ONLY, board_overlay_files),
+            )),
+            D('third_party', (
+                D('chromiumos-overlay', overlay_files),
+                D('portage-stable', overlay_files),
+            )),
+        )),
+    )
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
+
+    # Seed the board overlays.
+    conf_data = 'repo-name = %(repo-name)s'
+    conf_path = os.path.join(self.tempdir, 'src', '%(private)soverlays',
+                             'overlay-%(board)s', 'metadata', 'layout.conf')
+
+    for board in (self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY):
+      settings = {
+          'board': board,
+          'private': '',
+          'repo-name': board,
+      }
+      osutils.WriteFile(conf_path % settings,
+                        conf_data % settings)
+
+    for board in (self.PUB_PRIV, self.PRIV_ONLY):
+      settings = {
+          'board': board,
+          'private': 'private-',
+          'repo-name': '%s-private' % board,
+      }
+      osutils.WriteFile(conf_path % settings,
+                        conf_data % settings)
+
+    # Seed the common overlays.
+    conf_path = os.path.join(self.tempdir, 'src', 'third_party', '%(overlay)s',
+                             'metadata', 'layout.conf')
+    osutils.WriteFile(conf_path % {'overlay': 'chromiumos-overlay'},
+                      conf_data % {'repo-name': 'chromiumos'})
+    osutils.WriteFile(conf_path % {'overlay': 'portage-stable'},
+                      conf_data % {'repo-name': 'portage-stable'})
+
+    # Now build up the list of overlays that we'll use in tests below.
     self.overlays = {}
-    for b in (None, self.FAKE, self.MARIO):
+    for b in (None, self.FAKE, self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY,
+              self.PRIV_ONLY):
       self.overlays[b] = d = {}
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
-        d[o] = portage_util.FindOverlays(o, b, constants.SOURCE_ROOT)
+        try:
+          d[o] = portage_util.FindOverlays(o, b, self.tempdir)
+        except portage_util.MissingOverlayException:
+          d[o] = []
     self._no_overlays = not bool(any(d.values()))
-
-  def _MaybeSkip(self):
-    """Skip the test if no overlays are available."""
-    # TODO: Should create a local buildroot to test against instead ...
-    if self._no_overlays:
-      raise unittest.SkipTest('no overlays found in src/overlays/')
 
   def testMissingPrimaryOverlay(self):
     """Test what happens when a primary overlay is missing.
@@ -446,7 +504,7 @@ class FindOverlaysTest(cros_test_lib.MockTestCase):
     """
     self.assertRaises(portage_util.MissingOverlayException,
                       portage_util.FindPrimaryOverlay, self.BOTH,
-                      self.FAKE, constants.SOURCE_ROOT)
+                      self.FAKE, self.tempdir)
 
   def testDuplicates(self):
     """Verify that no duplicate overlays are returned."""
@@ -465,14 +523,10 @@ class FindOverlaysTest(cros_test_lib.MockTestCase):
 
     If we ask for results from 'both overlays', we should
     find all public and all private overlays.
-
-    There should always be at least one public overlay. (Note:
-    there may not be any private overlays, e.g. if the user has
-    a public checkout.)
     """
-    self._MaybeSkip()
-
-    for d in self.overlays.itervalues():
+    for b, d in self.overlays.items():
+      if b == self.FAKE:
+        continue
       self.assertGreaterEqual(set(d[self.BOTH]), set(d[self.PUBLIC]))
       self.assertGreater(set(d[self.BOTH]), set(d[self.PRIVATE]))
       self.assertTrue(set(d[self.PUBLIC]).isdisjoint(d[self.PRIVATE]))
@@ -487,44 +541,40 @@ class FindOverlaysTest(cros_test_lib.MockTestCase):
     If we specify a non-existent board to FindOverlays, only generic
     overlays should be returned.
     """
-    self._MaybeSkip()
-
     for o in (self.PUBLIC, self.BOTH):
       self.assertLess(set(self.overlays[self.FAKE][o]),
-                          set(self.overlays[self.MARIO][o]))
+                          set(self.overlays[self.PUB_PRIV][o]))
 
   def testAllBoards(self):
     """If we specify board=None, all overlays should be returned."""
-    self._MaybeSkip()
-
     for o in (self.PUBLIC, self.BOTH):
-      for b in (self.FAKE, self.MARIO):
+      for b in (self.FAKE, self.PUB_PRIV):
         self.assertLess(set(self.overlays[b][o]), set(self.overlays[None][o]))
 
-  def testMarioPrimaryOverlay(self):
-    """Verify that mario has a primary overlay.
+  def testPrimaryOverlays(self):
+    """Verify that boards have a primary overlay.
 
-    Further, the only difference between the public overlays for mario and a
-    fake board is the primary overlay, which is listed last.
+    Further, the only difference between public boards are the primary overlay
+    which should be listed last.
     """
-    self._MaybeSkip()
-
-    mario_primary = portage_util.FindPrimaryOverlay(self.BOTH, self.MARIO,
-                                                    constants.SOURCE_ROOT)
-    self.assertIn(mario_primary, self.overlays[self.MARIO][self.BOTH])
-    self.assertNotIn(mario_primary, self.overlays[self.FAKE][self.BOTH])
-    self.assertEqual(mario_primary, self.overlays[self.MARIO][self.PUBLIC][-1])
-    self.assertEqual(self.overlays[self.MARIO][self.PUBLIC][:-1],
-                     self.overlays[self.FAKE][self.PUBLIC])
+    primary = portage_util.FindPrimaryOverlay(
+        self.BOTH, self.PUB_ONLY, self.tempdir)
+    self.assertIn(primary, self.overlays[self.PUB_ONLY][self.BOTH])
+    self.assertNotIn(primary, self.overlays[self.PUB2_ONLY][self.BOTH])
+    self.assertEqual(primary, self.overlays[self.PUB_ONLY][self.PUBLIC][-1])
+    self.assertEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][:-1],
+                     self.overlays[self.PUB2_ONLY][self.PUBLIC][:-1])
+    self.assertNotEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][-1],
+                        self.overlays[self.PUB2_ONLY][self.PUBLIC][-1])
 
   def testReadOverlayFile(self):
     """Verify that the boards are examined in the right order"""
     m = self.PatchObject(osutils, 'ReadFile',
                          side_effect=IOError(os.errno.ENOENT, 'ENOENT'))
-    portage_util.ReadOverlayFile('test', self.PUBLIC, self.MARIO,
-                                 constants.SOURCE_ROOT)
+    portage_util.ReadOverlayFile('test', self.PUBLIC, self.PUB_PRIV,
+                                 self.tempdir)
     read_overlays = [x[0][0][:-5] for x in m.call_args_list]
-    overlays = [x for x in reversed(self.overlays[self.MARIO][self.PUBLIC])]
+    overlays = [x for x in reversed(self.overlays[self.PUB_PRIV][self.PUBLIC])]
     self.assertEqual(read_overlays, overlays)
 
 
