@@ -6,8 +6,8 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_SPELL_CHECK_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/mock_spell_check.h"
+#include "content/shell/renderer/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
 namespace content {

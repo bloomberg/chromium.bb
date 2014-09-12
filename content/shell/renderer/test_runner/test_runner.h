@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/shell/renderer/test_runner/WebTask.h"
+#include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "v8/include/v8.h"
 
@@ -163,7 +163,7 @@ class TestRunner : public WebTestRunner,
      public:
       WorkQueueTask(WorkQueue* object) : WebMethodTask<WorkQueue>(object) {}
 
-      virtual void runIfValid() OVERRIDE;
+      virtual void RunIfValid() OVERRIDE;
     };
 
     WebTaskList task_list_;

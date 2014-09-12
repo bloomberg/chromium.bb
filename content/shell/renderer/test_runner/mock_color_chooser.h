@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/WebTask.h"
+#include "content/shell/renderer/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 

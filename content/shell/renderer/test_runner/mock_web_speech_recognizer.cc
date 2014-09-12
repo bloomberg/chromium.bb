@@ -231,23 +231,23 @@ void MockWebSpeechRecognizer::ClearTaskQueue() {
   task_queue_running_ = false;
 }
 
-void MockWebSpeechRecognizer::StepTask::runIfValid() {
-  if (m_object->task_queue_.empty()) {
-    m_object->task_queue_running_ = false;
+void MockWebSpeechRecognizer::StepTask::RunIfValid() {
+  if (object_->task_queue_.empty()) {
+    object_->task_queue_running_ = false;
     return;
   }
 
-  Task* task = m_object->task_queue_.front();
-  m_object->task_queue_.pop_front();
+  Task* task = object_->task_queue_.front();
+  object_->task_queue_.pop_front();
   task->run();
   delete task;
 
-  if (m_object->task_queue_.empty()) {
-    m_object->task_queue_running_ = false;
+  if (object_->task_queue_.empty()) {
+    object_->task_queue_running_ = false;
     return;
   }
 
-  m_object->delegate_->postTask(new StepTask(m_object));
+  object_->delegate_->postTask(new StepTask(object_));
 }
 
 }  // namespace content

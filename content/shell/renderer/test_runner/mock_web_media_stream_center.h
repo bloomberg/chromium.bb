@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/WebTask.h"
+#include "content/shell/renderer/test_runner/web_task.h"
 
 namespace blink {
 class WebAudioSourceProvider;

@@ -22,7 +22,7 @@ class DataChannelReadyStateTask
         data_channel_client_(data_channel_client),
         state_(state) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     data_channel_client_->didChangeReadyState(state_);
   }
 

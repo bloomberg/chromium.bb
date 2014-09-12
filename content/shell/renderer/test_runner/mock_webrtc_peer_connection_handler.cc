@@ -34,7 +34,7 @@ class RTCSessionDescriptionRequestSuccededTask
         request_(request),
         result_(result) {}
 
-  virtual void runIfValid() OVERRIDE { request_.requestSucceeded(result_); }
+  virtual void RunIfValid() OVERRIDE { request_.requestSucceeded(result_); }
 
  private:
   WebRTCSessionDescriptionRequest request_;
@@ -50,7 +50,7 @@ class RTCSessionDescriptionRequestFailedTask
       : WebMethodTask<MockWebRTCPeerConnectionHandler>(object),
         request_(request) {}
 
-  virtual void runIfValid() OVERRIDE { request_.requestFailed("TEST_ERROR"); }
+  virtual void RunIfValid() OVERRIDE { request_.requestFailed("TEST_ERROR"); }
 
  private:
   WebRTCSessionDescriptionRequest request_;
@@ -66,7 +66,7 @@ class RTCStatsRequestSucceededTask
         request_(request),
         response_(response) {}
 
-  virtual void runIfValid() OVERRIDE { request_.requestSucceeded(response_); }
+  virtual void RunIfValid() OVERRIDE { request_.requestSucceeded(response_); }
 
  private:
   blink::WebRTCStatsRequest request_;
@@ -83,7 +83,7 @@ class RTCVoidRequestTask
         request_(request),
         succeeded_(succeeded) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     if (succeeded_)
       request_.requestSucceeded();
     else
@@ -108,7 +108,7 @@ class RTCPeerConnectionStateTask
         connection_state_(connection_state),
         gathering_state_(gathering_state) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     client_->didChangeICEGatheringState(gathering_state_);
     client_->didChangeICEConnectionState(connection_state_);
   }
@@ -129,7 +129,7 @@ class RemoteDataChannelTask
         client_(client),
         delegate_(delegate) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     WebRTCDataChannelInit init;
     WebRTCDataChannelHandler* remote_data_channel =
         new MockWebRTCDataChannelHandler(
@@ -314,7 +314,7 @@ WebRTCDTMFSenderHandler* MockWebRTCPeerConnectionHandler::createDTMFSender(
 
 void MockWebRTCPeerConnectionHandler::stop() {
   stopped_ = true;
-  task_list_.revokeAll();
+  task_list_.RevokeAll();
 }
 
 }  // namespace content

@@ -233,8 +233,8 @@ class MouseDownTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void runIfValid() OVERRIDE {
-    m_object->MouseDown(button_number_, modifiers_);
+  virtual void RunIfValid() OVERRIDE {
+    object_->MouseDown(button_number_, modifiers_);
   }
 
  private:
@@ -249,8 +249,8 @@ class MouseUpTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void runIfValid() OVERRIDE {
-    m_object->MouseUp(button_number_, modifiers_);
+  virtual void RunIfValid() OVERRIDE {
+    object_->MouseUp(button_number_, modifiers_);
   }
 
  private:
@@ -269,8 +269,8 @@ class KeyDownTask : public WebMethodTask<EventSender> {
         modifiers_(modifiers),
         location_(location) {}
 
-  virtual void runIfValid() OVERRIDE {
-    m_object->KeyDown(code_str_, modifiers_, location_);
+  virtual void RunIfValid() OVERRIDE {
+    object_->KeyDown(code_str_, modifiers_, location_);
   }
 
  private:
@@ -1112,7 +1112,7 @@ void EventSender::Reset() {
   last_button_type_ = WebMouseEvent::ButtonNone;
   touch_points_.clear();
   last_context_menu_data_.reset();
-  task_list_.revokeAll();
+  task_list_.RevokeAll();
   current_gesture_location_ = WebPoint(0, 0);
   mouse_event_queue_.clear();
 

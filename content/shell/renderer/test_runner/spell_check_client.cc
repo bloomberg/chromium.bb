@@ -22,7 +22,7 @@ class HostMethodTask : public WebMethodTask<SpellCheckClient> {
 
   virtual ~HostMethodTask() {}
 
-  virtual void runIfValid() OVERRIDE { (m_object->*callback_)(); }
+  virtual void RunIfValid() OVERRIDE { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;

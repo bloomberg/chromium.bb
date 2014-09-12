@@ -63,7 +63,7 @@ class HostMethodTask : public WebMethodTask<WebTestProxyBase> {
   HostMethodTask(WebTestProxyBase* object, CallbackMethodType callback)
       : WebMethodTask<WebTestProxyBase>(object), callback_(callback) {}
 
-  virtual void runIfValid() OVERRIDE { (m_object->*callback_)(); }
+  virtual void RunIfValid() OVERRIDE { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;

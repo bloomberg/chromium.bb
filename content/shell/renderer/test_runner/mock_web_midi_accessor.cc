@@ -23,7 +23,7 @@ class DidStartSessionTask : public WebMethodTask<MockWebMIDIAccessor> {
         client_(client),
         result_(result) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     client_->didStartSession(result_, "InvalidStateError", "");
   }
 

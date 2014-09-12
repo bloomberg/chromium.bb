@@ -71,9 +71,7 @@ class HostMethodTask : public WebMethodTask<TestRunner> {
   HostMethodTask(TestRunner* object, CallbackMethodType callback)
       : WebMethodTask<TestRunner>(object), callback_(callback) {}
 
-  virtual void runIfValid() OVERRIDE {
-    (m_object->*callback_)();
-  }
+  virtual void RunIfValid() OVERRIDE { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;
@@ -88,10 +86,10 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
         callback_(blink::mainThreadIsolate(), callback),
         argc_(0) {}
 
-  virtual void runIfValid() OVERRIDE {
+  virtual void RunIfValid() OVERRIDE {
     v8::Isolate* isolate = blink::mainThreadIsolate();
     v8::HandleScope handle_scope(isolate);
-    WebFrame* frame = m_object->web_view_->mainFrame();
+    WebFrame* frame = object_->web_view_->mainFrame();
 
     v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
     if (context.IsEmpty())
@@ -1492,8 +1490,8 @@ void TestRunner::WorkQueue::ProcessWork() {
     controller_->delegate_->testFinished();
 }
 
-void TestRunner::WorkQueue::WorkQueueTask::runIfValid() {
-  m_object->ProcessWork();
+void TestRunner::WorkQueue::WorkQueueTask::RunIfValid() {
+  object_->ProcessWork();
 }
 
 TestRunner::TestRunner(TestInterfaces* interfaces)
@@ -1624,7 +1622,7 @@ void TestRunner::Reset() {
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
 
-  task_list_.revokeAll();
+  task_list_.RevokeAll();
   work_queue_.Reset();
 
   if (close_remaining_windows_ && delegate_)
@@ -1906,7 +1904,7 @@ void TestRunner::NotifyDone() {
     return;
 
   // Test didn't timeout. Kill the timeout timer.
-  task_list_.revokeAll();
+  task_list_.RevokeAll();
 
   CompleteNotifyDone();
 }
