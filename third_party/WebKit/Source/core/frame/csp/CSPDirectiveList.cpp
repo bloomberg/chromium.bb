@@ -50,6 +50,13 @@ void CSPDirectiveList::reportViolation(const String& directiveText, const String
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header);
 }
 
+void CSPDirectiveList::reportViolationWithFrame(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, LocalFrame* frame) const
+{
+    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message), frame);
+    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, frame);
+}
+
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
@@ -215,12 +222,12 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
     return denyIfEnforcingPolicy();
 }
 
-bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* directive, LocalFrame* frame) const
+bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* directive, LocalFrame* frame, const KURL& url) const
 {
     if (checkAncestors(directive, frame))
         return true;
 
-    reportViolation(directive->text(), "frame-ancestors", "Refused to display '" + frame->document()->url().elidedString() + " in a frame because an ancestor violates the following Content Security Policy directive: \"" + directive->text() + "\".", frame->document()->url());
+    reportViolationWithFrame(directive->text(), "frame-ancestors", "Refused to display '" + url.elidedString() + "' in a frame because an ancestor violates the following Content Security Policy directive: \"" + directive->text() + "\".", url, frame);
     return denyIfEnforcingPolicy();
 }
 
@@ -359,10 +366,10 @@ bool CSPDirectiveList::allowBaseURI(const KURL& url, ContentSecurityPolicy::Repo
         checkSource(m_baseURI.get(), url);
 }
 
-bool CSPDirectiveList::allowAncestors(LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowAncestors(LocalFrame* frame, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkAncestorsAndReportViolation(m_frameAncestors.get(), frame) :
+        checkAncestorsAndReportViolation(m_frameAncestors.get(), frame, url) :
         checkAncestors(m_frameAncestors.get(), frame);
 }
 

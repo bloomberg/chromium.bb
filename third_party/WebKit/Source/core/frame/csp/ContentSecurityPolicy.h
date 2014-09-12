@@ -125,7 +125,7 @@ public:
     bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
-    bool allowAncestors(LocalFrame*, ReportingStatus = SendReport) const;
+    bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
     bool allowChildContextFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowWorkerContextFromSource(const KURL&, ReportingStatus = SendReport) const;
 
@@ -153,7 +153,9 @@ public:
 
     bool isActive() const;
 
-    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
+    // If a frame is passed in, the message will be logged to its active document's console.
+    // Otherwise, the message will be logged to this object's |m_executionContext|.
+    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>, LocalFrame* = 0);
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
     void reportDuplicateDirective(const String&);
@@ -169,7 +171,11 @@ public:
     void reportInvalidReferrer(const String&);
     void reportReportOnlyInMeta(const String&);
     void reportMetaOutsideHead(const String&);
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header);
+
+    // If a frame is passed in, the report will be sent using it as a context. If no frame is
+    // passed in, the report will be sent via this object's |m_executionContext| (or dropped
+    // on the floor if no such context is available).
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* = 0);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 

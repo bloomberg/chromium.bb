@@ -469,7 +469,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     m_contentSecurityPolicy = ContentSecurityPolicy::create();
     m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
     m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
-    if (!m_contentSecurityPolicy->allowAncestors(m_frame)) {
+    if (!m_contentSecurityPolicy->allowAncestors(m_frame, response.url())) {
         cancelLoadAfterXFrameOptionsOrCSPDenied(response);
         return;
     }

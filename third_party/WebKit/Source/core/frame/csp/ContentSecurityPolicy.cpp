@@ -338,11 +338,11 @@ bool isAllowedByAllWithURL(const CSPDirectiveListVector& policies, const KURL& u
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(LocalFrame*, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus)
+template<bool (CSPDirectiveList::*allowed)(LocalFrame*, const KURL&, ContentSecurityPolicy::ReportingStatus) const>
+bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame* frame, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
     for (size_t i = 0; i < policies.size(); ++i) {
-        if (!(policies[i].get()->*allowed)(frame, reportingStatus))
+        if (!(policies[i].get()->*allowed)(frame, url, reportingStatus))
             return false;
     }
     return true;
@@ -509,9 +509,9 @@ bool ContentSecurityPolicy::allowBaseURI(const KURL& url, ContentSecurityPolicy:
     return isAllowedByAllWithURL<&CSPDirectiveList::allowBaseURI>(m_policies, url, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowAncestors(LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowAncestors(LocalFrame* frame, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, reportingStatus);
+    return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, url, reportingStatus);
 }
 
 bool ContentSecurityPolicy::allowChildContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -603,9 +603,17 @@ static String stripURLForUseInReport(Document* document, const KURL& url)
 
 static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header)
 {
-    init.documentURI = document->url().string();
+    if (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors)) {
+        // If this load was blocked via 'frame-ancestors', then the URL of |document| has not yet
+        // been initialized. In this case, we'll set both 'documentURI' and 'blockedURI' to the
+        // blocked document's URL.
+        init.documentURI = blockedURL.string();
+        init.blockedURI = blockedURL.string();
+    } else {
+        init.documentURI = document->url().string();
+        init.blockedURI = stripURLForUseInReport(document, blockedURL);
+    }
     init.referrer = document->referrer();
-    init.blockedURI = stripURLForUseInReport(document, blockedURL);
     init.violatedDirective = directiveText;
     init.effectiveDirective = effectiveDirective;
     init.originalPolicy = header;
@@ -631,14 +639,12 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header)
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* contextFrame)
 {
-    // FIXME: Support sending 'frame-ancestor' reports (which occur before we're bound to an execution context)
-    if (!m_executionContext)
-        return;
+    ASSERT((m_executionContext && !contextFrame) || (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors) && contextFrame));
 
     // FIXME: Support sending reports from worker.
-    Document* document = this->document();
+    Document* document = contextFrame ? contextFrame->document() : this->document();
     if (!document)
         return;
 
@@ -689,8 +695,15 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
     RefPtr<FormData> report = FormData::create(stringifiedReport.utf8());
 
-    for (size_t i = 0; i < reportEndpoints.size(); ++i)
+    for (size_t i = 0; i < reportEndpoints.size(); ++i) {
+        // If we have a context frame we're dealing with 'frame-ancestors' and we don't have our
+        // own execution context. Use the frame's document to complete the endpoint URL, overriding
+        // its URL with the blocked document's URL.
+        ASSERT(!contextFrame || !m_executionContext);
+        ASSERT(!contextFrame || equalIgnoringCase(effectiveDirective, FrameAncestors));
+        KURL endpoint = contextFrame ? frame->document()->completeURLWithOverride(reportEndpoints[i], blockedURL) : completeURL(reportEndpoints[i]);
         PingLoader::sendViolationReport(frame, completeURL(reportEndpoints[i]), report, PingLoader::ContentSecurityPolicyViolationReport);
+    }
 
     didSendViolationReport(stringifiedReport);
 }
@@ -807,9 +820,11 @@ void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel lev
     logToConsole(ConsoleMessage::create(SecurityMessageSource, level, message));
 }
 
-void ContentSecurityPolicy::logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void ContentSecurityPolicy::logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage, LocalFrame* frame)
 {
-    if (m_executionContext)
+    if (frame)
+        frame->document()->addConsoleMessage(consoleMessage);
+    else if (m_executionContext)
         m_executionContext->addConsoleMessage(consoleMessage);
     else
         m_consoleMessages.append(consoleMessage);
