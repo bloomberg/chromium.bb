@@ -5,10 +5,11 @@
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/login/login_state.h"
+#include "components/ownership/owner_key_util.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -44,9 +45,9 @@ void ChromeCryptohomeAuthenticator::CheckSafeModeOwnership(
                                         LoginState::LOGGED_IN_USER_NONE);
   }
 
-  OwnerSettingsService::IsOwnerForSafeModeAsync(
+  OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
       context.GetUserIDHash(),
-      OwnerSettingsServiceFactory::GetInstance()->GetOwnerKeyUtil(),
+      OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil(),
       callback);
 }
 

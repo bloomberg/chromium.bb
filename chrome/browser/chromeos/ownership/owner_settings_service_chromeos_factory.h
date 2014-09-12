@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_FACTORY_H_
-
-#include <string>
+#ifndef CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_CHROMEOS_FACTORY_H_
+#define CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_CHROMEOS_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -22,13 +20,14 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
-class OwnerSettingsService;
+class OwnerSettingsServiceChromeOS;
 
-class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
+class OwnerSettingsServiceChromeOSFactory
+    : public BrowserContextKeyedServiceFactory {
  public:
-  static OwnerSettingsService* GetForProfile(Profile* profile);
+  static OwnerSettingsServiceChromeOS* GetForProfile(Profile* profile);
 
-  static OwnerSettingsServiceFactory* GetInstance();
+  static OwnerSettingsServiceChromeOSFactory* GetInstance();
 
   scoped_refptr<ownership::OwnerKeyUtil> GetOwnerKeyUtil();
 
@@ -36,10 +35,10 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
 
  private:
-  friend struct DefaultSingletonTraits<OwnerSettingsServiceFactory>;
+  friend struct DefaultSingletonTraits<OwnerSettingsServiceChromeOSFactory>;
 
-  OwnerSettingsServiceFactory();
-  virtual ~OwnerSettingsServiceFactory();
+  OwnerSettingsServiceChromeOSFactory();
+  virtual ~OwnerSettingsServiceChromeOSFactory();
 
   static KeyedService* BuildInstanceFor(content::BrowserContext* context);
 
@@ -52,9 +51,9 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
 
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
-  DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOSFactory);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_CHROMEOS_FACTORY_H_
