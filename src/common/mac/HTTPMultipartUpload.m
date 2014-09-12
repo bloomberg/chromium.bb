@@ -191,7 +191,7 @@
   [response_ release];
   response_ = nil;
 
-  NSData *data;
+  NSData *data = nil;
   if ([[req URL] isFileURL]) {
     [[req HTTPBody] writeToURL:[req URL] options:0 error:error];
   } else {
