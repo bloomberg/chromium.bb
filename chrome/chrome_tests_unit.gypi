@@ -2513,7 +2513,6 @@
           'sources!': [
             'app/chrome_dll.rc',
             'browser/search_engines/template_url_scraper_unittest.cc',
-            'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
             'test/data/resource.rc',
             '../skia/ext/vector_canvas_unittest.cc',
