@@ -193,9 +193,9 @@ RenderViewHostImpl::RenderViewHostImpl(
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       virtual_keyboard_requested_(false),
-      weak_factory_(this),
       is_focused_element_editable_(false),
-      updating_web_preferences_(false) {
+      updating_web_preferences_(false),
+      weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 

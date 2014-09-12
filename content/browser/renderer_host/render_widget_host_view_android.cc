@@ -273,7 +273,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
-      weak_ptr_factory_(this),
       overscroll_effect_enabled_(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableOverscrollEdgeEffect)),
@@ -287,7 +286,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                                         widget_host->GetRoutingID()) != NULL),
       frame_evictor_(new DelegatedFrameEvictor(this)),
       locks_on_frame_count_(0),
-      observing_root_window_(false) {
+      observing_root_window_(false),
+      weak_ptr_factory_(this) {
   host_->SetView(this);
   SetContentViewCore(content_view_core);
   ImageTransportFactoryAndroid::AddObserver(this);

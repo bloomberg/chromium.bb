@@ -526,8 +526,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   base::Closure pending_shutdown_on_swap_out_;
 
-  base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
-
   // True if the current focused element is editable.
   bool is_focused_element_editable_;
 
@@ -537,6 +535,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   scoped_ptr<WebPreferences> web_preferences_;
 
   bool updating_web_preferences_;
+
+  base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

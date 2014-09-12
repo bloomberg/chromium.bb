@@ -88,8 +88,9 @@ class SocketStreamDispatcherHost
   GetRequestContextCallback request_context_callback_;
   ResourceContext* resource_context_;
 
-  base::WeakPtrFactory<SocketStreamDispatcherHost> weak_ptr_factory_;
   bool on_shutdown_;
+
+  base::WeakPtrFactory<SocketStreamDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

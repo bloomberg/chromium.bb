@@ -19,8 +19,8 @@ CompositorResizeLock::CompositorResizeLock(
     const base::TimeDelta& timeout)
     : ResizeLock(new_size, defer_compositor_lock),
       host_(host),
-      weak_ptr_factory_(this),
-      cancelled_(false) {
+      cancelled_(false),
+      weak_ptr_factory_(this) {
   DCHECK(host_);
 
   TRACE_EVENT_ASYNC_BEGIN2("ui", "CompositorResizeLock", this,

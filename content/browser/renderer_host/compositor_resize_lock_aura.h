@@ -38,8 +38,9 @@ class CompositorResizeLock : public ResizeLock {
  private:
   aura::WindowTreeHost* host_;
   scoped_refptr<ui::CompositorLock> compositor_lock_;
-  base::WeakPtrFactory<CompositorResizeLock> weak_ptr_factory_;
   bool cancelled_;
+
+  base::WeakPtrFactory<CompositorResizeLock> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorResizeLock);
 };

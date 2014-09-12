@@ -383,7 +383,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The output surface id of the last received frame.
   uint32_t last_output_surface_id_;
 
-  base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
   std::queue<base::Closure> ack_callbacks_;
 
@@ -433,6 +432,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
+
+  base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
