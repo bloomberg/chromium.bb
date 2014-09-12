@@ -4,32 +4,20 @@
 
 """Common helper module for working with Chrome's processes and windows."""
 
-import ctypes
-import pywintypes
+import psutil
 import re
-import win32con
 import win32gui
 import win32process
 
 
 def GetProcessIDAndPathPairs():
   """Returns a list of 2-tuples of (process id, process path).
-
-  This is needed because psutil is not available on Windows slave machines (see:
-  http://crbug.com/257696).
-  TODO(sukolsak): Use psutil.process_iter() once it becomes available.
   """
   process_id_and_path_pairs = []
-  for process_id in win32process.EnumProcesses():
-    process_handle = ctypes.windll.kernel32.OpenProcess(
-        win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False,
-        process_id)
-    if not process_handle:
-      continue
+  for process in psutil.process_iter():
     try:
-      process_path = win32process.GetModuleFileNameEx(process_handle, 0)
-      process_id_and_path_pairs.append((process_id, process_path))
-    except pywintypes.error:
+      process_id_and_path_pairs.append((process.pid, process.exe))
+    except psutil.Error:
       # It's normal that some processes are not accessible.
       pass
   return process_id_and_path_pairs
