@@ -1,0 +1,25 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-popout-iframe" attributes="src" noscript>
+  <template>
+    <style>
+      .link {
+        /* <ct-test-output> sets line-height 0, so reset it here. */
+        line-height: initial;
+        padding: 3px;
+      }
+      iframe {
+        border: none;
+        width: 100%;
+        height: 400px;
+      }
+    </style>
+
+    <iframe src="{{src}}"></iframe>
+    <div class="link"><a href="{{src}}" target="_blank">pop out to a new tab</a></div>
+  </template>
+</polymer-element>

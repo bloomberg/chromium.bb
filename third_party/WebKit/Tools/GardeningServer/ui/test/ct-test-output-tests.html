@@ -50,7 +50,7 @@ describe('ct-test-output', function() {
       assert.lengthOf(output.shadowRoot.querySelectorAll('img'), 0);
       assert.lengthOf(output.shadowRoot.querySelectorAll('audio'), 0);
 
-      var iframes = output.shadowRoot.querySelectorAll('iframe');
+      var iframes = output.shadowRoot.querySelectorAll('ct-popout-iframe');
       assert.lengthOf(iframes, 1);
       assert.equal(iframes[0].src, url);
     });

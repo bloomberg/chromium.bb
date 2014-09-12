@@ -4,17 +4,14 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
- <polymer-element name="ct-test-output" attributes="type url">
+<link rel="import" href="ct-popout-iframe.html">
+
+<polymer-element name="ct-test-output" attributes="type url">
     <template>
         <style>
             .result {
                 border: 1px solid gray;
                 line-height: 0;
-            }
-            iframe {
-                border: none;
-                width: 100%;
-                height: 400px;
             }
             img {
                 width: 100%;
@@ -27,7 +24,7 @@ found in the LICENSE file.
                     <img src="{{url}}">
                 </template>
                 <template if="{{type == _kTextType}}">
-                    <iframe src="{{url}}"></iframe>
+                    <ct-popout-iframe src="{{url}}"></ct-popout-iframe>
                 </template>
                 <template if="{{type == _kAudioType}}">
                     <audio controls src="{{url}}"></audio>

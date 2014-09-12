@@ -7,6 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="../bower_components/core-menu/core-menu.html">
 <link rel="import" href="ct-results-by-builder.html">
 <link rel="import" href="ct-embedded-flakiness-dashboard.html">
+<link rel="import" href="ct-popout-iframe.html">
 
 <polymer-element name="ct-results-panel" attributes="failures tree">
   <template>
@@ -55,7 +56,7 @@ found in the LICENSE file.
       <div class="message">No results to display.</div>
     </template>
     <template if="{{ failures.url }}">
-      <iframe src='{{ failures.url }}'></iframe>
+      <ct-popout-iframe src="{{ failures.url }}"></ct-popout-iframe>
     </template>
     <template if="{{ failures.length }}">
       <core-menu selected="{{ selected }}">

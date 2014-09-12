@@ -1,0 +1,41 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-popout-iframe.html">
+
+<script>
+(function() {
+
+var assert = chai.assert;
+
+describe('ct-popout-iframe', function() {
+  it('has iframe and link', function() {
+    var elem = document.createElement('ct-popout-iframe');
+
+    var iframes = elem.shadowRoot.querySelectorAll('iframe');
+    assert.lengthOf(iframes, 1);
+
+    var links = elem.shadowRoot.querySelectorAll('a');
+    assert.lengthOf(links, 1);
+
+    var thisHref = location.href;
+    assert.equal(iframes[0].src, thisHref);
+    assert.equal(links[0].href, thisHref);
+
+    var url = 'http://example.com/results.txt';
+    elem.src = url;
+
+    describe('src', function() {
+      it('set to a URL', function() {
+        assert.equal(iframes[0].src, url);
+        assert.equal(links[0].href, url);
+      });
+    });
+  });
+});
+
+})();
+</script>
