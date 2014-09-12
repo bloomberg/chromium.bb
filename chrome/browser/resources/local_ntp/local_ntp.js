@@ -725,6 +725,7 @@ function createTile(page, position) {
     // The iframe which renders either a thumbnail or domain element.
     var thumbnailElem = document.createElement('iframe');
     thumbnailElem.tabIndex = '-1';
+    thumbnailElem.setAttribute('aria-hidden', 'true');
     // Keep this ID here. See comment above.
     thumbnailElem.id = 'thumb-' + rid;
     thumbnailElem.className = CLASSES.THUMBNAIL;
@@ -763,7 +764,7 @@ function createTile(page, position) {
  * Generates a function to be called when the page with the corresponding RID
  * is blacklisted.
  * @param {number} rid The RID of the page being blacklisted.
- * @return {function(!Event)} A function which handles the blacklisting of the
+ * @return {function(Event=)} A function which handles the blacklisting of the
  *     page by updating state variables and notifying Chrome.
  */
 function generateBlacklistFunction(rid) {
