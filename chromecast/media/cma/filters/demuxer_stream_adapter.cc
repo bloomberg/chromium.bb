@@ -67,9 +67,10 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       media_task_runner_(new DummyMediaTaskRunner(task_runner)),
       demuxer_stream_(demuxer_stream),
       is_pending_read_(false),
-      weak_factory_(new base::WeakPtrFactory<DemuxerStreamAdapter>(this)) {
+      is_pending_demuxer_read_(false),
+      weak_factory_(this),
+      weak_this_(weak_factory_.GetWeakPtr()) {
   ResetMediaTaskRunner();
-  weak_this_ = weak_factory_->GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 
@@ -82,10 +83,15 @@ DemuxerStreamAdapter::~DemuxerStreamAdapter() {
 void DemuxerStreamAdapter::Read(const ReadCB& read_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  DCHECK(flush_cb_.is_null());
+
   // Support only one read at a time.
   DCHECK(!is_pending_read_);
-
   is_pending_read_ = true;
+  ReadInternal(read_cb);
+}
+
+void DemuxerStreamAdapter::ReadInternal(const ReadCB& read_cb) {
   bool may_run_in_future = media_task_runner_->PostMediaTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapter::RequestBuffer, weak_this_, read_cb),
@@ -97,20 +103,30 @@ void DemuxerStreamAdapter::Flush(const base::Closure& flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CMALOG(kLogControl) << __FUNCTION__;
 
-  // Invalidate all the weak pointers so that we don't receive anymore buffers
-  // from |demuxer_stream_| that are associated with the current media
-  // timeline.
+  // Flush cancels any pending read.
   is_pending_read_ = false;
-  weak_factory_->InvalidateWeakPtrs();
-  weak_factory_.reset(new base::WeakPtrFactory<DemuxerStreamAdapter>(this));
-  weak_this_ = weak_factory_->GetWeakPtr();
 
   // Reset the decoder configurations.
   audio_config_ = ::media::AudioDecoderConfig();
   video_config_ = ::media::VideoDecoderConfig();
 
-  // Create a new media task runner for the upcoming media playback.
+  // Create a new media task runner for the upcoming media timeline.
   ResetMediaTaskRunner();
+
+  DCHECK(flush_cb_.is_null());
+  if (is_pending_demuxer_read_) {
+    // If there is a pending demuxer read, the implicit contract
+    // is that the pending read must be completed before invoking the
+    // flush callback.
+    flush_cb_ = flush_cb;
+    return;
+  }
+
+  // At this point, there is no more pending demuxer read,
+  // so all the previous tasks associated with the current timeline
+  // can be cancelled.
+  weak_factory_.InvalidateWeakPtrs();
+  weak_this_ = weak_factory_.GetWeakPtr();
 
   CMALOG(kLogControl) << "Flush done";
   flush_cb.Run();
@@ -128,6 +144,7 @@ void DemuxerStreamAdapter::ResetMediaTaskRunner() {
 
 void DemuxerStreamAdapter::RequestBuffer(const ReadCB& read_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  is_pending_demuxer_read_ = true;
   demuxer_stream_->Read(::media::BindToCurrentLoop(
       base::Bind(&DemuxerStreamAdapter::OnNewBuffer, weak_this_, read_cb)));
 }
@@ -138,7 +155,14 @@ void DemuxerStreamAdapter::OnNewBuffer(
     const scoped_refptr< ::media::DecoderBuffer>& input) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  is_pending_read_ = false;
+  is_pending_demuxer_read_ = false;
+
+  // Just discard the buffer in the flush stage.
+  if (!flush_cb_.is_null()) {
+    CMALOG(kLogControl) << "Flush done";
+    base::ResetAndReturn(&flush_cb_).Run();
+    return;
+  }
 
   if (status == ::media::DemuxerStream::kAborted) {
     DCHECK(input.get() == NULL);
@@ -153,7 +177,7 @@ void DemuxerStreamAdapter::OnNewBuffer(
       audio_config_ = demuxer_stream_->audio_decoder_config();
 
     // Got a new config, but we still need to get a frame.
-    Read(read_cb);
+    ReadInternal(read_cb);
     return;
   }
 
@@ -167,6 +191,7 @@ void DemuxerStreamAdapter::OnNewBuffer(
   }
 
   // Provides the buffer as well as possibly valid audio and video configs.
+  is_pending_read_ = false;
   scoped_refptr<DecoderBufferBase> buffer(new DecoderBufferAdapter(input));
   read_cb.Run(buffer, audio_config_, video_config_);
 

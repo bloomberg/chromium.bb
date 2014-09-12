@@ -45,6 +45,7 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
  private:
   void ResetMediaTaskRunner();
 
+  void ReadInternal(const ReadCB& read_cb);
   void RequestBuffer(const ReadCB& read_cb);
 
   // Callback invoked from the demuxer stream to signal a buffer is ready.
@@ -66,14 +67,21 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   // Frames are provided by |demuxer_stream_|.
   ::media::DemuxerStream* const demuxer_stream_;
 
-  // Indicate if there is a pending read on the demuxer.
+  // Indicate if there is a pending read.
   bool is_pending_read_;
+
+  // Indicate if |demuxer_stream_| has a pending read.
+  bool is_pending_demuxer_read_;
+
+  // In case of a pending flush operation, this is the callback
+  // that is invoked when flush is completed.
+  base::Closure flush_cb_;
 
   // Audio/video configuration that applies to the next frame.
   ::media::AudioDecoderConfig audio_config_;
   ::media::VideoDecoderConfig video_config_;
 
-  scoped_ptr<base::WeakPtrFactory<DemuxerStreamAdapter> > weak_factory_;
+  base::WeakPtrFactory<DemuxerStreamAdapter> weak_factory_;
   base::WeakPtr<DemuxerStreamAdapter> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapter);

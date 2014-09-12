@@ -51,6 +51,10 @@ class DummyDemuxerStream : public ::media::DemuxerStream {
   virtual bool SupportsConfigChanges() OVERRIDE;
   virtual ::media::VideoRotation video_rotation() OVERRIDE;
 
+  bool has_pending_read() const {
+    return has_pending_read_;
+  }
+
  private:
   void DoRead(const ReadCB& read_cb);
 
@@ -62,6 +66,8 @@ class DummyDemuxerStream : public ::media::DemuxerStream {
   // Number of frames sent so far.
   int frame_count_;
 
+  bool has_pending_read_;
+
   DISALLOW_COPY_AND_ASSIGN(DummyDemuxerStream);
 };
 
@@ -71,8 +77,9 @@ DummyDemuxerStream::DummyDemuxerStream(
     const std::list<int>& config_idx)
   : cycle_count_(cycle_count),
     delayed_frame_count_(delayed_frame_count),
+    config_idx_(config_idx),
     frame_count_(0),
-    config_idx_(config_idx) {
+    has_pending_read_(false) {
   DCHECK_LE(delayed_frame_count, cycle_count);
 }
 
@@ -80,8 +87,10 @@ DummyDemuxerStream::~DummyDemuxerStream() {
 }
 
 void DummyDemuxerStream::Read(const ReadCB& read_cb) {
+  has_pending_read_ = true;
   if (!config_idx_.empty() && config_idx_.front() == frame_count_) {
     config_idx_.pop_front();
+    has_pending_read_ = false;
     read_cb.Run(kConfigChanged,
                 scoped_refptr< ::media::DecoderBuffer>());
     return;
@@ -131,6 +140,7 @@ bool DummyDemuxerStream::SupportsConfigChanges() {
 }
 
 void DummyDemuxerStream::DoRead(const ReadCB& read_cb) {
+  has_pending_read_ = false;
   scoped_refptr< ::media::DecoderBuffer> buffer(
       new ::media::DecoderBuffer(16));
   buffer->set_timestamp(frame_count_ * base::TimeDelta::FromMilliseconds(40));
@@ -160,6 +170,7 @@ class DemuxerStreamAdapterTest : public testing::Test {
 
   // Number of demuxer read before issuing an early flush.
   int early_flush_idx_;
+  bool use_post_task_for_flush_;
 
   // Number of expected read frames.
   int total_expected_frames_;
@@ -170,12 +181,15 @@ class DemuxerStreamAdapterTest : public testing::Test {
   // List of expected frame indices with decoder config changes.
   std::list<int> config_idx_;
 
+  scoped_ptr<DummyDemuxerStream> demuxer_stream_;
+
   scoped_ptr<CodedFrameProvider> coded_frame_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamAdapterTest);
 };
 
-DemuxerStreamAdapterTest::DemuxerStreamAdapterTest() {
+DemuxerStreamAdapterTest::DemuxerStreamAdapterTest()
+    : use_post_task_for_flush_(false) {
 }
 
 DemuxerStreamAdapterTest::~DemuxerStreamAdapterTest() {
@@ -241,15 +255,25 @@ void DemuxerStreamAdapterTest::OnNewFrame(
 
   ASSERT_LE(frame_received_count_, early_flush_idx_);
   if (frame_received_count_ == early_flush_idx_) {
-    coded_frame_provider_->Flush(
+    base::Closure flush_cb =
         base::Bind(&DemuxerStreamAdapterTest::OnFlushCompleted,
-                   base::Unretained(this)));
+                   base::Unretained(this));
+    if (use_post_task_for_flush_) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&CodedFrameProvider::Flush,
+                     base::Unretained(coded_frame_provider_.get()),
+                     flush_cb));
+    } else {
+      coded_frame_provider_->Flush(flush_cb);
+    }
     return;
   }
 }
 
 void DemuxerStreamAdapterTest::OnFlushCompleted() {
   ASSERT_EQ(frame_received_count_, total_expected_frames_);
+  ASSERT_FALSE(demuxer_stream_->has_pending_read());
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -262,12 +286,12 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
 
   int cycle_count = 1;
   int delayed_frame_count = 0;
-  scoped_ptr<DummyDemuxerStream> demuxer_stream(
+  demuxer_stream_.reset(
       new DummyDemuxerStream(
           cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  Initialize(demuxer_stream.get());
+  Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
@@ -283,12 +307,12 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
 
   int cycle_count = 1;
   int delayed_frame_count = 1;
-  scoped_ptr<DummyDemuxerStream> demuxer_stream(
+  demuxer_stream_.reset(
       new DummyDemuxerStream(
           cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  Initialize(demuxer_stream.get());
+  Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
@@ -298,18 +322,19 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
 TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
   total_frames_ = 10;
   early_flush_idx_ = 5;
+  use_post_task_for_flush_ = true;
   total_expected_frames_ = 5;
   config_idx_.push_back(0);
-  config_idx_.push_back(5);
+  config_idx_.push_back(3);
 
   int cycle_count = 1;
   int delayed_frame_count = 1;
-  scoped_ptr<DummyDemuxerStream> demuxer_stream(
+  demuxer_stream_.reset(
       new DummyDemuxerStream(
           cycle_count, delayed_frame_count, config_idx_));
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  Initialize(demuxer_stream.get());
+  Initialize(demuxer_stream_.get());
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
