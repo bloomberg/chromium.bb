@@ -18,7 +18,8 @@ class Node;
 
 class Html5Fs : public Filesystem {
  public:
-  virtual Error Open(const Path& path, int mode, ScopedNode* out_node);
+  virtual Error OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                             ScopedNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int permissions);
   virtual Error Rmdir(const Path& path);

@@ -48,7 +48,7 @@ int _real_munmap(void* addr, size_t length) {
   return ENOSYS;
 }
 
-int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+int _real_open(const char* pathname, int oflag, mode_t mode, int* newfd) {
   return ENOSYS;
 }
 

@@ -22,10 +22,11 @@ Error PassthroughFs::Init(const FsInitArgs& args) {
 void PassthroughFs::Destroy() {
 }
 
-Error PassthroughFs::Open(const Path& path, int mode, ScopedNode* out_node) {
+Error PassthroughFs::OpenWithMode(const Path& path, int open_flags,
+                                  mode_t mode, ScopedNode* out_node) {
   out_node->reset(NULL);
   int real_fd;
-  int error = _real_open(path.Join().c_str(), mode, 0666, &real_fd);
+  int error = _real_open(path.Join().c_str(), open_flags, mode, &real_fd);
   if (error)
     return error;
 

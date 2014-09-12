@@ -273,8 +273,8 @@ TEST_F(SelectPollTest, PollMemPipe) {
   int fds[2];
 
   // Both FDs for regular files should be read/write but not exception.
-  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
-  fds[1] = kp->open("/test.txt", O_RDONLY);
+  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY, 0777);
+  fds[1] = kp->open("/test.txt", O_RDONLY, 0);
   ASSERT_GT(fds[0], -1);
   ASSERT_GT(fds[1], -1);
 
@@ -302,8 +302,8 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   int fds[2];
 
   // Both FDs for regular files should be read/write but not exception.
-  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
-  fds[1] = kp->open("/test.txt", O_RDONLY);
+  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY, 0777);
+  fds[1] = kp->open("/test.txt", O_RDONLY, 0);
   ASSERT_GT(fds[0], -1);
   ASSERT_GT(fds[1], -1);
   SetFDs(fds, 2);
@@ -344,8 +344,8 @@ TEST_F(SelectPollTest, SelectPartialFdset) {
   int fds[2];
 
   // Both FDs for regular files should be read/write but not exception.
-  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
-  fds[1] = kp->open("/test.txt", O_RDONLY);
+  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY, 0777);
+  fds[1] = kp->open("/test.txt", O_RDONLY, 0);
   ASSERT_GT(fds[0], -1);
   ASSERT_GT(fds[1], -1);
   ASSERT_LT(fds[1], 8);

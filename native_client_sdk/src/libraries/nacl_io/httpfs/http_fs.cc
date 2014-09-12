@@ -41,7 +41,8 @@ std::string NormalizeHeaderKey(const std::string& s) {
   return result;
 }
 
-Error HttpFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error HttpFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                           ScopedNode* out_node) {
   out_node->reset(NULL);
 
   ScopedNode node = FindExistingNode(path);

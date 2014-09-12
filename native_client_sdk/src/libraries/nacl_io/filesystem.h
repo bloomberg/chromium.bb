@@ -62,12 +62,20 @@ class Filesystem : public sdk_util::RefObject {
 
   // All paths in functions below are expected to containing a leading "/".
 
+  // Open a node at |path| with the specified open and modeflags. The resulting
+  // Node is created with a ref count of 1.
+  // Assumes that |out_node| is non-NULL.
+  virtual Error OpenWithMode(const Path& path,
+                             int open_flags,
+                             mode_t mode,
+                             ScopedNode* out_node) = 0;
+
   // Open a node at |path| with the specified open flags. The resulting
   // Node is created with a ref count of 1.
   // Assumes that |out_node| is non-NULL.
-  virtual Error Open(const Path& path,
-                     int open_flags,
-                     ScopedNode* out_node) = 0;
+  Error Open(const Path& path,
+             int open_flags,
+             ScopedNode* out_node);
 
   // OpenResource is only used to read files from the NaCl NMF file. No
   // filesystem except PassthroughFs should implement it.

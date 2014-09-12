@@ -29,7 +29,8 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 }  // namespace
 
-Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error Html5Fs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                            ScopedNode* out_node) {
   out_node->reset(NULL);
   Error error = BlockUntilFilesystemOpen();
   if (error)

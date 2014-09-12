@@ -25,6 +25,7 @@ class MockFs : public nacl_io::Filesystem {
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD2(Access, Error(const Path&, int));
   MOCK_METHOD3(Open, Error(const Path&, int, ScopedNode*));
+  MOCK_METHOD4(OpenWithMode, Error(const Path&, int, mode_t, ScopedNode*));
   MOCK_METHOD2(OpenResource, Error(const Path&, ScopedNode*));
   MOCK_METHOD1(Unlink, Error(const Path&));
   MOCK_METHOD2(Mkdir, Error(const Path&, int));

@@ -185,8 +185,8 @@ int WRAP(munmap)(void* addr, size_t length) {
   return REAL(munmap)(addr, length);
 }
 
-int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
-  *newfd = ki_open(pathname, oflag);
+int WRAP(open)(const char* pathname, int oflag, mode_t mode, int* newfd) {
+  *newfd = ki_open(pathname, oflag, mode);
   ERRNO_RTN(*newfd);
 }
 
@@ -335,9 +335,9 @@ int _real_munmap(void* addr, size_t length) {
   return REAL(munmap)(addr, length);
 }
 
-int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+int _real_open(const char* pathname, int oflag, mode_t mode, int* newfd) {
   CHECK_REAL(open);
-  return REAL(open)(pathname, oflag, cmode, newfd);
+  return REAL(open)(pathname, oflag, mode, newfd);
 }
 
 int _real_open_resource(const char* file, int* fd) {

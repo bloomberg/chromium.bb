@@ -434,7 +434,7 @@ TEST_F(JSPipeTest, JSPipeSelect) {
   fd_set writefds;
   fd_set errorfds;
 
-  int pipe_fd = ki_open("/dev/jspipe1", O_RDONLY);
+  int pipe_fd = ki_open("/dev/jspipe1", O_RDONLY, 0);
   ASSERT_GT(pipe_fd, 0) << "jspipe1 open failed: " << errno;
 
   FD_ZERO(&readfds);

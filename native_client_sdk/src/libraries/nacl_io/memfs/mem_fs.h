@@ -29,7 +29,8 @@ class MemFs : public Filesystem {
   virtual Error FindNode(const Path& path, int type, ScopedNode* out_node);
 
  public:
-  virtual Error Open(const Path& path, int mode, ScopedNode* out_node);
+  virtual Error OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                             ScopedNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int perm);
   virtual Error Rmdir(const Path& path);

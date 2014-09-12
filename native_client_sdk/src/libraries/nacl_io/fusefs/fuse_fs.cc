@@ -57,7 +57,8 @@ void FuseFs::Destroy() {
     fuse_ops_->destroy(fuse_user_data_);
 }
 
-Error FuseFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error FuseFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                           ScopedNode* out_node) {
   std::string path_str = path.Join();
   const char* path_cstr = path_str.c_str();
   int result = 0;
@@ -69,7 +70,6 @@ Error FuseFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   if (open_flags & (O_CREAT | O_EXCL)) {
     // According to the FUSE docs, open() is not called when O_CREAT or O_EXCL
     // is passed.
-    mode_t mode = S_IRALL | S_IWALL;
     if (fuse_ops_->create) {
       result = fuse_ops_->create(path_cstr, mode, &fi);
       if (result < 0)
@@ -101,6 +101,8 @@ Error FuseFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
         *out_node = node;
         return 0;
       }
+      // Get mode.
+      mode = statbuf.st_mode & ~S_IFMT;
     }
 
     // Existing file.
@@ -129,6 +131,7 @@ Error FuseFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   Error error = node->Init(open_flags);
   if (error)
     return error;
+  node->SetMode(mode);
 
   *out_node = node;
   return 0;

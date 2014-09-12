@@ -391,7 +391,8 @@ PP_Var JsFs::WaitForResponse(RequestId request_id) {
   }
 }
 
-Error JsFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error JsFs::OpenWithMode(const Path& path, int open_flags, mode_t t,
+                         ScopedNode* out_node) {
   out_node->reset(NULL);
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(&response, "%s%s%d",

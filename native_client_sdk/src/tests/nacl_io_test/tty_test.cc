@@ -188,7 +188,7 @@ TEST_F(TtyTest, TtySelect) {
   fd_set writefds;
   fd_set errorfds;
 
-  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  int tty_fd = ki_open("/dev/tty", O_RDONLY, 0);
   ASSERT_GT(tty_fd, 0) << "tty open failed: " << errno;
 
   FD_ZERO(&readfds);
@@ -231,7 +231,7 @@ TEST_F(TtyTest, TtySelect) {
 }
 
 TEST_F(TtyTest, TtyICANON) {
-  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  int tty_fd = ki_open("/dev/tty", O_RDONLY, 0);
 
   ASSERT_EQ(0, IsReadable(tty_fd));
 
@@ -264,7 +264,7 @@ static void sighandler(int sig) { g_received_signal = sig; }
 TEST_F(TtyTest, WindowSize) {
   // Get current window size
   struct winsize old_winsize = {0};
-  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  int tty_fd = ki_open("/dev/tty", O_RDONLY, 0);
   ASSERT_EQ(0, ki_ioctl_wrapper(tty_fd, TIOCGWINSZ, &old_winsize));
 
   // Install signal handler
@@ -312,7 +312,7 @@ static void* resize_thread_main(void* arg) {
 TEST_F(TtyTest, ResizeDuringSelect) {
   // Test that a window resize during a call
   // to select(3) will cause it to fail with EINTR.
-  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  int tty_fd = ki_open("/dev/tty", O_RDONLY, 0);
 
   fd_set readfds;
   fd_set errorfds;
@@ -347,7 +347,7 @@ static void* input_thread_main(void* arg) {
 
   usleep(50 * 1000);
 
-  int fd = ki_open("/dev/tty", O_RDONLY);
+  int fd = ki_open("/dev/tty", O_RDONLY, 0);
   thiz->TtyWrite(fd, "test\n");
   return NULL;
 }
@@ -355,7 +355,7 @@ static void* input_thread_main(void* arg) {
 TEST_F(TtyTest, InputDuringSelect) {
   // Test that input which occurs while in select causes
   // select to return.
-  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+  int tty_fd = ki_open("/dev/tty", O_RDONLY, 0);
 
   fd_set readfds;
   fd_set errorfds;

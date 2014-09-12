@@ -62,7 +62,7 @@ class KernelObject {
   // specified by the |oflags|.
   // Assumes |out_fs| and |out_node| are non-NULL.
   Error AcquireFsAndNode(const std::string& path,
-                         int oflags,
+                         int oflags, mode_t mflags,
                          ScopedFilesystem* out_fs,
                          ScopedNode* out_node);
 

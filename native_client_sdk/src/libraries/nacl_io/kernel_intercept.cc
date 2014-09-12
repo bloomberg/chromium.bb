@@ -221,9 +221,9 @@ int ki_umount(const char* path) {
   return s_state.kp->umount(path);
 }
 
-int ki_open(const char* path, int oflag) {
+int ki_open(const char* path, int oflag, mode_t mode) {
   ON_NOSYS_RETURN(-1);
-  return s_state.kp->open(path, oflag);
+  return s_state.kp->open(path, oflag, mode);
 }
 
 int ki_pipe(int pipefds[2]) {

@@ -129,9 +129,6 @@ int _mkdir(const char* path) {
 }
 
 int _open(const char* path, int oflag, ...) {
-#if 0
-  // TODO(binji): ki_open should use the pmode parameter. When it does, this
-  // will be necessary to add in.
   va_list list;
   int pmode = 0;
   if (oflag & _O_CREAT) {
@@ -139,8 +136,7 @@ int _open(const char* path, int oflag, ...) {
     pmode = va_arg(list, int);
     va_end(list);
   }
-#endif
-  return ki_open(path, oflag);
+  return ki_open(path, oflag, (mode_t) pmode);
 }
 
 int _sopen(const char* path, int oflag, int shflag) {

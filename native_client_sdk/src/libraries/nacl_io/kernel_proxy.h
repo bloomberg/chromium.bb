@@ -67,7 +67,7 @@ class KernelProxy : protected KernelObject {
   virtual int open_resource(const char* file);
 
   // KernelHandle and FD allocation and manipulation functions.
-  virtual int open(const char* path, int open_flags);
+  virtual int open(const char* path, int open_flags, mode_t mode);
   virtual int close(int fd);
   virtual int dup(int fd);
   virtual int dup2(int fd, int newfd);

@@ -85,7 +85,7 @@ int ki_mount(const char* source,
              unsigned long mountflags,
              const void* data);
 int ki_umount(const char* path);
-int ki_open(const char* path, int oflag);
+int ki_open(const char* path, int oflag, mode_t mode);
 int ki_pipe(int pipefds[2]);
 ssize_t ki_read(int fd, void* buf, size_t nbyte);
 ssize_t ki_write(int fd, const void* buf, size_t nbyte);

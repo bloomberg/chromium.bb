@@ -127,7 +127,7 @@ class KernelWrapTest : public ::testing::Test {
     errno = 0;
 
     // Initializing the KernelProxy opens stdin/stdout/stderr.
-    EXPECT_CALL(mock, open(_, _))
+    EXPECT_CALL(mock, open(_, _, _))
         .WillOnce(Return(0))
         .WillOnce(Return(1))
         .WillOnce(Return(2));
@@ -450,12 +450,12 @@ TEST_F(KernelWrapTest, munmap) {
 
 TEST_F(KernelWrapTest, open) {
   // We pass O_RDONLY because we do not want an error in flags translation
-  EXPECT_CALL(mock, open(kDummyConstChar, 0))
+  EXPECT_CALL(mock, open(kDummyConstChar, 0, 0))
       .WillOnce(Return(kDummyInt2))
       .WillOnce(Return(kDummyInt2));
 
-  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0));
-  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0));
+  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0, 0));
+  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0, 0));
 }
 
 TEST_F(KernelWrapTest, pipe) {

@@ -39,6 +39,12 @@ Error Filesystem::Init(const FsInitArgs& args) {
 void Filesystem::Destroy() {
 }
 
+Error Filesystem::Open(const Path& path,
+                       int open_flags,
+                       ScopedNode* out_node) {
+  return OpenWithMode(path, open_flags, 0666, out_node);
+}
+
 Error Filesystem::OpenResource(const Path& path, ScopedNode* out_node) {
   out_node->reset(NULL);
   LOG_TRACE("Can't open resource: %s", path.Join().c_str());

@@ -36,6 +36,7 @@ struct File {
 
 typedef std::vector<File> Files;
 Files g_files;
+mode_t last_create_mode = 0666;
 
 bool IsValidPath(const char* path) {
   if (path == NULL)
@@ -74,7 +75,7 @@ int testfs_getattr(const char* path, struct stat* stbuf) {
   if (file == NULL)
     return -ENOENT;
 
-  stbuf->st_mode = S_IFREG | 0666;
+  stbuf->st_mode = S_IFREG | last_create_mode;
   stbuf->st_size = file->data.size();
   return 0;
 }
@@ -95,7 +96,7 @@ int testfs_readdir(const char* path,
   return 0;
 }
 
-int testfs_create(const char* path, mode_t, struct fuse_file_info* fi) {
+int testfs_create(const char* path, mode_t mode, struct fuse_file_info* fi) {
   if (!IsValidPath(path))
     return -ENOENT;
 
@@ -108,6 +109,7 @@ int testfs_create(const char* path, mode_t, struct fuse_file_info* fi) {
     file = &g_files.back();
     file->name = &path[1];  // Skip initial /
   }
+  last_create_mode = mode;
 
   return 0;
 }
@@ -232,6 +234,17 @@ TEST_F(FuseFsTest, OpenAndRead) {
   ASSERT_STREQ("World!\n", buffer);
 }
 
+TEST_F(FuseFsTest, CreateWithMode) {
+  ScopedNode node;
+  struct stat statbuf;
+
+  ASSERT_EQ(0, fs_.OpenWithMode(Path("/hello"),
+                                O_RDWR | O_CREAT, 0723, &node));
+  EXPECT_EQ(0, node->GetStat(&statbuf));
+  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
+  EXPECT_EQ(0723, statbuf.st_mode & ~S_IFMT);
+}
+
 TEST_F(FuseFsTest, CreateAndWrite) {
   ScopedNode node;
   ASSERT_EQ(0, fs_.Open(Path("/foobar"), O_RDWR | O_CREAT, &node));
@@ -341,14 +354,14 @@ void KernelProxyFuseTest::TearDown() {
 
 TEST_F(KernelProxyFuseTest, Basic) {
   // Write a file.
-  int fd = ki_open("/hello", O_WRONLY | O_CREAT);
+  int fd = ki_open("/hello", O_WRONLY | O_CREAT, 0777);
   ASSERT_GT(fd, -1);
   ASSERT_EQ(sizeof(hello_world),
             ki_write(fd, hello_world, sizeof(hello_world)));
   EXPECT_EQ(0, ki_close(fd));
 
   // Then read it back in.
-  fd = ki_open("/hello", O_RDONLY);
+  fd = ki_open("/hello", O_RDONLY, 0);
   ASSERT_GT(fd, -1);
 
   char buffer[30];

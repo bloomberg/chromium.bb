@@ -240,7 +240,8 @@ Error FsNode::VIoctl(int request, va_list args) {
 
 }  // namespace
 
-Error DevFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error DevFs::OpenWithMode(const Path& path, int open_flags,
+                          mode_t mode, ScopedNode* out_node) {
   out_node->reset(NULL);
   int error;
   if (path.Part(1) == "fs") {

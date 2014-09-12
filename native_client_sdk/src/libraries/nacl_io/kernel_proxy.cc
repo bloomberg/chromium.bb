@@ -104,17 +104,17 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
 
   // Open the first three in order to get STDIN, STDOUT, STDERR
   int fd;
-  fd = open("/dev/stdin", O_RDONLY);
+  fd = open("/dev/stdin", O_RDONLY, 0);
   assert(fd == 0);
   if (fd < 0)
     rtn = errno;
 
-  fd = open("/dev/stdout", O_WRONLY);
+  fd = open("/dev/stdout", O_WRONLY, 0);
   assert(fd == 1);
   if (fd < 0)
     rtn = errno;
 
-  fd = open("/dev/stderr", O_WRONLY);
+  fd = open("/dev/stderr", O_WRONLY, 0);
   assert(fd == 2);
   if (fd < 0)
     rtn = errno;
@@ -199,11 +199,11 @@ int KernelProxy::open_resource(const char* path) {
   return AllocateFD(handle, path);
 }
 
-int KernelProxy::open(const char* path, int open_flags) {
+int KernelProxy::open(const char* path, int open_flags, mode_t mode) {
   ScopedFilesystem fs;
   ScopedNode node;
 
-  Error error = AcquireFsAndNode(path, open_flags, &fs, &node);
+  Error error = AcquireFsAndNode(path, open_flags, mode, &fs, &node);
   if (error) {
     errno = error;
     return -1;
@@ -324,7 +324,7 @@ char* KernelProxy::getwd(char* buf) {
 }
 
 int KernelProxy::chmod(const char* path, mode_t mode) {
-  int fd = KernelProxy::open(path, O_RDONLY);
+  int fd = KernelProxy::open(path, O_RDONLY, mode);
   if (-1 == fd)
     return -1;
 
@@ -388,7 +388,7 @@ int KernelProxy::rmdir(const char* path) {
 }
 
 int KernelProxy::stat(const char* path, struct stat* buf) {
-  int fd = open(path, O_RDONLY);
+  int fd = open(path, O_RDONLY, 0);
   if (-1 == fd)
     return -1;
 
@@ -718,7 +718,7 @@ int KernelProxy::unlink(const char* path) {
 }
 
 int KernelProxy::truncate(const char* path, off_t len) {
-  int fd = KernelProxy::open(path, O_WRONLY);
+  int fd = KernelProxy::open(path, O_WRONLY, 0);
   if (-1 == fd)
     return -1;
 

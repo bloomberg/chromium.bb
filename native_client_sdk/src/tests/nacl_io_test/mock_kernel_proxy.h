@@ -48,7 +48,7 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD5(mount, int(const char*, const char*, const char*, unsigned long,
                           const void*));
   MOCK_METHOD2(munmap, int(void*, size_t));
-  MOCK_METHOD2(open, int(const char*, int));
+  MOCK_METHOD3(open, int(const char*, int, mode_t));
   MOCK_METHOD1(pipe, int(int[2]));
   MOCK_METHOD3(read, ssize_t(int, void*, size_t));
   MOCK_METHOD3(readlink, int(const char*, char*, size_t count));

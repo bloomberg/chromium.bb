@@ -85,7 +85,7 @@ static int ki_fcntl_wrapper(int fd, int request, ...) {
  * or the filesystem node but directly in the FD mapping.
  */
 TEST_F(KernelProxyTest, Fcntl_GETFD) {
-  int fd = ki_open("/test", O_RDWR | O_CREAT);
+  int fd = ki_open("/test", O_RDWR | O_CREAT, 0777);
   ASSERT_NE(-1, fd);
 
   // FD flags should start as zero.
@@ -116,7 +116,7 @@ TEST_F(KernelProxyTest, FileLeak) {
 
   for (int file_num = 0; file_num < 4096; file_num++) {
     sprintf(filename, "/foo%i.tmp", file_num++);
-    int fd = ki_open(filename, O_WRONLY | O_CREAT);
+    int fd = ki_open(filename, O_WRONLY | O_CREAT, 0777);
     ASSERT_GT(fd, -1);
     ASSERT_EQ(1, root->ChildCount());
     ASSERT_EQ(buffer_size, ki_write(fd, garbage, buffer_size));
@@ -232,7 +232,7 @@ TEST_F(KernelProxyTest, SignalSigwinch) {
 
 TEST_F(KernelProxyTest, Rename) {
   // Create a dummy file
-  int file1 = ki_open("/test1.txt", O_RDWR | O_CREAT);
+  int file1 = ki_open("/test1.txt", O_RDWR | O_CREAT, 0777);
   ASSERT_GT(file1, -1);
   ASSERT_EQ(0, ki_close(file1));
 
@@ -293,27 +293,27 @@ TEST_F(KernelProxyTest, FDPathMapping) {
   EXPECT_EQ(0, ki_mkdir("/example", S_IREAD | S_IWRITE));
   ki_chdir("/foo");
 
-  fd1 = ki_open("/example", O_RDONLY);
+  fd1 = ki_open("/example", O_RDONLY, 0);
   EXPECT_NE(-1, fd1);
   EXPECT_EQ(ki_fchdir(fd1), 0);
   EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
   EXPECT_STREQ("/example", text);
 
   EXPECT_EQ(0, ki_chdir("/foo"));
-  fd2 = ki_open("../example", O_RDONLY);
+  fd2 = ki_open("../example", O_RDONLY, 0);
   EXPECT_NE(-1, fd2);
   EXPECT_EQ(0, ki_fchdir(fd2));
   EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
   EXPECT_STREQ("/example", text);
 
   EXPECT_EQ(0, ki_chdir("/foo"));
-  fd3 = ki_open("../test", O_CREAT | O_RDWR);
+  fd3 = ki_open("../test", O_CREAT | O_RDWR, 0777);
   EXPECT_NE(-1, fd3);
   EXPECT_EQ(-1, ki_fchdir(fd3));
   EXPECT_EQ(ENOTDIR, errno);
 
   EXPECT_EQ(0, ki_chdir("/foo"));
-  fd4 = ki_open("bar", O_RDONLY);
+  fd4 = ki_open("bar", O_RDONLY, 0);
   EXPECT_EQ(0, ki_fchdir(fd4));
   EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
   EXPECT_STREQ("/foo/bar", text);
@@ -360,19 +360,19 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
 
   // Fail to open "/foo/bar"
-  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY));
+  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY, 0));
   EXPECT_EQ(ENOENT, errno);
 
   // Create bar "/foo/bar"
-  fd1 = ki_open("/foo/bar", O_RDWR | O_CREAT);
+  fd1 = ki_open("/foo/bar", O_RDWR | O_CREAT, 0777);
   ASSERT_NE(-1, fd1);
 
   // Open (optionally create) bar "/foo/bar"
-  fd2 = ki_open("/foo/bar", O_RDWR | O_CREAT);
+  fd2 = ki_open("/foo/bar", O_RDWR | O_CREAT, 0777);
   ASSERT_NE(-1, fd2);
 
   // Fail to exclusively create bar "/foo/bar"
-  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY | O_CREAT | O_EXCL));
+  EXPECT_EQ(-1, ki_open("/foo/bar", O_RDONLY | O_CREAT | O_EXCL, 0777));
   EXPECT_EQ(EEXIST, errno);
 
   // Write hello and world to same node with different descriptors
@@ -380,7 +380,7 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(5, ki_write(fd2, "WORLD", 5));
   EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
 
-  fd3 = ki_open("/foo/bar", O_RDONLY);
+  fd3 = ki_open("/foo/bar", O_RDONLY, 0);
   ASSERT_NE(-1, fd3);
 
   len = ki_read(fd3, text, sizeof(text));
@@ -390,7 +390,7 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(0, ki_close(fd1));
   EXPECT_EQ(0, ki_close(fd2));
 
-  fd1 = ki_open("/foo/bar", O_WRONLY | O_APPEND);
+  fd1 = ki_open("/foo/bar", O_WRONLY | O_APPEND, 0);
   ASSERT_NE(-1, fd1);
   EXPECT_EQ(5, ki_write(fd1, "WORLD", 5));
 
@@ -399,7 +399,7 @@ TEST_F(KernelProxyTest, MemMountIO) {
   text[len] = 0;
   EXPECT_STREQ("WORLD", text);
 
-  fd2 = ki_open("/foo/bar", O_RDONLY);
+  fd2 = ki_open("/foo/bar", O_RDONLY, 0);
   ASSERT_NE(-1, fd2);
   len = ki_read(fd2, text, sizeof(text));
   if (len > 0)
@@ -415,9 +415,9 @@ TEST_F(KernelProxyTest, MemMountFTruncate) {
   // Open a file write only, write some text, then test that using a
   // separate file descriptor pointing to it that it is correctly
   // truncated at a specified number of bytes (2).
-  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT);
+  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT, 0777);
   ASSERT_NE(-1, fd1);
-  fd2 = ki_open("/trunc", O_RDONLY);
+  fd2 = ki_open("/trunc", O_RDONLY, 0);
   ASSERT_NE(-1, fd2);
   EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
   EXPECT_EQ(0, ki_ftruncate(fd1, 2));
@@ -435,20 +435,20 @@ TEST_F(KernelProxyTest, MemMountTruncate) {
   // Open a file write only, write some text, then test that by
   // referring to it by its path and truncating it we correctly truncate
   // it at a specified number of bytes (2).
-  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT);
+  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT, 0777);
   ASSERT_NE(-1, fd1);
   EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
   EXPECT_EQ(0, ki_close(fd1));
   EXPECT_EQ(0, ki_truncate("/trunc", 2));
   // Verify the text is only 2 bytes long with new file descriptor.
-  fd1 = ki_open("/trunc", O_RDONLY);
+  fd1 = ki_open("/trunc", O_RDONLY, 0);
   ASSERT_NE(-1, fd1);
   EXPECT_EQ(2, ki_read(fd1, text, sizeof(text)));
   EXPECT_EQ(0, ki_close(fd1));
 }
 
 TEST_F(KernelProxyTest, MemMountLseek) {
-  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
   ASSERT_EQ(9, ki_write(fd, "Some text", 9));
 
@@ -468,7 +468,7 @@ TEST_F(KernelProxyTest, MemMountLseek) {
 }
 
 TEST_F(KernelProxyTest, CloseTwice) {
-  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
 
   EXPECT_EQ(9, ki_write(fd, "Some text", 9));
@@ -481,7 +481,7 @@ TEST_F(KernelProxyTest, CloseTwice) {
 }
 
 TEST_F(KernelProxyTest, MemMountDup) {
-  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
 
   int dup_fd = ki_dup(fd);
@@ -495,7 +495,7 @@ TEST_F(KernelProxyTest, MemMountDup) {
   ASSERT_EQ(dup2_fd, ki_dup2(fd, dup2_fd));
   ASSERT_EQ(9, ki_lseek(dup2_fd, 0, SEEK_CUR));
 
-  int new_fd = ki_open("/bar", O_CREAT | O_RDWR);
+  int new_fd = ki_open("/bar", O_CREAT | O_RDWR, 0777);
 
   ASSERT_EQ(fd, ki_dup2(new_fd, fd));
   // fd, new_fd -> "/bar"
@@ -513,7 +513,7 @@ TEST_F(KernelProxyTest, MemMountDup) {
 }
 
 TEST_F(KernelProxyTest, Lstat) {
-  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
   ASSERT_EQ(0, ki_mkdir("/bar", S_IREAD | S_IWRITE));
 
@@ -530,8 +530,17 @@ TEST_F(KernelProxyTest, Lstat) {
   EXPECT_EQ(ENOENT, errno);
 }
 
+TEST_F(KernelProxyTest, OpenWithMode) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0723);
+  ASSERT_GT(fd, -1);
+
+  struct stat buf;
+  EXPECT_EQ(0, ki_lstat("/foo", &buf));
+  EXPECT_EQ(0723, buf.st_mode & ~S_IFMT);
+}
+
 TEST_F(KernelProxyTest, UseAfterClose) {
-  int fd = ki_open("/dummy", O_CREAT | O_WRONLY);
+  int fd = ki_open("/dummy", O_CREAT | O_WRONLY, 0777);
   ASSERT_GT(fd, -1);
   EXPECT_EQ(5, ki_write(fd, "hello", 5));
   EXPECT_EQ(0, ki_close(fd));
@@ -627,7 +636,7 @@ TEST_F(KernelProxyMountTest, MountAndIoctl) {
   char path[100];
   snprintf(path, 100, "dev/fs/%d", g_fs_dev);
 
-  int fd = ki_open(path, O_RDONLY);
+  int fd = ki_open(path, O_RDONLY, 0);
   ASSERT_GT(fd, -1);
 
   EXPECT_EQ(0, ki_ioctl_wrapper(fd, 0xdeadbeef));
@@ -701,7 +710,8 @@ class KernelProxyMMapTest_Node : public Node {
 
 class KernelProxyMMapTest_Filesystem : public Filesystem {
  public:
-  virtual Error Open(const Path& path, int mode, ScopedNode* out_node) {
+  virtual Error OpenWithMode(const Path& path, int open_flags,
+                             mode_t mode, ScopedNode* out_node) {
     out_node->reset(new KernelProxyMMapTest_Node(this));
     return 0;
   }
@@ -747,7 +757,7 @@ class KernelProxyMMapTest : public ::testing::Test {
 TEST_F(KernelProxyMMapTest, MMap) {
   ASSERT_EQ(0, ki_umount("/"));
   ASSERT_EQ(0, ki_mount("", "/", "mmapfs", 0, NULL));
-  int fd = ki_open("/file", O_RDWR | O_CREAT);
+  int fd = ki_open("/file", O_RDWR | O_CREAT, 0777);
   ASSERT_NE(-1, fd);
 
   void* addr1 = ki_mmap(NULL, 0x800, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -829,8 +839,8 @@ class KernelProxyErrorTest : public ::testing::Test {
 TEST_F(KernelProxyErrorTest, WriteError) {
   ScopedRef<MockFs> mock_fs(fs());
   ScopedRef<MockNode> mock_node(new MockNode(&*mock_fs));
-  EXPECT_CALL(*mock_fs, Open(_, _, _))
-      .WillOnce(DoAll(SetArgPointee<2>(mock_node), Return(0)));
+  EXPECT_CALL(*mock_fs, OpenWithMode(_, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<3>(mock_node), Return(0)));
 
   EXPECT_CALL(*mock_node, Write(_, _, _, _))
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Wrote 0 bytes.
@@ -838,7 +848,7 @@ TEST_F(KernelProxyErrorTest, WriteError) {
 
   EXPECT_CALL(*mock_node, Destroy()).Times(1);
 
-  int fd = ki_open("/dummy", O_WRONLY);
+  int fd = ki_open("/dummy", O_WRONLY, 0);
   EXPECT_NE(0, fd);
 
   char buf[20];
@@ -851,8 +861,8 @@ TEST_F(KernelProxyErrorTest, WriteError) {
 TEST_F(KernelProxyErrorTest, ReadError) {
   ScopedRef<MockFs> mock_fs(fs());
   ScopedRef<MockNode> mock_node(new MockNode(&*mock_fs));
-  EXPECT_CALL(*mock_fs, Open(_, _, _))
-      .WillOnce(DoAll(SetArgPointee<2>(mock_node), Return(0)));
+  EXPECT_CALL(*mock_fs, OpenWithMode(_, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<3>(mock_node), Return(0)));
 
   EXPECT_CALL(*mock_node, Read(_, _, _, _))
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Read 0 bytes.
@@ -860,7 +870,7 @@ TEST_F(KernelProxyErrorTest, ReadError) {
 
   EXPECT_CALL(*mock_node, Destroy()).Times(1);
 
-  int fd = ki_open("/dummy", O_RDONLY);
+  int fd = ki_open("/dummy", O_RDONLY, 0);
   EXPECT_NE(0, fd);
 
   char buf[20];

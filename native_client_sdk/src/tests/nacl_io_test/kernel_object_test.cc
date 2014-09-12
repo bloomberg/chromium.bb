@@ -32,7 +32,8 @@ class FilesystemForTesting : public Filesystem {
 
  public:
   Error Access(const Path& path, int a_mode) { return ENOSYS; }
-  Error Open(const Path& path, int mode, ScopedNode* out_node) {
+  Error OpenWithMode(const Path& path, int open_flags,
+                     mode_t mode, ScopedNode* out_node) {
     out_node->reset(NULL);
     return ENOSYS;
   }

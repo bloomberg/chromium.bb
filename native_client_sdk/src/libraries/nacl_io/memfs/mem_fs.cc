@@ -75,7 +75,8 @@ Error MemFs::FindNode(const Path& path, int type, ScopedNode* out_node) {
   return 0;
 }
 
-Error MemFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
+Error MemFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
+                          ScopedNode* out_node) {
   out_node->reset(NULL);
   ScopedNode node;
 
@@ -95,6 +96,7 @@ Error MemFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
     error = node->Init(open_flags);
     if (error)
       return error;
+    node->SetMode(mode);
 
     error = parent->AddChild(path.Basename(), node);
     if (error)

@@ -99,7 +99,7 @@ Error KernelObject::AcquireFsAndRelPath(const std::string& path,
 // Given a path, acquire the associated filesystem and node, creating the
 // node if needed based on the provided flags.
 Error KernelObject::AcquireFsAndNode(const std::string& path,
-                                     int oflags,
+                                     int oflags, mode_t mflags,
                                      ScopedFilesystem* out_fs,
                                      ScopedNode* out_node) {
   Path rel_parts;
@@ -109,7 +109,7 @@ Error KernelObject::AcquireFsAndNode(const std::string& path,
   if (error)
     return error;
 
-  error = (*out_fs)->Open(rel_parts, oflags, out_node);
+  error = (*out_fs)->OpenWithMode(rel_parts, oflags, mflags, out_node);
   if (error)
     return error;
 
@@ -143,7 +143,7 @@ Error KernelObject::SetCWD(const std::string& path) {
   ScopedFilesystem fs;
   ScopedNode node;
 
-  Error error = AcquireFsAndNode(abs_path, O_RDONLY, &fs, &node);
+  Error error = AcquireFsAndNode(abs_path, O_RDONLY, 0, &fs, &node);
   if (error)
     return error;
 
