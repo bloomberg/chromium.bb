@@ -197,11 +197,12 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
     return;
   }
 
-  if (!existing_registration.get()) {
+  if (!existing_registration.get() || existing_registration->is_uninstalled()) {
     RegisterAndContinue(SERVICE_WORKER_OK);
     return;
   }
 
+  DCHECK(existing_registration->GetNewestVersion());
   // "If scriptURL is equal to registration.[[ScriptURL]], then:"
   if (existing_registration->GetNewestVersion()->script_url() == script_url_) {
     // "Set registration.[[Uninstalling]] to false."

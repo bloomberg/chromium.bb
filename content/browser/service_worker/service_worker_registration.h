@@ -54,6 +54,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void set_is_deleted(bool deleted) { is_deleted_ = deleted; }
 
   bool is_uninstalling() const { return is_uninstalling_; }
+  bool is_uninstalled() const { return is_uninstalled_; }
 
   ServiceWorkerVersion* active_version() const {
     return active_version_.get();
@@ -140,6 +141,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   const int64 registration_id_;
   bool is_deleted_;
   bool is_uninstalling_;
+  bool is_uninstalled_;
   bool should_activate_when_ready_;
   base::Time last_update_check_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
