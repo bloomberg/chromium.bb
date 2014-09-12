@@ -17,10 +17,15 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace mojo {
 
 class ViewManager;
 class View;
+class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
@@ -38,7 +43,8 @@ class HTMLDocumentView : public blink::WebViewClient,
   // |shell| is the Shell connection for this mojo::Application.
   HTMLDocumentView(URLResponsePtr response,
                    InterfaceRequest<ServiceProvider> service_provider_request,
-                   Shell* shell);
+                   Shell* shell,
+                   scoped_refptr<base::MessageLoopProxy> compositor_thread);
   virtual ~HTMLDocumentView();
 
  private:
@@ -46,8 +52,8 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
 
   // WebWidgetClient methods:
-  virtual void didInvalidateRect(const blink::WebRect& rect);
-  virtual bool allowsBrokenNullLayerTreeView() const;
+  virtual void initializeLayerTreeView();
+  virtual blink::WebLayerTreeView* layerTreeView();
 
   // WebFrameClient methods:
   virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
@@ -84,7 +90,6 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
 
   void Load(URLResponsePtr response);
-  void Repaint();
 
   URLResponsePtr response_;
   scoped_ptr<ServiceProvider> embedder_service_provider_;
@@ -93,7 +98,8 @@ class HTMLDocumentView : public blink::WebViewClient,
   blink::WebView* web_view_;
   View* root_;
   ViewManagerClientFactory view_manager_client_factory_;
-  bool repaint_pending_;
+  scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
+  scoped_refptr<base::MessageLoopProxy> compositor_thread_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);

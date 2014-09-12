@@ -52,6 +52,15 @@ struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Rect, RectPtr> {
 };
 
 template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<RectFPtr, gfx::RectF> {
+  static RectFPtr Convert(const gfx::RectF& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::RectF, RectFPtr> {
+  static gfx::RectF Convert(const RectFPtr& input);
+};
+
+template <>
 struct MOJO_GEOMETRY_EXPORT TypeConverter<TransformPtr, gfx::Transform> {
   static TransformPtr Convert(const gfx::Transform& input);
 };

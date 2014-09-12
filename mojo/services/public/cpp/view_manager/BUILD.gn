@@ -32,6 +32,7 @@ source_set("view_manager") {
     "//mojo/public/cpp/application:chromium",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/view_manager",
