@@ -91,7 +91,7 @@ static_library("browser") {
   }
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "mock_password_store.cc",
@@ -107,9 +107,14 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":browser",
     "//base",
     "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+
+  forward_dependent_configs_from = [
+    ":browser",
   ]
 }

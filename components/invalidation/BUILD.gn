@@ -90,6 +90,10 @@ static_library("invalidation") {
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
+
+  forward_dependent_configs_from = [
+    "//third_party/cacheinvalidation",
+  ]
 }
 
 static_library("test_support") {

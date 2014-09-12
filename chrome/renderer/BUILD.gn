@@ -159,3 +159,42 @@ static_library("renderer") {
   #         'renderer/printing/print_web_view_helper_pdf_win.cc',
   #       ],
 }
+
+# In GYP this is part of test_support_common.
+source_set("test_support") {
+  testonly = true
+  visibility = [ "//chrome/test:test_support" ]
+
+  sources = [
+    "chrome_mock_render_thread.cc",
+    "chrome_mock_render_thread.h",
+    "safe_browsing/mock_feature_extractor_clock.cc",
+    "safe_browsing/mock_feature_extractor_clock.h",
+    "safe_browsing/test_utils.cc",
+    "safe_browsing/test_utils.h",
+  ]
+
+  deps = [
+    ":renderer",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (printing_mode == 1) {
+    deps += [ "//chrome/service" ]
+  }
+  if (printing_mode != 0) {
+    sources += [
+      "printing/mock_printer.cc",
+      "printing/mock_printer.h",
+    ]
+  }
+
+  if (enable_webrtc) {
+    sources += [
+      "media/mock_webrtc_logging_message_filter.cc",
+      "media/mock_webrtc_logging_message_filter.h",
+    ]
+  }
+}

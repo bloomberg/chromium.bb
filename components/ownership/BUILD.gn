@@ -23,6 +23,7 @@ component("ownership") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = ["owner_key_util_unittest.cc"]
 
   deps = [

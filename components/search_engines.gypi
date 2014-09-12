@@ -81,6 +81,7 @@
       ],
     },
     {
+      # GN version: //components/search_engines:test_support
       'target_name': 'search_engines_test_support',
       'type': 'static_library',
       'dependencies': [

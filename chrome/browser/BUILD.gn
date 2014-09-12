@@ -234,6 +234,7 @@ static_library("browser") {
       "//chrome/browser/extensions",
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
     ]
+    forward_dependent_configs_from += [ "//chrome/browser/extensions" ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
                            ".", "//chrome")
   }
@@ -668,5 +669,247 @@ if (false) {  #if (is_chrome_branded) {
 } else {
   group("chrome_internal_resources_gen") {
     # Empty placeholder.
+  }
+}
+
+# In GYP this is part of test_support_common.
+source_set("test_support") {
+  testonly = true
+
+  # Always include this via the main test support target.
+  visibility = [ "//chrome/test:test_support" ]
+
+  sources = [
+    "browsing_data/mock_browsing_data_appcache_helper.cc",
+    "browsing_data/mock_browsing_data_appcache_helper.h",
+    "browsing_data/mock_browsing_data_channel_id_helper.cc",
+    "browsing_data/mock_browsing_data_channel_id_helper.h",
+    "browsing_data/mock_browsing_data_cookie_helper.cc",
+    "browsing_data/mock_browsing_data_cookie_helper.h",
+    "browsing_data/mock_browsing_data_database_helper.cc",
+    "browsing_data/mock_browsing_data_database_helper.h",
+    "browsing_data/mock_browsing_data_file_system_helper.cc",
+    "browsing_data/mock_browsing_data_file_system_helper.h",
+    "browsing_data/mock_browsing_data_flash_lso_helper.cc",
+    "browsing_data/mock_browsing_data_flash_lso_helper.h",
+    "browsing_data/mock_browsing_data_indexed_db_helper.cc",
+    "browsing_data/mock_browsing_data_indexed_db_helper.h",
+    "browsing_data/mock_browsing_data_local_storage_helper.cc",
+    "browsing_data/mock_browsing_data_local_storage_helper.h",
+    "browsing_data/mock_browsing_data_quota_helper.cc",
+    "browsing_data/mock_browsing_data_quota_helper.h",
+    "browsing_data/mock_browsing_data_service_worker_helper.cc",
+    "browsing_data/mock_browsing_data_service_worker_helper.h",
+    "download/download_test_file_activity_observer.cc",
+    "download/download_test_file_activity_observer.h",
+    "download/test_download_shelf.cc",
+    "download/test_download_shelf.h",
+    "extensions/extension_action_test_util.cc",
+    "extensions/extension_action_test_util.h",
+    "invalidation/fake_invalidation_service.cc",
+    "invalidation/fake_invalidation_service.h",
+    "media/fake_desktop_media_list.cc",
+    "media/fake_desktop_media_list.h",
+    "net/dns_probe_test_util.cc",
+    "net/dns_probe_test_util.h",
+    "net/url_request_mock_util.cc",
+    "net/url_request_mock_util.h",
+    "notifications/notification_test_util.cc",
+    "notifications/notification_test_util.h",
+    "password_manager/mock_password_store_service.cc",
+    "password_manager/mock_password_store_service.h",
+    "password_manager/null_password_store_service.cc",
+    "password_manager/null_password_store_service.h",
+    "password_manager/test_password_store_service.cc",
+    "password_manager/test_password_store_service.h",
+    "prefs/pref_service_mock_factory.cc",
+    "prefs/pref_service_mock_factory.h",
+    "profile_resetter/profile_resetter_test_base.cc",
+    "profile_resetter/profile_resetter_test_base.h",
+    "search_engines/template_url_service_factory_test_util.cc",
+    "search_engines/template_url_service_factory_test_util.h",
+    "search_engines/template_url_service_test_util.cc",
+    "search_engines/template_url_service_test_util.h",
+    "sessions/session_service_test_helper.cc",
+    "sessions/session_service_test_helper.h",
+    "signin/fake_account_reconcilor.cc",
+    "signin/fake_account_reconcilor.h",
+    "signin/fake_account_tracker_service.cc",
+    "signin/fake_account_tracker_service.h",
+    "signin/fake_profile_oauth2_token_service.cc",
+    "signin/fake_profile_oauth2_token_service.h",
+    "signin/fake_profile_oauth2_token_service_builder.cc",
+    "signin/fake_profile_oauth2_token_service_builder.h",
+    "signin/fake_signin_manager.cc",
+    "signin/fake_signin_manager.h",
+    "ssl/ssl_client_auth_requestor_mock.cc",
+    "ssl/ssl_client_auth_requestor_mock.h",
+    "sync/glue/local_device_info_provider_mock.cc",
+    "sync/glue/local_device_info_provider_mock.h",
+    "sync/profile_sync_components_factory_mock.cc",
+    "sync/profile_sync_components_factory_mock.h",
+    "sync/profile_sync_service_mock.cc",
+    "sync/profile_sync_service_mock.h",
+  ]
+
+  deps = [
+    ":browser",
+    "//base:prefs_test_support",
+    "//chrome/browser",
+    "//chrome/browser/ui:test_support",
+    "//chrome/common",
+    "//chrome/common/safe_browsing:proto",
+    "//components/invalidation",
+    "//components/invalidation:test_support",
+    "//components/password_manager/core/browser:test_support",
+    "//components/search_engines:test_support",
+    "//content/test:test_support",
+    "//chrome/app/theme:theme_resources",
+    "//net:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx",
+  ]
+
+  forward_dependent_configs_from = [
+    ":browser",
+    "//chrome/browser/ui:test_support",
+  ]
+
+  if (!is_ios) {
+    deps += [
+      "//components/sessions:test_support",
+      "//extensions:test_support",
+      "//google_apis:test_support",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "chromeos/app_mode/fake_cws.cc",
+      "chromeos/app_mode/fake_cws.h",
+      "chromeos/file_manager/fake_disk_mount_manager.cc",
+      "chromeos/file_manager/fake_disk_mount_manager.h",
+      "chromeos/input_method/mock_candidate_window_controller.cc",
+      "chromeos/input_method/mock_candidate_window_controller.h",
+      "chromeos/input_method/mock_input_method_engine.cc",
+      "chromeos/input_method/mock_input_method_engine.h",
+      "chromeos/input_method/mock_input_method_manager.cc",
+      "chromeos/input_method/mock_input_method_manager.h",
+      "chromeos/login/fake_login_utils.cc",
+      "chromeos/login/fake_login_utils.h",
+      "chromeos/login/mock_login_utils.cc",
+      "chromeos/login/mock_login_utils.h",
+      "chromeos/login/users/avatar/mock_user_image_manager.cc",
+      "chromeos/login/users/avatar/mock_user_image_manager.h",
+      "chromeos/login/users/fake_supervised_user_manager.cc",
+      "chromeos/login/users/fake_supervised_user_manager.h",
+      "chromeos/login/users/fake_user_manager.cc",
+      "chromeos/login/users/fake_user_manager.h",
+      "chromeos/login/users/mock_user_manager.cc",
+      "chromeos/login/users/mock_user_manager.h",
+      "chromeos/login/test/oobe_screen_waiter.cc",
+      "chromeos/login/test/oobe_screen_waiter.h",
+      "chromeos/login/test/js_checker.cc",
+      "chromeos/login/test/js_checker.h",
+      "chromeos/login/ui/mock_login_display.cc",
+      "chromeos/login/ui/mock_login_display.h",
+      "chromeos/login/ui/mock_login_display_host.cc",
+      "chromeos/login/ui/mock_login_display_host.h",
+      "chromeos/net/network_portal_detector_test_utils.cc",
+      "chromeos/net/network_portal_detector_test_utils.h",
+      "chromeos/policy/cloud_external_data_manager_base_test_util.cc",
+      "chromeos/policy/cloud_external_data_manager_base_test_util.h",
+      "chromeos/policy/device_policy_builder.cc",
+      "chromeos/policy/device_policy_builder.h",
+      "chromeos/policy/fake_device_cloud_policy_initializer.cc",
+      "chromeos/policy/fake_device_cloud_policy_initializer.h",
+      "chromeos/policy/stub_enterprise_install_attributes.cc",
+      "chromeos/policy/stub_enterprise_install_attributes.h",
+      "chromeos/settings/device_settings_test_helper.cc",
+      "chromeos/settings/device_settings_test_helper.h",
+      "chromeos/system/fake_input_device_settings.cc",
+      "chromeos/system/fake_input_device_settings.h",
+    ]
+    configs += [ "//build/config/linux:dbus" ]
+    #deps += [ "//chromeos:test_support" ]  TODO(GYP)
+  }
+
+  if (enable_configuration_policy) {
+    sources += [
+      "policy/test/local_policy_test_server.cc",
+      "policy/test/local_policy_test_server.h",
+    ]
+    policy_deps = [
+      "//components/policy:policy_component_test_support",
+      "//components/policy:test_support",
+    ]
+    deps += policy_deps
+    forward_dependent_configs_from += policy_deps
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += [
+      "extensions/fake_safe_browsing_database_manager.cc",
+      "extensions/fake_safe_browsing_database_manager.h",
+    ]
+  }
+
+  if (enable_extensions) {
+    sources += [
+      "drive/dummy_drive_service.cc",
+      "drive/dummy_drive_service.h",
+      "drive/fake_drive_service.cc",
+      "drive/fake_drive_service.h",
+      "drive/test_util.cc",
+      "drive/test_util.h",
+      "extensions/api/messaging/native_messaging_test_util.cc",
+      "extensions/api/messaging/native_messaging_test_util.h",
+      "extensions/extension_notification_observer.cc",
+      "extensions/extension_notification_observer.h",
+      "extensions/extension_test_message_listener.cc",
+      "extensions/extension_test_message_listener.h",
+      "extensions/mock_extension_special_storage_policy.cc",
+      "extensions/mock_extension_special_storage_policy.h",
+      "extensions/test_blacklist.cc",
+      "extensions/test_blacklist.h",
+      "extensions/test_blacklist_state_fetcher.cc",
+      "extensions/test_blacklist_state_fetcher.h",
+      "extensions/test_extension_environment.cc",
+      "extensions/test_extension_environment.h",
+      "extensions/test_extension_prefs.cc",
+      "extensions/test_extension_prefs.h",
+      "extensions/test_extension_service.cc",
+      "extensions/test_extension_service.h",
+      "extensions/test_extension_system.cc",
+      "extensions/test_extension_system.h",
+      "media_galleries/media_galleries_test_util.cc",
+      "media_galleries/media_galleries_test_util.h",
+    ]
+    deps += [
+      "//components/storage_monitor:test_support",
+    ]
+  }
+
+  if (enable_mdns) {
+    sources += [
+      "local_discovery/test_service_discovery_client.cc",
+      "local_discovery/test_service_discovery_client.h",
+    ]
+  }
+
+  if (enable_app_list) {
+    sources += [
+      "ui/app_list/test/chrome_app_list_test_support.cc",
+      "ui/app_list/test/chrome_app_list_test_support.h",
+    ]
+  }
+
+  if (enable_wifi_bootstrapping) {
+    sources += [
+      "local_discovery/wifi/mock_wifi_manager.cc",
+      "local_discovery/wifi/mock_wifi_manager.h",
+    ]
   }
 }

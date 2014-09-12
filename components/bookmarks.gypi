@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/bookmarks/browser
       'target_name': 'bookmarks_browser',
       'type': 'static_library',
       'include_dirs': [
@@ -73,6 +74,7 @@
       ],
     },
     {
+      # GN version: //components/bookmarks/common
       'target_name': 'bookmarks_common',
       'type': 'static_library',
       'include_dirs': [
@@ -89,6 +91,7 @@
       ],
     },
     {
+      # GN version: //components/bookmarks/test
       'target_name': 'bookmarks_test_support',
       'type': 'static_library',
       'include_dirs': [

@@ -21,7 +21,8 @@ component("pref_registry") {
   ]
 }
 
-source_set("pref_registry_test_support") {
+source_set("test_support") {
+  testonly = true
   sources = [
     "testing_pref_service_syncable.cc",
     "testing_pref_service_syncable.h",

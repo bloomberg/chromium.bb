@@ -221,3 +221,35 @@ grit("chromium_strings") {
     "chromium_strings_zh-TW.pak",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  visibility = [ "//chrome/test:test_support" ]
+
+  sources = [
+    "chrome_main_delegate.cc",
+    "chrome_main_delegate.h",
+    "close_handle_hook_win.cc",
+    "close_handle_hook_win.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/browser",
+    "//chrome/common",
+    "//chrome/plugin",
+    "//chrome/renderer",
+    "//chrome/utility",
+    "//content/public/app:both",
+    "//content/public/common",
+    "//ui/base",
+  ]
+
+  if (is_mac) {
+    sources += [
+      "chrome_breakpad_client.cc",
+      "chrome_breakpad_client_mac.mm",
+      "chrome_main_mac.mm",
+    ]
+  }
+}

@@ -1,0 +1,189 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+# GYP version: chrome/chrome_tests_unit.gypi:test_support_common
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "base/chrome_process_util.cc",
+    "base/chrome_process_util.h",
+    "base/chrome_process_util_mac.cc",
+    "base/chrome_render_view_host_test_harness.cc",
+    "base/chrome_render_view_host_test_harness.h",
+    "base/chrome_test_launcher.cc",
+    "base/chrome_test_launcher.h",
+    "base/chrome_test_suite.cc",
+    "base/chrome_test_suite.h",
+    "base/chrome_unit_test_suite.cc",
+    "base/chrome_unit_test_suite.h",
+    "base/find_in_page_observer.cc",
+    "base/find_in_page_observer.h",
+    "base/history_index_restore_observer.cc",
+    "base/history_index_restore_observer.h",
+    "base/in_process_browser_test.cc",
+    "base/in_process_browser_test.h",
+    "base/profile_mock.cc",
+    "base/profile_mock.h",
+    "base/scoped_browser_locale.cc",
+    "base/scoped_browser_locale.h",
+    "base/scoped_testing_local_state.cc",
+    "base/scoped_testing_local_state.h",
+    "base/test_browser_window.cc",
+    "base/test_browser_window.h",
+    "base/test_launcher_utils.cc",
+    "base/test_launcher_utils.h",
+    "base/test_switches.cc",
+    "base/test_switches.h",
+    "base/testing_browser_process.cc",
+    "base/testing_browser_process.h",
+    "base/testing_browser_process_platform_part.h",
+    "base/testing_browser_process_platform_part.cc",
+    "base/testing_io_thread_state.cc",
+    "base/testing_io_thread_state.h",
+    "base/testing_pref_service_syncable.cc",
+    "base/testing_pref_service_syncable.h",
+    "base/testing_profile.cc",
+    "base/testing_profile.h",
+    "base/testing_profile_manager.cc",
+    "base/testing_profile_manager.h",
+    "base/tracing.cc",
+    "base/tracing.h",
+    "base/ui_test_utils.cc",
+    "base/ui_test_utils.h",
+    "logging/win/file_logger.cc",
+    "logging/win/file_logger.h",
+    "logging/win/log_file_printer.cc",
+    "logging/win/log_file_printer.h",
+    "logging/win/log_file_reader.cc",
+    "logging/win/log_file_reader.h",
+    "logging/win/mof_data_parser.cc",
+    "logging/win/mof_data_parser.h",
+    "logging/win/test_log_collector.cc",
+    "logging/win/test_log_collector.h",
+  ]
+
+  # New deps should go in the non-iOS section below.
+  deps = [
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/app:test_support",
+    #"//chrome/app/theme:theme_resources",
+    "//chrome/browser:test_support",
+    "//chrome/common:test_support",
+    "//chrome/renderer:test_support",
+    "//components/bookmarks/test",
+    "//components/component_updater:test_support",
+    "//components/gcm_driver:test_support",
+    "//components/history/core/test:test",
+    "//components/metrics:test_support",
+    "//components/omnibox:test_support",
+    "//components/ownership",
+    "//components/password_manager/core/browser:test_support",
+    "//components/pref_registry:test_support",
+    "//components/search_engines:test_support",
+    "//components/signin/core/browser:test_support",
+    "//components/sync_driver:test_support",
+    "//content/public/app:both",
+    "//content/test:test_support",
+    "//ui/gfx:test_support",
+    "//net",
+    "//net:test_support",
+    "//skia",
+    "//sql",
+    "//sql:test_support",
+    "//sync",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/zlib",
+    "//ui/message_center:test_support",
+  ]
+
+  forward_dependent_configs_from = [
+    "//content/test:test_support",
+  ]
+
+  if (!is_ios) {
+    deps += [
+      "//chrome/common/extensions/api",
+      "//chrome/plugin",
+      "//chrome/renderer",
+      "//chrome/utility",
+      "//content/public/child",
+      "//content/public/common",
+      "//content/public/plugin",
+      "//content/public/renderer",
+      "//content/public/utility",
+      "//components/autofill/core/browser:test_support",
+      "//components/captive_portal:test_support",
+      "//components/infobars/core",
+      "//components/sessions:test_support",
+      "//extensions:test_support",
+      "//google_apis:test_support",
+      "//ipc:test_support",
+      "//media:test_support",
+      "//ppapi:ppapi_shared",
+      "//sql:test_support",
+      "//third_party/leveldatabase",
+      "//ui/base",
+      "//ui/events:events_base",
+      "//ui/gl",
+    ]
+  }
+
+  if (is_linux) {
+    deps += [ "//crypto:platform" ]
+  }
+  if (is_win) {
+    deps += [
+      "//third_party/wtl",
+      "//ui/snapshot:test_support",
+    ]
+    if (use_aura) {
+      deps += [
+        #'../win8/win8.gyp:test_registrar_constants',  TODO(GYP)
+        #'../win8/win8.gyp:test_support_win8',  TODO(GYP)
+      ]
+    }
+  }
+
+  if (enable_plugins) {
+    sources += [
+      "ppapi/ppapi_test.cc",
+      "ppapi/ppapi_test.h",
+    ]
+  }
+
+  if (use_ash) {
+    deps += [ "//ash:test_support" ]
+  }
+  if (toolkit_views) {
+    deps += [ "//ui/views:test_support" ]
+  }
+}
+
+source_set("test_support_unit") {
+  testonly = true
+  sources = [
+    "../browser/sync/glue/session_sync_test_helper.cc",
+    "../browser/sync/glue/session_sync_test_helper.h",
+    "base/run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/browser",
+    "//chrome/common",
+    "//mojo/environment:chromium",
+    "//mojo/system",
+  ]
+}

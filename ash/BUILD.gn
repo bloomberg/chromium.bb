@@ -185,6 +185,8 @@ static_library("test_support") {
     "//ui/views:test_support",
   ]
 
+  forward_dependent_configs_from = [ ":ash" ]
+
   if (is_win) {
     sources += [
       "test/test_metro_viewer_process_host.cc",

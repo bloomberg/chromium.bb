@@ -421,3 +421,49 @@ if (is_mac) {
                          "//chrome")
   }
 }
+
+# In GYP this is part of test_support_common.
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "browser.h",
+    "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
+    "cocoa/run_loop_testing.h",
+    "cocoa/run_loop_testing.mm",
+    "find_bar/find_bar_host_unittest_util.h",
+    "fullscreen/fullscreen_controller_state_test.cc",
+    "fullscreen/fullscreen_controller_state_test.h",
+    "fullscreen/fullscreen_controller_state_tests.h",
+    "fullscreen/fullscreen_controller_test.cc",
+    "fullscreen/fullscreen_controller_test.h",
+    "login/login_prompt_test_utils.cc",
+    "login/login_prompt_test_utils.h",
+    "passwords/manage_passwords_ui_controller_mock.cc",
+    "passwords/manage_passwords_ui_controller_mock.h",
+    "pdf/pdf_browsertest_base.cc",
+    "pdf/pdf_browsertest_base.h",
+    "test/test_confirm_bubble_model.cc",
+    "test/test_confirm_bubble_model.h",
+    "views/find_bar_host_unittest_util_views.cc",
+    "website_settings/mock_permission_bubble_request.cc",
+    "website_settings/mock_permission_bubble_request.h",
+  ]
+
+  deps = [
+    ":ui",
+    "//chrome/app/theme:theme_resources",
+    "//chrome/browser",
+    "//content/public/browser",
+    "//content/public/common",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+  ]
+
+  forward_dependent_configs_from = [
+    ":ui",
+  ]
+}
