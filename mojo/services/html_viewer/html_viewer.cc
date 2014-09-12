@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/threading/thread.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -21,9 +20,7 @@ class HTMLViewer;
 
 class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  public:
-  ContentHandlerImpl(Shell* shell,
-                     scoped_refptr<base::MessageLoopProxy> compositor_thread)
-      : shell_(shell), compositor_thread_(compositor_thread) {}
+  explicit ContentHandlerImpl(Shell* shell) : shell_(shell) {}
   virtual ~ContentHandlerImpl() {}
 
  private:
@@ -32,51 +29,40 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
       const mojo::String& url,
       URLResponsePtr response,
       InterfaceRequest<ServiceProvider> service_provider_request) OVERRIDE {
-    new HTMLDocumentView(response.Pass(),
-                         service_provider_request.Pass(),
-                         shell_,
-                         compositor_thread_);
+    new HTMLDocumentView(
+        response.Pass(), service_provider_request.Pass(), shell_);
   }
 
   Shell* shell_;
-  scoped_refptr<base::MessageLoopProxy> compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
 
-class HTMLViewer : public ApplicationDelegate,
-                   public InterfaceFactory<ContentHandler> {
+class HTMLViewer : public ApplicationDelegate {
  public:
-  HTMLViewer() : compositor_thread_("compositor thread") {}
+  HTMLViewer() {}
 
   virtual ~HTMLViewer() { blink::shutdown(); }
 
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {
-    shell_ = app->shell();
+    content_handler_factory_.reset(
+        new InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell>(
+            app->shell()));
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
-    compositor_thread_.Start();
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService(this);
+    connection->AddService(content_handler_factory_.get());
     return true;
   }
 
-  // Overridden from InterfaceFactory<ContentHandler>
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ContentHandler> request) OVERRIDE {
-    BindToRequest(
-        new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy()),
-        &request);
-  }
-
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
-  Shell* shell_;
-  base::Thread compositor_thread_;
+  scoped_ptr<InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell> >
+      content_handler_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

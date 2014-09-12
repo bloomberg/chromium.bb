@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -16,11 +15,9 @@
 #include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
-#include "mojo/services/html_viewer/weblayertreeview_impl.h"
 #include "mojo/services/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
-#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -40,6 +37,7 @@ namespace mojo {
 namespace {
 
 void ConfigureSettings(blink::WebSettings* settings) {
+  settings->setAcceleratedCompositingEnabled(false);
   settings->setCookieEnabled(true);
   settings->setDefaultFixedFontSize(13);
   settings->setDefaultFontSize(16);
@@ -86,13 +84,12 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 HTMLDocumentView::HTMLDocumentView(
     URLResponsePtr response,
     InterfaceRequest<ServiceProvider> service_provider_request,
-    Shell* shell,
-    scoped_refptr<base::MessageLoopProxy> compositor_thread)
+    Shell* shell)
     : shell_(shell),
       web_view_(NULL),
       root_(NULL),
       view_manager_client_factory_(shell, this),
-      compositor_thread_(compositor_thread),
+      repaint_pending_(false),
       weak_factory_(this) {
   ServiceProviderImpl* exported_services = new ServiceProviderImpl();
   exported_services->AddService(&view_manager_client_factory_);
@@ -116,9 +113,8 @@ void HTMLDocumentView::OnEmbed(
   embedder_service_provider_ = embedder_service_provider.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
 
+  root_->SetColor(SK_ColorCYAN);  // Dummy background color.
   web_view_->resize(root_->bounds().size());
-  web_layer_tree_view_impl_->setViewportSize(root_->bounds().size());
-  web_layer_tree_view_impl_->set_view(root_);
   root_->AddObserver(this);
 }
 
@@ -128,7 +124,6 @@ void HTMLDocumentView::OnViewManagerDisconnected(ViewManager* view_manager) {
 
 void HTMLDocumentView::Load(URLResponsePtr response) {
   web_view_ = blink::WebView::create(this);
-  web_layer_tree_view_impl_->set_widget(web_view_);
   ConfigureSettings(web_view_->settings());
   web_view_->setMainFrame(blink::WebLocalFrame::create(this));
 
@@ -149,25 +144,22 @@ blink::WebStorageNamespace* HTMLDocumentView::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 
-void HTMLDocumentView::initializeLayerTreeView() {
-  ServiceProviderPtr surfaces_service_provider;
-  shell_->ConnectToApplication("mojo:mojo_surfaces_service",
-                               Get(&surfaces_service_provider));
-  InterfacePtr<SurfacesService> surfaces_service;
-  ConnectToService(surfaces_service_provider.get(), &surfaces_service);
-
-  ServiceProviderPtr gpu_service_provider;
-  // TODO(jamesr): Should be mojo:mojo_gpu_service
-  shell_->ConnectToApplication("mojo:mojo_native_viewport_service",
-                               Get(&gpu_service_provider));
-  InterfacePtr<Gpu> gpu_service;
-  ConnectToService(gpu_service_provider.get(), &gpu_service);
-  web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      compositor_thread_, surfaces_service.Pass(), gpu_service.Pass()));
+void HTMLDocumentView::didInvalidateRect(const blink::WebRect& rect) {
+  if (!repaint_pending_) {
+    repaint_pending_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&HTMLDocumentView::Repaint, weak_factory_.GetWeakPtr()));
+  }
 }
 
-blink::WebLayerTreeView* HTMLDocumentView::layerTreeView() {
-  return web_layer_tree_view_impl_.get();
+bool HTMLDocumentView::allowsBrokenNullLayerTreeView() const {
+  // TODO(darin): Switch to using compositor bindings.
+  //
+  // NOTE: Note to Blink maintainers, feel free to break this code if it is the
+  // last NOT using compositor bindings and you want to delete this code path.
+  //
+  return true;
 }
 
 blink::WebFrame* HTMLDocumentView::createChildFrame(
@@ -237,6 +229,26 @@ void HTMLDocumentView::OnViewInputEvent(View* view, const EventPtr& event) {
       event.To<scoped_ptr<blink::WebInputEvent> >();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
+}
+
+void HTMLDocumentView::Repaint() {
+  repaint_pending_ = false;
+
+  if (!root_)
+    return;
+
+  web_view_->animate(0.0);
+  web_view_->layout();
+
+  int width = web_view_->size().width;
+  int height = web_view_->size().height;
+
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(SkCanvas::NewRaster(
+      SkImageInfo::MakeN32(width, height, kOpaque_SkAlphaType)));
+
+  web_view_->paint(canvas.get(), gfx::Rect(0, 0, width, height));
+
+  root_->SetContents(canvas->getDevice()->accessBitmap(false));
 }
 
 }  // namespace mojo

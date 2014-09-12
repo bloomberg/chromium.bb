@@ -71,23 +71,6 @@ gfx::Rect TypeConverter<gfx::Rect, RectPtr>::Convert(const RectPtr& input) {
 }
 
 // static
-RectFPtr TypeConverter<RectFPtr, gfx::RectF>::Convert(const gfx::RectF& input) {
-  RectFPtr rect(RectF::New());
-  rect->x = input.x();
-  rect->y = input.y();
-  rect->width = input.width();
-  rect->height = input.height();
-  return rect.Pass();
-}
-
-// static
-gfx::RectF TypeConverter<gfx::RectF, RectFPtr>::Convert(const RectFPtr& input) {
-  if (input.is_null())
-    return gfx::RectF();
-  return gfx::RectF(input->x, input->y, input->width, input->height);
-}
-
-// static
 TransformPtr TypeConverter<TransformPtr, gfx::Transform>::Convert(
     const gfx::Transform& input) {
   std::vector<float> storage(16);

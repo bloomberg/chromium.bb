@@ -12,19 +12,12 @@
 
 namespace mojo {
 
-class OutputSurfaceMojoClient {
- public:
-  virtual ~OutputSurfaceMojoClient() {}
-
-  virtual void DidCreateSurface(cc::SurfaceId id) = 0;
-};
-
 class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
  public:
-  OutputSurfaceMojo(OutputSurfaceMojoClient* client,
-                    const scoped_refptr<cc::ContextProvider>& context_provider,
+  OutputSurfaceMojo(const scoped_refptr<cc::ContextProvider>& context_provider,
                     SurfacePtr surface,
                     uint32_t id_namespace);
+  virtual ~OutputSurfaceMojo();
 
   // SurfaceClient implementation.
   virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
@@ -32,11 +25,7 @@ class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
   // cc::OutputSurface implementation.
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 
- protected:
-  virtual ~OutputSurfaceMojo();
-
  private:
-  OutputSurfaceMojoClient* output_surface_mojo_client_;
   SurfacePtr surface_;
   cc::SurfaceIdAllocator id_allocator_;
   cc::SurfaceId surface_id_;

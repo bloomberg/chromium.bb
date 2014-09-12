@@ -9,12 +9,10 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
-#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 
 namespace mojo {
@@ -56,27 +54,6 @@ bool ConvertDrawQuad(const QuadPtr& input,
                      cc::SharedQuadState* sqs,
                      cc::RenderPass* render_pass) {
   switch (input->material) {
-    case MATERIAL_RENDER_PASS: {
-      cc::RenderPassDrawQuad* render_pass_quad =
-          render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
-      RenderPassQuadState* render_pass_quad_state =
-          input->render_pass_quad_state.get();
-      gfx::PointF filter_scale_as_point =
-          render_pass_quad_state->filters_scale.To<gfx::PointF>();
-      render_pass_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          render_pass_quad_state->render_pass_id.To<cc::RenderPassId>(),
-          render_pass_quad_state->mask_resource_id,
-          render_pass_quad_state->mask_uv_rect.To<gfx::RectF>(),
-          cc::FilterOperations(),  // TODO(jamesr): filters
-          gfx::Vector2dF(filter_scale_as_point.x(), filter_scale_as_point.y()),
-          cc::FilterOperations());  // TODO(jamesr): background_filters
-      break;
-    }
     case MATERIAL_SOLID_COLOR: {
       if (input->solid_color_quad_state.is_null())
         return false;
@@ -130,23 +107,6 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->flipped);
       break;
     }
-    case MATERIAL_TILED_CONTENT: {
-      TileQuadStatePtr& tile_state = input->tile_quad_state;
-      if (tile_state.is_null())
-        return false;
-      cc::TileDrawQuad* tile_quad =
-          render_pass->CreateAndAppendDrawQuad<cc::TileDrawQuad>();
-      tile_quad->SetAll(sqs,
-                        input->rect.To<gfx::Rect>(),
-                        input->opaque_rect.To<gfx::Rect>(),
-                        input->visible_rect.To<gfx::Rect>(),
-                        input->needs_blending,
-                        tile_state->resource_id,
-                        tile_state->tex_coord_rect.To<gfx::RectF>(),
-                        tile_state->texture_size.To<gfx::Size>(),
-                        tile_state->swizzle_contents);
-      break;
-    }
     default:
       NOTREACHED() << "Unsupported material " << input->material;
       return false;
@@ -183,21 +143,6 @@ SkColor TypeConverter<SkColor, ColorPtr>::Convert(const ColorPtr& input) {
 }
 
 // static
-RenderPassIdPtr TypeConverter<RenderPassIdPtr, cc::RenderPassId>::Convert(
-    const cc::RenderPassId& input) {
-  RenderPassIdPtr pass_id(RenderPassId::New());
-  pass_id->layer_id = input.layer_id;
-  pass_id->index = input.index;
-  return pass_id.Pass();
-}
-
-// static
-cc::RenderPassId TypeConverter<cc::RenderPassId, RenderPassIdPtr>::Convert(
-    const RenderPassIdPtr& input) {
-  return cc::RenderPassId(input->layer_id, input->index);
-}
-
-// static
 QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
     const cc::DrawQuad& input) {
   QuadPtr quad = Quad::New();
@@ -211,21 +156,6 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
   // state list.
   quad->shared_quad_state_index = -1;
   switch (input.material) {
-    case cc::DrawQuad::RENDER_PASS: {
-      const cc::RenderPassDrawQuad* render_pass_quad =
-          cc::RenderPassDrawQuad::MaterialCast(&input);
-      RenderPassQuadStatePtr pass_state = RenderPassQuadState::New();
-      pass_state->render_pass_id =
-          RenderPassId::From(render_pass_quad->render_pass_id);
-      pass_state->mask_resource_id = render_pass_quad->mask_resource_id;
-      pass_state->mask_uv_rect = RectF::From(render_pass_quad->mask_uv_rect);
-      // TODO(jamesr): pass_state->filters
-      pass_state->filters_scale = PointF::From(
-          gfx::PointAtOffsetFromOrigin(render_pass_quad->filters_scale));
-      // TODO(jamesr): pass_state->background_filters
-      quad->render_pass_quad_state = pass_state.Pass();
-      break;
-    }
     case cc::DrawQuad::SOLID_COLOR: {
       const cc::SolidColorDrawQuad* color_quad =
           cc::SolidColorDrawQuad::MaterialCast(&input);
@@ -249,6 +179,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       const cc::TextureDrawQuad* texture_quad =
           cc::TextureDrawQuad::MaterialCast(&input);
       TextureQuadStatePtr texture_state = TextureQuadState::New();
+      texture_state = TextureQuadState::New();
       texture_state->resource_id = texture_quad->resource_id;
       texture_state->premultiplied_alpha = texture_quad->premultiplied_alpha;
       texture_state->uv_top_left = PointF::From(texture_quad->uv_top_left);
@@ -263,17 +194,6 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       texture_state->vertex_opacity = vertex_opacity.Pass();
       texture_state->flipped = texture_quad->flipped;
       quad->texture_quad_state = texture_state.Pass();
-      break;
-    }
-    case cc::DrawQuad::TILED_CONTENT: {
-      const cc::TileDrawQuad* tile_quad =
-          cc::TileDrawQuad::MaterialCast(&input);
-      TileQuadStatePtr tile_state = TileQuadState::New();
-      tile_state->tex_coord_rect = RectF::From(tile_quad->tex_coord_rect);
-      tile_state->texture_size = Size::From(tile_quad->texture_size);
-      tile_state->swizzle_contents = tile_quad->swizzle_contents;
-      tile_state->resource_id = tile_quad->resource_id;
-      quad->tile_quad_state = tile_state.Pass();
       break;
     }
     default:
@@ -320,7 +240,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     if (quad.shared_quad_state != last_sqs) {
       sqs_i++;
       shared_quad_state[sqs_i] =
-          SharedQuadState::From(*input.shared_quad_state_list[sqs_i]);
+          SharedQuadState::From(*input.shared_quad_state_list[i]);
       last_sqs = quad.shared_quad_state;
     }
     quads[i]->shared_quad_state_index = sqs_i;
