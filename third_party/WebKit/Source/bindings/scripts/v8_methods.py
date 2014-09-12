@@ -253,6 +253,8 @@ def argument_context(interface, method, argument, index):
         'idl_type_object': idl_type,
         'index': index,
         'is_callback_interface': idl_type.is_callback_interface,
+        # FIXME: Remove generic 'Dictionary' special-casing
+        'is_dictionary': idl_type.is_dictionary or idl_type.base_type == 'Dictionary',
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,

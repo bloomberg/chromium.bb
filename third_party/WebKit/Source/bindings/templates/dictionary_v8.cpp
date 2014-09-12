@@ -15,6 +15,8 @@ namespace blink {
 
 {{cpp_class}}* {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, ExceptionState& exceptionState)
 {
+    ASSERT(isUndefinedOrNull(v8Value) || v8Value->IsObject());
+
     {{cpp_class}}* impl = {{cpp_class}}::create();
     // FIXME: Do not use Dictionary and DictionaryHelper
     // https://crbug.com/321462

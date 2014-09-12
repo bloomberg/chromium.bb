@@ -67,20 +67,20 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]));
-        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
-        if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+        if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
+        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
         TONATIVE_VOID_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate()));
         TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate()));
-        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
-        if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+        if (!isUndefinedOrNull(info[6]) && !info[6]->IsObject()) {
             exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
+        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
         TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]));
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());

@@ -100,7 +100,7 @@ OwnPtrWillBeRawPtr<{{argument.idl_type}}> {{argument.name}} = nullptr;
 {######################################}
 {% macro generate_argument(method, argument, world_suffix) %}
 {% if argument.is_optional and not argument.has_default and
-      argument.idl_type != 'Dictionary' and
+      not argument.is_dictionary and
       not argument.is_callback_interface %}
 {# Optional arguments without a default value generate an early call with
    fewer arguments if they are omitted.
@@ -174,6 +174,15 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
     }
     {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
 }
+{% elif argument.is_dictionary %}
+{# Dictionaries must have type Undefined, Null or Object:
+http://heycam.github.io/webidl/#es-dictionary #}
+if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
+    {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %
+                               (argument.index + 1, argument.name)) | indent}}
+    return;
+}
+{{argument.v8_value_to_local_cpp_value}};
 {% else %}{# argument.is_nullable #}
 {{argument.v8_value_to_local_cpp_value}};
 {% endif %}{# argument.is_nullable #}
@@ -197,10 +206,8 @@ if (!({{argument.enum_validation_expression}})) {
               (argument.index + 1)) | indent}}
     return;
 }
-{% elif argument.idl_type in ['Dictionary', 'Promise'] %}
-{# Dictionaries must have type Undefined, Null or Object:
-http://heycam.github.io/webidl/#es-dictionary
-We also require this for our implementation of promises, though not in spec:
+{% elif argument.idl_type == 'Promise' %}
+{# We require this for our implementation of promises, though not in spec:
 http://heycam.github.io/webidl/#es-promise #}
 if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
     {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %

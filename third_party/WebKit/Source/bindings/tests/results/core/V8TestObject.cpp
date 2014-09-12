@@ -6618,12 +6618,12 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg1, toInt32(info[0], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
-        TONATIVE_VOID_PROMISE_INTERNAL(arg2, Dictionary(info[1], info.GetIsolate()), info);
-        if (!arg2.isUndefinedOrNull() && !arg2.isObject()) {
+        if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
             exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
             v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
+        TONATIVE_VOID_PROMISE_INTERNAL(arg2, Dictionary(info[1], info.GetIsolate()), info);
         TOSTRING_VOID_PROMISE_INTERNAL(arg3, info[2], info);
         TONATIVE_VOID_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3), info);
     }
@@ -6648,11 +6648,11 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_PROMISE_INTERNAL(arg1, Dictionary(info[0], info.GetIsolate()), info);
-        if (!arg1.isUndefinedOrNull() && !arg1.isObject()) {
+        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."), info.GetIsolate())));
             return;
         }
+        TONATIVE_VOID_PROMISE_INTERNAL(arg1, Dictionary(info[0], info.GetIsolate()), info);
     }
     v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
 }
@@ -6701,11 +6701,11 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
-        if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
             return;
         }
+        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
     }
     impl->voidMethodDictionaryArg(dictionaryArg);
 }
@@ -7187,11 +7187,11 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
-        if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObject", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
             return;
         }
+        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
     }
     impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }
@@ -8111,6 +8111,11 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestDictionary* testDictionaryArg;
     {
         if (!info[0]->IsUndefined()) {
+            if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+                exceptionState.throwTypeError("parameter 1 ('testDictionaryArg') is not an object.");
+                exceptionState.throwIfNeeded();
+                return;
+            }
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testDictionaryArg, V8TestDictionary::toImpl(info.GetIsolate(), info[0], exceptionState), exceptionState);
         } else {
             testDictionaryArg = TestDictionary::create();

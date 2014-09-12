@@ -106,5 +106,10 @@ if (window.internals && internals.dictionaryTest) {
     debug('Test for setting invalid enum value');
     shouldThrow("dictionaryTest.set({enumMember: 'invalid'})");
     debug('');
+
+    debug('Test for passing invalid dictionary values');
+    shouldThrow("dictionaryTest.set(42)");
+    shouldThrow("dictionaryTest.set('string')");
+    debug('');
 }
 </script>
