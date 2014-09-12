@@ -37,11 +37,13 @@
         <input type="checkbox"
             metric="Options_ScreenLock"
             pref="settings.enable_screen_lock">
-        <span i18n-content="enableScreenlock"></span>
+       <span>
+         <span i18n-content="enableScreenlock"></span>
+         <span class="controlled-setting-indicator"
+            i18n-values="textshared:screenLockShared"
+            pref="settings.enable_screen_lock"></span>
+       </span>
       </label>
-      <span class="controlled-setting-indicator"
-          i18n-values="textshared:screenLockShared"
-          pref="settings.enable_screen_lock"></span>
     </div>
   </div>
 </if>  <!-- chromeos -->

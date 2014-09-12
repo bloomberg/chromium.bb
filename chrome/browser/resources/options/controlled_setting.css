@@ -4,13 +4,6 @@
 
 /* Controlled setting indicator and bubble. */
 
-.controlled-setting-with-label {
-  -webkit-box-align: center;
-  display: -webkit-box;
-  padding-bottom: 7px;
-  padding-top: 7px;
-}
-
 .controlled-setting-with-label input + span {
   -webkit-box-align: center;
   -webkit-box-flex: 1;
@@ -18,13 +11,8 @@
   display: -webkit-box;
 }
 
-.controlled-setting-with-label input:disabled + span label {
+.controlled-setting-with-label input:disabled + span {
   color: #999;
-}
-
-.controlled-setting-with-label label {
-  display: inline;
-  padding: 0;
 }
 
 .controlled-setting-indicator:not([controlled-by]) {
