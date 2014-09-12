@@ -356,6 +356,16 @@
       Wi-Fi settings.
     </dd>
 
+    <dt class="field">Cellular</dt>
+    <dd>
+      <span class="field_meta">
+        (required if <span class="field">Type</span> is
+        <span class="value">Cellular</span>, otherwise ignored)
+        <span class="type">Cellular</span>
+      </span>
+      Cellular settings.
+    </dd>
+
     <dt class="field">Type</dt>
     <dd>
       <span class="field_meta">
@@ -367,7 +377,7 @@
         <span class="rule_id"></span>
         Allowed values are <span class="value">Cellular</span>,
         <span class="value">Ethernet</span>, <span class="value">WiFi</span>,
-        and <span class="value">VPN</span>.
+        <span class="value">Cellular</span> and <span class="value">VPN</span>.
       </span>
       Indicates which kind of connection this is.
     </dd>
@@ -1855,9 +1865,457 @@
 <section>
   <h1>Cellular Networks</h1>
   <p>
-    This format will eventually also cover configuration of cellular network
-    technologies, however they are currently not supported.
+    For Cellular connections, <span class="field">Type</span> must be set to
+    <span class="value">Cellular</span> and the
+    field <span class="field">Cellular</span> must be set to an object of
+    type <span class="type">Cellular</span>. Currently only used for
+    representing an existing configuraiton; ONC configuration of
+    of <span class="field">Cellular</span> networks is not yet supported.
+    Contains the following fields:
   </p>
+
+  <dl class="field_list">
+    <dt class="field">APN</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">APN</span>
+      </span>
+      Currently active  <span class="type">APN</span> object to be used with a
+      GSM carrier for making data connections.
+    </dd>
+
+    <dt class="field">APNList</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">array of APN</span>
+      </span>
+      List of available APN configurations.
+    </dd>
+
+    <dt class="field">ActivationType</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Activation type.
+    </dd>
+
+    <dt class="field">ActivationState</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      Carrier account activation state.
+      <span class="rule">
+        <span class="rule_id"></span>Allowed values are
+        <span class="value">Activated</span>,
+        <span class="value">Activating</span>,
+        <span class="value">NotActivated</span>,
+        <span class="value">PartiallyActivated</span>
+      </span>
+    </dd>
+
+    <dt class="field">AllowRoaming</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">boolean</span>
+      </span>
+      Whether cellular data connections are allowed when the device is roaming.
+    </dd>
+
+    <dt class="field">Carrier</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The name of the carrier for which the device is configured.
+    </dd>
+
+    <dt class="field">ESN</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The Electronic Serial Number of the cellular modem.
+    </dd>
+
+    <dt class="field">Family</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      Technology family.
+      <span class="rule"><span class="rule_id"></span>
+        Allowed values are
+        <span class="value">CDMA</span>,
+        <span class="value">GSM</span>
+      </span>
+    </dd>
+
+    <dt class="field">FirmwareRevision</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The revision of firmware that is loaded in the modem.
+    </dd>
+
+    <dt class="field">FoundNetworks</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>)
+        <span class="type">array of FoundNetwork</span>
+      </span>
+      The list of cellular netwoks found in the most recent scan operation.
+    </dd>
+
+    <dt class="field">HardwareRevision</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The hardware revision of the cellular modem.
+    </dd>
+
+    <dt class="field">HomeProvider</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">array of CellularProvider</span>
+      </span>
+      Description of the operator that issued the SIM card currently installed
+      in the modem.
+    </dd>
+
+    <dt class="field">ICCID</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>
+        or <span class="field">NetworkTechnology</span>
+        is <span class="value">LTE</span>)
+        <span class="type">string</span>
+      </span>
+      For GSM / LTE modems, the Integrated Circuit Card Identifer of the SIM
+      card installed in the device.
+    </dd>
+
+    <dt class="field">IMEI</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The International Mobile Equipment Identity of the cellular modem.
+    </dd>
+
+    <dt class="field">IMSI</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>)
+        <span class="type">string</span>
+      </span>
+      For GSM modems, the International Mobile Subscriber Identity of the SIM
+      card installed in the device.
+    </dd>
+
+    <dt class="field">LastGoodAPN</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">APN</span>
+      </span>
+      The APN information used in the last successful connection attempt.
+    </dd>
+
+    <dt class="field">Manufacturer</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The manufacturer of the cellular modem.
+    </dd>
+
+    <dt class="field">MDN</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      The Mobile Directory Number (i.e., phone number) of the device.
+    </dd>
+
+    <dt class="field">MEID</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">CDMA</span>)
+        <span class="type">string</span>
+      </span>
+      For CDMA modems, the Mobile Equipment Identifer of the cellular modem.
+    </dd>
+
+    <dt class="field">MIN</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The Mobile Identification Number of the device.
+    </dd>
+
+    <dt class="field">ModelID</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The hardware model of the cellular modem.
+    </dd>
+
+    <dt class="field">NetworkTechnology</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      If the modem is registered on a network, then this is set to the
+      network technology currently in use.
+      <span class="rule"><span class="rule_id"></span>
+        Allowed values are
+        <span class="value">1xRTT</span>, <span class="value">EVDO</span>,
+        <span class="value">GPRS</span>, <span class="value">EDGE</span>,
+        <span class="value">UMTS</span>,
+        <span class="value">HSPA</span>, <span class="value">HSPA+</span>,
+        <span class="value">LTE</span>, <span class="value">LTE Advanced</span>
+      </span>
+    </dd>
+
+    <dt class="field">PRLVersion</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">integer</span>
+      </span>
+      The revision of the Preferred Roaming List that is loaded in the modem.
+    </dd>
+
+    <dt class="field">ProviderRequiresRoaming</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">boolean</span>
+      </span>
+      Indicates that the cellular provider (determined based on IMSI and SPN)
+      requires roaming.
+    </dd>
+
+    <dt class="field">RoamingState</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The roaming status of the cellular modem on the current network.
+    </dd>
+
+    <dt class="field">ServingOperator</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>)
+        <span class="type">CellularProvider</span>
+      </span>
+      Description of the operator on whose network the modem is currently
+      registered
+    </dd>
+
+    <dt class="field">SIMLockStatus</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>)
+        <span class="type">SIMLockStatus</span>
+      </span>
+      For GSM modems, a dictionary containing two properties describing the
+      state of the SIM card lock.
+    </dd>
+
+    <dt class="field">SIMPresent</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only, provided only
+        if <span class="field">Family</span> is <span class="value">GSM</span>
+        or <span class="field">NetworkTechnology</span>
+        is <span class="value">LTE</span>)
+        <span class="type">boolean</span>
+      </span>
+      For GSM or LTE modems, indicates whether a SIM card is present or not.
+    </dd>
+
+    <dt class="field">SupportNetworkScan</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">boolean</span>
+      </span>
+      True if the cellular network supports scanning.
+    </dd>
+
+    <dt class="field">SupportedCarriers</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">array of string</span>
+      </span>
+      A list of supported carriers.
+    </dd>
+
+  </dl>
+
+  <p><span class="type">APN</span> type contains the following:</p>
+  <dl class="field_list">
+    <dt class="field">AccessPointName</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The access point name used when making connections.
+    </dd>
+
+    <dt class="field">Name</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Description of the APN.
+    </dd>
+
+    <dt class="field">LocalizedName</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Localized description of the APN.
+    </dd>
+
+    <dt class="field">Username</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Username for making connections if required.
+    </dd>
+
+    <dt class="field">Password</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Password for making connections if required.
+    </dd>
+
+    <dt class="field">Language</dt>
+    <dd>
+      <span class="field_meta">(optional, rquired if <span class="field">
+          LocalizedName</span> is provided)
+        <span class="type">string</span>
+      </span>
+      Two letter language code for Localizedname if provided.
+    </dd>
+  </dl>
+
+  <p><span class="type">FoundNetwork</span> type contains the following:</p>
+  <dl class="field_list">
+    <dt class="field">Status</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The availability of the network.
+    </dd>
+
+    <dt class="field">NetworkId</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The network id in the form MCC/MNC (without the '/').
+    </dd>
+
+    <dt class="field">Technology</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      Access technology used by the network,
+      e.g. "GSM", "UMTS", "EDGE", "HSPA", etc.
+    </dd>
+
+    <dt class="field">ShortName</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Short-format name of the network operator.
+    </dd>
+
+    <dt class="field">LongName</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      Long-format name of the network operator.
+    </dd>
+  </dl>
+
+  <p><span class="type">CellularProvider</span> type contains the following:</p>
+  <dl class="field_list">
+    <dt class="field">Name</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The operator name.
+    </dd>
+
+    <dt class="field">Code</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The network id in the form MCC/MNC (without the '/').
+    </dd>
+
+    <dt class="field">Country</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">string</span>
+      </span>
+      The two-letter country code.
+    </dd>
+  </dl>
+
+  <p><span class="type">SIMLockStatus</span> type contains the following:</p>
+  <dl class="field_list">
+    <dt class="field">LockType</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      Specifies the type of lock in effect, or an empty string if unlocked.
+      <span class="rule"><span class="rule_id"></span>
+        Allowed values are
+        <span class="value">sim-pin</span>,
+        <span class="value">sim-puk</span>
+      </span>
+    </dd>
+
+    <dt class="field">LockEnabled</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">boolean</span>
+      </span>
+      Indicates whether SIM locking is enabled
+    </dd>
+
+    <dt class="field">RetriesLeft</dt>
+    <dd>
+      <span class="field_meta">(optional)
+        <span class="type">integer</span>
+      </span>
+      If <span class="field">LockType</span> is empty
+      or <span class="value">sim-pin</span>, then this property represents
+      the number of attempts remaining to supply a correct PIN before the
+      PIN becomes blocked, at which point a PUK provided by the carrier would
+      be necessary to unlock the SIM (and <span class="field">LockType</span>
+      changes to <span class="value">sim-puk</span>).
+    </dd>
+  </dl>
+
 </section>
 
 <section>

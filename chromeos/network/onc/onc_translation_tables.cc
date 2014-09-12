@@ -338,7 +338,6 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     { ::onc::cellular::kPRLVersion, shill::kPRLVersionProperty},
     { ::onc::cellular::kProviderRequiresRoaming,
       shill::kProviderRequiresRoamingProperty},
-    { ::onc::cellular::kSelectedNetwork, shill::kSelectedNetworkProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
     { ::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},

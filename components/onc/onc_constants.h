@@ -133,7 +133,6 @@ ONC_EXPORT extern const char kProviderRequiresRoaming[];
 ONC_EXPORT extern const char kRoamingState[];
 ONC_EXPORT extern const char kHome[];
 ONC_EXPORT extern const char kRoaming[];
-ONC_EXPORT extern const char kSelectedNetwork[];
 ONC_EXPORT extern const char kServingOperator[];
 ONC_EXPORT extern const char kSIMLockStatus[];
 ONC_EXPORT extern const char kSIMPresent[];
