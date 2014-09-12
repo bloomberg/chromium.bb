@@ -37,10 +37,8 @@
 namespace blink {
 
 class LocalFrame;
-class FrameLoaderClient;
 class KURL;
 class SecurityOrigin;
-class ResourceRequest;
 
 class MixedContentChecker {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);

@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class LocalFrame;
 class KURL;
 
 class DocumentLoadTiming {

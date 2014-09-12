@@ -38,7 +38,6 @@ namespace blink {
 
 class ExceptionState;
 class LocalFrame;
-class KURL;
 
 class ApplicationCache FINAL : public RefCountedWillBeGarbageCollectedFinalized<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();

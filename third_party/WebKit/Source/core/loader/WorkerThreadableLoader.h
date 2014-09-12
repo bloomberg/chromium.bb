@@ -47,7 +47,6 @@ namespace blink {
     class ResourceRequest;
     class WorkerGlobalScope;
     class WorkerLoaderProxy;
-    struct CrossThreadResourceResponseData;
     struct CrossThreadResourceRequestData;
 
     class WorkerThreadableLoader FINAL : public ThreadableLoader {

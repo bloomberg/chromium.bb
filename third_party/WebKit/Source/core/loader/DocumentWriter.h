@@ -38,10 +38,6 @@ namespace blink {
 
 class Document;
 class DocumentParser;
-class LocalFrame;
-class KURL;
-class SecurityOrigin;
-class TextResourceDecoder;
 
 class DocumentWriter : public RefCountedWillBeGarbageCollectedFinalized<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);

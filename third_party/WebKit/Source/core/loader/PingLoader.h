@@ -44,10 +44,7 @@ namespace blink {
 class FormData;
 class LocalFrame;
 class KURL;
-class ResourceError;
-class ResourceHandle;
 class ResourceRequest;
-class ResourceResponse;
 
 // Issue an asynchronous, one-directional request at some resources, ignoring
 // any response. The request is made independent of any LocalFrame staying alive,

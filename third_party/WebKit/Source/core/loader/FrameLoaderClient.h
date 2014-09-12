@@ -44,7 +44,6 @@ namespace blink {
 class WebCookieJar;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
-class WebServiceWorkerProviderClient;
 class WebSocketHandle;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -52,31 +51,20 @@ class WebApplicationCacheHostClient;
 
 namespace blink {
 
-    class Color;
-    class DOMWindowExtension;
-    class DOMWrapperWorld;
     class DocumentLoader;
-    class Element;
     class FetchRequest;
-    class FrameLoader;
-    class FrameNetworkingContext;
     class HTMLAppletElement;
     class HTMLFormElement;
     class HTMLFrameOwnerElement;
     class HTMLPlugInElement;
     class HistoryItem;
-    class IntSize;
     class KURL;
     class LocalFrame;
     class MessageEvent;
-    class Page;
-    class PluginView;
     class ResourceError;
-    class ResourceHandle;
     class ResourceRequest;
     class ResourceResponse;
     class SecurityOrigin;
-    class SharedBuffer;
     class SharedWorkerRepositoryClient;
     class SocketStreamHandle;
     class SubstituteData;

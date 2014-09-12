@@ -36,13 +36,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 
-namespace WTF{
-class TextEncoding;
-}
-
 namespace blink {
 
-class Document;
 class Event;
 class FormData;
 struct FrameLoadRequest;

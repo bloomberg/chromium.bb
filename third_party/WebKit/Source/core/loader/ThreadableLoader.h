@@ -40,9 +40,7 @@
 
 namespace blink {
 
-    class ResourceError;
     class ResourceRequest;
-    class ResourceResponse;
     class ExecutionContext;
     class ThreadableLoaderClient;
 

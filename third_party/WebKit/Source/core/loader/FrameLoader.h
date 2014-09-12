@@ -47,27 +47,18 @@
 
 namespace blink {
 
-class Chrome;
-class DOMWrapperWorld;
 class DocumentLoader;
-class Event;
 class FetchContext;
 class FormState;
-class FormSubmission;
 class Frame;
 class FrameLoaderClient;
-class IconController;
 class NavigationAction;
-class Page;
 class ProgressTracker;
 class ResourceError;
-class ResourceResponse;
-class SecurityOrigin;
 class SerializedScriptValue;
 class SubstituteData;
 
 struct FrameLoadRequest;
-struct WindowFeatures;
 
 bool isBackForwardLoadType(FrameLoadType);
 

@@ -48,24 +48,15 @@ namespace blink {
 class WebThreadedDataReceiver;
 }
 
-namespace WTF {
-class SchedulePair;
-}
-
 namespace blink {
     class ApplicationCacheHost;
-    class ArchiveResource;
     class ArchiveResourceCollection;
     class ResourceFetcher;
-    class ContentFilter;
     class DocumentInit;
-    class FormState;
     class LocalFrame;
     class FrameLoader;
     class MHTMLArchive;
-    class Page;
     class ResourceLoader;
-    class SharedBuffer;
 
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;

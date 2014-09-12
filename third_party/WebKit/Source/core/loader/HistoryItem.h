@@ -40,7 +40,6 @@ class Document;
 class DocumentState;
 class FormData;
 class HistoryItem;
-class Image;
 class KURL;
 class ResourceRequest;
 

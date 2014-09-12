@@ -40,12 +40,8 @@
 namespace blink {
     class ApplicationCache;
     class DocumentLoader;
-    class LocalFrame;
-    class ResourceLoader;
-    class ResourceError;
     class ResourceRequest;
     class ResourceResponse;
-    class SubstituteData;
 
     class ApplicationCacheHost FINAL : public NoBaseWillBeGarbageCollectedFinalized<ApplicationCacheHost>, public WebApplicationCacheHostClient {
         WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);

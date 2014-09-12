@@ -35,7 +35,6 @@
 #include "platform/network/ResourceRequest.h"
 
 namespace blink {
-class LocalFrame;
 
 struct FrameLoadRequest {
     STACK_ALLOCATED();
