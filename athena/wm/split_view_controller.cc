@@ -95,18 +95,8 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   }
 
   SetState(ACTIVE);
-  if (right_window_ != right) {
-    right_window_ = right;
-    // Since the |window_list_provider_| controls directly the order of windows,
-    // it needs to change the window order accordingly.
-    window_list_provider_->MoveToFront(right_window_);
-  }
-  if (left_window_ != left) {
-    left_window_ = left;
-    // Since the |window_list_provider_| controls directly the order of windows,
-    // it needs to change the window order accordingly.
-    window_list_provider_->MoveToFront(left_window_);
-  }
+  right_window_ = right;
+  left_window_ = left;
   UpdateLayout(true);
 }
 
@@ -179,6 +169,9 @@ void SplitViewController::UpdateLayout(bool animate) {
 
   left_window_->Show();
   right_window_->Show();
+  window_list_provider_->MoveToFront(right_window_);
+  window_list_provider_->MoveToFront(left_window_);
+
   if (state_ == ACTIVE) {
     if (animate) {
       gfx::Transform left_transform = GetTargetTransformForBoundsAnimation(

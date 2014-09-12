@@ -260,8 +260,7 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
       wm_api.GetWindowListProvider()->GetWindowList();
   ASSERT_EQ(4u, windows.size());
   EXPECT_EQ(second.get(), windows[3]);
-  EXPECT_EQ(third.get(), windows[2]);
-  EXPECT_EQ(fourth.get(), windows[1]);
+  EXPECT_EQ(fourth.get(), windows[2]);
 
   // Swipe the title of the right window now. It should switch to |third|.
   generator.GestureScrollSequence(gfx::Point(x_middle + 20, 10),
@@ -270,6 +269,10 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
                                   5);
   EXPECT_EQ(second.get(), wm_api.GetSplitViewController()->left_window());
   EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->right_window());
+  windows = wm_api.GetWindowListProvider()->GetWindowList();
+  ASSERT_EQ(4u, windows.size());
+  EXPECT_EQ(second.get(), windows[3]);
+  EXPECT_EQ(third.get(), windows[2]);
 }
 
 TEST_F(WindowManagerTest, NewWindowBounds) {

@@ -117,6 +117,7 @@
         'wm/window_list_provider_impl.cc',
         'wm/window_list_provider_impl.h',
         'wm/window_manager_impl.cc',
+        'wm/window_manager_impl.h',
         'wm/window_overview_mode.cc',
         'wm/window_overview_mode.h',
       ],
