@@ -34,12 +34,13 @@ def main():
   result = []
   if opts.libraries:
     libraries = b.get_libraries(ext)
-    if sys.platform in ['darwin', 'linux2']:
-      # In case of darwin and linux prefix all libraries (if there is any)
-      # so it can be used as a compiler argument.
+    if sys.platform == 'darwin':
+      libraries.append('python%s' % sys.version[:3])
+    if not opts.gn and sys.platform in ['darwin', 'linux2']:
+      # In case of GYP output for darwin and linux prefix all
+      # libraries (if there are any) so the result can be used as a
+      # compiler argument. GN handles platform-appropriate prefixing itself.
       libraries = ['-l%s' % library for library in libraries]
-      if sys.platform == 'darwin':
-        libraries.append('-lpython%s' % sys.version[:3])
     result.extend(libraries)
   if opts.includes:
     result = result  + b.include_dirs
