@@ -463,7 +463,7 @@ bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == srcAttr
         || attribute.name() == lowsrcAttr
         || attribute.name() == longdescAttr
-        || (attribute.name() == usemapAttr && attribute.value().string()[0] != '#')
+        || (attribute.name() == usemapAttr && attribute.value()[0] != '#')
         || HTMLElement::isURLAttribute(attribute);
 }
 
@@ -546,7 +546,7 @@ bool HTMLImageElement::isServerMap() const
     const AtomicString& usemap = fastGetAttribute(usemapAttr);
 
     // If the usemap attribute starts with '#', it refers to a map element in the document.
-    if (usemap.string()[0] == '#')
+    if (usemap[0] == '#')
         return false;
 
     return document().completeURL(stripLeadingAndTrailingHTMLSpaces(usemap)).isEmpty();

@@ -243,7 +243,7 @@ const QuotesData* quotesDataForLanguage(const AtomicString& lang)
 
     // This could be just a hash table, but doing that adds 200k to RenderQuote.o
     Language* languagesEnd = languages + WTF_ARRAY_LENGTH(languages);
-    CString lowercaseLang = lang.string().lower().utf8();
+    CString lowercaseLang = lang.lower().utf8();
     Language key = { lowercaseLang.data(), 0, 0, 0, 0, 0 };
     Language* match = std::lower_bound(languages, languagesEnd, key);
     if (match == languagesEnd || strcmp(match->lang, key.lang))

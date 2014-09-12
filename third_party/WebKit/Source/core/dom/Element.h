@@ -121,7 +121,6 @@ public:
     // Typed getters and setters for language bindings.
     int getIntegralAttribute(const QualifiedName& attributeName) const;
     void setIntegralAttribute(const QualifiedName& attributeName, int value);
-    unsigned getUnsignedIntegralAttribute(const QualifiedName& attributeName) const;
     void setUnsignedIntegralAttribute(const QualifiedName& attributeName, unsigned value);
     double getFloatingPointAttribute(const QualifiedName& attributeName, double fallbackValue = std::numeric_limits<double>::quiet_NaN()) const;
     void setFloatingPointAttribute(const QualifiedName& attributeName, double value);

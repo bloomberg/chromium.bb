@@ -862,7 +862,7 @@ void AXObjectCache::handleAttributeChanged(const QualifiedName& attrName, Elemen
     else if (attrName == forAttr && isHTMLLabelElement(*element))
         labelChanged(element);
 
-    if (!attrName.localName().string().startsWith("aria-"))
+    if (!attrName.localName().startsWith("aria-"))
         return;
 
     if (attrName == aria_activedescendantAttr)

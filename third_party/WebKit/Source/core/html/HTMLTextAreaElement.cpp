@@ -442,7 +442,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 int HTMLTextAreaElement::maxLength() const
 {
     bool ok;
-    int value = getAttribute(maxlengthAttr).string().toInt(&ok);
+    int value = getAttribute(maxlengthAttr).toInt(&ok);
     return ok && value >= 0 ? value : -1;
 }
 

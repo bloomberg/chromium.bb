@@ -174,7 +174,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         parseSizesAttribute(value, m_iconSizes);
         process();
     } else if (name == mediaAttr) {
-        m_media = value.string().lower();
+        m_media = value.lower();
         process();
     } else if (name == disabledAttr) {
         if (LinkStyle* link = linkStyle())

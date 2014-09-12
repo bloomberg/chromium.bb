@@ -774,7 +774,7 @@ SMILTime SVGSMILElement::repeatCount() const
             computedRepeatCount = SMILTime::indefinite();
         } else {
             bool ok;
-            double result = value.string().toDouble(&ok);
+            double result = value.toDouble(&ok);
             if (ok && result > 0)
                 computedRepeatCount = result;
         }

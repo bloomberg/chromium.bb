@@ -2594,17 +2594,12 @@ KURL Element::getNonEmptyURLAttribute(const QualifiedName& name) const
 
 int Element::getIntegralAttribute(const QualifiedName& attributeName) const
 {
-    return getAttribute(attributeName).string().toInt();
+    return getAttribute(attributeName).toInt();
 }
 
 void Element::setIntegralAttribute(const QualifiedName& attributeName, int value)
 {
     setAttribute(attributeName, AtomicString::number(value));
-}
-
-unsigned Element::getUnsignedIntegralAttribute(const QualifiedName& attributeName) const
-{
-    return getAttribute(attributeName).string().toUInt();
 }
 
 void Element::setUnsignedIntegralAttribute(const QualifiedName& attributeName, unsigned value)
