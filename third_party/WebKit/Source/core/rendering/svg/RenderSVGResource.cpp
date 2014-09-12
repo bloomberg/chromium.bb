@@ -47,7 +47,7 @@ static inline bool inheritColorFromParentStyle(RenderObject* object, bool applyT
     return true;
 }
 
-static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
+RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
 {
     ASSERT(object);
     ASSERT(style);
@@ -145,16 +145,6 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
         hasFallback = true;
     }
     return uriResource;
-}
-
-RenderSVGResource* RenderSVGResource::fillPaintingResource(RenderObject* object, const RenderStyle* style, bool& hasFallback)
-{
-    return requestPaintingResource(ApplyToFillMode, object, style, hasFallback);
-}
-
-RenderSVGResource* RenderSVGResource::strokePaintingResource(RenderObject* object, const RenderStyle* style, bool& hasFallback)
-{
-    return requestPaintingResource(ApplyToStrokeMode, object, style, hasFallback);
 }
 
 RenderSVGResourceSolidColor* RenderSVGResource::sharedSolidPaintingResource()
