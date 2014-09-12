@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
@@ -34,6 +35,13 @@ TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Va
     double doubleOrNullMember;
     if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "doubleOrNullMember", doubleOrNullMember)) {
         impl->setDoubleOrNullMember(doubleOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
+    }
+    RefPtrWillBeRawPtr<Element> elementOrNullMember;
+    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "elementOrNullMember", elementOrNullMember)) {
+        impl->setElementOrNullMember(elementOrNullMember);
     } else if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -139,6 +147,8 @@ v8::Handle<v8::Value> toV8(TestDictionary* impl, v8::Handle<v8::Object> creation
         v8Object->Set(v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl->doubleOrNullMember()));
     else
         v8Object->Set(v8String(isolate, "doubleOrNullMember"), v8::Null(isolate));
+    if (impl->hasElementOrNullMember())
+        v8Object->Set(v8String(isolate, "elementOrNullMember"), toV8(impl->elementOrNullMember(), creationContext, isolate));
     if (impl->hasEnumMember())
         v8Object->Set(v8String(isolate, "enumMember"), v8String(isolate, impl->enumMember()));
     else

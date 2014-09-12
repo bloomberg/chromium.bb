@@ -21,4 +21,5 @@ enum TestEnum { "foo", "bar", "baz" };
     DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember;
     TestEnum enumMember = "foo";
+    Element? elementOrNullMember;
 };

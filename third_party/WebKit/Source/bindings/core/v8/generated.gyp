@@ -140,6 +140,7 @@
       'explicit_idl_action': 1,
       'msvs_cygwin_shell': 0,
       'inputs': [
+        '<@(core_dictionary_idl_files)',
         '<@(core_testing_dictionary_idl_files)',
         '<@(idl_lexer_parser_files)',
         '<@(idl_cache_files)',

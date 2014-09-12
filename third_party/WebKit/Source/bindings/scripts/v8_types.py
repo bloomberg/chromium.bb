@@ -422,8 +422,8 @@ def impl_includes_for_type(idl_type, interfaces_info):
 
     if idl_type.is_string_type:
         includes_for_type.add('wtf/text/WTFString.h')
-    if idl_type.name in interfaces_info:
-        interface_info = interfaces_info[idl_type.name]
+    if idl_type.base_type in interfaces_info:
+        interface_info = interfaces_info[idl_type.base_type]
         includes_for_type.add(interface_info['include_path'])
     return includes_for_type
 

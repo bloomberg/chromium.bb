@@ -11,6 +11,7 @@
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
+#include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -66,6 +67,9 @@ public:
     bool hasEnumMember() const { return !m_enumMember.isNull(); }
     String enumMember() const { return m_enumMember; }
     void setEnumMember(String value) { m_enumMember = value; }
+    bool hasElementOrNullMember() const { return m_elementOrNullMember; }
+    PassRefPtrWillBeRawPtr<Element> elementOrNullMember() const { return m_elementOrNullMember; }
+    void setElementOrNullMember(PassRefPtrWillBeRawPtr<Element> value) { m_elementOrNullMember = value; }
 
     void trace(Visitor*);
 
@@ -86,6 +90,7 @@ private:
     Nullable<Vector<String> > m_stringArrayMember;
     Nullable<Vector<String> > m_stringSequenceMember;
     String m_enumMember;
+    RefPtrWillBeMember<Element> m_elementOrNullMember;
 
     friend class V8TestDictionary;
 };
