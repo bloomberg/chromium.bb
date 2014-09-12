@@ -10,18 +10,13 @@
 }
 
 body {
+  color: #414141;
   font-family: 'Roboto2', sans-serif;
-  font-size: 1em;
   margin: 0;
 }
 
-p {
-  margin: 1.5em;
-  text-align: justify;
-}
-
 a {
-  color: black;
+  color: #414141;
 }
 
 .colored {
@@ -30,26 +25,38 @@ a {
 
 .label {
   display: inline-block;
-  padding: 1.5em;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 28px;
   white-space: nowrap;
 }
 
 .label a {
-  font-weight: bold;
   text-decoration: none;
   text-transform: uppercase;
 }
 
 #button-container {
-  position: fixed;
   text-align: right;
-  top: calc(70% - 76px /* action bar */ - 69px /* height of content */);
   width: 100%;
 }
 
 #container.hide {
   -webkit-transform: scale(0.95);
-  -webkit-transition-property: opacity, -webkit-transform;
   -webkit-transition-duration: 218ms;
+  -webkit-transition-property: opacity, -webkit-transform;
   opacity: 0;
+}
+
+#description {
+  font-size: 16px;
+  line-height: 1.4em;
+  margin: 32px 16px 4px 16px;
+}
+
+#heading {
+  font-size: 24px;
+  letter-spacing: 1px;
+  margin-top: 0;
+  text-align: center;
 }

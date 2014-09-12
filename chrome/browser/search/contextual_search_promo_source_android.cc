@@ -91,6 +91,8 @@ void ContextualSearchPromoSourceAndroid::SendHtmlWithStrings(
       "description",
       l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION));
   strings_data.SetString(
+      "heading", l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_HEADER));
+  strings_data.SetString(
       "optIn", l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN));
   strings_data.SetString(
       "optOut", l10n_util::GetStringUTF16(IDS_CONTEXTUAL_SEARCH_PROMO_OPTOUT));

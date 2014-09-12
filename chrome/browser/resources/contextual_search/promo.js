@@ -12,3 +12,12 @@ window.onload = function() {
     $('container').classList.add('hide');
   });
 };
+
+/**
+ * Returns the height of the content. Method called from Chrome to properly size
+ * the view embedding it.
+ * @return {number} The height of the content, in pixels.
+ */
+function getContentHeight() {
+  return $('container').clientHeight;
+}

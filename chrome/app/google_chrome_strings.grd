@@ -1127,14 +1127,17 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </if>
 
       <!-- Contextual Search -->
+      <message name="IDS_CONTEXTUAL_SEARCH_HEADER" desc="Header shown at the top of the first run experience, to describe the Contextual Search feature.">
+        Search with one touch
+      </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION" desc="Description of the Contextual Search feature.">
-        “Touch to Search” provides an easy way to search for terms on a web page by simply touching on them.  The touched word and surrounding page will be sent to Google.
+        Using “Touch to Search” you can touch any word on a website to learn more about a topic. Chrome will send that word and the surrounding contents to Google and bring back relevant information about it.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN" desc="Text for the button the user clicks to opt in.">
-        Yes, please
+        Accept &amp; Search
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTOUT" desc="Text for the button the user clicks to opt out.">
-        No, thanks
+        No Thanks
       </message>
 
       <!-- Update bubble -->
