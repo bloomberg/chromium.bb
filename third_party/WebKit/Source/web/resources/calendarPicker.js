@@ -1560,7 +1560,6 @@ ScrollView.prototype.contentPositionForContentOffset = function(offset) {
  */
 function ListCell() {
     View.call(this, createElement("div", ListCell.ClassNameListCell));
-    this.element.setAttribute("role", "gridcell");
     
     /**
      * @type {!number}
@@ -2144,9 +2143,11 @@ function YearListCell(shortMonthLabels) {
     var monthChooserElement = createElement("div", YearListCell.ClassNameMonthChooser);
     for (var r = 0; r < YearListCell.ButtonRows; ++r) {
         var buttonsRow = createElement("div", YearListCell.ClassNameMonthButtonsRow);
+        buttonsRow.setAttribute("role", "row");
         for (var c = 0; c < YearListCell.ButtonColumns; ++c) {
             var month = c + r * YearListCell.ButtonColumns;
             var button = createElement("div", YearListCell.ClassNameMonthButton, shortMonthLabels[month]);
+            button.setAttribute("role", "gridcell");
             button.dataset.month = month;
             buttonsRow.appendChild(button);
             this.monthButtons.push(button);
@@ -2475,12 +2476,21 @@ YearListView.prototype.prepareNewCell = function(row) {
     var cell = YearListCell._recycleBin.pop() || new YearListCell(global.params.shortMonthLabels);
     cell.reset(row);
     cell.setSelected(this.selectedRow === row);
-    if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
-        cell.monthButtons[this.highlightedMonth.month].classList.add(YearListCell.ClassNameHighlighted);
-    }
     for (var i = 0; i < cell.monthButtons.length; ++i) {
         var month = new Month(row + 1, i);
+        cell.monthButtons[i].id = month.toString();
         cell.monthButtons[i].setAttribute("aria-disabled", this._minimumMonth > month || this._maximumMonth < month ? "true" : "false");
+        cell.monthButtons[i].setAttribute("aria-label", month.toLocaleString());
+    }
+    if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
+        var monthButton = cell.monthButtons[this.highlightedMonth.month];
+        monthButton.classList.add(YearListCell.ClassNameHighlighted);
+        // aira-activedescendant assumes both elements have renderers, and
+        // |monthButton| might have no renderer yet.
+        var element = this.element;
+        setTimeout(function() {
+            element.setAttribute("aria-activedescendant", monthButton.id);
+        }, 0);
     }
     var animator = this._runningAnimators[row];
     if (animator)
@@ -2606,6 +2616,7 @@ YearListView.prototype.dehighlightMonth = function() {
         monthButton.classList.remove(YearListCell.ClassNameHighlighted);
     }
     this.highlightedMonth = null;
+    this.element.removeAttribute("aria-activedescendant");
 };
 
 /**
@@ -2621,6 +2632,7 @@ YearListView.prototype.highlightMonth = function(month) {
     var monthButton = this.buttonForMonth(this.highlightedMonth);
     if (monthButton) {
         monthButton.classList.add(YearListCell.ClassNameHighlighted);
+        this.element.setAttribute("aria-activedescendant", monthButton.id);
     }
 };
 
@@ -3032,6 +3044,7 @@ function DayCell() {
     this.element.style.width = DayCell.Width + "px";
     this.element.style.height = DayCell.Height + "px";
     this.element.style.lineHeight = (DayCell.Height - DayCell.PaddingSize * 2) + "px";
+    this.element.setAttribute("role", "gridcell");
     /**
      * @type {?Day}
      */

@@ -4,14 +4,22 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Focused: AXDescription: 
-Focused: AXDescription: Sunday, January 2, 2000
+Focused: AXDescription: Sunday January 2 2000
 PASS Received ActiveDescendantChanged
-Focused: AXDescription: Monday, January 3, 2000
+Focused: AXDescription: Monday January 3 2000
 PASS Received ActiveDescendantChanged
 Focused: AXDescription: Show next month
 Focused: AXDescription: <<CalendarToday>>
 Focused: AXDescription: Show previous month
 Focused: AXDescription: Show month selection panel
+Open the month popup. This should notify the third ActiveDescendantChanged.
+Focused: AXDescription: 
+Focused: AXDescription: January 2000
+PASS Received ActiveDescendantChanged
+Focused: AXDescription: February 2000
+PASS Received ActiveDescendantChanged
+Focused: AXDescription: October 1999
+PASS Received ActiveDescendantChanged
 PASS successfullyParsed is true
 
 TEST COMPLETE

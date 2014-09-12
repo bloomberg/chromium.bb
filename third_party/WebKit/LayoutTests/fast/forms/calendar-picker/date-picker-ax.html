@@ -13,11 +13,21 @@ description('Tests if typing an arrow key dispatches |Focus| and |ActiveDescenda
 
 window.accessibilityController.setNotificationListener(function(axnode, type) {
     if (type == 'Focus') {
-        debug('Focused: ' + escapeHTML(accessibilityController.focusedElement.description));
+        // Remove ',' to reduce platform differences.
+        debug('Focused: ' + escapeHTML(accessibilityController.focusedElement.description.replace(/,/g, '')));
     } else if (type == 'ActiveDescendantChanged') {
         testPassed('Received ActiveDescendantChanged');
-        if (++activeDescendantCounter == 2)
+        if (++activeDescendantCounter == 2) {
             testButtonDescription();
+        } else if (activeDescendantCounter == 3) {
+            // Highlight 2000-02 in the month popup.
+            setTimeout(function() { eventSender.keyDown('rightArrow'); }, 0);
+        } else if (activeDescendantCounter == 4) {
+            // Highlight 1999-10 in the month popup.
+            setTimeout(function() { eventSender.keyDown('upArrow'); }, 0);
+        } else if (activeDescendantCounter == 5) {
+            finishJSTest();
+        }
     }
 });
 var activeDescendantCounter = 0;
@@ -37,7 +47,9 @@ function testButtonDescription() {
     eventSender.keyDown('\t', ['shiftKey']);
     // Focus on the month selector button.
     eventSender.keyDown('\t', ['shiftKey']);
-    setTimeout(finishJSTest, 0);
+
+    debug('Open the month popup. This should notify the third ActiveDescendantChanged.');
+    eventSender.keyDown(' ');
 }
 </script>
 </body>
