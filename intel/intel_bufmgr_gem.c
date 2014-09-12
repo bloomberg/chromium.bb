@@ -94,6 +94,8 @@ struct drm_intel_gem_bo_bucket {
 typedef struct _drm_intel_bufmgr_gem {
 	drm_intel_bufmgr bufmgr;
 
+	atomic_t refcount;
+
 	int fd;
 
 	int max_relocs;
@@ -110,6 +112,8 @@ typedef struct _drm_intel_bufmgr_gem {
 	struct drm_intel_gem_bo_bucket cache_bucket[14 * 4];
 	int num_buckets;
 	time_t time;
+
+	drmMMListHead managers;
 
 	drmMMListHead named;
 	drmMMListHead vma_cache;
@@ -3186,6 +3190,41 @@ drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
 	bo_gem->aub_annotation_count = count;
 }
 
+static pthread_mutex_t bufmgr_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+static drmMMListHead bufmgr_list = { &bufmgr_list, &bufmgr_list };
+
+static drm_intel_bufmgr_gem *
+drm_intel_bufmgr_gem_find(int fd)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem;
+
+	DRMLISTFOREACHENTRY(bufmgr_gem, &bufmgr_list, managers) {
+		if (bufmgr_gem->fd == fd) {
+			atomic_inc(&bufmgr_gem->refcount);
+			return bufmgr_gem;
+		}
+	}
+
+	return NULL;
+}
+
+static void
+drm_intel_bufmgr_gem_unref(drm_intel_bufmgr *bufmgr)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+
+	if (atomic_add_unless(&bufmgr_gem->refcount, -1, 1)) {
+		pthread_mutex_lock(&bufmgr_list_mutex);
+
+		if (atomic_dec_and_test(&bufmgr_gem->refcount)) {
+			DRMLISTDEL(&bufmgr_gem->managers);
+			drm_intel_bufmgr_gem_destroy(bufmgr);
+		}
+
+		pthread_mutex_unlock(&bufmgr_list_mutex);
+	}
+}
+
 /**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
@@ -3201,15 +3240,23 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	int ret, tmp;
 	bool exec2 = false;
 
+	pthread_mutex_lock(&bufmgr_list_mutex);
+
+	bufmgr_gem = drm_intel_bufmgr_gem_find(fd);
+	if (bufmgr_gem)
+		goto exit;
+
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
 	if (bufmgr_gem == NULL)
-		return NULL;
+		goto exit;
 
 	bufmgr_gem->fd = fd;
+	atomic_set(&bufmgr_gem->refcount, 1);
 
 	if (pthread_mutex_init(&bufmgr_gem->lock, NULL) != 0) {
 		free(bufmgr_gem);
-		return NULL;
+		bufmgr_gem = NULL;
+		goto exit;
 	}
 
 	ret = drmIoctl(bufmgr_gem->fd,
@@ -3246,7 +3293,8 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		bufmgr_gem->gen = 8;
 	else {
 		free(bufmgr_gem);
-		return NULL;
+		bufmgr_gem = NULL;
+		goto exit;
 	}
 
 	if (IS_GEN3(bufmgr_gem->pci_device) &&
@@ -3357,7 +3405,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
 	bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
 	bufmgr_gem->bufmgr.bo_madvise = drm_intel_gem_bo_madvise;
-	bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_destroy;
+	bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_unref;
 	bufmgr_gem->bufmgr.debug = 0;
 	bufmgr_gem->bufmgr.check_aperture_space =
 	    drm_intel_gem_check_aperture_space;
@@ -3373,5 +3421,10 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	DRMINITLISTHEAD(&bufmgr_gem->vma_cache);
 	bufmgr_gem->vma_max = -1; /* unlimited by default */
 
-	return &bufmgr_gem->bufmgr;
+	DRMLISTADD(&bufmgr_gem->managers, &bufmgr_list);
+
+exit:
+	pthread_mutex_unlock(&bufmgr_list_mutex);
+
+	return bufmgr_gem != NULL ? &bufmgr_gem->bufmgr : NULL;
 }
