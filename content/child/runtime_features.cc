@@ -165,9 +165,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (ui::IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 
-  if (command_line.HasSwitch(switches::kEnableTargetedStyleRecalc))
-    WebRuntimeFeatures::enableTargetedStyleRecalc(true);
-
   if (command_line.HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths))
     WebRuntimeFeatures::enableBleedingEdgeFastPaths(true);
 
