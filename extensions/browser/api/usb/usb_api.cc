@@ -56,6 +56,7 @@ using device::UsbDeviceFilter;
 using device::UsbDeviceHandle;
 using device::UsbEndpointDescriptor;
 using device::UsbEndpointDirection;
+using device::UsbInterfaceAltSettingDescriptor;
 using device::UsbInterfaceDescriptor;
 using device::UsbService;
 using device::UsbSynchronizationType;
@@ -760,58 +761,75 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
   if (!device_handle.get())
     return;
 
-  const UsbConfigDescriptor& config =
-      device_handle->GetDevice()->GetConfiguration();
+  scoped_refptr<UsbConfigDescriptor> config =
+      device_handle->GetDevice()->ListInterfaces();
 
-  scoped_ptr<base::ListValue> result(new base::ListValue());
-
-  for (UsbInterfaceDescriptor::Iterator interfaceIt = config.interfaces.begin();
-       interfaceIt != config.interfaces.end();
-       ++interfaceIt) {
-    std::vector<linked_ptr<EndpointDescriptor> > endpoints;
-
-    for (UsbEndpointDescriptor::Iterator endpointIt =
-             interfaceIt->endpoints.begin();
-         endpointIt != interfaceIt->endpoints.end();
-         ++endpointIt) {
-      linked_ptr<EndpointDescriptor> endpoint_desc(new EndpointDescriptor());
-
-      TransferType type;
-      Direction direction;
-      SynchronizationType synchronization;
-      UsageType usage;
-
-      if (!ConvertTransferTypeSafely(endpointIt->transfer_type, &type) ||
-          !ConvertDirectionSafely(endpointIt->direction, &direction) ||
-          !ConvertSynchronizationTypeSafely(endpointIt->synchronization_type,
-                                            &synchronization) ||
-          !ConvertUsageTypeSafely(endpointIt->usage_type, &usage)) {
-        SetError(kErrorCannotListInterfaces);
-        AsyncWorkCompleted();
-        return;
-      }
-
-      endpoint_desc->address = endpointIt->address;
-      endpoint_desc->type = type;
-      endpoint_desc->direction = direction;
-      endpoint_desc->maximum_packet_size = endpointIt->maximum_packet_size;
-      endpoint_desc->synchronization = synchronization;
-      endpoint_desc->usage = usage;
-      endpoint_desc->polling_interval.reset(
-          new int(endpointIt->polling_interval));
-
-      endpoints.push_back(endpoint_desc);
-    }
-
-    result->Append(PopulateInterfaceDescriptor(interfaceIt->interface_number,
-                                               interfaceIt->alternate_setting,
-                                               interfaceIt->interface_class,
-                                               interfaceIt->interface_subclass,
-                                               interfaceIt->interface_protocol,
-                                               &endpoints));
+  if (!config.get()) {
+    SetError(kErrorCannotListInterfaces);
+    AsyncWorkCompleted();
+    return;
   }
 
-  SetResult(result.release());
+  result_.reset(new base::ListValue());
+
+  for (size_t i = 0, num_interfaces = config->GetNumInterfaces();
+       i < num_interfaces;
+       ++i) {
+    scoped_refptr<const UsbInterfaceDescriptor> usb_interface(
+        config->GetInterface(i));
+    for (size_t j = 0, num_descriptors = usb_interface->GetNumAltSettings();
+         j < num_descriptors;
+         ++j) {
+      scoped_refptr<const UsbInterfaceAltSettingDescriptor> descriptor =
+          usb_interface->GetAltSetting(j);
+      std::vector<linked_ptr<EndpointDescriptor> > endpoints;
+      for (size_t k = 0, num_endpoints = descriptor->GetNumEndpoints();
+           k < num_endpoints;
+           k++) {
+        scoped_refptr<const UsbEndpointDescriptor> endpoint =
+            descriptor->GetEndpoint(k);
+        linked_ptr<EndpointDescriptor> endpoint_desc(new EndpointDescriptor());
+
+        TransferType type;
+        Direction direction;
+        SynchronizationType synchronization;
+        UsageType usage;
+
+        if (!ConvertTransferTypeSafely(endpoint->GetTransferType(), &type) ||
+            !ConvertDirectionSafely(endpoint->GetDirection(), &direction) ||
+            !ConvertSynchronizationTypeSafely(
+                endpoint->GetSynchronizationType(), &synchronization) ||
+            !ConvertUsageTypeSafely(endpoint->GetUsageType(), &usage)) {
+          SetError(kErrorCannotListInterfaces);
+          AsyncWorkCompleted();
+          return;
+        }
+
+        endpoint_desc->address = endpoint->GetAddress();
+        endpoint_desc->type = type;
+        endpoint_desc->direction = direction;
+        endpoint_desc->maximum_packet_size = endpoint->GetMaximumPacketSize();
+        endpoint_desc->synchronization = synchronization;
+        endpoint_desc->usage = usage;
+
+        int* polling_interval = new int;
+        endpoint_desc->polling_interval.reset(polling_interval);
+        *polling_interval = endpoint->GetPollingInterval();
+
+        endpoints.push_back(endpoint_desc);
+      }
+
+      result_->Append(
+          PopulateInterfaceDescriptor(descriptor->GetInterfaceNumber(),
+                                      descriptor->GetAlternateSetting(),
+                                      descriptor->GetInterfaceClass(),
+                                      descriptor->GetInterfaceSubclass(),
+                                      descriptor->GetInterfaceProtocol(),
+                                      &endpoints));
+    }
+  }
+
+  SetResult(result_.release());
   AsyncWorkCompleted();
 }
 

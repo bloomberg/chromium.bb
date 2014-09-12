@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "device/usb/usb_descriptors.h"
+#include "device/usb/usb_interface.h"
 #include "net/base/io_buffer.h"
 
 namespace device {

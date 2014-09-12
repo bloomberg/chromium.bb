@@ -12,7 +12,7 @@
 namespace device {
 
 class UsbDeviceHandle;
-struct UsbConfigDescriptor;
+class UsbConfigDescriptor;
 
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. For further manipulation of the device, a
@@ -44,9 +44,10 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Blocking method. Must be called on FILE thread.
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) = 0;
 
-  // Gets the UsbConfigDescriptor for the active device configuration.
+  // Lists the interfaces provided by the device and fills the given
+  // UsbConfigDescriptor.
   // Blocking method. Must be called on FILE thread.
-  virtual const UsbConfigDescriptor& GetConfiguration() = 0;
+  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces() = 0;
 
  protected:
   UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)

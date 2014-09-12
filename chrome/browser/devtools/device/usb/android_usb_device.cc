@@ -19,8 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "device/core/device_client.h"
-#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
+#include "device/usb/usb_interface.h"
 #include "device/usb/usb_service.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -29,6 +29,7 @@
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
+using device::UsbInterfaceAltSettingDescriptor;
 using device::UsbInterfaceDescriptor;
 using device::UsbEndpointDescriptor;
 using device::UsbService;
@@ -58,12 +59,17 @@ typedef std::set<scoped_refptr<UsbDevice> > UsbDeviceSet;
 base::LazyInstance<std::vector<AndroidUsbDevice*> >::Leaky g_devices =
     LAZY_INSTANCE_INITIALIZER;
 
-bool IsAndroidInterface(const UsbInterfaceDescriptor& interface) {
-  if (interface.alternate_setting != 0 ||
-      interface.interface_class != kAdbClass ||
-      interface.interface_subclass != kAdbSubclass ||
-      interface.interface_protocol != kAdbProtocol ||
-      interface.endpoints.size() != 2) {
+bool IsAndroidInterface(scoped_refptr<const UsbInterfaceDescriptor> interface) {
+  if (interface->GetNumAltSettings() == 0)
+    return false;
+
+  scoped_refptr<const UsbInterfaceAltSettingDescriptor> idesc =
+      interface->GetAltSetting(0);
+
+  if (idesc->GetInterfaceClass() != kAdbClass ||
+      idesc->GetInterfaceSubclass() != kAdbSubclass ||
+      idesc->GetInterfaceProtocol() != kAdbProtocol ||
+      idesc->GetNumEndpoints() != 2) {
     return false;
   }
   return true;
@@ -72,40 +78,40 @@ bool IsAndroidInterface(const UsbInterfaceDescriptor& interface) {
 scoped_refptr<AndroidUsbDevice> ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
     scoped_refptr<UsbDeviceHandle> usb_handle,
-    const UsbInterfaceDescriptor& interface) {
+    scoped_refptr<const UsbInterfaceDescriptor> interface,
+    int interface_id) {
+  scoped_refptr<const UsbInterfaceAltSettingDescriptor> idesc =
+      interface->GetAltSetting(0);
+
   int inbound_address = 0;
   int outbound_address = 0;
   int zero_mask = 0;
 
-  for (UsbEndpointDescriptor::Iterator endpointIt = interface.endpoints.begin();
-       endpointIt != interface.endpoints.end();
-       ++endpointIt) {
-    if (endpointIt->transfer_type != device::USB_TRANSFER_BULK)
+  for (size_t i = 0; i < idesc->GetNumEndpoints(); ++i) {
+    scoped_refptr<const UsbEndpointDescriptor> edesc =
+        idesc->GetEndpoint(i);
+    if (edesc->GetTransferType() != device::USB_TRANSFER_BULK)
       continue;
-    if (endpointIt->direction == device::USB_DIRECTION_INBOUND)
-      inbound_address = endpointIt->address;
+    if (edesc->GetDirection() == device::USB_DIRECTION_INBOUND)
+      inbound_address = edesc->GetAddress();
     else
-      outbound_address = endpointIt->address;
-    zero_mask = endpointIt->maximum_packet_size - 1;
+      outbound_address = edesc->GetAddress();
+    zero_mask = edesc->GetMaximumPacketSize() - 1;
   }
 
   if (inbound_address == 0 || outbound_address == 0)
     return NULL;
 
-  if (!usb_handle->ClaimInterface(interface.interface_number))
+  if (!usb_handle->ClaimInterface(interface_id))
     return NULL;
 
   base::string16 serial;
   if (!usb_handle->GetSerial(&serial) || serial.empty())
     return NULL;
 
-  return new AndroidUsbDevice(rsa_key,
-                              usb_handle,
-                              base::UTF16ToASCII(serial),
-                              inbound_address,
-                              outbound_address,
-                              zero_mask,
-                              interface.interface_number);
+  return new AndroidUsbDevice(rsa_key, usb_handle, base::UTF16ToASCII(serial),
+                              inbound_address, outbound_address, zero_mask,
+                              interface_id);
 }
 
 uint32 Checksum(const std::string& data) {
@@ -201,11 +207,12 @@ static void OpenAndroidDeviceOnFileThread(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (success) {
-    const UsbConfigDescriptor& config = device->GetConfiguration();
+    scoped_refptr<UsbConfigDescriptor> config = device->ListInterfaces();
     scoped_refptr<UsbDeviceHandle> usb_handle = device->Open();
     if (usb_handle.get()) {
       scoped_refptr<AndroidUsbDevice> android_device =
-          ClaimInterface(rsa_key, usb_handle, config.interfaces[interface_id]);
+        ClaimInterface(rsa_key, usb_handle, config->GetInterface(interface_id),
+                       interface_id);
       if (android_device.get())
         devices->push_back(android_device.get());
       else
@@ -222,17 +229,15 @@ static int CountOnFileThread() {
   if (service != NULL)
     service->GetDevices(&usb_devices);
   int device_count = 0;
-  for (UsbDevices::iterator deviceIt = usb_devices.begin();
-       deviceIt != usb_devices.end();
-       ++deviceIt) {
-    const UsbConfigDescriptor& config = (*deviceIt)->GetConfiguration();
+  for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
+       ++it) {
+    scoped_refptr<UsbConfigDescriptor> config = (*it)->ListInterfaces();
+    if (!config.get())
+      continue;
 
-    for (UsbInterfaceDescriptor::Iterator ifaceIt = config.interfaces.begin();
-         ifaceIt != config.interfaces.end();
-         ++ifaceIt) {
-      if (IsAndroidInterface(*ifaceIt)) {
+    for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
+      if (IsAndroidInterface(config->GetInterface(j)))
         ++device_count;
-      }
     }
   }
   return device_count;
@@ -259,13 +264,16 @@ static void EnumerateOnFileThread(
 
   for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
        ++it) {
-    const UsbConfigDescriptor& config = (*it)->GetConfiguration();
+    scoped_refptr<UsbConfigDescriptor> config = (*it)->ListInterfaces();
+    if (!config.get()) {
+      barrier.Run();
+      continue;
+    }
 
     bool has_android_interface = false;
-    for (size_t j = 0; j < config.interfaces.size(); ++j) {
-      if (!IsAndroidInterface(config.interfaces[j])) {
+    for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
+      if (!IsAndroidInterface(config->GetInterface(j)))
         continue;
-      }
 
       // Request permission on Chrome OS.
 #if defined(OS_CHROMEOS)

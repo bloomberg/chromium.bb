@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
-#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
 struct libusb_device;
@@ -38,7 +37,7 @@ class UsbDeviceImpl : public UsbDevice {
 #endif  // OS_CHROMEOS
   virtual scoped_refptr<UsbDeviceHandle> Open() OVERRIDE;
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE;
-  virtual const UsbConfigDescriptor& GetConfiguration() OVERRIDE;
+  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces() OVERRIDE;
 
  protected:
   friend class UsbServiceImpl;
@@ -59,11 +58,6 @@ class UsbDeviceImpl : public UsbDevice {
  private:
   base::ThreadChecker thread_checker_;
   PlatformUsbDevice platform_device_;
-
-  // The active configuration descriptor is not read immediately but cached for
-  // later use.
-  bool current_configuration_cached_;
-  UsbConfigDescriptor current_configuration_;
 
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;

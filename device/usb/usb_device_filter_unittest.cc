@@ -5,55 +5,156 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "device/usb/usb_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
 namespace {
 
-using testing::NiceMock;
-using testing::ReturnRef;
+class MockUsbInterfaceAltSettingDescriptor
+    : public UsbInterfaceAltSettingDescriptor {
+ public:
+  MockUsbInterfaceAltSettingDescriptor(int interface_number,
+                                       int alternate_setting,
+                                       int interface_class,
+                                       int interface_subclass,
+                                       int interface_protocol)
+      : interface_number_(interface_number),
+        alternate_setting_(alternate_setting),
+        interface_class_(interface_class),
+        interface_subclass_(interface_subclass),
+        interface_protocol_(interface_protocol) {}
+
+  virtual size_t GetNumEndpoints() const OVERRIDE { return 0; }
+  virtual scoped_refptr<const UsbEndpointDescriptor> GetEndpoint(
+      size_t index) const OVERRIDE {
+    return NULL;
+  }
+  virtual int GetInterfaceNumber() const OVERRIDE { return interface_number_; }
+  virtual int GetAlternateSetting() const OVERRIDE {
+    return alternate_setting_;
+  }
+  virtual int GetInterfaceClass() const OVERRIDE { return interface_class_; }
+  virtual int GetInterfaceSubclass() const OVERRIDE {
+    return interface_subclass_;
+  }
+  virtual int GetInterfaceProtocol() const OVERRIDE {
+    return interface_protocol_;
+  }
+
+ protected:
+  virtual ~MockUsbInterfaceAltSettingDescriptor() {}
+
+ private:
+  int interface_number_;
+  int alternate_setting_;
+  int interface_class_;
+  int interface_subclass_;
+  int interface_protocol_;
+};
+
+typedef std::vector<scoped_refptr<UsbInterfaceAltSettingDescriptor> >
+    UsbInterfaceAltSettingDescriptorList;
+
+class MockUsbInterfaceDescriptor : public UsbInterfaceDescriptor {
+ public:
+  MockUsbInterfaceDescriptor(
+      const UsbInterfaceAltSettingDescriptorList& alt_settings)
+      : alt_settings_(alt_settings) {}
+
+  virtual size_t GetNumAltSettings() const OVERRIDE {
+    return alt_settings_.size();
+  }
+  virtual scoped_refptr<const UsbInterfaceAltSettingDescriptor> GetAltSetting(
+      size_t index) const OVERRIDE {
+    return alt_settings_[index];
+  }
+
+ protected:
+  virtual ~MockUsbInterfaceDescriptor() {}
+
+ private:
+  UsbInterfaceAltSettingDescriptorList alt_settings_;
+};
+
+typedef std::vector<scoped_refptr<UsbInterfaceDescriptor> >
+    UsbInterfaceDescriptorList;
+
+class MockUsbConfigDescriptor : public UsbConfigDescriptor {
+ public:
+  MockUsbConfigDescriptor(const UsbInterfaceDescriptorList& interfaces)
+      : interfaces_(interfaces) {}
+
+  virtual size_t GetNumInterfaces() const OVERRIDE {
+    return interfaces_.size();
+  }
+  virtual scoped_refptr<const UsbInterfaceDescriptor> GetInterface(
+      size_t index) const OVERRIDE {
+    return interfaces_[index];
+  }
+
+ protected:
+  virtual ~MockUsbConfigDescriptor() {}
+
+ private:
+  UsbInterfaceDescriptorList interfaces_;
+};
 
 class MockUsbDevice : public UsbDevice {
  public:
-  MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-      : UsbDevice(vendor_id, product_id, unique_id) {}
+  MockUsbDevice(uint16 vendor_id,
+                uint16 product_id,
+                uint32 unique_id,
+                scoped_refptr<UsbConfigDescriptor> config_desc)
+      : UsbDevice(vendor_id, product_id, unique_id),
+        config_desc_(config_desc) {}
 
-  MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
+  virtual scoped_refptr<UsbDeviceHandle> Open() OVERRIDE { return NULL; }
+  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE {
+    NOTREACHED();
+    return true;
+  }
 #if defined(OS_CHROMEOS)
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
-#endif
-  MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
+  virtual void RequestUsbAccess(
+      int interface_id,
+      const base::Callback<void(bool success)>& callback) OVERRIDE {
+    NOTREACHED();
+  }
+#endif  // OS_CHROMEOS
+  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces() OVERRIDE {
+    return config_desc_;
+  }
+
+ protected:
+  virtual ~MockUsbDevice() {}
 
  private:
-  virtual ~MockUsbDevice() {}
+  scoped_refptr<UsbConfigDescriptor> config_desc_;
 };
 
 class UsbFilterTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    UsbInterfaceDescriptor interface;
-    interface.interface_number = 1;
-    interface.alternate_setting = 0;
-    interface.interface_class = 0xFF;
-    interface.interface_subclass = 0x42;
-    interface.interface_protocol = 0x01;
-    config_.interfaces.push_back(interface);
+    UsbInterfaceAltSettingDescriptorList alt_settings;
+    alt_settings.push_back(make_scoped_refptr(
+        new MockUsbInterfaceAltSettingDescriptor(1, 0, 0xFF, 0x42, 1)));
 
-    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, 0);
-    ON_CALL(*android_phone_.get(), GetConfiguration())
-        .WillByDefault(ReturnRef(config_));
+    UsbInterfaceDescriptorList interfaces;
+    interfaces.push_back(
+        make_scoped_refptr(new MockUsbInterfaceDescriptor(alt_settings)));
+
+    scoped_refptr<UsbConfigDescriptor> config_desc(
+        new MockUsbConfigDescriptor(interfaces));
+
+    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, 0, config_desc);
   }
 
  protected:
-  UsbConfigDescriptor config_;
-  scoped_refptr<MockUsbDevice> android_phone_;
+  scoped_refptr<UsbDevice> android_phone_;
 };
 
 TEST_F(UsbFilterTest, MatchAny) {
