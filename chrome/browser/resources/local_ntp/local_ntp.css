@@ -296,18 +296,19 @@ body[dir=rtl] #mv-tiles {
 }
 
 .default-theme.classical .mv-page-ready:hover .mv-mask,
-.default-theme.classical .mv-page-ready:focus .mv-mask {
+.default-theme.classical .mv-page-ready .mv-focused ~ .mv-mask {
   border-color: #7f7f7f;
 }
 
 .default-theme.md.old-hover .mv-page-ready:hover .mv-mask,
-.default-theme.md.old-hover .mv-page-ready:focus .mv-mask {
+.default-theme.md.old-hover .mv-page-ready .mv-focused ~ .mv-mask {
   border-color: #999;
 }
 
 .default-theme.md.dark .mv-page-ready:hover .mv-mask,
-.default-theme.md.dark .mv-page-ready:focus .mv-mask,
-.default-theme.md.old-hover.dark .mv-page-ready:hover .mv-mask {
+.default-theme.md.dark .mv-page-ready .mv-focused ~ .mv-mask,
+.default-theme.md.old-hover.dark .mv-page-ready:hover .mv-mask,
+.default-theme.md.old-hover.dark .mv-page-ready .mv-focused ~ .mv-mask {
   border-color: #888;
 }
 
@@ -315,24 +316,26 @@ body[dir=rtl] #mv-tiles {
 .default-theme.md .mv-page-ready .mv-mask {
   -webkit-transition: box-shadow 200ms, border 200ms;
 }
-.default-theme.md .mv-page-ready:hover .mv-mask {
+
+.default-theme.md .mv-page-ready:hover .mv-mask,
+.default-theme.md .mv-page-ready .mv-focused ~ .mv-mask {
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 4px 8px 0 rgba(0,0,0,0.2);
 }
 
-.default-theme..md.dark .mv-page-ready:hover .mv-mask,
-.default-theme..md.old-hover .mv-page-ready:hover .mv-mask {
+.default-theme.md.dark .mv-page-ready:hover .mv-mask,
+.default-theme.md.old-hover .mv-page-ready:hover .mv-mask {
   box-shadow: none;
 }
 
 /* Styling background. */
-.classical .mv-page:focus .mv-mask {
+.classical .mv-page .mv-focused ~ .mv-mask {
   -webkit-transition: background-color 100ms ease-in-out;
   background: linear-gradient(rgba(255, 255, 255, 0),
     rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.9));
   background-color: rgba(0, 0, 0, 0.35);
 }
 
-.md .mv-page:focus .mv-mask {
+.md .mv-page .mv-focused ~ .mv-mask {
   -webkit-transition: box-shadow 200ms, border 200ms,
       background-color 100ms ease-in-out;
   background: rgba(0, 0, 0, 0.3);

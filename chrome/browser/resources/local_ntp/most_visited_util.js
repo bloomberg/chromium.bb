@@ -123,20 +123,26 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
   link.href = href;
   link.title = title;
   link.target = '_top';
-  // Exclude links from the tab order.  The tabIndex is added to the thumbnail
-  // parent container instead.
-  link.tabIndex = '-1';
+  // Include links in the tab order.  The tabIndex is necessary for
+  // accessibility.
+  link.tabIndex = '0';
   if (text)
     link.textContent = text;
   link.addEventListener('mouseover', function() {
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
   });
+  link.addEventListener('focus', function() {
+    window.parent.postMessage('linkFocused', DOMAIN_ORIGIN);
+  });
+  link.addEventListener('blur', function() {
+    window.parent.postMessage('linkBlurred', DOMAIN_ORIGIN);
+  });
 
   // Webkit's security policy prevents some Most Visited thumbnails from
   // working (those with schemes different from http and https). Therefore,
   // navigateContentWindow is being used in order to get all schemes working.
-  link.addEventListener('click', function handleNavigation(e) {
+  var navigateFunction = function handleNavigation(e) {
     var isServerSuggestion = 'url' in params;
 
     // Ping are only populated for server-side suggestions, never for MV.
@@ -155,6 +161,18 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
       ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
     }
     // Else follow <a> normally, so transition type would be LINK.
+  };
+
+  link.addEventListener('click', navigateFunction);
+  link.addEventListener('keydown', function(event) {
+    if (event.keyCode == 46 /* DELETE */ ||
+        event.keyCode == 8 /* BACKSPACE */) {
+      event.preventDefault();
+      window.parent.postMessage('tileBlacklisted,' + params.pos, DOMAIN_ORIGIN);
+    } else if (event.keyCode == 13 /* ENTER */ ||
+               event.keyCode == 32 /* SPACE */) {
+      navigateFunction(event);
+    }
   });
 
   return link;

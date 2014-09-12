@@ -39,6 +39,7 @@ var CLASSES = {
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   FAVICON: 'mv-favicon',
   FAVICON_FALLBACK: 'mv-favicon-fallback',
+  FOCUSED: 'mv-focused',
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
@@ -85,7 +86,6 @@ var IDS = {
  * @const
  */
 var KEYCODE = {
-  DELETE: 46,
   ENTER: 13
 };
 
@@ -165,6 +165,13 @@ var tiles = [];
  * @type {?Tile}
  */
 var lastBlacklistedTile = null;
+
+
+/**
+ * The iframe element which is currently keyboard focused, or null.
+ * @type {?Element}
+ */
+var focusedIframe = null;
 
 
 /**
@@ -406,7 +413,7 @@ function setCustomThemeStyle(opt_themeInfo) {
       '  border: 1px solid ' +
           convertToRGBAColor(opt_themeInfo.sectionBorderColorRgba) + ';' +
       '}' +
-      '.mv-page-ready:hover .mv-mask, .mv-page-ready:focus .mv-mask {' +
+      '.mv-page-ready:hover .mv-mask, .mv-page-ready .mv-focused ~ .mv-mask {' +
       '  border-color: ' +
           convertToRGBAColor(opt_themeInfo.headerColorRgba) + ';' +
       '}';
@@ -681,13 +688,11 @@ function createTile(page, position) {
     // The click handler for navigating to the page identified by the RID.
     tileElem.addEventListener('click', navigateFunction);
 
-    // Make thumbnails tab-accessible.
-    tileElem.setAttribute('tabindex', '1');
-    registerKeyHandler(tileElem, KEYCODE.ENTER, navigateFunction);
-
     // The iframe which renders the page title.
     var titleElem = document.createElement('iframe');
-    titleElem.tabIndex = '-1';
+    // Enable tab navigation on the iframe, which will move the selection to the
+    // link element (which also has a tabindex).
+    titleElem.tabIndex = '0';
 
     // Why iframes have IDs:
     //
@@ -740,9 +745,6 @@ function createTile(page, position) {
     var maskElement = createAndAppendElement(
         innerElem, 'div', CLASSES.THUMBNAIL_MASK);
 
-    // When a tile is focused, have delete also blacklist the page.
-    registerKeyHandler(tileElem, KEYCODE.DELETE, blacklistFunction);
-
     // The page favicon, or a fallback.
     var favicon = createAndAppendElement(innerElem, 'div', CLASSES.FAVICON);
     if (page.faviconUrl) {
@@ -761,13 +763,14 @@ function createTile(page, position) {
  * Generates a function to be called when the page with the corresponding RID
  * is blacklisted.
  * @param {number} rid The RID of the page being blacklisted.
- * @return {function(Event)} A function which handles the blacklisting of the
+ * @return {function(!Event)} A function which handles the blacklisting of the
  *     page by updating state variables and notifying Chrome.
  */
 function generateBlacklistFunction(rid) {
   return function(e) {
     // Prevent navigation when the page is being blacklisted.
-    e.stopPropagation();
+    if (e)
+      e.stopPropagation();
 
     userInitiatedMostVisitedChange = true;
     isBlacklisting = true;
@@ -1033,6 +1036,33 @@ function getEmbeddedSearchApiHandle() {
 
 
 /**
+ * Event handler for the focus changed and blacklist messages on link elements.
+ * Used to toggle visual treatment on the tiles (depending on the message).
+ * @param {Event} event Event received.
+ */
+function handlePostMessage(event) {
+  if (event.origin !== 'chrome-search://most-visited')
+    return;
+
+  if (event.data === 'linkFocused') {
+    var activeElement = document.activeElement;
+    if (activeElement.classList.contains(CLASSES.TITLE)) {
+      activeElement.classList.add(CLASSES.FOCUSED);
+      focusedIframe = activeElement;
+    }
+  } else if (event.data === 'linkBlurred') {
+    if (focusedIframe)
+      focusedIframe.classList.remove(CLASSES.FOCUSED);
+    focusedIframe = null;
+  } else if (event.data.indexOf('tileBlacklisted') === 0) {
+    var tilePosition = event.data.split(',')[1];
+    if (tilePosition)
+      generateBlacklistFunction(tiles[parseInt(tilePosition, 10)].rid)();
+  }
+}
+
+
+/**
  * Prepares the New Tab Page by adding listeners, rendering the current
  * theme, the most visited pages section, and Google-specific elements for a
  * Google-provided page.
@@ -1151,6 +1181,8 @@ function init() {
     document.body.classList.add(CLASSES.RTL);
     $(IDS.TILES).dir = 'rtl';
   }
+
+  window.addEventListener('message', handlePostMessage);
 }
 
 
