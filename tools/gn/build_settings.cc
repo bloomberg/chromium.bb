@@ -4,7 +4,7 @@
 
 #include "tools/gn/build_settings.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "tools/gn/filesystem_utils.h"
 
 BuildSettings::BuildSettings() {

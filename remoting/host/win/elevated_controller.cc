@@ -4,8 +4,8 @@
 
 #include "remoting/host/win/elevated_controller.h"
 
-#include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"

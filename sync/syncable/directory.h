@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"

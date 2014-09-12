@@ -5,8 +5,8 @@
 #include "remoting/host/pairing_registry_delegate_linux.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"

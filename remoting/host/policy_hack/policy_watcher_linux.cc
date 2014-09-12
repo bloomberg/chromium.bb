@@ -16,10 +16,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

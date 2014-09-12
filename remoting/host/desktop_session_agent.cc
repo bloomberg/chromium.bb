@@ -4,7 +4,7 @@
 
 #include "remoting/host/desktop_session_agent.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -25,8 +25,8 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 

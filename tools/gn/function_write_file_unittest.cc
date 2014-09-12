@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/functions.h"

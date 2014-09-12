@@ -4,7 +4,7 @@
 
 #include "tools/gn/input_file.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 
 InputFile::InputFile(const SourceFile& name)
     : name_(name),

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"

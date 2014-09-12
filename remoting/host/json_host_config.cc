@@ -5,7 +5,7 @@
 #include "remoting/host/json_host_config.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
