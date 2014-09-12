@@ -118,6 +118,7 @@ repack("shell_and_test_pak") {
     # from generated_resources_en-US.pak. http://crbug.com/397250
     "$root_gen_dir/chrome/generated_resources_en-US.pak",
     "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
+    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/extensions/extensions_renderer_resources.pak",

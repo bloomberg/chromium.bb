@@ -22,6 +22,7 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual ~ShellBrowserContext();
 
   // content::BrowserContext implementation.
+  virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   // HACK: Pad the virtual function table so we trip an assertion if someone

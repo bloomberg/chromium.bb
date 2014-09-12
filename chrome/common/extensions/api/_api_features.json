@@ -437,22 +437,6 @@
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]
   },
-  "guestViewInternal": [{
-    "internal": true,
-    "channel": "stable",
-    "contexts": ["blessed_extension"]
-  }, {
-    // Component extensions can use the guestViewInternal API from iframes.
-    "location": "component",
-    "internal": true,
-    "dependencies": ["permission:webview"],
-    "contexts": ["unblessed_extension"]
-  }, {
-    "internal": true,
-    "channel": "trunk",
-    "contexts": ["webui"],
-    "matches": ["chrome://extensions-frame/*", "chrome://extensions/*"]
-  }],
   "hangoutsPrivate": {
     "channel": "stable",
     "contexts": ["blessed_extension"],

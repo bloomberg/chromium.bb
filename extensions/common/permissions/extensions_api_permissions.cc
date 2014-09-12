@@ -65,6 +65,8 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kVideoCapture, "videoCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
        PermissionMessage::kVideoCapture},
+      {APIPermission::kWebView, "webview",
+       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},
   };
 

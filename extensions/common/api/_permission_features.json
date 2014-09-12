@@ -309,5 +309,22 @@
         "A434B90223C3C52F2B69DB494736B63C612C774D"
       ]
     }
+  ],
+  "webview": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      // General support for webview in component extensions still in progress.
+      // Only allowed for whitelisted extensions until all the caveats are
+      // addressed. Tracked in crbug/285151.
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "location": "component",
+      "whitelist": [
+        "D519188F86D9ACCEE0412007B227D9936EB9676B"  // GAIA Component Extension
+      ]
+    }
   ]
 }

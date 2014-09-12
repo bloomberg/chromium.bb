@@ -276,8 +276,6 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
             .is_available()) {
       module_system->Require("chromeWebViewExperimental");
     }
-  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("denyWebView");
   }
 
   if (extensions::FeatureSwitch::app_view()->IsEnabled() &&

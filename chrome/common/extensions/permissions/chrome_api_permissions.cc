@@ -161,8 +161,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kTabs},
       {APIPermission::kWebRequest, "webRequest"},
       {APIPermission::kWebRequestBlocking, "webRequestBlocking"},
-      {APIPermission::kWebView, "webview",
-       APIPermissionInfo::kFlagCannotBeOptional},
 
       // Register private permissions.
       {APIPermission::kScreenlockPrivate, "screenlockPrivate",

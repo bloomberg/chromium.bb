@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 
 namespace extensions {
 class AppViewGuestDelegate;
@@ -51,7 +52,7 @@ WebViewGuestDelegate* ExtensionsAPIClient::CreateWebViewGuestDelegate(
 WebViewPermissionHelperDelegate* ExtensionsAPIClient::
     CreateWebViewPermissionHelperDelegate(
         WebViewPermissionHelper* web_view_permission_helper) const {
-  return NULL;
+  return new WebViewPermissionHelperDelegate(web_view_permission_helper);
 }
 
 scoped_refptr<RulesRegistry> ExtensionsAPIClient::GetRulesRegistry(

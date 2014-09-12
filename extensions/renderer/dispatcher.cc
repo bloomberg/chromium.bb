@@ -323,6 +323,18 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
   }
 
+  // Note: setting up the WebView class here, not the chrome.webview API.
+  // The API will be automatically set up when first used.
+  if (context->GetAvailability("webViewInternal").is_available()) {
+    module_system->Require("webView");
+    if (context->GetAvailability("webViewExperimentalInternal")
+            .is_available()) {
+      module_system->Require("webViewExperimental");
+    }
+  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("denyWebView");
+  }
+
   delegate_->RequireAdditionalModules(context, is_within_platform_app);
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
