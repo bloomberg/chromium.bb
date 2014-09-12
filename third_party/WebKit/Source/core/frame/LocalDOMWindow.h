@@ -112,6 +112,7 @@ public:
     virtual LocalDOMWindow* toDOMWindow() OVERRIDE;
 
     void registerProperty(DOMWindowProperty*);
+    void unregisterProperty(DOMWindowProperty*);
 
     void reset();
 

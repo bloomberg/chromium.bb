@@ -34,24 +34,39 @@ namespace blink {
 
 DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     : m_frame(frame)
+    , m_associatedDOMWindow(nullptr)
 {
     // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
     // See fast/dom/navigator-detached-no-crash.html for the recipe.
     // We should fix that.  <rdar://problem/11567132>
-    if (m_frame)
-        m_frame->domWindow()->registerProperty(this);
+    if (m_frame) {
+        m_associatedDOMWindow = m_frame->domWindow();
+        m_associatedDOMWindow->registerProperty(this);
+    }
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowProperty);
+#if !ENABLE(OILPAN)
+DOMWindowProperty::~DOMWindowProperty()
+{
+    if (m_associatedDOMWindow)
+        m_associatedDOMWindow->unregisterProperty(this);
+
+    m_associatedDOMWindow = nullptr;
+    m_frame = nullptr;
+}
+#endif
 
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
     // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
     ASSERT(m_frame);
+    ASSERT(m_associatedDOMWindow);
 
-    // DOMWindowProperty's registered lifetime is controlled by LocalDOMWindow. After
-    // the willDestroyGlobalObjectInFrame() notifications, LocalDOMWindow clears out
-    // all registrations. Hence no need to unregister.
+    // DOMWindowProperty lifetime isn't tied directly to the LocalDOMWindow itself so it is important that it unregister
+    // itself from any LocalDOMWindow it is associated with if that LocalDOMWindow is going away.
+    if (m_associatedDOMWindow)
+        m_associatedDOMWindow->unregisterProperty(this);
+    m_associatedDOMWindow = nullptr;
     m_frame = nullptr;
 }
 
@@ -59,6 +74,12 @@ void DOMWindowProperty::willDetachGlobalObjectFromFrame()
 {
     // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
     ASSERT(m_frame);
+    ASSERT(m_associatedDOMWindow);
 }
 
-} // namespace blink
+void DOMWindowProperty::trace(Visitor* visitor)
+{
+    visitor->trace(m_associatedDOMWindow);
+}
+
+}
