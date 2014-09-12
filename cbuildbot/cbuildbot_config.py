@@ -2045,6 +2045,14 @@ internal_notest_paladin.add_config('daisy_spring-paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
+internal_notest_paladin.add_config('kayle-paladin',
+  brillo_non_testable,
+  boards=['kayle'],
+  paladin_builder_name='kayle paladin',
+  important=False,
+  manifest='kayle.xml',
+)
+
 internal_notest_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
@@ -2096,7 +2104,6 @@ internal_brillo_paladin.add_config('lemmings-paladin',
   trybot_list=True,
   important=False,
 )
-
 
 external_brillo_paladin = paladin.derive(brillo)
 
@@ -2455,6 +2462,13 @@ _brillo_release.add_config('panther_embedded-minimal-release',
 )
 
 _arm_brillo_release = _brillo_release.derive(non_testable_builder)
+
+_arm_brillo_release.add_config('kayle-release',
+  boards=['kayle'],
+  manifest='kayle.xml',
+  paygen=False,
+  important=False,
+)
 
 _arm_brillo_release.add_config('storm-release',
   boards=['storm'],
