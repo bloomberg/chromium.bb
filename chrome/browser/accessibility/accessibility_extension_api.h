@@ -104,7 +104,7 @@ class AccessibilityPrivateSetAccessibilityEnabledFunction
   virtual ~AccessibilityPrivateSetAccessibilityEnabledFunction() {}
   virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setAccessibilityEnabled",
-                             EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED)
+                             ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED)
 };
 
 // API function that enables or disables web content accessibility support.
@@ -114,7 +114,7 @@ class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
   virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "accessibilityPrivate.setNativeAccessibilityEnabled",
-      EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED)
+      ACCESSIBILITY_PRIVATE_SETNATIVEACCESSIBILITYENABLED)
 };
 
 // API function that returns the most recent focused control.
@@ -123,7 +123,7 @@ class AccessibilityPrivateGetFocusedControlFunction
   virtual ~AccessibilityPrivateGetFocusedControlFunction() {}
   virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getFocusedControl",
-                             EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL)
+                             ACCESSIBILITY_PRIVATE_GETFOCUSEDCONTROL)
 };
 
 // API function that returns alerts being shown on the give tab.
@@ -132,7 +132,7 @@ class AccessibilityPrivateGetAlertsForTabFunction
   virtual ~AccessibilityPrivateGetAlertsForTabFunction() {}
   virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getAlertsForTab",
-                             EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB)
+                             ACCESSIBILITY_PRIVATE_GETALERTSFORTAB)
 };
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

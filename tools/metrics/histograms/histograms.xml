@@ -40723,7 +40723,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="82" label="BOOKMARKS_EXPORT"/>
   <int value="83" label="HISTORY_SEARCH"/>
   <int value="84" label="TTSENGINE_SENDTTSEVENT"/>
-  <int value="85" label="EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB"/>
+  <int value="85" label="ACCESSIBILITY_PRIVATE_GETALERTSFORTAB"/>
   <int value="86" label="BOOKMARKS_IMPORT"/>
   <int value="87" label="SYNCFILESYSTEM_DELETEFILESYSTEM"/>
   <int value="88" label="DEBUGGER_SENDCOMMAND"/>
@@ -40800,7 +40800,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="158" label="FONTSETTINGS_GETFONTLIST"/>
   <int value="159" label="PERMISSIONS_CONTAINS"/>
   <int value="160" label="DELETED_SCRIPTBADGE_GETPOPUP"/>
-  <int value="161" label="EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL"/>
+  <int value="161" label="ACCESSIBILITY_PRIVATE_GETFOCUSEDCONTROL"/>
   <int value="162" label="DEVELOPERPRIVATE_GETSTRINGS"/>
   <int value="163" label="METRICSPRIVATE_RECORDMEDIUMCOUNT"/>
   <int value="164" label="MANAGEMENT_GET"/>
@@ -40947,7 +40947,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="305" label="DIAL_DISCOVERNOW"/>
   <int value="306" label="TYPES_CHROMESETTING_SET"/>
   <int value="307" label="BROWSERACTION_SETICON"/>
-  <int value="308" label="EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED"/>
+  <int value="308" label="ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED"/>
   <int value="309" label="DELETED_FILEMANAGERPRIVATE_VIEWFILES"/>
   <int value="310" label="DELETED_BLUETOOTH_GETSERVICES"/>
   <int value="311" label="TABS_UPDATE"/>
@@ -41105,8 +41105,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="463" label="SOCKET_MULTICAST_SET_TIME_TO_LIVE"/>
   <int value="464" label="SOCKET_MULTICAST_SET_LOOPBACK_MODE"/>
   <int value="465" label="SOCKET_MULTICAST_GET_JOINED_GROUPS"/>
-  <int value="466"
-      label="EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED"/>
+  <int value="466" label="ACCESSIBILITY_PRIVATE_SETNATIVEACCESSIBILITYENABLED"/>
   <int value="467" label="RUNTIME_GETPLATFORMINFO"/>
   <int value="468" label="DELETED_WEBVIEW_INSERTCSS"/>
   <int value="469" label="METRICSPRIVATE_GETISCRASHRECORDINGENABLED"/>
