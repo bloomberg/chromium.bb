@@ -41,18 +41,6 @@ namespace blink {
 class Element;
 class FloatBox;
 
-// Given an input timing function between keyframe at 0 and keyframe at 1.0, we
-// need a timing function such that the behavior with the keyframes swapped is
-// equivalent to reversing time with the input timing function and keyframes.
-// This means flipping the timing function about x=0.5 and about y=0.5.
-// FIXME: Remove once the Compositor natively understands reversing time.
-class CompositorAnimationsTimingFunctionReverser {
-public:
-    static PassRefPtr<TimingFunction> reverse(const LinearTimingFunction& timefunc);
-    static PassRefPtr<TimingFunction> reverse(const CubicBezierTimingFunction& timefunc);
-    static PassRefPtr<TimingFunction> reverse(const TimingFunction& timefunc);
-};
-
 class CompositorAnimations {
 public:
     static CompositorAnimations* instance() { return instance(0); }

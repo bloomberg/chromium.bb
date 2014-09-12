@@ -1,0 +1,91 @@
+<html>
+<style>
+div {
+    position: relative;
+    height: 100px;
+    width: 100px;
+    background: blue;
+    -webkit-transform: translateZ(0);
+    -webkit-animation-duration: 2s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-fill-mode: both;
+    -webkit-animation-iteration-count: 2;
+}
+
+.test0 {
+    -webkit-animation-direction: normal;
+}
+
+.test1 {
+     -webkit-animation-direction: reverse;
+}
+
+.test2 {
+     -webkit-animation-direction: alternate;
+}
+
+.test3 {
+     -webkit-animation-direction: reverse;
+}
+
+.anim-left {
+    -webkit-animation-name: anim-left;
+    z-index: 100;
+}
+
+.anim-transform {
+    -webkit-animation-name: anim-transform;
+    z-index: 200;
+}
+
+@-webkit-keyframes anim-left {
+    0% {
+        left: 0px;
+    }
+    100% {
+        left: 300px;
+    }
+}
+
+@-webkit-keyframes anim-transform {
+    0% {
+        -webkit-transform: translateX(0px);
+    }
+    100% {
+        -webkit-transform: translateX(300px);
+    }
+}
+</style>
+<body>
+<p>
+Each section below has two boxes, the top runs on the main thread, the bottom
+on the compositor. The animations should be identical but start at different
+times.
+</p><p>
+This test is successful if the boxes are mostly in sync (there might be a small
+offset between them).
+</p>
+<hr>
+
+Direction normal
+<br>
+<div class='test0 anim-left'></div>
+<div class='test0 anim-transform'></div>
+
+Direction reverse
+<br>
+<div class='test1 anim-left'></div>
+<div class='test1 anim-transform'></div>
+
+Direction alternate
+<br>
+<div class='test2 anim-left'></div>
+<div class='test2 anim-transform'></div>
+
+Direction alternate-reverse
+<br>
+<div class='test3 anim-left'></div>
+<div class='test3 anim-transform'></div>
+
+</body>
+</html>

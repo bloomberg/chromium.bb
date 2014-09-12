@@ -41,8 +41,7 @@ class WebCompositorAnimationCurve;
 class CompositorAnimationsImpl {
 private:
     struct CompositorTiming {
-        bool reverse;
-        bool alternate;
+        Timing::PlaybackDirection direction;
         double scaledDuration;
         double scaledTimeOffset;
         double adjustedIterationCount;
@@ -52,7 +51,7 @@ private:
 
     static void getAnimationOnCompositor(const Timing&, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations);
 
-    static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&, bool reverse);
+    static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

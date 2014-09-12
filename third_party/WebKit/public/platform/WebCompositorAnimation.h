@@ -6,6 +6,7 @@
 #define WebCompositorAnimation_h
 
 #define WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS 1
+#define WEB_ANIMATION_SUPPORTS_FULL_DIRECTION 1
 
 namespace blink {
 
@@ -17,6 +18,13 @@ public:
         TargetPropertyOpacity,
         TargetPropertyFilter,
         TargetPropertyScrollOffset
+    };
+
+    enum Direction {
+        DirectionNormal = 0,
+        DirectionReverse,
+        DirectionAlternate,
+        DirectionAlternateReverse
     };
 
     virtual ~WebCompositorAnimation() { }
@@ -38,9 +46,8 @@ public:
     virtual double timeOffset() const = 0;
     virtual void setTimeOffset(double monotonicTime) = 0;
 
-    // If alternatesDirection is true, on odd numbered iterations we reverse the curve.
-    virtual bool alternatesDirection() const = 0;
-    virtual void setAlternatesDirection(bool) = 0;
+    virtual Direction direction() const = 0;
+    virtual void setDirection(Direction) = 0;
 };
 
 } // namespace blink

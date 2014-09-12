@@ -85,8 +85,8 @@ public:
     MOCK_CONST_METHOD0(timeOffset, double());
     MOCK_METHOD1(setTimeOffset, void(double));
 
-    MOCK_CONST_METHOD0(alternatesDirection, bool());
-    MOCK_METHOD1(setAlternatesDirection, void(bool));
+    MOCK_CONST_METHOD0(direction, Direction());
+    MOCK_METHOD1(setDirection, void(Direction));
 
     MOCK_METHOD0(delete_, void());
     ~WebCompositorAnimationMock() { delete_(); }
