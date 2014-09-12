@@ -55,7 +55,13 @@ void DriWindow::Close() {}
 void DriWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
+  if (cursor_->GetCursorWindow() == widget_)
+    cursor_->HideCursor();
+
   dri_window_delegate_->OnBoundsChanged(bounds);
+
+  if (cursor_->GetCursorWindow() == widget_)
+    cursor_->ShowCursor();
 }
 
 gfx::Rect DriWindow::GetBounds() {
