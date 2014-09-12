@@ -312,6 +312,9 @@ class Manager(object):
                 if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)
                 self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
+
+        self._check_for_stale_w3c_dir()
+
         return test_run_results.RunDetails(exit_code, summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):
@@ -353,6 +356,14 @@ class Manager(object):
         self._port.stop_helper()
         _log.debug("Cleaning up port")
         self._port.clean_up_test_run()
+
+    def _check_for_stale_w3c_dir(self):
+        # TODO(dpranke): Remove this check after 1/1/2015 and let people deal with the warnings.
+        # Remove the check in port/base.py as well.
+        fs = self._port.host.filesystem
+        layout_tests_dir = self._port.layout_tests_dir()
+        if fs.isdir(fs.join(layout_tests_dir, 'w3c')):
+            _log.warning('WARNING: You still have the old LayoutTests/w3c directory in your checkout. You should delete it!')
 
     def _force_pixel_tests_if_needed(self):
         if self._options.pixel_tests:

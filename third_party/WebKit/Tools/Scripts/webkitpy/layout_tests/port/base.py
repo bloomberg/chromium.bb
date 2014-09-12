@@ -897,7 +897,18 @@ class Port(object):
 
     def skipped_layout_tests(self, test_list):
         """Returns tests skipped outside of the TestExpectations files."""
-        return set(self._skipped_tests_for_unsupported_features(test_list))
+        tests = set(self._skipped_tests_for_unsupported_features(test_list))
+
+        # We explicitly skip any tests in LayoutTests/w3c if need be to avoid running any tests
+        # left over from the old DEPS-pulled repos.
+        # We also will warn at the end of the test run if these directories still exist.
+        #
+        # TODO(dpranke): Remove this check after 1/1/2015 and let people deal with the warnings.
+        # Remove the check in controllers/manager.py as well.
+        if self._filesystem.isdir(self._filesystem.join(self.layout_tests_dir(), 'w3c')):
+            tests.add('w3c')
+
+        return tests
 
     def _tests_from_skipped_file_contents(self, skipped_file_contents):
         tests_to_skip = []
@@ -1230,7 +1241,6 @@ class Port(object):
     def _port_specific_expectations_files(self):
         paths = []
         paths.append(self.path_from_chromium_base('skia', 'skia_test_expectations.txt'))
-        paths.append(self.path_from_chromium_base('webkit', 'tools', 'layout_tests', 'test_expectations_w3c.txt'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
