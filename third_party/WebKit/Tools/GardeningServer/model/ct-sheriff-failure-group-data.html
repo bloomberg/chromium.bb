@@ -4,12 +4,14 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="ct-builder-list.html">
 <link rel="import" href="ct-commit-list.html">
 
 <script>
 function CTSheriffFailureGroupData(failures, commitList) {
   this.failures = failures;
   this.commitList = commitList;
+  this.builderList = new CTBuilderList(failures);
   this.category = 'sheriff';
 };
 
@@ -40,5 +42,5 @@ CTSheriffFailureGroupData.prototype.failedOnce = function() {
     }
   }
   return totalFailures == 1;
-}
+};
 </script>

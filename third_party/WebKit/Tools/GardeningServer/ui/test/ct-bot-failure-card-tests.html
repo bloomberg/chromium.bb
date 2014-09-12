@@ -1,0 +1,66 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-bot-failure-card.html">
+
+<link rel="import" href="../../model/ct-commit-list-mock.html">
+<link rel="import" href="../../model/ct-commit-log-mock.html">
+<link rel="import" href="../../model/ct-failure-group.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-bot-failure-card', function() {
+  var group;
+  var card;
+  var failures;
+
+  beforeEach(function(done) {
+    card = document.createElement('ct-bot-failure-card');
+    var cl = new CTCommitListMock();
+    group = new CTFailureGroup('', new CTSheriffFailureGroupData([
+        new CTFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
+                      {'blink':158544})], cl));
+    card.group = group.data;
+    card.commitLog = new CTCommitLogMock();
+    setTimeout(done);
+  });
+
+  describe('failure card UI', function() {
+
+    it('should have commit summaries', function(done) {
+      // Expand the first repository so that the <ct-commit>'s are generated.
+      card.group.commitList.repositories[0].expanded = true;
+
+      setTimeout(function() {
+        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var commits = list.shadowRoot.querySelectorAll('ct-commit');
+        assert(commits[1].data);
+        assert(commits[1].data.summary);
+        done();
+      });
+    });
+
+    it('removing a commit summary', function(done) {
+      card.commitLog.commits['blink']['158545'].summary = undefined;
+      card.group.commitList.repositories[0].expanded = true;
+
+      setTimeout(function() {
+        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var commits = list.shadowRoot.querySelectorAll('ct-commit');
+        assert.notOk(commits[0].data.summary);
+        done();
+      });
+    });
+
+  });
+
+});
+
+})()
+</script>

@@ -8,9 +8,13 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
-<polymer-element name="ct-bot-failure-card" attributes="group builderList" noscript>
+<polymer-element name="ct-bot-failure-card" attributes="group commitLog" noscript>
   <template>
     <style>
+      :host {
+        display: flex;
+      }
+
       ct-builder-grid {
         margin-right: 10px;
         width: 250px;
@@ -24,12 +28,29 @@ found in the LICENSE file.
         flex: 1;
       }
     </style>
-    <ct-builder-grid builderList="{{ builderList }}"></ct-builder-grid>
+    <ct-builder-grid builderList="{{ group.builderList }}"></ct-builder-grid>
     <div id="failure">
       <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
       <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
     </div>
   </template>
+  <script>
+    Polymer({
+      group: null,
+      commitLog: null,
+      _builderList: null,
+
+      observe: {
+        group: '_updateCommitList',
+        commitLog: '_updateCommitList',
+      },
+
+      _updateCommitList: function() {
+        if (this.group && this.group.commitList && this.commitLog)
+          this.group.commitList.update(this.commitLog);
+      },
+    });
+  </script>
 </polymer-element>
 
 

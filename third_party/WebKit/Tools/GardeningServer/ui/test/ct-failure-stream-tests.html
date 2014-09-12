@@ -30,7 +30,7 @@ describe('ct-failure-stream', function() {
           new CTFailureGroup('', new CTSheriffFailureGroupData([]))];
       stream.category = 'default';
       setTimeout(function() {
-        var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
+        var cards = stream.shadowRoot.querySelectorAll('ct-bot-failure-card');
         assert.equal(cards.length, 2);
         done();
       });
@@ -38,18 +38,49 @@ describe('ct-failure-stream', function() {
   });
 
   describe('category', function() {
+
     it('should only show failure groups for the specified category', function(done) {
       var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
       var snoozed = new CTFailureGroup('', new CTSheriffFailureGroupData(failures));
       stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])), snoozed];
       stream.category = 'snoozed';
       setTimeout(function() {
-        var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
+        var cards = stream.shadowRoot.querySelectorAll('ct-bot-failure-card');
         assert.equal(cards.length, 1);
-        assert.equal(cards[0].group, snoozed);
+        assert.equal(cards[0].group, snoozed.data);
         done();
       });
     });
+
+    it('should select the correct card type', function(done) {
+      var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {}}])];
+      var failureGroup = new CTFailureGroup('', new CTSheriffFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])), failureGroup];
+      stream.category = 'default';
+      setTimeout(function() {
+        assert(stream.shadowRoot.querySelector('ct-bot-failure-card') != null,
+            'missing sheriff card');
+        stream.groups = [new CTFailureGroup('', new CTTrooperFailureGroupData(
+            'details', 'url', {percent_over_median_slo: '6%',
+            percent_over_max_slo: '7%'}, 'cq_latency', ''))];
+        setTimeout(function() {
+          assert(stream.shadowRoot.querySelector('ct-trooper-card') != null,
+              'missing cq-latency card');
+          stream.groups[0].data.type = 'tree_status';
+          setTimeout(function() {
+            assert(stream.shadowRoot.querySelector('ct-trooper-card') !=
+                null, 'missing tree-status card');
+            stream.groups[0].data.type = 'cycle_time';
+            setTimeout(function() {
+              assert(stream.shadowRoot.querySelector('ct-trooper-card') !=
+                  null, 'missing cycle-time card');
+              done();
+            });
+          });
+        });
+      });
+    });
+
   });
 });
 

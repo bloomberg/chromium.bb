@@ -4,7 +4,9 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="ct-failure-card.html">
+<link rel="import" href="ct-bot-failure-card.html">
+<link rel="import" href="ct-builder-failure-card.html">
+<link rel="import" href="ct-trooper-card.html">
 
 <polymer-element name="ct-failure-stream" attributes="groups commitLog tree category title" noscript>
   <template>
@@ -13,13 +15,18 @@ found in the LICENSE file.
         display: block;
       }
 
-      ct-failure-card {
+      .card {
         padding: 15px 5px;
         border-bottom: 1px solid lightgrey;
+        display: flex;
+      }
+
+      .card > * {
+        flex: 1;
       }
 
       /* FIXME: Don't use before hax to add labels */
-      ct-failure-card:first-of-type::before {
+      :host > div:first-of-type::before {
         content: "{{ title }}:";
         display: block;
         font-weight: bold;
@@ -28,10 +35,27 @@ found in the LICENSE file.
         background-color: #f5f5f5;
         margin-bottom: 5px;
       }
+
+      .snoozed {
+        opacity: 0.5;
+      }
     </style>
     <template repeat="{{ group in groups }}">
       <template if="{{ group.category == category }}">
-        <ct-failure-card group="{{ group }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-card>
+        <div> <!-- FIXME: Remove when we have a better title solution. -->
+          <div class="card">
+            <template if="{{ group.data.category == 'sheriff' }}">
+              <ct-bot-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}" commitLog="{{ commitLog }}"></ct-bot-failure-card>
+            </template>
+            <template if="{{ group.data.category == 'builder' }}">
+              <ct-builder-failure-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-builder-failure-card>
+            </template>
+            <template if="{{ group.data.category == 'trooper' }}">
+              <ct-trooper-card class='{{ { snoozed: group.isSnoozed } | tokenList }}' group="{{ group.data }}"></ct-trooper-card>
+            </template>
+            <ct-failure-card-buttons group="{{ group }}" bug="{{ bug }}"></ct-failure-card-buttons>
+          </div>
+        </div>
       </template>
     </template>
   </template>

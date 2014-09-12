@@ -4,12 +4,15 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="ct-builder-list.html">
+
 <script>
 function CTBuilderFailureGroupData(failure, bot, url) {
   this.bot = bot;
   this.failure = failure;
-  this.category = 'builder';
   this.url = url;
+  this.builderList = new CTBuilderList(failure);
+  this.category = 'builder';
 };
 
 CTBuilderFailureGroupData.prototype.getAnnotations = function() {
