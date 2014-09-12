@@ -29,8 +29,6 @@ struct CC_EXPORT DrawProperties {
         num_unclipped_descendants(0),
         layer_or_descendant_has_copy_request(false),
         layer_or_descendant_has_input_handler(false),
-        has_child_with_a_scroll_parent(false),
-        sorted_for_recursion(false),
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
@@ -39,7 +37,12 @@ struct CC_EXPORT DrawProperties {
         ideal_contents_scale(0.f),
         maximum_animation_contents_scale(0.f),
         page_scale_factor(0.f),
-        device_scale_factor(0.f) {}
+        device_scale_factor(0.f),
+        children_need_sorting(false),
+        sequence_number(0),
+        sort_weight(0),
+        sort_weight_sequence_number(0),
+        depth(0) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -106,16 +109,6 @@ struct CC_EXPORT DrawProperties {
   // If true, the layer or one of its descendants has a wheel or touch handler.
   bool layer_or_descendant_has_input_handler;
 
-  // This is true if the layer has any direct child that has a scroll parent.
-  // This layer will not be the scroll parent in this case. This information
-  // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our
-  // children have scroll parents, we will not need to recur out of order.
-  bool has_child_with_a_scroll_parent;
-
-  // This is true if the order (wrt to its siblings in the tree) in which the
-  // layer will be visited while computing draw properties has been determined.
-  bool sorted_for_recursion;
-
   // If this layer is visited out of order, its contribution to the descendant
   // and render surface layer lists will be put aside in a temporary list.
   // These values will allow for an efficient reordering of these additions.
@@ -147,6 +140,30 @@ struct CC_EXPORT DrawProperties {
 
   // The device scale factor that is applied to the layer.
   float device_scale_factor;
+
+  // This is used to detect cases when a layer needs to sort its children to
+  // ensure that scroll parents are visited before scroll children.
+  bool children_need_sorting;
+
+  // This sequence number is used to determine if we've visited this layer in
+  // PreCalculateMetaInformation.
+  int sequence_number;
+
+  // Determines the order the layer should be processed in
+  // CalculateDrawProperties wrt to its siblings. If you have lower
+  // |sort_weight| you get visited first.
+  int sort_weight;
+
+  // This sequence number is used to determine if a sort weight has already been
+  // assigned for a layer. We may assign a sort weight before we visit a layer,
+  // and it's important that we don't clobber it when we do eventually visit the
+  // layer.
+  int sort_weight_sequence_number;
+
+  // This is the topological depth in the tree. (E.g., root has depth zero).
+  // This is used to make it faster to find the lowest common ancestor of two
+  // layers.
+  int depth;
 };
 
 }  // namespace cc

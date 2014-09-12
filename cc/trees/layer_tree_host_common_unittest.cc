@@ -2878,7 +2878,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true,
                                false);
 
-  child->draw_properties().sorted_for_recursion = true;
+  int initial_sequence_number = child->draw_properties().sequence_number;
 
   TransformOperations start_transform_operations;
   start_transform_operations.AppendScale(1.f, 0.f, 0.f);
@@ -2893,7 +2893,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_FALSE(child->draw_properties().sorted_for_recursion);
+  EXPECT_NE(initial_sequence_number, child->draw_properties().sequence_number);
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -2915,13 +2915,13 @@ TEST_F(LayerTreeHostCommonTest,
                                true,
                                false);
 
-  root->draw_properties().sorted_for_recursion = true;
+  int initial_sequence_number = root->draw_properties().sequence_number;
 
   EXPECT_FALSE(root->TransformIsAnimating());
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_FALSE(root->draw_properties().sorted_for_recursion);
+  EXPECT_NE(initial_sequence_number, root->draw_properties().sequence_number);
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -7523,6 +7523,331 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   EXPECT_TRUE(render_surface_layer_list.at(0)->render_surface());
   EXPECT_TRUE(render_surface_layer_list.at(1)->render_surface());
   EXPECT_TRUE(render_surface_layer_list.at(2)->render_surface());
+}
+
+TEST_F(LayerTreeHostCommonTest, ScrollChildIsGrandchildOfLCA) {
+  // A previously unhandled case for layer sorting was when the scroll child was
+  // a grand child of the lowest common ancestor of the scroll child and parent.
+  // For example,
+  //
+  // + root
+  //   + top_content
+  //     + scroll_child
+  //     + bottom_content
+  //   + scroll_parent_border
+  //     + scroll_parent_clip
+  //       + scroll_parent
+  //
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  host_impl.CreatePendingTree();
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> scroll_parent_border =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  scoped_ptr<LayerImpl> scroll_parent_clip =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  scoped_ptr<LayerImpl> scroll_parent =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+  scoped_ptr<LayerImpl> scroll_child =
+      LayerImpl::Create(host_impl.active_tree(), 5);
+  scoped_ptr<LayerImpl> bottom_content =
+      LayerImpl::Create(host_impl.active_tree(), 6);
+  scoped_ptr<LayerImpl> top_content =
+      LayerImpl::Create(host_impl.active_tree(), 7);
+
+  scroll_parent_clip->SetMasksToBounds(true);
+
+  scroll_child->SetScrollParent(scroll_parent.get());
+  scoped_ptr<std::set<LayerImpl*> > scroll_children(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_child.get());
+  scroll_parent->SetScrollChildren(scroll_children.release());
+
+  scroll_child->SetDrawsContent(true);
+  scroll_parent->SetDrawsContent(true);
+  top_content->SetDrawsContent(true);
+  bottom_content->SetDrawsContent(true);
+
+  gfx::Transform identity_transform;
+  gfx::Transform top_transform;
+  top_transform.Translate3d(0.0, 0.0, 5.0);
+  gfx::Transform bottom_transform;
+  bottom_transform.Translate3d(0.0, 0.0, 3.0);
+
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_border.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_clip.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_child.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(top_content.get(),
+                               top_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false,
+                               true);
+  SetLayerPropertiesForTesting(bottom_content.get(),
+                               bottom_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false,
+                               true);
+
+  scroll_child->SetShouldFlattenTransform(false);
+  scroll_child->Set3dSortingContextId(1);
+
+  scroll_child->AddChild(bottom_content.Pass());
+
+  top_content->AddChild(scroll_child.Pass());
+  root->AddChild(top_content.Pass());
+
+  scroll_parent_clip->AddChild(scroll_parent.Pass());
+  scroll_parent_border->AddChild(scroll_parent_clip.Pass());
+  root->AddChild(scroll_parent_border.Pass());
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root.get(), root->bounds(), &render_surface_layer_list);
+
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_TRUE(root->render_surface());
+
+  EXPECT_EQ(4u, root->render_surface()->layer_list().size());
+  EXPECT_EQ(7, root->render_surface()->layer_list().at(0)->id());
+  EXPECT_EQ(5, root->render_surface()->layer_list().at(1)->id());
+  EXPECT_EQ(6, root->render_surface()->layer_list().at(2)->id());
+  EXPECT_EQ(4, root->render_surface()->layer_list().at(3)->id());
+
+  // Explicitly check that the sort weights of the two descendancs of the lowest
+  // common ancestor of the scroll parent and child are ordered correctly.
+  EXPECT_EQ(7, root->child_at(0)->id());
+  EXPECT_EQ(2, root->child_at(1)->id());
+  EXPECT_LT(root->child_at(1)->draw_properties().sort_weight,
+            root->child_at(0)->draw_properties().sort_weight);
+}
+
+TEST_F(LayerTreeHostCommonTest, ScrollWeightSetMultipleTimes) {
+  // This is a case where we have to reset a previously set weight.
+  // scroll_parent_1_border will get a negative weight because the child is
+  // visited first. When we reach scroll child 2, we'll have to go back and
+  // "fix" the weight for scroll_parent_2_border so that it sorts before
+  // scroll_parent_1_border.
+  //
+  // + root
+  //   + scroll_parent_2_border
+  //   | + scroll_parent_2_clip
+  //   |   + scroll_parent_2
+  //   |
+  //   + top_content
+  //   | + scroll_child_1
+  //   | + bottom_content
+  //   |
+  //   + scroll_parent_1_border
+  //     + scroll_parent_1_clip
+  //       + scroll_child_2
+  //       + scroll_parent_1
+  //
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  host_impl.CreatePendingTree();
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+
+  scoped_ptr<LayerImpl> scroll_parent_1_border =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  scoped_ptr<LayerImpl> scroll_parent_1_clip =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  scoped_ptr<LayerImpl> scroll_parent_1 =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+
+  scoped_ptr<LayerImpl> scroll_child_1 =
+      LayerImpl::Create(host_impl.active_tree(), 5);
+
+  scoped_ptr<LayerImpl> scroll_parent_2_border =
+      LayerImpl::Create(host_impl.active_tree(), 6);
+  scoped_ptr<LayerImpl> scroll_parent_2_clip =
+      LayerImpl::Create(host_impl.active_tree(), 7);
+  scoped_ptr<LayerImpl> scroll_parent_2 =
+      LayerImpl::Create(host_impl.active_tree(), 8);
+
+  scoped_ptr<LayerImpl> scroll_child_2 =
+      LayerImpl::Create(host_impl.active_tree(), 9);
+
+  scoped_ptr<LayerImpl> bottom_content =
+      LayerImpl::Create(host_impl.active_tree(), 10);
+  scoped_ptr<LayerImpl> top_content =
+      LayerImpl::Create(host_impl.active_tree(), 11);
+
+  scroll_parent_1_clip->SetMasksToBounds(true);
+  scroll_parent_2_clip->SetMasksToBounds(true);
+
+  scroll_child_1->SetScrollParent(scroll_parent_1.get());
+  scroll_child_2->SetScrollParent(scroll_parent_2.get());
+
+  scoped_ptr<std::set<LayerImpl*> > scroll_children_1(new std::set<LayerImpl*>);
+  scroll_children_1->insert(scroll_child_1.get());
+  scroll_parent_1->SetScrollChildren(scroll_children_1.release());
+
+  scoped_ptr<std::set<LayerImpl*> > scroll_children_2(new std::set<LayerImpl*>);
+  scroll_children_2->insert(scroll_child_2.get());
+  scroll_parent_2->SetScrollChildren(scroll_children_2.release());
+
+  scroll_child_1->SetDrawsContent(true);
+  scroll_child_2->SetDrawsContent(true);
+  scroll_parent_1->SetDrawsContent(true);
+  scroll_parent_2->SetDrawsContent(true);
+
+  top_content->SetDrawsContent(true);
+  bottom_content->SetDrawsContent(true);
+
+  gfx::Transform identity_transform;
+  gfx::Transform top_transform;
+  top_transform.Translate3d(0.0, 0.0, 5.0);
+  gfx::Transform bottom_transform;
+  bottom_transform.Translate3d(0.0, 0.0, 3.0);
+
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_1_border.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_1_clip.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_1.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_2_border.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_2_clip.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_2.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_child_1.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(scroll_child_2.get(),
+                               identity_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(top_content.get(),
+                               top_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false,
+                               true);
+  SetLayerPropertiesForTesting(bottom_content.get(),
+                               bottom_transform,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false,
+                               true);
+
+  scroll_child_1->SetShouldFlattenTransform(false);
+  scroll_child_1->Set3dSortingContextId(1);
+
+  scroll_child_2->SetShouldFlattenTransform(false);
+  scroll_child_2->Set3dSortingContextId(1);
+
+  scroll_parent_2_clip->AddChild(scroll_parent_2.Pass());
+  scroll_parent_2_border->AddChild(scroll_parent_2_clip.Pass());
+  root->AddChild(scroll_parent_2_border.Pass());
+
+  scroll_child_1->AddChild(bottom_content.Pass());
+  top_content->AddChild(scroll_child_1.Pass());
+  root->AddChild(top_content.Pass());
+
+  scroll_parent_1_clip->AddChild(scroll_child_2.Pass());
+  scroll_parent_1_clip->AddChild(scroll_parent_1.Pass());
+  scroll_parent_1_border->AddChild(scroll_parent_1_clip.Pass());
+  root->AddChild(scroll_parent_1_border.Pass());
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root.get(), root->bounds(), &render_surface_layer_list);
+
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_TRUE(root->render_surface());
+
+  EXPECT_GT(0, root->child_at(0)->draw_properties().sort_weight);
+  EXPECT_GT(0, root->child_at(2)->draw_properties().sort_weight);
+  EXPECT_LT(root->child_at(0)->draw_properties().sort_weight,
+            root->child_at(2)->draw_properties().sort_weight);
+  EXPECT_TRUE(root->draw_properties().children_need_sorting);
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {

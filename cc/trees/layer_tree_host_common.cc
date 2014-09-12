@@ -202,14 +202,27 @@ static void UpdateClipRectsForClipChild(
         TranslateRectDirectionToDescendant);
   } else {
     // If we're being clipped by our scroll parent, we must translate through
-    // our common ancestor. This happens to be our parent, so it is sufficent to
-    // translate from our clip parent's space to the space of its ancestor (our
-    // parent).
+    // our common ancestor.
+    const LayerType* lca =
+        HighestScrollParentAncestorNotOnChildAncestorChain(
+            layer->draw_properties().sequence_number, layer, clip_parent)
+            ->parent();
+
     *clip_rect_in_parent_target_space =
-        TranslateRectToTargetSpace<LayerType>(*layer->parent(),
+        TranslateRectToTargetSpace<LayerType>(*lca,
                                               *clip_parent,
                                               *clip_rect_in_parent_target_space,
                                               TranslateRectDirectionToAncestor);
+
+    // The lowest common ancestor is usually, but not always, our parent. We
+    // must check if we need to transform from the lca's space to our parent's.
+    if (lca != layer->parent()) {
+      *clip_rect_in_parent_target_space = TranslateRectToTargetSpace<LayerType>(
+          *lca,
+          *layer->parent(),
+          *clip_rect_in_parent_target_space,
+          TranslateRectDirectionToDescendant);
+    }
   }
 }
 
@@ -1155,6 +1168,18 @@ static inline void MarkLayerListWithRenderSurfaceLayerListId(
 }
 
 template <typename LayerType>
+static inline bool HaveVisited(LayerType* layer, int sequence_number) {
+  return layer->draw_properties().sequence_number == sequence_number;
+}
+
+template <typename LayerType>
+static inline bool HaveAssignedSortWeight(LayerType* layer,
+                                          int sequence_number) {
+  return layer->draw_properties().sort_weight_sequence_number ==
+         sequence_number;
+}
+
+template <typename LayerType>
 static inline void RemoveSurfaceForEarlyExit(
     LayerType* layer_to_remove,
     typename LayerType::RenderSurfaceListType* render_surface_layer_list) {
@@ -1181,6 +1206,73 @@ static inline void RemoveSurfaceForEarlyExit(
   layer_to_remove->ClearRenderSurfaceLayerList();
 }
 
+template <typename LayerType>
+static inline LayerType* HighestScrollParentAncestorNotOnChildAncestorChain(
+    int sequence_number,
+    LayerType* scroll_child,
+    LayerType* scroll_parent) {
+  // Say we have the following tree.
+  //
+  // a
+  // +-b
+  // | +-c
+  // |   +-scroll_child
+  // +-d
+  //   +-e
+  //     +-scroll_parent
+  //
+  // This function aims to find find the highest ancestor of |scroll_parent|
+  // that's not on |scroll_child|'s ancestor chain. d, in this case.
+  //
+  // Fortunately, we have some hints that make finding the lowest common
+  // ancestor a bit easier than usual. We know if we've visited a layer, and for
+  // those layers that we've visited, we know their depth in the tree.
+  if (!HaveVisited(scroll_parent, sequence_number)) {
+    DCHECK(scroll_parent->parent());
+    // This case is easy. Since we walk the tree in DFS order, if we haven't
+    // visited the scroll parent, we just have to walk up to the first visited
+    // layer, which will be the LCA.
+    while (!HaveVisited(scroll_parent->parent(), sequence_number))
+      scroll_parent = scroll_parent->parent();
+    // This would mean that |scroll_parent| is a descendant of |scroll_child|,
+    // which is an error.
+    DCHECK_NE(scroll_child, scroll_parent->parent());
+  } else {
+    // In this case, we've visited both the scroll_parent and scroll_child, so
+    // it's not as easy as walking to the first visited ancestor of the scroll
+    // parent. But since we've visited the layers, we know their depths, and we
+    // can efficiently find the LCA by walking up nodes at the same height.
+
+    // First, walk up from the deeper layer until we reach two layers at the
+    // same depth in the tree.
+    while (scroll_child->draw_properties().depth !=
+           scroll_parent->draw_properties().depth) {
+      int child_is_deeper = scroll_child->draw_properties().depth >
+                            scroll_parent->draw_properties().depth;
+      if (child_is_deeper)
+        scroll_child = scroll_child->parent();
+      else
+        scroll_parent = scroll_parent->parent();
+    }
+
+    // This would only happen if |scroll_child| and |scroll_parent| were on the
+    // same ancestor chain, which is an error. We only ever set up scroll parent
+    // scroll child relationships if scroll child is not a descendant of the
+    // scroll parent and will therefore not scroll with it naturally and needs
+    // special treatment by the compositor.
+    DCHECK_NE(scroll_child, scroll_parent);
+
+    // Now that scroll_child and scroll_parent are at the same depth, we can
+    // walk up in tandem to find the LCA.
+    while (scroll_child->parent() != scroll_parent->parent()) {
+      scroll_child = scroll_child->parent();
+      scroll_parent = scroll_parent->parent();
+    }
+  }
+
+  return scroll_parent;
+}
+
 struct PreCalculateMetaInformationRecursiveData {
   bool layer_or_descendant_has_copy_request;
   bool layer_or_descendant_has_input_handler;
@@ -1201,15 +1293,93 @@ struct PreCalculateMetaInformationRecursiveData {
   }
 };
 
+static int next_sort_weight(int* last_sort_weight) {
+  return ++(*last_sort_weight);
+}
+
+template <typename LayerType>
+static inline void AssignSortWeights(LayerType* layer,
+                                     int sequence_number,
+                                     int* last_sort_weight) {
+  // Give |layer| the highest sort weight in the tree so far.
+  if (!HaveAssignedSortWeight(layer, sequence_number)) {
+    layer->draw_properties().sort_weight = next_sort_weight(last_sort_weight);
+    layer->draw_properties().sort_weight_sequence_number = sequence_number;
+  }
+
+  if (LayerType* scroll_parent = layer->scroll_parent()) {
+    // It's important to note where we need to take care of ordering so that
+    // scroll parents are visited before scroll children; it's at their lowest
+    // common ancestor.
+    //
+    // LCA
+    // +-scroll_parent_ancestor
+    // | +- ...
+    // |   + scroll_parent
+    // |
+    // +-scroll_child_ancestor
+    //   +- ..
+    //     + scroll_child
+    //
+    // So given the above tree, we need to guarentee that scroll_parent_ancestor
+    // is processed before scroll_child. We ensure that by assigning it the
+    // lowest sort weight in the tree. We also want to flag LCA if we need to do
+    // any funny business with sort weights so that it knows to do special
+    // sorting of its descendants.
+    LayerType* scroll_parent_ancestor =
+        HighestScrollParentAncestorNotOnChildAncestorChain(
+            sequence_number, layer, scroll_parent);
+
+    // We know we need to reorder if we haven't yet assigned
+    // |scroll_parent_ancestor| a sort weight. Sort weights are monotonically
+    // increasing, so unless we intervene, it will be given a higher sort weight
+    // than |layer|.
+    bool need_to_reorder =
+        !HaveAssignedSortWeight(scroll_parent_ancestor, sequence_number);
+
+    LayerType* lca = scroll_parent_ancestor->parent();
+
+    // We also might need to reorder if scroll_parent_ancestor has been visited
+    // and has an unacceptable sort weight.
+    if (!need_to_reorder) {
+      LayerType* scroll_child_ancestor = layer;
+      while (scroll_child_ancestor->parent() &&
+             scroll_child_ancestor->parent() != lca) {
+        scroll_child_ancestor = scroll_child_ancestor->parent();
+      }
+      // We must have assigned a sort weight to this layer since its on our
+      // ancestor chain.
+      DCHECK(HaveAssignedSortWeight(scroll_child_ancestor, sequence_number));
+      if (scroll_child_ancestor->draw_properties().sort_weight <
+          scroll_parent_ancestor->draw_properties().sort_weight)
+        need_to_reorder = true;
+    }
+
+    if (need_to_reorder) {
+      // Give |scroll_parent_ancestor| the lowest weight in the tree so far.
+      scroll_parent_ancestor->draw_properties().sort_weight =
+          -next_sort_weight(last_sort_weight);
+      scroll_parent_ancestor->draw_properties().sort_weight_sequence_number =
+          sequence_number;
+
+      // Mark the LCA as needing to sort.
+      lca->draw_properties().children_need_sorting = true;
+    }
+  }
+}
+
 // Recursively walks the layer tree to compute any information that is needed
 // before doing the main recursion.
 template <typename LayerType>
 static void PreCalculateMetaInformation(
     LayerType* layer,
-    PreCalculateMetaInformationRecursiveData* recursive_data) {
-
-  layer->draw_properties().sorted_for_recursion = false;
-  layer->draw_properties().has_child_with_a_scroll_parent = false;
+    PreCalculateMetaInformationRecursiveData* recursive_data,
+    int depth,
+    int sequence_number,
+    int* last_sort_weight) {
+  layer->draw_properties().children_need_sorting = false;
+  layer->draw_properties().depth = depth;
+  layer->draw_properties().sequence_number = sequence_number;
 
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
@@ -1220,15 +1390,17 @@ static void PreCalculateMetaInformation(
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
+  AssignSortWeights(layer, sequence_number, last_sort_weight);
+
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerType* child_layer =
         LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
-
     PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformation(child_layer, &data_for_child);
-
-    if (child_layer->scroll_parent())
-      layer->draw_properties().has_child_with_a_scroll_parent = true;
+    PreCalculateMetaInformation(child_layer,
+                                &data_for_child,
+                                depth + 1,
+                                sequence_number,
+                                last_sort_weight);
     recursive_data->Merge(data_for_child);
   }
 
@@ -1315,77 +1487,23 @@ struct DataForRecursion {
 };
 
 template <typename LayerType>
-static LayerType* GetChildContainingLayer(const LayerType& parent,
-                                          LayerType* layer) {
-  for (LayerType* ancestor = layer; ancestor; ancestor = ancestor->parent()) {
-    if (ancestor->parent() == &parent)
-      return ancestor;
+struct AscendingScrollWeightComparator {
+  bool operator()(LayerType* lhs, LayerType* rhs) {
+    return lhs->draw_properties().sort_weight <
+           rhs->draw_properties().sort_weight;
   }
-  NOTREACHED();
-  return 0;
-}
+};
 
 template <typename LayerType>
-static void AddScrollParentChain(std::vector<LayerType*>* out,
-                                 const LayerType& parent,
-                                 LayerType* layer) {
-  // At a high level, this function walks up the chain of scroll parents
-  // recursively, and once we reach the end of the chain, we add the child
-  // of |parent| containing each scroll ancestor as we unwind. The result is
-  // an ordering of parent's children that ensures that scroll parents are
-  // visited before their descendants.
-  // Take for example this layer tree:
-  //
-  // + stacking_context
-  //   + scroll_child (1)
-  //   + scroll_parent_graphics_layer (*)
-  //   | + scroll_parent_scrolling_layer
-  //   |   + scroll_parent_scrolling_content_layer (2)
-  //   + scroll_grandparent_graphics_layer (**)
-  //     + scroll_grandparent_scrolling_layer
-  //       + scroll_grandparent_scrolling_content_layer (3)
-  //
-  // The scroll child is (1), its scroll parent is (2) and its scroll
-  // grandparent is (3). Note, this doesn't mean that (2)'s scroll parent is
-  // (3), it means that (*)'s scroll parent is (3). We don't want our list to
-  // look like [ (3), (2), (1) ], even though that does have the ancestor chain
-  // in the right order. Instead, we want [ (**), (*), (1) ]. That is, only want
-  // (1)'s siblings in the list, but we want them to appear in such an order
-  // that the scroll ancestors get visited in the correct order.
-  //
-  // So our first task at this step of the recursion is to determine the layer
-  // that we will potentionally add to the list. That is, the child of parent
-  // containing |layer|.
-  LayerType* child = GetChildContainingLayer(parent, layer);
-  if (child->draw_properties().sorted_for_recursion)
-    return;
-
-  if (LayerType* scroll_parent = child->scroll_parent())
-    AddScrollParentChain(out, parent, scroll_parent);
-
-  out->push_back(child);
-  child->draw_properties().sorted_for_recursion = true;
-}
-
-template <typename LayerType>
-static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
+static void SortChildrenForRecursion(std::vector<LayerType*>* out,
                                      const LayerType& parent) {
-  out->reserve(parent.children().size());
-  bool order_changed = false;
-  for (size_t i = 0; i < parent.children().size(); ++i) {
-    LayerType* current =
-        LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
+  out->resize(parent.children().size());
+  for (size_t i = 0; i < parent.children().size(); ++i)
+    (*out)[i] = LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
 
-    if (current->draw_properties().sorted_for_recursion) {
-      order_changed = true;
-      continue;
-    }
-
-    AddScrollParentChain(out, parent, current);
-  }
-
-  DCHECK_EQ(parent.children().size(), out->size());
-  return order_changed;
+  // Ensures the children are sorted in ascending sort weight.
+  std::sort(
+      out->begin(), out->end(), AscendingScrollWeightComparator<LayerType>());
 }
 
 template <typename LayerType>
@@ -2111,9 +2229,8 @@ static void CalculateDrawPropertiesInternal(
   }
 
   std::vector<LayerType*> sorted_children;
-  bool child_order_changed = false;
-  if (layer_draw_properties.has_child_with_a_scroll_parent)
-    child_order_changed = SortChildrenForRecursion(&sorted_children, *layer);
+  if (layer_draw_properties.children_need_sorting)
+    SortChildrenForRecursion(&sorted_children, *layer);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     // If one of layer's children has a scroll parent, then we may have to
@@ -2121,7 +2238,7 @@ static void CalculateDrawPropertiesInternal(
     // sorted_children. Otherwise, we'll grab the child directly from the
     // layer's list of children.
     LayerType* child =
-        layer_draw_properties.has_child_with_a_scroll_parent
+        layer_draw_properties.children_need_sorting
             ? sorted_children[i]
             : LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
 
@@ -2159,7 +2276,7 @@ static void CalculateDrawPropertiesInternal(
   }
 
   // Add the unsorted layer list contributions, if necessary.
-  if (child_order_changed) {
+  if (layer_draw_properties.children_need_sorting) {
     SortLayerListContributions(
         *layer,
         GetLayerListForSorting(render_surface_layer_list),
@@ -2390,8 +2507,15 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DataForRecursion<Layer> data_for_recursion;
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
 
+  // This is used as a global throughout the precalculate recursion.
+  int last_sort_weight = 0;
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  PreCalculateMetaInformation(inputs->root_layer,
+                              &recursive_data,
+                              0,
+                              inputs->current_render_surface_layer_list_id,
+                              &last_sort_weight);
+
   std::vector<AccumulatedSurfaceState<Layer> > accumulated_surface_state;
   CalculateDrawPropertiesInternal<Layer>(
       inputs->root_layer,
@@ -2419,8 +2543,15 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   LayerSorter layer_sorter;
   globals.layer_sorter = &layer_sorter;
 
+  // This is used as a global throughout the precalculate recursion.
+  int last_sort_weight = 0;
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  PreCalculateMetaInformation(inputs->root_layer,
+                              &recursive_data,
+                              0,
+                              inputs->current_render_surface_layer_list_id,
+                              &last_sort_weight);
+
   std::vector<AccumulatedSurfaceState<LayerImpl> >
       accumulated_surface_state;
   CalculateDrawPropertiesInternal<LayerImpl>(
