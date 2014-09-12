@@ -159,12 +159,6 @@ class BookmarkModelTest : public testing::Test,
     observer_details_.Set(old_parent, new_parent, old_index, new_index);
   }
 
-  virtual void OnWillAddBookmarkNode(BookmarkModel* model,
-                                     BookmarkNode* node) OVERRIDE {
-    ++will_add_count_;
-    EXPECT_TRUE(node->parent() == NULL);
-  }
-
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
                                  int index) OVERRIDE {
@@ -237,15 +231,14 @@ class BookmarkModelTest : public testing::Test,
   }
 
   void ClearCounts() {
-    will_add_count_ = added_count_ = moved_count_ = removed_count_ =
-        changed_count_ = reordered_count_ = extensive_changes_beginning_count_ =
+    added_count_ = moved_count_ = removed_count_ = changed_count_ =
+        reordered_count_ = extensive_changes_beginning_count_ =
         extensive_changes_ended_count_ = all_bookmarks_removed_ =
         before_remove_count_ = before_change_count_ = before_reorder_count_ =
         before_remove_all_count_ = 0;
   }
 
-  void AssertObserverCount(int will_add_count,
-                           int added_count,
+  void AssertObserverCount(int added_count,
                            int moved_count,
                            int removed_count,
                            int changed_count,
@@ -254,7 +247,6 @@ class BookmarkModelTest : public testing::Test,
                            int before_change_count,
                            int before_reorder_count,
                            int before_remove_all_count) {
-    EXPECT_EQ(will_add_count_, will_add_count);
     EXPECT_EQ(added_count_, added_count);
     EXPECT_EQ(moved_count_, moved_count);
     EXPECT_EQ(removed_count_, removed_count);
@@ -299,7 +291,6 @@ class BookmarkModelTest : public testing::Test,
   ObserverDetails observer_details_;
 
  private:
-  int will_add_count_;
   int added_count_;
   int moved_count_;
   int removed_count_;
@@ -343,7 +334,7 @@ TEST_F(BookmarkModelTest, AddURL) {
   const GURL url("http://foo.com");
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
@@ -364,7 +355,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
   const GURL url("https://www.baidu.com/");
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
@@ -405,7 +396,7 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
 
   const BookmarkNode* new_node = model_->AddURLWithCreationTimeAndMetaInfo(
       root, 0, title, url, time, &meta_info);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
@@ -428,7 +419,7 @@ TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
   const GURL url("http://foo.com");
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
@@ -447,7 +438,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
   const base::string16 title(ASCIIToUTF16("foo"));
 
   const BookmarkNode* new_node = model_->AddFolder(root, 0, title);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
@@ -461,7 +452,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
   // Add another folder, just to make sure folder_ids are incremented correctly.
   ClearCounts();
   model_->AddFolder(root, 0, title);
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 }
 
@@ -490,7 +481,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
 
   model_->Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
-  AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0, 0);
+  AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
@@ -513,7 +504,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   // Now remove the folder.
   model_->Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
-  AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0, 0);
+  AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
@@ -534,7 +525,7 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
   const BookmarkNode* folder = model_->AddFolder(bookmark_bar_node, 0, title);
   model_->AddURL(folder, 0, title, url);
 
-  AssertObserverCount(3, 3, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(3, 0, 0, 0, 0, 0, 0, 0, 0);
   ClearCounts();
 
   model_->RemoveAllUserBookmarks();
@@ -542,7 +533,7 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
   EXPECT_EQ(0, bookmark_bar_node->child_count());
   // No individual BookmarkNodeRemoved events are fired, so removed count
   // should be 0.
-  AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+  AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 1);
   AssertExtensiveChangesObserverCount(1, 1);
   EXPECT_EQ(1, AllNodesRemovedObserverCount());
 }
@@ -557,7 +548,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
 
   title = ASCIIToUTF16("foo2");
   model_->SetTitle(node, title);
-  AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 0, 0);
+  AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0);
   observer_details_.ExpectEquals(node, NULL, -1, -1);
   EXPECT_EQ(title, node->GetTitle());
 }
@@ -586,7 +577,7 @@ TEST_F(BookmarkModelTest, SetURL) {
 
   url = GURL("http://foo2.com");
   model_->SetURL(node, url);
-  AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 0, 0);
+  AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0);
   observer_details_.ExpectEquals(node, NULL, -1, -1);
   EXPECT_EQ(url, node->url());
 }
@@ -601,7 +592,7 @@ TEST_F(BookmarkModelTest, SetDateAdded) {
 
   base::Time new_time = base::Time::Now() + base::TimeDelta::FromMinutes(20);
   model_->SetDateAdded(node, new_time);
-  AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_EQ(new_time, node->date_added());
   EXPECT_EQ(new_time, model_->bookmark_bar_node()->date_folder_modified());
 }
@@ -616,7 +607,7 @@ TEST_F(BookmarkModelTest, Move) {
 
   model_->Move(node, folder1, 0);
 
-  AssertObserverCount(0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, folder1, 1, 0);
   EXPECT_TRUE(folder1 == node->parent());
   EXPECT_EQ(1, root->child_count());
@@ -627,7 +618,7 @@ TEST_F(BookmarkModelTest, Move) {
   // And remove the folder.
   ClearCounts();
   model_->Remove(root, 0);
-  AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0, 0);
+  AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
   EXPECT_EQ(0, root->child_count());
@@ -1021,7 +1012,7 @@ TEST_F(BookmarkModelTest, Sort) {
   model_->SortChildren(parent);
 
   // Make sure we were notified.
-  AssertObserverCount(0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
+  AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 0);
 
   // Make sure the order matches (remember, 'a' and 'C' are folders and
   // come first).
@@ -1049,7 +1040,7 @@ TEST_F(BookmarkModelTest, Reorder) {
   model_->ReorderChildren(parent, new_order);
 
   // Make sure we were notified.
-  AssertObserverCount(0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
+  AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 0);
 
   // Make sure the order matches is correct (it should be reversed).
   ASSERT_EQ(4, parent->child_count());

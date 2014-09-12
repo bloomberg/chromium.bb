@@ -29,12 +29,6 @@ class BookmarkModelObserver {
                                  const BookmarkNode* new_parent,
                                  int new_index) = 0;
 
-  // Invoked prior to adding a bookmark node, and in particular, prior to adding
-  // it to the parent. This function can be used to alter the contents of the
-  // node before BookmarkNodeAdded listeners know about it.
-  virtual void OnWillAddBookmarkNode(BookmarkModel* model,
-                                     BookmarkNode* node) {}
-
   // Invoked when a node has been added.
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,

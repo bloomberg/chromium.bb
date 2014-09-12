@@ -878,9 +878,6 @@ void BookmarkModel::RemoveNodeAndGetRemovedUrls(BookmarkNode* node,
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
                                      int index,
                                      BookmarkNode* node) {
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    OnWillAddBookmarkNode(this, node));
-
   parent->Add(node, index);
 
   if (store_.get())

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 
 #include "base/bind.h"
@@ -14,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -47,9 +44,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -90,56 +85,6 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
   base::FilePath default_path;
   PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
   return default_path.Append(filename);
-}
-
-bool IsEnhancedBookmarksExtensionActive(Profile* profile) {
-  static const char *enhanced_extension_hashes[] = {
-    "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
-    "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
-    "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
-  };
-  const ExtensionSet& extensions =
-      ExtensionRegistry::Get(profile)->enabled_extensions();
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    const Extension* extension = it->get();
-    if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kBookmarkManagerPrivate)) {
-      std::string hash = base::SHA1HashString(extension->id());
-      hash = base::HexEncode(hash.c_str(), hash.length());
-      for (size_t i = 0; i < arraysize(enhanced_extension_hashes); i++)
-        if (hash == enhanced_extension_hashes[i])
-          return true;
-    }
-  }
-  return false;
-}
-
-std::string ToBase36(int64 value) {
-  DCHECK(value >= 0);
-  std::string str;
-  while (value > 0) {
-    int digit = value % 36;
-    value /= 36;
-    str += (digit < 10 ? '0' + digit : 'a' + digit - 10);
-  }
-  std::reverse(str.begin(), str.end());
-  return str;
-}
-
-// Generate a metadata ID based on a the current time and a random number for
-// enhanced bookmarks, to be assigned pre-sync.
-std::string GenerateEnhancedBookmarksID(bool is_folder) {
-  static const char bookmark_prefix[] = "cc_";
-  static const char folder_prefix[] = "cf_";
-  // Use [0..range_mid) for bookmarks, [range_mid..2*range_mid) for folders.
-  int range_mid = 36*36*36*36 / 2;
-  int rand = base::RandInt(0, range_mid - 1);
-  int64 unix_epoch_time_in_ms =
-      (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
-  return std::string(is_folder ? folder_prefix : bookmark_prefix) +
-      ToBase36(is_folder ? range_mid + rand : rand) +
-      ToBase36(unix_epoch_time_in_ms);
 }
 
 }  // namespace
@@ -336,20 +281,6 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
   DispatchEvent(
       bookmarks::OnMoved::kEventName,
       bookmarks::OnMoved::Create(base::Int64ToString(node->id()), move_info));
-}
-
-void BookmarkEventRouter::OnWillAddBookmarkNode(BookmarkModel* model,
-                                                BookmarkNode* node) {
-  // TODO(wittman): Remove this once extension hooks are in place to allow the
-  // enhanced bookmarks extension to manage all bookmark creation code
-  // paths. See http://crbug.com/383557.
-  if (IsEnhancedBookmarksExtensionActive(Profile::FromBrowserContext(
-          browser_context_))) {
-    static const char key[] = "stars.id";
-    std::string value;
-    if (!node->GetMetaInfo(key, &value))
-      node->SetMetaInfo(key, GenerateEnhancedBookmarksID(node->is_folder()));
-  }
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
