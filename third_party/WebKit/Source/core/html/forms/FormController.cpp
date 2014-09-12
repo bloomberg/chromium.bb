@@ -413,7 +413,7 @@ static String formStateSignature()
     // In the legacy version of serialized state, the first item was a name
     // attribute value of a form control. The following string literal should
     // contain some characters which are rarely used for name attribute values.
-    DEFINE_STATIC_LOCAL(String, signature, ("\n\r?% Blink serialized form state version 9 \n\r=&"));
+    DEFINE_STATIC_LOCAL(String, signature, ("\n\r?% WebKit serialized form state version 8 \n\r=&"));
     return signature;
 }
 
