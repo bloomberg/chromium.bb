@@ -60,6 +60,11 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   virtual ~ViewManagerProxy() {
   }
 
+  // Returns true if in an initial state. If this returns false it means the
+  // last test didn't clean up properly, or most likely didn't invoke
+  // WaitForInstance() when it needed to.
+  static bool IsInInitialState() { return instance_ == NULL; }
+
   // Runs a message loop until the single instance has been created.
   static ViewManagerProxy* WaitForInstance() {
     if (!instance_)
@@ -449,6 +454,8 @@ class ViewManagerTest : public testing::Test {
         connection3_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(ViewManagerProxy::IsInInitialState());
+
     test_helper_.Init();
 
     test_helper_.SetLoaderForURL(
@@ -1169,26 +1176,6 @@ TEST_F(ViewManagerTest, CantGetViewTreeOfOtherRoots) {
   connection2_->GetViewTree(BuildViewId(1, 1), &views);
   ASSERT_EQ(1u, views.size());
   EXPECT_EQ("view=1,1 parent=null", views[0].ToString());
-}
-
-TEST_F(ViewManagerTest, ConnectTwice) {
-  ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 1)));
-  ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 2)));
-
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
-
-  // Try to connect again to 1,1, this should fail as already connected to that
-  // root.
-  ASSERT_TRUE(connection_->Embed(BuildViewId(1, 1), kTestServiceURL));
-
-  // Connecting to 1,2 should succeed and end up in connection2.
-  {
-    ASSERT_TRUE(connection_->Embed(BuildViewId(1, 2), kTestServiceURL));
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ViewDeleted view=1,1", changes[0]);
-  }
 }
 
 TEST_F(ViewManagerTest, OnViewInput) {
