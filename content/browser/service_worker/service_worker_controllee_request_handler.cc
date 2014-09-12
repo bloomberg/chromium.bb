@@ -148,8 +148,6 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   }
   DCHECK(registration.get());
 
-  ServiceWorkerMetrics::CountControlledPageLoad();
-
   // Initiate activation of a waiting version.
   // Usually a register job initiates activation but that
   // doesn't happen if the browser exits prior to activation
@@ -191,6 +189,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
+  ServiceWorkerMetrics::CountControlledPageLoad();
+
   provider_host_->AssociateRegistration(registration.get());
   job_->ForwardToServiceWorker();
   TRACE_EVENT_ASYNC_END2(
@@ -211,6 +211,9 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     job_->FallbackToNetwork();
     return;
   }
+
+  ServiceWorkerMetrics::CountControlledPageLoad();
+
   provider_host_->AssociateRegistration(registration);
   job_->ForwardToServiceWorker();
 }
