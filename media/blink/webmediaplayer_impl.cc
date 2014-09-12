@@ -358,9 +358,9 @@ void WebMediaPlayerImpl::setRate(double rate) {
       rate = kMinRate;
     else if (rate > kMaxRate)
       rate = kMaxRate;
-    if (playback_rate_ == 0 && delegate_)
+    if (playback_rate_ == 0 && !paused_ && delegate_)
       delegate_->DidPlay(this);
-  } else if (playback_rate_ != 0 && delegate_) {
+  } else if (playback_rate_ != 0 && !paused_ && delegate_) {
     delegate_->DidPause(this);
   }
 
