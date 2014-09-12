@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -15,7 +18,8 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
     : browser_(browser),
       wrench_menu_(wrench_menu),
       container_(NULL),
-      browser_actions_container_observer_(this) {
+      browser_actions_container_observer_(this),
+      weak_factory_(this) {
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()->browser_actions();
@@ -49,6 +53,18 @@ void ExtensionToolbarMenuView::Layout() {
 }
 
 void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
+  // The delay before we close the wrench menu if this was opened for a drop so
+  // that the user can see a browser action if one was moved.
+  static const int kCloseMenuDelay = 300;
+
   DCHECK(wrench_menu_->for_drop());
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ExtensionToolbarMenuView::CloseWrenchMenu,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kCloseMenuDelay));
+}
+
+void ExtensionToolbarMenuView::CloseWrenchMenu() {
   wrench_menu_->CloseMenu();
 }

@@ -33,6 +33,9 @@ class ExtensionToolbarMenuView : public views::View,
   // BrowserActionsContainerObserver:
   virtual void OnBrowserActionDragDone() OVERRIDE;
 
+  // Closes the |wrench_menu_|.
+  void CloseWrenchMenu();
+
   // The associated browser.
   Browser* browser_;
 
@@ -44,6 +47,8 @@ class ExtensionToolbarMenuView : public views::View,
 
   ScopedObserver<BrowserActionsContainer, BrowserActionsContainerObserver>
       browser_actions_container_observer_;
+
+  base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarMenuView);
 };
