@@ -11,17 +11,17 @@ module mojo {
 
 [Client=NativeViewportClient]
 interface NativeViewport {
-  Create(Rect bounds);
+  Create(Size size);
   Show();
   Hide();
   Close();
-  SetBounds(Rect bounds);
+  SetBounds(Size size);
   SubmittedFrame(SurfaceId surface_id);
 };
 
 interface NativeViewportClient {
   OnCreated(uint64 native_viewport_id);
-  OnBoundsChanged(Rect bounds);
+  OnBoundsChanged(Size size);
   OnDestroyed();
   OnEvent(Event event) => ();
 };

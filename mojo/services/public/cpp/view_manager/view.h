@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
+#include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -68,6 +69,8 @@ class View {
   bool Contains(View* child) const;
 
   View* GetChildById(Id id);
+
+  void SetSurfaceId(SurfaceIdPtr id);
 
   // TODO(beng): temporary only.
   void SetContents(const SkBitmap& contents);

@@ -12,7 +12,7 @@
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 class SurfaceIdAllocator;
@@ -25,12 +25,12 @@ class ViewportSurface : public SurfaceClient {
  public:
   ViewportSurface(SurfacesService* surfaces_service,
                   Gpu* gpu_service,
-                  const gfx::Rect& bounds,
+                  const gfx::Size& size,
                   cc::SurfaceId child_id);
   virtual ~ViewportSurface();
 
   void SetWidgetId(uint64_t widget_id);
-  void SetBounds(const gfx::Rect& bounds);
+  void SetSize(const gfx::Size& size);
   void SetChildId(cc::SurfaceId child_id);
 
  private:
@@ -44,7 +44,7 @@ class ViewportSurface : public SurfaceClient {
   SurfacePtr surface_;
   Gpu* gpu_service_;
   uint64_t widget_id_;
-  gfx::Rect bounds_;
+  gfx::Size size_;
   scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
   cc::SurfaceId id_;
   cc::SurfaceId child_id_;

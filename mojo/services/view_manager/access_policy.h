@@ -35,7 +35,7 @@ class AccessPolicy {
   virtual bool CanDescendIntoViewForViewTree(const ServerView* view) const = 0;
   virtual bool CanEmbed(const ServerView* view) const = 0;
   virtual bool CanChangeViewVisibility(const ServerView* view) const = 0;
-  virtual bool CanSetViewContents(const ServerView* view) const = 0;
+  virtual bool CanSetViewSurfaceId(const ServerView* view) const = 0;
   virtual bool CanSetViewBounds(const ServerView* view) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.

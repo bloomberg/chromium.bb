@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "cc/surfaces/surface_id.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
@@ -65,8 +65,8 @@ class MOJO_VIEW_MANAGER_EXPORT ServerView {
   // visible.
   bool IsDrawn(const ServerView* root) const;
 
-  void SetBitmap(const SkBitmap& contents);
-  const SkBitmap& bitmap() const { return bitmap_; }
+  void SetSurfaceId(cc::SurfaceId surface_id);
+  const cc::SurfaceId surface_id() const { return surface_id_; }
 
  private:
   typedef std::vector<ServerView*> Views;
@@ -80,7 +80,7 @@ class MOJO_VIEW_MANAGER_EXPORT ServerView {
   Views children_;
   bool visible_;
   gfx::Rect bounds_;
-  SkBitmap bitmap_;
+  cc::SurfaceId surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };

@@ -1,5 +1,10 @@
 include_rules = [
+  "+cc/surfaces/surface_id.h",
+  "+cc/surfaces/surface_id_allocator.h",
+  "+gpu/GLES2",
+  "+gpu/command_buffer/common/mailbox.h",
   "+mojo/geometry",
+  "+third_party/khronos/GLES2",
   "+third_party/skia",
   "+ui/gfx",
 ]

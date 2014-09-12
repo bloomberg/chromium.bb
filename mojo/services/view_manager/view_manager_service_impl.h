@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/access_policy_delegate.h"
 #include "mojo/services/view_manager/ids.h"
@@ -164,10 +165,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void GetViewTree(
       Id view_id,
       const Callback<void(Array<ViewDataPtr>)>& callback) OVERRIDE;
-  virtual void SetViewContents(Id view_id,
-                               ScopedSharedBufferHandle buffer,
-                               uint32_t buffer_size,
-                               const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void SetViewSurfaceId(Id view_id,
+                                SurfaceIdPtr surface_id,
+                                const Callback<void(bool)>& callback) OVERRIDE;
   virtual void SetViewBounds(Id view_id,
                              RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;

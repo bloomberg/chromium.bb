@@ -291,6 +291,12 @@ View* View::GetChildById(Id id) {
   return NULL;
 }
 
+void View::SetSurfaceId(SurfaceIdPtr id) {
+  if (manager_) {
+    static_cast<ViewManagerClientImpl*>(manager_)->SetSurfaceId(id_, id.Pass());
+  }
+}
+
 void View::SetContents(const SkBitmap& contents) {
   if (manager_) {
     static_cast<ViewManagerClientImpl*>(manager_)->SetViewContents(id_,

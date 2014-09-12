@@ -8,17 +8,18 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/services/public/cpp/surfaces/surfaces_utils.h"
 #include "ui/gfx/transform.h"
 
 namespace mojo {
 
 ViewportSurface::ViewportSurface(SurfacesService* surfaces_service,
                                  Gpu* gpu_service,
-                                 const gfx::Rect& bounds,
+                                 const gfx::Size& size,
                                  cc::SurfaceId child_id)
     : gpu_service_(gpu_service),
       widget_id_(0u),
-      bounds_(bounds),
+      size_(size),
       child_id_(child_id),
       weak_factory_(this) {
   surfaces_service->CreateSurfaceConnection(
@@ -35,15 +36,16 @@ void ViewportSurface::SetWidgetId(uint64_t widget_id) {
     BindSurfaceToNativeViewport();
 }
 
-void ViewportSurface::SetBounds(const gfx::Rect& bounds) {
-  if (bounds_ == bounds)
+void ViewportSurface::SetSize(const gfx::Size& size) {
+  if (size_ == size)
     return;
 
   if (id_.is_null())
     return;
 
   surface_->DestroySurface(SurfaceId::From(id_));
-  BindSurfaceToNativeViewport();
+  if (widget_id_)
+    BindSurfaceToNativeViewport();
 }
 
 void ViewportSurface::SetChildId(cc::SurfaceId child_id) {
@@ -54,6 +56,7 @@ void ViewportSurface::SetChildId(cc::SurfaceId child_id) {
 void ViewportSurface::OnSurfaceConnectionCreated(SurfacePtr surface,
                                                  uint32_t id_namespace) {
   surface_ = surface.Pass();
+  surface_.set_client(this);
   id_allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
   if (widget_id_ != 0u)
     BindSurfaceToNativeViewport();
@@ -62,11 +65,11 @@ void ViewportSurface::OnSurfaceConnectionCreated(SurfacePtr surface,
 void ViewportSurface::BindSurfaceToNativeViewport() {
   CommandBufferPtr cb;
   gpu_service_->CreateOnscreenGLES2Context(
-      widget_id_, Size::From(bounds_.size()), Get(&cb));
+      widget_id_, Size::From(size_), Get(&cb));
 
   id_ = id_allocator_->GenerateId();
   surface_->CreateGLES2BoundSurface(
-      cb.Pass(), SurfaceId::From(id_), Size::From(bounds_.size()));
+      cb.Pass(), SurfaceId::From(id_), Size::From(size_));
 
   SubmitFrame();
 }
@@ -78,33 +81,21 @@ void ViewportSurface::SubmitFrame() {
   SurfaceQuadStatePtr surface_quad_state = SurfaceQuadState::New();
   surface_quad_state->surface = SurfaceId::From(child_id_);
 
+  gfx::Rect bounds(size_);
+
   QuadPtr surface_quad = Quad::New();
   surface_quad->material = Material::MATERIAL_SURFACE_CONTENT;
-  surface_quad->rect = Rect::From(bounds_);
-  surface_quad->opaque_rect = Rect::From(bounds_);
-  surface_quad->visible_rect = Rect::From(bounds_);
+  surface_quad->rect = Rect::From(bounds);
+  surface_quad->opaque_rect = Rect::From(bounds);
+  surface_quad->visible_rect = Rect::From(bounds);
   surface_quad->needs_blending = true;
   surface_quad->shared_quad_state_index = 0;
   surface_quad->surface_quad_state = surface_quad_state.Pass();
 
-  SharedQuadStatePtr sqs = SharedQuadState::New();
-  sqs->content_to_target_transform = Transform::From(gfx::Transform());
-  sqs->content_bounds = Size::From(bounds_.size());
-  sqs->visible_content_rect = Rect::From(bounds_);
-  sqs->clip_rect = Rect::From(bounds_);
-  sqs->is_clipped = false;
-  sqs->opacity = 1.0f;
-  sqs->blend_mode = SkXfermode::SK_XFERMODE_kSrcOver_Mode;
-  sqs->sorting_context_id = 1;
+  PassPtr pass = CreateDefaultPass(1, bounds);
 
-  PassPtr pass = Pass::New();
-  pass->id = 1;
-  pass->output_rect = Rect::From(bounds_);
-  pass->damage_rect = Rect::From(bounds_);
-  pass->transform_to_root_target = Transform::From(gfx::Transform());
-  pass->has_transparent_background = false;
   pass->quads.push_back(surface_quad.Pass());
-  pass->shared_quad_states.push_back(sqs.Pass());
+  pass->shared_quad_states.push_back(CreateDefaultSQS(size_));
 
   FramePtr frame = Frame::New();
   frame->passes.push_back(pass.Pass());

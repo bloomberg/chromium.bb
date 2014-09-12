@@ -28,11 +28,11 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   virtual ~NativeViewportImpl();
 
   // InterfaceImpl<NativeViewport> implementation.
-  virtual void Create(RectPtr bounds) OVERRIDE;
+  virtual void Create(SizePtr bounds) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void SetBounds(RectPtr bounds) OVERRIDE;
+  virtual void SetBounds(SizePtr bounds) OVERRIDE;
   virtual void SubmittedFrame(SurfaceIdPtr surface_id) OVERRIDE;
 
   // PlatformViewport::Delegate implementation.

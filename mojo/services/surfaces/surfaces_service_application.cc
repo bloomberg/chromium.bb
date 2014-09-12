@@ -13,7 +13,7 @@
 namespace mojo {
 
 SurfacesServiceApplication::SurfacesServiceApplication()
-    : next_id_namespace_(1u), display_(NULL) {
+    : next_id_namespace_(1u), display_(NULL), draw_timer_(false, false) {
 }
 
 SurfacesServiceApplication::~SurfacesServiceApplication() {
@@ -33,8 +33,12 @@ void SurfacesServiceApplication::Create(
 }
 
 void SurfacesServiceApplication::FrameSubmitted() {
-  if (display_)
-    display_->Draw();
+  if (!draw_timer_.IsRunning() && display_) {
+    draw_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(17),
+                      base::Bind(base::IgnoreResult(&cc::Display::Draw),
+                                 base::Unretained(display_)));
+  }
 }
 
 void SurfacesServiceApplication::SetDisplay(cc::Display* display) {

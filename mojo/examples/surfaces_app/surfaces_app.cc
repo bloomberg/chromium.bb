@@ -46,7 +46,7 @@ class SurfacesApp : public ApplicationDelegate,
 
     size_ = gfx::Size(800, 600);
 
-    viewport_->Create(Rect::From(gfx::Rect(gfx::Point(10, 10), size_)));
+    viewport_->Create(Size::From(size_));
     viewport_->Show();
 
     child_size_ = gfx::Size(size_.width() / 3, size_.height() / 2);
@@ -104,7 +104,7 @@ class SurfacesApp : public ApplicationDelegate,
   }
   // NativeViewportClient implementation.
   virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {}
-  virtual void OnBoundsChanged(mojo::RectPtr bounds) OVERRIDE {}
+  virtual void OnBoundsChanged(mojo::SizePtr bounds) OVERRIDE {}
   virtual void OnDestroyed() OVERRIDE {}
   virtual void OnEvent(mojo::EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE {

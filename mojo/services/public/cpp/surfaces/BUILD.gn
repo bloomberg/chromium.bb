@@ -30,7 +30,9 @@ component("surfaces") {
 
   sources = [
     "lib/surfaces_type_converters.cc",
-    "surfaces_type_converters.h",
+    "lib/surfaces_utils.cc",
     "mojo_surfaces_export.h",
+    "surfaces_type_converters.h",
+    "surfaces_utils.h",
   ]
 }

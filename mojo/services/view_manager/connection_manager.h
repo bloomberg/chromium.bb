@@ -26,7 +26,6 @@ class ApplicationConnection;
 
 namespace service {
 
-class DisplayManagerDelegate;
 class ViewManagerServiceImpl;
 
 // ConnectionManager manages the set of connections to the ViewManager (all the
@@ -67,7 +66,6 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   };
 
   ConnectionManager(ApplicationConnection* app_connection,
-                    DisplayManagerDelegate* display_manager_delegate,
                     const Callback<void()>& native_viewport_closed_callback);
   virtual ~ConnectionManager();
 
@@ -137,12 +135,6 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   void ProcessViewDeleted(const ViewId& view);
 
  private:
-  // Used to setup any static state needed by ConnectionManager.
-  struct Context {
-    Context();
-    ~Context();
-  };
-
   typedef std::map<ConnectionSpecificId, ViewManagerServiceImpl*> ConnectionMap;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
@@ -179,10 +171,8 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   virtual void OnViewBoundsChanged(const ServerView* view,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnViewBitmapChanged(const ServerView* view) OVERRIDE;
+  virtual void OnViewSurfaceIdChanged(const ServerView* view) OVERRIDE;
   virtual void OnWillChangeViewVisibility(const ServerView* view) OVERRIDE;
-
-  Context context_;
 
   ApplicationConnection* app_connection_;
 

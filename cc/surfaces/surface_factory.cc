@@ -17,7 +17,6 @@ SurfaceFactory::SurfaceFactory(SurfaceManager* manager,
 }
 
 SurfaceFactory::~SurfaceFactory() {
-  DCHECK_EQ(0u, surface_map_.size());
 }
 
 void SurfaceFactory::Create(SurfaceId surface_id, const gfx::Size& size) {

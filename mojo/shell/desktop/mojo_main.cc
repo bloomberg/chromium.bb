@@ -11,6 +11,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
@@ -27,6 +28,13 @@ void RunApps(mojo::shell::Context* context, std::vector<GURL> app_urls) {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
+#if defined(OS_LINUX)
+  // We use gfx::RenderText from multiple threads concurrently and the pango
+  // backend (currently the default on linux) is not close to threadsafe. Force
+  // use of the harfbuzz backend for now.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableHarfBuzzRenderText);
+#endif
   mojo::shell::InitializeLogging();
 
   // TODO(vtl): Unify parent and child process cases to the extent possible.

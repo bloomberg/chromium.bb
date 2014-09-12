@@ -8,29 +8,25 @@ import("//mojo/system.gni")
 component("view_manager") {
   deps = [
     "//base",
-    "//cc",
-    "//mojo/cc",
+    "//cc/surfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/cpp/view_manager:common",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/interfaces/view_manager",
-    "//skia",
-    "//ui/aura",
     "//ui/base",
-    "//ui/compositor",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
-    "//webkit/common/gpu",
-  ] + mojo_system_for_component + mojo_gles2_for_component
+  ] + mojo_system_for_component
 
   defines = [
     "MOJO_VIEW_MANAGER_IMPLEMENTATION",
@@ -41,17 +37,12 @@ component("view_manager") {
     "access_policy_delegate.h",
     "connection_manager.cc",
     "connection_manager.h",
-    "context_factory_impl.cc",
-    "context_factory_impl.h",
     "default_access_policy.cc",
     "default_access_policy.h",
     "display_manager.cc",
     "display_manager.h",
-    "display_manager_delegate.h",
     "ids.h",
     "main.cc",
-    "screen_impl.cc",
-    "screen_impl.h",
     "server_view.cc",
     "server_view.h",
     "server_view_delegate.h",
@@ -64,8 +55,6 @@ component("view_manager") {
     "view_manager_service_impl.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
-    "window_tree_host_impl.cc",
-    "window_tree_host_impl.h",
   ]
 }
 
@@ -87,11 +76,7 @@ test("mojo_view_manager_unittests") {
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/shell:test_support",
     "//mojo/system",
-    "//skia",
     "//testing/gtest",
-    "//ui/aura",
-    "//ui/gfx/geometry",
-    "//ui/gl",
   ]
 
   sources = [

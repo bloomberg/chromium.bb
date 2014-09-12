@@ -7,13 +7,11 @@
 #include "base/bind.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
+#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 #include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/default_access_policy.h"
 #include "mojo/services/view_manager/server_view.h"
 #include "mojo/services/view_manager/window_manager_access_policy.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
 namespace service {
@@ -430,28 +428,17 @@ void ViewManagerServiceImpl::GetViewTree(
   callback.Run(ViewsToViewDatas(views));
 }
 
-void ViewManagerServiceImpl::SetViewContents(
+void ViewManagerServiceImpl::SetViewSurfaceId(
     Id view_id,
-    ScopedSharedBufferHandle buffer,
-    uint32_t buffer_size,
+    SurfaceIdPtr surface_id,
     const Callback<void(bool)>& callback) {
-  // TODO(sky): add coverage of not being able to set for random view.
+  // TODO(sky): add coverage of not being able to set for random node.
   ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  if (!view || !access_policy_->CanSetViewContents(view)) {
+  if (!view || !access_policy_->CanSetViewSurfaceId(view)) {
     callback.Run(false);
     return;
   }
-  void* handle_data;
-  if (MapBuffer(buffer.get(), 0, buffer_size, &handle_data,
-                MOJO_MAP_BUFFER_FLAG_NONE) != MOJO_RESULT_OK) {
-    callback.Run(false);
-    return;
-  }
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(static_cast<const unsigned char*>(handle_data),
-                        buffer_size, &bitmap);
-  view->SetBitmap(bitmap);
-  UnmapBuffer(handle_data);
+  view->SetSurfaceId(surface_id.To<cc::SurfaceId>());
   callback.Run(true);
 }
 

@@ -19,6 +19,7 @@
 class SkBitmap;
 
 namespace mojo {
+class BitmapUploader;
 class ViewManager;
 class ViewManagerDelegate;
 class ViewManagerTransaction;
@@ -52,6 +53,9 @@ class ViewManagerClientImpl : public ViewManager,
   bool OwnsView(Id id) const;
 
   void SetBounds(Id view_id, const gfx::Rect& bounds);
+  void SetSurfaceId(Id view_id, SurfaceIdPtr surface_id);
+  // TODO(jamesr): Remove once all callers switch from SetContents to
+  // SetSurfaceId.
   void SetViewContents(Id view_id, const SkBitmap& contents);
   void SetFocus(Id view_id);
   void SetVisible(Id view_id, bool visible);
@@ -150,6 +154,11 @@ class ViewManagerClientImpl : public ViewManager,
   ViewManagerService* service_;
 
   WindowManagerServicePtr window_manager_;
+
+  // TODO(jamesr): Remove once all callers switch from SetContents to
+  // SetSurfaceId.
+  Shell* shell_;
+  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

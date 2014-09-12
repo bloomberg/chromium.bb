@@ -33,7 +33,7 @@ class DefaultAccessPolicy : public AccessPolicy {
       const ServerView* view) const OVERRIDE;
   virtual bool CanEmbed(const ServerView* view) const OVERRIDE;
   virtual bool CanChangeViewVisibility(const ServerView* view) const OVERRIDE;
-  virtual bool CanSetViewContents(const ServerView* view) const OVERRIDE;
+  virtual bool CanSetViewSurfaceId(const ServerView* view) const OVERRIDE;
   virtual bool CanSetViewBounds(const ServerView* view) const OVERRIDE;
   virtual bool ShouldNotifyOnHierarchyChange(
       const ServerView* view,

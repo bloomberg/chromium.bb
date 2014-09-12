@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_SURFACES_SURFACES_SERVICE_APPLICATION_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "cc/surfaces/surface_manager.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
@@ -38,6 +39,8 @@ class SurfacesServiceApplication : public ApplicationDelegate,
   cc::SurfaceManager manager_;
   uint32_t next_id_namespace_;
   cc::Display* display_;
+  // TODO(jamesr): Integrate with real scheduler.
+  base::Timer draw_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesServiceApplication);
 };

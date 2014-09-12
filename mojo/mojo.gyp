@@ -513,6 +513,7 @@
             '../ui/wm/wm.gyp:wm',
             'mojo_aura_support',
             'mojo_views_support_internal',
+            'mojo_view_manager_bindings',
           ],
           'sources': [
             'views/input_method_mojo_linux.cc',

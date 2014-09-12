@@ -41,10 +41,11 @@ NativeViewportImpl::~NativeViewportImpl() {
   platform_viewport_.reset();
 }
 
-void NativeViewportImpl::Create(RectPtr bounds) {
+void NativeViewportImpl::Create(SizePtr bounds) {
   platform_viewport_ = PlatformViewport::Create(this);
-  platform_viewport_->Init(bounds.To<gfx::Rect>());
-  OnBoundsChanged(bounds.To<gfx::Rect>());
+  gfx::Rect rect = gfx::Rect(bounds.To<gfx::Size>());
+  platform_viewport_->Init(rect);
+  OnBoundsChanged(rect);
 }
 
 void NativeViewportImpl::Show() {
@@ -60,8 +61,8 @@ void NativeViewportImpl::Close() {
   platform_viewport_->Close();
 }
 
-void NativeViewportImpl::SetBounds(RectPtr bounds) {
-  platform_viewport_->SetBounds(bounds.To<gfx::Rect>());
+void NativeViewportImpl::SetBounds(SizePtr bounds) {
+  platform_viewport_->SetBounds(gfx::Rect(bounds.To<gfx::Size>()));
 }
 
 void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
@@ -73,7 +74,7 @@ void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
     viewport_surface_.reset(
         new ViewportSurface(surfaces_service_.get(),
                             gpu_service_.get(),
-                            bounds_,
+                            bounds_.size(),
                             child_surface_id.To<cc::SurfaceId>()));
     if (widget_id_)
       viewport_surface_->SetWidgetId(widget_id_);
@@ -85,9 +86,9 @@ void NativeViewportImpl::SubmittedFrame(SurfaceIdPtr child_surface_id) {
 
 void NativeViewportImpl::OnBoundsChanged(const gfx::Rect& bounds) {
   bounds_ = bounds;
-  client()->OnBoundsChanged(Rect::From(bounds));
+  client()->OnBoundsChanged(Size::From(bounds.size()));
   if (viewport_surface_)
-    viewport_surface_->SetBounds(bounds);
+    viewport_surface_->SetSize(bounds.size());
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(

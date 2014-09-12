@@ -36,12 +36,10 @@ class SampleApp : public mojo::ApplicationDelegate,
     // TODO(jamesr): Should be mojo:mojo_gpu_service
     app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
 
-    mojo::RectPtr rect(mojo::Rect::New());
-    rect->x = 10;
-    rect->y = 10;
-    rect->width = 800;
-    rect->height = 600;
-    viewport_->Create(rect.Pass());
+    mojo::SizePtr size(mojo::Size::New());
+    size->width = 800;
+    size->height = 600;
+    viewport_->Create(size.Pass());
     viewport_->Show();
   }
 
@@ -58,13 +56,10 @@ class SampleApp : public mojo::ApplicationDelegate,
 
   virtual void OnDestroyed() MOJO_OVERRIDE { mojo::RunLoop::current()->Quit(); }
 
-  virtual void OnBoundsChanged(mojo::RectPtr bounds) MOJO_OVERRIDE {
+  virtual void OnBoundsChanged(mojo::SizePtr bounds) MOJO_OVERRIDE {
     assert(bounds);
-    mojo::SizePtr size(mojo::Size::New());
-    size->width = bounds->width;
-    size->height = bounds->height;
     if (gles2_client_)
-      gles2_client_->SetSize(*size);
+      gles2_client_->SetSize(*bounds);
   }
 
   virtual void OnEvent(mojo::EventPtr event,

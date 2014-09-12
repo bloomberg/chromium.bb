@@ -13,7 +13,6 @@ SurfaceManager::SurfaceManager() {
 }
 
 SurfaceManager::~SurfaceManager() {
-  DCHECK_EQ(0u, surface_map_.size());
 }
 
 void SurfaceManager::RegisterSurface(Surface* surface) {

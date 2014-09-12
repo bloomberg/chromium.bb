@@ -66,9 +66,9 @@ bool DefaultAccessPolicy::CanChangeViewVisibility(
   return WasCreatedByThisConnection(view) || IsViewInRoots(view);
 }
 
-bool DefaultAccessPolicy::CanSetViewContents(const ServerView* view) const {
+bool DefaultAccessPolicy::CanSetViewSurfaceId(const ServerView* view) const {
   // Once a view embeds another app, the embedder app is no longer able to
-  // call SetViewContents() - this ability is transferred to the embedded app.
+  // call SetViewSurfaceId() - this ability is transferred to the embedded app.
   if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
     return false;
   return WasCreatedByThisConnection(view) || IsViewInRoots(view);

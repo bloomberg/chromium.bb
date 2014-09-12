@@ -129,9 +129,9 @@ bool ServerView::IsDrawn(const ServerView* root) const {
   return view == root;
 }
 
-void ServerView::SetBitmap(const SkBitmap& bitmap) {
-  bitmap_ = bitmap;
-  delegate_->OnViewBitmapChanged(this);
+void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {
+  surface_id_ = surface_id;
+  delegate_->OnViewSurfaceIdChanged(this);
 }
 
 void ServerView::RemoveImpl(ServerView* view) {

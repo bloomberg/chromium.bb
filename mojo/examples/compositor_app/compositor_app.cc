@@ -28,7 +28,7 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
-    viewport_->Create(Rect::From(gfx::Rect(10, 10, 800, 600)));
+    viewport_->Create(Size::From(gfx::Size(800, 600)));
     viewport_->Show();
 
     // TODO(jamesr): Should be mojo:mojo_gpu_service
@@ -45,9 +45,9 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
 
   virtual void OnDestroyed() OVERRIDE { base::MessageLoop::current()->Quit(); }
 
-  virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {
+  virtual void OnBoundsChanged(SizePtr bounds) OVERRIDE {
     if (host_)
-      host_->SetSize(gfx::Size(bounds->width, bounds->height));
+      host_->SetSize(bounds.To<gfx::Size>());
   }
 
   virtual void OnEvent(EventPtr event,

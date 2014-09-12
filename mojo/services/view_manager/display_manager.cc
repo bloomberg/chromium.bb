@@ -4,25 +4,15 @@
 
 #include "mojo/services/view_manager/display_manager.h"
 
-#include "base/auto_reset.h"
-#include "base/scoped_observer.h"
+#include "base/numerics/safe_conversions.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/services/public/cpp/surfaces/surfaces_utils.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/quads.mojom.h"
 #include "mojo/services/view_manager/connection_manager.h"
-#include "mojo/services/view_manager/display_manager_delegate.h"
-#include "mojo/services/view_manager/screen_impl.h"
-#include "mojo/services/view_manager/window_tree_host_impl.h"
-#include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/base/cursor/cursor.h"
-#include "ui/base/hit_test.h"
-#include "ui/compositor/layer.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace mojo {
 namespace service {
@@ -33,200 +23,146 @@ gfx::Rect ConvertRectToRoot(const ServerView* view, const gfx::Rect& bounds) {
   while (view->parent()) {
     origin += view->bounds().OffsetFromOrigin();
     view = view->parent();
+    if (!view->visible())
+      return gfx::Rect();
   }
   return gfx::Rect(origin, bounds.size());
 }
 
-void PaintViewTree(gfx::Canvas* canvas,
-                   const ServerView* view,
-                   const gfx::Point& origin) {
+void DrawViewTree(Pass* pass, const ServerView* view) {
   if (!view->visible())
     return;
 
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(view->bitmap()),
-                       origin.x(),
-                       origin.y());
+  cc::SurfaceId node_id = view->surface_id();
+
+  SurfaceQuadStatePtr surface_quad_state = SurfaceQuadState::New();
+  surface_quad_state->surface = SurfaceId::From(node_id);
+
+  const gfx::Rect& node_bounds = view->bounds();
+  gfx::Transform node_transform;
+  node_transform.Translate(node_bounds.x(), node_bounds.y());
+
+  QuadPtr surface_quad = Quad::New();
+  surface_quad->material = Material::MATERIAL_SURFACE_CONTENT;
+  surface_quad->rect = Rect::From(node_bounds);
+  surface_quad->opaque_rect = Rect::From(node_bounds);
+  surface_quad->visible_rect = Rect::From(node_bounds);
+  surface_quad->needs_blending = true;
+  surface_quad->shared_quad_state_index =
+      base::saturated_cast<int32_t>(pass->shared_quad_states.size());
+  surface_quad->surface_quad_state = surface_quad_state.Pass();
+
+  SharedQuadStatePtr sqs = CreateDefaultSQS(node_bounds.size());
+  sqs->content_to_target_transform = Transform::From(node_transform);
+
+  pass->quads.push_back(surface_quad.Pass());
+  pass->shared_quad_states.push_back(sqs.Pass());
+
   std::vector<const ServerView*> children(view->GetChildren());
-  for (size_t i = 0; i < children.size(); ++i) {
-    PaintViewTree(
-        canvas, children[i], origin + children[i]->bounds().OffsetFromOrigin());
+  for (std::vector<const ServerView*>::reverse_iterator it = children.rbegin();
+       it != children.rend();
+       ++it) {
+    DrawViewTree(pass, *it);
   }
 }
 
 }  // namespace
 
-class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
- public:
-  explicit RootWindowDelegateImpl(ConnectionManager* connection_manager)
-      : connection_manager_(connection_manager) {}
-  virtual ~RootWindowDelegateImpl() {}
-
-  // aura::WindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
-    return gfx::Size();
-  }
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
-    return gfx::Size();
-  }
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {
-    connection_manager_->ProcessViewBoundsChanged(connection_manager_->root(),
-                                                  old_bounds,
-                                                  new_bounds);
-  }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return gfx::kNullCursor;
-  }
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
-    return HTCAPTION;
-  }
-  virtual bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) OVERRIDE {
-    return true;
-  }
-  virtual bool CanFocus() OVERRIDE {
-    return true;
-  }
-  virtual void OnCaptureLost() OVERRIDE {
-  }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    PaintViewTree(canvas, connection_manager_->root(), gfx::Point());
-  }
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
-  }
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-  }
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
-  }
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
-  }
-  virtual bool HasHitTestMask() const OVERRIDE {
-    return false;
-  }
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
-  }
-
- private:
-  ConnectionManager* connection_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(RootWindowDelegateImpl);
-};
-
-// TODO(sky): Remove once aura is removed from the service.
-class FocusClientImpl : public aura::client::FocusClient {
- public:
-  FocusClientImpl() {}
-  virtual ~FocusClientImpl() {}
-
- private:
-  // Overridden from aura::client::FocusClient:
-  virtual void AddObserver(
-      aura::client::FocusChangeObserver* observer) OVERRIDE {}
-  virtual void RemoveObserver(
-      aura::client::FocusChangeObserver* observer) OVERRIDE {}
-  virtual void FocusWindow(aura::Window* window) OVERRIDE {}
-  virtual void ResetFocusWithinActiveWindow(aura::Window* window) OVERRIDE {}
-  virtual aura::Window* GetFocusedWindow() OVERRIDE { return NULL; }
-
-  DISALLOW_COPY_AND_ASSIGN(FocusClientImpl);
-};
-
-class WindowTreeClientImpl : public aura::client::WindowTreeClient {
- public:
-  explicit WindowTreeClientImpl(aura::Window* window) : window_(window) {
-    aura::client::SetWindowTreeClient(window_, this);
-  }
-
-  virtual ~WindowTreeClientImpl() {
-    aura::client::SetWindowTreeClient(window_, NULL);
-  }
-
-  // Overridden from aura::client::WindowTreeClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
-                                         const gfx::Rect& bounds) OVERRIDE {
-    if (!capture_client_) {
-      capture_client_.reset(
-          new aura::client::DefaultCaptureClient(window_->GetRootWindow()));
-    }
-    return window_;
-  }
-
- private:
-  aura::Window* window_;
-
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
-};
-
 DisplayManager::DisplayManager(
     ApplicationConnection* app_connection,
     ConnectionManager* connection_manager,
-    DisplayManagerDelegate* delegate,
     const Callback<void()>& native_viewport_closed_callback)
-    : delegate_(delegate),
-      connection_manager_(connection_manager),
+    : connection_manager_(connection_manager),
       in_setup_(false),
-      root_window_(NULL) {
-  screen_.reset(ScreenImpl::Create());
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
-  NativeViewportPtr viewport;
-  app_connection->ConnectToService(
-      "mojo:mojo_native_viewport_service", &viewport);
-  GpuPtr gpu_service;
-  // TODO(jamesr): Should be mojo:mojo_gpu_service
+      bounds_(800, 600),
+      draw_timer_(false, false),
+      weak_factory_(this) {
   app_connection->ConnectToService("mojo:mojo_native_viewport_service",
-                                   &gpu_service);
-  window_tree_host_.reset(new WindowTreeHostImpl(
-      viewport.Pass(),
-      gpu_service.Pass(),
-      gfx::Rect(800, 600),
-      base::Bind(&DisplayManager::OnCompositorCreated, base::Unretained(this)),
-      native_viewport_closed_callback,
-      base::Bind(&ConnectionManager::DispatchViewInputEventToWindowManager,
-                 base::Unretained(connection_manager_))));
+                                   &native_viewport_);
+  native_viewport_.set_client(this);
+  native_viewport_->Create(Size::From(bounds_));
+  native_viewport_->Show();
+  app_connection->ConnectToService("mojo:mojo_surfaces_service",
+                                   &surfaces_service_);
+  surfaces_service_->CreateSurfaceConnection(base::Bind(
+      &DisplayManager::OnSurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
 }
 
 DisplayManager::~DisplayManager() {
-  window_tree_client_.reset();
-  window_tree_host_.reset();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
 }
 
 void DisplayManager::SchedulePaint(const ServerView* view,
                                    const gfx::Rect& bounds) {
-  if (root_window_)
-    root_window_->SchedulePaintInRect(ConvertRectToRoot(view, bounds));
+  if (!view->visible())
+    return;
+  gfx::Rect root_relative_rect = ConvertRectToRoot(view, bounds);
+  if (root_relative_rect.IsEmpty())
+    return;
+  dirty_rect_.Union(root_relative_rect);
+  if (!draw_timer_.IsRunning()) {
+    draw_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta(),
+        base::Bind(&DisplayManager::Draw, base::Unretained(this)));
+  }
 }
 
-void DisplayManager::OnCompositorCreated() {
-  base::AutoReset<bool> resetter(&in_setup_, true);
-  window_tree_host_->InitHost();
+void DisplayManager::OnSurfaceConnectionCreated(SurfacePtr surface,
+                                                uint32_t id_namespace) {
+  surface_ = surface.Pass();
+  surface_.set_client(this);
+  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
+  Draw();
+}
 
-  window_delegate_.reset(
-      new RootWindowDelegateImpl(connection_manager_));
-  root_window_ = new aura::Window(window_delegate_.get());
-  root_window_->Init(aura::WINDOW_LAYER_TEXTURED);
-  root_window_->Show();
-  root_window_->SetBounds(
-      gfx::Rect(window_tree_host_->window()->bounds().size()));
-  window_tree_host_->window()->AddChild(root_window_);
+void DisplayManager::Draw() {
+  if (!surface_)
+    return;
+  if (surface_id_.is_null()) {
+    surface_id_ = surface_id_allocator_->GenerateId();
+    surface_->CreateSurface(SurfaceId::From(surface_id_), Size::From(bounds_));
+  }
 
-  connection_manager_->root()->SetBounds(
-      gfx::Rect(window_tree_host_->window()->bounds().size()));
+  PassPtr pass = CreateDefaultPass(1, gfx::Rect(bounds_));
+  pass->damage_rect = Rect::From(dirty_rect_);
 
-  window_tree_client_.reset(
-      new WindowTreeClientImpl(window_tree_host_->window()));
+  DrawViewTree(pass.get(), connection_manager_->root());
 
-  focus_client_.reset(new FocusClientImpl);
-  aura::client::SetFocusClient(window_tree_host_->window(),
-                               focus_client_.get());
+  FramePtr frame = Frame::New();
+  frame->passes.push_back(pass.Pass());
+  frame->resources.resize(0u);
+  surface_->SubmitFrame(SurfaceId::From(surface_id_), frame.Pass());
 
-  window_tree_host_->Show();
+  native_viewport_->SubmittedFrame(SurfaceId::From(surface_id_));
 
-  delegate_->OnDisplayManagerWindowTreeHostCreated();
+  dirty_rect_ = gfx::Rect();
+}
+
+void DisplayManager::OnCreated(uint64_t native_viewport_id) {
+}
+
+void DisplayManager::OnDestroyed() {
+  native_viewport_closed_callback_.Run();
+}
+
+void DisplayManager::OnBoundsChanged(SizePtr bounds) {
+  bounds_ = bounds.To<gfx::Size>();
+  connection_manager_->root()->SetBounds(gfx::Rect(bounds_));
+  if (surface_id_.is_null())
+    return;
+  surface_->DestroySurface(SurfaceId::From(surface_id_));
+  surface_id_ = cc::SurfaceId();
+  SchedulePaint(connection_manager_->root(), gfx::Rect(bounds_));
+}
+
+void DisplayManager::OnEvent(EventPtr event,
+                             const mojo::Callback<void()>& callback) {
+  connection_manager_->DispatchViewInputEventToWindowManager(event.Pass());
+  callback.Run();
+}
+
+void DisplayManager::ReturnResources(Array<ReturnedResourcePtr> resources) {
+  DCHECK_EQ(0u, resources.size());
 }
 
 }  // namespace service

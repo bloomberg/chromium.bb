@@ -9,7 +9,6 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
-#include "ui/aura/env.h"
 
 namespace mojo {
 namespace service {
@@ -28,27 +27,17 @@ ConnectionManager::ScopedChange::~ScopedChange() {
   connection_manager_->FinishChange();
 }
 
-ConnectionManager::Context::Context() {
-  // Pass in false as native viewport creates the PlatformEventSource.
-  aura::Env::CreateInstance(false);
-}
-
-ConnectionManager::Context::~Context() {
-  aura::Env::DeleteInstance();
-}
-
 ConnectionManager::ConnectionManager(
     ApplicationConnection* app_connection,
-    DisplayManagerDelegate* display_manager_delegate,
     const Callback<void()>& native_viewport_closed_callback)
     : app_connection_(app_connection),
       next_connection_id_(1),
       display_manager_(app_connection,
                        this,
-                       display_manager_delegate,
                        native_viewport_closed_callback),
       root_(new ServerView(this, RootViewId())),
       current_change_(NULL) {
+  root_->SetBounds(gfx::Rect(800, 600));
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -277,7 +266,7 @@ void ConnectionManager::OnViewBoundsChanged(const ServerView* view,
   display_manager_.SchedulePaint(view->parent(), new_bounds);
 }
 
-void ConnectionManager::OnViewBitmapChanged(const ServerView* view) {
+void ConnectionManager::OnViewSurfaceIdChanged(const ServerView* view) {
   display_manager_.SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 

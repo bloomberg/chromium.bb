@@ -34,7 +34,7 @@ class MOJO_VIEW_MANAGER_EXPORT ServerViewDelegate {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) = 0;
 
-  virtual void OnViewBitmapChanged(const ServerView* view) = 0;
+  virtual void OnViewSurfaceIdChanged(const ServerView* view) = 0;
 
   virtual void OnWillChangeViewVisibility(const ServerView* view) = 0;
 

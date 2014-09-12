@@ -5,6 +5,7 @@
 import "mojo/public/interfaces/application/service_provider.mojom"
 import "mojo/services/public/interfaces/geometry/geometry.mojom"
 import "mojo/services/public/interfaces/input_events/input_events.mojom"
+import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
 import "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom"
 
 module mojo {
@@ -105,10 +106,8 @@ interface ViewManagerService {
   // search (pre-order).
   GetViewTree(uint32 view_id) => (ViewData[] views);
 
-  // Shows the specified image (png encoded) in the specified view.
-  SetViewContents(uint32 view_id,
-                  handle<shared_buffer> buffer,
-                  uint32 buffer_size) => (bool success);
+  // Shows the surface in the specified view.
+  SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
 
   // Embeds the app for |url| in the specified view. More specifically this
   // creates a new connection to the specified url, expecting to get a

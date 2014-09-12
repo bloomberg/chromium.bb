@@ -66,12 +66,11 @@ struct TypeConverter<RectPtr, PP_Rect> {
 };
 
 template <>
-struct TypeConverter<PP_Rect, RectPtr> {
-  static PP_Rect Convert(const RectPtr& input) {
+struct TypeConverter<PP_Rect, SizePtr> {
+  static PP_Rect Convert(const SizePtr& input) {
     if (!input)
       return PP_MakeRectFromXYWH(0, 0, 0, 0);
-    return PP_MakeRectFromXYWH(input->x, input->y,
-                               input->width, input->height);
+    return PP_MakeRectFromXYWH(0, 0, input->width, input->height);
   }
 };
 
