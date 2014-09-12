@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
@@ -68,6 +69,12 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     requestMediaDevices(media_devices_request);
   }
 
+  void RequestSources() {
+    blink::WebMediaStreamTrackSourcesRequest sources_request;
+    state_ = REQUEST_NOT_COMPLETE;
+    requestSources(sources_request);
+  }
+
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest* request_info) OVERRIDE {
@@ -100,6 +107,13 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     last_devices_ = devices;
   }
 
+  virtual void EnumerateSourcesSucceded(
+      blink::WebMediaStreamTrackSourcesRequest* request,
+      blink::WebVector<blink::WebSourceInfo>& sources) OVERRIDE {
+    state_ = REQUEST_SUCCEEDED;
+    last_sources_ = sources;
+  }
+
   virtual MediaStreamVideoSource* CreateVideoSource(
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback) OVERRIDE {
@@ -115,6 +129,10 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
   const blink::WebVector<blink::WebMediaDeviceInfo>& last_devices() {
     return last_devices_;
+  }
+
+  const blink::WebVector<blink::WebSourceInfo>& last_sources() {
+    return last_sources_;
   }
 
   void ClearLastGeneratedStream() {
@@ -135,6 +153,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   content::MediaStreamRequestResult result_;
   blink::WebString result_name_;
   blink::WebVector<blink::WebMediaDeviceInfo> last_devices_;
+  blink::WebVector<blink::WebSourceInfo> last_sources_;
   PeerConnectionDependencyFactory* factory_;
   MockMediaStreamVideoCapturerSource* video_source_;
 };
@@ -199,6 +218,15 @@ class UserMediaClientImplTest : public ::testing::Test {
     used_media_impl_->OnDevicesEnumerated(
         ms_dispatcher_->audio_output_request_id(),
         ms_dispatcher_->audio_output_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->video_request_id(),
+        ms_dispatcher_->video_array());
+  }
+
+  void FakeMediaStreamDispatcherRequestSourcesComplete() {
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->audio_input_request_id(),
+        ms_dispatcher_->audio_input_array());
     used_media_impl_->OnDevicesEnumerated(
         ms_dispatcher_->video_request_id(),
         ms_dispatcher_->video_array());
@@ -464,40 +492,89 @@ TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
 
   EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
             used_media_impl_->request_state());
+  EXPECT_EQ(static_cast<size_t>(5), used_media_impl_->last_devices().size());
 
   // Audio input device with matched output ID.
-  EXPECT_FALSE(used_media_impl_->last_devices()[0].deviceId().isEmpty());
+  const blink::WebMediaDeviceInfo* device =
+      &used_media_impl_->last_devices()[0];
+  EXPECT_FALSE(device->deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
-            used_media_impl_->last_devices()[0].kind());
-  EXPECT_FALSE(used_media_impl_->last_devices()[0].label().isEmpty());
-  EXPECT_FALSE(used_media_impl_->last_devices()[0].groupId().isEmpty());
+            device->kind());
+  EXPECT_FALSE(device->label().isEmpty());
+  EXPECT_FALSE(device->groupId().isEmpty());
 
   // Audio input device without matched output ID.
-  EXPECT_FALSE(used_media_impl_->last_devices()[1].deviceId().isEmpty());
+  device = &used_media_impl_->last_devices()[1];
+  EXPECT_FALSE(device->deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
-            used_media_impl_->last_devices()[1].kind());
-  EXPECT_FALSE(used_media_impl_->last_devices()[1].label().isEmpty());
-  EXPECT_FALSE(used_media_impl_->last_devices()[1].groupId().isEmpty());
+            device->kind());
+  EXPECT_FALSE(device->label().isEmpty());
+  EXPECT_FALSE(device->groupId().isEmpty());
 
-  // Video input device.
-  EXPECT_FALSE(used_media_impl_->last_devices()[2].deviceId().isEmpty());
+  // Video input devices.
+  device = &used_media_impl_->last_devices()[2];
+  EXPECT_FALSE(device->deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
-            used_media_impl_->last_devices()[2].kind());
-  EXPECT_FALSE(used_media_impl_->last_devices()[2].label().isEmpty());
-  EXPECT_TRUE(used_media_impl_->last_devices()[2].groupId().isEmpty());
+            device->kind());
+  EXPECT_FALSE(device->label().isEmpty());
+  EXPECT_TRUE(device->groupId().isEmpty());
+
+  device = &used_media_impl_->last_devices()[3];
+  EXPECT_FALSE(device->deviceId().isEmpty());
+  EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
+            device->kind());
+  EXPECT_FALSE(device->label().isEmpty());
+  EXPECT_TRUE(device->groupId().isEmpty());
 
   // Audio output device.
-  EXPECT_FALSE(used_media_impl_->last_devices()[3].deviceId().isEmpty());
+  device = &used_media_impl_->last_devices()[4];
+  EXPECT_FALSE(device->deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioOutput,
-            used_media_impl_->last_devices()[3].kind());
-  EXPECT_FALSE(used_media_impl_->last_devices()[3].label().isEmpty());
-  EXPECT_FALSE(used_media_impl_->last_devices()[3].groupId().isEmpty());
+            device->kind());
+  EXPECT_FALSE(device->label().isEmpty());
+  EXPECT_FALSE(device->groupId().isEmpty());
 
   // Verfify group IDs.
   EXPECT_TRUE(used_media_impl_->last_devices()[0].groupId().equals(
-                  used_media_impl_->last_devices()[3].groupId()));
+                  used_media_impl_->last_devices()[4].groupId()));
   EXPECT_FALSE(used_media_impl_->last_devices()[1].groupId().equals(
-                   used_media_impl_->last_devices()[3].groupId()));
+                   used_media_impl_->last_devices()[4].groupId()));
+}
+
+TEST_F(UserMediaClientImplTest, EnumerateSources) {
+  used_media_impl_->RequestSources();
+  FakeMediaStreamDispatcherRequestSourcesComplete();
+
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
+            used_media_impl_->request_state());
+  EXPECT_EQ(static_cast<size_t>(4), used_media_impl_->last_sources().size());
+
+  // Audio input devices.
+  const blink::WebSourceInfo* source = &used_media_impl_->last_sources()[0];
+  EXPECT_FALSE(source->id().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::SourceKindAudio, source->kind());
+  EXPECT_FALSE(source->label().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
+
+  source = &used_media_impl_->last_sources()[1];
+  EXPECT_FALSE(source->id().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::SourceKindAudio, source->kind());
+  EXPECT_FALSE(source->label().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
+
+  // Video input device user facing.
+  source = &used_media_impl_->last_sources()[2];
+  EXPECT_FALSE(source->id().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
+  EXPECT_FALSE(source->label().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeUser, source->facing());
+
+  // Video input device environment facing.
+  source = &used_media_impl_->last_sources()[3];
+  EXPECT_FALSE(source->id().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
+  EXPECT_FALSE(source->label().isEmpty());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeEnvironment, source->facing());
 }
 
 }  // namespace content

@@ -21,6 +21,7 @@
 #include "content/renderer/media/media_stream_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebSourceInfo.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
@@ -64,6 +65,8 @@ class CONTENT_EXPORT UserMediaClientImpl
       const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
   virtual void cancelMediaDevicesRequest(
       const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
+  virtual void requestSources(
+      const blink::WebMediaStreamTrackSourcesRequest& sources_request) OVERRIDE;
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -108,6 +111,9 @@ class CONTENT_EXPORT UserMediaClientImpl
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
       blink::WebVector<blink::WebMediaDeviceInfo>& devices);
+  virtual void EnumerateSourcesSucceded(
+      blink::WebMediaStreamTrackSourcesRequest* request,
+      blink::WebVector<blink::WebSourceInfo>& sources);
   // Creates a MediaStreamVideoSource object.
   // This is virtual for test purposes.
   virtual MediaStreamVideoSource* CreateVideoSource(
@@ -204,6 +210,9 @@ class CONTENT_EXPORT UserMediaClientImpl
   void OnStreamGeneratedForCancelledRequest(
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array);
+
+  void FinalizeEnumerateDevices(MediaDevicesRequestInfo* request);
+  void FinalizeEnumerateSources(MediaDevicesRequestInfo* request);
 
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(

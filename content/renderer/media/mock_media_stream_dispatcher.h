@@ -58,7 +58,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
  private:
   void AddAudioInputDeviceToArray(bool matched_output);
   void AddAudioOutputDeviceToArray();
-  void AddVideoDeviceToArray();
+  void AddVideoDeviceToArray(bool facing_user);
 
   int audio_input_request_id_;
   int audio_output_request_id_;  // Only used for EnumerateDevices.
