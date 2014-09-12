@@ -74,7 +74,7 @@
               "messageId": {
                 "type": "string",
                 "minLength": 1,
-                "description": "The ID of the message. It must be unique for each message in scope of the applications. See the <a href='cloudMessagingV2#send_messages'>Cloud Messaging documentation</a> for advice for picking and handling an ID."
+                "description": "The ID of the message. It must be unique for each message in scope of the applications. See the <a href='cloudMessaging#send_messages'>Cloud Messaging documentation</a> for advice for picking and handling an ID."
               },
               "timeToLive": {
                 "type": "integer",
@@ -131,7 +131,7 @@
               "collapseKey": {
                 "type": "string",
                 "optional": true,
-                "desctription": "The collapse key of a message. See <a href='cloudMessagingV2#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
+                "desctription": "The collapse key of a message. See <a href='cloudMessaging#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
               }
             }
           }
@@ -140,7 +140,7 @@
       {
         "name": "onMessagesDeleted",
         "type": "function",
-        "description": "Fired when a GCM server had to delete messages sent by an app server to the application. See <a href='cloudMessagingV2#messages_deleted_event'>Messages deleted event</a> section of Cloud Messaging documentation for details on handling this event."
+        "description": "Fired when a GCM server had to delete messages sent by an app server to the application. See <a href='cloudMessaging#messages_deleted_event'>Messages deleted event</a> section of Cloud Messaging documentation for details on handling this event."
       },
       {
         "name": "onSendError",
