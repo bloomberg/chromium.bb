@@ -88,11 +88,12 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   virtual void WillDestroyCurrentMessageLoop();
 
   // Internal state.
-  WeakPtrFactory<ObjectWatcher> weak_factory_;
   Closure callback_;
   HANDLE object_;             // The object being watched
   HANDLE wait_object_;        // Returned by RegisterWaitForSingleObject
   MessageLoop* origin_loop_;  // Used to get back to the origin thread
+
+  WeakPtrFactory<ObjectWatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectWatcher);
 };

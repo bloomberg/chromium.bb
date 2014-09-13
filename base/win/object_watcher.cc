@@ -13,10 +13,10 @@ namespace win {
 //-----------------------------------------------------------------------------
 
 ObjectWatcher::ObjectWatcher()
-    : weak_factory_(this),
-      object_(NULL),
+    : object_(NULL),
       wait_object_(NULL),
-      origin_loop_(NULL) {
+      origin_loop_(NULL),
+      weak_factory_(this) {
 }
 
 ObjectWatcher::~ObjectWatcher() {

@@ -126,10 +126,11 @@ class BASE_EXPORT CancelableTaskTracker {
   void Untrack(TaskId id);
 
   base::hash_map<TaskId, base::CancellationFlag*> task_flags_;
-  base::WeakPtrFactory<CancelableTaskTracker> weak_factory_;
 
   TaskId next_id_;
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<CancelableTaskTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CancelableTaskTracker);
 };

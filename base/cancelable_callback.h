@@ -253,15 +253,14 @@ class CancelableCallback<void(A1, A2)> {
                             weak_factory_.GetWeakPtr());
   }
 
-  // Used to ensure Forward() is not run when this object is destroyed.
-  base::WeakPtrFactory<CancelableCallback<void(A1, A2)> > weak_factory_;
-
   // The wrapper closure.
   base::Callback<void(A1, A2)> forwarder_;
 
   // The stored closure that may be cancelled.
   base::Callback<void(A1, A2)> callback_;
 
+  // Used to ensure Forward() is not run when this object is destroyed.
+  base::WeakPtrFactory<CancelableCallback<void(A1, A2)> > weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CancelableCallback);
 };
 

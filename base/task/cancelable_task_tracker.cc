@@ -60,7 +60,7 @@ namespace base {
 const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 
 CancelableTaskTracker::CancelableTaskTracker()
-    : weak_factory_(this), next_id_(1) {}
+    : next_id_(1),weak_factory_(this) {}
 
 CancelableTaskTracker::~CancelableTaskTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
