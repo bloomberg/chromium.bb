@@ -186,7 +186,7 @@
             'simd/jsimd_arm64_neon.S',
           ],
         }],
-        [ 'target_arch=="mipsel"', {
+        [ 'target_arch=="mipsel" or target_arch=="mips64el"', {
           'sources': [
             'jsimd_none.c',
           ],
