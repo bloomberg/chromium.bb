@@ -217,6 +217,7 @@ struct window {
 	struct rectangle saved_allocation;
 	struct rectangle min_allocation;
 	struct rectangle pending_allocation;
+	struct rectangle last_geometry;
 	int x, y;
 	int redraw_needed;
 	int redraw_task_scheduled;
@@ -246,6 +247,7 @@ struct window {
 	struct xdg_popup *xdg_popup;
 
 	struct window *parent;
+	struct wl_surface *last_parent_surface;
 
 	struct window_frame *frame;
 
@@ -3993,7 +3995,11 @@ window_sync_parent(struct window *window)
 	else
 		parent_surface = NULL;
 
+	if (parent_surface == window->last_parent_surface)
+		return;
+
 	xdg_surface_set_parent(window->xdg_surface, parent_surface);
+	window->last_parent_surface = parent_surface;
 }
 
 static void
@@ -4018,12 +4024,18 @@ window_sync_geometry(struct window *window)
 		return;
 
 	window_get_geometry(window, &geometry);
+	if (geometry.x == window->last_geometry.x &&
+	    geometry.y == window->last_geometry.y &&
+	    geometry.width == window->last_geometry.width &&
+	    geometry.height == window->last_geometry.height)
+		return;
 
 	xdg_surface_set_window_geometry(window->xdg_surface,
 					geometry.x,
 					geometry.y,
 					geometry.width,
 					geometry.height);
+	window->last_geometry = geometry;
 }
 
 static void
