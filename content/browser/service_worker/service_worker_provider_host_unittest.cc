@@ -57,17 +57,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return context_->process_manager()->PatternHasProcessToRun(pattern_);
   }
 
-  void VerifyVersionAttributes(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerVersion* installing,
-      ServiceWorkerVersion* waiting,
-      ServiceWorkerVersion* active) {
-    EXPECT_EQ(installing, provider_host->installing_version_.get());
-    EXPECT_EQ(waiting, provider_host->waiting_version_.get());
-    EXPECT_EQ(active, provider_host->active_version_.get());
-    EXPECT_FALSE(provider_host->controlling_version_.get());
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;
@@ -158,75 +147,6 @@ TEST_F(ServiceWorkerProviderHostTest,
   // Disassociating the other provider_host will remove all process refs.
   provider_host2_->DisassociateRegistration();
   ASSERT_FALSE(HasProcessToRun());
-}
-
-TEST_F(ServiceWorkerProviderHostTest,
-       ObserveVersionAttributesChanged_Basic) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  provider_host2_->AssociateRegistration(registration_.get());
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-
-  registration_->SetInstallingVersion(version_.get());
-  VerifyVersionAttributes(provider_host1_, version_.get(), NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, version_.get(), NULL, NULL);
-
-  registration_->SetWaitingVersion(version_.get());
-  VerifyVersionAttributes(provider_host1_, NULL, version_.get(), NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, version_.get(), NULL);
-
-  // Disassociating the registration should clear all version attributes.
-  provider_host2_->DisassociateRegistration();
-  VerifyVersionAttributes(provider_host1_, NULL, version_.get(), NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-
-  // Shouldn't notify the disassociated provider of the change.
-  registration_->SetActiveVersion(version_.get());
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, version_.get());
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-}
-
-TEST_F(ServiceWorkerProviderHostTest,
-       ObserveVersionAttributesChanged_MultipleVersions) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  provider_host2_->AssociateRegistration(registration_.get());
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-
-  scoped_refptr<ServiceWorkerVersion> version1 = new ServiceWorkerVersion(
-      registration_.get(), script_url_, 10L, context_->AsWeakPtr());
-  scoped_refptr<ServiceWorkerVersion> version2 = new ServiceWorkerVersion(
-      registration_.get(), script_url_, 20L, context_->AsWeakPtr());
-
-  registration_->SetInstallingVersion(version1.get());
-  VerifyVersionAttributes(provider_host1_, version1.get(), NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, version1.get(), NULL, NULL);
-
-  registration_->SetWaitingVersion(version1.get());
-  VerifyVersionAttributes(provider_host1_, NULL, version1.get(), NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, version1.get(), NULL);
-
-  registration_->SetInstallingVersion(version2.get());
-  VerifyVersionAttributes(
-      provider_host1_, version2.get(), version1.get(), NULL);
-  VerifyVersionAttributes(
-      provider_host2_, version2.get(), version1.get(), NULL);
-
-  // Disassociating the registration should clear all version attributes.
-  provider_host2_->DisassociateRegistration();
-  VerifyVersionAttributes(
-      provider_host1_, version2.get(), version1.get(), NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-
-  // Shouldn't notify the disassociated provider of the change.
-  registration_->SetActiveVersion(version1.get());
-  VerifyVersionAttributes(
-      provider_host1_, version2.get(), NULL, version1.get());
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
-
-  registration_->SetActiveVersion(version2.get());
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, version2.get());
-  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 }
 
 }  // namespace content

@@ -48,16 +48,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   }
 }
 
-void ServiceWorkerProviderHost::OnVersionAttributesChanged(
-    ServiceWorkerRegistration* registration,
-    ChangedVersionAttributesMask changed_mask,
-    const ServiceWorkerRegistrationInfo& info) {
-  DCHECK_EQ(associated_registration_.get(), registration);
-  installing_version_ = registration->installing_version();
-  waiting_version_ = registration->waiting_version();
-  active_version_ = registration->active_version();
-}
-
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(associated_registration_.get(), registration);
@@ -91,7 +81,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
   if (!context_)
     return true;  // System is shutting down.
-  if (active_version_.get())
+  if (active_version())
     return false;  // Unexpected bad message.
 
   ServiceWorkerVersion* live_version = context_->GetLiveVersion(version_id);
@@ -136,9 +126,6 @@ void ServiceWorkerProviderHost::AssociateRegistration(
 
   associated_registration_ = registration;
   associated_registration_->AddListener(this);
-  installing_version_ = registration->installing_version();
-  waiting_version_ = registration->waiting_version();
-  active_version_ = registration->active_version();
   SetControllerVersionAttribute(registration->active_version());
 }
 
@@ -148,9 +135,6 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   DecreaseProcessReference(associated_registration_->pattern());
   associated_registration_->RemoveListener(this);
   associated_registration_ = NULL;
-  installing_version_ = NULL;
-  waiting_version_ = NULL;
-  active_version_ = NULL;
   SetControllerVersionAttribute(NULL);
 
   if (dispatcher_host_) {

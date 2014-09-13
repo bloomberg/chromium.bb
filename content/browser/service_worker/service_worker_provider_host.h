@@ -56,18 +56,20 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return running_hosted_version_.get() != NULL;
   }
 
-  // Getters for the navigator.serviceWorker attribute values.
   ServiceWorkerVersion* controlling_version() const {
     return controlling_version_.get();
   }
   ServiceWorkerVersion* active_version() const {
-    return active_version_.get();
+    return associated_registration_.get() ?
+        associated_registration_->active_version() : NULL;
   }
   ServiceWorkerVersion* waiting_version() const {
-    return waiting_version_.get();
+    return associated_registration_.get() ?
+        associated_registration_->waiting_version() : NULL;
   }
   ServiceWorkerVersion* installing_version() const {
-    return installing_version_.get();
+    return associated_registration_.get() ?
+        associated_registration_->installing_version() : NULL;
   }
 
   // The running version, if any, that this provider is providing resource
@@ -124,10 +126,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            UpdateAfter24Hours);
 
   // ServiceWorkerRegistration::Listener overrides.
-  virtual void OnVersionAttributesChanged(
-      ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
-      const ServiceWorkerRegistrationInfo& info) OVERRIDE;
   virtual void OnRegistrationFailed(
       ServiceWorkerRegistration* registration) OVERRIDE;
 
@@ -152,9 +150,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
-  scoped_refptr<ServiceWorkerVersion> active_version_;
-  scoped_refptr<ServiceWorkerVersion> waiting_version_;
-  scoped_refptr<ServiceWorkerVersion> installing_version_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
