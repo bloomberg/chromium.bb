@@ -240,15 +240,6 @@ class MockDecryptor : public Decryptor {
   DISALLOW_COPY_AND_ASSIGN(MockDecryptor);
 };
 
-// Helper mock statistics callback.
-class MockStatisticsCB {
- public:
-  MockStatisticsCB();
-  ~MockStatisticsCB();
-
-  MOCK_METHOD1(OnStatistics, void(const media::PipelineStatistics& statistics));
-};
-
 }  // namespace media
 
 #endif  // MEDIA_BASE_MOCK_FILTERS_H_

@@ -65,8 +65,6 @@ class VideoRendererImplTest : public ::testing::Test {
     EXPECT_CALL(demuxer_stream_, Read(_)).WillRepeatedly(
         RunCallback<0>(DemuxerStream::kOk,
                        scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
-    EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
-        .Times(AnyNumber());
   }
 
   virtual ~VideoRendererImplTest() {}
@@ -103,8 +101,8 @@ class VideoRendererImplTest : public ::testing::Test {
         &demuxer_stream_,
         low_delay,
         status_cb,
-        base::Bind(&MockStatisticsCB::OnStatistics,
-                   base::Unretained(&statistics_cb_object_)),
+        base::Bind(&VideoRendererImplTest::OnStatisticsUpdate,
+                   base::Unretained(this)),
         base::Bind(&StrictMock<MockCB>::BufferingStateChange,
                    base::Unretained(&mock_cb_)),
         ended_event_.GetClosure(),
@@ -251,7 +249,6 @@ class VideoRendererImplTest : public ::testing::Test {
   scoped_ptr<VideoRendererImpl> renderer_;
   MockVideoDecoder* decoder_;  // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
-  MockStatisticsCB statistics_cb_object_;
 
   // Use StrictMock<T> to catch missing/extra callbacks.
   class MockCB {
@@ -293,6 +290,8 @@ class VideoRendererImplTest : public ::testing::Test {
 
     message_loop_.PostTask(FROM_HERE, callback);
   }
+
+  void OnStatisticsUpdate(const PipelineStatistics& stats) {}
 
   base::MessageLoop message_loop_;
 

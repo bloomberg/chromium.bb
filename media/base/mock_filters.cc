@@ -94,8 +94,4 @@ MockDecryptor::MockDecryptor() {}
 
 MockDecryptor::~MockDecryptor() {}
 
-MockStatisticsCB::MockStatisticsCB() {}
-
-MockStatisticsCB::~MockStatisticsCB() {}
-
 }  // namespace media
