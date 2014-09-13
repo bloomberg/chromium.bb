@@ -83,9 +83,6 @@ class SessionConfig {
     return audio_config_.transport != ChannelConfig::TRANSPORT_NONE;
   }
 
-  // Returns true if the control channel supports capabilities.
-  bool SupportsCapabilities() const;
-
   // Returns a suitable session configuration for use in tests.
   static SessionConfig ForTest();
 

@@ -151,27 +151,17 @@ void ChromotingClient::OnAuthenticated() {
   if (connection_.config().is_audio_enabled())
     audio_decode_scheduler_->Initialize(connection_.config());
 
-  // Do not negotiate capabilities with the host if the host does not support
-  // them.
-  if (!connection_.config().SupportsCapabilities()) {
-    VLOG(1) << "The host does not support any capabilities.";
-
-    host_capabilities_received_ = true;
-    user_interface_->SetCapabilities(host_capabilities_);
-  }
 }
 
 void ChromotingClient::OnChannelsConnected() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Negotiate capabilities with the host.
-  if (connection_.config().SupportsCapabilities()) {
-    VLOG(1) << "Client capabilities: " << local_capabilities_;
+  VLOG(1) << "Client capabilities: " << local_capabilities_;
 
-    protocol::Capabilities capabilities;
-    capabilities.set_capabilities(local_capabilities_);
-    connection_.host_stub()->SetCapabilities(capabilities);
-  }
+  protocol::Capabilities capabilities;
+  capabilities.set_capabilities(local_capabilities_);
+  connection_.host_stub()->SetCapabilities(capabilities);
 }
 
 }  // namespace remoting

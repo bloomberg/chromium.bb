@@ -176,13 +176,6 @@ void ClientSession::SetCapabilities(
     const protocol::Capabilities& capabilities) {
   DCHECK(CalledOnValidThread());
 
-  // The client should not send protocol::Capabilities if it is not supported by
-  // the config channel.
-  if (!connection_->session()->config().SupportsCapabilities()) {
-    LOG(ERROR) << "Unexpected protocol::Capabilities has been received.";
-    return;
-  }
-
   // Ignore all the messages but the 1st one.
   if (client_capabilities_) {
     LOG(WARNING) << "protocol::Capabilities has been received already.";
@@ -288,16 +281,10 @@ void ClientSession::OnConnectionAuthenticated(
   }
 
   // Collate the set of capabilities to offer the client, if it supports them.
-  if (connection_->session()->config().SupportsCapabilities()) {
-    host_capabilities_ = desktop_environment_->GetCapabilities();
-    if (!host_capabilities_.empty()) {
-      host_capabilities_.append(" ");
-    }
-    host_capabilities_.append(extension_manager_->GetCapabilities());
-  } else {
-    VLOG(1) << "The client does not support any capabilities.";
-    desktop_environment_->SetCapabilities(std::string());
-  }
+  host_capabilities_ = desktop_environment_->GetCapabilities();
+  if (!host_capabilities_.empty())
+    host_capabilities_.append(" ");
+  host_capabilities_.append(extension_manager_->GetCapabilities());
 
   // Create the object that controls the screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();
@@ -332,13 +319,11 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK_EQ(connection_.get(), connection);
 
   // Negotiate capabilities with the client.
-  if (connection_->session()->config().SupportsCapabilities()) {
-    VLOG(1) << "Host capabilities: " << host_capabilities_;
+  VLOG(1) << "Host capabilities: " << host_capabilities_;
 
-    protocol::Capabilities capabilities;
-    capabilities.set_capabilities(host_capabilities_);
-    connection_->client_stub()->SetCapabilities(capabilities);
-  }
+  protocol::Capabilities capabilities;
+  capabilities.set_capabilities(host_capabilities_);
+  connection_->client_stub()->SetCapabilities(capabilities);
 
   // Start the event executor.
   input_injector_->Start(CreateClipboardProxy());
