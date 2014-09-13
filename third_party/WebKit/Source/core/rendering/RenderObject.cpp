@@ -1440,9 +1440,7 @@ bool RenderObject::hadPaintInvalidation() const
 
 const RenderLayerModelObject* RenderObject::containerForPaintInvalidation() const
 {
-    if (!isRooted())
-        return 0;
-
+    RELEASE_ASSERT(isRooted());
     return adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
 }
 
@@ -1521,10 +1519,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     if (r.isEmpty())
         return;
 
-    // FIXME: This should be an assert, but editing/selection can trigger this case to invalidate
-    // the selection. crbug.com/368140.
-    if (!isRooted())
-        return;
+    RELEASE_ASSERT(isRooted());
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),
@@ -1577,8 +1572,7 @@ LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelOb
 
 void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
 {
-    if (!isRooted())
-        return;
+    RELEASE_ASSERT(isRooted());
 
     if (view()->document().printing())
         return; // Don't invalidate paints if we're printing.
