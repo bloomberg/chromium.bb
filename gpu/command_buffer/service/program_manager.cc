@@ -521,65 +521,6 @@ void Program::ExecuteBindAttribLocationCalls() {
   }
 }
 
-void ProgramManager::DoCompileShader(
-    Shader* shader,
-    ShaderTranslator* translator,
-    ProgramManager::TranslatedShaderSourceType translated_shader_source_type) {
-  // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
-  // glShaderSource and then glCompileShader.
-  const std::string* source = shader->source();
-  const char* shader_src = source ? source->c_str() : "";
-  if (translator) {
-    if (!translator->Translate(shader_src)) {
-      shader->SetStatus(false, translator->info_log(), NULL);
-      return;
-    }
-    shader_src = translator->translated_shader();
-    if (translated_shader_source_type != kANGLE)
-      shader->UpdateTranslatedSource(shader_src);
-  }
-
-  glShaderSource(shader->service_id(), 1, &shader_src, NULL);
-  glCompileShader(shader->service_id());
-  if (translated_shader_source_type == kANGLE) {
-    GLint max_len = 0;
-    glGetShaderiv(shader->service_id(),
-                  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
-                  &max_len);
-    scoped_ptr<char[]> temp(new char[max_len]);
-    GLint len = 0;
-    glGetTranslatedShaderSourceANGLE(
-        shader->service_id(), max_len, &len, temp.get());
-    DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || temp[len] == '\0');
-    shader->UpdateTranslatedSource(max_len ? temp.get() : NULL);
-  }
-
-  GLint status = GL_FALSE;
-  glGetShaderiv(shader->service_id(), GL_COMPILE_STATUS, &status);
-  if (status) {
-    shader->SetStatus(true, "", translator);
-  } else {
-    // We cannot reach here if we are using the shader translator.
-    // All invalid shaders must be rejected by the translator.
-    // All translated shaders must compile.
-    GLint max_len = 0;
-    glGetShaderiv(shader->service_id(), GL_INFO_LOG_LENGTH, &max_len);
-    scoped_ptr<char[]> temp(new char[max_len]);
-    GLint len = 0;
-    glGetShaderInfoLog(shader->service_id(), max_len, &len, temp.get());
-    DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || temp[len] == '\0');
-    shader->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
-    LOG_IF(ERROR, translator)
-        << "Shader translator allowed/produced an invalid shader "
-        << "unless the driver is buggy:"
-        << "\n--original-shader--\n" << (source ? *source : std::string())
-        << "\n--translated-shader--\n" << shader_src << "\n--info-log--\n"
-        << *shader->log_info();
-  }
-}
-
 bool Program::Link(ShaderManager* manager,
                    ShaderTranslator* vertex_translator,
                    ShaderTranslator* fragment_translator,
@@ -623,12 +564,12 @@ bool Program::Link(ShaderManager* manager,
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
-    DCHECK(attached_shaders_[0]->signature_source() &&
-           attached_shaders_[1]->signature_source());
+    DCHECK(!attached_shaders_[0]->signature_source().empty() &&
+           !attached_shaders_[1]->signature_source().empty());
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
-        *attached_shaders_[0]->signature_source(),
+        attached_shaders_[0]->signature_source(),
         vertex_translator,
-        *attached_shaders_[1]->signature_source(),
+        attached_shaders_[1]->signature_source(),
         fragment_translator,
         &bind_attrib_location_map_);
 
@@ -1041,7 +982,7 @@ void Program::DetachShaders(ShaderManager* shader_manager) {
 
 bool Program::CanLink() const {
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->IsValid()) {
+    if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->valid()) {
       return false;
     }
   }
@@ -1055,7 +996,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
     // Find out if an attribute is declared in this program's shaders.
     bool active = false;
     for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-      if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->IsValid())
+      if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->valid())
         continue;
       if (attached_shaders_[ii]->GetAttribInfo(it->first)) {
         active = true;

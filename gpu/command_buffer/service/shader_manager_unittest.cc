@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -86,41 +87,11 @@ TEST_F(ShaderManagerTest, DeleteBug) {
   EXPECT_FALSE(manager_.IsOwned(shader2.get()));
 }
 
-TEST_F(ShaderManagerTest, Shader) {
+TEST_F(ShaderManagerTest, DoCompile) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   const char* kClient1Source = "hello world";
-  // Check we can create shader.
-  Shader* shader1 = manager_.CreateShader(
-      kClient1Id, kService1Id, kShader1Type);
-  // Check shader got created.
-  ASSERT_TRUE(shader1 != NULL);
-  EXPECT_EQ(kService1Id, shader1->service_id());
-  // Check if the shader has correct type.
-  EXPECT_EQ(kShader1Type, shader1->shader_type());
-  EXPECT_FALSE(shader1->IsValid());
-  EXPECT_FALSE(shader1->InUse());
-  EXPECT_TRUE(shader1->source() == NULL);
-  EXPECT_TRUE(shader1->log_info() == NULL);
-  const char* kLog = "foo";
-  shader1->SetStatus(true, kLog, NULL);
-  EXPECT_TRUE(shader1->IsValid());
-  EXPECT_STREQ(kLog, shader1->log_info()->c_str());
-  // Check we can set its source.
-  shader1->UpdateSource(kClient1Source);
-  EXPECT_STREQ(kClient1Source, shader1->source()->c_str());
-  EXPECT_EQ(NULL, shader1->translated_source());
-  // Check we can set its translated source.
-  shader1->UpdateTranslatedSource(kClient1Source);
-  EXPECT_STREQ(kClient1Source,
-               shader1->translated_source()->c_str());
-}
-
-TEST_F(ShaderManagerTest, GetInfo) {
-  const GLuint kClient1Id = 1;
-  const GLuint kService1Id = 11;
-  const GLenum kShader1Type = GL_VERTEX_SHADER;
   const GLenum kAttrib1Type = GL_FLOAT_VEC2;
   const GLsizei kAttrib1Size = 2;
   const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
@@ -140,8 +111,40 @@ TEST_F(ShaderManagerTest, GetInfo) {
   const int kUniform2Precision = SH_PRECISION_MEDIUMP;
   const int kUniform2StaticUse = 0;
   const char* kUniform2Name = "uni2";
+  const GLenum kVarying1Type = GL_FLOAT_VEC4;
+  const GLsizei kVarying1Size = 1;
+  const int kVarying1Precision = SH_PRECISION_HIGHP;
+  const int kVarying1StaticUse = 0;
+  const char* kVarying1Name = "varying1";
 
-  MockShaderTranslator shader_translator;
+  // Check we can create shader.
+  Shader* shader1 = manager_.CreateShader(
+      kClient1Id, kService1Id, kShader1Type);
+  // Check shader got created.
+  ASSERT_TRUE(shader1 != NULL);
+  EXPECT_EQ(kService1Id, shader1->service_id());
+  // Check if the shader has correct type.
+  EXPECT_EQ(kShader1Type, shader1->shader_type());
+  EXPECT_FALSE(shader1->valid());
+  EXPECT_FALSE(shader1->InUse());
+  EXPECT_TRUE(shader1->source().empty());
+  EXPECT_TRUE(shader1->log_info().empty());
+  EXPECT_TRUE(shader1->signature_source().empty());
+  EXPECT_TRUE(shader1->translated_source().empty());
+  EXPECT_EQ(0u, shader1->attrib_map().size());
+  EXPECT_EQ(0u, shader1->uniform_map().size());
+  EXPECT_EQ(0u, shader1->varying_map().size());
+
+  // Check we can set its source.
+  shader1->set_source(kClient1Source);
+  EXPECT_STREQ(kClient1Source, shader1->source().c_str());
+  EXPECT_TRUE(shader1->signature_source().empty());
+
+  // Check DoCompile() will set compilation states, log, translated source,
+  // shader variables, and name mapping.
+  const std::string kLog = "foo";
+  const std::string kTranslatedSource = "poo";
+
   ShaderTranslator::VariableMap attrib_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
       kAttrib1Type, kAttrib1Size, kAttrib1Precision,
@@ -156,24 +159,22 @@ TEST_F(ShaderManagerTest, GetInfo) {
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
       kUniform2Type, kUniform2Size, kUniform2Precision,
       kUniform2StaticUse, kUniform2Name);
-  EXPECT_CALL(shader_translator, attrib_map())
-      .WillRepeatedly(ReturnRef(attrib_map));
-  EXPECT_CALL(shader_translator, uniform_map())
-      .WillRepeatedly(ReturnRef(uniform_map));
   ShaderTranslator::VariableMap varying_map;
-  EXPECT_CALL(shader_translator, varying_map())
-      .WillRepeatedly(ReturnRef(varying_map));
-  ShaderTranslator::NameMap name_map;
-  EXPECT_CALL(shader_translator, name_map())
-      .WillRepeatedly(ReturnRef(name_map));
-  // Check we can create shader.
-  Shader* shader1 = manager_.CreateShader(
-      kClient1Id, kService1Id, kShader1Type);
-  // Check shader got created.
-  ASSERT_TRUE(shader1 != NULL);
-  // Set Status
-  shader1->SetStatus(true, "", &shader_translator);
-  // Check attrib and uniform infos got copied.
+  varying_map[kVarying1Name] = ShaderTranslatorInterface::VariableInfo(
+      kVarying1Type, kVarying1Size, kVarying1Precision,
+      kVarying1StaticUse, kVarying1Name);
+
+  TestHelper::SetShaderStates(
+      gl_.get(), shader1, true, &kLog, &kTranslatedSource,
+      &attrib_map, &uniform_map, &varying_map, NULL);
+  EXPECT_TRUE(shader1->valid());
+  // When compilation succeeds, no log is recorded.
+  EXPECT_STREQ("", shader1->log_info().c_str());
+  EXPECT_STREQ(kClient1Source, shader1->signature_source().c_str());
+  EXPECT_STREQ(kTranslatedSource.c_str(), shader1->translated_source().c_str());
+
+  // Check varying infos got copied.
+  EXPECT_EQ(attrib_map.size(), shader1->attrib_map().size());
   for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
     const Shader::VariableInfo* variable_info =
@@ -183,8 +184,10 @@ TEST_F(ShaderManagerTest, GetInfo) {
     EXPECT_EQ(it->second.size, variable_info->size);
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.static_use, variable_info->static_use);
-    EXPECT_EQ(it->second.name, variable_info->name);
+    EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
+  // Check uniform infos got copied.
+  EXPECT_EQ(uniform_map.size(), shader1->uniform_map().size());
   for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
        it != uniform_map.end(); ++it) {
     const Shader::VariableInfo* variable_info =
@@ -194,23 +197,32 @@ TEST_F(ShaderManagerTest, GetInfo) {
     EXPECT_EQ(it->second.size, variable_info->size);
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.static_use, variable_info->static_use);
-    EXPECT_EQ(it->second.name, variable_info->name);
+    EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
-  // Check attrib and uniform get cleared.
-  shader1->SetStatus(true, NULL, NULL);
-  EXPECT_TRUE(shader1->log_info() == NULL);
-  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
-       it != attrib_map.end(); ++it) {
+  // Check varying infos got copied.
+  EXPECT_EQ(varying_map.size(), shader1->varying_map().size());
+  for (ShaderTranslator::VariableMap::const_iterator it = varying_map.begin();
+       it != varying_map.end(); ++it) {
     const Shader::VariableInfo* variable_info =
-        shader1->GetAttribInfo(it->first);
-    EXPECT_TRUE(variable_info == NULL);
+        shader1->GetVaryingInfo(it->first);
+    ASSERT_TRUE(variable_info != NULL);
+    EXPECT_EQ(it->second.type, variable_info->type);
+    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.precision, variable_info->precision);
+    EXPECT_EQ(it->second.static_use, variable_info->static_use);
+    EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
-  for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
-       it != uniform_map.end(); ++it) {
-    const Shader::VariableInfo* variable_info =
-        shader1->GetUniformInfo(it->first);
-    ASSERT_TRUE(variable_info == NULL);
-  }
+
+  // Compile failure case.
+  TestHelper::SetShaderStates(
+      gl_.get(), shader1, false, &kLog, &kTranslatedSource,
+      &attrib_map, &uniform_map, &varying_map, NULL);
+  EXPECT_FALSE(shader1->valid());
+  EXPECT_STREQ(kLog.c_str(), shader1->log_info().c_str());
+  EXPECT_STREQ("", shader1->translated_source().c_str());
+  EXPECT_TRUE(shader1->attrib_map().empty());
+  EXPECT_TRUE(shader1->uniform_map().empty());
+  EXPECT_TRUE(shader1->varying_map().empty());
 }
 
 TEST_F(ShaderManagerTest, ShaderInfoUseCount) {

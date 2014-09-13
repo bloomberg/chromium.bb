@@ -74,19 +74,16 @@ class ShaderTranslatorInterface {
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
-  virtual bool Translate(const char* shader) = 0;
-
-  // The following functions return results from the last translation.
-  // The results are NULL/empty if the translation was unsuccessful.
-  // A valid info-log is always returned irrespective of whether translation
-  // was successful or not.
-  virtual const char* translated_shader() const = 0;
-  virtual const char* info_log() const = 0;
-
-  virtual const VariableMap& attrib_map() const = 0;
-  virtual const VariableMap& uniform_map() const = 0;
-  virtual const VariableMap& varying_map() const = 0;
-  virtual const NameMap& name_map() const = 0;
+  // Always fill |info_log| if it's non-null.
+  // Upon success, fill |translated_shader|, |attrib_map|, |uniform_map|,
+  // |varying_map|, and |name_map| if they are non-null.
+  virtual bool Translate(const std::string& shader_source,
+                         std::string* info_log,
+                         std::string* translated_shader,
+                         VariableMap* attrib_map,
+                         VariableMap* uniform_map,
+                         VariableMap* varying_map,
+                         NameMap* name_map) const = 0;
 
   // Return a string that is unique for a specfic set of options that would
   // possibly affect compilation.
@@ -123,17 +120,13 @@ class GPU_EXPORT ShaderTranslator
       ShCompileOptions driver_bug_workarounds) OVERRIDE;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual bool Translate(const char* shader) OVERRIDE;
-
-  // Overridden from ShaderTranslatorInterface.
-  virtual const char* translated_shader() const OVERRIDE;
-  virtual const char* info_log() const OVERRIDE;
-
-  // Overridden from ShaderTranslatorInterface.
-  virtual const VariableMap& attrib_map() const OVERRIDE;
-  virtual const VariableMap& uniform_map() const OVERRIDE;
-  virtual const VariableMap& varying_map() const OVERRIDE;
-  virtual const NameMap& name_map() const OVERRIDE;
+  virtual bool Translate(const std::string& shader_source,
+                         std::string* info_log,
+                         std::string* translated_source,
+                         VariableMap* attrib_map,
+                         VariableMap* uniform_map,
+                         VariableMap* varying_map,
+                         NameMap* name_map) const OVERRIDE;
 
   virtual std::string GetStringForOptionsThatWouldAffectCompilation() const
       OVERRIDE;
@@ -145,17 +138,10 @@ class GPU_EXPORT ShaderTranslator
   friend class base::RefCounted<ShaderTranslator>;
 
   virtual ~ShaderTranslator();
-  void ClearResults();
   int GetCompileOptions() const;
 
   ShHandle compiler_;
   ShBuiltInResources compiler_options_;
-  scoped_ptr<char[]> translated_shader_;
-  scoped_ptr<char[]> info_log_;
-  VariableMap attrib_map_;
-  VariableMap uniform_map_;
-  VariableMap varying_map_;
-  NameMap name_map_;
   bool implementation_is_glsl_es_;
   ShCompileOptions driver_bug_workarounds_;
   ObserverList<DestructionObserver> destruction_observers_;

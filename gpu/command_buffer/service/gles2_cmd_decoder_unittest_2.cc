@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -289,8 +290,10 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::LinkProgram, 0>(
   DoCreateShader(
       GL_FRAGMENT_SHADER, kClientFragmentShaderId, kServiceFragmentShaderId);
 
-  GetShader(kClientVertexShaderId)->SetStatus(true, "", NULL);
-  GetShader(kClientFragmentShaderId)->SetStatus(true, "", NULL);
+  TestHelper::SetShaderStates(
+      gl_.get(), GetShader(kClientVertexShaderId), true);
+  TestHelper::SetShaderStates(
+      gl_.get(), GetShader(kClientFragmentShaderId), true);
 
   InSequence dummy;
   EXPECT_CALL(*gl_,

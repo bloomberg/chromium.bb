@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,7 @@ using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
+using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
@@ -638,6 +640,78 @@ void TestHelper::SetTexParameteriWithExpectations(
         .RetiresOnSaturation();
   }
   manager->SetParameteri("", error_state, texture_ref, pname, value);
+}
+
+// static
+void TestHelper::SetShaderStates(
+      ::gfx::MockGLInterface* gl, Shader* shader,
+      bool expected_valid,
+      const std::string* const expected_log_info,
+      const std::string* const expected_translated_source,
+      const ShaderTranslatorInterface::VariableMap* const expected_attrib_map,
+      const ShaderTranslatorInterface::VariableMap* const expected_uniform_map,
+      const ShaderTranslatorInterface::VariableMap* const expected_varying_map,
+      const ShaderTranslatorInterface::NameMap* const expected_name_map) {
+  const std::string empty_log_info;
+  const std::string* log_info = (expected_log_info && !expected_valid) ?
+      expected_log_info : &empty_log_info;
+  const std::string empty_translated_source;
+  const std::string* translated_source =
+      (expected_translated_source && expected_valid) ?
+          expected_translated_source : &empty_translated_source;
+  const ShaderTranslatorInterface::VariableMap empty_attrib_map;
+  const ShaderTranslatorInterface::VariableMap* attrib_map =
+      (expected_attrib_map && expected_valid) ?
+          expected_attrib_map : &empty_attrib_map;
+  const ShaderTranslatorInterface::VariableMap empty_uniform_map;
+  const ShaderTranslatorInterface::VariableMap* uniform_map =
+      (expected_uniform_map && expected_valid) ?
+          expected_uniform_map : &empty_uniform_map;
+  const ShaderTranslatorInterface::VariableMap empty_varying_map;
+  const ShaderTranslatorInterface::VariableMap* varying_map =
+      (expected_varying_map && expected_valid) ?
+          expected_varying_map : &empty_varying_map;
+  const ShaderTranslatorInterface::NameMap empty_name_map;
+  const ShaderTranslatorInterface::NameMap* name_map =
+      (expected_name_map && expected_valid) ?
+          expected_name_map : &empty_name_map;
+
+  MockShaderTranslator translator;
+  EXPECT_CALL(translator, Translate(_,
+                                    NotNull(),  // log_info
+                                    NotNull(),  // translated_source
+                                    NotNull(),  // attrib_map
+                                    NotNull(),  // uniform_map
+                                    NotNull(),  // varying_map
+                                    NotNull()))  // name_map
+      .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
+                      SetArgumentPointee<2>(*translated_source),
+                      SetArgumentPointee<3>(*attrib_map),
+                      SetArgumentPointee<4>(*uniform_map),
+                      SetArgumentPointee<5>(*varying_map),
+                      SetArgumentPointee<6>(*name_map),
+                      Return(expected_valid)))
+      .RetiresOnSaturation();
+  if (expected_valid) {
+    EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, CompileShader(shader->service_id()))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetShaderiv(shader->service_id(),
+                                 GL_COMPILE_STATUS,
+                                 NotNull()))  // status
+        .WillOnce(SetArgumentPointee<2>(GL_TRUE))
+        .RetiresOnSaturation();
+  }
+  shader->DoCompile(&translator, Shader::kGL);
+}
+
+// static
+void TestHelper::SetShaderStates(
+      ::gfx::MockGLInterface* gl, Shader* shader, bool valid) {
+  SetShaderStates(gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ScopedGLImplementationSetter::ScopedGLImplementationSetter(

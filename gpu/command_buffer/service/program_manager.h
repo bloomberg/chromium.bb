@@ -356,11 +356,6 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 // need to be shared by multiple GLES2Decoders.
 class GPU_EXPORT ProgramManager {
  public:
-  enum TranslatedShaderSourceType {
-    kANGLE,
-    kGL,  // GL or GLES
-  };
-
   explicit ProgramManager(ProgramCache* program_cache,
                           uint32 max_varying_vectors);
   ~ProgramManager();
@@ -399,11 +394,6 @@ class GPU_EXPORT ProgramManager {
   bool IsOwned(Program* program);
 
   static int32 MakeFakeLocation(int32 index, int32 element);
-
-  void DoCompileShader(
-      Shader* shader,
-      ShaderTranslator* translator,
-      TranslatedShaderSourceType translated_shader_source_type);
 
   uint32 max_varying_vectors() const {
     return max_varying_vectors_;

@@ -22,6 +22,66 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
 Shader::~Shader() {
 }
 
+void Shader::DoCompile(ShaderTranslatorInterface* translator,
+                       TranslatedShaderSourceType type) {
+  // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
+  // glShaderSource and then glCompileShader.
+  const char* source_for_driver = source_.c_str();
+  if (translator) {
+    valid_ = translator->Translate(source_,
+                                   &log_info_,
+                                   &translated_source_,
+                                   &attrib_map_,
+                                   &uniform_map_,
+                                   &varying_map_,
+                                   &name_map_);
+    if (!valid_) {
+      return;
+    }
+    signature_source_ = source_;
+    source_for_driver = translated_source_.c_str();
+  }
+
+  glShaderSource(service_id_, 1, &source_for_driver, NULL);
+  glCompileShader(service_id_);
+  if (type == kANGLE) {
+    GLint max_len = 0;
+    glGetShaderiv(service_id_,
+                  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+                  &max_len);
+    scoped_ptr<char[]> buffer(new char[max_len]);
+    GLint len = 0;
+    glGetTranslatedShaderSourceANGLE(
+        service_id_, max_len, &len, buffer.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len == 0 || buffer[len] == '\0');
+    translated_source_ = std::string(buffer.get(), len);
+  }
+
+  GLint status = GL_FALSE;
+  glGetShaderiv(service_id_, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    // We cannot reach here if we are using the shader translator.
+    // All invalid shaders must be rejected by the translator.
+    // All translated shaders must compile.
+    GLint max_len = 0;
+    glGetShaderiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
+    scoped_ptr<char[]> buffer(new char[max_len]);
+    GLint len = 0;
+    glGetShaderInfoLog(service_id_, max_len, &len, buffer.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len == 0 || buffer[len] == '\0');
+    valid_ = false;
+    log_info_ = std::string(buffer.get(), len);
+    LOG_IF(ERROR, translator)
+        << "Shader translator allowed/produced an invalid shader "
+        << "unless the driver is buggy:"
+        << "\n--original-shader--\n" << source_
+        << "\n--translated-shader--\n" << source_for_driver
+        << "\n--info-log--\n" << log_info_;
+  }
+}
+
 void Shader::IncUseCount() {
   ++use_count_;
 }
@@ -36,31 +96,8 @@ void Shader::MarkAsDeleted() {
   service_id_ = 0;
 }
 
-void Shader::SetStatus(
-    bool valid, const char* log, ShaderTranslatorInterface* translator) {
-  valid_ = valid;
-  log_info_.reset(log ? new std::string(log) : NULL);
-  if (translator && valid) {
-    attrib_map_ = translator->attrib_map();
-    uniform_map_ = translator->uniform_map();
-    varying_map_ = translator->varying_map();
-    name_map_ = translator->name_map();
-  } else {
-    attrib_map_.clear();
-    uniform_map_.clear();
-    varying_map_.clear();
-    name_map_.clear();
-  }
-  if (valid && source_.get()) {
-    signature_source_.reset(new std::string(source_->c_str()));
-  } else {
-    signature_source_.reset();
-  }
-}
-
-const Shader::VariableInfo*
-    Shader::GetAttribInfo(
-        const std::string& name) const {
+const Shader::VariableInfo* Shader::GetAttribInfo(
+    const std::string& name) const {
   VariableMap::const_iterator it = attrib_map_.find(name);
   return it != attrib_map_.end() ? &it->second : NULL;
 }
@@ -83,11 +120,16 @@ const std::string* Shader::GetOriginalNameFromHashedName(
   return NULL;
 }
 
-const Shader::VariableInfo*
-    Shader::GetUniformInfo(
-        const std::string& name) const {
+const Shader::VariableInfo* Shader::GetUniformInfo(
+    const std::string& name) const {
   VariableMap::const_iterator it = uniform_map_.find(name);
   return it != uniform_map_.end() ? &it->second : NULL;
+}
+
+const Shader::VariableInfo* Shader::GetVaryingInfo(
+    const std::string& name) const {
+  VariableMap::const_iterator it = varying_map_.find(name);
+  return it != varying_map_.end() ? &it->second : NULL;
 }
 
 ShaderManager::ShaderManager() {}

@@ -6834,7 +6834,7 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
   }
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
-  shader->UpdateSource(str.c_str());
+  shader->set_source(str);
   return error::kNoError;
 }
 
@@ -6864,11 +6864,10 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
         vertex_translator_.get() : fragment_translator_.get();
   }
 
-  program_manager()->DoCompileShader(
-     shader,
+  shader->DoCompile(
      translator,
      feature_info_->feature_flags().angle_translated_shader_source ?
-         ProgramManager::kANGLE : ProgramManager::kGL);
+         Shader::kANGLE : Shader::kGL);
 
   // CompileShader can be very slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -6883,17 +6882,22 @@ void GLES2DecoderImpl::DoGetShaderiv(
   }
   switch (pname) {
     case GL_SHADER_SOURCE_LENGTH:
-      *params = shader->source() ? shader->source()->size() + 1 : 0;
+      *params = shader->source().size();
+      if (*params)
+        ++(*params);
       return;
     case GL_COMPILE_STATUS:
-      *params = compile_shader_always_succeeds_ ? true : shader->IsValid();
+      *params = compile_shader_always_succeeds_ ? true : shader->valid();
       return;
     case GL_INFO_LOG_LENGTH:
-      *params = shader->log_info() ? shader->log_info()->size() + 1 : 0;
+      *params = shader->log_info().size();
+      if (*params)
+        ++(*params);
       return;
     case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-      *params = shader->translated_source() ?
-          shader->translated_source()->size() + 1 : 0;
+      *params = shader->translated_source().size();
+      if (*params)
+        ++(*params);
       return;
     default:
       break;
@@ -6909,11 +6913,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(uint32 immediate_data_size,
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
   Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderSource");
-  if (!shader || !shader->source()) {
+  if (!shader || shader->source().empty()) {
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(shader->source()->c_str());
+  bucket->SetFromString(shader->source().c_str());
   return error::kNoError;
 }
 
@@ -6933,8 +6937,7 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
     return error::kNoError;
   }
 
-  bucket->SetFromString(shader->translated_source() ?
-      shader->translated_source()->c_str() : NULL);
+  bucket->SetFromString(shader->translated_source().c_str());
   return error::kNoError;
 }
 
@@ -6965,11 +6968,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
   Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderInfoLog");
-  if (!shader || !shader->log_info()) {
+  if (!shader) {
     bucket->SetFromString("");
     return error::kNoError;
   }
-  bucket->SetFromString(shader->log_info()->c_str());
+  bucket->SetFromString(shader->log_info().c_str());
   return error::kNoError;
 }
 

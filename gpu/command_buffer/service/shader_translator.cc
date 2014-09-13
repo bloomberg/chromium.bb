@@ -36,6 +36,10 @@ base::LazyInstance<ShaderTranslatorInitializer> g_translator_initializer =
 
 void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
                      ShaderTranslator::VariableMap* var_map) {
+  if (!var_map)
+    return;
+  var_map->clear();
+
   size_t name_len = 0, mapped_name_len = 0;
   switch (var_type) {
     case SH_ACTIVE_ATTRIBUTES:
@@ -82,6 +86,10 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 
 void GetNameHashingInfo(
     ShHandle compiler, ShaderTranslator::NameMap* name_map) {
+  if (!name_map)
+    return;
+  name_map->clear();
+
   size_t hashed_names_count = 0;
   ShGetInfo(compiler, SH_HASHED_NAMES_COUNT, &hashed_names_count);
   if (hashed_names_count == 0)
@@ -156,41 +164,53 @@ int ShaderTranslator::GetCompileOptions() const {
   return compile_options;
 }
 
-bool ShaderTranslator::Translate(const char* shader) {
+bool ShaderTranslator::Translate(const std::string& shader_source,
+                                 std::string* info_log,
+                                 std::string* translated_source,
+                                 VariableMap* attrib_map,
+                                 VariableMap* uniform_map,
+                                 VariableMap* varying_map,
+                                 NameMap* name_map) const {
   // Make sure this instance is initialized.
   DCHECK(compiler_ != NULL);
-  DCHECK(shader != NULL);
-  ClearResults();
 
   bool success = false;
   {
     TRACE_EVENT0("gpu", "ShCompile");
-    success = !!ShCompile(compiler_, &shader, 1, GetCompileOptions());
+    const char* const shader_strings[] = { shader_source.c_str() };
+    success = !!ShCompile(
+        compiler_, shader_strings, 1, GetCompileOptions());
   }
   if (success) {
-    // Get translated shader.
-    size_t obj_code_len = 0;
-    ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
-    if (obj_code_len > 1) {
-      translated_shader_.reset(new char[obj_code_len]);
-      ShGetObjectCode(compiler_, translated_shader_.get());
+    if (translated_source) {
+      translated_source->clear();
+      // Get translated shader.
+      size_t obj_code_len = 0;
+      ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
+      if (obj_code_len > 1) {
+        scoped_ptr<char[]> buffer(new char[obj_code_len]);
+        ShGetObjectCode(compiler_, buffer.get());
+        *translated_source = std::string(buffer.get(), obj_code_len - 1);
+      }
     }
-    // Get info for attribs and uniforms.
-    GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, &attrib_map_);
-    GetVariableInfo(compiler_, SH_ACTIVE_UNIFORMS, &uniform_map_);
-    GetVariableInfo(compiler_, SH_VARYINGS, &varying_map_);
+    // Get info for attribs, uniforms, and varyings.
+    GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, attrib_map);
+    GetVariableInfo(compiler_, SH_ACTIVE_UNIFORMS, uniform_map);
+    GetVariableInfo(compiler_, SH_VARYINGS, varying_map);
     // Get info for name hashing.
-    GetNameHashingInfo(compiler_, &name_map_);
+    GetNameHashingInfo(compiler_, name_map);
   }
 
   // Get info log.
-  size_t info_log_len = 0;
-  ShGetInfo(compiler_, SH_INFO_LOG_LENGTH, &info_log_len);
-  if (info_log_len > 1) {
-    info_log_.reset(new char[info_log_len]);
-    ShGetInfoLog(compiler_, info_log_.get());
-  } else {
-    info_log_.reset();
+  if (info_log) {
+    info_log->clear();
+    size_t info_log_len = 0;
+    ShGetInfo(compiler_, SH_INFO_LOG_LENGTH, &info_log_len);
+    if (info_log_len > 1) {
+      scoped_ptr<char[]> buffer(new char[info_log_len]);
+      ShGetInfoLog(compiler_, buffer.get());
+      *info_log = std::string(buffer.get(), info_log_len - 1);
+    }
   }
 
   return success;
@@ -212,34 +232,6 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldAffectCompilation()
          std::string(resource_str.get());
 }
 
-const char* ShaderTranslator::translated_shader() const {
-  return translated_shader_.get();
-}
-
-const char* ShaderTranslator::info_log() const {
-  return info_log_.get();
-}
-
-const ShaderTranslatorInterface::VariableMap&
-ShaderTranslator::attrib_map() const {
-  return attrib_map_;
-}
-
-const ShaderTranslatorInterface::VariableMap&
-ShaderTranslator::uniform_map() const {
-  return uniform_map_;
-}
-
-const ShaderTranslatorInterface::VariableMap&
-ShaderTranslator::varying_map() const {
-  return varying_map_;
-}
-
-const ShaderTranslatorInterface::NameMap&
-ShaderTranslator::name_map() const {
-  return name_map_;
-}
-
 void ShaderTranslator::AddDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.AddObserver(observer);
@@ -257,15 +249,6 @@ ShaderTranslator::~ShaderTranslator() {
 
   if (compiler_ != NULL)
     ShDestruct(compiler_);
-}
-
-void ShaderTranslator::ClearResults() {
-  translated_shader_.reset();
-  info_log_.reset();
-  attrib_map_.clear();
-  uniform_map_.clear();
-  varying_map_.clear();
-  name_map_.clear();
 }
 
 }  // namespace gles2
