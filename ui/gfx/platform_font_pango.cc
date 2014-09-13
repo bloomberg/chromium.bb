@@ -4,7 +4,6 @@
 
 #include "ui/gfx/platform_font_pango.h"
 
-#include <fontconfig/fontconfig.h>
 #include <pango/pango.h>
 
 #include <algorithm>

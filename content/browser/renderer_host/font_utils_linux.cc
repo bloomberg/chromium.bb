@@ -4,13 +4,12 @@
 
 #include <fcntl.h>
 #include <fontconfig/fontconfig.h>
-#include <sys/poll.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+
+#include <string>
 
 #include "base/posix/eintr_wrapper.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
-#include "content/common/set_process_title.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
