@@ -11,7 +11,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
-#include "media/formats/mpeg/mp3_stream_parser.h"
+#include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 #include "media/formats/webm/webm_stream_parser.h"
 
 #if defined(OS_ANDROID)
@@ -190,7 +190,7 @@ static const CodecInfo* kAudioMP3Codecs[] = {
 
 static StreamParser* BuildMP3Parser(
     const std::vector<std::string>& codecs, const LogCB& log_cb) {
-  return new MP3StreamParser();
+  return new MPEG1AudioStreamParser();
 }
 
 static const CodecInfo kADTSCodecInfo = { NULL, CodecInfo::AUDIO, NULL,

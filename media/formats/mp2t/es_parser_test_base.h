@@ -60,6 +60,9 @@ class EsParserTestBase {
   // Packets are assumed to be in stream order.
   void ComputePacketSize(std::vector<Packet>* packets);
 
+  // Generate some fixed size PES packets of |stream_|.
+  std::vector<Packet> GenerateFixedSizePesPacket(size_t pes_size);
+
   // ES stream.
   std::vector<uint8> stream_;
 

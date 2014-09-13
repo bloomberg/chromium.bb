@@ -16,6 +16,7 @@
 #include "media/formats/mp2t/es_parser.h"
 #include "media/formats/mp2t/es_parser_adts.h"
 #include "media/formats/mp2t/es_parser_h264.h"
+#include "media/formats/mp2t/es_parser_mpeg1audio.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "media/formats/mp2t/ts_packet.h"
 #include "media/formats/mp2t/ts_section.h"
@@ -348,6 +349,17 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
                        base::Unretained(this),
                        pes_pid),
             sbr_in_mimetype_));
+    is_audio = true;
+  } else if (stream_type == kStreamTypeMpeg1Audio) {
+    es_parser.reset(
+        new EsParserMpeg1Audio(
+            base::Bind(&Mp2tStreamParser::OnAudioConfigChanged,
+                       base::Unretained(this),
+                       pes_pid),
+            base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
+                       base::Unretained(this),
+                       pes_pid),
+            log_cb_));
     is_audio = true;
   } else {
     return;

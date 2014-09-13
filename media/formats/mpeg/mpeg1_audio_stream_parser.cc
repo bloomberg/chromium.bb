@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/formats/mpeg/mp3_stream_parser.h"
+#include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 
 namespace media {
 
-static const uint32 kMP3StartCodeMask = 0xffe00000;
+static const uint32 kMPEG1StartCodeMask = 0xffe00000;
 
 // Map that determines which bitrate_index & channel_mode combinations
 // are allowed.
@@ -80,38 +80,17 @@ static const int kSampleRateMap[4][4] = {
 static const int kXingHeaderMap[2][2] = {{32, 17}, {17, 9}};
 
 // Frame header field constants.
-static const int kVersion2 = 2;
-static const int kVersionReserved = 1;
-static const int kVersion2_5 = 0;
-static const int kLayerReserved = 0;
-static const int kLayer1 = 3;
-static const int kLayer2 = 2;
-static const int kLayer3 = 1;
 static const int kBitrateFree = 0;
 static const int kBitrateBad = 0xf;
 static const int kSampleRateReserved = 3;
 static const int kCodecDelay = 529;
 
-MP3StreamParser::MP3StreamParser()
-    : MPEGAudioStreamParserBase(kMP3StartCodeMask, kCodecMP3, kCodecDelay) {}
-
-MP3StreamParser::~MP3StreamParser() {}
-
-int MP3StreamParser::ParseFrameHeader(const uint8* data,
-                                      int size,
-                                      int* frame_size,
-                                      int* sample_rate,
-                                      ChannelLayout* channel_layout,
-                                      int* sample_count,
-                                      bool* metadata_frame) const {
-  DCHECK(data);
-  DCHECK_GE(size, 0);
-  DCHECK(frame_size);
-
-  if (size < 4)
-    return 0;
-
-  BitReader reader(data, size);
+// static
+bool MPEG1AudioStreamParser::ParseHeader(
+    const LogCB& log_cb,
+    const uint8* data,
+    Header* header) {
+  BitReader reader(data, kHeaderSize);
   int sync;
   int version;
   int layer;
@@ -133,7 +112,7 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
       !reader.ReadBits(1, &is_private) ||
       !reader.ReadBits(2, &channel_mode) ||
       !reader.ReadBits(6, &other_flags)) {
-    return -1;
+    return false;
   }
 
   DVLOG(2) << "Header data :" << std::hex
@@ -149,46 +128,44 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
       layer == kLayerReserved ||
       bitrate_index == kBitrateFree || bitrate_index == kBitrateBad ||
       sample_rate_index == kSampleRateReserved) {
-    MEDIA_LOG(log_cb()) << "Invalid header data :" << std::hex
-                        << " sync 0x" << sync
-                        << " version 0x" << version
-                        << " layer 0x" << layer
-                        << " bitrate_index 0x" << bitrate_index
-                        << " sample_rate_index 0x" << sample_rate_index
-                        << " channel_mode 0x" << channel_mode;
-    return -1;
+    MEDIA_LOG(log_cb) << "Invalid header data :" << std::hex
+                      << " sync 0x" << sync
+                      << " version 0x" << version
+                      << " layer 0x" << layer
+                      << " bitrate_index 0x" << bitrate_index
+                      << " sample_rate_index 0x" << sample_rate_index
+                      << " channel_mode 0x" << channel_mode;
+    return false;
   }
 
   if (layer == kLayer2 && kIsAllowed[bitrate_index][channel_mode]) {
-    MEDIA_LOG(log_cb()) << "Invalid (bitrate_index, channel_mode) combination :"
-                        << std::hex
-                        << " bitrate_index " << bitrate_index
-                        << " channel_mode " << channel_mode;
-    return -1;
+    MEDIA_LOG(log_cb) << "Invalid (bitrate_index, channel_mode) combination :"
+                      << std::hex
+                      << " bitrate_index " << bitrate_index
+                      << " channel_mode " << channel_mode;
+    return false;
   }
 
   int bitrate = kBitrateMap[bitrate_index][kVersionLayerMap[version][layer]];
 
   if (bitrate == 0) {
-    MEDIA_LOG(log_cb()) << "Invalid bitrate :" << std::hex
-                        << " version " << version
-                        << " layer " << layer
-                        << " bitrate_index " << bitrate_index;
-    return -1;
+    MEDIA_LOG(log_cb) << "Invalid bitrate :" << std::hex
+                      << " version " << version
+                      << " layer " << layer
+                      << " bitrate_index " << bitrate_index;
+    return false;
   }
 
   DVLOG(2) << " bitrate " << bitrate;
 
   int frame_sample_rate = kSampleRateMap[sample_rate_index][version];
   if (frame_sample_rate == 0) {
-    MEDIA_LOG(log_cb()) << "Invalid sample rate :" << std::hex
-                        << " version " << version
-                        << " sample_rate_index " << sample_rate_index;
-    return -1;
+    MEDIA_LOG(log_cb) << "Invalid sample rate :" << std::hex
+                      << " version " << version
+                      << " sample_rate_index " << sample_rate_index;
+    return false;
   }
-
-  if (sample_rate)
-    *sample_rate = frame_sample_rate;
+  header->sample_rate = frame_sample_rate;
 
   // http://teslabs.com/openplayer/docs/docs/specs/mp3_structure2.pdf
   // Table 2.1.5
@@ -210,11 +187,9 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
       break;
 
     default:
-      return -1;
+      return false;
   }
-
-  if (sample_count)
-    *sample_count = samples_per_frame;
+  header->sample_count = samples_per_frame;
 
   // http://teslabs.com/openplayer/docs/docs/specs/mp3_structure2.pdf
   // Text just below Table 2.1.5.
@@ -223,33 +198,68 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
     // but has slightly different truncation characteristics to deal
     // with the fact that Layer 1 has 4 byte "slots" instead of single
     // byte ones.
-    *frame_size = 4 * (12 * bitrate * 1000 / frame_sample_rate);
+    header->frame_size = 4 * (12 * bitrate * 1000 / frame_sample_rate);
   } else {
-    *frame_size =
+    header->frame_size =
         ((samples_per_frame / 8) * bitrate * 1000) / frame_sample_rate;
   }
 
   if (has_padding)
-    *frame_size += (layer == kLayer1) ? 4 : 1;
+    header->frame_size += (layer == kLayer1) ? 4 : 1;
 
-  if (channel_layout) {
-    // Map Stereo(0), Joint Stereo(1), and Dual Channel (2) to
-    // CHANNEL_LAYOUT_STEREO and Single Channel (3) to CHANNEL_LAYOUT_MONO.
-    *channel_layout =
-        (channel_mode == 3) ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
-  }
+  // Map Stereo(0), Joint Stereo(1), and Dual Channel (2) to
+  // CHANNEL_LAYOUT_STEREO and Single Channel (3) to CHANNEL_LAYOUT_MONO.
+  header->channel_layout =
+      (channel_mode == 3) ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
 
+  header->version = static_cast<Version>(version);
+  header->layer = static_cast<Layer>(layer);
+  header->channel_mode = channel_mode;
+  return true;
+}
+
+
+MPEG1AudioStreamParser::MPEG1AudioStreamParser()
+    : MPEGAudioStreamParserBase(kMPEG1StartCodeMask, kCodecMP3, kCodecDelay) {}
+
+MPEG1AudioStreamParser::~MPEG1AudioStreamParser() {}
+
+int MPEG1AudioStreamParser::ParseFrameHeader(const uint8* data,
+                                             int size,
+                                             int* frame_size,
+                                             int* sample_rate,
+                                             ChannelLayout* channel_layout,
+                                             int* sample_count,
+                                             bool* metadata_frame) const {
+  DCHECK(data);
+  DCHECK_GE(size, 0);
+  DCHECK(frame_size);
+
+  if (size < kHeaderSize)
+    return 0;
+
+  Header header;
+  if (!ParseHeader(log_cb(), data, &header))
+    return -1;
+
+  *frame_size = header.frame_size;
+  if (sample_rate)
+    *sample_rate = header.sample_rate;
+  if (sample_count)
+    *sample_count = header.sample_count;
+  if (channel_layout)
+    *channel_layout = header.channel_layout;
   if (metadata_frame)
     *metadata_frame = false;
 
-  const int header_bytes_read = reader.bits_read() / 8;
-  if (layer != kLayer3)
+  const int header_bytes_read = kHeaderSize;
+  if (header.layer != kLayer3)
     return header_bytes_read;
 
   // Check if this is a XING frame and tell the base parser to skip it if so.
   const int xing_header_index =
-      kXingHeaderMap[version == kVersion2 ||
-                     version == kVersion2_5][channel_mode == 3];
+      kXingHeaderMap[header.version == kVersion2 ||
+                     header.version == kVersion2_5][header.channel_mode == 3];
   uint32_t tag = 0;
 
   // It's not a XING frame if the frame isn't big enough to be one.
@@ -260,6 +270,7 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
 
   // If we don't have enough data available to check, return 0 so frame parsing
   // will be retried once more data is available.
+  BitReader reader(data + header_bytes_read, size - header_bytes_read);
   if (!reader.SkipBits(xing_header_index * 8) ||
       !reader.ReadBits(sizeof(tag) * 8, &tag)) {
     return 0;
@@ -270,7 +281,7 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
     MEDIA_LOG(log_cb()) << "Skipping XING header.";
     if (metadata_frame)
       *metadata_frame = true;
-    return reader.bits_read() / 8;
+    return header_bytes_read + reader.bits_read() / 8;
   }
 
   // If it wasn't a XING frame, just return the number consumed bytes.

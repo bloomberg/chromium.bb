@@ -27,8 +27,6 @@ class EsParserAdtsTest : public EsParserTestBase,
  protected:
   bool Process(const std::vector<Packet>& pes_packets, bool force_timing);
 
-  std::vector<Packet> GenerateFixedSizePesPacket(size_t pes_size);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(EsParserAdtsTest);
 };
@@ -44,23 +42,6 @@ bool EsParserAdtsTest::Process(
       base::Bind(&EsParserAdtsTest::EmitBuffer, base::Unretained(this)),
       false);
   return ProcessPesPackets(&es_parser, pes_packets, force_timing);
-}
-
-std::vector<EsParserTestBase::Packet>
-EsParserAdtsTest::GenerateFixedSizePesPacket(size_t pes_size) {
-  DCHECK_GT(stream_.size(), 0u);
-  std::vector<Packet> pes_packets;
-
-  Packet cur_pes_packet;
-  cur_pes_packet.offset = 0;
-  cur_pes_packet.pts = kNoTimestamp();
-  while (cur_pes_packet.offset < stream_.size()) {
-    pes_packets.push_back(cur_pes_packet);
-    cur_pes_packet.offset += pes_size;
-  }
-  ComputePacketSize(&pes_packets);
-
-  return pes_packets;
 }
 
 TEST_F(EsParserAdtsTest, NoInitialPts) {

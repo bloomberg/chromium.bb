@@ -4,22 +4,23 @@
 
 #include "media/base/test_data_util.h"
 #include "media/formats/common/stream_parser_test_base.h"
-#include "media/formats/mpeg/mp3_stream_parser.h"
+#include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-class MP3StreamParserTest : public StreamParserTestBase, public testing::Test {
+class MPEG1AudioStreamParserTest
+    : public StreamParserTestBase, public testing::Test {
  public:
-  MP3StreamParserTest()
+  MPEG1AudioStreamParserTest()
       : StreamParserTestBase(
-            scoped_ptr<StreamParser>(new MP3StreamParser()).Pass()) {}
-  virtual ~MP3StreamParserTest() {}
+            scoped_ptr<StreamParser>(new MPEG1AudioStreamParser()).Pass()) {}
+  virtual ~MPEG1AudioStreamParserTest() {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of
 // 2" field size assumptions.
-TEST_F(MP3StreamParserTest, UnalignedAppend) {
+TEST_F(MPEG1AudioStreamParserTest, UnalignedAppend) {
   const std::string expected =
       "NewSegment"
       "{ 0K }"
@@ -45,7 +46,7 @@ TEST_F(MP3StreamParserTest, UnalignedAppend) {
 
 // Test parsing with a larger piece size to verify that multiple buffers
 // are passed to |new_buffer_cb_|.
-TEST_F(MP3StreamParserTest, UnalignedAppend512) {
+TEST_F(MPEG1AudioStreamParserTest, UnalignedAppend512) {
   const std::string expected =
       "NewSegment"
       "{ 0K 26K 52K 78K }"
@@ -59,7 +60,7 @@ TEST_F(MP3StreamParserTest, UnalignedAppend512) {
   EXPECT_GT(last_audio_config().codec_delay(), 0);
 }
 
-TEST_F(MP3StreamParserTest, MetadataParsing) {
+TEST_F(MPEG1AudioStreamParserTest, MetadataParsing) {
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("sfx.mp3");
   const uint8_t* buffer_ptr = buffer->data();
 
