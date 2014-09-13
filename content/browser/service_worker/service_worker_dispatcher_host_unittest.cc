@@ -103,6 +103,22 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
+  void SendGetRegistration(int64 provider_id, GURL document_url) {
+    dispatcher_host_->OnMessageReceived(
+        ServiceWorkerHostMsg_GetRegistration(
+            -1, -1, provider_id, document_url));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void GetRegistration(int64 provider_id,
+                       GURL document_url,
+                       uint32 expected_message) {
+    SendGetRegistration(provider_id, document_url);
+    EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
+        expected_message));
+    dispatcher_host_->ipc_sink()->ClearMessages();
+  }
+
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
@@ -233,6 +249,42 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
   dispatcher_host_ = NULL;
   EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
+  context()->AddProviderHost(host.Pass());
+
+  GetRegistration(kProviderId,
+                  GURL("https://www.example.com/"),
+                  ServiceWorkerMsg_DidGetRegistration::ID);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOrigin) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
+  context()->AddProviderHost(host.Pass());
+
+  SendGetRegistration(kProviderId, GURL("https://foo.example.com/"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
+  helper_->ShutdownContext();
+
+  // Let the shutdown reach the simulated IO thread.
+  base::RunLoop().RunUntilIdle();
+
+  GetRegistration(-1,
+                  GURL(),
+                  ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
 }
 
 }  // namespace content

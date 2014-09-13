@@ -94,6 +94,12 @@ void WebServiceWorkerProviderImpl::unregisterServiceWorker(
       provider_id_, pattern, callbacks);
 }
 
+void WebServiceWorkerProviderImpl::getRegistration(
+    const blink::WebURL& document_url,
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
+  GetDispatcher()->GetRegistration(provider_id_, document_url, callbacks);
+}
+
 void WebServiceWorkerProviderImpl::RemoveScriptClient() {
   // Remove the script client, but only if the dispatcher is still there.
   // (For cleanup path we don't need to bother creating a new dispatcher)

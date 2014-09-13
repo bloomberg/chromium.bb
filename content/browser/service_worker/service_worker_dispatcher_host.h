@@ -25,6 +25,8 @@ class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
+struct ServiceWorkerRegistrationObjectInfo;
+struct ServiceWorkerVersionAttributes;
 
 class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
@@ -79,6 +81,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                  int request_id,
                                  int provider_id,
                                  const GURL& pattern);
+  void OnGetRegistration(int thread_id,
+                         int request_id,
+                         int provider_id,
+                         const GURL& document_url);
   void OnProviderCreated(int provider_id);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id, int64 version_id);
@@ -112,6 +118,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       int provider_id,
       int64 registration_id);
 
+  void GetRegistrationObjectInfoAndVersionAttributes(
+      int provider_id,
+      ServiceWorkerRegistration* registration,
+      ServiceWorkerRegistrationObjectInfo* info,
+      ServiceWorkerVersionAttributes* attrs);
+
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int thread_id,
                             int provider_id,
@@ -124,6 +136,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                               int request_id,
                               ServiceWorkerStatusCode status);
 
+  void GetRegistrationComplete(
+      int thread_id,
+      int provider_id,
+      int request_id,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+
   void SendRegistrationError(int thread_id,
                              int request_id,
                              ServiceWorkerStatusCode status);
@@ -131,6 +150,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void SendUnregistrationError(int thread_id,
                                int request_id,
                                ServiceWorkerStatusCode status);
+
+  void SendGetRegistrationError(int thread_id,
+                                int request_id,
+                                ServiceWorkerStatusCode status);
 
   ServiceWorkerContextCore* GetContext();
 

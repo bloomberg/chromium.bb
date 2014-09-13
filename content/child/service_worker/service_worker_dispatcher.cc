@@ -61,10 +61,14 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered, OnRegistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
                         OnUnregistered)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistration,
+                        OnDidGetRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
                         OnUnregistrationError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
+                        OnGetRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
@@ -133,6 +137,30 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
                            "Pettern", pattern.spec());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern));
+}
+
+void ServiceWorkerDispatcher::GetRegistration(
+    int provider_id,
+    const GURL& document_url,
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
+  DCHECK(callbacks);
+
+  if (document_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
+    scoped_ptr<WebServiceWorkerRegistrationCallbacks>
+        owned_callbacks(callbacks);
+    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
+        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    callbacks->onError(error.release());
+    return;
+  }
+
+  int request_id = pending_get_registration_callbacks_.Add(callbacks);
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerDispatcher::GetRegistration",
+                           request_id,
+                           "Document URL", document_url.spec());
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistration(
+      CurrentWorkerId(), request_id, provider_id, document_url));
 }
 
 void ServiceWorkerDispatcher::AddProviderContext(
@@ -303,25 +331,7 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-  WebServiceWorkerRegistrationImpl* registration =
-      FindServiceWorkerRegistration(info, true);
-  if (!registration) {
-    registration = CreateServiceWorkerRegistration(info, true);
-    registration->SetInstalling(GetServiceWorker(attrs.installing, true));
-    registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
-    registration->SetActive(GetServiceWorker(attrs.active, true));
-  } else {
-    // |registration| must already have version attributes, so adopt and destroy
-    // handle refs for them.
-    ServiceWorkerHandleReference::Adopt(
-        attrs.installing, thread_safe_sender_.get());
-    ServiceWorkerHandleReference::Adopt(
-        attrs.waiting, thread_safe_sender_.get());
-    ServiceWorkerHandleReference::Adopt(
-        attrs.active, thread_safe_sender_.get());
-  }
-
-  callbacks->onSuccess(registration);
+  callbacks->onSuccess(FindOrCreateRegistration(info, attrs));
   pending_registration_callbacks_.Remove(request_id);
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerDispatcher::RegisterServiceWorker",
@@ -345,6 +355,33 @@ void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
   pending_unregistration_callbacks_.Remove(request_id);
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                         request_id);
+}
+
+void ServiceWorkerDispatcher::OnDidGetRegistration(
+    int thread_id,
+    int request_id,
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  WebServiceWorkerRegistrationCallbacks* callbacks =
+      pending_get_registration_callbacks_.Lookup(request_id);
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "ServiceWorkerDispatcher::GetRegistration",
+      request_id,
+      "OnDidGetRegistration");
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  WebServiceWorkerRegistrationImpl* registration = NULL;
+  if (info.handle_id != kInvalidServiceWorkerHandleId)
+    registration = FindOrCreateRegistration(info, attrs);
+
+  callbacks->onSuccess(registration);
+  pending_get_registration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::GetRegistration",
                          request_id);
 }
 
@@ -394,6 +431,31 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
   pending_unregistration_callbacks_.Remove(request_id);
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                         request_id);
+}
+
+void ServiceWorkerDispatcher::OnGetRegistrationError(
+    int thread_id,
+    int request_id,
+    WebServiceWorkerError::ErrorType error_type,
+    const base::string16& message) {
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "ServiceWorkerDispatcher::GetRegistration",
+      request_id,
+      "OnGetRegistrationError");
+  WebServiceWorkerGetRegistrationCallbacks* callbacks =
+      pending_get_registration_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  scoped_ptr<WebServiceWorkerError> error(
+      new WebServiceWorkerError(error_type, message));
+  callbacks->onError(error.release());
+  pending_get_registration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::GetRegistration",
                          request_id);
 }
 
@@ -648,6 +710,30 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
     int registration_handle_id) {
   DCHECK(ContainsKey(registrations_, registration_handle_id));
   registrations_.erase(registration_handle_id);
+}
+
+WebServiceWorkerRegistrationImpl*
+ServiceWorkerDispatcher::FindOrCreateRegistration(
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  WebServiceWorkerRegistrationImpl* registration =
+      FindServiceWorkerRegistration(info, true);
+  if (!registration) {
+    registration = CreateServiceWorkerRegistration(info, true);
+    registration->SetInstalling(GetServiceWorker(attrs.installing, true));
+    registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
+    registration->SetActive(GetServiceWorker(attrs.active, true));
+  } else {
+    // |registration| must already have version attributes, so adopt and destroy
+    // handle refs for them.
+    ServiceWorkerHandleReference::Adopt(
+        attrs.installing, thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(
+        attrs.waiting, thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(
+        attrs.active, thread_safe_sender_.get());
+  }
+  return registration;
 }
 
 }  // namespace content

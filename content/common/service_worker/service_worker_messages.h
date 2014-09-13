@@ -90,6 +90,12 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int /* provider_id */,
                      GURL /* scope (url pattern) */)
 
+IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetRegistration,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */,
+                     GURL /* document_url */)
+
 // Sends a 'message' event to a service worker (renderer->browser).
 IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessageToWorker,
                      int /* handle_id */,
@@ -195,18 +201,25 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DisassociateRegistration,
                      int /* thread_id */,
                      int /* provider_id */)
 
-// Response to ServiceWorkerMsg_RegisterServiceWorker.
+// Response to ServiceWorkerHostMsg_RegisterServiceWorker.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
                      int /* thread_id */,
                      int /* request_id */,
                      content::ServiceWorkerRegistrationObjectInfo,
                      content::ServiceWorkerVersionAttributes)
 
-// Response to ServiceWorkerMsg_UnregisterServiceWorker.
+// Response to ServiceWorkerHostMsg_UnregisterServiceWorker.
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int /* thread_id */,
                      int /* request_id */,
                      bool /* is_success */)
+
+// Response to ServiceWorkerHostMsg_GetRegistration.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistration,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::ServiceWorkerRegistrationObjectInfo,
+                     content::ServiceWorkerVersionAttributes)
 
 // Sent when any kind of registration error occurs during a
 // RegisterServiceWorker handler above.
@@ -219,6 +232,14 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
 // Sent when any kind of registration error occurs during a
 // UnregisterServiceWorker handler above.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     base::string16 /* message */)
+
+// Sent when any kind of registration error occurs during a
+// GetRegistration handler above.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,
