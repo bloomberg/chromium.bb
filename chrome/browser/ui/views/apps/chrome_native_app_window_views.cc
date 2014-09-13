@@ -589,7 +589,8 @@ void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   is_fullscreen_ = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
   widget()->SetFullscreen(is_fullscreen_);
 
-#if defined(USE_ASH)
+  // TODO(oshima): Remove USE_ATHENA once athena has its own NativeAppWindow.
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   if (immersive_fullscreen_controller_.get()) {
     // |immersive_fullscreen_controller_| should only be set if immersive
     // fullscreen is the fullscreen type used by the OS.

@@ -53,7 +53,9 @@ bool WindowListProviderImpl::IsWindowInList(aura::Window* window) const {
 }
 
 bool WindowListProviderImpl::IsValidWindow(aura::Window* window) const {
-  return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
+  // TODO(oshima): crbug.com/413912
+  return window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+      window->type() == ui::wm::WINDOW_TYPE_PANEL;
 }
 
 void WindowListProviderImpl::MoveToFront(aura::Window* window) {

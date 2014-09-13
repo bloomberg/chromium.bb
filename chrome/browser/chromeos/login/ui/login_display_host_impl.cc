@@ -335,7 +335,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
 #if defined(USE_ATHENA)
   // TODO(dpolukhin): remove #ifdef when Athena supports wallpaper manager.
-  // crbug.com/408734.
+  // crbug.com/408734
   waiting_for_wallpaper_load_ = false;
 #endif
 
@@ -1045,9 +1045,11 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
-
+#if !defined(USE_ATHENA)
+    // crbug.com/405859
     focus_ring_controller_.reset(new FocusRingController);
     focus_ring_controller_->SetVisible(true);
+#endif
 
     keyboard_driven_oobe_key_handler_.reset(new KeyboardDrivenOobeKeyHandler);
   }
@@ -1140,11 +1142,14 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
     return;
   }
 
+#if !defined(USE_ATHENA)
+  // crbug.com/408733
   if (startup_sound_honors_spoken_feedback_ &&
       !ash::PlaySystemSoundIfSpokenFeedback(SOUND_STARTUP)) {
     EnableSystemSoundsForAccessibility();
     return;
   }
+#endif
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

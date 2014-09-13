@@ -44,6 +44,12 @@ DECLARE_WINDOW_PROPERTY_TYPE(athena::AthenaEnvState*);
 
 namespace athena {
 
+namespace {
+
+bool session_started = false;
+
+}  // namespace
+
 class VirtualKeyboardObserver;
 
 // Athena's env state.
@@ -131,6 +137,8 @@ void StartAthenaSessionWithContext(content::BrowserContext* context) {
 
 void StartAthenaSession(athena::ActivityFactory* activity_factory,
                         athena::AppModelBuilder* app_model_builder) {
+  DCHECK(!session_started);
+  session_started = true;
   athena::HomeCard::Create(app_model_builder);
   athena::ActivityManager::Create();
   athena::ResourceManager::Create();
@@ -138,10 +146,13 @@ void StartAthenaSession(athena::ActivityFactory* activity_factory,
 }
 
 void ShutdownAthena() {
-  athena::ActivityFactory::Shutdown();
-  athena::ResourceManager::Shutdown();
-  athena::ActivityManager::Shutdown();
-  athena::HomeCard::Shutdown();
+  if (session_started) {
+    athena::ActivityFactory::Shutdown();
+    athena::ResourceManager::Shutdown();
+    athena::ActivityManager::Shutdown();
+    athena::HomeCard::Shutdown();
+    session_started = false;
+  }
   athena::AppRegistry::ShutDown();
   athena::WindowManager::Shutdown();
   athena::SystemUI::Shutdown();

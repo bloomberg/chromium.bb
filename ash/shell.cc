@@ -196,7 +196,7 @@ Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
 
 // static
 Shell* Shell::GetInstance() {
-  DCHECK(instance_);
+  CHECK(instance_);
   return instance_;
 }
 
@@ -213,22 +213,26 @@ void Shell::DeleteInstance() {
 
 // static
 RootWindowController* Shell::GetPrimaryRootWindowController() {
+  CHECK(HasInstance());
   return GetRootWindowController(GetPrimaryRootWindow());
 }
 
 // static
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
+  CHECK(HasInstance());
   return Shell::GetInstance()->display_controller()->
       GetAllRootWindowControllers();
 }
 
 // static
 aura::Window* Shell::GetPrimaryRootWindow() {
+  CHECK(HasInstance());
   return GetInstance()->display_controller()->GetPrimaryRootWindow();
 }
 
 // static
 aura::Window* Shell::GetTargetRootWindow() {
+  CHECK(HasInstance());
   Shell* shell = GetInstance();
   if (shell->scoped_target_root_window_)
     return shell->scoped_target_root_window_;
@@ -242,6 +246,7 @@ gfx::Screen* Shell::GetScreen() {
 
 // static
 aura::Window::Windows Shell::GetAllRootWindows() {
+  CHECK(HasInstance());
   return Shell::GetInstance()->display_controller()->
       GetAllRootWindows();
 }

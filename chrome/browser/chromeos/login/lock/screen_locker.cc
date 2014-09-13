@@ -146,11 +146,14 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
 
+#if !defined(USE_ATHENA)
+  // crbug.com/408733
   ash::Shell::GetInstance()->
       lock_state_controller()->SetLockScreenDisplayedCallback(
           base::Bind(base::IgnoreResult(&ash::PlaySystemSoundIfSpokenFeedback),
                      static_cast<media::SoundsManager::SoundKey>(
                          chromeos::SOUND_LOCK)));
+#endif
 }
 
 void ScreenLocker::Init() {
@@ -368,6 +371,11 @@ void ScreenLocker::HandleLockScreenRequest() {
 
 // static
 void ScreenLocker::Show() {
+#if defined(USE_ATHENA)
+  // crbug.com/413926
+  return;
+#endif
+
   content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
@@ -407,6 +415,11 @@ void ScreenLocker::Show() {
 
 // static
 void ScreenLocker::Hide() {
+#if defined(USE_ATHENA)
+  // crbug.com/413926
+  return;
+#endif
+
   DCHECK(base::MessageLoopForUI::IsCurrent());
   // For a guest/demo user, screen_locker_ would have never been initialized.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest() ||

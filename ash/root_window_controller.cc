@@ -284,17 +284,20 @@ void RootWindowController::CreateForVirtualKeyboardDisplay(
 // static
 RootWindowController* RootWindowController::ForShelf(
     const aura::Window* window) {
+  CHECK(Shell::HasInstance());
   return GetRootWindowController(window->GetRootWindow());
 }
 
 // static
 RootWindowController* RootWindowController::ForWindow(
     const aura::Window* window) {
+  CHECK(Shell::HasInstance());
   return GetRootWindowController(window->GetRootWindow());
 }
 
 // static
 RootWindowController* RootWindowController::ForTargetRootWindow() {
+  CHECK(Shell::HasInstance());
   return GetRootWindowController(Shell::GetTargetRootWindow());
 }
 

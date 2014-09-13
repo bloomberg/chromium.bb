@@ -40,16 +40,20 @@ FirstRunController::~FirstRunController() {}
 
 // static
 void FirstRunController::Start() {
+#if !defined(USE_ATHENA)
+  // crbug.com/413914
   if (g_instance) {
     LOG(WARNING) << "First-run tutorial is running already.";
     return;
   }
   g_instance = new FirstRunController();
   g_instance->Init();
+#endif
 }
 
 // static
 void FirstRunController::Stop() {
+#if !defined(USE_ATHENA)
   if (!g_instance) {
     LOG(WARNING) << "First-run tutorial is not running.";
     return;
@@ -57,6 +61,7 @@ void FirstRunController::Stop() {
   g_instance->Finalize();
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, g_instance);
   g_instance = NULL;
+#endif
 }
 
 FirstRunController* FirstRunController::GetInstanceForTest() {

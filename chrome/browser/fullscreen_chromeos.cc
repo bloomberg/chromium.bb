@@ -7,6 +7,10 @@
 #include "ash/root_window_controller.h"
 
 bool IsFullScreenMode() {
+#if defined(USE_ATHENA)
+  // crbug.com/408755
+  return false;
+#endif
   // TODO(oshima): Fullscreen is per display state. Investigate
   // and fix if necessary.
   ash::RootWindowController* controller =

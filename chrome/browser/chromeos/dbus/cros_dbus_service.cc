@@ -122,9 +122,13 @@ void CrosDBusService::Initialize() {
   if (base::SysInfo::IsRunningOnChromeOS() && bus) {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
+#if !defined(USE_ATHENA)
+    // crbug.com/413897
     service->RegisterServiceProvider(new DisplayPowerServiceProvider);
-    service->RegisterServiceProvider(new LivenessServiceProvider);
+    // crbug.com/401285
     service->RegisterServiceProvider(new PrinterServiceProvider);
+#endif
+    service->RegisterServiceProvider(new LivenessServiceProvider);
     service->RegisterServiceProvider(new ScreenLockServiceProvider);
     g_cros_dbus_service = service;
     service->Start();

@@ -454,6 +454,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
       ash::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
+#if !defined(USE_ATHENA)
+  // crbug.com/408733 (and for all USE_ATHENA in this file)
 
 #if defined(USE_ASH)
   // Large cursor is implemented only in ash.
@@ -465,6 +467,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   ash::Shell::GetInstance()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());
 #endif
+
+#endif // !USE_ATHENA
 }
 
 bool AccessibilityManager::IsIncognitoAllowed() {
@@ -499,8 +503,7 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
     return;
 
   sticky_keys_enabled_ = enabled;
-#if defined(USE_ASH)
-  // Sticky keys is implemented only in ash.
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   ash::Shell::GetInstance()->sticky_keys_controller()->Enable(enabled);
 #endif
 }
@@ -510,10 +513,11 @@ void AccessibilityManager::EnableSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
-
+#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       enabled ? ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK
               : ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK);
+#endif
 
   spoken_feedback_notification_ = notify;
 
@@ -673,6 +677,8 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 
   NotifyAccessibilityStatusChanged(details);
 
+#if !defined(USE_ATHENA)
+
 #if defined(USE_ASH)
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
 #endif
@@ -680,6 +686,8 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 #if defined(OS_CHROMEOS)
   ash::Shell::GetInstance()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());
+#endif
+
 #endif
 }
 
@@ -727,7 +735,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   autoclick_enabled_ = enabled;
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   ash::Shell::GetInstance()->autoclick_controller()->SetEnabled(enabled);
 #endif
 }
@@ -753,7 +761,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
     return;
   autoclick_delay_ms_ = autoclick_delay_ms;
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   ash::Shell::GetInstance()->autoclick_controller()->SetAutoclickDelay(
       autoclick_delay_ms_);
 #endif
@@ -791,7 +799,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
 
   NotifyAccessibilityStatusChanged(details);
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(USE_ATHENA)
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   // Note that there are two versions of the on-screen keyboard. A full layout
   // is provided for accessibility, which includes sticky modifier keys to
@@ -966,8 +974,10 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   if (!system_sounds_enabled_)
     return base::TimeDelta();
   system_sounds_enabled_ = false;
+#if !defined(USE_ATHENA)
   if (!ash::PlaySystemSoundIfSpokenFeedback(SOUND_SHUTDOWN))
     return base::TimeDelta();
+#endif
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 

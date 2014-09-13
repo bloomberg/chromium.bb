@@ -426,11 +426,16 @@ void SupervisedUserCreationScreenHandler::HandlePhotoTaken
 }
 
 void SupervisedUserCreationScreenHandler::HandleTakePhoto() {
+#if !defined(USE_ATHENA)
+  // crbug.com/408733
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+#endif
 }
 
 void SupervisedUserCreationScreenHandler::HandleDiscardPhoto() {
+#if !defined(USE_ATHENA)
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
+#endif
 }
 
 void SupervisedUserCreationScreenHandler::HandleSelectImage(

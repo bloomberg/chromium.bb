@@ -124,6 +124,11 @@ PepperOutputProtectionMessageFilter::Delegate::Delegate(int render_process_id,
       client_id_(ui::DisplayConfigurator::kInvalidClientId),
       display_id_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+#if defined(USE_ATHENA)
+  // Fail for now so that we can catch the event in the crash report.
+  // crbug.com/381398
+  CHECK(false);
+#endif
 }
 
 PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
