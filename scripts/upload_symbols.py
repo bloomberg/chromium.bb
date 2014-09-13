@@ -95,9 +95,15 @@ OFFICIAL_DEDUPE_NAMESPACE = 'chromium-os-upload-symbols'
 STAGING_DEDUPE_NAMESPACE = '%s-staging' % OFFICIAL_DEDUPE_NAMESPACE
 
 
-# How long to wait (in seconds) for a single upload to complete.  This has
-# to allow for symbols that are up to CRASH_SERVER_FILE_LIMIT in size.
-UPLOAD_TIMEOUT = 30 * 60
+# The minimum average rate (in bytes per second) that we expect to maintain
+# when uploading symbols.  This has to allow for symbols that are up to
+# CRASH_SERVER_FILE_LIMIT in size.
+UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT / (30 * 60)
+
+# The lowest timeout (in seconds) we'll allow.  If the server is overloaded,
+# then there might be a delay in setting up the connection, not just with the
+# transfer.  So even a small file might need a larger value.
+UPLOAD_MIN_TIMEOUT = 2 * 60
 
 
 # Sleep for 200ms in between uploads to avoid DoS'ing symbol server.
@@ -181,10 +187,13 @@ def SymUpload(upload_url, sym_item):
       poster.encode.MultipartParam.from_file('symbol_file', sym_file),
   )
 
+  # Scale the timeout based on the filesize.
+  timeout = max(os.path.getsize(sym_file) / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+
   data, headers = poster.encode.multipart_encode(fields)
   request = urllib2.Request(upload_url, data, headers)
   request.add_header('User-agent', 'chromite.upload_symbols')
-  urllib2.urlopen(request, timeout=UPLOAD_TIMEOUT)
+  urllib2.urlopen(request, timeout=timeout)
 
 
 def TestingSymUpload(upload_url, sym_item):

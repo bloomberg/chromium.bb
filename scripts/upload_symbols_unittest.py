@@ -372,6 +372,21 @@ PUBLIC 1471 0 main"""
     self.assertTrue(line in data)
     self.assertTrue(self.SYM_CONTENTS in data)
 
+  def testTimeout(self):
+    """Verify timeouts scale based on filesize"""
+    m = self.PatchObject(urllib2, 'urlopen', autospec=True)
+    size = self.PatchObject(os.path, 'getsize')
+
+    tests = (
+        # Small files should get rounded up to the minimum timeout.
+        (10, upload_symbols.UPLOAD_MIN_TIMEOUT),
+        # A 50MiB file should take like ~4 minutes.
+        (50 * 1024 * 1024, 257),
+    )
+    for size.return_value, timeout in tests:
+      upload_symbols.SymUpload(self.SYM_URL, self.sym_item)
+      self.assertEqual(m.call_args[1]['timeout'], timeout)
+
 
 class UtilTest(cros_test_lib.TempDirTestCase):
   """Various tests for utility funcs."""
