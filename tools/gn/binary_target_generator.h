@@ -24,6 +24,7 @@ class BinaryTargetGenerator : public TargetGenerator {
 
  private:
   void FillCheckIncludes();
+  void FillCompleteStaticLib();
   void FillOutputName();
   void FillOutputExtension();
   void FillAllowCircularIncludesFrom();
@@ -34,4 +35,3 @@ class BinaryTargetGenerator : public TargetGenerator {
 };
 
 #endif  // TOOLS_GN_BINARY_TARGET_GENERATOR_H_
-

@@ -58,7 +58,11 @@ class Target : public Item {
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }
 
+  // Can be linked into other targets.
   bool IsLinkable() const;
+
+  // Can have dependencies linked in.
+  bool IsFinal() const;
 
   // Will be the empty string to use the target label as the output name.
   // See GetComputedOutputName().
@@ -94,6 +98,13 @@ class Target : public Item {
   // Whether this target's includes should be checked by "gn check".
   bool check_includes() const { return check_includes_; }
   void set_check_includes(bool ci) { check_includes_ = ci; }
+
+  // Whether this static_library target should have code linked in.
+  bool complete_static_lib() const { return complete_static_lib_; }
+  void set_complete_static_lib(bool complete) {
+    DCHECK_EQ(STATIC_LIBRARY, output_type_);
+    complete_static_lib_ = complete;
+  }
 
   bool testonly() const { return testonly_; }
   void set_testonly(bool value) { testonly_ = value; }
@@ -239,6 +250,7 @@ class Target : public Item {
   bool all_headers_public_;
   FileList public_headers_;
   bool check_includes_;
+  bool complete_static_lib_;
   bool testonly_;
   FileList inputs_;
   FileList data_;

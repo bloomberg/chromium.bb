@@ -125,6 +125,38 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
+
+  // Make the static library 'complete', which means it should be linked.
+  stlib_target.set_complete_static_lib(true);
+  {
+    std::ostringstream out;
+    NinjaBinaryTargetWriter writer(&stlib_target, out);
+    writer.Run();
+
+    const char expected[] =
+        "defines =\n"
+        "include_dirs =\n"
+        "cflags =\n"
+        "cflags_c =\n"
+        "cflags_cc =\n"
+        "cflags_objc =\n"
+        "cflags_objcc =\n"
+        "root_out_dir = .\n"
+        "target_out_dir = obj/foo\n"
+        "target_output_name = libstlib\n"
+        "\n"
+        "\n"
+        // Ordering of the obj files here should come out in the order
+        // specified, with the target's first, followed by the source set's, in
+        // order.
+        "build obj/foo/libstlib.a: alink obj/foo/bar.input1.o "
+            "obj/foo/bar.input2.o ../../foo/input3.o ../../foo/input4.obj\n"
+        "  ldflags =\n"
+        "  libs =\n"
+        "  output_extension = \n";
+    std::string out_str = out.str();
+    EXPECT_EQ(expected, out_str);
+  }
 }
 
 // This tests that output extension overrides apply, and input dependencies

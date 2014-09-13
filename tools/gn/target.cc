@@ -73,6 +73,7 @@ Target::Target(const Settings* settings, const Label& label)
       output_type_(UNKNOWN),
       all_headers_public_(true),
       check_includes_(true),
+      complete_static_lib_(false),
       testonly_(false),
       hard_dep_(false),
       toolchain_(NULL) {
@@ -160,6 +161,11 @@ bool Target::IsLinkable() const {
   return output_type_ == STATIC_LIBRARY || output_type_ == SHARED_LIBRARY;
 }
 
+bool Target::IsFinal() const {
+  return output_type_ == EXECUTABLE || output_type_ == SHARED_LIBRARY ||
+         (output_type_ == STATIC_LIBRARY && complete_static_lib_);
+}
+
 std::string Target::GetComputedOutputName(bool include_prefix) const {
   DCHECK(toolchain_)
       << "Toolchain must be specified before getting the computed output name.";
@@ -235,8 +241,7 @@ void Target::PullDependentTargetInfo() {
 
     // Inherited libraries and flags are inherited across static library
     // boundaries.
-    if (dep->output_type() != SHARED_LIBRARY &&
-        dep->output_type() != EXECUTABLE) {
+    if (!dep->IsFinal()) {
       inherited_libraries_.Append(dep->inherited_libraries().begin(),
                                   dep->inherited_libraries().end());
 

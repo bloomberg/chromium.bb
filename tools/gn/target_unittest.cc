@@ -274,6 +274,41 @@ TEST(Target, InheritLibs) {
   EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
 }
 
+TEST(Target, InheritCompleteStaticLib) {
+  TestWithScope setup;
+  Err err;
+
+  // Create a dependency chain:
+  //   A (executable) -> B (complete static lib) -> C (source set)
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
+  a.set_output_type(Target::EXECUTABLE);
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
+  b.set_output_type(Target::STATIC_LIBRARY);
+  b.set_complete_static_lib(true);
+  b.SetToolchain(setup.toolchain());
+  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
+  c.set_output_type(Target::SOURCE_SET);
+  c.SetToolchain(setup.toolchain());
+  a.deps().push_back(LabelTargetPair(&b));
+  b.deps().push_back(LabelTargetPair(&c));
+
+  ASSERT_TRUE(c.OnResolved(&err));
+  ASSERT_TRUE(b.OnResolved(&err));
+  ASSERT_TRUE(a.OnResolved(&err));
+
+  // B should have C in its inherited libs.
+  const UniqueVector<const Target*>& b_inherited = b.inherited_libraries();
+  EXPECT_EQ(1u, b_inherited.size());
+  EXPECT_TRUE(b_inherited.IndexOf(&c) != static_cast<size_t>(-1));
+
+  // A should have B in its inherited libs, but not any others (the complete
+  // static library will include the source set).
+  const UniqueVector<const Target*>& a_inherited = a.inherited_libraries();
+  EXPECT_EQ(1u, a_inherited.size());
+  EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
+}
+
 TEST(Target, GetComputedOutputName) {
   TestWithScope setup;
   Err err;

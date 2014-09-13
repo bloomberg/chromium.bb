@@ -59,6 +59,10 @@ void BinaryTargetGenerator::DoRun() {
   if (err_->has_error())
     return;
 
+  FillCompleteStaticLib();
+  if (err_->has_error())
+    return;
+
   // Config values (compiler flags, etc.) set directly on this target.
   ConfigValuesGenerator gen(&target_->config_values(), scope_,
                             scope_->GetSourceDir(), err_);
@@ -74,6 +78,17 @@ void BinaryTargetGenerator::FillCheckIncludes() {
   if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
     return;
   target_->set_check_includes(value->boolean_value());
+}
+
+void BinaryTargetGenerator::FillCompleteStaticLib() {
+  if (target_->output_type() == Target::STATIC_LIBRARY) {
+    const Value* value = scope_->GetValue(variables::kCompleteStaticLib, true);
+    if (!value)
+      return;
+    if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+      return;
+    target_->set_complete_static_lib(value->boolean_value());
+  }
 }
 
 void BinaryTargetGenerator::FillOutputName() {

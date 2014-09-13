@@ -99,6 +99,10 @@ extern const char kCheckIncludes[];
 extern const char kCheckIncludes_HelpShort[];
 extern const char kCheckIncludes_Help[];
 
+extern const char kCompleteStaticLib[];
+extern const char kCompleteStaticLib_HelpShort[];
+extern const char kCompleteStaticLib_Help[];
+
 extern const char kConfigs[];
 extern const char kConfigs_HelpShort[];
 extern const char kConfigs_Help[];

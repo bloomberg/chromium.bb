@@ -368,6 +368,31 @@ const char kCheckIncludes_Help[] =
     "    ...\n"
     "  }\n";
 
+const char kCompleteStaticLib[] = "complete_static_lib";
+const char kCompleteStaticLib_HelpShort[] =
+    "complete_static_lib: [boolean] Links all deps into a static library.\n";
+const char kCompleteStaticLib_Help[] =
+    "complete_static_lib: [boolean] Links all deps into a static library.\n"
+    "\n"
+    "  A static library normally doesn't include code from dependencies, but\n"
+    "  instead forward the static libraries and source sets in its deps up\n"
+    "  the dependency chain until a linkable target (an executable or shared\n"
+    "  library) is reached. The final linkable target only links each static\n"
+    "  library once, even if it appears more than once in its dependency\n"
+    "  graph.\n"
+    "\n"
+    "  In some cases the static library might be the final desired output.\n"
+    "  For example, you may be producing a static library for distribution to\n"
+    "  third parties. In this case, the static library should include code\n"
+    "  for all dependencies in one complete package.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  static_library(\"foo\") {\n"
+    "    complete_static_lib = true\n"
+    "    deps = [ \"bar\" ]\n"
+    "  }\n";
+
 const char kConfigs[] = "configs";
 const char kConfigs_HelpShort[] =
     "configs: [label list] Configs applying to this target.";
@@ -918,6 +943,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(CflagsObjC)
     INSERT_VARIABLE(CflagsObjCC)
     INSERT_VARIABLE(CheckIncludes)
+    INSERT_VARIABLE(CompleteStaticLib)
     INSERT_VARIABLE(Configs)
     INSERT_VARIABLE(Data)
     INSERT_VARIABLE(Datadeps)

@@ -393,27 +393,26 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
     UniqueVector<OutputFile>* extra_object_files,
     UniqueVector<const Target*>* linkable_deps,
     UniqueVector<const Target*>* non_linkable_deps) const {
-  // Only these types of outputs have libraries linked into them. Child deps of
-  // static libraries get pushed up the dependency tree until one of these is
-  // reached, and source sets don't link at all.
-  bool can_link_libs =
-      (target_->output_type() == Target::EXECUTABLE ||
-       target_->output_type() == Target::SHARED_LIBRARY);
+  // Only the following types of outputs have libraries linked into them:
+  //  EXECUTABLE
+  //  SHARED_LIBRARY
+  //  _complete_ STATIC_LIBRARY
+  //
+  // Child deps of intermediate static libraries get pushed up the
+  // dependency tree until one of these is reached, and source sets
+  // don't link at all.
+  bool can_link_libs = target_->IsFinal();
 
   if (dep->output_type() == Target::SOURCE_SET) {
-    // Source sets have their object files linked into final targets (shared
-    // libraries and executables). Intermediate static libraries and other
-    // source sets just forward the dependency, otherwise the files in the
-    // source set can easily get linked more than once which will cause
+    // Source sets have their object files linked into final targets
+    // (shared libraries, executables, and complete static
+    // libraries). Intermediate static libraries and other source sets
+    // just forward the dependency, otherwise the files in the source
+    // set can easily get linked more than once which will cause
     // multiple definition errors.
-    //
-    // In the future, we may need a way to specify a "complete" static library
-    // for cases where you want a static library that includes all source sets
-    // (like if you're shipping that to customers to link against).
-    if (target_->output_type() != Target::SOURCE_SET &&
-        target_->output_type() != Target::STATIC_LIBRARY) {
-      // Linking in a source set to an executable or shared library, copy its
-      // object files.
+    if (can_link_libs) {
+      // Linking in a source set to an executable, shared library, or
+      // complete static library, so copy its object files.
       std::vector<OutputFile> tool_outputs;  // Prevent allocation in loop.
       for (size_t i = 0; i < dep->sources().size(); i++) {
         Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
