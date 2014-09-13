@@ -89,8 +89,12 @@ int32_t PepperUMAHost::OnResourceMessageReceived(
 }
 
 bool PepperUMAHost::IsPluginWhitelisted() {
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
       document_url_, allowed_origins_);
+#else
+  return false;
+#endif
 }
 
 bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {

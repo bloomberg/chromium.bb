@@ -46,11 +46,15 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     return false;
   }
 
+// TODO(thestig): Remove scaffolding once this file no longer builds with
+// extensions disabled.
+#if defined(ENABLE_EXTENSIONS)
   if (dispatcher_->IsExtensionActive(extensions::kWebStoreAppId)) {
     if (error)
       *error = errors::kCannotScriptGallery;
     return false;
   }
+#endif
 
   return true;
 }

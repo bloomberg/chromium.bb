@@ -896,8 +896,16 @@
           'sources!': [
             'renderer/api_definitions_natives.cc',
             'renderer/context_menus_custom_bindings.cc',
+            'renderer/dispatcher.cc',
+            'renderer/dispatcher.h',
             'renderer/render_view_observer_natives.cc',
             'renderer/send_request_natives.cc',
+            'renderer/user_script_injector.cc',
+            'renderer/user_script_injector.h',
+            'renderer/user_script_set.cc',
+            'renderer/user_script_set.h',
+            'renderer/user_script_set_manager.cc',
+            'renderer/user_script_set_manager.h',
           ],
         }],
       ]

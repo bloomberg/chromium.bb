@@ -9,7 +9,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -19,10 +18,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/common/extension.h"
-#include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/event_bindings.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -31,6 +26,17 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
+#include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/common/extension.h"
+#include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/event_bindings.h"
+#endif
+
+using autofill::AutofillAgent;
+using autofill::PasswordAutofillAgent;
+using autofill::PasswordGenerationAgent;
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -38,9 +44,6 @@ using blink::WebScriptController;
 using blink::WebScriptSource;
 using blink::WebString;
 using blink::WebURLRequest;
-using autofill::AutofillAgent;
-using autofill::PasswordAutofillAgent;
-using autofill::PasswordGenerationAgent;
 
 ChromeRenderViewTest::ChromeRenderViewTest()
     : password_autofill_(NULL),
@@ -71,9 +74,11 @@ void ChromeRenderViewTest::SetUp() {
 }
 
 void ChromeRenderViewTest::TearDown() {
+#if defined(ENABLE_EXTENSIONS)
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
   client->GetExtensionDispatcherForTest()->OnRenderProcessShutdown();
+#endif
 
 #if defined(LEAK_SANITIZER)
   // Do this before shutting down V8 in RenderViewTest::TearDown().
@@ -94,11 +99,13 @@ content::ContentBrowserClient*
 
 content::ContentRendererClient*
     ChromeRenderViewTest::CreateContentRendererClient() {
+  ChromeContentRendererClient* client = new ChromeContentRendererClient();
+#if defined(ENABLE_EXTENSIONS)
   extension_dispatcher_delegate_.reset(
       new ChromeExtensionsDispatcherDelegate());
-  ChromeContentRendererClient* client = new ChromeContentRendererClient();
   client->SetExtensionDispatcherForTest(
       new extensions::Dispatcher(extension_dispatcher_delegate_.get()));
+#endif
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());
 #endif

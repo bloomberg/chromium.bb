@@ -163,8 +163,16 @@ source_set("renderer") {
     sources -= [
       "api_definitions_natives.cc",
       "context_menus_custom_bindings.cc",
+      "dispatcher.cc",
+      "dispatcher.h",
       "render_view_observer_natives.cc",
       "send_request_natives.cc",
+      "user_script_injector.cc",
+      "user_script_injector.h",
+      "user_script_set.cc",
+      "user_script_set.h",
+      "user_script_set_manager.cc",
+      "user_script_set_manager.h",
     ]
   }
 

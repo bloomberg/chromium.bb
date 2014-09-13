@@ -148,10 +148,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       content::RenderFrame* render_frame,
       const std::string& mime_type) OVERRIDE;
 
+#if defined(ENABLE_EXTENSIONS)
   // Takes ownership.
   void SetExtensionDispatcherForTest(
       extensions::Dispatcher* extension_dispatcher);
   extensions::Dispatcher* GetExtensionDispatcherForTest();
+#endif
 
 #if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.
@@ -165,8 +167,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const blink::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
   static bool IsExtensionOrSharedModuleWhitelisted(
       const GURL& url, const std::set<std::string>& whitelist);
+#endif
 
   static bool WasWebRequestUsedBySomeExtensions();
 
@@ -175,6 +179,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest,
                            ShouldSuppressErrorPage);
 
+#if defined(ENABLE_EXTENSIONS)
   // Gets extension by the given origin, regardless of whether the extension
   // is active in the current process.
   const extensions::Extension* GetExtensionByOrigin(
@@ -187,6 +192,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                const extensions::ExtensionSet& extensions,
                                bool is_extension_url,
                                bool is_initial_navigation);
+#endif
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
@@ -201,10 +207,16 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
+
+// TODO(thestig): Extract into a separate file if possible. Cleanup
+// ENABLE_EXTENSIONS ifdefs in the .cc file as well.
+#if defined(ENABLE_EXTENSIONS)
   scoped_ptr<ChromeExtensionsDispatcherDelegate> extension_dispatcher_delegate_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<extensions::RendererPermissionsPolicyDelegate>
       permissions_policy_delegate_;
+#endif
+
   scoped_ptr<PrescientNetworkingDispatcher> prescient_networking_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<password_manager::CredentialManagerClient>
