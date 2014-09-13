@@ -796,11 +796,11 @@
       'example_value': False,
       'id': 162,
       'caption': '''Force SafeSearch''',
-      'desc': '''Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
+      'desc': '''Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.
 
-      If you enable this setting, SafeSearch in Google Search is always active.
+      If you enable this setting, SafeSearch in Google Search and YouTube is always active.
 
-      If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.''',
+      If you disable this setting or do not set a value, SafeSearch in Google Search and YouTube is not enforced.''',
     },
     {
       'name': 'SafeBrowsingEnabled',
