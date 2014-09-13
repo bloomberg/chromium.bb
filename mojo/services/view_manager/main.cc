@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/services/view_manager/view_manager_init_service_context.h"
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 

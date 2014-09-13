@@ -16,7 +16,7 @@ shared_library("window_manager") {
 
   deps = [
     ":lib",
-    "//mojo/public/cpp/application:chromium",
+    "//mojo/application",
   ] + mojo_system_for_shared_library
 }
 
@@ -31,10 +31,10 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//mojo/application",
     "//mojo/aura",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/window_manager",

@@ -9,9 +9,9 @@ component("view_manager") {
   deps = [
     "//base",
     "//cc/surfaces",
+    "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/surfaces",
@@ -63,9 +63,9 @@ test("mojo_view_manager_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/application",
     "//mojo/application_manager",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/view_manager",

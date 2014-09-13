@@ -6,11 +6,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"

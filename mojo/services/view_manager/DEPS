@@ -2,6 +2,7 @@ include_rules = [
   "+cc",
   "-cc/blink",
   "+gpu/command_buffer/service/mailbox_manager.h",
+  "+mojo/application",
   "+mojo/cc",
   "+mojo/geometry",
   "+mojo/services",

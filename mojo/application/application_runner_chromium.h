@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_
-#define MOJO_PUBLIC_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_
+#ifndef MOJO_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_
+#define MOJO_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -51,4 +51,4 @@ class ApplicationRunnerChromium {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_
+#endif  // MOJO_APPLICATION_APPLICATION_RUNNER_CHROMIUM_H_

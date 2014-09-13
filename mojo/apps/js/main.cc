@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/i18n/icu_util.h"
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/apps/js/application_delegate_impl.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_runner_chromium.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   base::i18n::InitializeICU();

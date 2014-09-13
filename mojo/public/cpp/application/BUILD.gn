@@ -30,19 +30,6 @@ source_set("application") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_application_chromium
-source_set("chromium") {
-  sources = [
-    "lib/application_runner_chromium.cc"
-  ]
-
-  deps = [
-    ":application",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-  ]
-}
-
 # GYP version: mojo/mojo_public.gypi:mojo_application_standalone
 source_set("standalone") {
   sources = [

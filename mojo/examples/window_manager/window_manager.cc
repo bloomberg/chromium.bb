@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/window_manager/debug_panel.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
@@ -11,7 +12,6 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"

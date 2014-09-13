@@ -21,9 +21,9 @@ shared_library("network") {
 source_set("lib") {
   deps = [
     "//base",
+    "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/interfaces/network",
     "//net",
     "//url",

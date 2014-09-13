@@ -469,12 +469,12 @@
       }
     },
     {
-     # GN version: //mojo/public/cpp/application:chromium
+     # GN version: //mojo/application
      'target_name': 'mojo_application_chromium',
      'type': 'static_library',
      'sources': [
-       'public/cpp/application/lib/application_runner_chromium.cc',
-       'public/cpp/application/application_runner_chromium.h',
+       'application/application_runner_chromium.cc',
+       'application/application_runner_chromium.h',
       ],
       'dependencies': [
         'mojo_application_base',

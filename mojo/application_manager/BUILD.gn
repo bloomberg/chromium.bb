@@ -45,13 +45,13 @@ test("mojo_application_manager_unittests") {
     ":application_manager",
     ":test_bindings",
     "//base",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//url",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/public/cpp/application:chromium",
-    "//mojo/common/test:run_all_unittests",
-    "//mojo/public/cpp/bindings",
   ]
 
   sources = [

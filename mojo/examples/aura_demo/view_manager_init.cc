@@ -4,10 +4,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
