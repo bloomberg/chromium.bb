@@ -134,6 +134,14 @@
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
+// When a view does not have a layer, but it has multiple subviews with layers,
+// the ordering of the layers is not well defined. Removing a subview and
+// re-adding it to the same position has the side effect of updating the layer
+// ordering to better reflect the subview ordering.
+// This is a hack needed because NSThemeFrame is not layer backed, but it has
+// multiple direct subviews which are. http://crbug.com/413009
+- (void)updateLayerOrdering:(NSView*)view;
+
 // Ensures the z-order of subviews is correct.
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode;
 

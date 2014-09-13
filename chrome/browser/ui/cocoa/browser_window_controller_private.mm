@@ -977,6 +977,38 @@ willPositionSheet:(NSWindow*)sheet
   return [bookmarkBarController_ toolbarDividerOpacity];
 }
 
+- (void)updateLayerOrdering:(NSView*)view {
+  // Hold a reference to the view so that it doesn't accidentally get
+  // dealloc'ed.
+  base::scoped_nsobject<NSView> reference([view retain]);
+
+  // If the superview has a layer, then this hack isn't required.
+  NSView* superview = [view superview];
+  if ([superview layer])
+    return;
+
+  // Get the current position of the view.
+  NSArray* subviews = [superview subviews];
+  NSInteger index = [subviews indexOfObject:view];
+  NSView* siblingBelow = nil;
+  if (index > 0)
+    siblingBelow = [subviews objectAtIndex:index - 1];
+
+  // Remove the view.
+  [view removeFromSuperview];
+
+  // Add it to the same position.
+  if (siblingBelow) {
+    [superview addSubview:view
+               positioned:NSWindowAbove
+               relativeTo:siblingBelow];
+  } else {
+    [superview addSubview:view
+               positioned:NSWindowBelow
+               relativeTo:nil];
+  }
+}
+
 // TODO(erikchen): The implementation of this method is quite fragile. The
 // method cr_ensureSubview:... does not check that the subview is /directly/
 // above/below the given view. e.g. There are 3 subviews: A, B, C, in that
@@ -1069,27 +1101,8 @@ willPositionSheet:(NSWindow*)sheet
       [CATransaction begin];
       [CATransaction setDisableActions:YES];
 
-      // Get the current position of the tabStripView.
-      NSView* superview = [[self tabStripView] superview];
-      NSArray* subviews = [superview subviews];
-      NSInteger index = [subviews indexOfObject:[self tabStripView]];
-      NSView* siblingBelow = nil;
-      if (index > 0)
-        siblingBelow = [subviews objectAtIndex:index - 1];
-
-      // Remove the tabStripView.
-      [[self tabStripView] removeFromSuperview];
-
-      // Add it to the same position.
-      if (siblingBelow) {
-        [superview addSubview:[self tabStripView]
-                   positioned:NSWindowAbove
-                   relativeTo:siblingBelow];
-      } else {
-        [superview addSubview:[self tabStripView]
-                   positioned:NSWindowBelow
-                   relativeTo:nil];
-      }
+      [self updateLayerOrdering:[self tabStripView]];
+      [self updateLayerOrdering:[avatarButtonController_ view]];
 
       [CATransaction commit];
       hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = YES;

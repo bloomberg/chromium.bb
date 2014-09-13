@@ -186,6 +186,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
     if (errorController)
       [cell setHasError:errorController->HasError() withTitle:[button_ title]];
 
+    [button_ setWantsLayer:YES];
     [self setView:button_];
 
     [button_ setBezelStyle:NSShadowlessSquareBezelStyle];
