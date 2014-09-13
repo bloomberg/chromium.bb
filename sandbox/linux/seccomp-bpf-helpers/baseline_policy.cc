@@ -126,6 +126,10 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
 #endif
 
+  if (sysno == __NR_clock_gettime) {
+    return RestrictClockID();
+  }
+
   if (sysno == __NR_clone) {
     return RestrictCloneToThreadsAndEPERMFork();
   }

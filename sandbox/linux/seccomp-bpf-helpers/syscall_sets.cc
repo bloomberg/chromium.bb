@@ -27,7 +27,6 @@ bool SyscallSets::IsKill(int sysno) {
 
 bool SyscallSets::IsAllowedGettime(int sysno) {
   switch (sysno) {
-    case __NR_clock_gettime:
     case __NR_gettimeofday:
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_time:
@@ -36,6 +35,7 @@ bool SyscallSets::IsAllowedGettime(int sysno) {
     case __NR_adjtimex:         // Privileged.
     case __NR_clock_adjtime:    // Privileged.
     case __NR_clock_getres:     // Could be allowed.
+    case __NR_clock_gettime:
     case __NR_clock_nanosleep:  // Could be allowed.
     case __NR_clock_settime:    // Privileged.
 #if defined(__i386__) || defined(__mips__)

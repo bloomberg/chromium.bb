@@ -26,12 +26,13 @@ RendererProcessPolicy::~RendererProcessPolicy() {}
 
 ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
-    case __NR_ioctl:
-      return sandbox::RestrictIoctl();
-    // Allow the system calls below.
     // The baseline policy allows __NR_clock_gettime. Allow
     // clock_getres() for V8. crbug.com/329053.
     case __NR_clock_getres:
+      return sandbox::RestrictClockID();
+    case __NR_ioctl:
+      return sandbox::RestrictIoctl();
+    // Allow the system calls below.
     case __NR_fdatasync:
     case __NR_fsync:
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)

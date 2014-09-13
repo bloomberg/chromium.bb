@@ -17,6 +17,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "base/files/scoped_file.h"
@@ -334,6 +335,14 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  BaselinePolicy) {
   getpriority(PRIO_USER, 0);
   _exit(1);
+}
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 ClockGettimeWithDisallowedClockCrashes,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 }
 
 }  // namespace
