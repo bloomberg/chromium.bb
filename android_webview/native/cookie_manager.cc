@@ -13,8 +13,8 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -609,4 +609,4 @@ bool RegisterCookieManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace android_webview
+}  // android_webview namespace
