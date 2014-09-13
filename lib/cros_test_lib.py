@@ -1457,40 +1457,38 @@ def FindTests(directory, module_namespace=''):
   return [module_namespace + x[:-3].replace('/', '.') for x in results]
 
 
-def main(**kwargs):
-  """Helper wrapper around unittest.main.  Invoke this, not unittest.main.
+class TestProgram(unittest.TestProgram):
+  """Helper wrapper around unittest.TestProgram
 
   Any passed in kwargs are passed directly down to unittest.main; via this, you
   can inject custom argv for example (to limit what tests run).
   """
-  # Default to exit=True; this matches old behaviour, and allows unittest
-  # to trigger sys.exit on its own.  Unfortunately, the exit keyword is only
-  # available in 2.7- as such, handle it ourselves.
-  allow_exit = kwargs.pop('exit', True)
-  if '--network' in sys.argv:
-    sys.argv.remove('--network')
-    GlobalTestConfig.RUN_NETWORK_TESTS = True
-  level = kwargs.pop('level', logging.CRITICAL)
-  for flag in ('-d', '--debug'):
-    if flag in sys.argv:
-      sys.argv.remove(flag)
-      level = logging.DEBUG
-  cros_build_lib.SetupBasicLogging(level)
-  try:
-    unittest.main(**kwargs)
-    raise SystemExit(0)
-  except SystemExit as e:
-    if GlobalTestConfig.NETWORK_TESTS_SKIPPED:
-      print('Note: %i network test(s) skipped; use --network to run them.' %
-            GlobalTestConfig.NETWORK_TESTS_SKIPPED)
-    if e.__class__ != SystemExit or allow_exit:
-      raise
-    # Redo the exit code ourselves- unittest throws True on occasion.
-    # This is why the lack of typing for SystemExit code attribute makes life
-    # suck, in parallel to unittest being special.
-    # Finally, note that it's possible for code to be a string...
-    if isinstance(e.code, (int, long)):
-      # This is done since exit code may be something other than 1/0; if they
-      # explicitly pass it, we'll honor it.
-      return e.code
-    return 1 if e.code else 0
+
+  USAGE = unittest.main.USAGE + """
+Chromite Options:
+  -d, --debug      Set logging level to debug
+      --network    Include network based tests (default: skip network tests)
+"""
+
+  def __init__(self, **kwargs):
+    if '--network' in sys.argv:
+      sys.argv.remove('--network')
+      GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    level = kwargs.pop('level', logging.CRITICAL)
+    for flag in ('-d', '--debug'):
+      if flag in sys.argv:
+        sys.argv.remove(flag)
+        level = logging.DEBUG
+    cros_build_lib.SetupBasicLogging(level)
+
+    try:
+      super(TestProgram, self).__init__(**kwargs)
+    finally:
+      if GlobalTestConfig.NETWORK_TESTS_SKIPPED:
+        print('Note: %i network test(s) skipped; use --network to run them.' %
+              GlobalTestConfig.NETWORK_TESTS_SKIPPED)
+
+
+class main(TestProgram):
+  """Chromite's version of unittest.main.  Invoke this, not unittest.main."""
