@@ -80,7 +80,7 @@ public class ChromeShellToolbar extends LinearLayout {
         if (mTab != null) mTab.removeObserver(mTabObserver);
         mTab = tab;
         mTab.addObserver(mTabObserver);
-        mUrlTextView.setText(mTab.getContentViewCore().getUrl());
+        mUrlTextView.setText(mTab.getWebContents().getUrl());
     }
 
     private void onUpdateUrl(String url) {
@@ -145,7 +145,7 @@ public class ChromeShellToolbar extends LinearLayout {
             public void onFocusChange(View v, boolean hasFocus) {
                 setKeyboardVisibilityForUrl(hasFocus);
                 if (!hasFocus) {
-                    mUrlTextView.setText(mTab.getContentViewCore().getUrl());
+                    mUrlTextView.setText(mTab.getWebContents().getUrl());
                     mSuggestionPopup.dismissPopup();
                 }
             }
@@ -190,9 +190,9 @@ public class ChromeShellToolbar extends LinearLayout {
             @Override
             public void onClick(View v) {
                 if (mLoading) {
-                    mTab.getContentViewCore().stopLoading();
+                    mTab.getWebContents().stop();
                 } else {
-                    mTab.getContentViewCore().reload(true);
+                    mTab.getWebContents().getNavigationController().reload(true);
                 }
             }
         });

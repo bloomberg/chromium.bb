@@ -52,7 +52,8 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
      * @return true if the test url is the current one, false otherwise.
      */
     protected boolean isCurrentTestUrl(String testUrl) {
-        return UrlUtils.getTestFileUrl(testUrl).equals(getContentViewCore().getUrl());
+        return UrlUtils.getTestFileUrl(testUrl).equals(getContentViewCore()
+                .getWebContents().getUrl());
     }
 
     /**

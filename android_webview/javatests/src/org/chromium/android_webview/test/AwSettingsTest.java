@@ -33,9 +33,9 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -1675,7 +1675,7 @@ public class AwSettingsTest extends AwTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final ContentViewCore contentView = testContainerView.getContentViewCore();
+        final WebContents webContents = awContents.getWebContents();
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         settings.setJavaScriptEnabled(true);
@@ -1701,9 +1701,9 @@ public class AwSettingsTest extends AwTestBase {
         settings.setUserAgentString(null);
         // Must not cause any changes until the next page loading.
         assertEquals(page2Title + customUserAgentString, getTitleOnUiThread(awContents));
-        HistoryUtils.goBackSync(getInstrumentation(), contentView, onPageFinishedHelper);
+        HistoryUtils.goBackSync(getInstrumentation(), webContents, onPageFinishedHelper);
         assertEquals(page1Title + defaultUserAgentString, getTitleOnUiThread(awContents));
-        HistoryUtils.goForwardSync(getInstrumentation(), contentView,
+        HistoryUtils.goForwardSync(getInstrumentation(), webContents,
                                    onPageFinishedHelper);
         assertEquals(page2Title + defaultUserAgentString, getTitleOnUiThread(awContents));
     }

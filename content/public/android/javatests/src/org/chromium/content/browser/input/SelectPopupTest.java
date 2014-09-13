@@ -20,6 +20,9 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Integration Tests for SelectPopup.
+ */
 public class SelectPopupTest extends ContentShellTestBase {
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
@@ -87,7 +90,7 @@ public class SelectPopupTest extends ContentShellTestBase {
             @Override
             public void run() {
                 // Now reload the page while the popup is showing, it gets hidden.
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,

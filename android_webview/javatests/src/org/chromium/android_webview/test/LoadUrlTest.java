@@ -323,7 +323,7 @@ public class LoadUrlTest extends AwTestBase {
             validateNoRequestHeaders(extraHeaders, webServer.getLastRequest(nextPath));
 
             HistoryUtils.goBackSync(getInstrumentation(),
-                                    awContents.getContentViewCore(),
+                                    awContents.getWebContents(),
                                     contentsClient.getOnPageFinishedHelper());
             assertEquals(2, webServer.getRequestCount(path));
             validateRequestHeaders(extraHeaders, webServer.getLastRequest(path));

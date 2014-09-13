@@ -125,8 +125,9 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().getActiveShell().getContentViewCore().loadUrl(
-                        new LoadUrlParams(CLICK_TEST_URL));
+                getActivity().getActiveShell().getContentViewCore().getWebContents()
+                        .getNavigationController().loadUrl(
+                                new LoadUrlParams(CLICK_TEST_URL));
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,

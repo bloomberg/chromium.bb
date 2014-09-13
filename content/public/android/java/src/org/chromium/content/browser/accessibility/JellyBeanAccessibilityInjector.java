@@ -77,7 +77,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
 
         boolean actionSuccessful = sendActionToAndroidVox(action, arguments);
 
-        if (actionSuccessful) mContentViewCore.showImeIfNeeded();
+        if (actionSuccessful) mContentViewCore.getWebContents().showImeIfNeeded();
 
         return actionSuccessful;
     }

@@ -76,8 +76,6 @@ import org.chromium.content.browser.input.SelectionEventType;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
@@ -100,7 +98,7 @@ import java.util.Map;
  */
 @JNINamespace("content")
 public class ContentViewCore
-        implements NavigationClient, AccessibilityStateChangeListener, ScreenOrientationObserver {
+        implements AccessibilityStateChangeListener, ScreenOrientationObserver {
 
     private static final String TAG = "ContentViewCore";
 
@@ -840,54 +838,9 @@ public class ContentViewCore
         return mContentViewClient;
     }
 
-    public int getBackgroundColor() {
-        assert mWebContents != null;
-        return mWebContents.getBackgroundColor();
-    }
-
     @CalledByNative
     private void onBackgroundColorChanged(int color) {
         getContentViewClient().onBackgroundColorChanged(color);
-    }
-
-    /**
-     * Load url without fixing up the url string. Consumers of ContentView are responsible for
-     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
-     * off during user input).
-     *
-     * @param params Parameters for this load.
-     */
-    public void loadUrl(LoadUrlParams params) {
-        assert mWebContents !=  null;
-        mWebContents.getNavigationController().loadUrl(params);
-    }
-
-    /**
-     * Stops loading the current web contents.
-     */
-    public void stopLoading() {
-        assert mWebContents != null;
-        mWebContents.stop();
-    }
-
-    /**
-     * Get the URL of the current page.
-     *
-     * @return The URL of the current page.
-     */
-    public String getUrl() {
-        assert mWebContents != null;
-        return mWebContents.getUrl();
-    }
-
-    /**
-     * Get the title of the current page.
-     *
-     * @return The title of the current page.
-     */
-    public String getTitle() {
-        assert mWebContents != null;
-        return mWebContents.getTitle();
     }
 
     /**
@@ -959,126 +912,6 @@ public class ContentViewCore
      */
     public float getContentWidthCss() {
         return mRenderCoordinates.getContentWidthCss();
-    }
-
-    // TODO(teddchoc): Remove all these navigation controller methods from here and have the
-    //                 embedders manage it.
-    /**
-     * @return Whether the current WebContents has a previous navigation entry.
-     */
-    public boolean canGoBack() {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().canGoBack();
-    }
-
-    /**
-     * @return Whether the current WebContents has a navigation entry after the current one.
-     */
-    public boolean canGoForward() {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().canGoForward();
-    }
-
-    /**
-     * @param offset The offset into the navigation history.
-     * @return Whether we can move in history by given offset
-     */
-    public boolean canGoToOffset(int offset) {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().canGoToOffset(offset);
-    }
-
-    /**
-     * Navigates to the specified offset from the "current entry". Does nothing if the offset is out
-     * of bounds.
-     * @param offset The offset into the navigation history.
-     */
-    @VisibleForTesting
-    public void goToOffset(int offset) {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().goToOffset(offset);
-    }
-
-    @Override
-    public void goToNavigationIndex(int index) {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().goToNavigationIndex(index);
-    }
-
-    /**
-     * Goes to the navigation entry before the current one.
-     */
-    public void goBack() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().goBack();
-    }
-
-    /**
-     * Goes to the navigation entry following the current one.
-     */
-    public void goForward() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().goForward();
-    }
-
-    /**
-     * Loads the current navigation if there is a pending lazy load (after tab restore).
-     */
-    public void loadIfNecessary() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().loadIfNecessary();
-    }
-
-    /**
-     * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
-     */
-    public void requestRestoreLoad() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().requestRestoreLoad();
-    }
-
-    /**
-     * Reload the current page.
-     */
-    public void reload(boolean checkForRepost) {
-        assert mWebContents != null;
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        mWebContents.getNavigationController().reload(checkForRepost);
-    }
-
-    /**
-     * Reload the current page, ignoring the contents of the cache.
-     */
-    public void reloadIgnoringCache(boolean checkForRepost) {
-        assert mWebContents != null;
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        mWebContents.getNavigationController().reloadIgnoringCache(
-                checkForRepost);
-    }
-
-    /**
-     * Cancel the pending reload.
-     */
-    public void cancelPendingReload() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().cancelPendingReload();
-    }
-
-    /**
-     * Continue the pending reload.
-     */
-    public void continuePendingReload() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().continuePendingReload();
-    }
-
-    /**
-     * Clears the ContentViewCore's page history in both the backwards and
-     * forwards directions.
-     */
-    public void clearHistory() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().clearHistory();
     }
 
     /**
@@ -2202,39 +2035,10 @@ public class ContentViewCore
         getContentViewClient().onSelectionEvent(eventType);
     }
 
-    public boolean getUseDesktopUserAgent() {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().getUseDesktopUserAgent();
-    }
-
-    /**
-     * Set whether or not we're using a desktop user agent for the currently loaded page.
-     * @param override If true, use a desktop user agent.  Use a mobile one otherwise.
-     * @param reloadOnChange Reload the page if the UA has changed.
-     */
-    public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().setUseDesktopUserAgent(override,
-                reloadOnChange);
-    }
-
-    public void clearSslPreferences() {
-        assert mWebContents != null;
-        mWebContents.getNavigationController().clearSslPreferences();
-    }
-
     private void hideTextHandles() {
         mHasSelection = false;
         mHasInsertion = false;
         if (mNativeContentViewCore != 0) nativeHideTextHandles(mNativeContentViewCore);
-    }
-
-    /**
-     * Shows the IME if the focused widget could accept text input.
-     */
-    public void showImeIfNeeded() {
-        assert mWebContents != null;
-        mWebContents.showImeIfNeeded();
     }
 
     /**
@@ -2983,31 +2787,6 @@ public class ContentViewCore
         assert mWebContents != null;
         mWebContents.updateTopControlsState(
                 enableHiding, enableShowing, animate);
-    }
-
-    /**
-     * Get a copy of the navigation history of the view.
-     */
-    public NavigationHistory getNavigationHistory() {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().getNavigationHistory();
-    }
-
-    @Override
-    public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit) {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().getDirectedNavigationHistory(
-                isForward, itemLimit);
-    }
-
-    /**
-     * @return The original request URL for the current navigation entry, or null if there is no
-     *         current entry.
-     */
-    public String getOriginalUrlForActiveNavigationEntry() {
-        assert mWebContents != null;
-        return mWebContents.getNavigationController().
-                getOriginalUrlForVisibleNavigationEntry();
     }
 
     /**

@@ -117,7 +117,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void run() {
                 getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
                         name, requiredAnnotation);
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -130,7 +130,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -195,7 +195,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             @Override
             public void run() {
                 getContentViewCore().removeJavascriptInterface("foo");
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -357,7 +357,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                         testObject, "testObject1", null);
                 getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         testObject, "testObject2", null);
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -404,7 +404,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                         object, "testObject", null);
                 getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         innerObject, "innerObject", null);
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -545,7 +545,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void method() {}
             private void privateMethod() {}
             public int field;
-            private int privateField;
+            private int mPrivateField;
         }, "testObject");
         executeJavaScript(
                 "var result = \"\"; " +
@@ -598,7 +598,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testReflectPrivateFieldRaisesException() throws Throwable {
         injectObjectAndReload(new Object() {
             public Class<?> myGetClass() { return getClass(); }
-            private int field;
+            private int mField;
         }, "testObject");
         assertRaisesException("testObject.myGetClass().getField('field')");
         // getDeclaredField() is able to access a private field, but getInt()
@@ -774,7 +774,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void run() {
                 getContentViewCore().addJavascriptInterface(new Test(),
                         "testObject");
-                getContentViewCore().reload(true);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);

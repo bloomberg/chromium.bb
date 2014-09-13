@@ -54,8 +54,10 @@ import org.chromium.content_public.Referrer;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.PageTransitionTypes;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -182,6 +184,8 @@ public class AwContents {
     private final Context mContext;
     private ContentViewCore mContentViewCore;
     private WindowAndroid mWindowAndroid;
+    private WebContents mWebContents;
+    private NavigationController mNavigationController;
     private final AwContentsClient mContentsClient;
     private final AwContentViewClient mContentViewClient;
     private WebContentsObserverAndroid mWebContentsObserver;
@@ -745,6 +749,8 @@ public class AwContents {
         if (mNativeAwContents != 0) {
             destroy();
             mContentViewCore = null;
+            mWebContents = null;
+            mNavigationController = null;
         }
 
         assert mNativeAwContents == 0 && mCleanupReference == null && mContentViewCore == null;
@@ -768,6 +774,8 @@ public class AwContents {
                 new AwGestureStateListener(), mContentViewClient, mZoomControls, mWindowAndroid);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
+        mWebContents = mContentViewCore.getWebContents();
+        mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
@@ -780,8 +788,7 @@ public class AwContents {
         if (mWebContentsObserver != null) {
             mWebContentsObserver.detachFromWebContents();
         }
-        mWebContentsObserver = new AwWebContentsObserver(mContentViewCore.getWebContents(),
-                mContentsClient);
+        mWebContentsObserver = new AwWebContentsObserver(mWebContents, mContentsClient);
     }
 
     /**
@@ -886,6 +893,16 @@ public class AwContents {
     @VisibleForTesting
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
+    }
+
+    @VisibleForTesting
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
+
+    @VisibleForTesting
+    public NavigationController getNavigationController() {
+        return mNavigationController;
     }
 
     // Can be called from any thread.
@@ -1074,7 +1091,7 @@ public class AwContents {
 
         // If we are reloading the same url, then set transition type as reload.
         if (params.getUrl() != null &&
-                params.getUrl().equals(mContentViewCore.getUrl()) &&
+                params.getUrl().equals(mWebContents.getUrl()) &&
                 params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
             params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
@@ -1108,7 +1125,7 @@ public class AwContents {
         }
         params.setExtraHeaders(new HashMap<String, String>());
 
-        mContentViewCore.loadUrl(params);
+        mNavigationController.loadUrl(params);
 
         // The behavior of WebViewClassic uses the populateVisitedLinks callback in WebKit.
         // Chromium does not use this use code path and the best emulation of this behavior to call
@@ -1132,7 +1149,7 @@ public class AwContents {
      * @return The URL of the current page or null if it's empty.
      */
     public String getUrl() {
-        String url =  mContentViewCore.getUrl();
+        String url =  mWebContents.getUrl();
         if (url == null || url.trim().isEmpty()) return null;
         return url;
     }
@@ -1323,56 +1340,56 @@ public class AwContents {
      * @see android.webkit.WebView#stopLoading()
      */
     public void stopLoading() {
-        mContentViewCore.stopLoading();
+        mWebContents.stop();
     }
 
     /**
      * @see android.webkit.WebView#reload()
      */
     public void reload() {
-        mContentViewCore.reload(true);
+        mNavigationController.reload(true);
     }
 
     /**
      * @see android.webkit.WebView#canGoBack()
      */
     public boolean canGoBack() {
-        return mContentViewCore.canGoBack();
+        return mNavigationController.canGoBack();
     }
 
     /**
      * @see android.webkit.WebView#goBack()
      */
     public void goBack() {
-        mContentViewCore.goBack();
+        mNavigationController.goBack();
     }
 
     /**
      * @see android.webkit.WebView#canGoForward()
      */
     public boolean canGoForward() {
-        return mContentViewCore.canGoForward();
+        return mNavigationController.canGoForward();
     }
 
     /**
      * @see android.webkit.WebView#goForward()
      */
     public void goForward() {
-        mContentViewCore.goForward();
+        mNavigationController.goForward();
     }
 
     /**
      * @see android.webkit.WebView#canGoBackOrForward(int)
      */
     public boolean canGoBackOrForward(int steps) {
-        return mContentViewCore.canGoToOffset(steps);
+        return mNavigationController.canGoToOffset(steps);
     }
 
     /**
      * @see android.webkit.WebView#goBackOrForward(int)
      */
     public void goBackOrForward(int steps) {
-        mContentViewCore.goToOffset(steps);
+        mNavigationController.goToOffset(steps);
     }
 
     /**
@@ -1473,7 +1490,7 @@ public class AwContents {
     }
 
     public String getOriginalUrl() {
-        NavigationHistory history = mContentViewCore.getNavigationHistory();
+        NavigationHistory history = mNavigationController.getNavigationHistory();
         int currentIndex = history.getCurrentEntryIndex();
         if (currentIndex >= 0 && currentIndex < history.getEntryCount()) {
             return history.getEntryAtIndex(currentIndex).getOriginalUrl();
@@ -1485,21 +1502,21 @@ public class AwContents {
      * @see ContentViewCore#getNavigationHistory()
      */
     public NavigationHistory getNavigationHistory() {
-        return mContentViewCore.getNavigationHistory();
+        return mNavigationController.getNavigationHistory();
     }
 
     /**
      * @see android.webkit.WebView#getTitle()
      */
     public String getTitle() {
-        return mContentViewCore.getTitle();
+        return mWebContents.getTitle();
     }
 
     /**
      * @see android.webkit.WebView#clearHistory()
      */
     public void clearHistory() {
-        mContentViewCore.clearHistory();
+        mNavigationController.clearHistory();
     }
 
     public String[] getHttpAuthUsernamePassword(String host, String realm) {
@@ -1525,7 +1542,7 @@ public class AwContents {
      * @see android.webkit.WebView#clearSslPreferences()
      */
     public void clearSslPreferences() {
-        mContentViewCore.clearSslPreferences();
+        mNavigationController.clearSslPreferences();
     }
 
     // TODO(sgurun) remove after this rolls in. To keep internal tree happy.
@@ -1696,14 +1713,14 @@ public class AwContents {
             };
         }
 
-        mContentViewCore.evaluateJavaScript(script, jsCallback);
+        mWebContents.evaluateJavaScript(script, jsCallback, false);
     }
 
     /**
      * @see ContentViewCore.evaluateJavaScriptEvenIfNotYetNavigated(String)
      */
     public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
-        mContentViewCore.evaluateJavaScriptEvenIfNotYetNavigated(script);
+        mWebContents.evaluateJavaScript(script, null, true);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -1853,7 +1870,7 @@ public class AwContents {
         // but is optimized out in the restoreState case because the title is
         // already restored. See WebContentsImpl::UpdateTitleForEntry. So we
         // call the callback explicitly here.
-        if (result) mContentsClient.onReceivedTitle(mContentViewCore.getTitle());
+        if (result) mContentsClient.onReceivedTitle(mWebContents.getTitle());
 
         return result;
     }

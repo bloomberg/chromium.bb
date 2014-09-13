@@ -95,7 +95,8 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
                             ChromeShellTab tab = activity.getActiveTab();
                             if (tab != null) {
                                 isLoaded.set(!tab.isLoading()
-                                        && !TextUtils.isEmpty(tab.getContentViewCore().getUrl()));
+                                        && !TextUtils.isEmpty(tab.getContentViewCore()
+                                                .getWebContents().getUrl()));
                             } else {
                                 isLoaded.set(false);
                             }

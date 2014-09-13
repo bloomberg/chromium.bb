@@ -7,9 +7,9 @@ package org.chromium.android_webview.test;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Tests for a wanted clearHistory method.
@@ -36,23 +36,22 @@ public class ClearHistoryTest extends AwTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final ContentViewCore contentViewCore = testContainerView.getContentViewCore();
-
+        final WebContents webContents = awContents.getWebContents();
         OnPageFinishedHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
         for (int i = 0; i < 3; i++) {
             loadUrlSync(awContents, onPageFinishedHelper, URLS[i]);
         }
 
-        HistoryUtils.goBackSync(getInstrumentation(), contentViewCore, onPageFinishedHelper);
+        HistoryUtils.goBackSync(getInstrumentation(), webContents, onPageFinishedHelper);
         assertTrue("Should be able to go back",
-                   HistoryUtils.canGoBackOnUiThread(getInstrumentation(), contentViewCore));
+                   HistoryUtils.canGoBackOnUiThread(getInstrumentation(), webContents));
         assertTrue("Should be able to go forward",
-                   HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), contentViewCore));
+                   HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), webContents));
 
-        HistoryUtils.clearHistoryOnUiThread(getInstrumentation(), contentViewCore);
+        HistoryUtils.clearHistoryOnUiThread(getInstrumentation(), webContents);
         assertFalse("Should not be able to go back",
-                    HistoryUtils.canGoBackOnUiThread(getInstrumentation(), contentViewCore));
+                    HistoryUtils.canGoBackOnUiThread(getInstrumentation(), webContents));
         assertFalse("Should not be able to go forward",
-                    HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), contentViewCore));
+                    HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), webContents));
     }
 }

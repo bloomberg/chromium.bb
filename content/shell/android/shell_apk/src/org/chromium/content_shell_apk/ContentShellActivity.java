@@ -126,7 +126,7 @@ public class ContentShellActivity extends Activity {
         super.onSaveInstanceState(outState);
         ContentViewCore contentViewCore = getActiveContentViewCore();
         if (contentViewCore != null) {
-            outState.putString(ACTIVE_SHELL_URL_KEY, contentViewCore.getUrl());
+            outState.putString(ACTIVE_SHELL_URL_KEY, contentViewCore.getWebContents().getUrl());
         }
 
         mWindowAndroid.saveInstanceState(outState);
@@ -144,8 +144,9 @@ public class ContentShellActivity extends Activity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             ContentViewCore contentViewCore = getActiveContentViewCore();
-            if (contentViewCore != null && contentViewCore.canGoBack()) {
-                contentViewCore.goBack();
+            if (contentViewCore != null && contentViewCore.getWebContents()
+                    .getNavigationController().canGoBack()) {
+                contentViewCore.getWebContents().getNavigationController().goBack();
                 return true;
             }
         }

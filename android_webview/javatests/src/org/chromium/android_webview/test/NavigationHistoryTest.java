@@ -60,7 +60,7 @@ public class NavigationHistoryTest extends AwTestBase {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<NavigationHistory>() {
             @Override
             public NavigationHistory call() {
-                return awContents.getContentViewCore().getNavigationHistory();
+                return awContents.getNavigationController().getNavigationHistory();
             }
         });
     }
@@ -171,7 +171,7 @@ public class NavigationHistoryTest extends AwTestBase {
         loadUrlSync(mAwContents, onPageFinishedHelper, page1Url);
         loadUrlSync(mAwContents, onPageFinishedHelper, page2Url);
 
-        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getContentViewCore(),
+        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getWebContents(),
                 onPageFinishedHelper);
         list = getNavigationHistory(mAwContents);
 
@@ -288,7 +288,7 @@ public class NavigationHistoryTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                String title = mAwContents.getContentViewCore().getTitle();
+                String title = mAwContents.getTitle();
                 return LOGIN_RESPONSE_PAGE_TITLE.equals(title);
             }
         });
@@ -299,18 +299,18 @@ public class NavigationHistoryTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                String title = mAwContents.getContentViewCore().getTitle();
+                String title = mAwContents.getTitle();
                 return PAGE_1_TITLE.equals(title);
             }
         });
         // Verify that we can still go back to the login response page despite that
         // it is non-cacheable.
-        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getContentViewCore(),
+        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getWebContents(),
                 onPageFinishedHelper);
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                String title = mAwContents.getContentViewCore().getTitle();
+                String title = mAwContents.getTitle();
                 return LOGIN_RESPONSE_PAGE_TITLE.equals(title);
             }
         });

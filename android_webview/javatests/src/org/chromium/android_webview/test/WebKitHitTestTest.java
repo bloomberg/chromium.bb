@@ -382,7 +382,7 @@ public class WebKitHitTestTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mAwContents.getContentViewCore().getTitle().equals(title);
+                return mAwContents.getTitle().equals(title);
             }
         });
         AwTestTouchUtils.simulateTouchCenterOfView(mTestView);

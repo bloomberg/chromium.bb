@@ -226,7 +226,7 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      */
     private boolean isBannerForCurrentPage(String bannerUrl) {
         return mContentViewCore != null &&
-               TextUtils.equals(mContentViewCore.getUrl(), bannerUrl);
+               TextUtils.equals(mContentViewCore.getWebContents().getUrl(), bannerUrl);
     }
 
     private static native boolean nativeIsEnabled();

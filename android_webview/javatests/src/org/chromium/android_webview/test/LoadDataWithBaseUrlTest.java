@@ -12,9 +12,9 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.File;
@@ -29,7 +29,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
-    private ContentViewCore mContentViewCore;
+    private WebContents mWebContents;
 
     @Override
     public void setUp() throws Exception {
@@ -38,7 +38,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
-        mContentViewCore = testContainerView.getContentViewCore();
+        mWebContents = mAwContents.getWebContents();
     }
 
     protected void loadDataWithBaseUrlSync(
@@ -202,11 +202,11 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         final String historyUrl = "http://history.com/";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, historyUrl);
         assertEquals(historyUrl, HistoryUtils.getUrlOnUiThread(
-                getInstrumentation(), mContentViewCore));
+                getInstrumentation(), mWebContents));
 
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, null);
         assertEquals("about:blank", HistoryUtils.getUrlOnUiThread(
-                getInstrumentation(), mContentViewCore));
+                getInstrumentation(), mWebContents));
     }
 
     @SmallTest
@@ -228,7 +228,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         final String historyUrl = "http://history.com/";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, "data:foo", historyUrl);
         assertEquals("data:text/html," + pageHtml, HistoryUtils.getUrlOnUiThread(
-                getInstrumentation(), mContentViewCore));
+                getInstrumentation(), mWebContents));
     }
 
     /*
@@ -260,7 +260,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             loadDataSync(mAwContents, onPageFinishedHelper, page2Html, "text/html", false);
             assertEquals(page2Title, getTitleOnUiThread(mAwContents));
 
-            HistoryUtils.goBackSync(getInstrumentation(), mContentViewCore, onPageFinishedHelper);
+            HistoryUtils.goBackSync(getInstrumentation(), mWebContents, onPageFinishedHelper);
             // The title of the 'about.html' specified via historyUrl.
             assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
 

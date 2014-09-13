@@ -149,11 +149,13 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
             public void handleMessage(Message msg) {
                 switch(msg.what) {
                     case msgContinuePendingReload: {
-                        contentViewCore.continuePendingReload();
+                        contentViewCore.getWebContents().getNavigationController()
+                                .continuePendingReload();
                         break;
                     }
                     case msgCancelPendingReload: {
-                        contentViewCore.cancelPendingReload();
+                        contentViewCore.getWebContents().getNavigationController()
+                                .cancelPendingReload();
                         break;
                     }
                     default:

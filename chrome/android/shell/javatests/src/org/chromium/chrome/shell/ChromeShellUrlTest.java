@@ -64,9 +64,10 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                isShowingInterstitialPage.set(contentViewCore.get().isShowingInterstitialPage());
-                url.set(contentViewCore.get().getUrl());
-                title.set(contentViewCore.get().getTitle());
+                isShowingInterstitialPage.set(contentViewCore.get().getWebContents()
+                        .isShowingInterstitialPage());
+                url.set(contentViewCore.get().getWebContents().getUrl());
+                title.set(contentViewCore.get().getWebContents().getTitle());
             }
         });
         assertFalse("Showed interstitial page instead of welcome page",

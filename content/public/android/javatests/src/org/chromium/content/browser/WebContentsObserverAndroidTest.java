@@ -67,7 +67,8 @@ public class WebContentsObserverAndroidTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().loadUrl(new LoadUrlParams(URL));
+                getContentViewCore().getWebContents().getNavigationController()
+                        .loadUrl(new LoadUrlParams(URL));
             }
         });
         observer.getDidFirstVisuallyNonEmptyPaintCallbackHelper().waitForCallback(callCount);

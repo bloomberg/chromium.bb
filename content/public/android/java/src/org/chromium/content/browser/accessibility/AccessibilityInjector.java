@@ -305,11 +305,13 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     }
 
     private int getAxsUrlParameterValue() {
-        if (mContentViewCore.getUrl() == null) return ACCESSIBILITY_SCRIPT_INJECTION_UNDEFINED;
+        if (mContentViewCore.getWebContents().getUrl() == null) {
+            return ACCESSIBILITY_SCRIPT_INJECTION_UNDEFINED;
+        }
 
         try {
-            List<NameValuePair> params = URLEncodedUtils.parse(new URI(mContentViewCore.getUrl()),
-                    null);
+            List<NameValuePair> params = URLEncodedUtils.parse(
+                    new URI(mContentViewCore.getWebContents().getUrl()), null);
 
             for (NameValuePair param : params) {
                 if ("axs".equals(param.getName())) {
@@ -317,8 +319,11 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
                 }
             }
         } catch (URISyntaxException ex) {
+            // Intentional no-op.
         } catch (NumberFormatException ex) {
+            // Intentional no-op.
         } catch (IllegalArgumentException ex) {
+            // Intentional no-op.
         }
 
         return ACCESSIBILITY_SCRIPT_INJECTION_UNDEFINED;

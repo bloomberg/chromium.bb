@@ -259,7 +259,7 @@ public class AwTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.getContentViewCore().reload(true);
+                awContents.getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
@@ -355,7 +355,7 @@ public class AwTestBase
         return runTestOnUiThreadAndGetResult(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return awContents.getContentViewCore().getTitle();
+                return awContents.getTitle();
             }
         });
     }

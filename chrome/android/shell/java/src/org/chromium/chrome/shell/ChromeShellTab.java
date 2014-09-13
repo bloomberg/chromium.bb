@@ -13,9 +13,10 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.Referrer;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -62,14 +63,15 @@ public class ChromeShellTab extends Tab {
         // Invalid URLs will just return empty.
         if (TextUtils.isEmpty(url)) return;
 
-        ContentViewCore contentViewCore = getContentViewCore();
-        if (TextUtils.equals(url, contentViewCore.getUrl())) {
-            contentViewCore.reload(true);
+        WebContents webContents = getWebContents();
+        NavigationController navigationController = webContents.getNavigationController();
+        if (TextUtils.equals(url, webContents.getUrl())) {
+            navigationController.reload(true);
         } else {
             if (postData == null) {
-                contentViewCore.loadUrl(new LoadUrlParams(url));
+                navigationController.loadUrl(new LoadUrlParams(url));
             } else {
-                contentViewCore.loadUrl(LoadUrlParams.createLoadHttpPostParams(url, postData));
+                navigationController.loadUrl(LoadUrlParams.createLoadHttpPostParams(url, postData));
             }
         }
     }

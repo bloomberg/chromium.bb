@@ -85,7 +85,7 @@ public final class DomDistillerFeedbackReporter implements
         if (!good) {
             Activity activity = mTab.getWindowAndroid().getActivity().get();
             String url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                   mContentViewCore.getUrl());
+                   mContentViewCore.getWebContents().getUrl());
             sExternalFeedbackReporter.reportFeedback(activity, url, good);
         }
     }

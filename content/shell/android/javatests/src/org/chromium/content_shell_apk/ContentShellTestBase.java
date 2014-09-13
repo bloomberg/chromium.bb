@@ -86,7 +86,7 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         launchContentShellWithUrl(UrlUtils.getTestFileUrl(url));
         assertNotNull(getActivity());
         assertTrue(waitForActiveShellToBeDoneLoading());
-        assertEquals(UrlUtils.getTestFileUrl(url), getContentViewCore().getUrl());
+        assertEquals(UrlUtils.getTestFileUrl(url), getContentViewCore().getWebContents().getUrl());
     }
 
     /**
@@ -138,7 +138,8 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
                                 // loading because it has no URL set yet.  The second is that
                                 // we've set a URL and it actually is loading.
                                 isLoaded.set(!shell.isLoading()
-                                        && !TextUtils.isEmpty(shell.getContentViewCore().getUrl()));
+                                        && !TextUtils.isEmpty(shell.getContentViewCore()
+                                                .getWebContents().getUrl()));
                             } else {
                                 isLoaded.set(false);
                             }
@@ -168,7 +169,7 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
                 new Runnable() {
                     @Override
                     public void run() {
-                        viewCore.loadUrl(params);
+                        viewCore.getWebContents().getNavigationController().loadUrl(params);
                     }
                 });
     }
