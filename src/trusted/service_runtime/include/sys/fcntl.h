@@ -81,6 +81,7 @@ extern "C" {
 #endif  /* __cplusplus */
 
 extern int open(const char *file, int oflag, ...);
+extern int creat(const char *file, mode_t mode);
 extern int fcntl(int, int, ...);
 
 #ifdef __cplusplus
