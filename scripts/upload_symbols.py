@@ -146,6 +146,21 @@ ERROR_ADJUST_FAIL = 1.0
 ERROR_ADJUST_PASS = -0.5
 
 
+def GetUploadTimeout(path):
+  """How long to wait for a specific file to upload to the crash server.
+
+  This is a function largely to make unittesting easier.
+
+  Args:
+    path: The path to the file to calculate the timeout for
+
+  Returns:
+    Timeout length (in seconds)
+  """
+  # Scale the timeout based on the filesize.
+  return max(os.path.getsize(path) / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+
+
 def SymUpload(upload_url, sym_item):
   """Upload a symbol file to a HTTP server
 
@@ -187,13 +202,10 @@ def SymUpload(upload_url, sym_item):
       poster.encode.MultipartParam.from_file('symbol_file', sym_file),
   )
 
-  # Scale the timeout based on the filesize.
-  timeout = max(os.path.getsize(sym_file) / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
-
   data, headers = poster.encode.multipart_encode(fields)
   request = urllib2.Request(upload_url, data, headers)
   request.add_header('User-agent', 'chromite.upload_symbols')
-  urllib2.urlopen(request, timeout=timeout)
+  urllib2.urlopen(request, timeout=GetUploadTimeout(sym_file))
 
 
 def TestingSymUpload(upload_url, sym_item):

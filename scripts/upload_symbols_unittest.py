@@ -7,10 +7,13 @@
 
 from __future__ import print_function
 
+import BaseHTTPServer
 import ctypes
 import logging
 import multiprocessing
 import os
+import signal
+import SocketServer
 import sys
 import time
 import urllib2
@@ -22,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
+from chromite.lib import remote_access
 from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
 
@@ -29,6 +33,102 @@ from chromite.scripts import upload_symbols
 # Until then, this has to be after the chromite imports.
 import isolateserver
 import mock
+
+
+class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+  """HTTP handler for symbol POSTs"""
+
+  RESP_CODE = None
+  RESP_MSG = None
+
+  def do_POST(self):
+    """Handle a POST request"""
+    # Drain the data from the client.  If we don't, we might write the response
+    # and close the socket before the client finishes, so they die with EPIPE.
+    clen = int(self.headers.get('Content-Length', '0'))
+    self.rfile.read(clen)
+
+    self.send_response(self.RESP_CODE, self.RESP_MSG)
+    self.end_headers()
+
+  def log_message(self, *args, **kwargs):
+    """Stub the logger as it writes to stderr"""
+    pass
+
+
+class SymbolServer(SocketServer.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
+  """Simple HTTP server that forks each request"""
+
+
+class UploadSymbolsServerTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for UploadSymbols() and a local HTTP server"""
+
+  SYM_CONTENTS = """MODULE Linux arm 123-456 blkid
+PUBLIC 1471 0 main"""
+
+  def SpawnServer(self, RequestHandler):
+    """Spawn a new http server"""
+    port = remote_access.GetUnusedPort()
+    address = ('', port)
+    self.server = 'http://localhost:%i' % port
+    self.httpd = SymbolServer(address, RequestHandler)
+    self.httpd_pid = os.fork()
+    if self.httpd_pid == 0:
+      self.httpd.serve_forever(poll_interval=0.1)
+      sys.exit(0)
+
+  def setUp(self):
+    self.httpd_pid = None
+    self.httpd = None
+    self.server = None
+    self.sym_file = os.path.join(self.tempdir, 'test.sym')
+    osutils.WriteFile(self.sym_file, self.SYM_CONTENTS)
+
+  def tearDown(self):
+    # Only kill the server if we forked one.
+    if self.httpd_pid:
+      os.kill(self.httpd_pid, signal.SIGUSR1)
+
+  def testSuccess(self):
+    """The server returns success for all uploads"""
+    class Handler(SymbolServerRequestHandler):
+      """Always return 200"""
+      RESP_CODE = 200
+
+    self.SpawnServer(Handler)
+    ret = upload_symbols.UploadSymbols('', server=self.server, sleep=0,
+                                       sym_paths=[self.sym_file] * 10,
+                                       retry=False)
+    self.assertEqual(ret, 0)
+
+  def testError(self):
+    """The server returns errors for all uploads"""
+    class Handler(SymbolServerRequestHandler):
+      """Always return 500"""
+      RESP_CODE = 500
+      RESP_MSG = 'Internal Server Error'
+
+    self.SpawnServer(Handler)
+    ret = upload_symbols.UploadSymbols('', server=self.server, sleep=0,
+                                       sym_paths=[self.sym_file] * 10,
+                                       retry=False)
+    self.assertEqual(ret, 4)
+
+  def testHungServer(self):
+    """The server chokes, but we recover"""
+    class Handler(SymbolServerRequestHandler):
+      """All connections choke forever"""
+      def do_POST(self):
+        while True:
+          time.sleep(1000)
+
+    self.SpawnServer(Handler)
+    with mock.patch.object(upload_symbols, 'GetUploadTimeout') as m:
+      m.return_value = 0.1
+      ret = upload_symbols.UploadSymbols('', server=self.server, sleep=0,
+                                         sym_paths=[self.sym_file] * 10,
+                                         retry=False)
+    self.assertEqual(ret, 4)
 
 
 class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
