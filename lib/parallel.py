@@ -32,6 +32,9 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import signals
+from chromite.lib import timeout_util
+
 
 _BUFSIZE = 1024
 
@@ -135,6 +138,10 @@ class _BackgroundTask(multiprocessing.Process):
   SIGTERM_TIMEOUT = 30
   SIGKILL_TIMEOUT = 60
 
+  # How long we allow debug commands to run (so we don't hang will trying to
+  # recover from a hang).
+  DEBUG_CMD_TIMEOUT = 60
+
   # Interval we check for updates from print statements.
   PRINT_INTERVAL = 1
 
@@ -172,21 +179,74 @@ class _BackgroundTask(multiprocessing.Process):
     msg = 'Process failed to start in %d seconds' % self.STARTUP_TIMEOUT
     assert self._started.is_set(), msg
 
-  def Kill(self, sig, log_level):
+  @classmethod
+  def _DebugRunCommand(cls, cmd, **kwargs):
+    """Swallow any exception RunCommand raises.
+
+    Since these commands are for purely informational purposes, we don't
+    random issues causing the bot to die.
+
+    Returns:
+      Stdout on success
+    """
+    log_level = kwargs['debug_level']
+    try:
+      with timeout_util.Timeout(cls.DEBUG_CMD_TIMEOUT):
+        return cros_build_lib.RunCommand(cmd, **kwargs).output
+    except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
+      logger.log(log_level, 'Running %s failed: %s', cmd[0], str(e))
+      return ''
+
+  # Debug commands to run in gdb.  A class member so tests can stub it out.
+  GDB_COMMANDS = (
+      'info proc all',
+      'info threads',
+      'thread apply all py-list',
+      'thread apply all py-bt',
+      'thread apply all bt',
+      'detach',
+  )
+
+  @classmethod
+  def _DumpDebugPid(cls, log_level, pid):
+    """Dump debug info about the hanging |pid|."""
+    pid = str(pid)
+    commands = (
+        ('pstree', '-Apals', pid),
+        ('lsof', '-p', pid),
+    )
+    for cmd in commands:
+      cls._DebugRunCommand(cmd, debug_level=log_level, error_code_ok=True,
+                           log_output=True)
+
+    stdin = '\n'.join(['echo \\n>>> %s\\n\n%s' % (x, x)
+                       for x in cls.GDB_COMMANDS])
+    cmd = ('gdb', '--nx', '-q', '-p', pid, '-ex', 'set prompt',)
+    cls._DebugRunCommand(cmd, debug_level=log_level, error_code_ok=True,
+                         log_output=True, input=stdin)
+
+  def Kill(self, sig, log_level, first=False):
     """Kill process with signal, ignoring if the process is dead.
 
     Args:
       sig: Signal to send.
       log_level: The log level of log messages.
+      first: Whether this is the first signal we've sent.
     """
     self._killing.set()
     self._WaitForStartup()
     if logger.isEnabledFor(log_level):
-      # Print a pstree of the hanging process.
-      logger.log(log_level, 'Killing %r (sig=%r)', self.pid, sig)
-      cros_build_lib.RunCommand(['pstree', '-Apal', str(self.pid)],
-                                debug_level=log_level, error_code_ok=True,
-                                log_output=True)
+      # Dump debug information about the hanging process.
+      logger.log(log_level, 'Killing %r (sig=%r %s)', self.pid, sig,
+                 signals.StrSignal(sig))
+
+      if first:
+        ppid = str(self.pid)
+        output = self._DebugRunCommand(
+            ('pgrep', '-P', ppid), debug_level=log_level, print_cmd=False,
+            error_code_ok=True, capture_output=True)
+        for pid in [ppid] + output.splitlines():
+          self._DumpDebugPid(log_level, pid)
 
     try:
       os.kill(self.pid, sig)
@@ -338,13 +398,11 @@ class _BackgroundTask(multiprocessing.Process):
 
   def _Run(self):
     """Internal method for running the list of steps."""
-
-    # The default handler for SIGINT sometimes forgets to actually raise the
-    # exception (and we can reproduce this using unit tests), so we define a
-    # custom one instead.
-    def kill_us(_sig_num, _frame):
-      raise KeyboardInterrupt('SIGINT received')
-    signal.signal(signal.SIGINT, kill_us)
+    # Register a handler for a signal that is rarely used.
+    def trigger_bt(_sig_num, frame):
+      logger.error('pre-kill notification (SIGXCPU); traceback:\n%s',
+                   ''.join(traceback.format_stack(frame)))
+    signal.signal(signal.SIGXCPU, trigger_bt)
 
     sys.stdout.flush()
     sys.stderr.flush()
@@ -399,13 +457,17 @@ class _BackgroundTask(multiprocessing.Process):
       log_level: The log level of log messages.
     """
     logger.log(log_level, 'Killing tasks: %r', bg_tasks)
-    signals = ((signal.SIGINT, cls.SIGTERM_TIMEOUT),
-               (signal.SIGTERM, cls.SIGKILL_TIMEOUT),
-               (signal.SIGKILL, None))
-    for sig, timeout in signals:
+    siglist = (
+        (signal.SIGXCPU, cls.SIGTERM_TIMEOUT),
+        (signal.SIGTERM, cls.SIGKILL_TIMEOUT),
+        (signal.SIGKILL, None),
+    )
+    first = True
+    for sig, timeout in siglist:
       # Send signal to all tasks.
       for task in bg_tasks:
-        task.Kill(sig, log_level)
+        task.Kill(sig, log_level, first)
+      first = False
 
       # Wait for all tasks to exit, if requested.
       if timeout is None:

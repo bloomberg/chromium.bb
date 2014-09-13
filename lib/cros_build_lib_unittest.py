@@ -192,10 +192,12 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
                                         error_code_ok=True)
     self.assertTrue(result.returncode != 0)
 
-  def testReturnCodeNotZeroErrorOkNotRaisesError(self):
-    """Raise error when proc.communicate() returns non-zero."""
+  def testMissingCommandRaisesError(self):
+    """Raise error when command is not found."""
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
-                      ['/does/not/exist'])
+                      ['/does/not/exist'], error_code_ok=False)
+    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
+                      ['/does/not/exist'], error_code_ok=True)
 
 
 def _ForceLoggingLevel(functor):

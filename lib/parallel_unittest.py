@@ -450,12 +450,13 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
   def testKillQuiet(self, steps=None, **kwargs):
     """Test that processes do get killed if they're silent for too long."""
     if steps is None:
-      steps = [self._Fail] * 10
+      steps = [self._Fail] * 2
     kwargs.setdefault('SILENT_TIMEOUT', 0.1)
     kwargs.setdefault('MINIMUM_SILENT_TIMEOUT', 0.01)
     kwargs.setdefault('SILENT_TIMEOUT_STEP', 0)
     kwargs.setdefault('SIGTERM_TIMEOUT', 0.1)
     kwargs.setdefault('PRINT_INTERVAL', 0.01)
+    kwargs.setdefault('GDB_COMMANDS', ('detach',))
 
     ex_str = None
     with mock.patch.multiple(parallel._BackgroundTask, **kwargs):
