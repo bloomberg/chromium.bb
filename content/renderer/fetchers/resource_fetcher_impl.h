@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/resource_fetcher.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "content/renderer/fetchers/web_url_loader_client_impl.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
@@ -28,7 +28,7 @@ struct WebURLError;
 namespace content {
 
 class ResourceFetcherImpl : public ResourceFetcher,
-                            public blink::WebURLLoaderClient {
+                            public WebURLLoaderClientImpl {
  public:
   // ResourceFetcher implementation:
   virtual void SetMethod(const std::string& method) OVERRIDE;
@@ -38,6 +38,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
   virtual void Start(blink::WebFrame* frame,
                      blink::WebURLRequest::RequestContext request_context,
                      blink::WebURLRequest::FrameType frame_type,
+                     LoaderType loader_type,
                      const Callback& callback) OVERRIDE;
   virtual void SetTimeout(const base::TimeDelta& timeout) OVERRIDE;
 
@@ -48,53 +49,21 @@ class ResourceFetcherImpl : public ResourceFetcher,
 
   virtual ~ResourceFetcherImpl();
 
-  void RunCallback(const blink::WebURLResponse& response,
-                   const std::string& data);
-
   // Callback for timer that limits how long we wait for the server.  If this
   // timer fires and the request hasn't completed, we kill the request.
   void TimeoutFired();
 
-  // WebURLLoaderClient methods:
-  virtual void willSendRequest(
-      blink::WebURLLoader* loader, blink::WebURLRequest& new_request,
-      const blink::WebURLResponse& redirect_response);
-  virtual void didSendData(
-      blink::WebURLLoader* loader, unsigned long long bytes_sent,
-      unsigned long long total_bytes_to_be_sent);
-  virtual void didReceiveResponse(
-      blink::WebURLLoader* loader, const blink::WebURLResponse& response);
-  virtual void didReceiveCachedMetadata(
-      blink::WebURLLoader* loader, const char* data, int data_length);
-
-  virtual void didReceiveData(
-      blink::WebURLLoader* loader, const char* data, int data_length,
-      int encoded_data_length);
-  virtual void didFinishLoading(
-      blink::WebURLLoader* loader, double finishTime,
-      int64_t total_encoded_data_length);
-  virtual void didFail(
-      blink::WebURLLoader* loader, const blink::WebURLError& error);
+  // WebURLLoaderClientImpl methods:
+  virtual void OnLoadComplete() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
 
   scoped_ptr<blink::WebURLLoader> loader_;
 
   // Request to send.  Released once Start() is called.
   blink::WebURLRequest request_;
 
-  // Set to true once the request is complete.
-  bool completed_;
-
-  // Buffer to hold the content from the server.
-  std::string data_;
-
-  // A copy of the original resource response.
-  blink::WebURLResponse response_;
-
   // Callback when we're done.
   Callback callback_;
-
-  // Buffer to hold metadata from the cache.
-  std::string metadata_;
 
   // Limit how long to wait for the server.
   base::OneShotTimer<ResourceFetcherImpl> timeout_timer_;

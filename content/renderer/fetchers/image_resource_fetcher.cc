@@ -35,6 +35,7 @@ ImageResourceFetcher::ImageResourceFetcher(
   fetcher_->Start(frame,
                   request_context,
                   WebURLRequest::FrameTypeNone,
+                  ResourceFetcher::PLATFORM_LOADER,
                   base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
                              base::Unretained(this)));
 

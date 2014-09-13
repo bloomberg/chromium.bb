@@ -264,6 +264,7 @@ void NetErrorHelper::FetchNavigationCorrections(
       frame,
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeTopLevel,
+      content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
                  base::Unretained(this)));
 
@@ -293,6 +294,7 @@ void NetErrorHelper::SendTrackingRequest(
       frame,
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeTopLevel,
+      content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
                  base::Unretained(this)));
 }

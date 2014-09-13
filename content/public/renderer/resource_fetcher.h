@@ -27,6 +27,11 @@ namespace content {
 // Interface to download resources asynchronously.
 class CONTENT_EXPORT ResourceFetcher {
  public:
+  enum LoaderType {
+    PLATFORM_LOADER,         // uses Platform::createURLLoader
+    FRAME_ASSOCIATED_LOADER, // uses WebFrame::createAssociatedURLLoader
+  };
+
   virtual ~ResourceFetcher() {}
 
   // This will be called asynchronously after the URL has been fetched,
@@ -53,11 +58,15 @@ class CONTENT_EXPORT ResourceFetcher {
   virtual void Start(blink::WebFrame* frame,
                      blink::WebURLRequest::RequestContext request_context,
                      blink::WebURLRequest::FrameType frame_type,
+                     LoaderType loader_type,
                      const Callback& callback) = 0;
 
   // Sets how long to wait for the server to reply.  By default, there is no
   // timeout.  Must be called after a request is started.
   virtual void SetTimeout(const base::TimeDelta& timeout) = 0;
+
+  // Manually cancel the request.
+  virtual void Cancel() = 0;
 };
 
 }  // namespace content

@@ -100,6 +100,7 @@ void WebUIMojoContextState::FetchModule(const std::string& id) {
   fetcher->Start(frame_,
                  blink::WebURLRequest::RequestContextScript,
                  blink::WebURLRequest::FrameTypeNone,
+                 ResourceFetcher::PLATFORM_LOADER,
                  base::Bind(&WebUIMojoContextState::OnFetchModuleComplete,
                             base::Unretained(this),
                             fetcher));

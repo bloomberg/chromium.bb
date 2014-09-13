@@ -34,6 +34,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
       frame,
       request_context,
       WebURLRequest::FrameTypeNone,
+      ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this)));
 }
