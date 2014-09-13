@@ -388,6 +388,15 @@ TEST_F(TouchEventQueueTest, ActiveSequenceDroppedWhenHandlersRemoved) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
+  // Repeated registration/unregstration of handlers should have no effect as
+  // we're still awaiting the ack arrival.
+  OnHasTouchEventHandlers(true);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+  OnHasTouchEventHandlers(false);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+
   // The ack should be flush the queue.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());

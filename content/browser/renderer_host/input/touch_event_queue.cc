@@ -626,7 +626,6 @@ void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
     if (touch_filtering_state_ == DROP_ALL_TOUCHES) {
       // If no touch handler was previously registered, ensure that we don't
       // send a partial touch sequence to the renderer.
-      DCHECK(touch_queue_.empty());
       touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
     }
   } else {
