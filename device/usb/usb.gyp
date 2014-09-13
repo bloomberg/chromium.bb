@@ -19,6 +19,8 @@
       'sources': [
         'usb_context.cc',
         'usb_context.h',
+        'usb_descriptors.cc',
+        'usb_descriptors.h',
         'usb_device_impl.cc',
         'usb_device_impl.h',
         'usb_device.h',
@@ -31,9 +33,6 @@
         'usb_error.h',
         'usb_ids.cc',
         'usb_ids.h',
-        'usb_interface.h',
-        'usb_interface_impl.cc',
-        'usb_interface_impl.h',
         'usb_service.h',
         'usb_service_impl.cc',
       ],

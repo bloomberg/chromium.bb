@@ -168,7 +168,6 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
   bool ConvertUsageTypeSafely(const device::UsbUsageType& input,
                               extensions::core_api::usb::UsageType* output);
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<extensions::core_api::usb::ListInterfaces::Params> parameters_;
 };
 

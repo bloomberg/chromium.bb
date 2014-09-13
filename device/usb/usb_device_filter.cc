@@ -5,8 +5,8 @@
 #include "device/usb/usb_device_filter.h"
 
 #include "base/values.h"
+#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_interface.h"
 
 namespace device {
 
@@ -69,27 +69,21 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
 
   if (interface_class_set_) {
     bool foundMatch = false;
-    scoped_refptr<const UsbConfigDescriptor> config = device->ListInterfaces();
+    const UsbConfigDescriptor& config = device->GetConfiguration();
 
     // TODO(reillyg): Check device configuration if the class is not defined at
     // a per-interface level. This is not really important because most devices
     // have per-interface classes. The only counter-examples I know of are hubs.
 
-    for (size_t i = 0; i < config->GetNumInterfaces() && !foundMatch; ++i) {
-      scoped_refptr<const UsbInterfaceDescriptor> iface =
-          config->GetInterface(i);
-
-      for (size_t j = 0; j < iface->GetNumAltSettings() && !foundMatch; ++j) {
-        scoped_refptr<const UsbInterfaceAltSettingDescriptor> altSetting =
-            iface->GetAltSetting(j);
-
-        if (altSetting->GetInterfaceClass() == interface_class_ &&
-            (!interface_subclass_set_ ||
-             (altSetting->GetInterfaceSubclass() == interface_subclass_ &&
-              (!interface_protocol_set_ ||
-               altSetting->GetInterfaceProtocol() == interface_protocol_)))) {
-          foundMatch = true;
-        }
+    for (UsbInterfaceDescriptor::Iterator ifaceIt = config.interfaces.begin();
+         ifaceIt != config.interfaces.end() && !foundMatch;
+         ++ifaceIt) {
+      if (ifaceIt->interface_class == interface_class_ &&
+          (!interface_subclass_set_ ||
+           (ifaceIt->interface_subclass == interface_subclass_ &&
+            (!interface_protocol_set_ ||
+             ifaceIt->interface_protocol == interface_protocol_)))) {
+        foundMatch = true;
       }
     }
 

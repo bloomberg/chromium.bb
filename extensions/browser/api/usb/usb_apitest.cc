@@ -14,6 +14,7 @@
 using testing::AnyNumber;
 using testing::_;
 using testing::Return;
+using testing::ReturnRef;
 using content::BrowserThread;
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
@@ -106,16 +107,6 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   virtual ~MockUsbDeviceHandle() {}
 };
 
-class MockUsbConfigDescriptor : public UsbConfigDescriptor {
- public:
-  MOCK_CONST_METHOD0(GetNumInterfaces, size_t());
-  MOCK_CONST_METHOD1(GetInterface,
-                     scoped_refptr<const UsbInterfaceDescriptor>(size_t index));
-
- protected:
-  virtual ~MockUsbConfigDescriptor() {}
-};
-
 class MockUsbDevice : public UsbDevice {
  public:
   explicit MockUsbDevice(MockUsbDeviceHandle* mock_handle)
@@ -141,7 +132,7 @@ class MockUsbDevice : public UsbDevice {
   }
 #endif  // OS_CHROMEOS
 
-  MOCK_METHOD0(ListInterfaces, scoped_refptr<UsbConfigDescriptor>());
+  MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
 
  private:
   MockUsbDeviceHandle* mock_handle_;
@@ -225,12 +216,10 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
-  scoped_refptr<MockUsbConfigDescriptor> mock_descriptor =
-      new MockUsbConfigDescriptor();
+  UsbConfigDescriptor config_descriptor;
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
-  EXPECT_CALL(*mock_descriptor.get(), GetNumInterfaces()).WillOnce(Return(0));
-  EXPECT_CALL(*mock_device_.get(), ListInterfaces())
-      .WillOnce(Return(mock_descriptor));
+  EXPECT_CALL(*mock_device_.get(), GetConfiguration())
+      .WillOnce(ReturnRef(config_descriptor));
   ASSERT_TRUE(RunExtensionTest("usb/list_interfaces"));
 }
 
