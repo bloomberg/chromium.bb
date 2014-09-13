@@ -9,6 +9,7 @@ import fileinput
 import mox
 import os
 import sys
+import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
@@ -315,7 +316,6 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
     return m_file
 
-
   def testRevWorkOnEBuild(self):
     """Test Uprev of a single project ebuild."""
     m_file = self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
@@ -413,7 +413,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.assertTrue(portage_util.EBuild.GitRepoHasChanges(self.tempdir))
 
 
-class FindOverlaysTest(cros_test_lib.MoxTestCase):
+class FindOverlaysTest(cros_test_lib.MockTestCase):
   """Tests related to finding overlays."""
 
   FAKE, MARIO = 'fake-board', 'x86-mario'
@@ -428,7 +428,13 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
       self.overlays[b] = d = {}
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         d[o] = portage_util.FindOverlays(o, b, constants.SOURCE_ROOT)
-    self.no_overlays = not bool(any(d.values()))
+    self._no_overlays = not bool(any(d.values()))
+
+  def _MaybeSkip(self):
+    """Skip the test if no overlays are available."""
+    # TODO: Should create a local buildroot to test against instead ...
+    if self._no_overlays:
+      raise unittest.SkipTest('no overlays found in src/overlays/')
 
   def testMissingPrimaryOverlay(self):
     """Test what happens when a primary overlay is missing.
@@ -462,12 +468,11 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     there may not be any private overlays, e.g. if the user has
     a public checkout.)
     """
-    if self.no_overlays:
-      return
+    self._MaybeSkip()
 
     for d in self.overlays.itervalues():
-      self.assertTrue(set(d[self.BOTH]) >= set(d[self.PUBLIC]))
-      self.assertTrue(set(d[self.BOTH]) > set(d[self.PRIVATE]))
+      self.assertGreaterEqual(set(d[self.BOTH]), set(d[self.PUBLIC]))
+      self.assertGreater(set(d[self.BOTH]), set(d[self.PRIVATE]))
       self.assertTrue(set(d[self.PUBLIC]).isdisjoint(d[self.PRIVATE]))
 
   def testNoOverlayType(self):
@@ -480,21 +485,19 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     If we specify a non-existent board to FindOverlays, only generic
     overlays should be returned.
     """
-    if self.no_overlays:
-      return
+    self._MaybeSkip()
 
     for o in (self.PUBLIC, self.BOTH):
-      self.assertTrue(set(self.overlays[self.FAKE][o]) <
-                      set(self.overlays[self.MARIO][o]))
+      self.assertLess(set(self.overlays[self.FAKE][o]),
+                          set(self.overlays[self.MARIO][o]))
 
   def testAllBoards(self):
     """If we specify board=None, all overlays should be returned."""
-    if self.no_overlays:
-      return
+    self._MaybeSkip()
 
     for o in (self.PUBLIC, self.BOTH):
       for b in (self.FAKE, self.MARIO):
-        self.assertTrue(set(self.overlays[b][o]) < set(self.overlays[None][o]))
+        self.assertLess(set(self.overlays[b][o]), set(self.overlays[None][o]))
 
   def testMarioPrimaryOverlay(self):
     """Verify that mario has a primary overlay.
@@ -502,28 +505,25 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     Further, the only difference between the public overlays for mario and a
     fake board is the primary overlay, which is listed last.
     """
-    if self.no_overlays:
-      return
+    self._MaybeSkip()
 
     mario_primary = portage_util.FindPrimaryOverlay(self.BOTH, self.MARIO,
                                                     constants.SOURCE_ROOT)
-    self.assertTrue(mario_primary in self.overlays[self.MARIO][self.BOTH])
-    self.assertTrue(mario_primary not in self.overlays[self.FAKE][self.BOTH])
+    self.assertIn(mario_primary, self.overlays[self.MARIO][self.BOTH])
+    self.assertNotIn(mario_primary, self.overlays[self.FAKE][self.BOTH])
     self.assertEqual(mario_primary, self.overlays[self.MARIO][self.PUBLIC][-1])
     self.assertEqual(self.overlays[self.MARIO][self.PUBLIC][:-1],
                      self.overlays[self.FAKE][self.PUBLIC])
 
   def testReadOverlayFile(self):
     """Verify that the boards are examined in the right order"""
-    overlays = self.overlays[self.MARIO][self.PUBLIC]
-    self.mox.StubOutWithMock(osutils, 'ReadFile')
-    for overlay in reversed(overlays):
-      osutils.ReadFile(os.path.join(overlay, 'test')).AndRaise(
-          IOError(os.errno.ENOENT, 'ENOENT'))
-    self.mox.ReplayAll()
+    m = self.PatchObject(osutils, 'ReadFile',
+                         side_effect=IOError(os.errno.ENOENT, 'ENOENT'))
     portage_util.ReadOverlayFile('test', self.PUBLIC, self.MARIO,
                                  constants.SOURCE_ROOT)
-    self.mox.VerifyAll()
+    read_overlays = [x[0][0][:-5] for x in m.call_args_list]
+    overlays = [x for x in reversed(self.overlays[self.MARIO][self.PUBLIC])]
+    self.assertEqual(read_overlays, overlays)
 
 
 class UtilFuncsTest(cros_test_lib.TempDirTestCase):
@@ -576,7 +576,6 @@ class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
     paths = [[self.root, [], []]]
     os.walk("/overlay").AndReturn(paths)
     self.mox.StubOutWithMock(portage_util, '_FindUprevCandidates')
-
 
   def testWantedPackage(self):
     overlays = {"/overlay": []}
@@ -645,6 +644,7 @@ class ProjectMappingTest(cros_test_lib.TestCase):
       for packages, projects in matches:
         self.assertEquals(projects,
                           portage_util.FindWorkonProjects(packages))
+
 
 class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
   """Package Database related tests."""
