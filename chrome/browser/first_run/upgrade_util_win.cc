@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,16 +28,19 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "google_update/google_update_idl.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
 
@@ -109,6 +113,21 @@ RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode) {
 
   if (relaunch_mode == kRelaunchModeDesktop)
     return RELAUNCH_MODE_DESKTOP;
+
+  // On Windows 7 if the current browser is in Chrome OS mode, then restart
+  // into Chrome OS mode.
+  if ((base::win::GetVersion() == base::win::VERSION_WIN7) &&
+       CommandLine::ForCurrentProcess()->HasSwitch(switches::kViewerConnect) &&
+       g_browser_process->local_state()->HasPrefPath(prefs::kRelaunchMode)) {
+    // TODO(ananta)
+    // On Windows 8, the delegate execute process looks up the previously
+    // launched mode from the registry and relaunches into that mode. We need
+    // something similar on Windows 7. For now, set the pref to ensure that
+    // we get relaunched into Chrome OS mode.
+    g_browser_process->local_state()->SetString(
+        prefs::kRelaunchMode, upgrade_util::kRelaunchModeMetro);
+    return RELAUNCH_MODE_METRO;
+  }
 
   return RELAUNCH_MODE_DEFAULT;
 }

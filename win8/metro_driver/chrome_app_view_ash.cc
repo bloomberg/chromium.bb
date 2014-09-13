@@ -971,6 +971,9 @@ void ChromeAppViewAsh::OnMetroExit(MetroTerminateMethod method) {
     if (ui_channel_)
       ui_channel_->Close();
 
+    HWND core_window = core_window_hwnd();
+    ::PostMessage(core_window, WM_CLOSE, 0, 0);
+
     globals.app_exit->Exit();
   }
 }
