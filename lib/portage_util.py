@@ -92,38 +92,48 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 
   # Build up the list of repos we need.
   ret = []
+  seen = set()
+  def _AddRepo(repo, optional=False):
+    """Recursively add |repo|'s masters from |overlays| to |ret|.
+
+    Args:
+      repo: The repo name to look up.
+      optional: If |repo| does not exist, return False, else
+        throw a KeyError exception.
+
+    Returns:
+      True if |repo| was found.
+    """
+    if optional and repo not in overlays:
+      return False
+    for master in overlays[repo]['masters'] + [repo]:
+      if master not in seen:
+        seen.add(master)
+        _AddRepo(master)
+        ret.append(overlays[master]['path'])
+    return True
 
   # Legacy: load the global configs.  In the future, this should be found
   # via the overlay's masters.
-  if 'chromeos' in overlays:
-    ret.append(overlays['chromeos']['path'])
+  _AddRepo('chromeos', optional=True)
   path = os.path.join(buildroot, 'src', 'private-overlays',
                       'chromeos-*-overlay')
   ret += glob.glob(path)
-  ret.append(overlays['chromiumos']['path'])
-  ret.append(overlays['portage-stable']['path'])
+  _AddRepo('chromiumos')
+  _AddRepo('portage-stable')
 
-  # Try to locate the repo by name.
+  # Locate the board repo by name.
   board_no_variant = board.split('_', 1)[0]
   search_boards = [board_no_variant]
   if board != board_no_variant:
     search_boards.append(board)
   for b in search_boards:
-    found = False
-
-    # Load the public version if available.
-    if b in overlays:
-      found = True
-      ret.append(overlays[b]['path'])
-
-    # Load the private version if available.
-    privb = '%s-private' % b
-    if privb in overlays:
-      found = True
-      ret.append(overlays[privb]['path'])
+    # Load the public & private versions if available.
+    found_pub = _AddRepo(b, optional=True)
+    found_priv = _AddRepo('%s-private' % b, optional=True)
 
     # If neither public nor private board was found, die.
-    if not found:
+    if not found_pub and not found_priv:
       raise MissingOverlayException('board overlay not found: %s' % b)
 
   return ret

@@ -577,6 +577,20 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     overlays = [x for x in reversed(self.overlays[self.PUB_PRIV][self.PUBLIC])]
     self.assertEqual(read_overlays, overlays)
 
+  def testFoundPrivateOverlays(self):
+    """Verify that private boards had their overlays located."""
+    for b in (self.PUB_PRIV, self.PRIV_ONLY):
+      self.assertNotEqual(self.overlays[b][self.PRIVATE], [])
+    self.assertNotEqual(self.overlays[self.PUB_PRIV][self.BOTH],
+                        self.overlays[self.PUB_PRIV][self.PRIVATE])
+
+  def testFoundPublicOverlays(self):
+    """Verify that public boards had their overlays located."""
+    for b in (self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY):
+      self.assertNotEqual(self.overlays[b][self.PUBLIC], [])
+    self.assertNotEqual(self.overlays[self.PUB_PRIV][self.BOTH],
+                        self.overlays[self.PUB_PRIV][self.PUBLIC])
+
 
 class UtilFuncsTest(cros_test_lib.TempDirTestCase):
   """Basic tests for utility functions"""
