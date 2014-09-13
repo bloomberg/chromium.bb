@@ -172,7 +172,6 @@ class CC_EXPORT PictureLayerImpl
   bool MarkVisibleTilesAsRequired(
       PictureLayerTiling* tiling,
       const PictureLayerTiling* optional_twin_tiling,
-      float contents_scale,
       const gfx::Rect& rect,
       const Region& missing_region) const;
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;

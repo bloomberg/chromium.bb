@@ -422,6 +422,8 @@ void PictureLayerImpl::AppendQuads(
 void PictureLayerImpl::UpdateTiles(
     const Occlusion& occlusion_in_content_space) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTiles");
+  DCHECK_EQ(1.f, contents_scale_x());
+  DCHECK_EQ(1.f, contents_scale_y());
 
   DoPostCommitInitializationIfNeeded();
 
@@ -484,13 +486,12 @@ void PictureLayerImpl::UpdateTilePriorities(
   if (!tiling_needs_update)
     return;
 
-  gfx::Rect visible_rect_in_content_space(
-      GetViewportForTilePriorityInContentSpace());
-  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
-      visible_rect_in_content_space, 1.f / contents_scale_x());
+  gfx::Rect visible_layer_rect = GetViewportForTilePriorityInContentSpace();
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    // Pass |occlusion_in_content_space| for |occlusion_in_layer_space| since
+    // they are the same space in picture lbayer, as contents scale is always 1.
     tilings_->tiling_at(i)->UpdateTilePriorities(tree,
                                                  visible_layer_rect,
                                                  ideal_contents_scale_,
@@ -754,9 +755,8 @@ void PictureLayerImpl::SyncTiling(
 
 ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
-  float scale = MaximumTilingContentsScale();
   PictureLayerTilingSet::CoverageIterator iter(
-      tilings_.get(), scale, content_rect, ideal_contents_scale_);
+      tilings_.get(), 1.f, content_rect, ideal_contents_scale_);
 
   // Mask resource not ready yet.
   if (!iter || !*iter)
@@ -831,10 +831,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
       high_res = tiling;
       continue;
     }
-    for (PictureLayerTiling::CoverageIterator iter(tiling,
-                                                   contents_scale_x(),
-                                                   rect);
-         iter;
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
          ++iter) {
       if (!*iter || !iter->IsReadyToDraw())
         continue;
@@ -879,14 +876,13 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // As a second pass, mark as required any visible high res tiles not filled in
   // by acceptable non-ideal tiles from the first pass.
   if (MarkVisibleTilesAsRequired(
-      high_res, twin_high_res, contents_scale_x(), rect, missing_region)) {
+          high_res, twin_high_res, rect, missing_region)) {
     // As an optional third pass, if a high res tile was skipped because its
     // twin was also missing, then fall back to mark low res tiles as required
     // in case the active twin is substituting those for missing high res
     // content. Only suitable, when low res is enabled.
     if (low_res) {
-      MarkVisibleTilesAsRequired(
-          low_res, twin_low_res, contents_scale_x(), rect, missing_region);
+      MarkVisibleTilesAsRequired(low_res, twin_low_res, rect, missing_region);
     }
   }
 }
@@ -894,14 +890,10 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
 bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     PictureLayerTiling* tiling,
     const PictureLayerTiling* optional_twin_tiling,
-    float contents_scale,
     const gfx::Rect& rect,
     const Region& missing_region) const {
   bool twin_had_missing_tile = false;
-  for (PictureLayerTiling::CoverageIterator iter(tiling,
-                                                 contents_scale,
-                                                 rect);
-       iter;
+  for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
        ++iter) {
     Tile* tile = *iter;
     // A null tile (i.e. missing recording) can just be skipped.
@@ -1427,7 +1419,7 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
 
   state->BeginArray("coverage_tiles");
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
-                                                    contents_scale_x(),
+                                                    1.f,
                                                     gfx::Rect(content_bounds()),
                                                     ideal_contents_scale_);
        iter;
@@ -1487,9 +1479,7 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
       continue;
 
     gfx::Rect rect(visible_content_rect());
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling, contents_scale_x(), rect);
-         iter;
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
          ++iter) {
       const Tile* tile = *iter;
       // A null tile (i.e. missing recording) can just be skipped.
