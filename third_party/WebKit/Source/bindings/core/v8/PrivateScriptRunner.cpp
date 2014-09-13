@@ -15,7 +15,6 @@
 #include "core/PrivateScriptSourcesForTesting.h"
 #endif
 #include "core/dom/ExceptionCode.h"
-#include "platform/PlatformResourceLoader.h"
 
 namespace blink {
 
@@ -40,10 +39,10 @@ static void dumpV8Message(v8::Handle<v8::Message> message)
     fprintf(stderr, "%s (line %d): %s\n", fileName.utf8().data(), lineNumber, toCoreString(errorMessage).utf8().data());
 }
 
-static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const char* source, size_t size)
+static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const unsigned char* source, size_t size)
 {
     v8::TryCatch block;
-    String sourceString(source, size);
+    String sourceString(reinterpret_cast<const char*>(source), size);
     String fileName = scriptClassName + ".js";
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, TextPosition::minimumPosition(), 0, isolate, NotSharableCrossOrigin, V8CacheOptionsOff);
     if (block.HasCaught()) {
@@ -83,8 +82,7 @@ static void installPrivateScript(v8::Isolate* isolate, String className)
     // by make_private_script_source.py.
     for (size_t index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSources); index++) {
         if (className == kPrivateScriptSources[index].className) {
-            String resourceData = loadResourceAsASCIIString(kPrivateScriptSources[index].resourceFile);
-            compileAndRunPrivateScript(isolate, kPrivateScriptSources[index].scriptClassName, resourceData.utf8().data(), resourceData.length());
+            compileAndRunPrivateScript(isolate, kPrivateScriptSources[index].scriptClassName, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
             compiledScriptCount++;
         }
     }
@@ -109,8 +107,7 @@ static v8::Handle<v8::Value> installPrivateScriptRunner(v8::Isolate* isolate)
         fprintf(stderr, "Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
         RELEASE_ASSERT_NOT_REACHED();
     }
-    String resourceData = loadResourceAsASCIIString(kPrivateScriptSources[index].resourceFile);
-    return compileAndRunPrivateScript(isolate, className, resourceData.utf8().data(), resourceData.length());
+    return compileAndRunPrivateScript(isolate, className, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
 }
 
 static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
