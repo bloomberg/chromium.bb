@@ -335,6 +335,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
       "  document.write(frames['sub1'].name);"
       "  frames['sub1'].document.write("
       "      '<p>Cras tempus ante eu felis semper luctus!</p>');"
+      "  frames['sub1'].document.close();"
       "</script></body></html>";
 
   LoadHTML(html);
@@ -563,6 +564,7 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 
 #if defined(ENABLE_FULL_PRINTING)
 TEST_F(PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
+  LoadHTML(kHelloWorldHTML);
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
   print_web_view_helper->SetScriptedPrintBlocked(true);
   PrintWithJavaScript();
