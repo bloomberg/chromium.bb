@@ -67,6 +67,6 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
   return "";
 }
 
-VideoCaptureParams::VideoCaptureParams() : allow_resolution_change(false) {}
-
+VideoCaptureParams::VideoCaptureParams()
+    : resolution_change_policy(RESOLUTION_POLICY_FIXED) {}
 }  // namespace media

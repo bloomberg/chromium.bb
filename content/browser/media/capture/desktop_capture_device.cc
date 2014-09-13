@@ -315,7 +315,8 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
   output_frame_.reset();
 
   if (previous_frame_size_.is_empty() ||
-      requested_params_.allow_resolution_change) {
+      requested_params_.resolution_change_policy ==
+      media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT) {
     // If this is the first frame, or the receiver supports variable resolution
     // then determine the output size by treating the requested width & height
     // as maxima.

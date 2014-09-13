@@ -104,7 +104,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
   InitWithDeviceInfo(device_info);
 
   EXPECT_CALL(mock_delegate(), StartCapture(
-      testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
+      testing::Field(&media::VideoCaptureParams::resolution_change_policy,
+                     media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
@@ -119,7 +120,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   InitWithDeviceInfo(device_info);
 
   EXPECT_CALL(mock_delegate(), StartCapture(
-      testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
+      testing::Field(&media::VideoCaptureParams::resolution_change_policy,
+                     media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();

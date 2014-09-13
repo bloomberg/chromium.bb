@@ -221,9 +221,11 @@ void VideoCaptureHost::OnStartCapture(int device_id,
   DVLOG(1) << "VideoCaptureHost::OnStartCapture:"
            << " session_id=" << session_id
            << ", device_id=" << device_id
-           << ", format=" << params.requested_format.frame_size.ToString()
+           << ", format=" << params.requested_format.ToString()
            << "@" << params.requested_format.frame_rate
-           << " (" << (params.allow_resolution_change ? "variable" : "constant")
+           << " (" << (params.resolution_change_policy ==
+                           media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT ?
+                           "variable" : "constant")
            << ")";
   VideoCaptureControllerID controller_id(device_id);
   if (entries_.find(controller_id) != entries_.end()) {

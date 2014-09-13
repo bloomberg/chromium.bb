@@ -31,6 +31,23 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_MAX,
 };
 
+// Policies for capture devices that has source content with dynamic resolution.
+enum ResolutionChangePolicy {
+  // Capture device outputs a fixed resolution all the time. The resolution of
+  // the first frame is the resolution for all frames.
+  // It is implementation specific for the capture device to scale, letter-box
+  // and pillar-box. The only gurantee is that resolution will never change.
+  RESOLUTION_POLICY_FIXED,
+
+  // Capture device outputs frames with dynamic resolution. The width and height
+  // will not exceed the maximum dimensions specified. The typical scenario is
+  // the frames will have the same aspect ratio as the original content and
+  // scaled down to fit inside the limit.
+  RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT,
+
+  RESOLUTION_POLICY_LAST,
+};
+
 // Some drivers use rational time per frame instead of float frame rate, this
 // constant k is used to convert between both: A fps -> [k/k*A] seconds/frame.
 const int kFrameRatePrecision = 10000;
@@ -71,8 +88,8 @@ class MEDIA_EXPORT VideoCaptureParams {
   // Requests a resolution and format at which the capture will occur.
   VideoCaptureFormat requested_format;
 
-  // Allow mid-capture resolution change.
-  bool allow_resolution_change;
+  // Policy for resolution change.
+  ResolutionChangePolicy resolution_change_policy;
 };
 
 }  // namespace media

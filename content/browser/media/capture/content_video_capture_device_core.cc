@@ -155,7 +155,8 @@ void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   // If this is the first call to UpdateCaptureSize(), or the receiver supports
   // variable resolution, then determine the capture size by treating the
   // requested width and height as maxima.
-  if (!capture_size_updated_ || params_.allow_resolution_change) {
+  if (!capture_size_updated_ || params_.resolution_change_policy ==
+      media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT) {
     // The capture resolution should not exceed the source frame size.
     // In other words it should downscale the image but not upscale it.
     if (source_size.width() > params_.requested_format.frame_size.width() ||

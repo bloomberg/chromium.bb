@@ -115,7 +115,6 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_params.allow_resolution_change = false;
   capture_device->AllocateAndStart(
       capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
   capture_device->StopAndDeAllocate();

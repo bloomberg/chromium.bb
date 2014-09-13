@@ -237,7 +237,8 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
   new_params.requested_format = format;
   if (device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    new_params.allow_resolution_change = true;
+    new_params.resolution_change_policy =
+        media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT;
   }
   delegate_->StartCapture(
       new_params,

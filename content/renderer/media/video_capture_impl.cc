@@ -103,8 +103,8 @@ void VideoCaptureImpl::StartCapture(
       clients_[client_id] = client_info;
       // TODO(sheu): Allowing resolution change will require that all
       // outstanding clients of a capture session support resolution change.
-      DCHECK_EQ(params_.allow_resolution_change,
-                params.allow_resolution_change);
+      DCHECK_EQ(params_.resolution_change_policy,
+                params.resolution_change_policy);
     } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
       clients_pending_on_restart_[client_id] = client_info;
       DVLOG(1) << "StartCapture: Got new resolution "
