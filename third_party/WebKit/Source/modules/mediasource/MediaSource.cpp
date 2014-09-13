@@ -155,8 +155,6 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     SourceBuffer* buffer = SourceBuffer::create(webSourceBuffer.release(), this, m_asyncEventQueue.get());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
-    // FIXME: Remove the following once Chromium calls WebSourceBufferClient::InitSegmentReceived()
-    setSourceBufferActive(buffer);
 
     // 7. Return the new object to the caller.
     return buffer;
@@ -484,8 +482,7 @@ bool MediaSource::isOpen() const
 
 void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
 {
-    if (m_activeSourceBuffers->contains(sourceBuffer))
-        return;
+    ASSERT(!m_activeSourceBuffers->contains(sourceBuffer));
 
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-activeSourceBuffers
     // SourceBuffer objects in SourceBuffer.activeSourceBuffers must appear in

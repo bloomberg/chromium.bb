@@ -48,10 +48,7 @@ public:
 
     // This will only be called once and only with a non-null pointer to a
     // client whose ownership is not transferred to this WebSourceBuffer.
-    virtual void setClient(WebSourceBufferClient*)
-    {
-        // FIXME: Remove default implementation once Chromium impl lands.
-    }
+    virtual void setClient(WebSourceBufferClient*) = 0;
 
     virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
