@@ -1,0 +1,9 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    ROLE_SYSTEM_GROUPING name='Browser Engine's:' READONLY
+        ROLE_SYSTEM_CLIENT
+            ROLE_SYSTEM_STATICTEXT name='Browser Engine's:'
+        IA2_ROLE_SECTION READONLY
+            ROLE_SYSTEM_STATICTEXT name='Browser: '
+            ROLE_SYSTEM_TEXT FOCUSABLE
+            ROLE_SYSTEM_STATICTEXT name='Rendering Engine: '
+            ROLE_SYSTEM_TEXT FOCUSABLE
