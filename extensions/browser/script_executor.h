@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SCRIPT_EXECUTOR_H_
-#define CHROME_BROWSER_EXTENSIONS_SCRIPT_EXECUTOR_H_
+#ifndef EXTENSIONS_BROWSER_SCRIPT_EXECUTOR_H_
+#define EXTENSIONS_BROWSER_SCRIPT_EXECUTOR_H_
 
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
@@ -110,4 +110,4 @@ class ScriptExecutor {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SCRIPT_EXECUTOR_H_
+#endif  // EXTENSIONS_BROWSER_SCRIPT_EXECUTOR_H_

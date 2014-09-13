@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_
-#define EXENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_
+#ifndef EXTENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_
+#define EXTENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_
 
 #include "base/macros.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
@@ -33,4 +33,4 @@ class TestRuntimeAPIDelegate : public RuntimeAPIDelegate {
 
 }  // namespace extensions
 
-#endif  // EXENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_
+#endif  // EXTENSIONS_BROWSER_TEST_RUNTIME_API_DELEGATE_H_

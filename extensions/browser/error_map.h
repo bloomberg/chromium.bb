@@ -22,7 +22,7 @@ typedef std::deque<const ExtensionError*> ErrorList;
 // destruction.
 class ErrorMap {
  public:
-  explicit ErrorMap();
+  ErrorMap();
   ~ErrorMap();
 
   // Return the list of all errors associated with the given extension.
@@ -48,7 +48,7 @@ class ErrorMap {
   // that Extension.
   class ExtensionEntry {
    public:
-    explicit ExtensionEntry();
+    ExtensionEntry();
     ~ExtensionEntry();
 
     // Delete all errors associated with this extension.

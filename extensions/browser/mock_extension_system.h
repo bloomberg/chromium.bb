@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_MOCK_EXTENSIONS_SYSTEM_H_
-#define EXTENSIONS_BROWSER_MOCK_EXTENSIONS_SYSTEM_H_
+#ifndef EXTENSIONS_BROWSER_MOCK_EXTENSION_SYSTEM_H_
+#define EXTENSIONS_BROWSER_MOCK_EXTENSION_SYSTEM_H_
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -92,4 +92,4 @@ class MockExtensionSystemFactory : public ExtensionSystemProvider {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_MOCK_EXTENSIONS_SYSTEM_H_
+#endif  // EXTENSIONS_BROWSER_MOCK_EXTENSION_SYSTEM_H_

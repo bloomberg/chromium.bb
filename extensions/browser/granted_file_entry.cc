@@ -12,4 +12,4 @@ GrantedFileEntry::GrantedFileEntry() {
 GrantedFileEntry::~GrantedFileEntry() {
 }
 
-}  // namespace extension
+}  // namespace extensions

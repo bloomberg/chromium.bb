@@ -24,6 +24,6 @@ enum UninstallReason {
   UNINSTALL_REASON_INTERNAL_MANAGEMENT  // Internal extensions (see usages)
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_UNINSTALL_REASON_H_

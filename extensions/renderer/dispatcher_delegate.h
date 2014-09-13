@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H
-#define EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H
+#ifndef EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H_
+#define EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H_
 
 #include <set>
 #include <string>
@@ -91,4 +91,4 @@ class DispatcherDelegate {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H
+#endif  // EXTENSIONS_RENDERER_DISPATCHER_DELEGATE_H_
