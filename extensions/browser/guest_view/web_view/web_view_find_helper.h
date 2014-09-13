@@ -155,11 +155,11 @@ class WebViewFindHelper {
     // request of a find session.
     std::vector<base::WeakPtr<FindInfo> > find_next_requests_;
 
-    // Weak pointer used to access the find info of fin.
-    base::WeakPtrFactory<FindInfo> weak_ptr_factory_;
-
     friend void WebViewFindHelper::EndFindSession(int session_request_id,
                                                   bool canceled);
+
+// Weak pointer used to access the find info of fin.
+    base::WeakPtrFactory<FindInfo> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(FindInfo);
   };
