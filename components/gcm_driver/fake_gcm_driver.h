@@ -22,6 +22,7 @@ class FakeGCMDriver : public GCMDriver {
                              GCMAppHandler* handler) OVERRIDE;
   virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
   virtual void OnSignedIn() OVERRIDE;
+  virtual void OnSignedOut() OVERRIDE;
   virtual void Purge() OVERRIDE;
   virtual void AddConnectionObserver(GCMConnectionObserver* observer) OVERRIDE;
   virtual void RemoveConnectionObserver(

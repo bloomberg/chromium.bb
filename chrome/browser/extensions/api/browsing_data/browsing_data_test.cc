@@ -496,39 +496,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSimple) {
 
 // Test cookie and app data settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
-  int site_data_no_plugins = BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  int site_data_no_plugins_and_gcm = BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA &
+      ~BrowsingDataRemover::REMOVE_GCM;
 
   SetPrefsAndVerifySettings(BrowsingDataRemover::REMOVE_COOKIES,
                             UNPROTECTED_WEB,
-                            site_data_no_plugins);
+                            site_data_no_plugins_and_gcm);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
       PROTECTED_WEB,
-      site_data_no_plugins);
+      site_data_no_plugins_and_gcm);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_COOKIES |
           BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
       PROTECTED_WEB | UNPROTECTED_WEB,
-      site_data_no_plugins);
+      site_data_no_plugins_and_gcm);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_COOKIES |
           BrowsingDataRemover::REMOVE_PLUGIN_DATA,
       UNPROTECTED_WEB,
-      BrowsingDataRemover::REMOVE_SITE_DATA);
+      site_data_no_plugins_and_gcm | BrowsingDataRemover::REMOVE_PLUGIN_DATA);
 }
 
 // Test an arbitrary assortment of settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionAssorted) {
-  int site_data_no_plugins = BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  int site_data_no_plugins_and_gcm = BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA &
+      ~BrowsingDataRemover::REMOVE_GCM;
 
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_COOKIES |
           BrowsingDataRemover::REMOVE_HISTORY |
           BrowsingDataRemover::REMOVE_DOWNLOADS,
     UNPROTECTED_WEB,
-    site_data_no_plugins |
+    site_data_no_plugins_and_gcm |
         BrowsingDataRemover::REMOVE_HISTORY |
         BrowsingDataRemover::REMOVE_DOWNLOADS);
 }

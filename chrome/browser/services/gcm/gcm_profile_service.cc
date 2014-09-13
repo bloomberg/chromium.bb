@@ -116,9 +116,11 @@ void GCMProfileService::IdentityObserver::OnActiveAccountLogout() {
   // Check is necessary to not crash browser_tests.
   if (gcm_account_tracker_)
     gcm_account_tracker_->Stop();
-  // TODO(fgorski): If we purge here, what should happen when we get
-  // OnActiveAccountLogin() right after that?
-  driver_->Purge();
+  // When sign-in enforcement is not dropped, OnSignedOut will also clear all
+  // the GCM data and a new GCM ID will be retrieved after the user signs in
+  // again. Otherwise, the user sign-out will not affect the existing GCM
+  // data.
+  driver_->OnSignedOut();
 }
 
 std::string GCMProfileService::IdentityObserver::SignedInUserName() const {

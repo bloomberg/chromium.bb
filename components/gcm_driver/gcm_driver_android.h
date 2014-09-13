@@ -45,6 +45,7 @@ class GCMDriverAndroid : public GCMDriver {
 
   // GCMDriver implementation:
   virtual void OnSignedIn() OVERRIDE;
+  virtual void OnSignedOut() OVERRIDE;
   virtual void Purge() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void AddConnectionObserver(GCMConnectionObserver* observer) OVERRIDE;

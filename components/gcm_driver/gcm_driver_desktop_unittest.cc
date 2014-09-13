@@ -258,7 +258,7 @@ void GCMDriverTest::SignIn(const std::string& account_id) {
 }
 
 void GCMDriverTest::SignOut() {
-  driver_->Purge();
+  driver_->OnSignedOut();
   PumpIOLoop();
   PumpUILoop();
 }
@@ -350,6 +350,7 @@ TEST_F(GCMDriverTest, Create) {
 }
 
 TEST_F(GCMDriverTest, CreateByFieldTrial) {
+  // Turn on the signal to drop sign-in enforcement.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("GCM", "Enabled"));
 
   // Create GCMDriver first. GCM is not started.
@@ -364,6 +365,18 @@ TEST_F(GCMDriverTest, CreateByFieldTrial) {
   PumpIOLoop();
   EXPECT_TRUE(driver()->IsConnected());
   EXPECT_TRUE(gcm_connection_observer()->connected());
+
+  // Sign-in will not affect GCM state.
+  SignIn(kTestAccountID1);
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsStarted());
+  EXPECT_TRUE(driver()->IsConnected());
+
+  // Sign-out will not affect GCM state.
+  SignOut();
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsStarted());
+  EXPECT_TRUE(driver()->IsConnected());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {

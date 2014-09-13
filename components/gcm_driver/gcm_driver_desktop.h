@@ -54,6 +54,7 @@ class GCMDriverDesktop : public GCMDriver {
   // GCMDriver overrides:
   virtual void Shutdown() OVERRIDE;
   virtual void OnSignedIn() OVERRIDE;
+  virtual void OnSignedOut() OVERRIDE;
   virtual void Purge() OVERRIDE;
   virtual void AddAppHandler(const std::string& app_id,
                              GCMAppHandler* handler) OVERRIDE;
