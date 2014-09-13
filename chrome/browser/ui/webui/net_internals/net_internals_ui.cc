@@ -1211,7 +1211,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
 
   if (disk_cache) {
     // Extract the statistics key/value pairs from the backend.
-    std::vector<std::pair<std::string, std::string> > stats;
+    base::StringPairs stats;
     disk_cache->GetStats(&stats);
     for (size_t i = 0; i < stats.size(); ++i) {
       stats_dict->SetStringWithoutPathExpansion(

@@ -165,7 +165,7 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
 
     std::string fragment = url.GetContent().substr(
         redirect_path_prefix_.length(), std::string::npos);
-    std::vector<std::pair<std::string, std::string> > pairs;
+    base::StringPairs pairs;
     base::SplitStringIntoKeyValuePairs(fragment, '=', '&', &pairs);
     std::string access_token;
     std::string error;

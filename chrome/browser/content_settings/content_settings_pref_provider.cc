@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
@@ -509,7 +510,7 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
   DCHECK(all_settings_dictionary);
 
   std::vector<std::string> remove_items;
-  std::vector<std::pair<std::string, std::string> > move_items;
+  base::StringPairs move_items;
   for (base::DictionaryValue::Iterator i(*all_settings_dictionary);
        !i.IsAtEnd();
        i.Advance()) {
