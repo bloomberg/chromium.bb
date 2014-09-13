@@ -178,20 +178,6 @@ void SupervisedUserNavigationObserver::WarnInfoBarDismissed() {
   warn_infobar_ = NULL;
 }
 
-void SupervisedUserNavigationObserver::ProvisionalChangeToMainFrameUrl(
-    const GURL& url,
-    content::RenderFrameHost* render_frame_host) {
-  SupervisedUserURLFilter::FilteringBehavior behavior =
-      url_filter_->GetFilteringBehaviorForURL(url);
-
-  if (behavior == SupervisedUserURLFilter::WARN || !warn_infobar_)
-    return;
-
-  // If we shouldn't have a warn infobar remove it here.
-  InfoBarService::FromWebContents(web_contents())->RemoveInfoBar(warn_infobar_);
-  warn_infobar_ = NULL;
-}
-
 void SupervisedUserNavigationObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
@@ -206,6 +192,10 @@ void SupervisedUserNavigationObserver::DidCommitProvisionalLoadForFrame(
   if (behavior == SupervisedUserURLFilter::WARN && !warn_infobar_) {
     warn_infobar_ = SupervisedUserWarningInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()));
+  } else if (behavior != SupervisedUserURLFilter::WARN && warn_infobar_) {
+    InfoBarService::FromWebContents(web_contents())->
+        RemoveInfoBar(warn_infobar_);
+    warn_infobar_ = NULL;
   }
 }
 

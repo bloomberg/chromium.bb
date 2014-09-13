@@ -131,8 +131,16 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked right after the DidStartProvisionalLoadForFrame if
   // the provisional load affects the main frame, or if the provisional load
-  // was redirected. The latter use case is DEPRECATED. You should listen to
+  // was redirected.
+  //
+  // The latter use case is DEPRECATED. You should listen to
   // WebContentsObserver::DidGetRedirectForResourceRequest instead.
+  //
+  // The former use case is redundant; you should use
+  // DidStartProvisionalLoadForFrame instead, and do a check for the main frame.
+  //
+  // As a result, this whole callback is silly and DEPRECATED. Do not use it.
+  // http://crbug.com/78512
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
       RenderFrameHost* render_frame_host) {}

@@ -51,9 +51,6 @@ class SupervisedUserNavigationObserver
   explicit SupervisedUserNavigationObserver(content::WebContents* web_contents);
 
   // content::WebContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(
-      const GURL& url,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
