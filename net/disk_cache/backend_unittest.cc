@@ -3473,4 +3473,22 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   EXPECT_TRUE(keys_to_match.empty());
 }
 
+// Tests that enumerations don't leak memory when the backend is destructed
+// mid-enumeration.
+TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
+  SetSimpleCacheMode();
+  InitCache();
+  std::set<std::string> key_pool;
+  ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
+
+  void* iter = NULL;
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, OpenNextEntry(&iter, &entry));
+  EXPECT_TRUE(entry);
+  disk_cache::ScopedEntryPtr entry_closer(entry);
+
+  cache_.reset();
+  // This test passes if we don't leak memory.
+}
+
 #endif  // defined(OS_POSIX)

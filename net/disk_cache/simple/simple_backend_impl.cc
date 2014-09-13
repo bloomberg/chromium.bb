@@ -483,9 +483,7 @@ int SimpleBackendImpl::OpenNextEntry(void** iter,
 }
 
 void SimpleBackendImpl::EndEnumeration(void** iter) {
-  SimpleIndex::HashList* entry_list =
-      static_cast<SimpleIndex::HashList*>(*iter);
-  delete entry_list;
+  active_enumerations_.Remove(IteratorToEnumerationId(iter));
   *iter = NULL;
 }
 
@@ -499,6 +497,27 @@ void SimpleBackendImpl::GetStats(
 
 void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
   index_->UseIfExists(simple_util::GetEntryHashKey(key));
+}
+
+// static
+SimpleBackendImpl::ActiveEnumerationMap::KeyType
+    SimpleBackendImpl::IteratorToEnumerationId(void** iter) {
+  COMPILE_ASSERT(sizeof(ptrdiff_t) >= sizeof(*iter),
+                 integer_type_must_fit_ptr_type_for_cast_to_be_reversible);
+  const ptrdiff_t ptrdiff_enumeration_id = reinterpret_cast<ptrdiff_t>(*iter);
+  const ActiveEnumerationMap::KeyType enumeration_id = ptrdiff_enumeration_id;
+  DCHECK_EQ(enumeration_id, ptrdiff_enumeration_id);
+  return enumeration_id;
+}
+
+// static
+void* SimpleBackendImpl::EnumerationIdToIterator(
+    ActiveEnumerationMap::KeyType enumeration_id) {
+  const ptrdiff_t ptrdiff_enumeration_id = enumeration_id;
+  DCHECK_EQ(enumeration_id, ptrdiff_enumeration_id);
+  COMPILE_ASSERT(sizeof(ptrdiff_t) >= sizeof(void*),
+                 integer_type_must_fit_ptr_type_for_cast_to_be_reversible);
+  return reinterpret_cast<void*>(ptrdiff_enumeration_id);
 }
 
 void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,
@@ -623,11 +642,15 @@ void SimpleBackendImpl::GetNextEntryInIterator(
     callback.Run(error_code);
     return;
   }
+  std::vector<uint64>* entry_list = NULL;
   if (*iter == NULL) {
-    *iter = index()->GetAllHashes().release();
+    const ActiveEnumerationMap::KeyType new_enumeration_id =
+        active_enumerations_.Add(
+            entry_list = index()->GetAllHashes().release());
+    *iter = EnumerationIdToIterator(new_enumeration_id);
+  } else {
+    entry_list = active_enumerations_.Lookup(IteratorToEnumerationId(iter));
   }
-  SimpleIndex::HashList* entry_list =
-      static_cast<SimpleIndex::HashList*>(*iter);
   while (entry_list->size() > 0) {
     uint64 entry_hash = entry_list->back();
     entry_list->pop_back();

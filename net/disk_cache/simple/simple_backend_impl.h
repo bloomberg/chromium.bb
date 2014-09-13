@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -107,6 +108,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
  private:
   typedef base::hash_map<uint64, SimpleEntryImpl*> EntryMap;
 
+  typedef IDMap<std::vector<uint64>, IDMapOwnPointer> ActiveEnumerationMap;
+
   typedef base::Callback<void(base::Time mtime, uint64 max_size, int result)>
       InitializeIndexCallback;
 
@@ -120,6 +123,17 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     bool detected_magic_number_mismatch;
     int net_error;
   };
+
+  // Convert an iterator from OpenNextEntry() to the key type for
+  // ActiveEnumerationMap. Note it takes a void** argument; this is for safety;
+  // if it took a void*, that would be type compatible with a void** permitting
+  // easy calls missing the dereference.
+  static ActiveEnumerationMap::KeyType IteratorToEnumerationId(void** iter);
+
+  // Convert a key from ActiveEnumerationMap back to a void*, suitable for
+  // storing in the iterator argument to OpenNextEntry().
+  static void* EnumerationIdToIterator(
+      ActiveEnumerationMap::KeyType enumeration_id);
 
   void InitializeIndex(const CompletionCallback& callback,
                        const DiskStatResult& result);
@@ -205,6 +219,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   const SimpleEntryImpl::OperationsMode entry_operations_mode_;
 
   EntryMap active_entries_;
+
+  // One entry for every enumeration in progress.
+  ActiveEnumerationMap active_enumerations_;
 
   // The set of all entries which are currently being doomed. To avoid races,
   // these entries cannot have Doom/Create/Open operations run until the doom
