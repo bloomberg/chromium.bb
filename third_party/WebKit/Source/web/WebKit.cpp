@@ -202,12 +202,14 @@ void shutdown()
         s_messageLoopInterruptor = 0;
     }
 
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    V8PerIsolateData::willBeDestroyed(isolate);
+
     // Detach the main thread before starting the shutdown sequence
     // so that the main thread won't get involved in a GC during the shutdown.
     ThreadState::detachMainThread();
 
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    V8PerIsolateData::dispose(isolate);
+    V8PerIsolateData::destroy(isolate);
 
     shutdownWithoutV8();
 }

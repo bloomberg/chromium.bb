@@ -32,6 +32,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -58,7 +59,9 @@ public:
         ASSERT(isolate->GetData(gin::kEmbedderBlink));
         return static_cast<V8PerIsolateData*>(isolate->GetData(gin::kEmbedderBlink));
     }
-    static void dispose(v8::Isolate*);
+
+    static void willBeDestroyed(v8::Isolate*);
+    static void destroy(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
@@ -99,6 +102,8 @@ public:
     const char* previousSamplingState() const { return m_previousSamplingState; }
     void setPreviousSamplingState(const char* name) { m_previousSamplingState = name; }
 
+    IDBPendingTransactionMonitor* ensureIDBPendingTransactionMonitor();
+
 private:
     V8PerIsolateData();
     ~V8PerIsolateData();
@@ -130,6 +135,8 @@ private:
 #endif
     OwnPtr<GCEventData> m_gcEventData;
     bool m_performingMicrotaskCheckpoint;
+
+    OwnPtr<IDBPendingTransactionMonitor> m_idbPendingTransactionMonitor;
 };
 
 } // namespace blink

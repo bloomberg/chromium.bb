@@ -39,7 +39,7 @@ namespace blink {
 void V8RecursionScope::didLeaveScriptContext()
 {
     Microtask::performCheckpoint();
-    ModuleProxy::moduleProxy().didLeaveScriptContextForRecursionScope(m_executionContext);
+    ModuleProxy::moduleProxy().didLeaveScriptContextForRecursionScope(m_isolate);
 }
 
 } // namespace blink

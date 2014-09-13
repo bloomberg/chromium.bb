@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/EventListener.h"
@@ -55,7 +56,6 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
-#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/JSONValues.h"
@@ -178,7 +178,7 @@ public:
 
         IDBDatabase* idbDatabase = requestResult->idbDatabase();
         m_executableWithDatabase->execute(idbDatabase);
-        IDBPendingTransactionMonitor::from(*context).deactivateNewTransactions();
+        V8PerIsolateData::from(m_executableWithDatabase->scriptState()->isolate())->ensureIDBPendingTransactionMonitor()->deactivateNewTransactions();
         idbDatabase->close();
     }
 

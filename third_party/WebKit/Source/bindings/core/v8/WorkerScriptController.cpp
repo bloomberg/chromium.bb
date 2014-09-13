@@ -130,7 +130,7 @@ public:
 
     virtual void postCleanup()
     {
-        V8PerIsolateData::dispose(m_isolate);
+        V8PerIsolateData::destroy(m_isolate);
     }
 
 private:
@@ -152,6 +152,8 @@ WorkerScriptController::~WorkerScriptController()
 
     if (isContextInitialized())
         m_scriptState->disposePerContextData();
+
+    V8PerIsolateData::willBeDestroyed(m_isolate);
 
     ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate));
 }

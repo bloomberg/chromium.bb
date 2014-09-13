@@ -59,9 +59,8 @@ namespace blink {
 class V8RecursionScope {
     WTF_MAKE_NONCOPYABLE(V8RecursionScope);
 public:
-    V8RecursionScope(v8::Isolate* isolate, ExecutionContext* context)
+    explicit V8RecursionScope(v8::Isolate* isolate)
         : m_isolate(isolate)
-        , m_executionContext(*context)
     {
         V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
         RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
@@ -118,7 +117,6 @@ private:
     void didLeaveScriptContext();
 
     v8::Isolate* m_isolate;
-    ExecutionContext& m_executionContext;
 };
 
 } // namespace blink

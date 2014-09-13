@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebIDBDatabase.h"
 #include <gtest/gtest.h>
@@ -61,6 +60,11 @@ public:
     v8::Isolate* isolate() const { return m_scope.isolate(); }
     ScriptState* scriptState() const { return m_scope.scriptState(); }
     ExecutionContext* executionContext() { return m_scope.scriptState()->executionContext(); }
+
+    void deactivateNewTransactions()
+    {
+        V8PerIsolateData::from(isolate())->ensureIDBPendingTransactionMonitor()->deactivateNewTransactions();
+    }
 
 private:
     V8TestingScope m_scope;
@@ -105,7 +109,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     EXPECT_EQ(1u, set.size());
 
     Persistent<IDBRequest> request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction.get());
-    IDBPendingTransactionMonitor::from(*executionContext()).deactivateNewTransactions();
+    deactivateNewTransactions();
 
     Heap::collectAllGarbage();
     EXPECT_EQ(1u, set.size());
@@ -134,7 +138,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     Heap::collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
-    IDBPendingTransactionMonitor::from(*executionContext()).deactivateNewTransactions();
+    deactivateNewTransactions();
 
     Heap::collectAllGarbage();
     EXPECT_EQ(1u, set.size());

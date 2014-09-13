@@ -118,16 +118,25 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
     return m_liveRoot.getUnsafe();
 }
 
-void V8PerIsolateData::dispose(v8::Isolate* isolate)
+void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
+{
+    V8PerIsolateData* data = from(isolate);
+
+    // Clear any data that may have handles into the heap,
+    // prior to calling ThreadState::detach().
+    data->m_idbPendingTransactionMonitor.clear();
+}
+
+void V8PerIsolateData::destroy(v8::Isolate* isolate)
 {
 #if ENABLE(ASSERT)
     if (blink::Platform::current()->currentThread())
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif
-    void* data = isolate->GetData(gin::kEmbedderBlink);
+    V8PerIsolateData* data = from(isolate);
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     isolate->Exit();
-    delete static_cast<V8PerIsolateData*>(data);
+    delete data;
 }
 
 V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
@@ -229,6 +238,13 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     if (m_toStringTemplate.isEmpty())
         m_toStringTemplate.set(isolate(), v8::FunctionTemplate::New(isolate(), constructorOfToString));
     return m_toStringTemplate.newLocal(isolate());
+}
+
+IDBPendingTransactionMonitor* V8PerIsolateData::ensureIDBPendingTransactionMonitor()
+{
+    if (!m_idbPendingTransactionMonitor)
+        m_idbPendingTransactionMonitor = adoptPtr(new IDBPendingTransactionMonitor());
+    return m_idbPendingTransactionMonitor.get();
 }
 
 } // namespace blink

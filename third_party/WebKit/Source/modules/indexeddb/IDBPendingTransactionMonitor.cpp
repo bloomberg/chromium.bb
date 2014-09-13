@@ -26,30 +26,12 @@
 #include "config.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(IDBPendingTransactionMonitor)
-
-const char* IDBPendingTransactionMonitor::supplementName()
+IDBPendingTransactionMonitor::IDBPendingTransactionMonitor()
 {
-    return "IDBPendingTransactionMonitor";
-}
-
-inline IDBPendingTransactionMonitor::IDBPendingTransactionMonitor()
-{
-}
-
-IDBPendingTransactionMonitor& IDBPendingTransactionMonitor::from(WillBeHeapSupplementable<ExecutionContext>& context)
-{
-    IDBPendingTransactionMonitor* supplement = static_cast<IDBPendingTransactionMonitor*>(WillBeHeapSupplement<ExecutionContext>::from(context, supplementName()));
-    if (!supplement) {
-        supplement = new IDBPendingTransactionMonitor();
-        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
-    }
-    return *supplement;
 }
 
 void IDBPendingTransactionMonitor::addNewTransaction(IDBTransaction& transaction)
@@ -63,14 +45,6 @@ void IDBPendingTransactionMonitor::deactivateNewTransactions()
         m_transactions[i]->setActive(false);
     // FIXME: Exercise this call to clear() in a layout test.
     m_transactions.clear();
-}
-
-void IDBPendingTransactionMonitor::trace(Visitor* visitor)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_transactions);
-#endif
-    WillBeHeapSupplement<ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink

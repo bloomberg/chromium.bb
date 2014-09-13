@@ -6,16 +6,17 @@
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 
 #include "bindings/core/v8/ModuleProxy.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace blink {
 
-static void didLeaveScriptContextForModule(ExecutionContext& executionContext)
+static void didLeaveScriptContextForModule(v8::Isolate* isolate)
 {
     // Indexed DB requires that transactions are created with an internal |active| flag
     // set to true, but the flag becomes false when control returns to the event loop.
-    IDBPendingTransactionMonitor::from(executionContext).deactivateNewTransactions();
+    V8PerIsolateData::from(isolate)->ensureIDBPendingTransactionMonitor()->deactivateNewTransactions();
 }
 
 void ModuleBindingsInitializer::init()

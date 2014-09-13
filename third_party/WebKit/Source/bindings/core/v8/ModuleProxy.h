@@ -5,6 +5,8 @@
 #ifndef ModuleProxy_h
 #define ModuleProxy_h
 
+#include <v8.h>
+
 namespace blink {
 
 class ExecutionContext;
@@ -15,13 +17,13 @@ class ModuleProxy {
 public:
     static ModuleProxy& moduleProxy();
 
-    void didLeaveScriptContextForRecursionScope(ExecutionContext&);
-    void registerDidLeaveScriptContextForRecursionScope(void (*didLeaveScriptContext)(ExecutionContext&));
+    void didLeaveScriptContextForRecursionScope(v8::Isolate*);
+    void registerDidLeaveScriptContextForRecursionScope(void (*didLeaveScriptContext)(v8::Isolate*));
 
 private:
     ModuleProxy() : m_didLeaveScriptContextForRecursionScope(0) { }
 
-    void (*m_didLeaveScriptContextForRecursionScope)(ExecutionContext&);
+    void (*m_didLeaveScriptContextForRecursionScope)(v8::Isolate*);
 };
 
 } // namespace blink
