@@ -137,6 +137,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
     kReachedIdLimit,  // Reached ID limit. We can't handle any more IDs.
   };
 
+  typedef base::Closure InitSegmentReceivedCB;
+
   // |open_cb| Run when Initialize() is called to signal that the demuxer
   //   is ready to receive media data via AppenData().
   // |need_key_cb| Run when the demuxer determines that an encryption key is
@@ -211,10 +213,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |append_window_start| and |append_window_end| correspond to the MSE spec's
   // similarly named source buffer attributes that are used in coded frame
   // processing.
+  // |init_segment_received_cb| is run for each newly successfully parsed
+  // initialization segment.
   void AppendData(const std::string& id, const uint8* data, size_t length,
                   base::TimeDelta append_window_start,
                   base::TimeDelta append_window_end,
-                  base::TimeDelta* timestamp_offset);
+                  base::TimeDelta* timestamp_offset,
+                  const InitSegmentReceivedCB& init_segment_received_cb);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.

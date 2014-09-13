@@ -21,6 +21,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   virtual ~WebSourceBufferImpl();
 
   // blink::WebSourceBuffer implementation.
+  virtual void setClient(blink::WebSourceBufferClient* client);
   virtual bool setMode(AppendMode mode);
   virtual blink::WebTimeRanges buffered();
   virtual void append(
@@ -35,8 +36,14 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   virtual void removedFromMediaSource();
 
  private:
+  // Demuxer callback handler to process an initialization segment received
+  // during an append() call.
+  void InitSegmentReceived();
+
   std::string id_;
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
+
+  blink::WebSourceBufferClient* client_;
 
   // Controls the offset applied to timestamps when processing appended media
   // segments. It is initially 0, which indicates that no offset is being

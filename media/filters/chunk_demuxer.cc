@@ -90,6 +90,8 @@ class SourceState {
   typedef base::Callback<ChunkDemuxerStream*(
       DemuxerStream::Type)> CreateDemuxerStreamCB;
 
+  typedef ChunkDemuxer::InitSegmentReceivedCB InitSegmentReceivedCB;
+
   typedef base::Callback<void(
       ChunkDemuxerStream*, const TextTrackConfig&)> NewTextTrackCB;
 
@@ -111,11 +113,14 @@ class SourceState {
   // error occurred. |*timestamp_offset| is used and possibly updated by the
   // append. |append_window_start| and |append_window_end| correspond to the MSE
   // spec's similarly named source buffer attributes that are used in coded
-  // frame processing.
-  bool Append(const uint8* data, size_t length,
+  // frame processing. |init_segment_received_cb| is run for each new fully
+  // parsed initialization segment.
+  bool Append(const uint8* data,
+              size_t length,
               TimeDelta append_window_start,
               TimeDelta append_window_end,
-              TimeDelta* timestamp_offset);
+              TimeDelta* timestamp_offset,
+              const InitSegmentReceivedCB& init_segment_received_cb);
 
   // Aborts the current append sequence and resets the parser.
   void Abort(TimeDelta append_window_start,
@@ -232,6 +237,13 @@ class SourceState {
   LogCB log_cb_;
   StreamParser::InitCB init_cb_;
 
+  // During Append(), OnNewConfigs() will trigger the initialization segment
+  // received algorithm. This callback is only non-NULL during the lifetime of
+  // an Append() call. Note, the MSE spec explicitly disallows this algorithm
+  // during an Abort(), since Abort() is allowed only to emit coded frames, and
+  // only if the parser is PARSING_MEDIA_SEGMENT (not an INIT segment).
+  InitSegmentReceivedCB init_segment_received_cb_;
+
   // Indicates that timestampOffset should be updated automatically during
   // OnNewBuffers() based on the earliest end timestamp of the buffers provided.
   // TODO(wolenetz): Refactor this function while integrating April 29, 2014
@@ -300,20 +312,27 @@ void SourceState::SetGroupStartTimestampIfInSequenceMode(
   frame_processor_->SetGroupStartTimestampIfInSequenceMode(timestamp_offset);
 }
 
-bool SourceState::Append(const uint8* data, size_t length,
-                         TimeDelta append_window_start,
-                         TimeDelta append_window_end,
-                         TimeDelta* timestamp_offset) {
+bool SourceState::Append(
+    const uint8* data,
+    size_t length,
+    TimeDelta append_window_start,
+    TimeDelta append_window_end,
+    TimeDelta* timestamp_offset,
+    const InitSegmentReceivedCB& init_segment_received_cb) {
   DCHECK(timestamp_offset);
   DCHECK(!timestamp_offset_during_append_);
+  DCHECK(!init_segment_received_cb.is_null());
+  DCHECK(init_segment_received_cb_.is_null());
   append_window_start_during_append_ = append_window_start;
   append_window_end_during_append_ = append_window_end;
   timestamp_offset_during_append_ = timestamp_offset;
+  init_segment_received_cb_= init_segment_received_cb;
 
   // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
   // append window and timestamp offset pointer. See http://crbug.com/351454.
   bool err = stream_parser_->Parse(data, length);
   timestamp_offset_during_append_ = NULL;
+  init_segment_received_cb_.Reset();
   return err;
 }
 
@@ -534,6 +553,7 @@ bool SourceState::OnNewConfigs(
   DVLOG(1) << "OnNewConfigs(" << allow_audio << ", " << allow_video
            << ", " << audio_config.IsValidConfig()
            << ", " << video_config.IsValidConfig() << ")";
+  DCHECK(!init_segment_received_cb_.is_null());
 
   if (!audio_config.IsValidConfig() && !video_config.IsValidConfig()) {
     DVLOG(1) << "OnNewConfigs() : Audio & video config are not valid!";
@@ -676,6 +696,9 @@ bool SourceState::OnNewConfigs(
   frame_processor_->SetAllTrackBuffersNeedRandomAccessPoint();
 
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
+  if (success)
+    init_segment_received_cb_.Run();
+
   return success;
 }
 
@@ -1238,15 +1261,19 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
   return itr->second->GetBufferedRanges(duration_, state_ == ENDED);
 }
 
-void ChunkDemuxer::AppendData(const std::string& id,
-                              const uint8* data, size_t length,
-                              TimeDelta append_window_start,
-                              TimeDelta append_window_end,
-                              TimeDelta* timestamp_offset) {
+void ChunkDemuxer::AppendData(
+    const std::string& id,
+    const uint8* data,
+    size_t length,
+    TimeDelta append_window_start,
+    TimeDelta append_window_end,
+    TimeDelta* timestamp_offset,
+    const InitSegmentReceivedCB& init_segment_received_cb) {
   DVLOG(1) << "AppendData(" << id << ", " << length << ")";
 
   DCHECK(!id.empty());
   DCHECK(timestamp_offset);
+  DCHECK(!init_segment_received_cb.is_null());
 
   Ranges<TimeDelta> ranges;
 
@@ -1269,7 +1296,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
         if (!source_state_map_[id]->Append(data, length,
                                            append_window_start,
                                            append_window_end,
-                                           timestamp_offset)) {
+                                           timestamp_offset,
+                                           init_segment_received_cb)) {
           ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
           return;
         }
@@ -1280,7 +1308,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
         if (!source_state_map_[id]->Append(data, length,
                                            append_window_start,
                                            append_window_end,
-                                           timestamp_offset)) {
+                                           timestamp_offset,
+                                           init_segment_received_cb)) {
           ReportError_Locked(PIPELINE_ERROR_DECODE);
           return;
         }

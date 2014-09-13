@@ -18,9 +18,11 @@
 #include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/renderer_impl.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtLeast;
 using testing::AtMost;
 using testing::SaveArg;
 
@@ -432,7 +434,9 @@ class MockMediaSource {
 
     chunk_demuxer_->AppendData(
         kSourceId, file_data_->data() + current_position_, size,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_,
+        base::Bind(&MockMediaSource::InitSegmentReceived,
+                   base::Unretained(this)));
     current_position_ += size;
   }
 
@@ -442,7 +446,9 @@ class MockMediaSource {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId, pData, size,
                                base::TimeDelta(), kInfiniteDuration(),
-                               &timestamp_offset);
+                               &timestamp_offset,
+                               base::Bind(&MockMediaSource::InitSegmentReceived,
+                                          base::Unretained(this)));
     last_timestamp_offset_ = timestamp_offset;
   }
 
@@ -457,7 +463,9 @@ class MockMediaSource {
                                size,
                                append_window_start,
                                append_window_end,
-                               &timestamp_offset);
+                               &timestamp_offset,
+                               base::Bind(&MockMediaSource::InitSegmentReceived,
+                                          base::Unretained(this)));
     last_timestamp_offset_ = timestamp_offset;
   }
 
@@ -519,6 +527,8 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
+  MOCK_METHOD0(InitSegmentReceived, void(void));
+
  private:
   base::FilePath file_path_;
   scoped_refptr<DecoderBuffer> file_data_;
@@ -536,6 +546,7 @@ class PipelineIntegrationTest
       public PipelineIntegrationTestBase {
  public:
   void StartPipelineWithMediaSource(MockMediaSource* source) {
+    EXPECT_CALL(*source, InitSegmentReceived()).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));

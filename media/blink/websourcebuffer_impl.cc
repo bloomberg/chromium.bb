@@ -6,8 +6,12 @@
 
 #include <limits>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/float_util.h"
 #include "media/filters/chunk_demuxer.h"
+#include "third_party/WebKit/public/platform/WebSourceBufferClient.h"
 
 namespace media {
 
@@ -34,12 +38,20 @@ WebSourceBufferImpl::WebSourceBufferImpl(
     const std::string& id, ChunkDemuxer* demuxer)
     : id_(id),
       demuxer_(demuxer),
+      client_(NULL),
       append_window_end_(kInfiniteDuration()) {
   DCHECK(demuxer_);
 }
 
 WebSourceBufferImpl::~WebSourceBufferImpl() {
   DCHECK(!demuxer_) << "Object destroyed w/o removedFromMediaSource() call";
+  DCHECK(!client_);
+}
+
+void WebSourceBufferImpl::setClient(blink::WebSourceBufferClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
 }
 
 bool WebSourceBufferImpl::setMode(WebSourceBuffer::AppendMode mode) {
@@ -76,7 +88,9 @@ void WebSourceBufferImpl::append(
   base::TimeDelta old_offset = timestamp_offset_;
   demuxer_->AppendData(id_, data, length,
                        append_window_start_, append_window_end_,
-                       &timestamp_offset_);
+                       &timestamp_offset_,
+                       base::Bind(&WebSourceBufferImpl::InitSegmentReceived,
+                                  base::Unretained(this)));
 
   // Coded frame processing may update the timestamp offset. If the caller
   // provides a non-NULL |timestamp_offset| and frame processing changes the
@@ -129,6 +143,12 @@ void WebSourceBufferImpl::setAppendWindowEnd(double end) {
 void WebSourceBufferImpl::removedFromMediaSource() {
   demuxer_->RemoveId(id_);
   demuxer_ = NULL;
+  client_ = NULL;
+}
+
+void WebSourceBufferImpl::InitSegmentReceived() {
+  DVLOG(1) << __FUNCTION__;
+  client_->initializationSegmentReceived();
 }
 
 }  // namespace media
