@@ -145,8 +145,6 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   path = os.path.join(buildroot, 'src', 'private-overlays',
                       'chromeos-*-overlay')
   ret += glob.glob(path)
-  _AddRepo('chromiumos')
-  _AddRepo('portage-stable')
 
   # Locate the board repo by name.
   # Load the public & private versions if available.

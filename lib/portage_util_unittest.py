@@ -608,12 +608,12 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
                   self.PUB2_ONLY):
       settings = {
           'board': board,
-          'masters': '',
+          'masters': 'portage-stable ',
           'private': '',
           'repo-name': board,
       }
       if '_' in board:
-        settings['masters'] = board.split('_')[0]
+        settings['masters'] += board.split('_')[0]
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
 
@@ -626,12 +626,12 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     for board in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PRIV_ONLY):
       settings = {
           'board': board,
-          'masters': '',
+          'masters': 'portage-stable ',
           'private': 'private-',
           'repo-name': '%s-private' % board,
       }
       if '_' in board:
-        settings['masters'] = board.split('_')[0]
+        settings['masters'] += board.split('_')[0]
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
 
