@@ -486,7 +486,6 @@ void PictureLayerImpl::UpdateTilePriorities(
 
   gfx::Rect visible_rect_in_content_space(
       GetViewportForTilePriorityInContentSpace());
-  visible_rect_in_content_space.Intersect(visible_content_rect());
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_rect_in_content_space, 1.f / contents_scale_x());
   WhichTree tree =
@@ -524,6 +523,7 @@ gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
     }
   }
 
+  visible_rect_in_content_space.Intersect(visible_content_rect());
   return visible_rect_in_content_space;
 }
 
@@ -789,13 +789,11 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   if (visible_content_rect().IsEmpty())
     return;
 
-  gfx::Rect rect(visible_content_rect());
-
   // Only mark tiles inside the viewport for tile priority as required for
   // activation. This viewport is normally the same as the draw viewport but
   // can be independently overridden by embedders like Android WebView with
   // SetExternalDrawConstraints.
-  rect.Intersect(GetViewportForTilePriorityInContentSpace());
+  gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);
