@@ -530,7 +530,7 @@ def WriteQueueToFile(listing, queue, relpath=None):
       f.write('%s\n' % path)
 
 
-def UploadSymbols(board=None, official=False, breakpad_dir=None,
+def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
                   upload_limit=None, sym_paths=None, failed_list=None,
                   root=None, retry=True, dedupe_namespace=None):
@@ -544,6 +544,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   Args:
     board: The board whose symbols we wish to upload
     official: Use the official symbol server rather than the staging one
+    server: Explicit server to post symbols to
     breakpad_dir: The full path to the breakpad directory where symbols live
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: How long to sleep in between uploads
@@ -562,11 +563,14 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   # TODO(build): Delete this assert.
   assert isolateserver, 'Missing isolateserver import http://crbug.com/341152'
 
-  if official:
-    upload_url = OFFICIAL_UPLOAD_URL
+  if server is None:
+    if official:
+      upload_url = OFFICIAL_UPLOAD_URL
+    else:
+      cros_build_lib.Warning('unofficial builds upload to the staging server')
+      upload_url = STAGING_UPLOAD_URL
   else:
-    cros_build_lib.Warning('unofficial builds upload to the staging server')
-    upload_url = STAGING_UPLOAD_URL
+    upload_url = server
 
   if sym_paths:
     cros_build_lib.Info('uploading specified symbols to %s', upload_url)
@@ -769,6 +773,8 @@ def main(argv):
                       help='root directory for breakpad symbols')
   parser.add_argument('--official_build', action='store_true', default=False,
                       help='point to official symbol server')
+  parser.add_argument('--server', type=str, default=None,
+                      help='URI for custom symbol server')
   parser.add_argument('--regenerate', action='store_true', default=False,
                       help='regenerate all symbols')
   parser.add_argument('--upload-limit', type=int, default=None,
@@ -832,7 +838,7 @@ def main(argv):
         opts.board, breakpad_dir=opts.breakpad_root)
 
   ret += UploadSymbols(opts.board, official=opts.official_build,
-                       breakpad_dir=opts.breakpad_root,
+                       server=opts.server, breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
                        upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
                        failed_list=opts.failed_list,
