@@ -8336,6 +8336,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE" desc="Title of the advanced printer settings selection dialog.">
           Advanced settings for <ph name="PRINTING_DESTINATION">$1<ex>Office printer</ex></ph>
         </message>
+        <message name="IDS_PRINT_PREVIEW_NO_ADVANCED_SETTINGS_MATCH_SEARCH_HINT" desc="Message to display in the printer advanced settings dialog when no settings match search string entered by the user.">
+          No matches were found.
+        </message>
         <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the printer advanced settings dialog.">
           Apply
         </message>

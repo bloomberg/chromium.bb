@@ -28,6 +28,13 @@
   -webkit-user-select: none;
 }
 
+#advanced-settings .no-settings-match-hint {
+  -webkit-padding-start: 17px;
+  color: #999;
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
 #advanced-settings .settings-area {
   overflow-y: auto;
   padding: 0 17px;

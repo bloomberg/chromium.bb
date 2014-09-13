@@ -149,6 +149,16 @@ cr.define('print_preview', function() {
      */
     onTextInput_: function() {
       this.selectedValue_ = this.text_.value || null;
+
+      if (this.query_) {
+        var optionMatches = (this.selectedValue_ || '').match(this.query_);
+        // Even if there's no match anymore, keep the item visible to do not
+        // surprise user.
+        if (optionMatches)
+          this.showSearchBubble_(optionMatches[0]);
+        else
+          this.hideSearchBubble_();
+      }
     },
 
     /**
@@ -171,10 +181,8 @@ cr.define('print_preview', function() {
       }
       var matches = nameMatches || optionMatches;
 
-      if ((!matches || !optionMatches) && this.searchBubble_) {
-        this.searchBubble_.dispose();
-        this.searchBubble_ = null;
-      }
+      if (!matches || !optionMatches)
+        this.hideSearchBubble_();
 
       setIsVisible(this.getElement(), matches);
       if (!matches)
@@ -189,15 +197,34 @@ cr.define('print_preview', function() {
       }
       nameEl.title = textContent;
 
-      if (optionMatches) {
-        var element =
-            this.capability_.type == 'SELECT' ? this.select_ : this.text_;
-        if (!this.searchBubble_) {
-          this.searchBubble_ = new print_preview.SearchBubble(optionMatches[0]);
-          this.searchBubble_.attachTo(element);
-        } else {
-          this.searchBubble_.content = optionMatches[0];
-        }
+      if (optionMatches)
+        this.showSearchBubble_(optionMatches[0]);
+    },
+
+    /**
+     * Shows search bubble for this element.
+     * @param {string} text Text to show in the search bubble.
+     * @private
+     */
+    showSearchBubble_: function(text) {
+      var element =
+          this.capability_.type == 'SELECT' ? this.select_ : this.text_;
+      if (!this.searchBubble_) {
+        this.searchBubble_ = new print_preview.SearchBubble(text);
+        this.searchBubble_.attachTo(element);
+      } else {
+        this.searchBubble_.content = text;
+      }
+    },
+
+    /**
+     * Hides search bubble associated with this element.
+     * @private
+     */
+    hideSearchBubble_: function() {
+      if (this.searchBubble_) {
+        this.searchBubble_.dispose();
+        this.searchBubble_ = null;
       }
     },
 

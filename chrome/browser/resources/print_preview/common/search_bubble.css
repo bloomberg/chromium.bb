@@ -18,8 +18,10 @@
   background: linear-gradient(rgba(255, 248, 172, 0.9),
                               rgba(255, 243, 128, 0.9));
   border-radius: 2px;
+  overflow: hidden;
   padding: 4px 10px;
   text-align: center;
+  text-overflow: ellipsis;
   width: 100px;
 }
 

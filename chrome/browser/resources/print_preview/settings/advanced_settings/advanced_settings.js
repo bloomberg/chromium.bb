@@ -39,6 +39,15 @@ cr.define('print_preview', function() {
     this.items_ = [];
   };
 
+  /**
+   * CSS classes used by the component.
+   * @enum {string}
+   * @private
+   */
+  AdvancedSettings.Classes_ = {
+    EXTRA_PADDING: 'advanced-settings-item-extra-padding'
+  };
+
   AdvancedSettings.prototype = {
     __proto__: print_preview.Overlay.prototype,
 
@@ -126,14 +135,19 @@ cr.define('print_preview', function() {
      * @private
      */
     filterLists_: function(query) {
+      var atLeastOneMatch = false;
       var lastVisibleItemWithBubble = null;
       this.items_.forEach(function(item) {
         item.updateSearchQuery(query);
+        if (getIsVisible(item.getElement()))
+          atLeastOneMatch = true;
         if (item.searchBubbleShown)
           lastVisibleItemWithBubble = item;
       });
       setIsVisible(
-          this.getChildElement('.advanced-settings-item-extra-padding'),
+          this.getChildElement('.no-settings-match-hint'), !atLeastOneMatch);
+      setIsVisible(
+          this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING),
           !!lastVisibleItemWithBubble);
     },
 
@@ -157,6 +171,11 @@ cr.define('print_preview', function() {
       }.bind(this));
       this.items_ = [];
 
+      var extraPadding =
+          this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING);
+      if (extraPadding)
+        extraPadding.parentNode.removeChild(extraPadding);
+
       var vendorCapabilities = this.printTicketStore_.vendorItems.capability;
       if (!vendorCapabilities)
         return;
@@ -174,8 +193,8 @@ cr.define('print_preview', function() {
         this.items_.push(item);
       }.bind(this));
 
-      var extraPadding = document.createElement('div');
-      extraPadding.classList.add('advanced-settings-item-extra-padding');
+      extraPadding = document.createElement('div');
+      extraPadding.classList.add(AdvancedSettings.Classes_.EXTRA_PADDING);
       extraPadding.hidden = true;
       settingsEl.appendChild(extraPadding);
     },

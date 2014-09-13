@@ -337,6 +337,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("advancedSettingsDialogTitle",
                              IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE);
   source->AddLocalizedString(
+      "noAdvancedSettingsMatchSearchHint",
+      IDS_PRINT_PREVIEW_NO_ADVANCED_SETTINGS_MATCH_SEARCH_HINT);
+  source->AddLocalizedString(
       "advancedSettingsDialogConfirm",
       IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM);
   source->AddLocalizedString("cancel", IDS_CANCEL);
