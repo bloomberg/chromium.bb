@@ -42,9 +42,9 @@ class _IndexedDbMeasurement(page_test.PageTest):
     self._power_metric = None
     self._v8_object_stats_metric = None
 
-  def WillStartBrowser(self, browser):
+  def WillStartBrowser(self, platform):
     """Initialize metrics once right before the browser has been launched."""
-    self._power_metric = power.PowerMetric(browser)
+    self._power_metric = power.PowerMetric(platform)
 
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
