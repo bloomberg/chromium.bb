@@ -46,6 +46,9 @@ extern const char kTypeTreeItem[];
 extern const char kTypeVolume[];
 extern const char kTypeWindow[];
 
+// Errors.
+extern const char kErrorNotSupported[];
+
 };  // namespace extension_accessibility_api_constants
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_CONSTANTS_H_

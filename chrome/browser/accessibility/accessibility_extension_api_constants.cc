@@ -42,4 +42,7 @@ const char kTypeTree[] = "tree";
 const char kTypeTreeItem[] = "treeitem";
 const char kTypeWindow[] = "window";
 
+// Errors.
+const char kErrorNotSupported[] = "This API is not supported on this platform.";
+
 }  // namespace extension_accessibility_api_constants

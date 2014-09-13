@@ -135,4 +135,13 @@ class AccessibilityPrivateGetAlertsForTabFunction
                              ACCESSIBILITY_PRIVATE_GETALERTSFORTAB)
 };
 
+// API function that sets the location of the accessibility focus ring.
+class AccessibilityPrivateSetFocusRingFunction
+    : public ChromeSyncExtensionFunction {
+  virtual ~AccessibilityPrivateSetFocusRingFunction() {}
+  virtual bool RunSync() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRing",
+                             ACCESSIBILITY_PRIVATE_SETFOCUSRING)
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

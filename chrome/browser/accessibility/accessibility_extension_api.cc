@@ -25,6 +25,10 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
+#endif
+
 namespace keys = extension_accessibility_api_constants;
 namespace accessibility_private = extensions::api::accessibility_private;
 
@@ -307,4 +311,30 @@ bool AccessibilityPrivateGetAlertsForTabFunction::RunSync() {
 
   SetResult(alerts_value);
   return true;
+}
+
+bool AccessibilityPrivateSetFocusRingFunction::RunSync() {
+#if defined(OS_CHROMEOS)
+  base::ListValue* rect_values = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &rect_values));
+
+  std::vector<gfx::Rect> rects;
+  for (size_t i = 0; i < rect_values->GetSize(); ++i) {
+    base::DictionaryValue* rect_value = NULL;
+    EXTENSION_FUNCTION_VALIDATE(rect_values->GetDictionary(i, &rect_value));
+    int left, top, width, height;
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("left", &left));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("top", &top));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("width", &width));
+    EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger("height", &height));
+    rects.push_back(gfx::Rect(left, top, width, height));
+  }
+
+  chromeos::AccessibilityFocusRingController::GetInstance()->SetFocusRing(
+      rects);
+  return true;
+#endif  // defined(OS_CHROMEOS)
+
+  error_ = keys:: kErrorNotSupported;
+  return false;
 }

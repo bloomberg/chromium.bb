@@ -159,6 +159,17 @@
             ]
           }
         }
+      },
+      {
+        "id": "ScreenRect",
+        "type": "object",
+        "description": "Bounding rectangle in global screen coordinates.",
+        "properties": {
+          "left": {"type": "integer", "description": "Left coordinate in global screen coordinates."},
+          "top": {"type": "integer", "description": "Top coordinate in global screen coordinates."},
+          "width": {"type": "integer", "description": "Width in pixels."},
+          "height": {"type": "integer", "description": "Height in pixels."}
+        }
       }
     ],
     "functions": [
@@ -226,6 +237,19 @@
                 "description": "Alerts being shown on the given tab."
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "setFocusRing",
+        "type": "function",
+        "description": "Set the bounds of the accessibility focus ring.",
+        "parameters": [
+          {
+            "name": "rects",
+            "type": "array",
+            "items": { "$ref": "ScreenRect" },
+            "description": "Array of rectangles to draw the accessibility focus ring around."
           }
         ]
       }
