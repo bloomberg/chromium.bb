@@ -54,6 +54,28 @@
 
 namespace blink {
 
+// This wraps CallbackPromiseAdapter and resolves the promise with undefined
+// when nullptr is given to onSuccess.
+class GetRegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks {
+public:
+    explicit GetRegistrationCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+        , m_adapter(m_resolver) { }
+    virtual ~GetRegistrationCallback() { }
+    virtual void onSuccess(WebServiceWorkerRegistration* registration) OVERRIDE
+    {
+        if (registration)
+            m_adapter.onSuccess(registration);
+        else if (m_resolver->executionContext() && !m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            m_resolver->resolve();
+    }
+    virtual void onError(WebServiceWorkerError* error) OVERRIDE { m_adapter.onError(error); }
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+    CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError> m_adapter;
+    WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
+};
+
 ServiceWorkerContainer* ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
     return new ServiceWorkerContainer(executionContext);
@@ -160,6 +182,32 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
         return promise;
     }
     m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<BooleanValue, ServiceWorkerError>(resolver));
+    return promise;
+}
+
+ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, const String& documentURL)
+{
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    // FIXME: This should use the container's execution context, not
+    // the callers.
+    ExecutionContext* executionContext = scriptState->executionContext();
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    String errorMessage;
+    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        resolver->reject(DOMException::create(NotSupportedError, errorMessage));
+        return promise;
+    }
+
+    KURL completedURL = executionContext->completeURL(documentURL);
+    if (!documentOrigin->canRequest(completedURL)) {
+        resolver->reject(DOMException::create(SecurityError, "The documentURL must match the current origin."));
+        return promise;
+    }
+    m_provider->getRegistration(completedURL, new GetRegistrationCallback(resolver));
+
     return promise;
 }
 

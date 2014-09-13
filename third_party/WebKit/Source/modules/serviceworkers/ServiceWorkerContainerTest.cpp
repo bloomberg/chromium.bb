@@ -205,6 +205,18 @@ protected:
         container->willBeDetachedFromFrame();
     }
 
+    void testGetRegistrationRejected(const String& documentURL, const ScriptValueTest& valueTest)
+    {
+        provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
+
+        ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
+        ScriptState::Scope scriptScope(scriptState());
+        ScriptPromise promise = container->getRegistration(scriptState(), documentURL);
+        expectRejected(scriptState(), promise, valueTest);
+
+        container->willBeDetachedFromFrame();
+    }
+
 private:
     OwnPtr<DummyPageHolder> m_page;
 };
@@ -252,11 +264,28 @@ TEST_F(ServiceWorkerContainerTest, Unregister_CrossOriginScopeIsRejected)
         ExpectDOMException("SecurityError", "The scope must match the current origin."));
 }
 
+TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected)
+{
+    setPageURL("http://www.example.com/");
+    testGetRegistrationRejected(
+        "http://www.example.com/",
+        ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
+}
+
+TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected)
+{
+    setPageURL("https://www.example.com/");
+    testGetRegistrationRejected(
+        "https://foo.example.com/", // Differs by host
+        ExpectDOMException("SecurityError", "The documentURL must match the current origin."));
+}
+
 class StubWebServiceWorkerProvider {
 public:
     StubWebServiceWorkerProvider()
         : m_registerCallCount(0)
         , m_unregisterCallCount(0)
+        , m_getRegistrationCallCount(0)
     {
     }
 
@@ -274,6 +303,8 @@ public:
     const WebURL& registerScriptURL() { return m_registerScriptURL; }
     size_t unregisterCallCount() { return m_unregisterCallCount; }
     const WebURL& unregisterScope() { return m_unregisterScope; }
+    size_t getRegistrationCallCount() { return m_getRegistrationCallCount; }
+    const WebURL& getRegistrationURL() { return m_getRegistrationURL; }
 
 private:
     class WebServiceWorkerProviderImpl : public WebServiceWorkerProvider {
@@ -300,10 +331,18 @@ private:
             m_unregistrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
+        virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks* callbacks) OVERRIDE
+        {
+            m_owner.m_getRegistrationCallCount++;
+            m_owner.m_getRegistrationURL = documentURL;
+            m_getRegistrationCallbacksToDelete.append(adoptPtr(callbacks));
+        }
+
     private:
         StubWebServiceWorkerProvider& m_owner;
         Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks> > m_registrationCallbacksToDelete;
         Vector<OwnPtr<WebServiceWorkerUnregistrationCallbacks> > m_unregistrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerGetRegistrationCallbacks> > m_getRegistrationCallbacksToDelete;
     };
 
 private:
@@ -312,6 +351,8 @@ private:
     WebURL m_registerScriptURL;
     size_t m_unregisterCallCount;
     WebURL m_unregisterScope;
+    size_t m_getRegistrationCallCount;
+    WebURL m_getRegistrationURL;
 };
 
 TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelegatesToProvider)
@@ -342,6 +383,25 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
 
         EXPECT_EQ(1ul, stubProvider.unregisterCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.unregisterScope());
+    }
+
+    container->willBeDetachedFromFrame();
+}
+
+TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToPageURL)
+{
+    setPageURL("http://localhost/x/index.html");
+
+    StubWebServiceWorkerProvider stubProvider;
+    provide(stubProvider.provider());
+
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
+
+    {
+        ScriptState::Scope scriptScope(scriptState());
+        container->getRegistration(scriptState(), "");
+        EXPECT_EQ(1ul, stubProvider.getRegistrationCallCount());
+        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), stubProvider.getRegistrationURL());
     }
 
     container->willBeDetachedFromFrame();
