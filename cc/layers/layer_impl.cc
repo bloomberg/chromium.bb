@@ -1415,6 +1415,8 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   MathUtil::AddToTracedValue(bounds_, state);
   state->EndDictionary();
 
+  state->SetDouble("opacity", opacity());
+
   state->BeginArray("position");
   MathUtil::AddToTracedValue(position_, state);
   state->EndArray();

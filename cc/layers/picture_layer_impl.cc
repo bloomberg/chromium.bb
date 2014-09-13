@@ -1409,6 +1409,14 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   tilings_->AsValueInto(state);
   state->EndArray();
 
+  state->BeginArray("tile_priority_rect");
+  MathUtil::AddToTracedValue(GetViewportForTilePriorityInContentSpace(), state);
+  state->EndArray();
+
+  state->BeginArray("visible_rect");
+  MathUtil::AddToTracedValue(visible_content_rect(), state);
+  state->EndArray();
+
   state->BeginArray("pictures");
   pile_->AsValueInto(state);
   state->EndArray();
