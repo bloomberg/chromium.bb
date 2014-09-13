@@ -242,16 +242,23 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
   if (!layer)
     return;
 
-  DCHECK_EQ(!!layer->scroll_parent(), !!layer_impl->scroll_parent());
-  if (layer->scroll_parent())
+  // Having a scroll parent on the impl thread implies having one the main
+  // thread, too. The main thread may have a scroll parent that is not in the
+  // tree because it's been removed but not deleted. In this case, the layer
+  // impl will have no scroll parent. Same argument applies for clip parents and
+  // scroll/clip children.
+  DCHECK(!layer_impl->scroll_parent() || !!layer->scroll_parent());
+  DCHECK(!layer_impl->clip_parent() || !!layer->clip_parent());
+  DCHECK(!layer_impl->scroll_children() || !!layer->scroll_children());
+  DCHECK(!layer_impl->clip_children() || !!layer->clip_children());
+
+  if (layer_impl->scroll_parent())
     DCHECK_EQ(layer->scroll_parent()->id(), layer_impl->scroll_parent()->id());
 
-  DCHECK_EQ(!!layer->clip_parent(), !!layer_impl->clip_parent());
-  if (layer->clip_parent())
+  if (layer_impl->clip_parent())
     DCHECK_EQ(layer->clip_parent()->id(), layer_impl->clip_parent()->id());
 
-  DCHECK_EQ(!!layer->scroll_children(), !!layer_impl->scroll_children());
-  if (layer->scroll_children()) {
+  if (layer_impl->scroll_children()) {
     for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
          it != layer->scroll_children()->end();
          ++it) {
@@ -265,8 +272,7 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
     }
   }
 
-  DCHECK_EQ(!!layer->clip_children(), !!layer_impl->clip_children());
-  if (layer->clip_children()) {
+  if (layer_impl->clip_children()) {
     for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
          it != layer->clip_children()->end();
          ++it) {

@@ -504,14 +504,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   bool IsPropertyChangeAllowed() const;
 
-  // If this layer has a scroll parent, it removes |this| from its list of
-  // scroll children.
-  void RemoveFromScrollTree();
-
-  // If this layer has a clip parent, it removes |this| from its list of clip
-  // children.
-  void RemoveFromClipTree();
-
   void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
 
   // This flag is set when the layer needs to push properties to the impl
@@ -570,6 +562,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
       const gfx::Vector2dF& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
+
+  // If this layer has a scroll parent, it removes |this| from its list of
+  // scroll children.
+  void RemoveFromScrollTree();
+
+  // If this layer has a clip parent, it removes |this| from its list of clip
+  // children.
+  void RemoveFromClipTree();
 
   LayerList children_;
   Layer* parent_;

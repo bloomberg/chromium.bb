@@ -336,6 +336,64 @@ TEST_F(LayerTest, ReplaceChildWithNewChildThatHasOtherParent) {
   EXPECT_FALSE(child2_->parent());
 }
 
+TEST_F(LayerTest, DeleteRemovedScrollParent) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
+
+  ASSERT_EQ(0U, parent->children().size());
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child1, 0));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child2, 1));
+
+  ASSERT_EQ(2U, parent->children().size());
+  EXPECT_EQ(child1, parent->children()[0]);
+  EXPECT_EQ(child2, parent->children()[1]);
+
+  EXPECT_SET_NEEDS_COMMIT(2, child1->SetScrollParent(child2.get()));
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child2->RemoveFromParent());
+
+  child1->reset_needs_push_properties_for_testing();
+
+  EXPECT_SET_NEEDS_COMMIT(1, child2 = NULL);
+
+  EXPECT_TRUE(child1->needs_push_properties());
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+}
+
+TEST_F(LayerTest, DeleteRemovedScrollChild) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
+
+  ASSERT_EQ(0U, parent->children().size());
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child1, 0));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child2, 1));
+
+  ASSERT_EQ(2U, parent->children().size());
+  EXPECT_EQ(child1, parent->children()[0]);
+  EXPECT_EQ(child2, parent->children()[1]);
+
+  EXPECT_SET_NEEDS_COMMIT(2, child1->SetScrollParent(child2.get()));
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child1->RemoveFromParent());
+
+  child2->reset_needs_push_properties_for_testing();
+
+  EXPECT_SET_NEEDS_COMMIT(1, child1 = NULL);
+
+  EXPECT_TRUE(child2->needs_push_properties());
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+}
+
 TEST_F(LayerTest, ReplaceChildWithSameChild) {
   CreateSimpleTestTree();
 
