@@ -179,10 +179,10 @@ double Animation::TrimTimeToCurrentIteration(
       needs_synchronized_start_time())
     trimmed = base::TimeTicks() + time_offset_;
 
-  double trimmed_in_seconds = (trimmed - base::TimeTicks()).InSecondsF();
+  double active_time = (trimmed - base::TimeTicks()).InSecondsF();
 
   // Return 0 if we are before the start of the animation
-  if (trimmed_in_seconds < 0)
+  if (active_time < 0)
     return 0;
 
   // Always return zero if we have no iterations.
@@ -193,46 +193,55 @@ double Animation::TrimTimeToCurrentIteration(
   if (curve_->Duration() <= 0)
     return 0;
 
-  // Calculate the active time
-  trimmed_in_seconds *= std::abs(playback_rate_);
+  double repeated_duration = iterations_ * curve_->Duration();
+  double active_duration = repeated_duration / std::abs(playback_rate_);
 
-  // check if we are past active interval
-  bool is_past_total_duration =
-      (iterations_ > 0 &&
-       trimmed_in_seconds >= curve_->Duration() * iterations_);
+  // Check if we are past active duration
+  bool is_past_active_duration =
+      iterations_ > 0 && active_time >= active_duration;
 
-  // We need to know the current iteration if we're alternating.
-  int iteration = 0;
+  // Calculate the scaled active time
+  double scaled_active_time;
+  if (playback_rate_ < 0)
+    scaled_active_time = (active_time - active_duration) * playback_rate_;
+  else
+    scaled_active_time = active_time * playback_rate_;
 
-  // If we are past the active interval, return iteration duration of last
-  // iteration
-  if (is_past_total_duration) {
-    iteration = iterations_ - 1;
-    double frac = fmod(curve_->Duration() * iterations_, curve_->Duration());
-    trimmed_in_seconds = frac == 0 ? curve_->Duration() : frac;
+  // Calculate the iteration time
+  double iteration_time;
+  if (is_past_active_duration) {
+    // If we are past the active interval, return iteration duration of last
+    // iteration
+    double frac = fmod(repeated_duration, curve_->Duration());
+    iteration_time =
+        frac == 0 && scaled_active_time > 0 ? curve_->Duration() : frac;
+  } else if (scaled_active_time == repeated_duration) {
+    iteration_time = curve_->Duration();
   } else {
-    iteration = static_cast<int>(trimmed_in_seconds / curve_->Duration());
-    // Calculate x where trimmed = x + n * curve_->Duration() for some positive
-    // integer n.
-    trimmed_in_seconds = fmod(trimmed_in_seconds, curve_->Duration());
+    iteration_time = fmod(scaled_active_time, curve_->Duration());
   }
 
-  // check if we are running the animation in reverse direction for the current
+  // Calculate the current iteration
+  int iteration;
+  if (scaled_active_time <= 0) {
+    iteration = 0;
+  } else if (is_past_active_duration || iteration_time == curve_->Duration()) {
+    iteration = iterations_ - 1;
+  } else {
+    iteration = static_cast<int>(scaled_active_time / curve_->Duration());
+  }
+
+  // Check if we are running the animation in reverse direction for the current
   // iteration
   bool reverse = (direction_ == Reverse) ||
                  (direction_ == Alternate && iteration % 2 == 1) ||
                  (direction_ == AlternateReverse && iteration % 2 == 0);
 
-  // check if playback rate is negative and if the playback rate is negative and
-  // the animation is in reverse direction, run the animation normally
-  if (playback_rate_ < 0)
-    reverse = !reverse;
-
-  // if we are running the animation in reverse direction, reverse the result
+  // If we are running the animation in reverse direction, reverse the result
   if (reverse)
-    return curve_->Duration() - trimmed_in_seconds;
+    return curve_->Duration() - iteration_time;
 
-  return trimmed_in_seconds;
+  return iteration_time;
 }
 
 scoped_ptr<Animation> Animation::CloneAndInitialize(
