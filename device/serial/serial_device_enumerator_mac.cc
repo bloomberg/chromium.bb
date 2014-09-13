@@ -4,9 +4,9 @@
 
 #include "device/serial/serial_device_enumerator_mac.h"
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 

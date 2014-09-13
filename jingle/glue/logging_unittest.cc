@@ -14,7 +14,7 @@
 #include "third_party/webrtc/overrides/webrtc/base/logging.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

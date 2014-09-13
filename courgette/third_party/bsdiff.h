@@ -38,7 +38,7 @@
 #define COURGETTE_BSDIFF_H_
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 
 namespace courgette {
 

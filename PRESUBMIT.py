@@ -931,6 +931,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^cloud_print[\\\/]",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
+                 r"^courgette[\\\/]courgette_tool\.cc$",
                  r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
                  r"^native_client_sdk[\\\/]",
                  r"^remoting[\\\/]base[\\\/]logging\.h$",

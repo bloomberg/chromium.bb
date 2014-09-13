@@ -4,7 +4,7 @@
 
 #include "courgette/base_test_unittest.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 
 void BaseTest::SetUp() {

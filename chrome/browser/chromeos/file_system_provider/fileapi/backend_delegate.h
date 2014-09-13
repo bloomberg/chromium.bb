@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_BACKEND_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 

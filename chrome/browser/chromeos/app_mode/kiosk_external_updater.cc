@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"

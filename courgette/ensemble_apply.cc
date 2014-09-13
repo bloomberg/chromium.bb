@@ -7,14 +7,14 @@
 #include "courgette/ensemble.h"
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "courgette/crc.h"
-#include "courgette/region.h"
-#include "courgette/streams.h"
-#include "courgette/simple_delta.h"
 #include "courgette/patcher_x86_32.h"
+#include "courgette/region.h"
+#include "courgette/simple_delta.h"
+#include "courgette/streams.h"
 
 namespace courgette {
 
