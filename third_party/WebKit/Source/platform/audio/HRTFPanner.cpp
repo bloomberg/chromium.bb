@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
 #include "platform/audio/HRTFDatabase.h"
 #include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"
@@ -82,7 +83,7 @@ size_t HRTFPanner::fftSizeForSampleRate(float sampleRate)
     // The resampled length is used to compute the FFT size by choosing a power of two that is
     // greater than or equal the resampled length. This power of two is doubled to get the actual FFT size.
 
-    ASSERT(sampleRate >= 3000 && sampleRate <= 192000);
+    ASSERT(AudioUtilities::isValidAudioBufferSampleRate(sampleRate));
 
     int truncatedImpulseLength = 256;
     double sampleRateRatio = sampleRate / 44100;

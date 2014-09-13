@@ -42,6 +42,12 @@ PLATFORM_EXPORT double discreteTimeConstantForSampleRate(double timeConstant, do
 // Convert the time to a sample frame at the given sample rate.
 PLATFORM_EXPORT size_t timeToSampleFrame(double time, double sampleRate);
 
+// Check that |sampleRate| is a valid rate for AudioBuffers.
+PLATFORM_EXPORT bool isValidAudioBufferSampleRate(float sampleRate);
+
+// Return max/min sample rate supported by AudioBuffers.
+PLATFORM_EXPORT float minAudioBufferSampleRate();
+PLATFORM_EXPORT float maxAudioBufferSampleRate();
 } // AudioUtilites
 } // namespace blink
 

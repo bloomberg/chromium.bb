@@ -35,27 +35,16 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AudioContext.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
-#include "modules/webaudio/AudioContext.h"
+#include "platform/audio/AudioUtilities.h"
 
 namespace blink {
 
-float AudioBuffer::minAllowedSampleRate()
-{
-    // crbug.com/344375
-    return 3000;
-}
-
-float AudioBuffer::maxAllowedSampleRate()
-{
-    // Windows can support up to this rate.
-    return 192000;
-}
-
 AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
-    if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
+    if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate) || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
         return 0;
 
     AudioBuffer* buffer = new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate);
@@ -80,15 +69,15 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
         return 0;
     }
 
-    if (sampleRate < AudioBuffer::minAllowedSampleRate() || sampleRate > AudioBuffer::maxAllowedSampleRate()) {
+    if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate)) {
         exceptionState.throwDOMException(
             NotSupportedError,
             ExceptionMessages::indexOutsideRange(
                 "sample rate",
                 sampleRate,
-                AudioBuffer::minAllowedSampleRate(),
+                AudioUtilities::minAudioBufferSampleRate(),
                 ExceptionMessages::InclusiveBound,
-                AudioBuffer::maxAllowedSampleRate(),
+                AudioUtilities::maxAudioBufferSampleRate(),
                 ExceptionMessages::InclusiveBound));
         return 0;
     }

@@ -62,9 +62,6 @@ public:
     Float32Array* getChannelData(unsigned channelIndex);
     void zero();
 
-    static float minAllowedSampleRate();
-    static float maxAllowedSampleRate();
-
     void trace(Visitor*) { }
 
 protected:

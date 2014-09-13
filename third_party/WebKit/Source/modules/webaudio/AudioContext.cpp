@@ -78,11 +78,6 @@ const WTF::ThreadIdentifier UndefinedThreadIdentifier = 0xffffffff;
 
 namespace blink {
 
-bool AudioContext::isSampleRateRangeGood(float sampleRate)
-{
-    return sampleRate >= AudioBuffer::minAllowedSampleRate() && sampleRate <= AudioBuffer::maxAllowedSampleRate();
-}
-
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.
 const unsigned MaxHardwareContexts = 6;
 unsigned AudioContext::s_hardwareContextCount = 0;

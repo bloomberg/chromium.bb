@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/audio/AudioUtilities.h"
 
 namespace blink {
 
@@ -66,9 +67,13 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
         return 0;
     }
 
-    if (!isSampleRateRangeGood(sampleRate)) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange(
-            "sampleRate", sampleRate, 3000.f, ExceptionMessages::InclusiveBound, 192000.f, ExceptionMessages::InclusiveBound));
+    if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate)) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange(
+                "sampleRate", sampleRate,
+                AudioUtilities::minAudioBufferSampleRate(), ExceptionMessages::InclusiveBound,
+                AudioUtilities::maxAudioBufferSampleRate(), ExceptionMessages::InclusiveBound));
         return nullptr;
     }
 
