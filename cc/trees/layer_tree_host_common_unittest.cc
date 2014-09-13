@@ -8559,5 +8559,61 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(4.f, child2_layer->draw_properties().device_scale_factor);
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(),
+                               gfx::Transform(),
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(768 / 2, 3000),
+                               true,
+                               false);
+  root->SetIsDrawable(true);
+
+  scoped_refptr<Layer> clip = Layer::Create();
+  SetLayerPropertiesForTesting(clip.get(),
+                               gfx::Transform(),
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(768 / 2, 10000),
+                               true,
+                               false);
+  clip->SetMasksToBounds(true);
+
+  scoped_refptr<Layer> content = Layer::Create();
+  SetLayerPropertiesForTesting(content.get(),
+                               gfx::Transform(),
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(768 / 2, 10000),
+                               true,
+                               false);
+  content->SetIsDrawable(true);
+  content->SetForceRenderSurface(true);
+
+  root->AddChild(clip);
+  clip->AddChild(content);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  gfx::Size device_viewport_size(768, 582);
+  RenderSurfaceLayerList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      host->root_layer(), device_viewport_size, &render_surface_layer_list);
+  inputs.device_scale_factor = 2.f;
+  inputs.page_scale_factor = 1.f;
+  inputs.page_scale_application_layer = NULL;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  // Layers in the root render surface have their visible content rect clipped
+  // by the viewport.
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), root->visible_content_rect());
+
+  // Layers drawing to a child render surface should still have their visible
+  // content rect clipped by the viewport.
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), content->visible_content_rect());
+}
+
 }  // namespace
 }  // namespace cc
