@@ -62,7 +62,7 @@ class HidConnectionMac : public HidConnection {
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  scoped_ptr<uint8_t[]> inbound_buffer_;
+  std::vector<uint8_t> inbound_buffer_;
 
   std::queue<PendingHidReport> pending_reports_;
   std::queue<PendingHidRead> pending_reads_;
