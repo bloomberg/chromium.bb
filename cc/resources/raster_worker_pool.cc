@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event_synthetic_delay.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
@@ -18,9 +18,7 @@ namespace {
 class RasterTaskGraphRunner : public TaskGraphRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
-  RasterTaskGraphRunner()
-      : synthetic_delay_(base::debug::TraceEventSyntheticDelay::Lookup(
-            "cc.RasterRequiredForActivation")) {
+  RasterTaskGraphRunner() {
     size_t num_threads = RasterWorkerPool::GetNumRasterThreads();
     while (workers_.size() < num_threads) {
       scoped_ptr<base::DelegateSimpleThread> worker =
@@ -39,10 +37,6 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 
   virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
 
-  base::debug::TraceEventSyntheticDelay* synthetic_delay() {
-    return synthetic_delay_;
-  }
-
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
   virtual void Run() OVERRIDE {
@@ -50,7 +44,6 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
   }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
-  base::debug::TraceEventSyntheticDelay* synthetic_delay_;
 };
 
 base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
@@ -91,43 +84,6 @@ class RasterFinishedTaskImpl : public RasterizerTask {
   const base::Closure on_raster_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterFinishedTaskImpl);
-};
-
-class RasterRequiredForActivationFinishedTaskImpl
-    : public RasterFinishedTaskImpl {
- public:
-  RasterRequiredForActivationFinishedTaskImpl(
-      base::SequencedTaskRunner* task_runner,
-      const base::Closure& on_raster_finished_callback,
-      size_t tasks_required_for_activation_count)
-      : RasterFinishedTaskImpl(task_runner, on_raster_finished_callback),
-        tasks_required_for_activation_count_(
-            tasks_required_for_activation_count) {
-    if (tasks_required_for_activation_count_) {
-      g_task_graph_runner.Get().synthetic_delay()->BeginParallel(
-          &activation_delay_end_time_);
-    }
-  }
-
-  // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
-    TRACE_EVENT0(
-        "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnWorkerThread");
-
-    if (tasks_required_for_activation_count_) {
-      g_task_graph_runner.Get().synthetic_delay()->EndParallel(
-          activation_delay_end_time_);
-    }
-    RasterFinished();
-  }
-
- private:
-  virtual ~RasterRequiredForActivationFinishedTaskImpl() {}
-
-  base::TimeTicks activation_delay_end_time_;
-  const size_t tasks_required_for_activation_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterRequiredForActivationFinishedTaskImpl);
 };
 
 }  // namespace
@@ -176,18 +132,6 @@ scoped_refptr<RasterizerTask> RasterWorkerPool::CreateRasterFinishedTask(
     const base::Closure& on_raster_finished_callback) {
   return make_scoped_refptr(
       new RasterFinishedTaskImpl(task_runner, on_raster_finished_callback));
-}
-
-// static
-scoped_refptr<RasterizerTask>
-RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
-    size_t tasks_required_for_activation_count,
-    base::SequencedTaskRunner* task_runner,
-    const base::Closure& on_raster_finished_callback) {
-  return make_scoped_refptr(new RasterRequiredForActivationFinishedTaskImpl(
-      task_runner,
-      on_raster_finished_callback,
-      tasks_required_for_activation_count));
 }
 
 // static

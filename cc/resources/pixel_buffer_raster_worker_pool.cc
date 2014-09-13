@@ -117,12 +117,6 @@ void PixelBufferRasterWorkerPool::Shutdown() {
 void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::ScheduleTasks");
 
-  DCHECK_EQ(queue->required_for_activation_count,
-            static_cast<size_t>(
-                std::count_if(queue->items.begin(),
-                              queue->items.end(),
-                              RasterTaskQueue::Item::IsRequiredForActivation)));
-
   if (!should_notify_client_if_no_tasks_are_pending_)
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
 
@@ -572,13 +566,11 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   // tasks required for activation from being scheduled.
   if (!did_throttle_raster_tasks_required_for_activation &&
       should_notify_client_if_no_tasks_required_for_activation_are_pending_) {
-    new_raster_required_for_activation_finished_task =
-        CreateRasterRequiredForActivationFinishedTask(
-            raster_tasks_.required_for_activation_count,
-            task_runner_.get(),
-            base::Bind(&PixelBufferRasterWorkerPool::
-                           OnRasterRequiredForActivationFinished,
-                       raster_finished_weak_ptr_factory_.GetWeakPtr()));
+    new_raster_required_for_activation_finished_task = CreateRasterFinishedTask(
+        task_runner_.get(),
+        base::Bind(
+            &PixelBufferRasterWorkerPool::OnRasterRequiredForActivationFinished,
+            raster_finished_weak_ptr_factory_.GetWeakPtr()));
     raster_required_for_activation_finished_task_pending_ = true;
     InsertNodeForTask(&graph_,
                       new_raster_required_for_activation_finished_task.get(),

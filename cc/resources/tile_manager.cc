@@ -978,8 +978,6 @@ void TileManager::ScheduleTasks(
 
     raster_queue_.items.push_back(RasterTaskQueue::Item(
         tile_version.raster_task_.get(), tile->required_for_activation()));
-    raster_queue_.required_for_activation_count +=
-        tile->required_for_activation();
   }
 
   // We must reduce the amount of unused resoruces before calling

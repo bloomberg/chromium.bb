@@ -127,7 +127,6 @@ struct CC_EXPORT RasterTaskQueue {
   void Reset();
 
   Item::Vector items;
-  size_t required_for_activation_count;
 };
 
 // This interface can be used to schedule and run raster tasks. The client will

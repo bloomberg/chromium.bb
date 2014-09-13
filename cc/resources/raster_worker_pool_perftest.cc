@@ -198,7 +198,6 @@ class RasterWorkerPoolPerfTestBase {
       bool required_for_activation = (i % 2) == 0;
       queue->items.push_back(RasterTaskQueue::Item(raster_tasks[i].get(),
                                                    required_for_activation));
-      queue->required_for_activation_count += required_for_activation;
     }
   }
 

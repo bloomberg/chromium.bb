@@ -62,12 +62,6 @@ void GpuRasterWorkerPool::Shutdown() {
 void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   TRACE_EVENT0("cc", "GpuRasterWorkerPool::ScheduleTasks");
 
-  DCHECK_EQ(queue->required_for_activation_count,
-            static_cast<size_t>(
-                std::count_if(queue->items.begin(),
-                              queue->items.end(),
-                              RasterTaskQueue::Item::IsRequiredForActivation)));
-
   raster_tasks_pending_ = true;
   raster_tasks_required_for_activation_pending_ = true;
 
@@ -79,18 +73,18 @@ void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
   scoped_refptr<RasterizerTask>
-      new_raster_required_for_activation_finished_task(
-          CreateRasterRequiredForActivationFinishedTask(
-              queue->required_for_activation_count,
-              task_runner_.get(),
-              base::Bind(
-                  &GpuRasterWorkerPool::OnRasterRequiredForActivationFinished,
-                  raster_finished_weak_ptr_factory_.GetWeakPtr())));
+      new_raster_required_for_activation_finished_task(CreateRasterFinishedTask(
+          task_runner_.get(),
+          base::Bind(
+              &GpuRasterWorkerPool::OnRasterRequiredForActivationFinished,
+              raster_finished_weak_ptr_factory_.GetWeakPtr())));
   scoped_refptr<RasterizerTask> new_raster_finished_task(
       CreateRasterFinishedTask(
           task_runner_.get(),
           base::Bind(&GpuRasterWorkerPool::OnRasterFinished,
                      raster_finished_weak_ptr_factory_.GetWeakPtr())));
+
+  size_t required_for_activation_count = 0;
 
   for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
        it != queue->items.end();
@@ -100,6 +94,7 @@ void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
     DCHECK(!task->HasCompleted());
 
     if (item.required_for_activation) {
+      ++required_for_activation_count;
       graph_.edges.push_back(TaskGraph::Edge(
           task, new_raster_required_for_activation_finished_task.get()));
     }
@@ -113,7 +108,7 @@ void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   InsertNodeForTask(&graph_,
                     new_raster_required_for_activation_finished_task.get(),
                     kRasterRequiredForActivationFinishedTaskPriority,
-                    queue->required_for_activation_count);
+                    required_for_activation_count);
   InsertNodeForTask(&graph_,
                     new_raster_finished_task.get(),
                     kRasterFinishedTaskPriority,

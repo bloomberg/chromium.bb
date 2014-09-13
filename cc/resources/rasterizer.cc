@@ -61,18 +61,16 @@ RasterTaskQueue::Item::Item(RasterTask* task, bool required_for_activation)
 
 RasterTaskQueue::Item::~Item() {}
 
-RasterTaskQueue::RasterTaskQueue() : required_for_activation_count(0u) {}
+RasterTaskQueue::RasterTaskQueue() {
+}
 
 RasterTaskQueue::~RasterTaskQueue() {}
 
 void RasterTaskQueue::Swap(RasterTaskQueue* other) {
   items.swap(other->items);
-  std::swap(required_for_activation_count,
-            other->required_for_activation_count);
 }
 
 void RasterTaskQueue::Reset() {
-  required_for_activation_count = 0u;
   items.clear();
 }
 
