@@ -175,6 +175,9 @@
                     '|Source/core/css/MediaQuery' \
                     '|Source/core/css/parser/MediaQuery'
     },
+    'modules': {
+      'filepath': 'Source/modules/'
+    },
     'navigator_content_utils': {
       'filepath': 'Source/modules/navigatorcontentutils' \
                   '|LayoutTests/fast/dom/navigatorcontentutils'
@@ -245,6 +248,9 @@
                   '|LayoutTests/fast/dom/DeviceOrientation/' \
                   '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base' \
                   '|Source/core/frame/DeviceSingleWindowEventController'
+    },
+    'web': {
+      'filepath': 'Source/web/'
     },
     'webp': {
       'filepath': 'Source/platform/image-decoders/webp' \
@@ -333,6 +339,8 @@
                            'dschulze@chromium.org',
                            'rob.buis@samsung.com',
                            'jbroman@chromium.org' ],
+    'platform': [ 'mkwst+moarreviews@chromium.org' ],
+    'web': [ 'mkwst+moarreviews@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr@chromium.org', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com', 'fs@opera.com', 'ed+blinkwatch@opera.com', 'gyuyoung.kim@webkit.org', 'kouhei+svg@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ed+blinkwatch@opera.com', 'rune+blink@opera.com', 'rob.buis@samsung.com', 'blink-reviews-css@chromium.org' ],
     'dom': [ 'eae+blinkwatch@chromium.org',
@@ -350,7 +358,8 @@
     'wtf': [ 'abarth@chromium.org',
              'mikhail.pozdnyakov@intel.com',
              'aandrey+blink@chromium.org',
-             'blink-reviews-wtf@chromium.org' ],
+             'blink-reviews-wtf@chromium.org'
+             'mkwst+moarreviews@chromium.org' ],
     'indexed_db': ['dgrogan@chromium.org',
                    'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
     'rendering': [ 'pdr@chromium.org',
