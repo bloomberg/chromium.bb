@@ -67,6 +67,10 @@ class BasicPolicy : public SandboxBPFDSLPolicy {
       const Arg<pid_t> pid(0);
       return If(pid == 0, Error(EPERM)).Else(Error(EINVAL));
     }
+    if (sysno == __NR_setuid) {
+      const Arg<uid_t> uid(0);
+      return If(uid != 42, Error(ESRCH)).Else(Error(ENOMEM));
+    }
     return Allow();
   }
 
@@ -77,6 +81,9 @@ class BasicPolicy : public SandboxBPFDSLPolicy {
 BPF_TEST_C(BPFDSL, Basic, BasicPolicy) {
   ASSERT_SYSCALL_RESULT(-EPERM, getpgid, 0);
   ASSERT_SYSCALL_RESULT(-EINVAL, getpgid, 1);
+
+  ASSERT_SYSCALL_RESULT(-ENOMEM, setuid, 42);
+  ASSERT_SYSCALL_RESULT(-ESRCH, setuid, 43);
 }
 
 /* On IA-32, socketpair() is implemented via socketcall(). :-( */

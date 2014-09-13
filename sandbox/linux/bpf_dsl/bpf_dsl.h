@@ -60,11 +60,12 @@ class SandboxBPF;
 //
 // More generally, the DSL currently supports the following grammar:
 //
-//   result = Allow() | Error(errno) | Trap(trap_func, aux)
+//   result = Allow() | Error(errno) | Kill(msg) | Trace(aux)
+//          | Trap(trap_func, aux) | UnsafeTrap(trap_func, aux)
 //          | If(bool, result)[.ElseIf(bool, result)].Else(result)
 //          | Switch(arg)[.Case(val, result)].Default(result)
 //   bool   = BoolConst(boolean) | !bool | bool && bool | bool || bool
-//          | arg == val
+//          | arg == val | arg != val
 //   arg    = Arg<T>(num) | arg & mask
 //
 // The semantics of each function and operator are intended to be
@@ -113,7 +114,7 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy : public SandboxBPFPolicy {
   virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const OVERRIDE FINAL;
 
   // Helper method so policies can just write Trap(func, aux).
-  static ResultExpr Trap(Trap::TrapFnc trap_func, void* aux);
+  static ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
@@ -129,10 +130,37 @@ SANDBOX_EXPORT ResultExpr Allow();
 // side effects.
 SANDBOX_EXPORT ResultExpr Error(int err);
 
+// Kill specifies a result to kill the program and print an error message.
+SANDBOX_EXPORT ResultExpr Kill(const char* msg);
+
+// Trace specifies a result to notify a tracing process via the
+// PTRACE_EVENT_SECCOMP event and allow it to change or skip the system call.
+// The value of |aux| will be available to the tracer via PTRACE_GETEVENTMSG.
+SANDBOX_EXPORT ResultExpr Trace(uint16_t aux);
+
 // Trap specifies a result that the system call should be handled by
 // trapping back into userspace and invoking |trap_func|, passing
 // |aux| as the second parameter.
-SANDBOX_EXPORT ResultExpr Trap(Trap::TrapFnc trap_func, void* aux);
+SANDBOX_EXPORT ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
+
+// UnsafeTrap is like Trap, except the policy is marked as "unsafe"
+// and allowed to use SandboxSyscall to invoke any system call.
+//
+// NOTE: This feature, by definition, disables all security features of
+//   the sandbox. It should never be used in production, but it can be
+//   very useful to diagnose code that is incompatible with the sandbox.
+//   If even a single system call returns "UnsafeTrap", the security of
+//   entire sandbox should be considered compromised.
+SANDBOX_EXPORT ResultExpr UnsafeTrap(Trap::TrapFnc trap_func, const void* aux);
+
+// BoolConst converts a bool value into a BoolExpr.
+SANDBOX_EXPORT BoolExpr BoolConst(bool value);
+
+// Various ways to combine boolean expressions into more complex expressions.
+// They follow standard boolean algebra laws.
+SANDBOX_EXPORT BoolExpr operator!(const BoolExpr& cond);
+SANDBOX_EXPORT BoolExpr operator&&(const BoolExpr& lhs, const BoolExpr& rhs);
+SANDBOX_EXPORT BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs);
 
 template <typename T>
 class SANDBOX_EXPORT Arg {
@@ -149,9 +177,13 @@ class SANDBOX_EXPORT Arg {
     return Arg(lhs.num_, lhs.mask_ & rhs);
   }
 
-  // Returns a boolean expression comparing whether the system call
-  // argument (after applying any bitmasks, if appropriate) equals |rhs|.
+  // Returns a boolean expression comparing whether the system call argument
+  // (after applying any bitmasks, if appropriate) equals |rhs|.
   friend BoolExpr operator==(const Arg& lhs, T rhs) { return lhs.EqualTo(rhs); }
+
+  // Returns a boolean expression comparing whether the system call argument
+  // (after applying any bitmasks, if appropriate) does not equal |rhs|.
+  friend BoolExpr operator!=(const Arg& lhs, T rhs) { return !(lhs == rhs); }
 
  private:
   Arg(int num, uint64_t mask) : num_(num), mask_(mask) {}
@@ -163,15 +195,6 @@ class SANDBOX_EXPORT Arg {
 
   DISALLOW_ASSIGN(Arg);
 };
-
-// Convert a bool value into a BoolExpr.
-SANDBOX_EXPORT BoolExpr BoolConst(bool value);
-
-// Various ways to combine boolean expressions into more complex expressions.
-// They follow standard boolean algebra laws.
-SANDBOX_EXPORT BoolExpr operator!(const BoolExpr& cond);
-SANDBOX_EXPORT BoolExpr operator&&(const BoolExpr& lhs, const BoolExpr& rhs);
-SANDBOX_EXPORT BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs);
 
 // If begins a conditional result expression predicated on the
 // specified boolean expression.

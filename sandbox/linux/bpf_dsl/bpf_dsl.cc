@@ -49,9 +49,42 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
   DISALLOW_COPY_AND_ASSIGN(ErrorResultExprImpl);
 };
 
+class KillResultExprImpl : public internal::ResultExprImpl {
+ public:
+  explicit KillResultExprImpl(const char* msg) : msg_(msg) { DCHECK(msg_); }
+
+  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+    return sb->Kill(msg_);
+  }
+
+ private:
+  virtual ~KillResultExprImpl() {}
+
+  const char* msg_;
+
+  DISALLOW_COPY_AND_ASSIGN(KillResultExprImpl);
+};
+
+class TraceResultExprImpl : public internal::ResultExprImpl {
+ public:
+  TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
+
+  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+    return ErrorCode(ErrorCode::ERR_TRACE + aux_);
+  }
+
+ private:
+  virtual ~TraceResultExprImpl() {}
+
+  uint16_t aux_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceResultExprImpl);
+};
+
 class TrapResultExprImpl : public internal::ResultExprImpl {
  public:
-  TrapResultExprImpl(Trap::TrapFnc func, void* arg) : func_(func), arg_(arg) {
+  TrapResultExprImpl(Trap::TrapFnc func, const void* arg)
+      : func_(func), arg_(arg) {
     DCHECK(func_);
   }
 
@@ -63,9 +96,29 @@ class TrapResultExprImpl : public internal::ResultExprImpl {
   virtual ~TrapResultExprImpl() {}
 
   Trap::TrapFnc func_;
-  void* arg_;
+  const void* arg_;
 
   DISALLOW_COPY_AND_ASSIGN(TrapResultExprImpl);
+};
+
+class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
+ public:
+  UnsafeTrapResultExprImpl(Trap::TrapFnc func, const void* arg)
+      : func_(func), arg_(arg) {
+    DCHECK(func_);
+  }
+
+  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+    return sb->UnsafeTrap(func_, arg_);
+  }
+
+ private:
+  virtual ~UnsafeTrapResultExprImpl() {}
+
+  Trap::TrapFnc func_;
+  const void* arg_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnsafeTrapResultExprImpl);
 };
 
 class IfThenResultExprImpl : public internal::ResultExprImpl {
@@ -228,8 +281,20 @@ ResultExpr Error(int err) {
   return ResultExpr(new const ErrorResultExprImpl(err));
 }
 
-ResultExpr Trap(Trap::TrapFnc trap_func, void* aux) {
+ResultExpr Kill(const char* msg) {
+  return ResultExpr(new const KillResultExprImpl(msg));
+}
+
+ResultExpr Trace(uint16_t aux) {
+  return ResultExpr(new const TraceResultExprImpl(aux));
+}
+
+ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux) {
   return ResultExpr(new const TrapResultExprImpl(trap_func, aux));
+}
+
+ResultExpr UnsafeTrap(Trap::TrapFnc trap_func, const void* aux) {
+  return ResultExpr(new const UnsafeTrapResultExprImpl(trap_func, aux));
 }
 
 BoolExpr BoolConst(bool value) {
@@ -311,7 +376,7 @@ ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(SandboxBPF* sb) const {
   return InvalidSyscall()->Compile(sb);
 }
 
-ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, void* aux) {
+ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, const void* aux) {
   return bpf_dsl::Trap(trap_func, aux);
 }
 

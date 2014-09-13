@@ -31,6 +31,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
@@ -51,6 +52,7 @@
 #endif
 
 namespace sandbox {
+namespace bpf_dsl {
 
 namespace {
 
@@ -103,21 +105,22 @@ intptr_t IncreaseCounter(const struct arch_seccomp_data& args, void* aux) {
   return (*counter)++;
 }
 
-class VerboseAPITestingPolicy : public SandboxBPFPolicy {
+class VerboseAPITestingPolicy : public SandboxBPFDSLPolicy {
  public:
   VerboseAPITestingPolicy(int* counter_ptr) : counter_ptr_(counter_ptr) {}
+  virtual ~VerboseAPITestingPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
-      return sandbox->Trap(IncreaseCounter, counter_ptr_);
+      return Trap(IncreaseCounter, counter_ptr_);
     }
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:
   int* counter_ptr_;
+
   DISALLOW_COPY_AND_ASSIGN(VerboseAPITestingPolicy);
 };
 
@@ -140,16 +143,18 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
 
 // A simple blacklist test
 
-class BlacklistNanosleepPolicy : public SandboxBPFPolicy {
+class BlacklistNanosleepPolicy : public SandboxBPFDSLPolicy {
  public:
   BlacklistNanosleepPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysno) const OVERRIDE {
+  virtual ~BlacklistNanosleepPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_nanosleep:
-        return ErrorCode(EACCES);
+        return Error(EACCES);
       default:
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
     }
   }
 
@@ -170,17 +175,19 @@ BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
 
 // Now do a simple whitelist test
 
-class WhitelistGetpidPolicy : public SandboxBPFPolicy {
+class WhitelistGetpidPolicy : public SandboxBPFDSLPolicy {
  public:
   WhitelistGetpidPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysno) const OVERRIDE {
+  virtual ~WhitelistGetpidPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_getpid:
       case __NR_exit_group:
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
       default:
-        return ErrorCode(ENOMEM);
+        return Error(ENOMEM);
     }
   }
 
@@ -240,41 +247,43 @@ BPF_TEST(SandboxBPF,
 
 // A simple test that verifies we can return arbitrary errno values.
 
-class ErrnoTestPolicy : public SandboxBPFPolicy {
+class ErrnoTestPolicy : public SandboxBPFDSLPolicy {
  public:
   ErrnoTestPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysno) const OVERRIDE;
+  virtual ~ErrnoTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ErrnoTestPolicy);
 };
 
-ErrorCode ErrnoTestPolicy::EvaluateSyscall(SandboxBPF*, int sysno) const {
+ResultExpr ErrnoTestPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   switch (sysno) {
-    case __NR_dup3:    // dup2 is a wrapper of dup3 in android
+    case __NR_dup3:  // dup2 is a wrapper of dup3 in android
 #if defined(__NR_dup2)
     case __NR_dup2:
 #endif
       // Pretend that dup2() worked, but don't actually do anything.
-      return ErrorCode(0);
+      return Error(0);
     case __NR_setuid:
 #if defined(__NR_setuid32)
     case __NR_setuid32:
 #endif
       // Return errno = 1.
-      return ErrorCode(1);
+      return Error(1);
     case __NR_setgid:
 #if defined(__NR_setgid32)
     case __NR_setgid32:
 #endif
       // Return maximum errno value (typically 4095).
-      return ErrorCode(ErrorCode::ERR_MAX_ERRNO);
+      return Error(ErrorCode::ERR_MAX_ERRNO);
     case __NR_uname:
       // Return errno = 42;
-      return ErrorCode(42);
+      return Error(42);
     default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
   }
 }
 
@@ -320,22 +329,20 @@ BPF_TEST_C(SandboxBPF, ErrnoTest, ErrnoTestPolicy) {
 
 // Testing the stacking of two sandboxes
 
-class StackingPolicyPartOne : public SandboxBPFPolicy {
+class StackingPolicyPartOne : public SandboxBPFDSLPolicy {
  public:
   StackingPolicyPartOne() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ~StackingPolicyPartOne() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
-      case __NR_getppid:
-        return sandbox->Cond(0,
-                             ErrorCode::TP_32BIT,
-                             ErrorCode::OP_EQUAL,
-                             0,
-                             ErrorCode(ErrorCode::ERR_ALLOWED),
-                             ErrorCode(EPERM));
+      case __NR_getppid: {
+        const Arg<int> arg(0);
+        return If(arg == 0, Allow()).Else(Error(EPERM));
+      }
       default:
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
     }
   }
 
@@ -343,22 +350,20 @@ class StackingPolicyPartOne : public SandboxBPFPolicy {
   DISALLOW_COPY_AND_ASSIGN(StackingPolicyPartOne);
 };
 
-class StackingPolicyPartTwo : public SandboxBPFPolicy {
+class StackingPolicyPartTwo : public SandboxBPFDSLPolicy {
  public:
   StackingPolicyPartTwo() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ~StackingPolicyPartTwo() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
-      case __NR_getppid:
-        return sandbox->Cond(0,
-                             ErrorCode::TP_32BIT,
-                             ErrorCode::OP_EQUAL,
-                             0,
-                             ErrorCode(EINVAL),
-                             ErrorCode(ErrorCode::ERR_ALLOWED));
+      case __NR_getppid: {
+        const Arg<int> arg(0);
+        return If(arg == 0, Error(EINVAL)).Else(Allow());
+      }
       default:
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
     }
   }
 
@@ -403,17 +408,19 @@ int SysnoToRandomErrno(int sysno) {
   return ((sysno & ~3) >> 2) % 29 + 1;
 }
 
-class SyntheticPolicy : public SandboxBPFPolicy {
+class SyntheticPolicy : public SandboxBPFDSLPolicy {
  public:
   SyntheticPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysno) const OVERRIDE {
+  virtual ~SyntheticPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_exit_group || sysno == __NR_write) {
       // exit_group() is special, we really need it to work.
       // write() is needed for BPF_ASSERT() to report a useful error message.
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     }
-    return ErrorCode(SysnoToRandomErrno(sysno));
+    return Error(SysnoToRandomErrno(sysno));
   }
 
  private:
@@ -454,18 +461,20 @@ int ArmPrivateSysnoToErrno(int sysno) {
   }
 }
 
-class ArmPrivatePolicy : public SandboxBPFPolicy {
+class ArmPrivatePolicy : public SandboxBPFDSLPolicy {
  public:
   ArmPrivatePolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysno) const OVERRIDE {
+  virtual ~ArmPrivatePolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     // Start from |__ARM_NR_set_tls + 1| so as not to mess with actual
     // ARM private system calls.
     if (sysno >= static_cast<int>(__ARM_NR_set_tls + 1) &&
         sysno <= static_cast<int>(MAX_PRIVATE_SYSCALL)) {
-      return ErrorCode(ArmPrivateSysnoToErrno(sysno));
+      return Error(ArmPrivateSysnoToErrno(sysno));
     }
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:
@@ -557,22 +566,23 @@ intptr_t PrctlHandler(const struct arch_seccomp_data& args, void*) {
   }
 }
 
-class PrctlPolicy : public SandboxBPFPolicy {
+class PrctlPolicy : public SandboxBPFDSLPolicy {
  public:
   PrctlPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ~PrctlPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     setenv(kSandboxDebuggingEnv, "t", 0);
     Die::SuppressInfoMessages(true);
 
     if (sysno == __NR_prctl) {
       // Handle prctl() inside an UnsafeTrap()
-      return sandbox->UnsafeTrap(PrctlHandler, NULL);
+      return UnsafeTrap(PrctlHandler, NULL);
     }
 
     // Allow all other system calls.
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:
@@ -610,18 +620,18 @@ intptr_t AllowRedirectedSyscall(const struct arch_seccomp_data& args, void*) {
   return SandboxBPF::ForwardSyscall(args);
 }
 
-class RedirectAllSyscallsPolicy : public SandboxBPFPolicy {
+class RedirectAllSyscallsPolicy : public SandboxBPFDSLPolicy {
  public:
   RedirectAllSyscallsPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~RedirectAllSyscallsPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RedirectAllSyscallsPolicy);
 };
 
-ErrorCode RedirectAllSyscallsPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                     int sysno) const {
+ResultExpr RedirectAllSyscallsPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   setenv(kSandboxDebuggingEnv, "t", 0);
   Die::SuppressInfoMessages(true);
@@ -629,8 +639,8 @@ ErrorCode RedirectAllSyscallsPolicy::EvaluateSyscall(SandboxBPF* sandbox,
   // Some system calls must always be allowed, if our policy wants to make
   // use of UnsafeTrap()
   if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  return sandbox->UnsafeTrap(AllowRedirectedSyscall, NULL);
+    return Allow();
+  return UnsafeTrap(AllowRedirectedSyscall, NULL);
 }
 
 int bus_handler_fd_ = -1;
@@ -714,7 +724,9 @@ BPF_TEST_C(SandboxBPF, UnsafeTrapWithErrno, RedirectAllSyscallsPolicy) {
   BPF_ASSERT(errno == 0);
 }
 
-bool NoOpCallback() { return true; }
+bool NoOpCallback() {
+  return true;
+}
 
 // Test a trap handler that makes use of a broker process to open().
 
@@ -746,7 +758,7 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
   BPF_ASSERT(aux);
   BrokerProcess* broker_process = static_cast<BrokerProcess*>(aux);
   switch (args.nr) {
-    case __NR_faccessat:    // access is a wrapper of faccessat in android
+    case __NR_faccessat:  // access is a wrapper of faccessat in android
       BPF_ASSERT(static_cast<int>(args.args[0]) == AT_FDCWD);
       return broker_process->Access(reinterpret_cast<const char*>(args.args[1]),
                                     static_cast<int>(args.args[2]));
@@ -846,18 +858,18 @@ BPF_TEST(SandboxBPF,
 
 // Simple test demonstrating how to use SandboxBPF::Cond()
 
-class SimpleCondTestPolicy : public SandboxBPFPolicy {
+class SimpleCondTestPolicy : public SandboxBPFDSLPolicy {
  public:
   SimpleCondTestPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~SimpleCondTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleCondTestPolicy);
 };
 
-ErrorCode SimpleCondTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                int sysno) const {
+ResultExpr SimpleCondTestPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
 
   // We deliberately return unusual errno values upon failure, so that we
@@ -869,34 +881,24 @@ ErrorCode SimpleCondTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_open:
       flags_argument_position = 1;
 #endif
-    case __NR_openat:  // open can be a wrapper for openat(2).
+    case __NR_openat: {  // open can be a wrapper for openat(2).
       if (sysno == __NR_openat)
         flags_argument_position = 2;
 
       // Allow opening files for reading, but don't allow writing.
       COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
-      return sandbox->Cond(flags_argument_position,
-                           ErrorCode::TP_32BIT,
-                           ErrorCode::OP_HAS_ANY_BITS,
-                           O_ACCMODE /* 0x3 */,
-                           ErrorCode(EROFS),
-                           ErrorCode(ErrorCode::ERR_ALLOWED));
-    case __NR_prctl:
+      const Arg<int> flags(flags_argument_position);
+      return If((flags & O_ACCMODE) != 0, Error(EROFS)).Else(Allow());
+    }
+    case __NR_prctl: {
       // Allow prctl(PR_SET_DUMPABLE) and prctl(PR_GET_DUMPABLE), but
       // disallow everything else.
-      return sandbox->Cond(0,
-                           ErrorCode::TP_32BIT,
-                           ErrorCode::OP_EQUAL,
-                           PR_SET_DUMPABLE,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-                           sandbox->Cond(0,
-                                         ErrorCode::TP_32BIT,
-                                         ErrorCode::OP_EQUAL,
-                                         PR_GET_DUMPABLE,
-                                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                                         ErrorCode(ENOMEM)));
+      const Arg<int> option(0);
+      return If(option == PR_SET_DUMPABLE || option == PR_GET_DUMPABLE, Allow())
+          .Else(Error(ENOMEM));
+    }
     default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
   }
 }
 
@@ -1233,47 +1235,31 @@ BPF_TEST(SandboxBPF,
   BPF_AUX->VerifyFilter();
 }
 
-class EqualityArgumentWidthPolicy : public SandboxBPFPolicy {
+class EqualityArgumentWidthPolicy : public SandboxBPFDSLPolicy {
  public:
   EqualityArgumentWidthPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~EqualityArgumentWidthPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EqualityArgumentWidthPolicy);
 };
 
-ErrorCode EqualityArgumentWidthPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                       int sysno) const {
+ResultExpr EqualityArgumentWidthPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   if (sysno == __NR_uname) {
-    return sandbox->Cond(
-        0,
-        ErrorCode::TP_32BIT,
-        ErrorCode::OP_EQUAL,
-        0,
-        sandbox->Cond(1,
-                      ErrorCode::TP_32BIT,
-                      ErrorCode::OP_EQUAL,
-                      0x55555555,
-                      ErrorCode(1),
-                      ErrorCode(2)),
-        // The BPF compiler and the BPF interpreter in the kernel are
-        // (mostly) agnostic of the host platform's word size. The compiler
-        // will happily generate code that tests a 64bit value, and the
-        // interpreter will happily perform this test.
-        // But unless there is a kernel bug, there is no way for us to pass
-        // in a 64bit quantity on a 32bit platform. The upper 32bits should
-        // always be zero. So, this test should always evaluate as false on
-        // 32bit systems.
-        sandbox->Cond(1,
-                      ErrorCode::TP_64BIT,
-                      ErrorCode::OP_EQUAL,
-                      0x55555555AAAAAAAAULL,
-                      ErrorCode(1),
-                      ErrorCode(2)));
+    const Arg<int> option(0);
+    const Arg<uint32_t> arg32(1);
+    const Arg<uint64_t> arg64(1);
+    return Switch(option)
+        .Case(0, If(arg32 == 0x55555555, Error(1)).Else(Error(2)))
+#if __SIZEOF_POINTER__ > 4
+        .Case(1, If(arg64 == 0x55555555AAAAAAAAULL, Error(1)).Else(Error(2)))
+#endif
+        .Default(Error(3));
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+  return Allow();
 }
 
 BPF_TEST_C(SandboxBPF, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
@@ -1287,8 +1273,6 @@ BPF_TEST_C(SandboxBPF, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
   BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x5555555500000000ULL) == -2);
   BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x5555555511111111ULL) == -2);
   BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x11111111AAAAAAAAULL) == -2);
-#else
-  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x55555555) == -2);
 #endif
 }
 
@@ -1304,21 +1288,21 @@ BPF_DEATH_TEST_C(SandboxBPF,
 }
 #endif
 
-class EqualityWithNegativeArgumentsPolicy : public SandboxBPFPolicy {
+class EqualityWithNegativeArgumentsPolicy : public SandboxBPFDSLPolicy {
  public:
   EqualityWithNegativeArgumentsPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ~EqualityWithNegativeArgumentsPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
-      return sandbox->Cond(0,
-                           ErrorCode::TP_32BIT,
-                           ErrorCode::OP_EQUAL,
-                           0xFFFFFFFF,
-                           ErrorCode(1),
-                           ErrorCode(2));
+      // TODO(mdempsky): This currently can't be Arg<int> because then
+      // 0xFFFFFFFF will be treated as a (signed) int, and then when
+      // Arg::EqualTo casts it to uint64_t, it will be sign extended.
+      const Arg<unsigned> arg(0);
+      return If(arg == 0xFFFFFFFF, Error(1)).Else(Error(2));
     }
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:
@@ -1344,83 +1328,64 @@ BPF_DEATH_TEST_C(SandboxBPF,
   BPF_ASSERT(Syscall::Call(__NR_uname, 0xFFFFFFFF00000000LL) == -1);
 }
 #endif
-class AllBitTestPolicy : public SandboxBPFPolicy {
+
+class AllBitTestPolicy : public SandboxBPFDSLPolicy {
  public:
   AllBitTestPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~AllBitTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
+  static ResultExpr HasAllBits32(uint32_t bits);
+  static ResultExpr HasAllBits64(uint64_t bits);
+
   DISALLOW_COPY_AND_ASSIGN(AllBitTestPolicy);
 };
 
-ErrorCode AllBitTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                            int sysno) const {
+ResultExpr AllBitTestPolicy::HasAllBits32(uint32_t bits) {
+  if (bits == 0) {
+    return Error(1);
+  }
+  const Arg<uint32_t> arg(1);
+  return If((arg & bits) == bits, Error(1)).Else(Error(0));
+}
+
+ResultExpr AllBitTestPolicy::HasAllBits64(uint64_t bits) {
+  if (bits == 0) {
+    return Error(1);
+  }
+  const Arg<uint64_t> arg(1);
+  return If((arg & bits) == bits, Error(1)).Else(Error(0));
+}
+
+ResultExpr AllBitTestPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-  // Test the OP_HAS_ALL_BITS conditional test operator with a couple of
-  // different bitmasks. We try to find bitmasks that could conceivably
+  // Test masked-equality cases that should trigger the "has all bits"
+  // peephole optimizations. We try to find bitmasks that could conceivably
   // touch corner cases.
   // For all of these tests, we override the uname(). We can make use with
   // a single system call number, as we use the first system call argument to
   // select the different bit masks that we want to test against.
   if (sysno == __NR_uname) {
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 0,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 1,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 2,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 3,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 4,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 5,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 6,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 7,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 8,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x100000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 9,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x300000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 10,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         0x100000001ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-                         sandbox->Kill("Invalid test case number"))))))))))));
+    const Arg<int> option(0);
+    return Switch(option)
+        .Case(0, HasAllBits32(0x0))
+        .Case(1, HasAllBits32(0x1))
+        .Case(2, HasAllBits32(0x3))
+        .Case(3, HasAllBits32(0x80000000))
+#if __SIZEOF_POINTER__ > 4
+        .Case(4, HasAllBits64(0x0))
+        .Case(5, HasAllBits64(0x1))
+        .Case(6, HasAllBits64(0x3))
+        .Case(7, HasAllBits64(0x80000000))
+        .Case(8, HasAllBits64(0x100000000ULL))
+        .Case(9, HasAllBits64(0x300000000ULL))
+        .Case(10, HasAllBits64(0x100000001ULL))
+#endif
+        .Default(Kill("Invalid test case number"));
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+  return Allow();
 }
 
 // Define a macro that performs tests using our test policy.
@@ -1473,6 +1438,7 @@ BPF_TEST_C(SandboxBPF, AllBitTests, AllBitTestPolicy) {
   BITMASK_TEST( 3,         0xC0000000U, ALLBITS32, 0x80000000, EXPECT_SUCCESS);
   BITMASK_TEST( 3,       -0x80000000LL, ALLBITS32, 0x80000000, EXPECT_SUCCESS);
 
+#if __SIZEOF_POINTER__ > 4
   // 64bit test: all of 0x0 (should always be true)
   BITMASK_TEST( 4,                   0, ALLBITS64,          0, EXPECT_SUCCESS);
   BITMASK_TEST( 4,                   1, ALLBITS64,          0, EXPECT_SUCCESS);
@@ -1546,88 +1512,66 @@ BPF_TEST_C(SandboxBPF, AllBitTests, AllBitTestPolicy) {
   BITMASK_TEST(10,       0x100000001LL, ALLBITS64,0x100000001, EXPT64_SUCCESS);
   BITMASK_TEST(10,         0xFFFFFFFFU, ALLBITS64,0x100000001, EXPECT_FAILURE);
   BITMASK_TEST(10,                 -1L, ALLBITS64,0x100000001, EXPT64_SUCCESS);
+#endif
 }
 
-class AnyBitTestPolicy : public SandboxBPFPolicy {
+class AnyBitTestPolicy : public SandboxBPFDSLPolicy {
  public:
   AnyBitTestPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~AnyBitTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
+  static ResultExpr HasAnyBits32(uint32_t);
+  static ResultExpr HasAnyBits64(uint64_t);
+
   DISALLOW_COPY_AND_ASSIGN(AnyBitTestPolicy);
 };
 
-ErrorCode AnyBitTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                            int sysno) const {
+ResultExpr AnyBitTestPolicy::HasAnyBits32(uint32_t bits) {
+  if (bits == 0) {
+    return Error(0);
+  }
+  const Arg<uint32_t> arg(1);
+  return If((arg & bits) != 0, Error(1)).Else(Error(0));
+}
+
+ResultExpr AnyBitTestPolicy::HasAnyBits64(uint64_t bits) {
+  if (bits == 0) {
+    return Error(0);
+  }
+  const Arg<uint64_t> arg(1);
+  return If((arg & bits) != 0, Error(1)).Else(Error(0));
+}
+
+ResultExpr AnyBitTestPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-  // Test the OP_HAS_ANY_BITS conditional test operator with a couple of
-  // different bitmasks. We try to find bitmasks that could conceivably
+  // Test masked-equality cases that should trigger the "has any bits"
+  // peephole optimizations. We try to find bitmasks that could conceivably
   // touch corner cases.
   // For all of these tests, we override the uname(). We can make use with
   // a single system call number, as we use the first system call argument to
   // select the different bit masks that we want to test against.
   if (sysno == __NR_uname) {
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 0,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 1,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 2,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 3,
-           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           // All the following tests don't really make much sense on 32bit
-           // systems. They will always evaluate as false.
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 4,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x0,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 5,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x1,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 6,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x3,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 7,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x80000000,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 8,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x100000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 9,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x300000000ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, 10,
-           sandbox->Cond(1, ErrorCode::TP_64BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         0x100000001ULL,
-                         ErrorCode(1), ErrorCode(0)),
-
-                         sandbox->Kill("Invalid test case number"))))))))))));
+    const Arg<int> option(0);
+    return Switch(option)
+        .Case(0, HasAnyBits32(0x0))
+        .Case(1, HasAnyBits32(0x1))
+        .Case(2, HasAnyBits32(0x3))
+        .Case(3, HasAnyBits32(0x80000000))
+#if __SIZEOF_POINTER__ > 4
+        .Case(4, HasAnyBits64(0x0))
+        .Case(5, HasAnyBits64(0x1))
+        .Case(6, HasAnyBits64(0x3))
+        .Case(7, HasAnyBits64(0x80000000))
+        .Case(8, HasAnyBits64(0x100000000ULL))
+        .Case(9, HasAnyBits64(0x300000000ULL))
+        .Case(10, HasAnyBits64(0x100000001ULL))
+#endif
+        .Default(Kill("Invalid test case number"));
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+  return Allow();
 }
 
 BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
@@ -1658,6 +1602,7 @@ BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
   BITMASK_TEST( 3,         0xC0000000U, ANYBITS32, 0x80000000, EXPECT_SUCCESS);
   BITMASK_TEST( 3,       -0x80000000LL, ANYBITS32, 0x80000000, EXPECT_SUCCESS);
 
+#if __SIZEOF_POINTER__ > 4
   // 64bit test: any of 0x0 (should always be false)
   BITMASK_TEST( 4,                   0, ANYBITS64,        0x0, EXPECT_FAILURE);
   BITMASK_TEST( 4,                   1, ANYBITS64,        0x0, EXPECT_FAILURE);
@@ -1731,57 +1676,48 @@ BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
   BITMASK_TEST( 10,      0x100000001LL, ANYBITS64,0x100000001, EXPECT_SUCCESS);
   BITMASK_TEST( 10,        0xFFFFFFFFU, ANYBITS64,0x100000001, EXPECT_SUCCESS);
   BITMASK_TEST( 10,                -1L, ANYBITS64,0x100000001, EXPECT_SUCCESS);
+#endif
 }
 
-class MaskedEqualTestPolicy : public SandboxBPFPolicy {
+class MaskedEqualTestPolicy : public SandboxBPFDSLPolicy {
  public:
   MaskedEqualTestPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~MaskedEqualTestPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
-  struct Rule {
-    ErrorCode::ArgType arg_type;
-    uint64_t mask;
-    uint64_t value;
-  };
-
-  static Rule rules[];
+  static ResultExpr MaskedEqual32(uint32_t mask, uint32_t value);
+  static ResultExpr MaskedEqual64(uint64_t mask, uint64_t value);
 
   DISALLOW_COPY_AND_ASSIGN(MaskedEqualTestPolicy);
 };
 
-MaskedEqualTestPolicy::Rule MaskedEqualTestPolicy::rules[] = {
-    /* 0 = */ {ErrorCode::TP_32BIT, 0x0000000000ff00ff, 0x00000000005500aa},
+ResultExpr MaskedEqualTestPolicy::MaskedEqual32(uint32_t mask, uint32_t value) {
+  const Arg<uint32_t> arg(1);
+  return If((arg & mask) == value, Error(1)).Else(Error(0));
+}
 
-#if __SIZEOF_POINTER__ > 4
-    /* 1 = */ {ErrorCode::TP_64BIT, 0x00ff00ff00000000, 0x005500aa00000000},
-    /* 2 = */ {ErrorCode::TP_64BIT, 0x00ff00ff00ff00ff, 0x005500aa005500aa},
-#endif
-};
+ResultExpr MaskedEqualTestPolicy::MaskedEqual64(uint64_t mask, uint64_t value) {
+  const Arg<uint64_t> arg(1);
+  return If((arg & mask) == value, Error(1)).Else(Error(0));
+}
 
-ErrorCode MaskedEqualTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                 int sysno) const {
+ResultExpr MaskedEqualTestPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
 
   if (sysno == __NR_uname) {
-    ErrorCode err = sandbox->Kill("Invalid test case number");
-    for (size_t i = 0; i < arraysize(rules); i++) {
-      err = sandbox->Cond(0,
-                          ErrorCode::TP_32BIT,
-                          ErrorCode::OP_EQUAL,
-                          i,
-                          sandbox->CondMaskedEqual(1,
-                                                   rules[i].arg_type,
-                                                   rules[i].mask,
-                                                   rules[i].value,
-                                                   ErrorCode(1),
-                                                   ErrorCode(0)),
-                          err);
-    }
-    return err;
+    const Arg<int> option(0);
+    return Switch(option)
+        .Case(0, MaskedEqual32(0x00ff00ff, 0x005500aa))
+#if __SIZEOF_POINTER__ > 4
+        .Case(1, MaskedEqual64(0x00ff00ff00000000, 0x005500aa00000000))
+        .Case(2, MaskedEqual64(0x00ff00ff00ff00ff, 0x005500aa005500aa))
+#endif
+        .Default(Kill("Invalid test case number"));
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+  return Allow();
 }
 
 #define MASKEQ_TEST(rulenum, arg, expected_result) \
@@ -1870,18 +1806,18 @@ intptr_t PthreadTrapHandler(const struct arch_seccomp_data& args, void* aux) {
   return -EPERM;
 }
 
-class PthreadPolicyEquality : public SandboxBPFPolicy {
+class PthreadPolicyEquality : public SandboxBPFDSLPolicy {
  public:
   PthreadPolicyEquality() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~PthreadPolicyEquality() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PthreadPolicyEquality);
 };
 
-ErrorCode PthreadPolicyEquality::EvaluateSyscall(SandboxBPF* sandbox,
-                                                 int sysno) const {
+ResultExpr PthreadPolicyEquality::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   // This policy allows creating threads with pthread_create(). But it
   // doesn't allow any other uses of clone(). Most notably, it does not
@@ -1897,39 +1833,48 @@ ErrorCode PthreadPolicyEquality::EvaluateSyscall(SandboxBPF* sandbox,
     // The following policy is very strict. It only allows the exact masks
     // that we have seen in known implementations. It is probably somewhat
     // stricter than what we would want to do.
-    const uint64_t kGlibcCloneMask =
-        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-        CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-        CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
-    const uint64_t kBaseAndroidCloneMask =
-        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-        CLONE_THREAD | CLONE_SYSVSEM;
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         kGlibcCloneMask,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         kBaseAndroidCloneMask | CLONE_DETACHED,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         kBaseAndroidCloneMask,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         sandbox->Trap(PthreadTrapHandler, "Unknown mask"))));
+    const uint64_t kGlibcCloneMask = CLONE_VM | CLONE_FS | CLONE_FILES |
+                                     CLONE_SIGHAND | CLONE_THREAD |
+                                     CLONE_SYSVSEM | CLONE_SETTLS |
+                                     CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+    const uint64_t kBaseAndroidCloneMask = CLONE_VM | CLONE_FS | CLONE_FILES |
+                                           CLONE_SIGHAND | CLONE_THREAD |
+                                           CLONE_SYSVSEM;
+    const Arg<unsigned long> flags(0);
+    return If(flags == kGlibcCloneMask ||
+                  flags == (kBaseAndroidCloneMask | CLONE_DETACHED) ||
+                  flags == kBaseAndroidCloneMask,
+              Allow()).Else(Trap(PthreadTrapHandler, "Unknown mask"));
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+  return Allow();
 }
 
-class PthreadPolicyBitMask : public SandboxBPFPolicy {
+class PthreadPolicyBitMask : public SandboxBPFDSLPolicy {
  public:
   PthreadPolicyBitMask() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE;
+  virtual ~PthreadPolicyBitMask() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE;
 
  private:
+  static BoolExpr HasAnyBits(const Arg<unsigned long>& arg, unsigned long bits);
+  static BoolExpr HasAllBits(const Arg<unsigned long>& arg, unsigned long bits);
+
   DISALLOW_COPY_AND_ASSIGN(PthreadPolicyBitMask);
 };
 
-ErrorCode PthreadPolicyBitMask::EvaluateSyscall(SandboxBPF* sandbox,
-                                                int sysno) const {
+BoolExpr PthreadPolicyBitMask::HasAnyBits(const Arg<unsigned long>& arg,
+                                          unsigned long bits) {
+  return (arg & bits) != 0;
+}
+
+BoolExpr PthreadPolicyBitMask::HasAllBits(const Arg<unsigned long>& arg,
+                                          unsigned long bits) {
+  return (arg & bits) == bits;
+}
+
+ResultExpr PthreadPolicyBitMask::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   // This policy allows creating threads with pthread_create(). But it
   // doesn't allow any other uses of clone(). Most notably, it does not
@@ -1945,30 +1890,31 @@ ErrorCode PthreadPolicyBitMask::EvaluateSyscall(SandboxBPF* sandbox,
     // err on the side of rather safe than sorry.
     // Very noticeably though, we disallow fork() (which is often just a
     // wrapper around clone()).
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         ~uint32(CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
-                                 CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|
-                                 CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|
-                                 CLONE_DETACHED),
-                         sandbox->Trap(PthreadTrapHandler,
-                                       "Unexpected CLONE_XXX flag found"),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
-                         CLONE_THREAD|CLONE_SYSVSEM,
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ALL_BITS,
-                         CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                         CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID,
-                         sandbox->Trap(PthreadTrapHandler,
-                                       "Must set either all or none of the TLS"
-                                       " and futex bits in call to clone()"),
-                         ErrorCode(ErrorCode::ERR_ALLOWED))),
-                         sandbox->Trap(PthreadTrapHandler,
-                                       "Missing mandatory CLONE_XXX flags "
-                                       "when creating new thread")));
+    const unsigned long kMandatoryFlags = CLONE_VM | CLONE_FS | CLONE_FILES |
+                                          CLONE_SIGHAND | CLONE_THREAD |
+                                          CLONE_SYSVSEM;
+    const unsigned long kFutexFlags =
+        CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+    const unsigned long kNoopFlags = CLONE_DETACHED;
+    const unsigned long kKnownFlags =
+        kMandatoryFlags | kFutexFlags | kNoopFlags;
+
+    const Arg<unsigned long> flags(0);
+    return If(HasAnyBits(flags, ~kKnownFlags),
+              Trap(PthreadTrapHandler, "Unexpected CLONE_XXX flag found"))
+        .ElseIf(!HasAllBits(flags, kMandatoryFlags),
+                Trap(PthreadTrapHandler,
+                     "Missing mandatory CLONE_XXX flags "
+                     "when creating new thread"))
+        .ElseIf(
+             !HasAllBits(flags, kFutexFlags) && HasAnyBits(flags, kFutexFlags),
+             Trap(PthreadTrapHandler,
+                  "Must set either all or none of the TLS and futex bits in "
+                  "call to clone()"))
+        .Else(Allow());
   }
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+  return Allow();
 }
 
 static void* ThreadFnc(void* arg) {
@@ -2075,14 +2021,13 @@ long SetSyscall(pid_t pid, regs_struct* regs, int syscall_number) {
 
 const uint16_t kTraceData = 0xcc;
 
-class TraceAllPolicy : public SandboxBPFPolicy {
+class TraceAllPolicy : public SandboxBPFDSLPolicy {
  public:
   TraceAllPolicy() {}
   virtual ~TraceAllPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
-    return ErrorCode(ErrorCode::ERR_TRACE + kTraceData);
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE {
+    return Trace(kTraceData);
   }
 
  private:
@@ -2137,8 +2082,11 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
   BPF_ASSERT(HANDLE_EINTR(waitpid(pid, &status, WUNTRACED)) != -1);
   BPF_ASSERT(WIFSTOPPED(status));
 
-  BPF_ASSERT_NE(-1, ptrace(PTRACE_SETOPTIONS, pid, NULL,
-                           reinterpret_cast<void*>(PTRACE_O_TRACESECCOMP)));
+  BPF_ASSERT_NE(-1,
+                ptrace(PTRACE_SETOPTIONS,
+                       pid,
+                       NULL,
+                       reinterpret_cast<void*>(PTRACE_O_TRACESECCOMP)));
   BPF_ASSERT_NE(-1, ptrace(PTRACE_CONT, pid, NULL, NULL));
   while (true) {
     BPF_ASSERT(HANDLE_EINTR(waitpid(pid, &status, 0)) != -1);
@@ -2219,22 +2167,21 @@ bool FullPread64(int fd, char* buffer, size_t count, off64_t offset) {
 
 bool pread_64_was_forwarded = false;
 
-class TrapPread64Policy : public SandboxBPFPolicy {
+class TrapPread64Policy : public SandboxBPFDSLPolicy {
  public:
   TrapPread64Policy() {}
   virtual ~TrapPread64Policy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE {
     // Set the global environment for unsafe traps once.
     if (system_call_number == MIN_SYSCALL) {
       EnableUnsafeTraps();
     }
 
     if (system_call_number == __NR_pread64) {
-      return sandbox_compiler->UnsafeTrap(ForwardPreadHandler, NULL);
+      return UnsafeTrap(ForwardPreadHandler, NULL);
     }
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
   }
 
  private:
@@ -2245,6 +2192,7 @@ class TrapPread64Policy : public SandboxBPFPolicy {
 
     return SandboxBPF::ForwardSyscall(args);
   }
+
   DISALLOW_COPY_AND_ASSIGN(TrapPread64Policy);
 };
 
@@ -2286,7 +2234,7 @@ void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
 
 SANDBOX_TEST(SandboxBPF, Tsync) {
   if (SandboxBPF::SupportsSeccompThreadFilterSynchronization() !=
-          SandboxBPF::STATUS_AVAILABLE) {
+      SandboxBPF::STATUS_AVAILABLE) {
     return;
   }
 
@@ -2294,8 +2242,8 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
 
   // Create a thread on which to invoke the blocked syscall.
   pthread_t thread;
-  BPF_ASSERT_EQ(0,
-      pthread_create(&thread, NULL, &TsyncApplyToTwoThreadsFunc, &event));
+  BPF_ASSERT_EQ(
+      0, pthread_create(&thread, NULL, &TsyncApplyToTwoThreadsFunc, &event));
 
   // Test that nanoseelp success.
   const struct timespec ts = {0, 0};
@@ -2316,21 +2264,22 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   BPF_ASSERT_EQ(0, pthread_join(thread, NULL));
 }
 
-class AllowAllPolicy : public SandboxBPFPolicy {
+class AllowAllPolicy : public SandboxBPFDSLPolicy {
  public:
-  AllowAllPolicy() : SandboxBPFPolicy() {}
+  AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    return Allow();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
 };
 
-SANDBOX_DEATH_TEST(SandboxBPF, StartMultiThreadedAsSingleThreaded,
+SANDBOX_DEATH_TEST(
+    SandboxBPF,
+    StartMultiThreadedAsSingleThreaded,
     DEATH_MESSAGE("Cannot start sandbox; process is already multi-threaded")) {
   base::Thread thread("sandbox.linux.StartMultiThreadedAsSingleThreaded");
   BPF_ASSERT(thread.Start());
@@ -2342,9 +2291,12 @@ SANDBOX_DEATH_TEST(SandboxBPF, StartMultiThreadedAsSingleThreaded,
 
 // http://crbug.com/407357
 #if !defined(THREAD_SANITIZER)
-SANDBOX_DEATH_TEST(SandboxBPF, StartSingleThreadedAsMultiThreaded,
-    DEATH_MESSAGE("Cannot start sandbox; process may be single-threaded when "
-                  "reported as not")) {
+SANDBOX_DEATH_TEST(
+    SandboxBPF,
+    StartSingleThreadedAsMultiThreaded,
+    DEATH_MESSAGE(
+        "Cannot start sandbox; process may be single-threaded when "
+        "reported as not")) {
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new AllowAllPolicy());
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
@@ -2356,46 +2308,39 @@ intptr_t NoOpHandler(const struct arch_seccomp_data& args, void*) {
   return -1;
 }
 
-class UnsafeTrapWithCondPolicy : public SandboxBPFPolicy {
+class UnsafeTrapWithCondPolicy : public SandboxBPFDSLPolicy {
  public:
   UnsafeTrapWithCondPolicy() {}
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
-                                    int sysno) const OVERRIDE {
+  virtual ~UnsafeTrapWithCondPolicy() {}
+
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     setenv(kSandboxDebuggingEnv, "t", 0);
     Die::SuppressInfoMessages(true);
 
     if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
 
     switch (sysno) {
-      case __NR_uname:
-        return sandbox->Cond(0,
-                             ErrorCode::TP_32BIT,
-                             ErrorCode::OP_EQUAL,
-                             0,
-                             ErrorCode(ErrorCode::ERR_ALLOWED),
-                             ErrorCode(EPERM));
-      case __NR_setgid:
-        return sandbox->Cond(0,
-                             ErrorCode::TP_32BIT,
-                             ErrorCode::OP_EQUAL,
-                             100,
-                             ErrorCode(ErrorCode(ENOMEM)),
-                             sandbox->Cond(0,
-                                           ErrorCode::TP_32BIT,
-                                           ErrorCode::OP_EQUAL,
-                                           200,
-                                           ErrorCode(ENOSYS),
-                                           ErrorCode(EPERM)));
+      case __NR_uname: {
+        const Arg<uint32_t> arg(0);
+        return If(arg == 0, Allow()).Else(Error(EPERM));
+      }
+      case __NR_setgid: {
+        const Arg<uint32_t> arg(0);
+        return Switch(arg)
+            .Case(100, Error(ENOMEM))
+            .Case(200, Error(ENOSYS))
+            .Default(Error(EPERM));
+      }
       case __NR_close:
       case __NR_exit_group:
       case __NR_write:
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
       case __NR_getppid:
-        return sandbox->UnsafeTrap(NoOpHandler, NULL);
+        return UnsafeTrap(NoOpHandler, NULL);
       default:
-        return ErrorCode(EPERM);
+        return Error(EPERM);
     }
   }
 
@@ -2422,4 +2367,5 @@ BPF_TEST_C(SandboxBPF, UnsafeTrapWithCond, UnsafeTrapWithCondPolicy) {
 
 }  // namespace
 
+}  // namespace bpf_dsl
 }  // namespace sandbox
