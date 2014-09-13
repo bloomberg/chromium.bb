@@ -35,8 +35,9 @@ namespace system {
 // |Init()| must be called on that same thread before it becomes thread-safe (in
 // particular, before references are given to any other thread) and |Shutdown()|
 // must be called on that same thread before destruction. Its public methods are
-// otherwise thread-safe. It may be destroyed on any thread, in the sense that
-// the last reference to it may be released on any thread, with the proviso that
+// otherwise thread-safe. (Many private methods are restricted to the creation
+// thread.) It may be destroyed on any thread, in the sense that the last
+// reference to it may be released on any thread, with the proviso that
 // |Shutdown()| must have been called first (so the pattern is that a "main"
 // reference is kept on its creation thread and is released after |Shutdown()|
 // is called, but other threads may have temporarily "dangling" references).
@@ -136,13 +137,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   friend class base::RefCountedThreadSafe<Channel>;
   virtual ~Channel();
 
-  // |RawChannel::Delegate| implementation:
+  // |RawChannel::Delegate| implementation (only called on the creation thread):
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE;
   virtual void OnError(Error error) OVERRIDE;
 
-  // Helpers for |OnReadMessage|:
+  // Helpers for |OnReadMessage| (only called on the creation thread):
   void OnReadMessageForDownstream(
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
@@ -152,17 +153,20 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Removes the message pipe endpoint with the given local ID, which must exist
   // and be a zombie, and given remote ID. Returns false on failure, in
-  // particular if no message pipe with |local_id| is attached.
+  // particular if no message pipe with |local_id| is attached. Only called on
+  // the creation thread.
   bool RemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                  MessageInTransit::EndpointId remote_id);
 
-  // Handles errors (e.g., invalid messages) from the remote side.
+  // Handles errors (e.g., invalid messages) from the remote side. Callable from
+  // any thread.
   void HandleRemoteError(const base::StringPiece& error_message);
-  // Handles internal errors/failures from the local side.
+  // Handles internal errors/failures from the local side. Callable from any
+  // thread.
   void HandleLocalError(const base::StringPiece& error_message);
 
   // Helper to send channel control messages. Returns true on success. Should be
-  // called *without* |lock_| held.
+  // called *without* |lock_| held. Callable from any thread.
   bool SendControlMessage(MessageInTransit::Subtype subtype,
                           MessageInTransit::EndpointId source_id,
                           MessageInTransit::EndpointId destination_id);

@@ -275,6 +275,8 @@ Channel::~Channel() {
 void Channel::OnReadMessage(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
+
   switch (message_view.type()) {
     case MessageInTransit::kTypeMessagePipeEndpoint:
     case MessageInTransit::kTypeMessagePipe:
@@ -292,6 +294,8 @@ void Channel::OnReadMessage(
 }
 
 void Channel::OnError(Error error) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
+
   switch (error) {
     case ERROR_READ_SHUTDOWN:
       // The other side was cleanly closed, so this isn't actually an error.
@@ -323,6 +327,7 @@ void Channel::OnError(Error error) {
 void Channel::OnReadMessageForDownstream(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
   DCHECK(message_view.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
          message_view.type() == MessageInTransit::kTypeMessagePipe);
 
@@ -402,6 +407,7 @@ void Channel::OnReadMessageForDownstream(
 void Channel::OnReadMessageForChannel(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(message_view.type(), MessageInTransit::kTypeChannel);
 
   // Currently, no channel messages take platform handles.
@@ -453,6 +459,8 @@ void Channel::OnReadMessageForChannel(
 bool Channel::RemoveMessagePipeEndpoint(
     MessageInTransit::EndpointId local_id,
     MessageInTransit::EndpointId remote_id) {
+  DCHECK(creation_thread_checker_.CalledOnValidThread());
+
   scoped_refptr<MessagePipe> message_pipe;
   unsigned port;
   {
