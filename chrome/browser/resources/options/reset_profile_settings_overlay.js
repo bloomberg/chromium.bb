@@ -28,18 +28,17 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      $('reset-profile-settings-dismiss').onclick = function(e) {
+      $('reset-profile-settings-dismiss').onclick = function(event) {
         ResetProfileSettingsOverlay.dismiss();
       };
-      $('reset-profile-settings-commit').onclick = function(e) {
+      $('reset-profile-settings-commit').onclick = function(event) {
         ResetProfileSettingsOverlay.setResettingState(true);
         chrome.send('performResetProfileSettings',
                     [$('send-settings').checked]);
       };
-      $('expand-feedback').onclick = function(e) {
+      $('expand-feedback').onclick = function(event) {
         var feedbackTemplate = $('feedback-template');
         feedbackTemplate.hidden = !feedbackTemplate.hidden;
-        e.preventDefault();
       };
     },
 

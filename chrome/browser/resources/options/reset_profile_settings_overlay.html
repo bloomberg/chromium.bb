@@ -21,15 +21,15 @@
       </div>
     </div>
   </div>
-  <div id="feedback-bar"
-      class="gray-bottom-bar checkbox controlled-setting-with-label">
-    <label>
+  <div id="feedback-bar" class="gray-bottom-bar checkbox">
+    <span class="controlled-setting-with-label">
       <input id="send-settings" type="checkbox" checked>
       <span>
-        <span i18n-content="resetProfileSettingsFeedback"></span>
-        <span id="expand-feedback"></span>
+        <label for="send-settings" i18n-content="resetProfileSettingsFeedback">
+        </label>
+        <div id='expand-feedback'></div>
       </span>
-    </label>
+    </span>
     <div id="feedback-template" hidden>
       <div>
         <table>
