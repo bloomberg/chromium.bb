@@ -60,6 +60,8 @@ namespace usb {
     UsageType? usage;
     // Polling interval (interrupt and isochronous only).
     long? pollingInterval;
+    // Extra descriptor data associated with this endpoint.
+    ArrayBuffer extra_data;
   };
 
   [noinline_doc] dictionary InterfaceDescriptor {
@@ -77,6 +79,25 @@ namespace usb {
     DOMString? description;
     // Available endpoints.
     EndpointDescriptor[] endpoints;
+    // Extra descriptor data associated with this interface.
+    ArrayBuffer extra_data;
+  };
+
+  [noinline_doc] dictionary ConfigDescriptor {
+    // The configuration number.
+    long configurationValue;
+    // Description of the configuration.
+    DOMString? description;
+    // The device is self-powered.
+    boolean selfPowered;
+    // The device supports remote wakeup.
+    boolean remoteWakeup;
+    // The maximum power needed by this device in milliamps (mA).
+    long maxPower;
+    // Available interfaces.
+    InterfaceDescriptor[] interfaces;
+    // Extra descriptor data associated with this configuration.
+    ArrayBuffer extra_data;
   };
 
   dictionary ControlTransferInfo {
@@ -181,6 +202,7 @@ namespace usb {
   callback RequestAccessCallback = void (boolean success);
   callback OpenDeviceCallback = void (ConnectionHandle handle);
   callback FindDevicesCallback = void (ConnectionHandle[] handles);
+  callback GetConfigurationCallback = void (ConfigDescriptor config);
   callback ListInterfacesCallback = void (InterfaceDescriptor[] descriptors);
   callback CloseDeviceCallback = void ();
   callback TransferCallback = void (TransferResultInfo info);
@@ -231,6 +253,12 @@ namespace usb {
     // |handle|: The $(ref:ConnectionHandle) to close.
     static void closeDevice(ConnectionHandle handle,
                             optional CloseDeviceCallback callback);
+
+    // Gets the configuration descriptor for the currently selected
+    // configuration.
+    // |handle|: An open connection to the device.
+    static void getConfiguration(ConnectionHandle handle,
+                                 GetConfigurationCallback callback);
 
     // Lists all interfaces on a USB device.
     // |handle|: An open connection to the device.

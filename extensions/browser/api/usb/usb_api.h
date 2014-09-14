@@ -144,6 +144,22 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
   scoped_ptr<extensions::core_api::usb::OpenDevice::Params> parameters_;
 };
 
+class UsbGetConfigurationFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.getConfiguration", USB_GETCONFIGURATION)
+
+  UsbGetConfigurationFunction();
+
+ protected:
+  virtual ~UsbGetConfigurationFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  scoped_ptr<extensions::core_api::usb::GetConfiguration::Params> parameters_;
+};
+
 class UsbListInterfacesFunction : public UsbAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.listInterfaces", USB_LISTINTERFACES)
@@ -157,17 +173,6 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  bool ConvertDirectionSafely(const device::UsbEndpointDirection& input,
-                              extensions::core_api::usb::Direction* output);
-  bool ConvertSynchronizationTypeSafely(
-      const device::UsbSynchronizationType& input,
-      extensions::core_api::usb::SynchronizationType* output);
-  bool ConvertTransferTypeSafely(
-      const device::UsbTransferType& input,
-      extensions::core_api::usb::TransferType* output);
-  bool ConvertUsageTypeSafely(const device::UsbUsageType& input,
-                              extensions::core_api::usb::UsageType* output);
-
   scoped_ptr<extensions::core_api::usb::ListInterfaces::Params> parameters_;
 };
 

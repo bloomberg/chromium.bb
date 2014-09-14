@@ -952,6 +952,7 @@ enum HistogramValue {
   EASYUNLOCKPRIVATE_GETSIGNINCHALLENGE,
   EASYUNLOCKPRIVATE_TRYSIGNINSECRET,
   ACCESSIBILITY_PRIVATE_SETFOCUSRING,
+  USB_GETCONFIGURATION,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
