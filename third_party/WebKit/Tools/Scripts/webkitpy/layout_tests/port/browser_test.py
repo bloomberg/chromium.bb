@@ -71,6 +71,9 @@ class BrowserTestPortOverrides(object):
             return 3 * timeout_ms
         return timeout_ms
 
+    def virtual_test_suites(self):
+        return []
+
 
 class BrowserTestLinuxPort(BrowserTestPortOverrides, linux.LinuxPort):
     pass

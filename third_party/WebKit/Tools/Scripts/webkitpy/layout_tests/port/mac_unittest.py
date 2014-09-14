@@ -37,6 +37,7 @@ class MacPortTest(port_testcase.PortTestCase):
     os_name = 'mac'
     os_version = 'snowleopard'
     port_name = 'mac'
+    full_port_name = 'mac-snowleopard'
     port_maker = mac.MacPort
 
     def assert_name(self, port_name, os_version_string, expected):

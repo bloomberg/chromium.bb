@@ -38,6 +38,7 @@ from webkitpy.layout_tests.port import port_testcase
 
 class LinuxPortTest(port_testcase.PortTestCase):
     port_name = 'linux'
+    full_port_name = 'linux-x86'
     port_maker = linux.LinuxPort
 
     def assert_architecture(self, port_name=None, file_output=None, expected_architecture=None):

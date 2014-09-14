@@ -39,6 +39,7 @@ from webkitpy.tool.mocktool import MockOptions
 
 class WinPortTest(port_testcase.PortTestCase):
     port_name = 'win'
+    full_port_name = 'win-xp'
     port_maker = win.WinPort
     os_name = 'win'
     os_version = 'xp'

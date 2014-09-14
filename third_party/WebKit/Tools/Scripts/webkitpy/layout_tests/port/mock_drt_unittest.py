@@ -77,6 +77,9 @@ class MockDRTPortTest(port_testcase.PortTestCase):
     def test_check_build(self):
         pass
 
+    def test_virtual_test_suites(self):
+        pass
+
 
 class MockDRTTest(unittest.TestCase):
     def input_line(self, port, test_name, pixel_tests, checksum=None):

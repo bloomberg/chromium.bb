@@ -28,6 +28,7 @@
 
 """Unit testing base class for Port implementations."""
 
+import collections
 import errno
 import logging
 import os
@@ -39,6 +40,7 @@ import unittest
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port, TestConfiguration
@@ -87,6 +89,7 @@ class PortTestCase(unittest.TestCase):
     os_version = None
     port_maker = TestWebKitPort
     port_name = None
+    full_port_name = None
 
     def make_port(self, host=None, port_name=None, options=None, os_name=None, os_version=None, **kwargs):
         host = host or MockSystemHost(os_name=(os_name or self.os_name), os_version=(os_version or self.os_version))
@@ -465,3 +468,10 @@ class PortTestCase(unittest.TestCase):
     def test_additional_platform_directory(self):
         port = self.make_port(options=MockOptions(additional_platform_directory=['/tmp/foo']))
         self.assertEqual(port.baseline_search_path()[0], '/tmp/foo')
+
+    def test_virtual_test_suites(self):
+        # We test that we can load the real LayoutTests/VirtualTestSuites file properly, so we
+        # use a real SystemHost(). We don't care what virtual_test_suites() returns as long
+        # as it is iterable.
+        port = self.make_port(host=SystemHost(), port_name=self.full_port_name)
+        self.assertTrue(isinstance(port.virtual_test_suites(), collections.Iterable))
