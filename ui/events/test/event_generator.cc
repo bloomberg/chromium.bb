@@ -248,11 +248,7 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(EventTarget* window) {
 
 void EventGenerator::GestureEdgeSwipe() {
   ui::GestureEvent gesture(
-      0,
-      0,
-      0,
-      Now(),
-      ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE, 0, 0));
+      0, 0, 0, Now(), ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE));
   Dispatch(&gesture);
 }
 

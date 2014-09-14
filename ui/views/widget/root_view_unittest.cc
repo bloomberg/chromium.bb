@@ -206,14 +206,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
       5,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   ui::EventDispatchDetails details = root_view->OnEventFromSource(&long_press1);
 
-  ui::GestureEvent end1(5,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end1(
+      5, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end1);
 
   EXPECT_FALSE(details.target_destroyed);
@@ -228,14 +225,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
       5,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   details = root_view->OnEventFromSource(&long_press2);
 
-  ui::GestureEvent end2(25,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end2(
+      25, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end2);
 
   EXPECT_FALSE(details.target_destroyed);
@@ -250,14 +244,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
       50,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   details = root_view->OnEventFromSource(&long_press3);
 
-  ui::GestureEvent end3(25,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end3(
+      25, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end3);
 
   EXPECT_FALSE(details.target_destroyed);
@@ -300,14 +291,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
       5,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   ui::EventDispatchDetails details = root_view->OnEventFromSource(&long_press1);
 
-  ui::GestureEvent end1(5,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end1(
+      5, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end1);
 
   EXPECT_FALSE(details.target_destroyed);
@@ -322,14 +310,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
       5,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   details = root_view->OnEventFromSource(&long_press2);
 
-  ui::GestureEvent end2(25,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end2(
+      25, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end2);
 
   EXPECT_FALSE(details.target_destroyed);
@@ -344,14 +329,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
       50,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   details = root_view->OnEventFromSource(&long_press3);
 
-  ui::GestureEvent end3(25,
-                        5,
-                        0,
-                        base::TimeDelta(),
-                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  ui::GestureEvent end3(
+      25, 5, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_END));
   details = root_view->OnEventFromSource(&end3);
 
   EXPECT_FALSE(details.target_destroyed);
