@@ -32,6 +32,7 @@ _RETRYABLE_OPERATIONAL_ERROR_CODES = (
             # this error code, not INSERT queries, since we don't know
             # whether the query completed before or after the connection
             # lost.
+    2026,    # 'SSL connection error: unknown error number'
 )
 
 
