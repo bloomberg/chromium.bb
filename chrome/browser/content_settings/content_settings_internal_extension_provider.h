@@ -12,18 +12,21 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionService;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 namespace content_settings {
 
 // A content settings provider which disables certain plugins for platform apps.
 class InternalExtensionProvider : public ObservableProvider,
-                            public content::NotificationObserver {
+                                  public content::NotificationObserver,
+                                  public extensions::ExtensionRegistryObserver {
  public:
   explicit InternalExtensionProvider(ExtensionService* extension_service);
 
@@ -51,6 +54,16 @@ class InternalExtensionProvider : public ObservableProvider,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // extensions::ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
  private:
   void SetContentSettingForExtension(const extensions::Extension* extension,
                                      ContentSetting setting);
@@ -64,6 +77,8 @@ class InternalExtensionProvider : public ObservableProvider,
   // Used around accesses to the |value_map_| list to guarantee thread safety.
   mutable base::Lock lock_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
+
+  extensions::ExtensionRegistry* extension_registry_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(InternalExtensionProvider);
 };
