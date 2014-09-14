@@ -1,9 +1,0 @@
-AXWebArea
-    AXGroup AXTitleUIElement='AXUnknown'
-        AXUnknown
-            AXStaticText AXValue='Browser Engine's:'
-        AXGroup
-            AXStaticText AXValue='Browser: '
-            AXTextField
-            AXStaticText AXValue='Rendering Engine: '
-            AXTextField

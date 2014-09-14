@@ -1,5 +1,0 @@
-AXWebArea
-    AXGroup
-        AXStaticText AXValue='This test is to check '
-        AXStaticText AXValue='mark tag'
-        AXStaticText AXValue='.'
