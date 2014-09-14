@@ -550,8 +550,8 @@ class WebViewInteractiveTest
 // crbug.com/341876
 
 #if defined(OS_LINUX)
-
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
+// flaky http://crbug.com/412086
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PointerLock) {
   SetupTest("web_view/pointer_lock",
             "/extensions/platform_apps/web_view/pointer_lock/guest.html");
 
