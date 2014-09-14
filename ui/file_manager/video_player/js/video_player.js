@@ -307,6 +307,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     // Re-enables ui and hides error message if already displayed.
     document.querySelector('#video-player').removeAttribute('disabled');
     document.querySelector('#error').removeAttribute('visible');
+    this.controls.detachMedia();
     this.controls.inactivityWatcher.disabled = true;
     this.controls.decodeErrorOccured = false;
     this.controls.casting = !!this.currentCast_;
