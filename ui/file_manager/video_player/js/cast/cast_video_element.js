@@ -36,6 +36,7 @@ function CastVideoElement(media, session) {
   this.currentTime_ = null;
   this.src_ = '';
   this.volume_ = 100;
+  this.loop_ = false;
   this.currentMediaPlayerState_ = null;
   this.currentMediaCurrentTime_ = null;
   this.currentMediaDuration_ = null;
@@ -190,6 +191,17 @@ CastVideoElement.prototype = {
   },
   set src(value) {
     // Do nothing.
+  },
+
+  /**
+   * Returns the flag if the video loops at end or not.
+   * @type {boolean}
+   */
+  get loop() {
+    return this.loop_;
+  },
+  set loop(value) {
+    this.loop_ = !!value;
   },
 
   /**
@@ -408,6 +420,21 @@ CastVideoElement.prototype = {
       return;
 
     var media = this.castMedia_;
+    if (this.loop_ &&
+        media.idleReason === chrome.cast.media.IdleReason.FINISHED &&
+        !alive) {
+      // Resets the previous media silently.
+      this.castMedia_ = null;
+
+      // Replay the current media.
+      this.currentMediaPlayerState_ = chrome.cast.media.PlayerState.BUFFERING;
+      this.currentMediaCurrentTime_ = 0;
+      this.dispatchEvent(new Event('play'));
+      this.dispatchEvent(new Event('timeupdate'));
+      this.play();
+      return;
+    }
+
     if (this.currentMediaPlayerState_ !== media.playerState) {
       var oldPlayState = false;
       var oldState = this.currentMediaPlayerState_;
