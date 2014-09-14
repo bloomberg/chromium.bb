@@ -620,7 +620,6 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
 
     bool swallowEvent = false;
     m_mousePressed = true;
-    m_selectionInitiationState = HaveNotStartedSelection;
 
     if (event.event().clickCount() == 2)
         swallowEvent = handleMousePressEventDoubleClick(event);
@@ -1283,6 +1282,10 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_frame->selection().setCaretBlinkingSuspended(true);
 
     bool swallowEvent = !dispatchMouseEvent(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent, true);
+    // m_selectionInitiationState is initialized after dispatching mousedown event in order not to keep the selection by DOM APIs
+    // Because we can't give the user the chance to handle the selection by user action like dragging if we keep the selection in case of mousedown.
+    // FireFox also has the same behavior and it's more compatible with other browsers.
+    m_selectionInitiationState = HaveNotStartedSelection;
     swallowEvent = swallowEvent || handleMouseFocus(mouseEvent);
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
@@ -2935,6 +2938,11 @@ void EventHandler::notifyElementActivated()
     if (m_activeIntervalTimer.isActive())
         m_activeIntervalTimer.stop();
     m_lastDeferredTapElement = nullptr;
+}
+
+void EventHandler::notifySelectionChanged()
+{
+    m_selectionInitiationState = ExtendedSelection;
 }
 
 bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
