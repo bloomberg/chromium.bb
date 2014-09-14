@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var testCases = [
+        "http://www.example.com/foo/jquery-1.7-min.js", "/jquery\\-1\\.7\\-min\\.js$",
+        "https://www.example.com/jquery.js?version=1.7", "/jquery\\.js\\b",
+        "http://www.google.com/jsapi", "/jsapi$",
+        "https://www.google.com/jsapi/", "/jsapi/$",
+        "data:text/html,foo", "",
+        "about:blank", "",
+        "chrome-extension://extensionName/main.js", "^chrome-extension://extensionName\\b.*/main\\.js$",
+        "extensions::unload_events", "^extensions::unload_events$",
+    ];
+
+    for (var i = 0; i < testCases.length; i += 2) {
+        var url = testCases[i];
+        InspectorTest.addResult("Testing " + url);
+        var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
+        InspectorTest.assertEquals(testCases[i + 1], regexValue);
+        if (!regexValue)
+            continue;
+        var regex = new RegExp(regexValue);
+        InspectorTest.assertTrue(regex.test(url), "FAIL: Generated RegExp does not match the URL");
+    }
+
+    InspectorTest.addResult("\nPASS");
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests framework blackbox patterns for various URLs.
+</p>
+</body>
+</html>
