@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/view_type.h"
 
 class GURL;
@@ -41,8 +40,7 @@ class ProcessManagerObserver;
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
-class ProcessManager : public content::NotificationObserver,
-                       public extensions::ExtensionRegistryObserver {
+class ProcessManager : public content::NotificationObserver {
  public:
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -179,16 +177,6 @@ class ProcessManager : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // extensions::ExtensionRegistryObserver:
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
-
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 
