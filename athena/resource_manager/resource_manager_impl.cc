@@ -176,8 +176,10 @@ void ResourceManagerImpl::OnOverviewModeEnter() {
 
 void ResourceManagerImpl::OnOverviewModeExit() {
   in_overview_mode_ = false;
-  // Reorder the activities.
+  // Reorder the activities and manage the resources again since an order change
+  // might have caused a visibility change.
   UpdateActivityOrder();
+  ManageResource();
 }
 
 void ResourceManagerImpl::OnSplitViewModeEnter() {
@@ -259,7 +261,7 @@ void ResourceManagerImpl::ManageResource() {
       break;
   }
 
-  // The first n activities should be trated as "visible", means they updated
+  // The first n activities should be treated as "visible", means they updated
   // in overview mode and will keep their layer resources for faster switch
   // times. Usually we use |kMaxVisibleActivities| items, but when the memory
   // pressure gets critical we only hold as many as are really visible.
@@ -287,11 +289,18 @@ void ResourceManagerImpl::ManageResource() {
                                    Activity::ACTIVITY_INVISIBLE;
       // Only change the state when it changes. Note that when the memory
       // pressure is critical, only the primary activities (1 or 2) are made
-      // visible. Furthermore, in relaxed mode we only want to make visible.
+      // visible. Furthermore, in relaxed mode we only want to turn visible,
+      // never invisible.
       if (visiblity_state != state &&
           (current_memory_pressure_ != MEMORY_PRESSURE_LOW ||
-           visiblity_state == Activity::ACTIVITY_VISIBLE))
+           visiblity_state == Activity::ACTIVITY_VISIBLE)) {
         activity->SetCurrentState(visiblity_state);
+        // If we turned an activity invisible, we should not at the same time
+        // throw an activity out of memory. Thus we grant one more invisible
+        // Activity in that case.
+        if (visiblity_state == Activity::ACTIVITY_INVISIBLE)
+          max_running_activities++;
+      }
     }
 
     // See which index we should handle next.
@@ -306,7 +315,9 @@ void ResourceManagerImpl::ManageResource() {
   // No need to remove anything.
   if (current_memory_pressure_ == MEMORY_PRESSURE_LOW)
     return;
-
+  // TODO(skuhne): Do not release too many activities in short succession.
+  // since it takes time to release resources. As such the time of last call
+  // should be remembered and if called to early we should exit early.
   // Check if/which activity we want to unload.
   Activity* oldest_media_activity = NULL;
   std::vector<Activity*> unloadable_activities;

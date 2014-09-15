@@ -150,6 +150,8 @@
         'content/app_registry_impl.cc',
         'content/content_activity_factory.cc',
         'content/content_activity_factory.h',
+        'content/content_proxy.cc',
+        'content/content_proxy.h',
         'content/public/app_registry.h',
         'content/public/content_activity_factory_creator.h',
         'content/public/dialogs.h',

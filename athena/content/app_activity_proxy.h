@@ -9,10 +9,13 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "athena/content/content_proxy.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace athena {
 
+class AppActivity;
 class AppActivityRegistry;
 
 // This activity object is a proxy placeholder for the application while it is
@@ -24,7 +27,8 @@ class AppActivityProxy : public Activity,
   // The |replaced_activity| is the activity which this proxy replaces. Note
   // that after the Init() call got called, this object will become invalid.
   // The |creator| should be informed when the object goes away.
-  AppActivityProxy(Activity* replaced_activity, AppActivityRegistry* creator);
+  AppActivityProxy(AppActivity* replaced_activity,
+                   AppActivityRegistry* creator);
 
  protected:
   virtual ~AppActivityProxy();
@@ -45,7 +49,6 @@ class AppActivityProxy : public Activity,
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* CreateWidget() OVERRIDE;
-  virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
   virtual void PrepareContentsForOverview() OVERRIDE;
   virtual void ResetContentsView() OVERRIDE;
@@ -57,16 +60,18 @@ class AppActivityProxy : public Activity,
 
   // The presentation values.
   const base::string16 title_;
-  const gfx::ImageSkia image_;
   const SkColor color_;
 
   // The activity which gets replaced. It is used to sort the activity against
   // upon initialization. Once moved, this value gets reset since the object
   // can go away at any time.
-  Activity* replaced_activity_;
+  AppActivity* replaced_activity_;
 
   // The associated view.
   views::View* view_;
+
+  // The content proxy.
+  scoped_ptr<ContentProxy> content_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(AppActivityProxy);
 };

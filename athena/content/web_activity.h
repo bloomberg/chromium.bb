@@ -9,6 +9,7 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -33,6 +34,7 @@ class WidgetDelegate;
 namespace athena {
 
 class AthenaWebView;
+class ContentProxy;
 
 class WebActivity : public Activity,
                     public ActivityViewModel,
@@ -62,7 +64,6 @@ class WebActivity : public Activity,
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* CreateWidget() OVERRIDE;
-  virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
   virtual void PrepareContentsForOverview() OVERRIDE;
   virtual void ResetContentsView() OVERRIDE;
@@ -87,13 +88,11 @@ class WebActivity : public Activity,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
-  // Make the content visible. This call should only be paired with
-  // MakeInvisible. Note: Upon object creation the content is visible.
-  void MakeVisible();
+  // Hiding the contet proxy and showing the real content instead.
+  void HideContentProxy();
 
-  // Make the content invisible. This call should only be paired with
-  // MakeVisible.
-  void MakeInvisible();
+  // Showing a content proxy instead of the real content to save resoruces.
+  void ShowContentProxy();
 
   // Reload the content if required, and start observing it.
   void ReloadAndObserve();
@@ -108,8 +107,8 @@ class WebActivity : public Activity,
   // The current state for this activity.
   ActivityState current_state_;
 
-  // The image which will be used in overview mode.
-  gfx::ImageSkia overview_mode_image_;
+  // The content proxy.
+  scoped_ptr<ContentProxy> content_proxy_;
 
   base::WeakPtrFactory<WebActivity> weak_ptr_factory_;
 

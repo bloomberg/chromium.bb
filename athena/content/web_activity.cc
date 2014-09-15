@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/content/content_proxy.h"
 #include "athena/content/public/dialogs.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "base/bind.h"
@@ -179,6 +180,10 @@ class AthenaWebView : public views::WebView {
     scoped_ptr<content::WebContents> old_contents(SwapWebContents(
         scoped_ptr<content::WebContents>(content::WebContents::Create(
             content::WebContents::CreateParams(browser_context())))));
+    // If there is a progress bar, we need to get rid of it now since its
+    // associated content, parent window and layers will disappear with evicting
+    // the content.
+    progress_bar_.reset();
     evicted_web_contents_.reset(
         content::WebContents::Create(content::WebContents::CreateParams(
             old_contents->GetBrowserContext())));
@@ -380,15 +385,18 @@ void WebActivity::SetCurrentState(Activity::ActivityState state) {
     case ACTIVITY_VISIBLE:
       if (!web_view_)
         break;
-      MakeVisible();
+      HideContentProxy();
       ReloadAndObserve();
       break;
     case ACTIVITY_INVISIBLE:
       if (!web_view_)
         break;
+
       if (current_state_ == ACTIVITY_VISIBLE)
-        MakeInvisible();
-      ReloadAndObserve();
+        ShowContentProxy();
+      else
+        ReloadAndObserve();
+
       break;
     case ACTIVITY_BACKGROUND_LOW_PRIORITY:
       DCHECK(ACTIVITY_VISIBLE == current_state_ ||
@@ -402,6 +410,8 @@ void WebActivity::SetCurrentState(Activity::ActivityState state) {
       break;
     case ACTIVITY_UNLOADED:
       DCHECK_NE(ACTIVITY_UNLOADED, current_state_);
+      if (content_proxy_)
+        content_proxy_->ContentWillUnload();
       Observe(NULL);
       web_view_->EvictContent();
       break;
@@ -467,10 +477,10 @@ views::View* WebActivity::GetContentsView() {
     web_view_->LoadInitialURL(url_);
     // Make sure the content gets properly shown.
     if (current_state_ == ACTIVITY_VISIBLE) {
-      MakeVisible();
+      HideContentProxy();
       ReloadAndObserve();
     } else if (current_state_ == ACTIVITY_INVISIBLE) {
-      MakeInvisible();
+      ShowContentProxy();
       ReloadAndObserve();
     } else {
       // If not previously specified, we change the state now to invisible..
@@ -484,23 +494,26 @@ views::Widget* WebActivity::CreateWidget() {
   return NULL;  // Use default widget.
 }
 
-void WebActivity::CreateOverviewModeImage() {
-  // TODO(skuhne): Create an overview.
-}
-
 gfx::ImageSkia WebActivity::GetOverviewModeImage() {
-  return overview_mode_image_;
+  if (content_proxy_.get())
+    content_proxy_->GetContentImage();
+  return gfx::ImageSkia();
 }
 
 void WebActivity::PrepareContentsForOverview() {
   // Turn on fast resizing to avoid re-laying out the web contents when
-  // entering / exiting overview mode.
-  web_view_->SetFastResize(true);
+  // entering / exiting overview mode and the content is visible.
+  if (!content_proxy_.get())
+    web_view_->SetFastResize(true);
 }
 
 void WebActivity::ResetContentsView() {
-  web_view_->SetFastResize(false);
-  web_view_->Layout();
+  // Turn on fast resizing to avoid re-laying out the web contents when
+  // entering / exiting overview mode and the content is visible.
+  if (!content_proxy_.get()) {
+    web_view_->SetFastResize(false);
+    web_view_->Layout();
+  }
 }
 
 void WebActivity::TitleWasSet(content::NavigationEntry* entry,
@@ -553,37 +566,14 @@ void WebActivity::DidChangeThemeColor(SkColor theme_color) {
   ActivityManager::Get()->UpdateActivity(this);
 }
 
-void WebActivity::MakeVisible() {
-  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
-  // be moved into an ActivityContentController which is used by all activities.
-  // Make the content visible.
-  // TODO(skuhne): If this can be combined with app_activity, move this into a
-  // separate class.
-  web_view_->SetVisible(true);
-  web_view_->GetWebContents()->GetNativeView()->Show();
-  // If we have a proxy image, we can delete it now since the contet goes live.
-  // TODO(skuhne): Once we have figured out how to do overview mode that code
-  // needs to go here.
-  overview_mode_image_ = gfx::ImageSkia();
+void WebActivity::HideContentProxy() {
+  if (content_proxy_.get())
+    content_proxy_.reset(NULL);
 }
 
-void WebActivity::MakeInvisible() {
-  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
-  // be moved into an ActivityContentController which is used by all activities.
-  // TODO(skuhne): If this can be combined with app_activity, move this into a
-  // separate class.
-  DCHECK(web_view_->visible());
-  // Create our proxy image / layer.
-  if (current_state_ == ACTIVITY_VISIBLE) {
-    // Create a proxy image of the current visible content.
-    // TODO(skuhne): Do this once we figure out how to do overview mode.
-    overview_mode_image_ = gfx::ImageSkia();
-  }
-  // Now we can hide this.
-  // Note: This might have to be done asynchronously after the read back took
-  // place.
-  web_view_->GetWebContents()->GetNativeView()->Hide();
-  web_view_->SetVisible(false);
+void WebActivity::ShowContentProxy() {
+  if (!content_proxy_.get() && web_view_)
+    content_proxy_.reset(new ContentProxy(web_view_, this));
 }
 
 void WebActivity::ReloadAndObserve() {

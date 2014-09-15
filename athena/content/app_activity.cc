@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/app_activity_registry.h"
+#include "athena/content/content_proxy.h"
 #include "athena/content/public/app_registry.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
@@ -24,6 +25,12 @@ AppActivity::AppActivity(const std::string& app_id)
       app_activity_registry_(NULL) {
 }
 
+scoped_ptr<ContentProxy> AppActivity::GetContentProxy(aura::Window* window) {
+  if (content_proxy_.get())
+    content_proxy_->Reparent(window);
+  return content_proxy_.Pass();
+}
+
 ActivityViewModel* AppActivity::GetActivityViewModel() {
   return this;
 }
@@ -37,11 +44,11 @@ void AppActivity::SetCurrentState(Activity::ActivityState state) {
 
   switch (state) {
     case ACTIVITY_VISIBLE:
-      MakeVisible();
+      HideContentProxy();
       return;
     case ACTIVITY_INVISIBLE:
       if (current_state == ACTIVITY_VISIBLE)
-        MakeInvisible();
+        ShowContentProxy();
       break;
     case ACTIVITY_BACKGROUND_LOW_PRIORITY:
       DCHECK(ACTIVITY_VISIBLE == current_state ||
@@ -123,9 +130,9 @@ views::View* AppActivity::GetContentsView() {
     web_view_ = GetWebView();
     // Make sure the content gets properly shown.
     if (current_state_ == ACTIVITY_VISIBLE) {
-      MakeVisible();
+      HideContentProxy();
     } else if (current_state_ == ACTIVITY_INVISIBLE) {
-      MakeInvisible();
+      ShowContentProxy();
     } else {
       // If not previously specified, we change the state now to invisible..
       SetCurrentState(ACTIVITY_INVISIBLE);
@@ -135,23 +142,26 @@ views::View* AppActivity::GetContentsView() {
   return web_view_;
 }
 
-void AppActivity::CreateOverviewModeImage() {
-  // TODO(skuhne): Implement this!
-}
-
 gfx::ImageSkia AppActivity::GetOverviewModeImage() {
-  return overview_mode_image_;
+  if (content_proxy_.get())
+    return content_proxy_->GetContentImage();
+  return gfx::ImageSkia();
 }
 
 void AppActivity::PrepareContentsForOverview() {
   // Turn on fast resizing to avoid re-laying out the web contents when
-  // entering / exiting overview mode.
-  web_view_->SetFastResize(true);
+  // entering / exiting overview mode and the content is visible.
+  if (!content_proxy_.get())
+    web_view_->SetFastResize(true);
 }
 
 void AppActivity::ResetContentsView() {
-  web_view_->SetFastResize(false);
-  web_view_->Layout();
+  // Turn on fast resizing to avoid re-laying out the web contents when
+  // entering / exiting overview mode and the content is visible.
+  if (!content_proxy_.get()) {
+    web_view_->SetFastResize(false);
+    web_view_->Layout();
+  }
 }
 
 AppActivity::~AppActivity() {
@@ -184,38 +194,13 @@ void AppActivity::RegisterActivity() {
   app_activity_registry_->RegisterAppActivity(this);
 }
 
-void AppActivity::MakeVisible() {
-  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
-  // be moved into an ActivityContentController which is used by all activities.
-  // Make the content visible.
-  // TODO(skuhne): If this can be combined with web_activity, move this into a
-  // separate class.
-  web_view_->SetVisible(true);
-  web_view_->GetWebContents()->GetNativeView()->Show();
-
-  // Remove our proxy image.
-  // TODO(skuhne): Once we have figured out how to do overview mode that code
-  // needs to go here.
-  overview_mode_image_ = gfx::ImageSkia();
+void AppActivity::HideContentProxy() {
+  content_proxy_.reset();
 }
 
-void AppActivity::MakeInvisible() {
-  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
-  // be moved into an ActivityContentController which is used by all activities.
-  // TODO(skuhne): If this can be combined with web_activity, move this into a
-  // separate class.
-  DCHECK(web_view_->visible());
-  // Create our proxy image.
-  if (current_state_ == ACTIVITY_VISIBLE) {
-    // Create a proxy image of the current visible content.
-    // TODO(skuhne): Do this once we figure out how to do overview mode.
-    overview_mode_image_ = gfx::ImageSkia();
-  }
-  // Now we can hide this.
-  // Note: This might have to be done asynchronously after the readback took
-  // place.
-  web_view_->SetVisible(false);
-  web_view_->GetWebContents()->GetNativeView()->Hide();
+void AppActivity::ShowContentProxy() {
+  if (!content_proxy_.get() && web_view_)
+    content_proxy_.reset(new ContentProxy(web_view_, this));
 }
 
 }  // namespace athena

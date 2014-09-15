@@ -13,6 +13,7 @@ include_rules = [
   "+ui/compositor",
   "+ui/gfx",
   "+ui/views",
+  "+ui/wm/core",
 
   # No inclusion of WebKit from the athena main process, other than
   # strictly enum/POD, header-only types, and some selected common code.

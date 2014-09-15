@@ -54,11 +54,6 @@ class ATHENA_EXPORT ActivityViewModel {
   // implementation.
   virtual views::Widget* CreateWidget() = 0;
 
-  // This gets called before the Activity gets (partially) thrown out of memory
-  // to create a preview image of the activity. Note that even if this function
-  // gets called, |GetOverviewModeImage()| could still return an empty image.
-  virtual void CreateOverviewModeImage() = 0;
-
   // Returns an image which can be used to represent the activity in e.g. the
   // overview mode. The returned image can have no size if either a view exists
   // or the activity has not yet been loaded. In that case

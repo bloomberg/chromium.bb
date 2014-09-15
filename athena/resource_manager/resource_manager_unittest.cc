@@ -55,8 +55,9 @@ class TestActivity : public Activity,
   virtual bool UsesFrame() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
   virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
-  virtual void CreateOverviewModeImage() OVERRIDE {}
-  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE { return image_; }
+  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE {
+    return gfx::ImageSkia();
+  }
   virtual void PrepareContentsForOverview() OVERRIDE {}
   virtual void ResetContentsView() OVERRIDE {}
 
@@ -132,9 +133,10 @@ TEST_F(ResourceManagerTest, OnCriticalWillUnloadOneActivity) {
   app_unloadable1->set_visible(false);
   app_unloadable2->set_visible(false);
 
-  DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
-  DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_unloadable1->GetCurrentState());
-  DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_unloadable2->GetCurrentState());
+  // Set the initial visibility states.
+  app_visible->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app_unloadable1->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+  app_unloadable2->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
 
   // Call the resource manager and say we are in a critical memory condition.
   ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
@@ -174,6 +176,12 @@ TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
   app_media_locked1->set_media_state(
       Activity::ACTIVITY_MEDIA_STATE_AUDIO_PLAYING);
   app_media_locked2->set_media_state(Activity::ACTIVITY_MEDIA_STATE_RECORDING);
+
+  // Set the initial visibility states.
+  app_visible->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app_media_locked1->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+  app_unloadable->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
+  app_media_locked2->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
 
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_visible->GetCurrentState());
   DCHECK_NE(Activity::ACTIVITY_UNLOADED, app_media_locked1->GetCurrentState());
@@ -262,6 +270,28 @@ TEST_F(ResourceManagerTest, VisibilityChanges) {
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
   EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
   EXPECT_NE(Activity::ACTIVITY_INVISIBLE, app4->GetCurrentState());
+}
+
+// Make sure that an activity which got just demoted from visible to invisible,
+// does not get thrown out of memory in the same step.
+TEST_F(ResourceManagerTest, NoUnloadFromVisible) {
+  // Create a few dummy activities in the reverse order as we need them.
+  TestActivity* app2 = CreateActivity("app2");
+  TestActivity* app1 = CreateActivity("app1");
+  app1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app2->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+
+  // Applying low resource pressure should turn one item ivisible.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+
+  // Applying low resource pressure again will unload it.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_UNLOADED, app2->GetCurrentState());
 }
 
 }  // namespace test

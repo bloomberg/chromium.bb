@@ -74,6 +74,10 @@ class ATHENA_EXPORT AppActivityRegistry {
   void RestartApplication(AppActivityProxy* proxy);
 
  private:
+  // Called if an unload of an application should take place asynchronously to
+  // avoid object destruction within an observer handler.
+  void DelayedUnload();
+
   // Gets most recently used AppAcitivty that belongs to the same application.
   AppActivity* GetMruActivity();
 

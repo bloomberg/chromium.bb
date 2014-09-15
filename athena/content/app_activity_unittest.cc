@@ -53,6 +53,8 @@ class TestAppActivity : public AppActivity {
   }
   virtual void SetCurrentState(Activity::ActivityState state) OVERRIDE {
     current_state_ = state;
+    if (state == ACTIVITY_UNLOADED)
+      app_activity_registry_->Unload();
   }
   virtual ActivityState GetCurrentState() OVERRIDE {
     return current_state_;
@@ -77,7 +79,9 @@ class TestAppActivity : public AppActivity {
   virtual bool UsesFrame() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
   virtual views::Widget* CreateWidget() OVERRIDE { return NULL; }
-  virtual void CreateOverviewModeImage() OVERRIDE {}
+  virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE {
+    return gfx::ImageSkia();
+  }
 
  private:
   // If known the registry which holds all activities for the associated app.
@@ -278,12 +282,13 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
   // Calling Unload now should not do anything since at least one activity in
   // the registry is still visible.
   app_activity_registry->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
 
   // After setting our activity to unloaded however the application should get
   // unloaded as requested.
   app_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity_registry->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Check that our created application is gone, and instead a proxy got
@@ -324,7 +329,7 @@ TEST_F(AppActivityTest, TestUnloadProxyLocation) {
       app_activity2a->app_activity_registry();
   app_activity2a->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity2b->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity2a->app_activity_registry()->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
   Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   RunAllPendingInMessageLoop();
@@ -361,13 +366,13 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
 
   // After setting all activities to UNLOADED the application should unload.
   app_activity1->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity1->app_activity_registry()->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
   app_activity2->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity2->app_activity_registry()->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
   app_activity3->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity3->app_activity_registry()->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Now there should only be the proxy activity left.
@@ -405,7 +410,7 @@ TEST_F(AppActivityTest, TestUnloadWithReload) {
 
   // Unload the activity.
   app_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
-  app_activity_registry->Unload();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Try to activate the activity again. This will force the application to

@@ -7,7 +7,6 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace athena {
@@ -38,7 +37,6 @@ class SampleActivity : public Activity,
   virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* CreateWidget() OVERRIDE;
-  virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
   virtual void PrepareContentsForOverview() OVERRIDE;
   virtual void ResetContentsView() OVERRIDE;

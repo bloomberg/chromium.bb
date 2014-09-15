@@ -81,9 +81,6 @@ views::Widget* SampleActivity::CreateWidget() {
   return NULL;
 }
 
-void SampleActivity::CreateOverviewModeImage() {
-}
-
 gfx::ImageSkia SampleActivity::GetOverviewModeImage() {
   return gfx::ImageSkia();
 }

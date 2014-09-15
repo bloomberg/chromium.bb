@@ -12,6 +12,10 @@
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -79,11 +83,13 @@ void AppActivityRegistry::Unload() {
   unloaded_activity_proxy_ = new AppActivityProxy(GetMruActivity(), this);
   ActivityManager::Get()->AddActivity(unloaded_activity_proxy_);
 
-  // Unload the application. This operation will be asynchronous.
-  if (!ExtensionsDelegate::Get(browser_context_)->UnloadApp(app_id_)) {
-    while(!activity_list_.empty())
-      Activity::Delete(activity_list_.back());
-  }
+  // This function can be called through an observer call. When that happens,
+  // several activities will be closed / started. That can then cause a crash.
+  // We postpone therefore the activity destruction till after the observer is
+  // done.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppActivityRegistry::DelayedUnload, base::Unretained(this)));
 }
 
 void AppActivityRegistry::ProxyDestroyed(AppActivityProxy* proxy) {
@@ -101,6 +107,13 @@ void AppActivityRegistry::RestartApplication(AppActivityProxy* proxy) {
   // sure that the proxy gets deleted - after - the new activity got moved
   // to the proxies activity location.
   ExtensionsDelegate::Get(browser_context_)->LaunchApp(app_id_);
+}
+
+void AppActivityRegistry::DelayedUnload() {
+  if (!ExtensionsDelegate::Get(browser_context_)->UnloadApp(app_id_)) {
+    while(!activity_list_.empty())
+      Activity::Delete(activity_list_.back());
+  }
 }
 
 AppActivity* AppActivityRegistry::GetMruActivity() {
