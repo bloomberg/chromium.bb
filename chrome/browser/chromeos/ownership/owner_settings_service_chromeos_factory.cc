@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 
 #include "base/path_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_paths.h"
@@ -15,29 +15,30 @@
 
 namespace chromeos {
 
-OwnerSettingsServiceFactory::OwnerSettingsServiceFactory()
+OwnerSettingsServiceChromeOSFactory::OwnerSettingsServiceChromeOSFactory()
     : BrowserContextKeyedServiceFactory(
           "OwnerSettingsService",
           BrowserContextDependencyManager::GetInstance()) {
 }
 
-OwnerSettingsServiceFactory::~OwnerSettingsServiceFactory() {
+OwnerSettingsServiceChromeOSFactory::~OwnerSettingsServiceChromeOSFactory() {
 }
 
 // static
-OwnerSettingsService* OwnerSettingsServiceFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<OwnerSettingsService*>(
+OwnerSettingsServiceChromeOS*
+OwnerSettingsServiceChromeOSFactory::GetForProfile(Profile* profile) {
+  return static_cast<OwnerSettingsServiceChromeOS*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-OwnerSettingsServiceFactory* OwnerSettingsServiceFactory::GetInstance() {
-  return Singleton<OwnerSettingsServiceFactory>::get();
+OwnerSettingsServiceChromeOSFactory*
+OwnerSettingsServiceChromeOSFactory::GetInstance() {
+  return Singleton<OwnerSettingsServiceChromeOSFactory>::get();
 }
 
 scoped_refptr<ownership::OwnerKeyUtil>
-OwnerSettingsServiceFactory::GetOwnerKeyUtil() {
+OwnerSettingsServiceChromeOSFactory::GetOwnerKeyUtil() {
   if (owner_key_util_.get())
     return owner_key_util_;
   base::FilePath public_key_path;
@@ -47,25 +48,27 @@ OwnerSettingsServiceFactory::GetOwnerKeyUtil() {
   return owner_key_util_;
 }
 
-void OwnerSettingsServiceFactory::SetOwnerKeyUtilForTesting(
+void OwnerSettingsServiceChromeOSFactory::SetOwnerKeyUtilForTesting(
     const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util) {
   owner_key_util_ = owner_key_util;
 }
 
 // static
-KeyedService* OwnerSettingsServiceFactory::BuildInstanceFor(
+KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
   if (profile->IsGuestSession() || ProfileHelper::IsSigninProfile(profile))
     return NULL;
-  return new OwnerSettingsService(profile, GetInstance()->GetOwnerKeyUtil());
+  return new OwnerSettingsServiceChromeOS(profile,
+                                          GetInstance()->GetOwnerKeyUtil());
 }
 
-bool OwnerSettingsServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+bool OwnerSettingsServiceChromeOSFactory::ServiceIsCreatedWithBrowserContext()
+    const {
   return true;
 }
 
-KeyedService* OwnerSettingsServiceFactory::BuildServiceInstanceFor(
+KeyedService* OwnerSettingsServiceChromeOSFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return BuildInstanceFor(context);
 }

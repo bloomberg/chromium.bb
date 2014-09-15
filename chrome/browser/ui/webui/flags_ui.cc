@@ -34,8 +34,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -292,8 +292,8 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
 #if defined(OS_CHROMEOS)
-  chromeos::OwnerSettingsService* service =
-      chromeos::OwnerSettingsServiceFactory::GetForProfile(profile);
+  chromeos::OwnerSettingsServiceChromeOS* service =
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile);
   if (service) {
     service->IsOwnerAsync(base::Bind(
         &FinishInitialization, weak_factory_.GetWeakPtr(), profile, handler));

@@ -10,6 +10,8 @@ component("ownership") {
     "owner_key_util.h",
     "owner_key_util_impl.cc",
     "owner_key_util_impl.h",
+    "owner_settings_service.cc",
+    "owner_settings_service.h",
   ]
 
   defines = [
@@ -18,6 +20,9 @@ component("ownership") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
+    "//components/policy",
+    "//components/policy/proto",
     "//crypto",
   ]
 }
