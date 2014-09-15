@@ -71,7 +71,7 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
     return PP_OK_COMPLETIONPENDING;
   }
 
-  if (!pv_)
+  if (!pv_.get())
     pv_ = new PlatformVerificationFlow();
 
   pv_->ChallengePlatformKey(
