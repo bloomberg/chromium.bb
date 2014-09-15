@@ -11228,6 +11228,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Duration in milliseconds of HTML5 media (when known).</summary>
 </histogram>
 
+<histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Size in KB of the last file sucessfully read by the CDM through CDM FileIO
+    before a specific error happens. This is reported only when the error
+    happens, which should be rare.
+  </summary>
+</histogram>
+
+<histogram name="Media.EME.CdmFileIO.FileSizeKBOnFirstRead" units="KB">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Size in KB of the first file sucessfully read by the CDM through CDM FileIO.
+    This is recorded once per CDM instance.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey.addKey" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>addKey result using the Clear Key key system.</summary>

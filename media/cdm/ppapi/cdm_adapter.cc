@@ -19,6 +19,12 @@
 
 namespace {
 
+// Constants for UMA reporting of file size (in KB) via HistogramCustomCounts().
+// Note that the histogram is log-scaled (rather than linear).
+const uint32_t kSizeKBMin = 1;
+const uint32_t kSizeKBMax = 512 * 1024;  // 512MB
+const uint32_t kSizeKBBuckets = 100;
+
 #if !defined(NDEBUG)
   #define DLOG_TO_CONSOLE(message) LogToConsole(message);
 #else
@@ -267,7 +273,9 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
       deferred_initialize_audio_decoder_(false),
       deferred_audio_decoder_config_id_(0),
       deferred_initialize_video_decoder_(false),
-      deferred_video_decoder_config_id_(0) {
+      deferred_video_decoder_config_id_(0),
+      last_read_file_size_kb_(0),
+      file_size_uma_reported_(false) {
   callback_factory_.Initialize(this);
 }
 
@@ -759,6 +767,17 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  uint32_t system_code,
                                  const char* error_message,
                                  uint32_t error_message_length) {
+  // UMA to investigate http://crbug.com/410630
+  // TODO(xhwang): Remove after bug is fixed.
+  if (system_code == 0x27) {
+    pp::UMAPrivate uma_interface(this);
+    uma_interface.HistogramCustomCounts("Media.EME.CdmFileIO.FileSizeKBOnError",
+                                        last_read_file_size_kb_,
+                                        kSizeKBMin,
+                                        kSizeKBMax,
+                                        kSizeKBBuckets);
+  }
+
   RejectPromise(promise_id,
                 error,
                 system_code,
@@ -1082,6 +1101,25 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   return true;
 }
 
+void CdmAdapter::OnFirstFileRead(int32_t file_size_bytes) {
+  PP_DCHECK(IsMainThread());
+  PP_DCHECK(file_size_bytes >= 0);
+
+  last_read_file_size_kb_ = file_size_bytes / 1024;
+
+  if (file_size_uma_reported_)
+    return;
+
+  pp::UMAPrivate uma_interface(this);
+  uma_interface.HistogramCustomCounts(
+      "Media.EME.CdmFileIO.FileSizeKBOnFirstRead",
+      last_read_file_size_kb_,
+      kSizeKBMin,
+      kSizeKBMax,
+      kSizeKBBuckets);
+  file_size_uma_reported_ = true;
+}
+
 #if !defined(NDEBUG)
 void CdmAdapter::LogToConsole(const pp::Var& value) {
   PP_DCHECK(IsMainThread());
@@ -1189,7 +1227,10 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
 // The CDM owns the returned object and must call FileIO::Close() to release it.
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
-  return new CdmFileIOImpl(client, pp_instance());
+  return new CdmFileIOImpl(
+      client,
+      pp_instance(),
+      callback_factory_.NewCallback(&CdmAdapter::OnFirstFileRead));
 }
 
 #if defined(OS_CHROMEOS)

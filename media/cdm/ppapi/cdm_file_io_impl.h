@@ -35,7 +35,12 @@ class CdmFileIOImpl : public cdm::FileIO {
     DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
   };
 
-  CdmFileIOImpl(cdm::FileIOClient* client, PP_Instance pp_instance);
+  // After the first successful file read, call |first_file_read_cb| to report
+  // the file size. |first_file_read_cb| takes one parameter: the file size in
+  // bytes.
+  CdmFileIOImpl(cdm::FileIOClient* client,
+                PP_Instance pp_instance,
+                const pp::CompletionCallback& first_file_read_cb);
 
   // cdm::FileIO implementation.
   virtual void Open(const char* file_name, uint32_t file_name_size) OVERRIDE;
@@ -157,6 +162,11 @@ class CdmFileIOImpl : public cdm::FileIO {
   // Buffer to hold all read data requested. This buffer is passed to |client_|
   // when read completes.
   std::vector<char> cumulative_read_buffer_;
+
+  bool first_file_read_reported_;
+
+  // Callback to report the file size in bytes after the first successful read.
+  pp::CompletionCallback first_file_read_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmFileIOImpl);
 };

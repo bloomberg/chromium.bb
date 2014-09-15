@@ -247,6 +247,9 @@ class CdmAdapter : public pp::Instance,
 
   bool IsValidVideoFrame(const LinkedVideoFrame& video_frame);
 
+  // Callback to report |file_size_bytes| of the first file read by FileIO.
+  void OnFirstFileRead(int32_t file_size_bytes);
+
 #if !defined(NDEBUG)
   // Logs the given message to the JavaScript console associated with the
   // CDM adapter instance. The name of the CDM adapter issuing the log message
@@ -297,6 +300,9 @@ class CdmAdapter : public pp::Instance,
   uint32_t deferred_audio_decoder_config_id_;
   bool deferred_initialize_video_decoder_;
   uint32_t deferred_video_decoder_config_id_;
+
+  uint32_t last_read_file_size_kb_;
+  bool file_size_uma_reported_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapter);
 };

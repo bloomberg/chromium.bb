@@ -55,12 +55,17 @@ CdmFileIOImpl::ResourceTracker::~ResourceTracker() {
   delete CdmFileIOImpl::file_lock_map_;
 }
 
-CdmFileIOImpl::CdmFileIOImpl(cdm::FileIOClient* client, PP_Instance pp_instance)
+CdmFileIOImpl::CdmFileIOImpl(
+    cdm::FileIOClient* client,
+    PP_Instance pp_instance,
+    const pp::CompletionCallback& first_file_read_cb)
     : state_(FILE_UNOPENED),
       client_(client),
       pp_instance_handle_(pp_instance),
       callback_factory_(this),
-      io_offset_(0) {
+      io_offset_(0),
+      first_file_read_reported_(false),
+      first_file_read_cb_(first_file_read_cb) {
   PP_DCHECK(IsMainThread());
   PP_DCHECK(pp_instance);  // 0 indicates a "NULL handle".
 }
@@ -336,6 +341,14 @@ void CdmFileIOImpl::OnFileRead(int32_t bytes_read) {
   state_ = FILE_OPENED;
   const uint8_t* data = local_buffer.empty() ?
       NULL : reinterpret_cast<const uint8_t*>(&local_buffer[0]);
+
+  // Call this before OnReadComplete() so that we always have the latest file
+  // size before CDM fires errors.
+  if (!first_file_read_reported_) {
+    first_file_read_cb_.Run(local_buffer.size());
+    first_file_read_reported_ = true;
+  }
+
   client_->OnReadComplete(
       cdm::FileIOClient::kSuccess, data, local_buffer.size());
 }
