@@ -561,6 +561,8 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       form_(NULL),
       defer_page_unload_(false),
       selecting_(false),
+      mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
+                        PDFiumPage::LinkTarget()),
       next_page_to_search_(-1),
       last_page_to_search_(-1),
       last_character_index_to_search_(-1),
@@ -1322,7 +1324,7 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area = GetCharIndex(event, &page_index,
                                        &char_index, &target);
-  mouse_down_state_ = MouseDownState(area, target);
+  mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
   // mouse move events.
@@ -1410,7 +1412,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
       GetCharIndex(event, &page_index, &char_index, &target);
 
   // Open link on mouse up for same link for which mouse down happened earlier.
-  if (mouse_down_state_ == MouseDownState(area, target)) {
+  if (mouse_down_state_.Matches(area, target)) {
     if (area == PDFiumPage::WEBLINK_AREA) {
       bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier);
       client_->NavigateTo(target.url, open_in_new_tab);
@@ -1443,8 +1445,8 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
 
   // Clear |mouse_down_state_| if mouse moves away from where the mouse down
   // happened.
-  if (mouse_down_state_ != MouseDownState(area, target))
-    mouse_down_state_ = MouseDownState();
+  if (!mouse_down_state_.Matches(area, target))
+    mouse_down_state_.Reset();
 
   if (!selecting_) {
     PP_CursorType_Dev cursor;
@@ -2754,6 +2756,39 @@ PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelectionsScreenRects(
             engine_->current_rotation_);
     rects->insert(rects->end(), selection_rects.begin(), selection_rects.end());
   }
+}
+
+PDFiumEngine::MouseDownState::MouseDownState(
+    const PDFiumPage::Area& area,
+    const PDFiumPage::LinkTarget& target)
+    : area_(area), target_(target) {
+}
+
+PDFiumEngine::MouseDownState::~MouseDownState() {
+}
+
+void PDFiumEngine::MouseDownState::Set(const PDFiumPage::Area& area,
+                                       const PDFiumPage::LinkTarget& target) {
+  area_ = area;
+  target_ = target;
+}
+
+void PDFiumEngine::MouseDownState::Reset() {
+  area_ = PDFiumPage::NONSELECTABLE_AREA;
+  target_ = PDFiumPage::LinkTarget();
+}
+
+bool PDFiumEngine::MouseDownState::Matches(
+    const PDFiumPage::Area& area,
+    const PDFiumPage::LinkTarget& target) const {
+  if (area_ == area) {
+    if (area == PDFiumPage::WEBLINK_AREA)
+      return target_.url == target.url;
+    if (area == PDFiumPage::DOCLINK_AREA)
+      return target_.page == target.page;
+    return true;
+  }
+  return false;
 }
 
 void PDFiumEngine::DeviceToPage(int page_index,

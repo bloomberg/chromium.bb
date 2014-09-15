@@ -131,6 +131,26 @@ class PDFiumEngine : public PDFEngine,
     pp::Point previous_origin_;
   };
 
+  // Used to store mouse down state to handle it in other mouse event handlers.
+  class MouseDownState {
+   public:
+    MouseDownState(const PDFiumPage::Area& area,
+                   const PDFiumPage::LinkTarget& target);
+    ~MouseDownState();
+
+    void Set(const PDFiumPage::Area& area,
+             const PDFiumPage::LinkTarget& target);
+    void Reset();
+    bool Matches(const PDFiumPage::Area& area,
+                 const PDFiumPage::LinkTarget& target) const;
+
+   private:
+    PDFiumPage::Area area_;
+    PDFiumPage::LinkTarget target_;
+
+    DISALLOW_COPY_AND_ASSIGN(MouseDownState);
+  };
+
   friend class SelectionChangeInvalidator;
 
   struct FileAvail : public FX_FILEAVAIL {
@@ -509,22 +529,6 @@ class PDFiumEngine : public PDFEngine,
   // True if we're in the middle of selection.
   bool selecting_;
 
-  // Used to store mouse down state to handle it in other mouse event handlers.
-  struct MouseDownState {
-    MouseDownState() {};
-    MouseDownState(PDFiumPage::Area area, PDFiumPage::LinkTarget target)
-        : area_(area), target_(target) {};
-    PDFiumPage::Area area_;
-    PDFiumPage::LinkTarget target_;
-
-    bool operator==(const MouseDownState& rhs) const {
-      return (area_ == rhs.area_) && (target_.url == rhs.target_.url);
-    }
-
-    bool operator!=(const MouseDownState rhs) const {
-      return (area_ != rhs.area_) || (target_.url != rhs.target_.url);
-    }
-  };
   MouseDownState mouse_down_state_;
 
   // Used for searching.
