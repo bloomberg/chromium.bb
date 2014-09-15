@@ -280,6 +280,7 @@ PeriodicWave
 Plugin
 PluginArray
 PopStateEvent
+Presentation
 ProcessingInstruction
 ProgressEvent
 Promise

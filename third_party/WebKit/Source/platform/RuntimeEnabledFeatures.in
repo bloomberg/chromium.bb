@@ -95,6 +95,7 @@ PagePopup status=stable
 PathOpsSVGClipping status=stable
 PeerConnection depends_on=MediaStream, status=stable
 PreciseMemoryInfo
+Presentation status=test
 PushMessaging status=experimental
 QuotaPromise status=experimental
 OverlayScrollbars

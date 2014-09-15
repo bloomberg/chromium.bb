@@ -49,6 +49,7 @@ PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.maxTouchPoints is 0
 PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
+PASS childWindow.navigator.presentation.onavailablechange is null
 PASS childWindow.navigator.product is window.navigator.product
 PASS childWindow.navigator.productSub is window.navigator.productSub
 PASS childWindow.navigator.serviceWorker.controller is null

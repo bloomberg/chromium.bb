@@ -44,6 +44,7 @@ PASS window.cached_navigator.userAgent is ''
 PASS window.cached_navigator.vendor is window.navigator.vendor
 PASS window.cached_navigator.vendorSub is ''
 PASS window.cached_navigator_connection.ontypechange is null
+PASS window.cached_navigator_presentation.onavailablechange is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_performance.onwebkitresourcetimingbufferfull is null
 PASS window.cached_performance_navigation.redirectCount is 0

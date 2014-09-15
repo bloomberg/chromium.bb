@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+    assert_true('presentation' in navigator);
+    assert_true('onavailablechange' in navigator.presentation);
+}, "Test that the Presentation API is present.")
+
+test(function() {
+  assert_equals(typeof(navigator.presentation), "object");
+  assert_equals(typeof(navigator.presentation.onavailablechange), "object");
+}, "Test the Presentation API property types.");
+
+test(function() {
+  assert_true(navigator.presentation instanceof EventTarget);
+}, "Test that navigator.presentation is an EventTarget.");
+
+</script>
+</body>
+</html>
+

@@ -23,6 +23,7 @@ audioprocess
 audiostart
 autocomplete
 autocompleteerror
+availablechange
 beforecopy
 beforecut
 beforepaste
