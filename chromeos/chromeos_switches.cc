@@ -80,6 +80,9 @@ const char kEnableChromeVoxNext[] = "enable-chromevox-next";
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
 
+// Enable Easy sign-in.
+const char kEnableEasySignin[] = "enable-easy-signin";
+
 // If this switch is set, Chrome OS login screen uses |EmbeddedSignin| endpoint
 // of GAIA.
 const char kEnableEmbeddedSignin[] = "enable-embedded-signin";

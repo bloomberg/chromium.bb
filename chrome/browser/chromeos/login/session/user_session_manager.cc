@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -792,6 +794,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile);
+
+  UpdateEasyUnlockKeys(profile);
 }
 
 void UserSessionManager::InitSessionRestoreStrategy() {
@@ -991,6 +995,34 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
                     PendingUserSessionsRestoreFinished());
 }
 
+void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
+  if (!GetEasyUnlockKeyManager())
+    return;
+
+  // Only update Easy unlock keys for regular user.
+  if (user_context_.GetUserType() != user_manager::USER_TYPE_REGULAR)
+    return;
+
+  // |user_context_| and |user_profile| must belong to the same user.
+  DCHECK_EQ(SigninManagerFactory::GetForProfile(user_profile)
+                ->GetAuthenticatedAccountId(),
+            user_context_.GetUserID());
+
+  const base::ListValue* device_list = NULL;
+  if (EasyUnlockService::Get(user_profile))
+    device_list = EasyUnlockService::Get(user_profile)->GetRemoteDevices();
+
+  if (device_list) {
+    easy_unlock_key_manager_->RefreshKeys(
+        user_context_,
+        *device_list,
+        EasyUnlockKeyManager::RefreshKeysCallback());
+  } else {
+    easy_unlock_key_manager_->RemoveKeys(
+        user_context_, 0, EasyUnlockKeyManager::RemoveKeysCallback());
+  }
+}
+
 void UserSessionManager::ActiveUserChanged(
     const user_manager::User* active_user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(active_user);
@@ -1014,6 +1046,18 @@ UserSessionManager::GetDefaultIMEState(Profile* profile) {
     default_ime_states_[profile] = state;
   }
   return state;
+}
+
+EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
+  if (!CommandLine::ForCurrentProcess()
+           ->HasSwitch(chromeos::switches::kEnableEasySignin)) {
+    return NULL;
+  }
+
+  if (!easy_unlock_key_manager_)
+    easy_unlock_key_manager_.reset(new EasyUnlockKeyManager);
+
+  return easy_unlock_key_manager_.get();
 }
 
 }  // namespace chromeos

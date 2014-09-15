@@ -1,0 +1,363 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_create_keys_operation.h"
+
+#include <string>
+
+#include "base/base64.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#include "chromeos/cryptohome/homedir_methods.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/login/auth/key.h"
+#include "crypto/encryptor.h"
+#include "crypto/random.h"
+#include "crypto/symmetric_key.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace chromeos {
+
+namespace {
+
+const int kUserKeyByteSize = 16;
+const int kSessionKeyByteSize = 16;
+
+const int kEasyUnlockKeyRevision = 1;
+const int kEasyUnlockKeyPrivileges =
+    cryptohome::PRIV_MOUNT | cryptohome::PRIV_ADD | cryptohome::PRIV_REMOVE;
+
+bool WebSafeBase64Decode(const std::string& encoded, std::string* decoded) {
+  std::string adjusted_encoded = encoded;
+  base::ReplaceChars(adjusted_encoded, "-", "+", &adjusted_encoded);
+  base::ReplaceChars(adjusted_encoded, "_", "/", &adjusted_encoded);
+
+  return base::Base64Decode(adjusted_encoded, decoded);
+}
+
+}  // namespace
+
+/////////////////////////////////////////////////////////////////////////////
+// EasyUnlockCreateKeysOperation::ChallengeCreator
+
+class EasyUnlockCreateKeysOperation::ChallengeCreator {
+ public:
+  typedef base::Callback<void (bool success)> ChallengeCreatedCallback;
+  ChallengeCreator(const std::string& user_key,
+                   const std::string& session_key,
+                   const std::string& tpm_pub_key,
+                   EasyUnlockDeviceKeyData* device,
+                   const ChallengeCreatedCallback& callback);
+  ~ChallengeCreator();
+
+  void Start();
+
+  const std::string& user_key() const { return user_key_; }
+
+ private:
+  void OnEcKeyPairGenerated(const std::string& ec_public_key,
+                            const std::string& ec_private_key);
+  void OnEskGenerated(const std::string& esk);
+
+  void GeneratePayload();
+  void OnPayloadMessageGenerated(const std::string& payload_message);
+  void OnPayloadGenerated(const std::string& payload);
+
+  void OnChallengeGenerated(const std::string& challenge);
+
+  const std::string user_key_;
+  const std::string session_key_;
+  const std::string tpm_pub_key_;
+  EasyUnlockDeviceKeyData* device_;
+  ChallengeCreatedCallback callback_;
+
+  std::string ec_public_key_;
+  std::string esk_;
+
+  // Owned by DBusThreadManager
+  chromeos::EasyUnlockClient* easy_unlock_client_;
+
+  base::WeakPtrFactory<ChallengeCreator> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChallengeCreator);
+};
+
+EasyUnlockCreateKeysOperation::ChallengeCreator::ChallengeCreator(
+    const std::string& user_key,
+    const std::string& session_key,
+    const std::string& tpm_pub_key,
+    EasyUnlockDeviceKeyData* device,
+    const ChallengeCreatedCallback& callback)
+    : user_key_(user_key),
+      session_key_(session_key),
+      tpm_pub_key_(tpm_pub_key),
+      device_(device),
+      callback_(callback),
+      easy_unlock_client_(
+          chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()),
+      weak_ptr_factory_(this) {
+}
+
+EasyUnlockCreateKeysOperation::ChallengeCreator::~ChallengeCreator() {
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::Start() {
+  easy_unlock_client_->GenerateEcP256KeyPair(
+      base::Bind(&ChallengeCreator::OnEcKeyPairGenerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
+    const std::string& ec_private_key,
+    const std::string& ec_public_key) {
+  if (ec_private_key.empty() || ec_public_key.empty()) {
+    LOG(ERROR) << "Easy unlock failed to generate ec key pair.";
+    callback_.Run(false);
+    return;
+  }
+
+  std::string device_pub_key;
+  if (!WebSafeBase64Decode(device_->public_key, &device_pub_key)) {
+    LOG(ERROR) << "Easy unlock failed to decode device public key.";
+    callback_.Run(false);
+    return;
+  }
+
+  ec_public_key_ = ec_public_key;
+  easy_unlock_client_->PerformECDHKeyAgreement(
+      ec_private_key,
+      device_pub_key,
+      base::Bind(&ChallengeCreator::OnEskGenerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
+    const std::string& esk) {
+  if (esk.empty()) {
+    LOG(ERROR) << "Easy unlock failed to generate challenge esk.";
+    callback_.Run(false);
+    return;
+  }
+
+  esk_ = esk;
+  GeneratePayload();
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::GeneratePayload() {
+  // Work around to get HeaderAndBody bytes to use as challenge payload.
+  easy_unlock_client_->CreateSecureMessage(
+      session_key_,
+      esk_,
+      std::string(),  // associated data
+      std::string(),  // public meta
+      tpm_pub_key_,   // TODO(xiyuan): Wrap in a GenericPublicKey proto.
+      std::string(),  // decryption key id
+      easy_unlock::kEncryptionTypeAES256CBC,
+      easy_unlock::kSignatureTypeHMACSHA256,
+      base::Bind(&ChallengeCreator::OnPayloadMessageGenerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void
+EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadMessageGenerated(
+    const std::string& payload_message) {
+  easy_unlock_client_->UnwrapSecureMessage(
+      payload_message,
+      esk_,
+      std::string(),  // associated data
+      easy_unlock::kEncryptionTypeAES256CBC,
+      easy_unlock::kSignatureTypeHMACSHA256,
+      base::Bind(&ChallengeCreator::OnPayloadGenerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
+    const std::string& payload) {
+  if (payload.empty()) {
+    LOG(ERROR) << "Easy unlock failed to generate challenge payload.";
+    callback_.Run(false);
+    return;
+  }
+
+  easy_unlock_client_->CreateSecureMessage(
+      payload,
+      esk_,
+      std::string(),   // associated data
+      std::string(),   // public meta
+      std::string(),   // verification key id
+      ec_public_key_,  // decryption key id
+      easy_unlock::kEncryptionTypeAES256CBC,
+      easy_unlock::kSignatureTypeHMACSHA256,
+      base::Bind(&ChallengeCreator::OnChallengeGenerated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::OnChallengeGenerated(
+    const std::string& challenge) {
+  if (challenge.empty()) {
+    LOG(ERROR) << "Easy unlock failed to generate challenge.";
+    callback_.Run(false);
+    return;
+  }
+
+  device_->challenge = challenge;
+  callback_.Run(true);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// EasyUnlockCreateKeysOperation
+
+EasyUnlockCreateKeysOperation::EasyUnlockCreateKeysOperation(
+    const UserContext& user_context,
+    const EasyUnlockDeviceKeyDataList& devices,
+    const CreateKeysCallback& callback)
+    : user_context_(user_context),
+      devices_(devices),
+      callback_(callback),
+      key_creation_index_(0),
+      weak_ptr_factory_(this) {
+  // Must have the secret and callback.
+  DCHECK(!user_context_.GetKey()->GetSecret().empty());
+  DCHECK(!callback_.is_null());
+}
+
+EasyUnlockCreateKeysOperation::~EasyUnlockCreateKeysOperation() {
+}
+
+void EasyUnlockCreateKeysOperation::Start() {
+  key_creation_index_ = 0;
+  CreateKeyForDeviceAtIndex(key_creation_index_);
+}
+
+void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
+  DCHECK_GE(index, 0u);
+  if (index == devices_.size()) {
+    callback_.Run(true);
+    return;
+  }
+
+  std::string user_key;
+  crypto::RandBytes(WriteInto(&user_key, kUserKeyByteSize + 1),
+                    kUserKeyByteSize);
+
+  scoped_ptr<crypto::SymmetricKey> session_key(
+      crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES,
+                                              kSessionKeyByteSize * 8));
+
+  std::string iv(kSessionKeyByteSize, ' ');
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(session_key.get(), crypto::Encryptor::CBC, iv)) {
+    LOG(ERROR) << "Easy unlock failed to init encryptor for key creation.";
+    callback_.Run(false);
+    return;
+  }
+
+  EasyUnlockDeviceKeyData* device = &devices_[index];
+  if (!encryptor.Encrypt(user_key, &device->wrapped_secret)) {
+    LOG(ERROR) << "Easy unlock failed to encrypt user key for key creation.";
+    callback_.Run(false);
+    return;
+  }
+
+  std::string raw_session_key;
+  session_key->GetRawKey(&raw_session_key);
+
+  challenge_creator_.reset(new ChallengeCreator(
+      user_key,
+      raw_session_key,
+      std::string(),
+      device,
+      base::Bind(&EasyUnlockCreateKeysOperation::OnChallengeCreated,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 index)));
+  challenge_creator_->Start();
+}
+
+void EasyUnlockCreateKeysOperation::OnChallengeCreated(size_t index,
+                                                       bool success) {
+  DCHECK_EQ(key_creation_index_, index);
+
+  if (!success) {
+    LOG(ERROR) << "Easy unlock failed to create challenge for key creation.";
+    callback_.Run(false);
+    return;
+  }
+
+  SystemSaltGetter::Get()->GetSystemSalt(
+      base::Bind(&EasyUnlockCreateKeysOperation::OnGetSystemSalt,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 index));
+}
+
+void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
+    size_t index,
+    const std::string& system_salt) {
+  DCHECK_EQ(key_creation_index_, index);
+  if (system_salt.empty()) {
+    LOG(ERROR) << "Easy unlock failed to get system salt for key creation.";
+    callback_.Run(false);
+    return;
+  }
+
+  Key user_key(challenge_creator_->user_key());
+  user_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+
+  EasyUnlockDeviceKeyData* device = &devices_[index];
+  cryptohome::KeyDefinition key_def(
+      user_key.GetSecret(),
+      EasyUnlockKeyManager::GetKeyLabel(index),
+      kEasyUnlockKeyPrivileges);
+  key_def.revision = kEasyUnlockKeyRevision;
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNameBluetoothAddress, device->bluetooth_address));
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNamePsk, device->psk));
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNamePubKey, device->public_key));
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNameChallenge, device->challenge));
+  // TODO(xiyuan): Store wrapped secret when all pieces are in place.
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNameWrappedSecret, challenge_creator_->user_key()));
+
+  // Add cryptohome key.
+  std::string canonicalized =
+      gaia::CanonicalizeEmail(user_context_.GetUserID());
+  cryptohome::Identification id(canonicalized);
+  const Key* const auth_key = user_context_.GetKey();
+  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
+  cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
+      id,
+      auth,
+      key_def,
+      true,  // clobber
+      base::Bind(&EasyUnlockCreateKeysOperation::OnKeyCreated,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 index));
+}
+
+void EasyUnlockCreateKeysOperation::OnKeyCreated(
+    size_t index,
+    bool success,
+    cryptohome::MountError return_code) {
+  DCHECK_EQ(key_creation_index_, index);
+
+  if (!success) {
+    LOG(ERROR) << "Easy unlock failed to create key, code=" << return_code;
+    callback_.Run(false);
+    return;
+  }
+
+  ++key_creation_index_;
+  CreateKeyForDeviceAtIndex(key_creation_index_);
+}
+
+}  // namespace chromeos

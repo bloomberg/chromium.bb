@@ -44446,6 +44446,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
+  <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>

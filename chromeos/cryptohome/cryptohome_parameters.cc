@@ -86,6 +86,17 @@ KeyDefinition::ProviderData::ProviderData(const ProviderData& other)
     bytes.reset(new std::string(*other.bytes));
 }
 
+KeyDefinition::ProviderData::ProviderData(const std::string& name, int64 number)
+    : name(name),
+      number(new int64(number)) {
+}
+
+KeyDefinition::ProviderData::ProviderData(const std::string& name,
+                                          const std::string& bytes)
+    : name(name),
+      bytes(new std::string(bytes)) {
+}
+
 void KeyDefinition::ProviderData::operator=(const ProviderData& other) {
   name = other.name;
   number.reset(other.number ? new int64(*other.number) : NULL);

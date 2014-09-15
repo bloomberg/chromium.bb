@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -32,6 +33,8 @@ class User;
 }  // namespace user_manager
 
 namespace chromeos {
+
+class EasyUnlockKeyManager;
 
 class UserSessionManagerDelegate {
  public:
@@ -152,6 +155,9 @@ class UserSessionManager
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
       Profile* profile);
 
+  // Note this could return NULL if not enabled.
+  EasyUnlockKeyManager* GetEasyUnlockKeyManager();
+
  private:
   friend struct DefaultSingletonTraits<UserSessionManager>;
 
@@ -235,6 +241,9 @@ class UserSessionManager
   // Notifies observers that user pending sessions restore has finished.
   void NotifyPendingUserSessionsRestoreFinished();
 
+  // Update Easy unlock cryptohome keys using the pairing data in user prefs.
+  void UpdateEasyUnlockKeys(Profile* user_profile);
+
   UserSessionManagerDelegate* delegate_;
 
   // Authentication/user context.
@@ -280,6 +289,9 @@ class UserSessionManager
   // Per-user-session Input Methods states.
   std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State> >
       default_ime_states_;
+
+  // Manages Easy unlock cryptohome keys.
+  scoped_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

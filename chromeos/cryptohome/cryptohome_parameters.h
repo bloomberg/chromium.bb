@@ -85,6 +85,8 @@ struct CHROMEOS_EXPORT KeyDefinition {
     ProviderData();
     explicit ProviderData(const std::string& name);
     explicit ProviderData(const ProviderData& other);
+    ProviderData(const std::string& name, int64 number);
+    ProviderData(const std::string& name, const std::string& bytes);
     void operator=(const ProviderData& other);
     ~ProviderData();
 

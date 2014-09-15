@@ -6348,6 +6348,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION" desc="Description for the flag to enable animated transition in the first-run tutorial.">
           If enabled, transitions during first-run tutorial are animated.
         </message>
+        <message name="IDS_FLAGS_ENABLE_EASY_SIGNIN_NAME" desc="Name of the Enable Easy signin flag.">
+          Enable Easy sign-in
+        </message>
+        <message name="IDS_FLAGS_ENABLE_EASY_SIGNIN_DESCRIPTION" desc="Description of the Enable Easy signin flag.">
+          Easy sign-in allows you to sign in your Chromebook when in proximity to your phone.
+        </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME" desc="Name of the flag to enable streamlined hosted apps.">
         Enable experimental streamlined hosted apps.
