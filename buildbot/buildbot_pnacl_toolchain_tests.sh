@@ -31,6 +31,7 @@ readonly TOOLCHAIN_BUILD="toolchain_build/toolchain_build_pnacl.py"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
+readonly CLANG_UPDATE="../tools/clang/scripts/update.py"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -114,7 +115,7 @@ build-run-prerequisites() {
 scons-tests-translator() {
   local platform=$1
   local flags="--mode=opt-host,nacl use_sandboxed_translator=1 \
-               platform=${platform} -k"
+               platform=${platform} -k skip_trusted_tests=1"
   local targets="small_tests medium_tests large_tests"
 
   # ROUND 1: regular builds
@@ -276,6 +277,9 @@ archived-frontend-test() {
 tc-test-bot() {
   local archset="$1"
   clobber
+
+  # Update Clang
+  python ${CLANG_UPDATE}
 
   # Only build MIPS stuff on mips bots
   if [[ ${archset} == "mips" ]]; then
