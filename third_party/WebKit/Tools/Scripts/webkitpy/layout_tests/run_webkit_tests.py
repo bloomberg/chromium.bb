@@ -77,9 +77,8 @@ def main(argv, stdout, stderr):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
 
-        if options.enable_versioned_results:
-            gen_dash_board = GenerateDashBoard(port)
-            gen_dash_board.generate()
+        gen_dash_board = GenerateDashBoard(port)
+        gen_dash_board.generate()
 
         return run_details.exit_code
 
@@ -135,8 +134,6 @@ def parse_args(args):
             help="Use the specified port's baselines first"),
         optparse.make_option("--driver-name", type="string",
             help="Alternative driver binary to use"),
-        optparse.make_option("--enable-versioned-results", action="store_true",
-            default=False, help="Archive the test results for later access."),
         optparse.make_option("--full-results-html", action="store_true",
             default=False,
             help="Show all failures in results.html, rather than only regressions"),

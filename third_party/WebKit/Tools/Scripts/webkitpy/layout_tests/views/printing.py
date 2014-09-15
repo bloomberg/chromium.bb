@@ -78,9 +78,7 @@ class Printer(object):
         self._print_default("Using port '%s'" % self._port.name())
         self._print_default("Test configuration: %s" % self._port.test_configuration())
         self._print_default("View the test results at file://%s/results.html" % results_directory)
-
-        if self._options.enable_versioned_results:
-            self._print_default("View the archived results dashboard at file://%s/dashboard.html" % results_directory)
+        self._print_default("View the archived results dashboard at file://%s/dashboard.html" % results_directory)
 
         # FIXME: should these options be in printing_options?
         if self._options.new_baseline:

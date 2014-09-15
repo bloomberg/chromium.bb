@@ -126,7 +126,6 @@ class  Testprinter(unittest.TestCase):
         printer, err = self.get_printer()
         # FIXME: it's lame that i have to set these options directly.
         printer._options.pixel_tests = True
-        printer._options.enable_versioned_results = True
         printer._options.new_baseline = True
         printer._options.time_out_ms = 6000
         printer._options.slow_time_out_ms = 12000

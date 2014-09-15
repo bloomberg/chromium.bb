@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import logging
 
 
 class ProcessJsonData(object):
@@ -113,10 +114,13 @@ class GenerateDashBoard(object):
         file_list = self._filesystem.listdir(self._results_directory_path)
         results_directories = []
         for dir in file_list:
-            if self._filesystem.isdir(self._filesystem.join(self._results_directory_path, dir)):
-                results_directories.append(self._filesystem.join(self._results_directory_path, dir))
+            full_dir_path = self._filesystem.join(self._results_directory_path, dir)
+            if self._filesystem.isdir(full_dir_path):
+                if self._results_directory in full_dir_path:
+                    results_directories.append(full_dir_path)
         results_directories.sort(reverse=True, key=lambda x: self._filesystem.mtime(x))
-        with open(self._filesystem.join(results_directories[0], 'failing_results.json'), "r") as file:
+        current_failing_results_json_file = self._filesystem.join(results_directories[0], 'failing_results.json')
+        with self._filesystem.open_text_file_for_reading(current_failing_results_json_file) as file:
             input_json_string = file.readline()
         input_json_string = input_json_string[12:-2]   # Remove preceeding string ADD_RESULTS( and ); at the end
         self._current_result_json_dict['tests'] = json.loads(input_json_string)['tests']
@@ -127,21 +131,26 @@ class GenerateDashBoard(object):
 
         # Load the remaining stale layout test results Json's to create the dashboard
         for json_file in results_directories:
-            with open(self._filesystem.join(json_file, 'failing_results.json'), "r") as file:
+            failing_json_file_path = self._filesystem.join(json_file, 'failing_results.json')
+            full_json_file_path = self._filesystem.join(json_file, 'full_results.json')
+            with self._filesystem.open_text_file_for_reading(failing_json_file_path) as file:
                 json_string = file.readline()
             json_string = json_string[12:-2]   # Remove preceeding string ADD_RESULTS( and ); at the end
             self._old_failing_results_list.append(json.loads(json_string))
 
-            with open(self._filesystem.join(json_file, 'full_results.json'), "r") as full_file:
+            with self._filesystem.open_text_file_for_reading(full_json_file_path) as full_file:
                 json_string_full_result = full_file.readline()
             self._old_full_results_list.append(json.loads(json_string_full_result))
         self._copy_dashboard_html()
 
     def generate(self):
         self._initialize()
-        process_json_data = ProcessJsonData(self._current_result_json_dict, self._old_failing_results_list, self._old_full_results_list)
-        self._final_result = process_json_data.generate_archived_result()
-        final_json = json.dumps(self._final_result)
-        final_json = 'ADD_RESULTS(' + final_json + ');'
-        with open(self._filesystem.join(self._results_directory, 'archived_results.json'), "w") as file:
-            file.write(final_json)
+
+        # There must be atleast one archived result to be processed
+        if self._current_result_json_dict:
+            process_json_data = ProcessJsonData(self._current_result_json_dict, self._old_failing_results_list, self._old_full_results_list)
+            self._final_result = process_json_data.generate_archived_result()
+            final_json = json.dumps(self._final_result)
+            final_json = 'ADD_RESULTS(' + final_json + ');'
+            with self._filesystem.open_text_file_for_writing(self._filesystem.join(self._results_directory, 'archived_results.json')) as file:
+                file.write(final_json)
