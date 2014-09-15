@@ -67,8 +67,6 @@
       '-Goutput_dir=xcodebuild/<(ninja_output_dir)',
       # nacl isn't in the iOS checkout, make sure it's turned off
       '-Ddisable_nacl=1',
-      # Add a variable to handle specific cases for mac_build.
-      '-Dios_mac_build=1',
       # Pass through the Mac SDK version.
       '-Dmac_sdk=<(mac_sdk)',
       '-Dparent_generator=<(parent_generator)'
