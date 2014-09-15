@@ -104,7 +104,24 @@ define("mojo/public/js/bindings/connector", [
     }
   };
 
+  // The TestConnector subclass is only intended to be used in unit tests. It
+  // enables delivering a message to the pipe's handle without an async wait.
+
+  function TestConnector(handle) {
+    Connector.call(this, handle);
+  }
+
+  TestConnector.prototype = Object.create(Connector.prototype);
+
+  TestConnector.prototype.waitToReadMore_ = function() {
+  };
+
+  TestConnector.prototype.deliverMessage = function() {
+    this.readMore_(core.RESULT_OK);
+  }
+
   var exports = {};
   exports.Connector = Connector;
+  exports.TestConnector = TestConnector;
   return exports;
 });

@@ -8,8 +8,10 @@ define("mojo/public/js/bindings/router", [
   "mojo/public/js/bindings/validator",
 ], function(codec, connector, validator) {
 
-  function Router(handle) {
-    this.connector_ = new connector.Connector(handle);
+  function Router(handle, connectorFactory) {
+    if (connectorFactory === undefined)
+      connectorFactory = connector.Connector;
+    this.connector_ = new connectorFactory(handle);
     this.incomingReceiver_ = null;
     this.nextRequestID_ = 0;
     this.responders_ = {};
@@ -71,9 +73,14 @@ define("mojo/public/js/bindings/router", [
     var err = messageValidator.validateMessageHeader();
     for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
       err = this.payloadValidators_[i](messageValidator);
-    if (err !== noError)
-      this.close();
 
+    if (err == noError)
+      this.handleValidIncomingMessage_(message);
+    else
+      this.handleInvalidIncomingMessage_(message, err);
+  };
+
+  Router.prototype.handleValidIncomingMessage_ = function(message) {
     if (message.expectsResponse()) {
       if (this.incomingReceiver_) {
         this.incomingReceiver_.acceptWithResponder(message, this);
@@ -92,7 +99,11 @@ define("mojo/public/js/bindings/router", [
       if (this.incomingReceiver_)
         this.incomingReceiver_.accept(message);
     }
-  };
+  }
+
+  Router.prototype.handleInvalidIncomingMessage_ = function(message, error) {
+    this.close();
+  }
 
   Router.prototype.handleConnectionError_ = function(result) {
     for (var each in this.responders_)
@@ -100,7 +111,25 @@ define("mojo/public/js/bindings/router", [
     this.close();
   };
 
+  // The TestRouter subclass is only intended to be used in unit tests.
+  // It defeats valid message handling and delgates invalid message handling.
+
+  function TestRouter(handle, connectorFactory) {
+    Router.call(this, handle, connectorFactory);
+  }
+
+  TestRouter.prototype = Object.create(Router.prototype);
+
+  TestRouter.prototype.handleValidIncomingMessage_ = function() {
+  };
+
+  TestRouter.prototype.handleInvalidIncomingMessage_ =
+      function(message, error) {
+        this.validationErrorHandler(error);
+      };
+
   var exports = {};
   exports.Router = Router;
+  exports.TestRouter = TestRouter;
   return exports;
 });

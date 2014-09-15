@@ -6,11 +6,12 @@
 test("mojo_js_unittests") {
   deps = [
     "//gin:gin_test",
-    "//mojo/common/test:run_all_unittests",
     "//mojo/common/test:test_support",
-    "//mojo/environment:chromium",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//mojo/public/cpp/environment:standalone",
     "//mojo/bindings/js",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/public/cpp/utility",
   ]
 
   sources = [ "run_js_tests.cc" ]

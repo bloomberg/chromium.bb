@@ -9,10 +9,26 @@ define([
     "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
     "mojo/public/js/bindings/buffer",
     "mojo/public/js/bindings/codec",
+    "mojo/public/js/bindings/connection",
+    "mojo/public/js/bindings/connector",
+    "mojo/public/js/bindings/core",
     "mojo/public/js/bindings/tests/validation_test_input_parser",
+    "mojo/public/js/bindings/router",
     "mojo/public/js/bindings/validator",
-  ], function(
-    console, file, expect, testInterface, buffer, codec, parser, validator) {
+], function(console,
+            file,
+            expect,
+            testInterface,
+            buffer,
+            codec,
+            connection,
+            connector,
+            core,
+            parser,
+            router,
+            validator) {
+
+  var noError = validator.validationError.NONE;
 
   function checkTestMessageParser() {
     function TestMessageParserFailure(message, input) {
@@ -196,11 +212,18 @@ define([
     return contents.trim();
   }
 
+  function checkValidationResult(testFile, err) {
+    var actualResult = (err === noError) ? "PASS" : err;
+    var expectedResult = readTestExpected(testFile);
+    if (actualResult != expectedResult)
+      console.log("[Test message validation failed: " + testFile + " ]");
+    expect(actualResult).toEqual(expectedResult);
+  }
+
   function testMessageValidation(key, filters) {
     var testFiles = getMessageTestFiles(key);
     expect(testFiles.length).toBeGreaterThan(0);
 
-    var noError = validator.validationError.NONE;
     for (var i = 0; i < testFiles.length; i++) {
       // TODO(hansmuller): Temporarily skipping array pointer overflow tests.
       if (testFiles[i].indexOf("overflow") != -1) {
@@ -217,11 +240,7 @@ define([
       for (var j = 0; err === noError && j < filters.length; ++j)
         err = filters[j](messageValidator);
 
-      var actualResult = (err === noError) ? "PASS" : err;
-      var expectedResult = readTestExpected(testFiles[i]);
-      if (actualResult != expectedResult)
-        console.log("[Test message validation failed: " + testFiles[i] + " ]");
-      expect(actualResult).toEqual(expectedResult);
+      checkValidationResult(testFiles[i], err);
     }
   }
 
@@ -235,14 +254,49 @@ define([
         testInterface.ConformanceTestInterfaceStub.prototype.validator]);
   }
 
-  function testIntegrationMessageValidation() {
-    testMessageValidation("integration_", [
-        testInterface.IntegrationTestInterface1Stub.prototype.validator,
-        testInterface.IntegrationTestInterface2Proxy.prototype.validator]);
+  function testIntegratedMessageValidation() {
+    var testFiles = getMessageTestFiles("integration_");
+    expect(testFiles.length).toBeGreaterThan(0);
+
+    for (var i = 0; i < testFiles.length; i++) {
+      // TODO(hansmuller): Temporarily skipping array pointer overflow tests.
+      if (testFiles[i].indexOf("overflow") != -1) {
+        console.log("[Skipping " + testFiles[i] + "]");
+        continue;
+      }
+
+      var testMessage = readTestMessage(testFiles[i]);
+      var handles = new Array(testMessage.handleCount);
+      var testMessagePipe = new core.createMessagePipe();
+      expect(testMessagePipe.result).toBe(core.RESULT_OK);
+
+      var writeMessageValue = core.writeMessage(
+          testMessagePipe.handle0,
+          new Uint8Array(testMessage.buffer.arrayBuffer),
+          new Array(testMessage.handleCount),
+          core.WRITE_MESSAGE_FLAG_NONE);
+      expect(writeMessageValue).toBe(core.RESULT_OK);
+
+      var testConnection = new connection.TestConnection(
+          testMessagePipe.handle1,
+          testInterface.IntegrationTestInterface1Stub,
+          testInterface.IntegrationTestInterface2Proxy);
+
+      var validationError = noError;
+      testConnection.router_.validationErrorHandler = function(err) {
+        validationError = err;
+      }
+
+      testConnection.router_.connector_.deliverMessage();
+      checkValidationResult(testFiles[i], validationError);
+
+      testConnection.close();
+      expect(core.close(testMessagePipe.handle0)).toBe(core.RESULT_OK);
+    }
   }
 
   expect(checkTestMessageParser()).toBeNull();
   testConformanceMessageValidation();
-  testIntegrationMessageValidation();
+  testIntegratedMessageValidation();
   this.result = "PASS";
 });

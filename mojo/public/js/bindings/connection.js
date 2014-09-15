@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/bindings/connection", [
+  "mojo/public/js/bindings/connector",
   "mojo/public/js/bindings/router",
-], function(router) {
+], function(connector, router) {
 
-  function Connection(handle, localFactory, remoteFactory) {
-    this.router_ = new router.Router(handle);
+  function Connection(
+      handle, localFactory, remoteFactory, routerFactory, connectorFactory) {
+    if (routerFactory === undefined)
+      routerFactory = router.Router;
+    this.router_ = new routerFactory(handle, connectorFactory);
     this.remote = new remoteFactory(this.router_);
     this.local = new localFactory(this.remote);
     this.router_.setIncomingReceiver(this.local);
@@ -33,7 +37,21 @@ define("mojo/public/js/bindings/connection", [
     return this.router_.encounteredError();
   };
 
+  // The TestConnection subclass is only intended to be used in unit tests.
+
+  function TestConnection(handle, localFactory, remoteFactory) {
+    Connection.call(this,
+                    handle,
+                    localFactory,
+                    remoteFactory,
+                    router.TestRouter,
+                    connector.TestConnector);
+  }
+
+  TestConnection.prototype = Object.create(Connection.prototype);
+
   var exports = {};
   exports.Connection = Connection;
+  exports.TestConnection = TestConnection;
   return exports;
 });

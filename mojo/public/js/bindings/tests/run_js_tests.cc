@@ -10,6 +10,8 @@
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
 #include "mojo/bindings/js/core.h"
+#include "mojo/bindings/js/support.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -21,6 +23,7 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
+    AddBuiltinModule(Support::kModuleName, Support::GetModule);
   }
 
  private:
@@ -28,6 +31,7 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
 };
 
 void RunTest(std::string test, bool run_until_idle) {
+  Environment env;
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("mojo")

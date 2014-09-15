@@ -218,9 +218,11 @@
       'dependencies': [
         '../gin/gin.gyp:gin_test',
         'mojo_common_test_support',
+        'mojo_environment_standalone',
         'mojo_js_bindings_lib',
         'mojo_public_test_interfaces',
         'mojo_run_all_unittests',
+        'mojo_utility',
       ],
       'sources': [
         'public/js/bindings/tests/run_js_tests.cc',

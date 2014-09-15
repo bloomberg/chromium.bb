@@ -3,4 +3,5 @@ include_rules = [
   "+gin",
   "+v8",
   "+mojo/bindings/js/core.h",
+  "+mojo/bindings/js/support.h",
 ]
