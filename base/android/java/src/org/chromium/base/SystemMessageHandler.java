@@ -6,24 +6,11 @@ package org.chromium.base;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 class SystemMessageHandler extends Handler {
 
-    private static final String TAG = "SystemMessageHandler";
-
     private static final int SCHEDULED_WORK = 1;
     private static final int DELAYED_SCHEDULED_WORK = 2;
-
-    // Reflected API for marking a message as asynchronous. This is a workaround
-    // to provide *fair* Chromium task dispatch when served by the Android UI
-    // thread's Looper, avoiding stalls when the Looper has a sync barrier.
-    // Note: Use of this API is experimental and demonstrative, and is likely
-    // to be removed in the near future.
-    private Method mMessageMethodSetAsynchonous;
 
     // Native class pointer set by the constructor of the SharedClient native class.
     private long mMessagePumpDelegateNative = 0;
@@ -31,18 +18,6 @@ class SystemMessageHandler extends Handler {
 
     private SystemMessageHandler(long messagePumpDelegateNative) {
         mMessagePumpDelegateNative = messagePumpDelegateNative;
-
-        try {
-            Class<?> messageClass = Class.forName("android.os.Message");
-            mMessageMethodSetAsynchonous = messageClass.getMethod(
-                    "setAsynchronous", new Class[]{boolean.class});
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "Failed to find android.os.Message class:" + e);
-        } catch (NoSuchMethodException e) {
-            Log.e(TAG, "Failed to load Message.setAsynchronous method:" + e);
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Exception while loading Message.setAsynchronous method: " + e);
-        }
     }
 
     @Override
@@ -56,7 +31,7 @@ class SystemMessageHandler extends Handler {
     @SuppressWarnings("unused")
     @CalledByNative
     private void scheduleWork() {
-        sendMessage(obtainAsyncMessage(SCHEDULED_WORK));
+        sendEmptyMessage(SCHEDULED_WORK);
     }
 
     @SuppressWarnings("unused")
@@ -66,7 +41,7 @@ class SystemMessageHandler extends Handler {
             removeMessages(DELAYED_SCHEDULED_WORK);
         }
         mDelayedScheduledTimeTicks = delayedTimeTicks;
-        sendMessageDelayed(obtainAsyncMessage(DELAYED_SCHEDULED_WORK), millis);
+        sendEmptyMessageDelayed(DELAYED_SCHEDULED_WORK, millis);
     }
 
     @SuppressWarnings("unused")
@@ -74,28 +49,6 @@ class SystemMessageHandler extends Handler {
     private void removeAllPendingMessages() {
         removeMessages(SCHEDULED_WORK);
         removeMessages(DELAYED_SCHEDULED_WORK);
-    }
-
-    private Message obtainAsyncMessage(int what) {
-        Message msg = Message.obtain();
-        msg.what = what;
-        if (mMessageMethodSetAsynchonous != null) {
-            // If invocation fails, assume this is indicative of future
-            // failures, and avoid log spam by nulling the reflected method.
-            try {
-                mMessageMethodSetAsynchonous.invoke(msg, true);
-            } catch (IllegalAccessException e) {
-                Log.e(TAG, "Illegal access to asynchronous message creation, disabling.");
-                mMessageMethodSetAsynchonous = null;
-            } catch (IllegalArgumentException e) {
-                Log.e(TAG, "Illegal argument for asynchronous message creation, disabling.");
-                mMessageMethodSetAsynchonous = null;
-            } catch (InvocationTargetException e) {
-                Log.e(TAG, "Invocation exception during asynchronous message creation, disabling.");
-                mMessageMethodSetAsynchonous = null;
-            }
-        }
-        return msg;
     }
 
     @CalledByNative
