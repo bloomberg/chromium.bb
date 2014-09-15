@@ -394,8 +394,10 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
   views::Label* user_email = NULL;
   if (login_status != user::LOGGED_IN_GUEST &&
       (multiprofile_index || !IsMultiAccountSupportedAndUserActive())) {
+    SystemTrayDelegate* tray_delegate =
+        Shell::GetInstance()->system_tray_delegate();
     base::string16 user_email_string =
-        login_status == user::LOGGED_IN_SUPERVISED
+        tray_delegate->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
             : base::UTF8ToUTF16(
                   delegate->GetUserInfo(multiprofile_index)->GetEmail());

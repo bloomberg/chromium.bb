@@ -394,11 +394,16 @@ SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
 
 const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
+  if (!IsUserSupervised())
     return base::string16();
   return l10n_util::GetStringFUTF16(
       IDS_USER_IS_SUPERVISED_BY_NOTICE,
       base::UTF8ToUTF16(GetSupervisedUserManager()));
+}
+
+bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  return user && user->IsSupervised();
 }
 
 bool SystemTrayDelegateChromeOS::SystemShouldUpgrade() const {

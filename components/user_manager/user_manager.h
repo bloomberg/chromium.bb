@@ -289,6 +289,9 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
 
+  // Force update login state.
+  virtual void ForceUpdateState() {}
+
  protected:
   // Sets UserManager instance.
   static void SetInstance(UserManager* user_manager);

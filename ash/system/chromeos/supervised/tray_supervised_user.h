@@ -15,7 +15,7 @@ class LabelTrayView;
 class SystemTray;
 
 class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
-                                          public ViewClickListener {
+                                      public ViewClickListener {
  public:
   explicit TraySupervisedUser(SystemTray* system_tray);
   virtual ~TraySupervisedUser();
@@ -42,6 +42,9 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   LabelTrayView* tray_view_;
   // Previous login status to avoid showing notification upon unlock.
   user::LoginStatus status_;
+
+  // Previous user supervised state to avoid showing notification upon unlock.
+  bool is_user_supervised_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUser);
 };

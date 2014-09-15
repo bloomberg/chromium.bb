@@ -91,6 +91,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   virtual const gfx::ImageSkia& GetImage() const OVERRIDE;
   virtual std::string GetUserID() const OVERRIDE;
 
+  // Is user supervised.
+  virtual bool IsSupervised() const;
+  virtual void SetIsSupervised(bool is_supervised);
+
   // Returns the account name part of the email. Use the display form of the
   // email if available and use_display_name == true. Otherwise use canonical.
   std::string GetAccountName(bool use_display_email) const;
