@@ -1738,12 +1738,14 @@ VisiblePosition AXRenderObject::visiblePositionForIndex(int index) const
     if (index <= 0)
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
 
-    RefPtrWillBeRawPtr<Range> range = Range::create(m_renderer->document());
-    range->selectNodeContents(node, IGNORE_EXCEPTION);
-    CharacterIterator it(range.get());
+    Position start, end;
+    bool selected = Range::selectNodeContents(node, start, end);
+    if (!selected)
+        return VisiblePosition();
+
+    CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(Position(it.range()->endContainer(), it.range()->endOffset(), Position::PositionIsOffsetInAnch\
-or), UPSTREAM);
+    return VisiblePosition(Position(it.endContainer(), it.endOffset(), Position::PositionIsOffsetInAnchor), UPSTREAM);
 }
 
 int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const

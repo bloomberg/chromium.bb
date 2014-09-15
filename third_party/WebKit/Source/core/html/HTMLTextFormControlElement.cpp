@@ -393,11 +393,13 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
 {
     if (index <= 0)
         return VisiblePosition(firstPositionInNode(innerEditorElement()), DOWNSTREAM);
-    RefPtrWillBeRawPtr<Range> range = Range::create(document());
-    range->selectNodeContents(innerEditorElement(), ASSERT_NO_EXCEPTION);
-    CharacterIterator it(range.get());
+    Position start, end;
+    bool selected = Range::selectNodeContents(innerEditorElement(), start, end);
+    if (!selected)
+        return VisiblePosition();
+    CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(it.range()->endPosition(), UPSTREAM);
+    return VisiblePosition(it.endPosition(), UPSTREAM);
 }
 
 int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& pos) const

@@ -73,7 +73,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     if (!forwardIterator.atEnd())
         forwardIterator.advance(maxLength - halfMaxLength);
 
-    forwardRange = forwardIterator.range();
+    forwardRange = forwardIterator.createRange();
     if (!forwardRange || !Range::create(*document, endPosition, forwardRange->startPosition())->text().length()) {
         ASSERT(forwardRange);
         return;
@@ -87,15 +87,9 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     if (!backwardsIterator.atEnd())
         backwardsIterator.advance(halfMaxLength);
 
-    backwardsRange = backwardsIterator.range();
-    if (!backwardsRange) {
-        ASSERT(backwardsRange);
-        return;
-    }
-
-    m_startOffsetInContent = Range::create(*document, backwardsRange->endPosition(), startPosition)->text().length();
-    m_endOffsetInContent = Range::create(*document, backwardsRange->endPosition(), endPosition)->text().length();
-    m_contentRange = Range::create(*document, backwardsRange->endPosition(), forwardRange->startPosition());
+    m_startOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), startPosition)->text().length();
+    m_endOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), endPosition)->text().length();
+    m_contentRange = Range::create(*document, backwardsIterator.endPosition(), forwardRange->startPosition());
     ASSERT(m_contentRange);
 }
 

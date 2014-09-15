@@ -76,7 +76,8 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     size_t docTextPosition = 0;
     bool startRangeFound = false;
 
-    RefPtrWillBeRawPtr<Range> textRunRange = nullptr;
+    Position textRunStartPosition;
+    Position textRunEndPosition;
 
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
     if (getRangeFor == ForSelection)
@@ -92,7 +93,9 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
 
     for (; !it.atEnd(); it.advance()) {
         int len = it.length();
-        textRunRange = it.range();
+
+        textRunStartPosition = it.startPosition();
+        textRunEndPosition = it.endPosition();
 
         bool foundStart = start() >= docTextPosition && start() <= docTextPosition + len;
         bool foundEnd = end() >= docTextPosition && end() <= docTextPosition + len;
@@ -106,39 +109,37 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
             if (len == 1 && (it.characterAt(0) == '\n' || it.isInsideReplacedElement())) {
                 it.advance();
                 if (!it.atEnd()) {
-                    RefPtrWillBeRawPtr<Range> range = it.range();
-                    textRunRange->setEnd(range->startContainer(), range->startOffset(), ASSERT_NO_EXCEPTION);
+                    textRunEndPosition = it.startPosition();
                 } else {
-                    Position runStart = textRunRange->startPosition();
-                    Position runEnd = VisiblePosition(runStart).next().deepEquivalent();
+                    Position runEnd = VisiblePosition(textRunStartPosition).next().deepEquivalent();
                     if (runEnd.isNotNull())
-                        textRunRange->setEnd(runEnd.containerNode(), runEnd.computeOffsetInContainerNode(), ASSERT_NO_EXCEPTION);
+                        textRunEndPosition = createLegacyEditingPosition(runEnd.containerNode(), runEnd.computeOffsetInContainerNode());
                 }
             }
         }
 
         if (foundStart) {
             startRangeFound = true;
-            if (textRunRange->startContainer()->isTextNode()) {
+            if (textRunStartPosition.containerNode()->isTextNode()) {
                 int offset = start() - docTextPosition;
-                resultRange->setStart(textRunRange->startContainer(), offset + textRunRange->startOffset(), IGNORE_EXCEPTION);
+                resultRange->setStart(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
             } else {
                 if (start() == docTextPosition)
-                    resultRange->setStart(textRunRange->startContainer(), textRunRange->startOffset(), IGNORE_EXCEPTION);
+                    resultRange->setStart(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
                 else
-                    resultRange->setStart(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION);
+                    resultRange->setStart(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
             }
         }
 
         if (foundEnd) {
-            if (textRunRange->startContainer()->isTextNode()) {
+            if (textRunStartPosition.containerNode()->isTextNode()) {
                 int offset = end() - docTextPosition;
-                resultRange->setEnd(textRunRange->startContainer(), offset + textRunRange->startOffset(), IGNORE_EXCEPTION);
+                resultRange->setEnd(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
             } else {
                 if (end() == docTextPosition)
-                    resultRange->setEnd(textRunRange->startContainer(), textRunRange->startOffset(), IGNORE_EXCEPTION);
+                    resultRange->setEnd(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
                 else
-                    resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION);
+                    resultRange->setEnd(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
             }
             docTextPosition += len;
             break;
@@ -150,7 +151,7 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
         return nullptr;
 
     if (length() && end() > docTextPosition) { // end() is out of bounds
-        resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION);
+        resultRange->setEnd(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
     }
 
     return resultRange.release();

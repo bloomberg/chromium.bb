@@ -98,6 +98,7 @@ public:
     void setEndAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNodeContents(Node*, ExceptionState&);
+    static bool selectNodeContents(Node*, Position&, Position&);
     void surroundContents(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
     void setStartBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 

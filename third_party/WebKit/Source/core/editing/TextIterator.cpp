@@ -1187,7 +1187,7 @@ void TextIterator::emitText(Node* textNode, RenderText* renderer, int textStartO
     m_hasEmitted = true;
 }
 
-PassRefPtrWillBeRawPtr<Range> TextIterator::range() const
+PassRefPtrWillBeRawPtr<Range> TextIterator::createRange() const
 {
     // use the current run information, if we have it
     if (m_positionNode) {
@@ -1200,6 +1200,15 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::range() const
         return Range::create(m_endContainer->document(), m_endContainer, m_endOffset, m_endContainer, m_endOffset);
 
     return nullptr;
+}
+
+Document* TextIterator::ownerDocument() const
+{
+    if (m_positionNode)
+        return &m_positionNode->document();
+    if (m_endContainer)
+        return &m_endContainer->document();
+    return 0;
 }
 
 Node* TextIterator::node() const
@@ -1242,6 +1251,11 @@ Node* TextIterator::startContainer() const
     return m_endContainer;
 }
 
+Node* TextIterator::endContainer() const
+{
+    return startContainer();
+}
+
 Position TextIterator::startPosition() const
 {
     return createLegacyEditingPosition(startContainer(), startOffset());
@@ -1249,7 +1263,7 @@ Position TextIterator::startPosition() const
 
 Position TextIterator::endPosition() const
 {
-    return createLegacyEditingPosition(startContainer(), endOffset());
+    return createLegacyEditingPosition(endContainer(), endOffset());
 }
 
 // --------
@@ -1575,14 +1589,6 @@ bool SimplifiedBackwardsTextIterator::advanceRespectingRange(Node* next)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<Range> SimplifiedBackwardsTextIterator::range() const
-{
-    if (m_positionNode)
-        return Range::create(m_positionNode->document(), m_positionNode, m_positionStartOffset, m_positionNode, m_positionEndOffset);
-
-    return Range::create(m_startNode->document(), m_startNode, m_startOffset, m_startNode, m_startOffset);
-}
-
 Node* SimplifiedBackwardsTextIterator::startContainer() const
 {
     if (m_positionNode)
@@ -1601,6 +1607,13 @@ Position SimplifiedBackwardsTextIterator::startPosition() const
 {
     if (m_positionNode)
         return createLegacyEditingPosition(m_positionNode, m_positionStartOffset);
+    return createLegacyEditingPosition(m_startNode, m_startOffset);
+}
+
+Position SimplifiedBackwardsTextIterator::endPosition() const
+{
+    if (m_positionNode)
+        return createLegacyEditingPosition(m_positionNode, m_positionEndOffset);
     return createLegacyEditingPosition(m_startNode, m_startOffset);
 }
 
@@ -1630,9 +1643,9 @@ void CharacterIterator::initialize()
         m_textIterator.advance();
 }
 
-PassRefPtrWillBeRawPtr<Range> CharacterIterator::range() const
+PassRefPtrWillBeRawPtr<Range> CharacterIterator::createRange() const
 {
-    RefPtrWillBeRawPtr<Range> r = m_textIterator.range();
+    RefPtrWillBeRawPtr<Range> r = m_textIterator.createRange();
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() <= 1) {
             ASSERT(!m_runOffset);
@@ -1647,9 +1660,19 @@ PassRefPtrWillBeRawPtr<Range> CharacterIterator::range() const
     return r.release();
 }
 
+Document* CharacterIterator::ownerDocument() const
+{
+    return m_textIterator.ownerDocument();
+}
+
 Node* CharacterIterator::startContainer() const
 {
     return m_textIterator.startContainer();
+}
+
+Node* CharacterIterator::endContainer() const
+{
+    return m_textIterator.endContainer();
 }
 
 int CharacterIterator::startOffset() const
@@ -1660,6 +1683,16 @@ int CharacterIterator::startOffset() const
         ASSERT(!m_runOffset);
     }
     return m_textIterator.startOffset();
+}
+
+int CharacterIterator::endOffset() const
+{
+    if (!m_textIterator.atEnd()) {
+        if (m_textIterator.length() > 1)
+            return m_textIterator.startOffset() + m_runOffset + 1;
+        ASSERT(!m_runOffset);
+    }
+    return m_textIterator.endOffset();
 }
 
 Position CharacterIterator::startPosition() const
@@ -1763,32 +1796,16 @@ BackwardsCharacterIterator::BackwardsCharacterIterator(const Position& start, co
         m_textIterator.advance();
 }
 
-PassRefPtrWillBeRawPtr<Range> BackwardsCharacterIterator::range() const
-{
-    RefPtrWillBeRawPtr<Range> r = m_textIterator.range();
-    if (!m_textIterator.atEnd()) {
-        if (m_textIterator.length() <= 1) {
-            ASSERT(!m_runOffset);
-        } else {
-            Node* n = r->startContainer();
-            ASSERT(n == r->endContainer());
-            int offset = r->endOffset() - m_runOffset;
-            r->setStart(n, offset - 1, ASSERT_NO_EXCEPTION);
-            r->setEnd(n, offset, ASSERT_NO_EXCEPTION);
-        }
-    }
-    return r.release();
-}
-
 Position BackwardsCharacterIterator::endPosition() const
 {
-    Node* n = m_textIterator.startContainer();
     if (!m_textIterator.atEnd()) {
-        if (m_textIterator.length() > 1)
+        if (m_textIterator.length() > 1) {
+            Node* n = m_textIterator.startContainer();
             return createLegacyEditingPosition(n, m_textIterator.endOffset() - m_runOffset);
+        }
         ASSERT(!m_runOffset);
     }
-    return createLegacyEditingPosition(n, m_textIterator.endOffset());
+    return m_textIterator.endPosition();
 }
 
 void BackwardsCharacterIterator::advance(int count)
@@ -2292,9 +2309,8 @@ static size_t findPlainTextInternal(CharacterIterator& it, const String& target,
     SearchBuffer buffer(target, options);
 
     if (buffer.needsMoreContext()) {
-        RefPtrWillBeRawPtr<Range> startRange = it.range();
-        RefPtrWillBeRawPtr<Range> beforeStartRange = startRange->ownerDocument().createRange();
-        beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION);
+        RefPtrWillBeRawPtr<Range> beforeStartRange = it.ownerDocument()->createRange();
+        beforeStartRange->setEnd(it.startContainer(), it.startOffset(), IGNORE_EXCEPTION);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);

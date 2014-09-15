@@ -107,12 +107,14 @@ public:
         }
     }
 
-    PassRefPtrWillBeRawPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> createRange() const;
     Node* node() const;
 
+    Document* ownerDocument() const;
+    Node* startContainer() const;
+    Node* endContainer() const;
     int startOffset() const;
     int endOffset() const;
-    Node* startContainer() const;
     Position startPosition() const;
     Position endPosition() const;
 
@@ -252,11 +254,10 @@ public:
             m_textContainer.prependTo(output, m_textOffset, m_textLength);
     }
 
-    PassRefPtrWillBeRawPtr<Range> range() const;
-
     Node* startContainer() const;
     int endOffset() const;
     Position startPosition() const;
+    Position endPosition() const;
 
 private:
     void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
@@ -335,10 +336,13 @@ public:
     void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
 
     int characterOffset() const { return m_offset; }
-    PassRefPtrWillBeRawPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> createRange() const;
 
+    Document* ownerDocument() const;
     Node* startContainer() const;
+    Node* endContainer() const;
     int startOffset() const;
+    int endOffset() const;
     Position startPosition() const;
     Position endPosition() const;
 
@@ -361,8 +365,6 @@ public:
     void advance(int);
 
     bool atEnd() const { return m_textIterator.atEnd(); }
-
-    PassRefPtrWillBeRawPtr<Range> range() const;
 
     Position endPosition() const;
 

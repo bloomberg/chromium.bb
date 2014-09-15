@@ -1228,18 +1228,18 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
     // or DocumentType node.
     for (Node* n = refNode; n; n = n->parentNode()) {
         switch (n->nodeType()) {
-            case Node::ATTRIBUTE_NODE:
-            case Node::CDATA_SECTION_NODE:
-            case Node::COMMENT_NODE:
-            case Node::DOCUMENT_FRAGMENT_NODE:
-            case Node::DOCUMENT_NODE:
-            case Node::ELEMENT_NODE:
-            case Node::PROCESSING_INSTRUCTION_NODE:
-            case Node::TEXT_NODE:
-                break;
-            case Node::DOCUMENT_TYPE_NODE:
-                exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
-                return;
+        case Node::ATTRIBUTE_NODE:
+        case Node::CDATA_SECTION_NODE:
+        case Node::COMMENT_NODE:
+        case Node::DOCUMENT_FRAGMENT_NODE:
+        case Node::DOCUMENT_NODE:
+        case Node::ELEMENT_NODE:
+        case Node::PROCESSING_INSTRUCTION_NODE:
+        case Node::TEXT_NODE:
+            break;
+        case Node::DOCUMENT_TYPE_NODE:
+            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
+            return;
         }
     }
 
@@ -1248,6 +1248,37 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
 
     m_start.setToStartOfNode(*refNode);
     m_end.setToEndOfNode(*refNode);
+}
+
+bool Range::selectNodeContents(Node* refNode, Position& start, Position& end)
+{
+    if (!refNode) {
+        return false;
+    }
+
+    for (Node* n = refNode; n; n = n->parentNode()) {
+        switch (n->nodeType()) {
+        case Node::ATTRIBUTE_NODE:
+        case Node::CDATA_SECTION_NODE:
+        case Node::COMMENT_NODE:
+        case Node::DOCUMENT_FRAGMENT_NODE:
+        case Node::DOCUMENT_NODE:
+        case Node::ELEMENT_NODE:
+        case Node::PROCESSING_INSTRUCTION_NODE:
+        case Node::TEXT_NODE:
+            break;
+        case Node::DOCUMENT_TYPE_NODE:
+            return false;
+        }
+    }
+
+    RangeBoundaryPoint startBoundaryPoint(refNode);
+    startBoundaryPoint.setToStartOfNode(*refNode);
+    start = startBoundaryPoint.toPosition();
+    RangeBoundaryPoint endBoundaryPoint(refNode);
+    endBoundaryPoint.setToEndOfNode(*refNode);
+    end = endBoundaryPoint.toPosition();
+    return true;
 }
 
 void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, ExceptionState& exceptionState)

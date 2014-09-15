@@ -98,8 +98,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
-        addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset(), description, hash));
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description, hash));
     }
 }
 
@@ -107,8 +106,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
-        addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset(), description));
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset(), description));
     }
 }
 
@@ -116,8 +114,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
-        addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset()));
+        addMarker(markedText.startContainer(), DocumentMarker(type, markedText.startOffset(), markedText.endOffset()));
     }
 
 }
@@ -126,16 +123,15 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
-        unsigned startOffset = textPiece->startOffset();
-        unsigned endOffset = textPiece->endOffset();
-        addMarker(textPiece->startContainer(), DocumentMarker(startOffset, endOffset, activeMatch));
+        unsigned startOffset = markedText.startOffset();
+        unsigned endOffset = markedText.endOffset();
+        addMarker(markedText.startContainer(), DocumentMarker(startOffset, endOffset, activeMatch));
         if (endOffset > startOffset) {
             // Rendered rects for markers in WebKit are not populated until each time
             // the markers are painted. However, we need it to happen sooner, because
             // the whole purpose of tickmarks on the scrollbar is to show where
             // matches off-screen are (that haven't been painted yet).
-            Node* node = textPiece->startContainer();
+            Node* node = markedText.startContainer();
             DocumentMarkerVector markers = markersFor(node);
             toRenderedDocumentMarker(markers[markers.size() - 1])->setRenderedRect(range->boundingBox());
         }
