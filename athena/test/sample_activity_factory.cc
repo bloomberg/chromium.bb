@@ -36,15 +36,6 @@ Activity* SampleActivityFactory::CreateWebActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    extensions::ShellAppWindow* app_window,
-    const std::string& app_id) {
-  // SampleActivityFactory can't own the |app_window|, so it must be NULL.
-  DCHECK(app_window == NULL);
-  return new SampleActivity(
-      kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
-}
-
-Activity* SampleActivityFactory::CreateAppActivity(
     extensions::AppWindow* app_window,
     views::WebView* web_view) {
   DCHECK(!web_view);

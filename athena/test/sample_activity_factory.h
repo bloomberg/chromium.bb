@@ -20,8 +20,6 @@ class SampleActivityFactory : public ActivityFactory {
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const base::string16& title,
                                       const GURL& url) OVERRIDE;
-  virtual Activity* CreateAppActivity(extensions::ShellAppWindow* app_window,
-                                      const std::string& app_id) OVERRIDE;
   virtual Activity* CreateAppActivity(extensions::AppWindow* app_window,
                                       views::WebView* web_view) OVERRIDE;
 

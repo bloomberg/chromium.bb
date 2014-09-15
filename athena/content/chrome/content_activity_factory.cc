@@ -53,10 +53,4 @@ Activity* ContentActivityFactory::CreateAppActivity(
   return new ChromeAppActivity(app_window, web_view);
 }
 
-Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::ShellAppWindow* app_window,
-    const std::string& app_id) {
-  return NULL;
-}
-
 }  // namespace athena

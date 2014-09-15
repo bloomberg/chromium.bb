@@ -24,7 +24,6 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/file_util.h"
-#include "extensions/shell/browser/api/shell/shell_api.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

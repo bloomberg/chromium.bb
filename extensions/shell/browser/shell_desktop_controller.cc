@@ -4,11 +4,13 @@
 
 #include "extensions/shell/browser/shell_desktop_controller.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
-#include "extensions/shell/browser/shell_app_window.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -183,22 +185,6 @@ aura::WindowTreeHost* ShellDesktopController::GetHost() {
   return host_.get();
 }
 
-ShellAppWindow* ShellDesktopController::CreateShellAppWindow(
-    content::BrowserContext* context,
-    const Extension* extension) {
-  aura::Window* root_window = GetHost()->window();
-
-  shell_app_window_.reset(new ShellAppWindow);
-  shell_app_window_->Init(context, extension, root_window->bounds().size());
-
-  // Attach the web contents view to our window hierarchy.
-  aura::Window* content = shell_app_window_->GetNativeWindow();
-  AddAppWindow(content);
-  content->Show();
-
-  return shell_app_window_.get();
-}
-
 AppWindow* ShellDesktopController::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
@@ -212,7 +198,6 @@ void ShellDesktopController::AddAppWindow(aura::Window* window) {
 }
 
 void ShellDesktopController::CloseAppWindows() {
-  shell_app_window_.reset();
   if (app_window_) {
     app_window_->GetBaseWindow()->Close();  // Close() deletes |app_window_|.
     app_window_ = NULL;

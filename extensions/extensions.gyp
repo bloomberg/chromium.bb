@@ -989,7 +989,6 @@
         '../ui/strings/ui_strings.gyp:ui_strings',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
-        'shell/app_shell_resources.gyp:app_shell_resources',
       ],
       'actions': [
         {
@@ -1008,7 +1007,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/extensions/shell/app_shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/strings/extensions_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',

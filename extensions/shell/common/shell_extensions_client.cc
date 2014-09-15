@@ -20,8 +20,6 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
-#include "extensions/shell/common/api/generated_schemas.h"
-#include "grit/app_shell_resources.h"
 #include "grit/extensions_resources.h"
 
 namespace extensions {
@@ -135,7 +133,6 @@ ShellExtensionsClient::CreateFeatureProviderSource(
       new JSONFeatureProviderSource(name));
   if (name == "api") {
     source->LoadJSON(IDR_EXTENSION_API_FEATURES);
-    source->LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
   } else if (name == "manifest") {
     source->LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
   } else if (name == "permission") {
@@ -180,20 +177,11 @@ bool ShellExtensionsClient::IsScriptableURL(const GURL& url,
 
 bool ShellExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
-  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
-  // moved out. See http://crbug.com/349042.
-  // Special-case our simplified app.runtime implementation because we don't
-  // have the Chrome app APIs available.
-  return core_api::GeneratedSchemas::IsGenerated(name) ||
-         shell_api::GeneratedSchemas::IsGenerated(name);
+  return core_api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ShellExtensionsClient::GetAPISchema(
     const std::string& name) const {
-  // Schema for chrome.shell APIs.
-  if (shell_api::GeneratedSchemas::IsGenerated(name))
-    return shell_api::GeneratedSchemas::Get(name);
-
   return core_api::GeneratedSchemas::Get(name);
 }
 

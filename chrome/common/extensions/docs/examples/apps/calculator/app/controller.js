@@ -12,12 +12,8 @@
 // Checking for "chrome.app.runtime" availability allows testing in a regular
 // web page (like tests/manual.html).
 if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
-  // Compatibility for running under app_shell, which does not have app.window.
-  var createWindow =
-      chrome.shell ? chrome.shell.createWindow : chrome.app.window.create;
-
   var showCalculatorWindow = function () {
-    createWindow('calculator.html', {
+    chrome.app.window.create('calculator.html', {
       innerBounds: {
         width: 243, minWidth: 243, maxWidth: 243,
         height: 380, minHeight: 380, maxHeight: 380

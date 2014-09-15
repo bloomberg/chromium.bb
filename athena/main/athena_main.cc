@@ -22,7 +22,6 @@
 #include "extensions/shell/app/shell_main_delegate.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
-#include "extensions/shell/browser/shell_app_window.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
@@ -55,21 +54,9 @@ class AthenaDesktopController : public extensions::DesktopController {
     return athena::AthenaEnv::Get()->GetHost();
   }
 
-  // Creates a new ShellAppWindow and adds it to the desktop. The desktop
-  // maintains ownership of the window.
-  virtual extensions::ShellAppWindow* CreateShellAppWindow(
-      content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE {
-    extensions::ShellAppWindow* app_window = new extensions::ShellAppWindow();
-    app_window->Init(context, extension, gfx::Size(100, 100));
-    athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateAppActivity(app_window,
-                                                          extension->id()));
-    return app_window;
-  }
-
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window.
+  // TODO(jamescook|oshima): Is this function needed?
   virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE {

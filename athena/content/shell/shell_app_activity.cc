@@ -7,23 +7,17 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
-#include "extensions/shell/browser/shell_app_window.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace athena {
 
 ShellAppActivity::ShellAppActivity(extensions::AppWindow* app_window)
     : AppActivity(app_window->extension_id()), app_window_(app_window) {
-}
-
-ShellAppActivity::ShellAppActivity(extensions::ShellAppWindow* app_window,
-                                   const std::string& app_id)
-    : AppActivity(app_id), app_window_(NULL), shell_app_window_(app_window) {
+  DCHECK(app_window_);
 }
 
 ShellAppActivity::~ShellAppActivity() {
-  if (app_window_)
-    app_window_->GetBaseWindow()->Close();  // Deletes |app_window_|.
+  app_window_->GetBaseWindow()->Close();  // Deletes |app_window_|.
 }
 
 views::Widget* ShellAppActivity::CreateWidget() {
@@ -31,9 +25,7 @@ views::Widget* ShellAppActivity::CreateWidget() {
 }
 
 views::WebView* ShellAppActivity::GetWebView() {
-  content::WebContents* web_contents =
-      app_window_ ? app_window_->web_contents() :
-      shell_app_window_->GetAssociatedWebContents();
+  content::WebContents* web_contents = app_window_->web_contents();
   views::WebView* web_view =
       new views::WebView(web_contents->GetBrowserContext());
   web_view->SetWebContents(web_contents);

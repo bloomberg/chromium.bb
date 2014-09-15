@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/null_app_sorting.h"
-#include "extensions/shell/browser/api/generated_api_registration.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
@@ -183,9 +182,6 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
   // Register core extension-system APIs.
   core_api::GeneratedFunctionRegistry::RegisterAll(registry);
-
-  // Register chrome.shell APIs.
-  shell_api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 scoped_ptr<RuntimeAPIDelegate>

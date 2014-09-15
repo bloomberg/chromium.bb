@@ -9,10 +9,10 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/renderer/default_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/shell/common/shell_extensions_client.h"
-#include "extensions/shell/renderer/shell_dispatcher_delegate.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -83,7 +83,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
   extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
   ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
-  extension_dispatcher_delegate_.reset(new ShellDispatcherDelegate());
+  extension_dispatcher_delegate_.reset(new DefaultDispatcherDelegate());
 
   // Must be initialized after ExtensionsRendererClient.
   extension_dispatcher_.reset(

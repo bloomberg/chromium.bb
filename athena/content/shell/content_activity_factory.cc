@@ -9,12 +9,6 @@
 namespace athena {
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::ShellAppWindow* app_window,
-    const std::string& app_id) {
-  return new ShellAppActivity(app_window, app_id);
-}
-
-Activity* ContentActivityFactory::CreateAppActivity(
     extensions::AppWindow* app_window,
     views::WebView* web_view) {
   return new ShellAppActivity(app_window);

@@ -14,7 +14,6 @@ class BrowserContext;
 
 namespace extensions {
 class AppWindow;
-class ShellAppWindow;
 }
 
 namespace views {
@@ -42,13 +41,6 @@ class ATHENA_EXPORT ActivityFactory {
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const base::string16& title,
                                       const GURL& url) = 0;
-
-  // Create an activity of an app with |app_window| for app shell environemnt.
-  // The returned activity should own |app_window|.
-  // TODO(oshima): Consolidate these two methods to create AppActivity
-  // once crbug.com/403726 is finished.
-  virtual Activity* CreateAppActivity(extensions::ShellAppWindow* app_window,
-                                      const std::string& id) = 0;
 
   // Create an activity of an app with |app_window| for chrome environment and
   // |web_view| that will host the content.
