@@ -82,17 +82,15 @@ def _SyncFilesToCloud(input_api, output_api):
       continue
 
     try:
-      bucket_input = raw_input('Uploading to Cloud Storage: %s\n'
-                               'Is this file [P]ublic or Google-[i]nternal?'
-                               % file_path).lower()
-      if 'public'.startswith(bucket_input):
-        bucket = cloud_storage.PUBLIC_BUCKET
-      elif ('internal'.startswith(bucket_input) or
-            'google-internal'.startswith(bucket_input)):
-        bucket = cloud_storage.INTERNAL_BUCKET
-      else:
+      bucket_aliases_string = ', '.join(cloud_storage.BUCKET_ALIASES)
+      bucket_input = raw_input(
+          'Uploading to Cloud Storage: %s\n'
+          'Which bucket should this go in? (%s) '
+          % (file_path, bucket_aliases_string)).lower()
+      bucket = cloud_storage.BUCKET_ALIASES.get(bucket_input, None)
+      if not bucket:
         results.append(output_api.PresubmitError(
-            'Response was neither "public" nor "internal": %s' % bucket_input))
+            '"%s" was not one of %s' % (bucket_input, bucket_aliases_string)))
         return results
 
       cloud_storage.Insert(bucket, file_hash, file_path)
