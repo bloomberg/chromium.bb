@@ -534,17 +534,6 @@ Note that starting with the ``pepper_22`` bundle, the NaCl SDK for Windows
 includes pre-built libraries and library source code, making it much easier to
 build a module into a .DLL.
 
-Open source profiling tools
----------------------------
-
-For the brave-hearted there are open source tools at `Chromium.org
-<http://www.chromium.org/nativeclient>`_ that describe how to do profiling on
-`64-bit Windows
-<https://sites.google.com/a/chromium.org/dev/nativeclient/how-tos/profiling-nacl-apps-on-64-bit-windows>`_
-and `Linux
-<http://www.chromium.org/nativeclient/how-tos/limited-profiling-with-oprofile-on-x86-64>`_
-machines.
-
 
 .. |menu-icon| image:: /images/menu-icon.png
 .. |puzzle| image:: /images/puzzle.png
