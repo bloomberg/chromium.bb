@@ -289,7 +289,6 @@ class WebsiteTest:
 
   def Logout(self):
     """Logout Method."""
-    self.environment.ClearAllCookies()
 
   # Tests
 

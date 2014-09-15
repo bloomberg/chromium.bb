@@ -165,34 +165,29 @@ class Environment:
     else:
       self.working_tests.append(websitetest.name)
 
-  def RemoveAllPasswords(self):
-    """Removes all the stored passwords."""
-    logging.info("\nRemoveAllPasswords\n")
-    self.driver.get("chrome://settings/passwords")
-    self.driver.switch_to_frame("settings")
-    while True:
-      try:
-        self.driver.execute_script(
-            "document.querySelector('#saved-passwords-list .row-delete-button')"
-            ".click()")
-        time.sleep(1)
-      except NoSuchElementException:
-        break
-      except WebDriverException:
-        break
+  def ClearCache(self, clear_passwords):
+    """Clear the browser cookies. If |clear_passwords| is true, clear all the
+    saved passwords too.
 
-  def ClearAllCookies(self):
-    """Removes all the cookies."""
-    logging.info("\nClearAllCookies\n")
+    Args:
+      clear_passwords : Clear all the passwords if the bool value is true.
+    """
+    logging.info("\nClearCache\n")
     self.driver.get("chrome://settings/clearBrowserData")
     self.driver.switch_to_frame("settings")
-    self.driver.execute_script(
-        "var checkboxes = document.querySelectorAll("
-        "    '#clear-data-checkboxes [type=\\\'checkbox\\\']');"
-        "for (var i in checkboxes)"
-        "    checkboxes[i].checked = false;"
-        "document.querySelector('#delete-cookies-checkbox').checked = true;"
-        "document.querySelector('#clear-browser-data-commit').click();")
+    script = (
+        "if (!document.querySelector('#delete-cookies-checkbox').checked)"
+        "  document.querySelector('#delete-cookies-checkbox').click();"
+        )
+    negation = ""
+    if clear_passwords:
+      negation = "!"
+    script += (
+        "if (%sdocument.querySelector('#delete-passwords-checkbox').checked)"
+        "  document.querySelector('#delete-passwords-checkbox').click();"
+        % negation)
+    script += "document.querySelector('#clear-browser-data-commit').click();"
+    self.driver.execute_script(script)
     time.sleep(2)
 
   def OpenTabAndGoToInternals(self, url):
@@ -364,7 +359,7 @@ class Environment:
     Raises:
       Exception: An exception is raised if the tests fail.
     """
-    self.RemoveAllPasswords()
+    self.ClearCache(True)
 
     for websitetest in websitetests:
       successful = True
@@ -373,14 +368,17 @@ class Environment:
         websitetest.was_run = True
         websitetest.WrongLoginTest()
         websitetest.SuccessfulLoginTest()
+        self.ClearCache(False)
         websitetest.SuccessfulLoginWithAutofilledPasswordTest()
-        self.RemoveAllPasswords()
+        self.ClearCache(True)
         websitetest.SuccessfulLoginTest()
+        self.ClearCache(True)
       except Exception:
         successful = False
         error = traceback.format_exc()
       self.tests_results.append(TestResult(websitetest.name, "normal",
           successful, escape(error)))
+
 
   def PromptTestList(self, websitetests):
     """Runs the prompt tests on the websites in |websitetests|.
@@ -391,7 +389,7 @@ class Environment:
     Raises:
       Exception: An exception is raised if the tests fail.
     """
-    self.RemoveAllPasswords()
+    self.ClearCache(True)
 
     for websitetest in websitetests:
       successful = True
