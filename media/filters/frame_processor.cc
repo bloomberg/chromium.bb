@@ -598,12 +598,6 @@ bool FrameProcessor::ProcessFrame(
         HandlePartialAppendWindowTrimming(append_window_start,
                                           append_window_end,
                                           frame)) {
-      // If |frame| was front-trimmed a discontinuity may exist, so treat the
-      // next frames appended as if they were the beginning of a new media
-      // segment.
-      if (frame->timestamp() != presentation_timestamp && !sequence_mode_)
-        *new_media_segment = true;
-
       // |frame| has been partially trimmed or had preroll added.  Though
       // |frame|'s duration may have changed, do not update |frame_duration|
       // here, so |track_buffer|'s last frame duration update uses original
