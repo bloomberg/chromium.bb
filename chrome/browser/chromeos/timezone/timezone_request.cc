@@ -337,7 +337,7 @@ void TimeZoneRequest::StartRequest() {
 
   url_fetcher_.reset(
       net::URLFetcher::Create(request_url_, net::URLFetcher::GET, this));
-  url_fetcher_->SetRequestContext(url_context_getter_);
+  url_fetcher_->SetRequestContext(url_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
                              net::LOAD_DISABLE_CACHE |
                              net::LOAD_DO_NOT_SAVE_COOKIES |

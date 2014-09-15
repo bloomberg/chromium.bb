@@ -387,7 +387,7 @@ void Preferences::InitUserPrefsForTesting(
   user_ = user;
   ime_state_ = ime_state;
 
-  if (ime_state)
+  if (ime_state.get())
     input_method_manager_->SetState(ime_state);
 
   InitUserPrefs(prefs);

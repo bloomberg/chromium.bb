@@ -132,14 +132,14 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
       return;
     loaded_ = true;
     quit_ = true;
-    if (runner_)
+    if (runner_.get())
       runner_->Quit();
   }
 
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
     loaded_ = false;
     quit_ = true;
-    if (runner_)
+    if (runner_.get())
       runner_->Quit();
   }
 

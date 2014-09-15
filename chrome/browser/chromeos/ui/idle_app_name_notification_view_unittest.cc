@@ -71,8 +71,12 @@ class IdleAppNameNotificationViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  extensions::Extension* correct_extension() { return correct_extension_; }
-  extensions::Extension* incorrect_extension() { return incorrect_extension_; }
+  extensions::Extension* correct_extension() {
+    return correct_extension_.get();
+  }
+  extensions::Extension* incorrect_extension() {
+    return incorrect_extension_.get();
+  }
 
  private:
   // Extensions to test with.
