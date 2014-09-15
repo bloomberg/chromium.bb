@@ -18,8 +18,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -136,8 +136,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         mock_caller_(NULL),
         mock_homedir_methods_(NULL),
         owner_key_util_(new ownership::MockOwnerKeyUtil()) {
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
     user_context_.SetKey(Key("fakepass"));
     user_context_.SetUserIDHash("me_nowhere_com_hash");
     const user_manager::User* user =

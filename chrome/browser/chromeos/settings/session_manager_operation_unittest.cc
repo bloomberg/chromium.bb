@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,8 +40,8 @@ class SessionManagerOperationTest : public testing::Test {
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
         validated_(false) {
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -49,8 +49,7 @@ class SessionManagerOperationTest : public testing::Test {
     policy_.Build();
 
     profile_.reset(new TestingProfile());
-    service_ =
-        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    service_ = OwnerSettingsServiceFactory::GetForProfile(profile_.get());
   }
 
   MOCK_METHOD2(OnOperationCompleted,
@@ -83,7 +82,7 @@ class SessionManagerOperationTest : public testing::Test {
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
   scoped_ptr<TestingProfile> profile_;
-  OwnerSettingsServiceChromeOS* service_;
+  OwnerSettingsService* service_;
 
   bool validated_;
 
@@ -221,7 +220,7 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
       policy.Pass());
-  op.set_owner_settings_service(service_->as_weak_ptr());
+  op.set_delegate(service_->as_weak_ptr());
 
   EXPECT_CALL(*this,
               OnOperationCompleted(
