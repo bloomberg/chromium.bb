@@ -3881,9 +3881,9 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
     return InvalidationIncremental;
 }
 
-void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer)
+void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
-    RenderObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, positionFromPaintInvalidationContainer);
+    RenderObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, positionFromPaintInvalidationBacking);
 
     bool hasBoxDecorations = style()->hasBoxDecorations();
     if (!style()->hasBackground() && !hasBoxDecorations)
@@ -3900,7 +3900,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
     // is good for boxes having background without box decorations.
     ASSERT(oldBounds.location() == newBounds.location()); // Otherwise we won't do incremental invalidation.
     if (!hasBoxDecorations
-        && positionFromPaintInvalidationContainer == newBounds.location()
+        && positionFromPaintInvalidationBacking == newBounds.location()
         && oldBorderBoxSize == oldBounds.size()
         && newBorderBoxSize == newBounds.size())
         return;
@@ -3912,8 +3912,8 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
         LayoutUnit borderTopRightRadiusWidth = valueForLength(style()->borderTopRightRadius().width(), smallerWidth);
         LayoutUnit borderBottomRightRadiusWidth = valueForLength(style()->borderBottomRightRadius().width(), smallerWidth);
         LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight(), std::max(borderTopRightRadiusWidth, borderBottomRightRadiusWidth));
-        LayoutRect rightDeltaRect(positionFromPaintInvalidationContainer.x() + smallerWidth - borderWidth,
-            positionFromPaintInvalidationContainer.y(),
+        LayoutRect rightDeltaRect(positionFromPaintInvalidationBacking.x() + smallerWidth - borderWidth,
+            positionFromPaintInvalidationBacking.y(),
             deltaWidth + borderWidth,
             std::max(oldBorderBoxSize.height(), newBorderBoxSize.height()));
         invalidatePaintUsingContainer(&paintInvalidationContainer, rightDeltaRect, InvalidationIncremental);
@@ -3926,8 +3926,8 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
         LayoutUnit borderBottomLeftRadiusHeight = valueForLength(style()->borderBottomLeftRadius().height(), smallerHeight);
         LayoutUnit borderBottomRightRadiusHeight = valueForLength(style()->borderBottomRightRadius().height(), smallerHeight);
         LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom(), std::max(borderBottomLeftRadiusHeight, borderBottomRightRadiusHeight));
-        LayoutRect bottomDeltaRect(positionFromPaintInvalidationContainer.x(),
-            positionFromPaintInvalidationContainer.y() + smallerHeight - borderHeight,
+        LayoutRect bottomDeltaRect(positionFromPaintInvalidationBacking.x(),
+            positionFromPaintInvalidationBacking.y() + smallerHeight - borderHeight,
             std::max(oldBorderBoxSize.width(), newBorderBoxSize.width()),
             deltaHeight + borderHeight);
         invalidatePaintUsingContainer(&paintInvalidationContainer, bottomDeltaRect, InvalidationIncremental);

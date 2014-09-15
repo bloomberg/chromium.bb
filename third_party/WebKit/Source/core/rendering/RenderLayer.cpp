@@ -521,7 +521,7 @@ void RenderLayer::updatePagination()
     }
 }
 
-LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutPoint RenderLayer::positionFromPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer || !paintInvalidationContainer->layer()->groupedMapping())
         return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);

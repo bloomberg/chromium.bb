@@ -321,7 +321,7 @@ public:
     // Computes the position of the given render object in the space of |paintInvalidationContainer|.
     // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.
-    static LayoutPoint positionFromPaintInvalidationContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    static LayoutPoint positionFromPaintInvalidationBacking(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
     static void mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&);
 

@@ -1013,11 +1013,13 @@ public:
 
     bool isRelayoutBoundaryForInspector() const;
 
+    // The previous paint invalidation rect in the object's previous paint backing.
     const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
     void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
 
-    const LayoutPoint& previousPositionFromPaintInvalidationContainer() const { return m_previousPositionFromPaintInvalidationContainer; }
-    void setPreviousPositionFromPaintInvalidationContainer(const LayoutPoint& location) { m_previousPositionFromPaintInvalidationContainer = location; }
+    // The previous position of the top-left corner of the object in its previous paint backing.
+    const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
+    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.shouldDoFullPaintInvalidation(); }
     void setShouldDoFullPaintInvalidation(bool, MarkingBehavior = MarkContainingBlockChain);
@@ -1133,9 +1135,9 @@ protected:
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
-        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
-        const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer);
-    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer);
+        const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
+        const LayoutRect& newPaintInvalidationRect, const LayoutPoint& newPositionFromPaintInvalidationBacking);
+    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking);
     void fullyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 #if ENABLE(ASSERT)
@@ -1354,9 +1356,9 @@ private:
     // This stores the paint invalidation rect from the previous layout.
     LayoutRect m_previousPaintInvalidationRect;
 
-    // This stores the position in the paint invalidation container's coordinate.
+    // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect renderer shifts that forces a full invalidation.
-    LayoutPoint m_previousPositionFromPaintInvalidationContainer;
+    LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 
     static unsigned s_instanceCount;
 };

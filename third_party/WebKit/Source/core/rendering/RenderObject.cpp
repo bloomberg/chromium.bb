@@ -1660,11 +1660,11 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
         return InvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
-    const LayoutPoint oldLocation = previousPositionFromPaintInvalidationContainer();
+    const LayoutPoint oldLocation = previousPositionFromPaintInvalidationBacking();
     const LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
-    const LayoutPoint newLocation = RenderLayer::positionFromPaintInvalidationContainer(this, &paintInvalidationContainer, &paintInvalidationState);
+    const LayoutPoint newLocation = RenderLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
     setPreviousPaintInvalidationRect(newBounds);
-    setPreviousPositionFromPaintInvalidationContainer(newLocation);
+    setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
     // If we are set to do a full paint invalidation that means the RenderView will issue
     // paint invalidations. We can then skip issuing of paint invalidations for the child
@@ -1691,7 +1691,7 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidation
 }
 
 InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
-    const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
+    const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking, const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking)
 {
     if (shouldDoFullPaintInvalidation())
         return InvalidationFull;
@@ -1700,7 +1700,7 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     if (style()->borderFit() == BorderFitLines)
         return InvalidationBorderFitLines;
 
-    if (compositingState() != PaintsIntoOwnBacking && newLocation != oldLocation)
+    if (compositingState() != PaintsIntoOwnBacking && newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking)
         return InvalidationLocationChange;
 
     // If the bounds are the same then we know that none of the statements below
@@ -1731,7 +1731,7 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     return InvalidationIncremental;
 }
 
-void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer)
+void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     ASSERT(oldBounds.location() == newBounds.location());
 
