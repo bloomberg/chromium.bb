@@ -86,10 +86,6 @@ const base::string16 DefaultSystemTrayDelegate::GetSupervisedUserMessage()
   return base::string16();
 }
 
-bool DefaultSystemTrayDelegate::IsUserSupervised() const {
-  return false;
-}
-
 bool DefaultSystemTrayDelegate::SystemShouldUpgrade() const {
   return true;
 }

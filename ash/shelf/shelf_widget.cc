@@ -714,9 +714,6 @@ bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
 
 // static
 bool ShelfWidget::ShelfAlignmentAllowed() {
-  if (Shell::GetInstance()->system_tray_delegate()->IsUserSupervised())
-    return false;
-
   user::LoginStatus login_status =
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 

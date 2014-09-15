@@ -43,7 +43,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
 
   // Overridden from SystemTrayDelegate:
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
-  virtual bool IsUserSupervised() const OVERRIDE;
   virtual bool ShouldShowDisplayNotification() OVERRIDE;
   virtual bool GetSessionStartTime(
       base::TimeTicks* session_start_time) OVERRIDE;

@@ -65,7 +65,6 @@ class SystemTrayDelegateChromeOS
   virtual const std::string GetSupervisedUserManager() const OVERRIDE;
   virtual const base::string16 GetSupervisedUserManagerName() const OVERRIDE;
   virtual const base::string16 GetSupervisedUserMessage() const OVERRIDE;
-  virtual bool IsUserSupervised() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
   virtual void ShowSettings() OVERRIDE;

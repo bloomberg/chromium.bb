@@ -28,14 +28,6 @@ std::string GetUserName(const std::string& email) {
 
 }  // namespace
 
-bool User::IsSupervised() const {
-  return false;
-}
-
-void User::SetIsSupervised(bool is_supervised) {
-  VLOG(1) << "Ignoring SetIsSupervised call with param " << is_supervised;
-}
-
 class RegularUser : public User {
  public:
   explicit RegularUser(const std::string& email);
@@ -44,17 +36,8 @@ class RegularUser : public User {
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
   virtual bool CanSyncImage() const OVERRIDE;
-  virtual void SetIsSupervised(bool is_supervised) OVERRIDE {
-    VLOG(1) << "Setting user is supervised to " << is_supervised;
-    is_supervised_ = is_supervised;
-  }
-  virtual bool IsSupervised() const OVERRIDE {
-    return is_supervised_;
-  }
 
  private:
-  bool is_supervised_;
-
   DISALLOW_COPY_AND_ASSIGN(RegularUser);
 };
 
@@ -89,7 +72,6 @@ class SupervisedUser : public User {
 
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
-  virtual bool IsSupervised() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
@@ -294,10 +276,6 @@ UserType SupervisedUser::GetType() const {
 
 std::string SupervisedUser::display_email() const {
   return base::UTF16ToUTF8(display_name());
-}
-
-bool SupervisedUser::IsSupervised() const {
-  return true;
 }
 
 RetailModeUser::RetailModeUser() : User(chromeos::login::kRetailModeUserName) {

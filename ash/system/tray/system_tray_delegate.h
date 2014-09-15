@@ -119,9 +119,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns the notification for supervised users.
   virtual const base::string16 GetSupervisedUserMessage() const = 0;
 
-  // Returns true if the current user is supervised.
-  virtual bool IsUserSupervised() const = 0;
-
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
 
