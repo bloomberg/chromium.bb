@@ -11,21 +11,18 @@
 //   networkingPrivate API. See network_config.js.
 // See crbug.com/279351 for more info.
 
-/** @typedef {{activationState: (string|undefined),
- *             carriers: Array,
- *             currentCarrierIndex; (number|undefined),
- *             ipAutoConfig: boolean,
- *             ipconfig: Object,
- *             nameServerType: string,
- *             restrictedPool: (string|undefined),
- *             roamingState: (string|undefined),
- *             savedIP: Object,
- *             showActivateButton: (boolean|undefined)
- *             showViewAccountButton: (boolean|undefined),
- *             staticIP: Object}}
- * Only the keys which had caused problems are declared in this typedef.
- * There are many more of them.
+/**
+ * InternetDetailedInfo argument passed to showDetailedInfo.
  * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
+ * @typedef {{
+ *   carriers: (Array.<string>|undefined),
+ *   currentCarrierIndex: (number|undefined),
+ *   deviceConnected: (boolean|undefined),
+ *   errorMessage: (string|undefined),
+ *   servicePath: string,
+ *   showCarrierSelect: (boolean|undefined),
+ *   showViewAccountButton: (boolean|undefined)
+ * }}
  */
 var InternetDetailedInfo;
 
@@ -101,7 +98,7 @@ cr.define('options.internet', function() {
 
   /**
    * Returns the netmask as a string for a given prefix length.
-   * @param {string} prefixLength The ONC routing prefix length.
+   * @param {number} prefixLength The ONC routing prefix length.
    * @return {string} The corresponding netmask.
    */
   function prefixLengthToNetmask(prefixLength) {
@@ -576,6 +573,11 @@ cr.define('options.internet', function() {
                   ['Options_NetworkManualProxy_Enable']);
     },
 
+    /**
+     * Helper method called from showDetailedInfo and updateConnectionData.
+     * Updates visibilty/enabled of the login/disconnect/configure buttons.
+     * @private
+     */
     updateConnectionButtonVisibilty_: function() {
       var onc = this.onc_;
       if (this.type_ == 'Ethernet') {
@@ -610,6 +612,12 @@ cr.define('options.internet', function() {
       }
     },
 
+    /**
+     * Helper method called from showDetailedInfo and updateConnectionData.
+     * Updates the connection state property and account / sim card links.
+     * @param {InternetDetailedInfo} data
+     * @private
+     */
     updateDetails_: function(data) {
       var onc = this.onc_;
 
@@ -648,6 +656,11 @@ cr.define('options.internet', function() {
         $('details-internet-login').hidden = true;
     },
 
+    /**
+     * Helper method called from showDetailedInfo and updateConnectionData.
+     * Updates the fields in the header section of the details frame.
+     * @private
+     */
     populateHeader_: function() {
       var onc = this.onc_;
 
@@ -682,7 +695,13 @@ cr.define('options.internet', function() {
       }
     },
 
-    initializeApnList_: function(onc) {
+    /**
+     * Helper method called from showDetailedInfo to intialize the Apn list.
+     * @private
+     */
+    initializeApnList_: function() {
+      var onc = this.onc_;
+
       var apnSelector = $('select-apn');
       // Clear APN lists, keep only last element that "other".
       while (apnSelector.length != 1) {
@@ -736,6 +755,10 @@ cr.define('options.internet', function() {
       updateHidden('.apn-details-view', true);
     },
 
+    /**
+     * Event Listener for the cellular-apn-use-default button.
+     * @private
+     */
     setDefaultApn_: function() {
       var onc = this.onc_;
       var apnSelector = $('select-apn');
@@ -768,6 +791,10 @@ cr.define('options.internet', function() {
       updateHidden('.apn-details-view', true);
     },
 
+    /**
+     * Event Listener for the cellular-apn-set button.
+     * @private
+     */
     setApn_: function(apnValue) {
       if (apnValue == '')
         return;
@@ -803,12 +830,20 @@ cr.define('options.internet', function() {
       updateHidden('.apn-details-view', true);
     },
 
+    /**
+     * Event Listener for the cellular-apn-cancel button.
+     * @private
+     */
     cancelApn_: function() {
       $('select-apn').selectedIndex = this.selectedApnIndex_;
       updateHidden('.apn-list-view', false);
       updateHidden('.apn-details-view', true);
     },
 
+    /**
+     * Event Listener for the select-apn button.
+     * @private
+     */
     selectApn_: function() {
       var onc = this.onc_;
       var apnSelector = $('select-apn');
@@ -1340,7 +1375,8 @@ cr.define('options.internet', function() {
       $('roaming-state').textContent =
           onc.getTranslatedValue('Cellular.RoamingState');
       $('cellular-restricted-connectivity').textContent = restrictedString;
-      $('error-state').textContent = data.errorMessage;
+      if ('errorMessage' in data)
+        $('error-state').textContent = data.errorMessage;
       $('manufacturer').textContent =
           onc.getActiveValue('Cellular.Manufacturer');
       $('model-id').textContent = onc.getActiveValue('Cellular.ModelID');
@@ -1378,7 +1414,7 @@ cr.define('options.internet', function() {
       if (onc.getActiveValue('Cellular.Family') == 'GSM') {
         $('iccid').textContent = onc.getActiveValue('Cellular.ICCID');
         $('imsi').textContent = onc.getActiveValue('Cellular.IMSI');
-        detailsPage.initializeApnList_(onc);
+        detailsPage.initializeApnList_();
       }
       $('auto-connect-network-cellular').checked =
           onc.getActiveValue('Cellular.AutoConnect');
