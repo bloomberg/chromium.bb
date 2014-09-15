@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/requirements_checker.h"
+
 #include <vector>
 
 #include "base/bind.h"
@@ -11,11 +13,11 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "gpu/config/gpu_info.h"
@@ -82,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckEmptyExtension) {
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), std::vector<std::string>()));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
@@ -99,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest,
@@ -117,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest,
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
@@ -129,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
   std::vector<std::string> blacklisted_features;
   blacklisted_features.push_back("webgl");
   BlackListGPUFeatures(blacklisted_features);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   std::vector<std::string> expected_errors;
   expected_errors.push_back(l10n_util::GetStringUTF8(
@@ -138,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
@@ -156,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
       base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 }  // namespace extensions

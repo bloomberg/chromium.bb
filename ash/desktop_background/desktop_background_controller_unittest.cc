@@ -291,8 +291,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   // that the resized image is the expected size.
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  content::RunAllPendingInMessageLoop();
+  content::RunAllBlockingPoolTasksUntilIdle();
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
   EXPECT_FALSE(image.BackedBySameObjectAs(resized_image));
   EXPECT_EQ(gfx::Size(320, 200).ToString(), resized_image.size().ToString());
@@ -301,8 +300,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  content::RunAllPendingInMessageLoop();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 

@@ -26,6 +26,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -59,7 +60,6 @@ class TestVisitedLinkDelegate : public VisitedLinkDelegate {
   void AddURLForRebuild(const GURL& url);
 
  private:
-
   URLs rebuild_urls_;
 };
 
@@ -159,7 +159,7 @@ class VisitedLinkTest : public testing::Test {
       master_.reset(NULL);
 
     // Wait for all pending file I/O to be completed.
-    BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   // Loads the database from disk and makes sure that the same URLs are present
@@ -585,7 +585,6 @@ class VisitedLinkRenderProcessHostFactory
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
 
@@ -766,7 +765,6 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
   WaitForCoalescense();
 
   EXPECT_EQ(0, different_context.new_table_count());
-
 }
 
 }  // namespace visitedlink

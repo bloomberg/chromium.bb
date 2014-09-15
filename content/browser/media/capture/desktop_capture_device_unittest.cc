@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/desktop_capture_device.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -61,9 +63,10 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
 class InvertedDesktopFrame : public webrtc::DesktopFrame {
  public:
   // Takes ownership of |frame|.
-  InvertedDesktopFrame(webrtc::DesktopFrame* frame)
+  explicit InvertedDesktopFrame(webrtc::DesktopFrame* frame)
       : webrtc::DesktopFrame(
-            frame->size(), -frame->stride(),
+            frame->size(),
+            -frame->stride(),
             frame->data() + (frame->size().height() - 1) * frame->stride(),
             frame->shared_memory()),
         original_frame_(frame) {

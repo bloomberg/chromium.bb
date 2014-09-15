@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
-#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -179,8 +180,7 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id),
       cancel_callback);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/crx_installer.h"
+
 #include "base/at_exit.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -524,14 +526,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
       browser()->profile())->extension_service();
   EXPECT_FALSE(service->GetExtensionById(extension_id, false));
 
-  // In the worst case you need to repeat this up to 3 times to make sure that
-  // all pending tasks we sent from UI thread to task runner and back to UI.
-  for (int i = 0; i < 3; i++) {
-    // Wait for background task completion that sends replay to UI thread.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    // Wait for UI thread task completion.
-    base::RunLoop().RunUntilIdle();
-  }
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_FALSE(base::PathExists(extension_path));
 }

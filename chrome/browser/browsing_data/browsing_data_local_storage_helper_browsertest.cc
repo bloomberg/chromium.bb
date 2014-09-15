@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -16,12 +18,12 @@
 #include "base/test/thread_test_helper.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browsing_data/browsing_data_helper_browsertest.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
@@ -126,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
       new BrowsingDataLocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteOrigin(GURL(kOriginOfTestFile0));
-  BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Ensure the file has been deleted.
   base::FileEnumerator file_enumerator(

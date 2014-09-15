@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -19,6 +20,7 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -183,7 +185,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
   device_policy_.SetDefaultNewSigningKey();
   device_policy_.Build();
   store_->Store(device_policy_.policy());
-  device_settings_test_helper_.FlushLoops();
+  content::RunAllBlockingPoolTasksUntilIdle();
   device_settings_test_helper_.FlushStore();
   owner_key_util_->SetPublicKeyFromPrivateKey(
       *device_policy_.GetNewSigningKey());

@@ -17,23 +17,13 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 namespace chromeos {
 
 DeviceSettingsTestHelper::DeviceSettingsTestHelper() {}
 
 DeviceSettingsTestHelper::~DeviceSettingsTestHelper() {}
-
-void DeviceSettingsTestHelper::FlushLoops() {
-  // DeviceSettingsService may trigger operations that hop back and forth
-  // between the message loop and the blocking pool. 2 iterations are currently
-  // sufficient (key loading, signing).
-  for (int i = 0; i < 2; ++i) {
-    base::MessageLoop::current()->RunUntilIdle();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  }
-  base::MessageLoop::current()->RunUntilIdle();
-}
 
 void DeviceSettingsTestHelper::FlushStore() {
   std::vector<StorePolicyCallback> callbacks;
@@ -78,11 +68,11 @@ void DeviceSettingsTestHelper::FlushRetrieve() {
 
 void DeviceSettingsTestHelper::Flush() {
   do {
-    FlushLoops();
+    content::RunAllBlockingPoolTasksUntilIdle();
     FlushStore();
-    FlushLoops();
+    content::RunAllBlockingPoolTasksUntilIdle();
     FlushRetrieve();
-    FlushLoops();
+    content::RunAllBlockingPoolTasksUntilIdle();
   } while (HasPendingOperations());
 }
 

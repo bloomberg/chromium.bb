@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/wizard_controller.h"
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -37,7 +39,6 @@
 #include "chrome/browser/chromeos/login/test_login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -147,9 +148,7 @@ void RunSwitchLanguageTest(const std::string& locale,
   locale_util::SwitchLanguage(locale, true, false, callback.Pass());
 
   // Token writing moves control to BlockingPool and back.
-  base::RunLoop().RunUntilIdle();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(data.done, true);
   EXPECT_EQ(data.requested_locale, locale);

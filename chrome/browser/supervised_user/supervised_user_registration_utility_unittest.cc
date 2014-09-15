@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -9,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/supervised_user/supervised_user_refresh_token_fetcher.h"
-#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
@@ -18,6 +19,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change.h"
@@ -163,8 +165,7 @@ SupervisedUserRegistrationUtilityTest::
 }
 
 void SupervisedUserRegistrationUtilityTest::TearDown() {
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 scoped_ptr<SyncChangeProcessor>

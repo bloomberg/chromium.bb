@@ -341,9 +341,7 @@ void SupervisedUserTestBase::StartUserCreation(
   registration_utility_stub_->RunSuccessCallback("token");
 
   // Token writing moves control to BlockingPool and back.
-  base::RunLoop().RunUntilIdle();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
   JSEval("$('supervised-user-creation-gotit-button').click()");
@@ -390,7 +388,7 @@ void SupervisedUserTestBase::SigninAsManager(int user_index) {
 }
 
 void SupervisedUserTestBase::RemoveSupervisedUser(
-    unsigned long original_user_count,
+    size_t original_user_count,
     int user_index,
     const std::string& expected_display_name) {
   // Remove supervised user.

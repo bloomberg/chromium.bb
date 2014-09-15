@@ -12,6 +12,7 @@
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_id.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -64,8 +65,8 @@ void SessionServiceTestHelper::ReadWindows(
       read_commands.get(), windows, active_window_id);
 }
 
-void SessionServiceTestHelper::AssertTabEquals(SessionID& window_id,
-                                               SessionID& tab_id,
+void SessionServiceTestHelper::AssertTabEquals(const SessionID& window_id,
+                                               const SessionID& tab_id,
                                                int visual_index,
                                                int nav_index,
                                                size_t nav_count,
@@ -109,7 +110,7 @@ SessionBackend* SessionServiceTestHelper::backend() {
 void SessionServiceTestHelper::SetService(SessionService* service) {
   service_.reset(service);
   // Execute IO tasks posted by the SessionService.
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void SessionServiceTestHelper::RunTaskOnBackendThread(

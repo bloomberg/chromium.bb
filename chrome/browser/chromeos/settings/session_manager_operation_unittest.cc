@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -21,6 +24,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -156,7 +160,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
 
   EXPECT_CALL(*this, OnOperationCompleted(&op, _)).Times(0);
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
-  device_settings_test_helper_.FlushLoops();
+  content::RunAllBlockingPoolTasksUntilIdle();
   device_settings_test_helper_.FlushRetrieve();
   EXPECT_TRUE(op.public_key().get());
   EXPECT_TRUE(op.public_key()->is_loaded());

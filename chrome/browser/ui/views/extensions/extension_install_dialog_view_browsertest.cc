@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
+#include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -11,10 +12,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/test_util.h"
@@ -166,8 +167,7 @@ bool ScrollbarTest::IsScrollbarVisible() {
   views::Widget* modal =
       CreateBrowserModalDialogViews(dialog, show_params.parent_window);
   modal->Show();
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check if the vertical scrollbar is visible.
   return dialog->scroll_view()->vertical_scroll_bar()->visible();

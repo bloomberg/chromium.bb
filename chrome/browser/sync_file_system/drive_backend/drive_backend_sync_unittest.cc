@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -152,8 +153,7 @@ class DriveBackendSyncTest : public testing::Test,
     local_sync_service_.reset();
     remote_sync_service_.reset();
 
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     RevokeSyncableFileSystem();
   }
 
@@ -359,7 +359,6 @@ class DriveBackendSyncTest : public testing::Test,
 
       if (local_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC &&
           remote_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-
         {
           base::RunLoop run_loop;
           remote_sync_service_->PromoteDemotedChanges(run_loop.QuitClosure());

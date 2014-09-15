@@ -42,9 +42,6 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   DeviceSettingsTestHelper();
   virtual ~DeviceSettingsTestHelper();
 
-  // Flushes operations on the current message loop and the blocking pool.
-  void FlushLoops();
-
   // Runs all pending store callbacks.
   void FlushStore();
 

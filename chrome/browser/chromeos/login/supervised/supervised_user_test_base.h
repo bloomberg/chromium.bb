@@ -92,7 +92,7 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
                               int user_index,
                               const std::string& expected_display_name);
   void SigninAsManager(int user_index);
-  void RemoveSupervisedUser(unsigned long original_user_count,
+  void RemoveSupervisedUser(size_t original_user_count,
                             int user_index,
                             const std::string& expected_display_name);
 

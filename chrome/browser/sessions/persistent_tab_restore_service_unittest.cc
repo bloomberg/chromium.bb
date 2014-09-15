@@ -4,8 +4,9 @@
 
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 
+#include <string>
+
 #include "base/compiler_specific.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/render_view_test.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -114,7 +116,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     // Must set service to null first so that it is destroyed before the new
     // one is created.
     service_->Shutdown();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
     service_.reset();
     service_.reset(new PersistentTabRestoreService(profile(), time_factory_));
     SynchronousLoadTabsFromLastSession();
@@ -158,9 +160,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   void SynchronousLoadTabsFromLastSession() {
     // Ensures that the load is complete before continuing.
     service_->LoadTabsFromLastSession();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   GURL url1_;
