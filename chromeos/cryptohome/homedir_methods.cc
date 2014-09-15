@@ -27,8 +27,10 @@ namespace {
 HomedirMethods* g_homedir_methods = NULL;
 
 void FillKeyProtobuf(const KeyDefinition& key_def, Key* key) {
-  key->set_secret(key_def.key);
+  key->set_secret(key_def.secret);
   KeyData* data = key->mutable_data();
+  DCHECK_EQ(KeyDefinition::TYPE_PASSWORD, key_def.type);
+  data->set_type(KeyData::KEY_TYPE_PASSWORD);
   data->set_label(key_def.label);
 
   if (key_def.revision > 0)
@@ -44,20 +46,48 @@ void FillKeyProtobuf(const KeyDefinition& key_def, Key* key) {
                                       PRIV_AUTHORIZED_UPDATE);
   }
 
-  if (key_def.encryption_key.empty() && key_def.signature_key.empty())
-    return;
+  for (std::vector<KeyDefinition::AuthorizationData>::const_iterator auth_it =
+          key_def.authorization_data.begin();
+       auth_it != key_def.authorization_data.end(); ++auth_it) {
+    KeyAuthorizationData* auth_data = data->add_authorization_data();
+    switch (auth_it->type) {
+      case KeyDefinition::AuthorizationData::TYPE_HMACSHA256:
+        auth_data->set_type(
+            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
+        break;
+      case KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256:
+        auth_data->set_type(
+            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
 
-  KeyAuthorizationData* auth_data = data->add_authorization_data();
-  auth_data->set_type(KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
-  if (!key_def.encryption_key.empty()) {
-    KeyAuthorizationSecret* secret = auth_data->add_secrets();
-    secret->mutable_usage()->set_encrypt(true);
-    secret->set_symmetric_key(key_def.encryption_key);
+    for (std::vector<KeyDefinition::AuthorizationData::Secret>::const_iterator
+             secret_it = auth_it->secrets.begin();
+         secret_it != auth_it->secrets.end(); ++secret_it) {
+      KeyAuthorizationSecret* secret = auth_data->add_secrets();
+      secret->mutable_usage()->set_encrypt(secret_it->encrypt);
+      secret->mutable_usage()->set_sign(secret_it->sign);
+      if (!secret_it->symmetric_key.empty())
+        secret->set_symmetric_key(secret_it->symmetric_key);
+      if (!secret_it->public_key.empty())
+        secret->set_public_key(secret_it->public_key);
+      secret->set_wrapped(secret_it->wrapped);
+    }
   }
-  if (!key_def.signature_key.empty()) {
-    KeyAuthorizationSecret* secret = auth_data->add_secrets();
-    secret->mutable_usage()->set_sign(true);
-    secret->set_symmetric_key(key_def.signature_key);
+
+  for (std::vector<KeyDefinition::ProviderData>::const_iterator it =
+           key_def.provider_data.begin(); it != key_def.provider_data.end();
+       ++it) {
+    KeyProviderData::Entry* entry =
+        data->mutable_provider_data()->add_entry();
+    entry->set_name(it->name);
+    if (it->number)
+      entry->set_number(*it->number);
+    if (it->bytes)
+      entry->set_bytes(*it->bytes);
   }
 }
 
@@ -75,6 +105,35 @@ void FillAuthorizationProtobuf(const Authorization& auth,
     key->mutable_data()->set_label(auth.label);
   }
   key->set_secret(auth.key);
+}
+
+void ParseAuthorizationDataProtobuf(
+    const KeyAuthorizationData& authorization_data_proto,
+    KeyDefinition::AuthorizationData* authorization_data) {
+  switch (authorization_data_proto.type()) {
+    case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256:
+      authorization_data->type =
+          KeyDefinition::AuthorizationData::TYPE_HMACSHA256;
+      break;
+    case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256:
+      authorization_data->type =
+          KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  for (RepeatedPtrField<KeyAuthorizationSecret>::const_iterator it =
+          authorization_data_proto.secrets().begin();
+       it != authorization_data_proto.secrets().end(); ++it) {
+    authorization_data->secrets.push_back(
+        KeyDefinition::AuthorizationData::Secret(it->usage().encrypt(),
+                                                 it->usage().sign(),
+                                                 it->symmetric_key(),
+                                                 it->public_key(),
+                                                 it->wrapped()));
+  }
 }
 
 MountError MapError(CryptohomeErrorCode code) {
@@ -257,69 +316,60 @@ class HomedirMethodsImpl : public HomedirMethods {
                               bool result,
                               const BaseReply& reply) {
     if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-      callback.Run(false, MOUNT_ERROR_FATAL, ScopedVector<RetrievedKeyData>());
+      callback.Run(false, MOUNT_ERROR_FATAL, std::vector<KeyDefinition>());
       return;
     }
     if (reply.has_error()) {
       if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
         callback.Run(false,
                      MapError(reply.error()),
-                     ScopedVector<RetrievedKeyData>());
+                     std::vector<KeyDefinition>());
         return;
       }
     }
 
     if (!reply.HasExtension(GetKeyDataReply::reply)) {
-      callback.Run(false, MOUNT_ERROR_FATAL, ScopedVector<RetrievedKeyData>());
+      callback.Run(false, MOUNT_ERROR_FATAL, std::vector<KeyDefinition>());
       return;
     }
 
     // Extract the contents of the |KeyData| protos returned.
-    const RepeatedPtrField<KeyData>& key_data_proto =
+    const RepeatedPtrField<KeyData>& key_data =
         reply.GetExtension(GetKeyDataReply::reply).key_data();
-    ScopedVector<RetrievedKeyData> key_data_list;
-    for (RepeatedPtrField<KeyData>::const_iterator it = key_data_proto.begin();
-         it != key_data_proto.end(); ++it) {
+    std::vector<KeyDefinition> key_definitions;
+    for (RepeatedPtrField<KeyData>::const_iterator it = key_data.begin();
+         it != key_data.end(); ++it) {
 
       // Extract |type|, |label| and |revision|.
       DCHECK_EQ(KeyData::KEY_TYPE_PASSWORD, it->type());
-      key_data_list.push_back(new RetrievedKeyData(
-          RetrievedKeyData::TYPE_PASSWORD,
-          it->label(),
-          it->revision()));
-      RetrievedKeyData* key_data = key_data_list.back();
+      key_definitions.push_back(KeyDefinition(std::string() /* secret */,
+                                              it->label(),
+                                              0 /* privileges */));
+      KeyDefinition& key_definition = key_definitions.back();
+      key_definition.revision = it->revision();
 
       // Extract |privileges|.
       const KeyPrivileges& privileges = it->privileges();
       if (privileges.mount())
-        key_data->privileges |= PRIV_MOUNT;
+        key_definition.privileges |= PRIV_MOUNT;
       if (privileges.add())
-        key_data->privileges |= PRIV_ADD;
+        key_definition.privileges |= PRIV_ADD;
       if (privileges.remove())
-        key_data->privileges |= PRIV_REMOVE;
+        key_definition.privileges |= PRIV_REMOVE;
       if (privileges.update())
-        key_data->privileges |= PRIV_MIGRATE;
+        key_definition.privileges |= PRIV_MIGRATE;
       if (privileges.authorized_update())
-        key_data->privileges |= PRIV_AUTHORIZED_UPDATE;
+        key_definition.privileges |= PRIV_AUTHORIZED_UPDATE;
 
       // Extract |authorization_data|.
       for (RepeatedPtrField<KeyAuthorizationData>::const_iterator auth_it =
                it->authorization_data().begin();
            auth_it != it->authorization_data().end(); ++auth_it) {
-        switch (auth_it->type()) {
-          case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256:
-            key_data->authorization_types.push_back(
-                RetrievedKeyData::AUTHORIZATION_TYPE_HMACSHA256);
-            break;
-          case KeyAuthorizationData::
-                   KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256:
-            key_data->authorization_types.push_back(
-                RetrievedKeyData::AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
-            break;
-          default:
-            NOTREACHED();
-            break;
-        }
+        key_definition.authorization_data.push_back(
+            KeyDefinition::AuthorizationData());
+        ParseAuthorizationDataProtobuf(
+            *auth_it,
+            &key_definition.authorization_data.back());
       }
 
       // Extract |provider_data|.
@@ -328,22 +378,22 @@ class HomedirMethodsImpl : public HomedirMethods {
            provider_data_it != it->provider_data().entry().end();
            ++provider_data_it) {
         // Extract |name|.
-        key_data->provider_data.push_back(
-            new RetrievedKeyData::ProviderData(provider_data_it->name()));
-        RetrievedKeyData::ProviderData* provider_data =
-            key_data->provider_data.back();
+        key_definition.provider_data.push_back(
+            KeyDefinition::ProviderData(provider_data_it->name()));
+        KeyDefinition::ProviderData& provider_data =
+            key_definition.provider_data.back();
 
         int data_items = 0;
 
         // Extract |number|.
         if (provider_data_it->has_number()) {
-          provider_data->number.reset(new int64(provider_data_it->number()));
+          provider_data.number.reset(new int64(provider_data_it->number()));
           ++data_items;
         }
 
         // Extract |bytes|.
         if (provider_data_it->has_bytes()) {
-          provider_data->bytes.reset(
+          provider_data.bytes.reset(
               new std::string(provider_data_it->bytes()));
           ++data_items;
         }
@@ -352,7 +402,7 @@ class HomedirMethodsImpl : public HomedirMethods {
       }
     }
 
-    callback.Run(true, MOUNT_ERROR_NONE, key_data_list.Pass());
+    callback.Run(true, MOUNT_ERROR_NONE, key_definitions);
   }
 
   void OnMountExCallback(const MountCallback& callback,

@@ -4,7 +4,8 @@
 
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 
-#include "base/memory/scoped_vector.h"
+#include <vector>
+
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 
@@ -41,7 +42,7 @@ void MockHomedirMethods::DoCallback(const Callback& callback) {
 }
 
 void MockHomedirMethods::DoGetDataCallback(const GetKeyDataCallback& callback) {
-  callback.Run(success_, return_code_, ScopedVector<RetrievedKeyData>());
+  callback.Run(success_, return_code_, std::vector<KeyDefinition>());
 }
 
 void MockHomedirMethods::DoMountCallback(const MountCallback& callback) {

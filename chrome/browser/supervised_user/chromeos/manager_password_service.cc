@@ -164,9 +164,14 @@ void ManagerPasswordService::GetSupervisedUsersCallback(
       kCryptohomeSupervisedUserKeyLabel,
       cryptohome::PRIV_AUTHORIZED_UPDATE || cryptohome::PRIV_MOUNT);
   new_key_definition.revision = revision;
-
-  new_key_definition.encryption_key = encryption_key;
-  new_key_definition.signature_key = signature_key;
+  new_key_definition.authorization_data.push_back(
+      cryptohome::KeyDefinition::AuthorizationData(true /* encrypt */,
+                                                   false /* sign */,
+                                                   encryption_key));
+  new_key_definition.authorization_data.push_back(
+      cryptohome::KeyDefinition::AuthorizationData(false /* encrypt */,
+                                                   true /* sign */,
+                                                   signature_key));
 
   authenticator_->AddKey(manager_key,
                          new_key_definition,

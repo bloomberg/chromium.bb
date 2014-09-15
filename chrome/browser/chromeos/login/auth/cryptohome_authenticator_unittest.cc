@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -258,25 +258,22 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void ExpectGetKeyDataExCall(scoped_ptr<int64> key_type,
                               scoped_ptr<std::string> salt) {
-    key_data_.clear();
-    key_data_.push_back(new cryptohome::RetrievedKeyData(
-       cryptohome::RetrievedKeyData::TYPE_PASSWORD,
-       kCryptohomeGAIAKeyLabel,
-       1));
-    key_data_.front()->privileges = cryptohome::PRIV_DEFAULT;
-    key_data_.front()->authorization_types.push_back(
-        cryptohome::RetrievedKeyData::AUTHORIZATION_TYPE_HMACSHA256);
+    key_definitions_.clear();
+    key_definitions_.push_back(cryptohome::KeyDefinition(
+        std::string() /* secret */,
+        kCryptohomeGAIAKeyLabel,
+        cryptohome::PRIV_DEFAULT));
+    cryptohome::KeyDefinition& key_definition = key_definitions_.back();
+    key_definition.revision = 1;
     if (key_type) {
-      scoped_ptr<cryptohome::RetrievedKeyData::ProviderData> provider_data(
-          new cryptohome::RetrievedKeyData::ProviderData("type"));
-      provider_data->number = key_type.Pass();
-      key_data_.front()->provider_data.push_back(provider_data.release());
+      key_definition.provider_data.push_back(
+          cryptohome::KeyDefinition::ProviderData("type"));
+      key_definition.provider_data.back().number = key_type.Pass();
     }
     if (salt) {
-      scoped_ptr<cryptohome::RetrievedKeyData::ProviderData> provider_data(
-          new cryptohome::RetrievedKeyData::ProviderData("salt"));
-      provider_data->bytes = salt.Pass();
-      key_data_.front()->provider_data.push_back(provider_data.release());
+      key_definition.provider_data.push_back(
+          cryptohome::KeyDefinition::ProviderData("salt"));
+      key_definition.provider_data.back().bytes = salt.Pass();
     }
     EXPECT_CALL(*mock_homedir_methods_, GetKeyDataEx(
         cryptohome::Identification(user_context_.GetUserID()),
@@ -333,7 +330,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   UserContext user_context_with_transformed_key_;
   Key transformed_key_;
 
-  ScopedVector<cryptohome::RetrievedKeyData> key_data_;
+  std::vector<cryptohome::KeyDefinition> key_definitions_;
 
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
@@ -359,7 +356,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
       const cryptohome::HomedirMethods::GetKeyDataCallback& callback) {
     callback.Run(true /* success */,
                  cryptohome::MOUNT_ERROR_NONE,
-                 key_data_.Pass());
+                 key_definitions_);
   }
 };
 

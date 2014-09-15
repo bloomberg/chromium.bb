@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chromeos/chromeos_export.h"
 
 namespace cryptohome {
@@ -34,25 +33,85 @@ struct CHROMEOS_EXPORT Identification {
 };
 
 // Definition of the key (e.g. password) for the cryptohome.
-// It contains authorization data along with extra parameters like perimissions
+// It contains authorization data along with extra parameters like permissions
 // associated with this key.
 struct CHROMEOS_EXPORT KeyDefinition {
-  KeyDefinition(const std::string& key,
+  enum Type {
+    TYPE_PASSWORD = 0
+  };
+
+  struct AuthorizationData {
+    enum Type {
+      TYPE_HMACSHA256 = 0,
+      TYPE_AES256CBC_HMACSHA256
+    };
+
+    struct Secret {
+      Secret();
+      Secret(bool encrypt,
+             bool sign,
+             const std::string& symmetric_key,
+             const std::string& public_key,
+             bool wrapped);
+
+      bool operator==(const Secret& other) const;
+
+      bool encrypt;
+      bool sign;
+      std::string symmetric_key;
+      std::string public_key;
+      bool wrapped;
+    };
+
+    AuthorizationData();
+    AuthorizationData(bool encrypt,
+                      bool sign,
+                      const std::string& symmetric_key);
+    ~AuthorizationData();
+
+    bool operator==(const AuthorizationData& other) const;
+
+    Type type;
+    std::vector<Secret> secrets;
+  };
+
+  // This struct holds metadata that will be stored alongside the key. Each
+  // |ProviderData| entry must have a |name| and may hold either a |number| or a
+  // sequence of |bytes|. The metadata is entirely opaque to cryptohome. It is
+  // stored with the key and returned when requested but is never interpreted by
+  // cryptohome in any way. The metadata can be used to store information such
+  // as the hashing algorithm and the salt used to create the key.
+  struct ProviderData {
+    ProviderData();
+    explicit ProviderData(const std::string& name);
+    explicit ProviderData(const ProviderData& other);
+    void operator=(const ProviderData& other);
+    ~ProviderData();
+
+    bool operator==(const ProviderData& other) const;
+
+    std::string name;
+    scoped_ptr<int64> number;
+    scoped_ptr<std::string> bytes;
+  };
+
+  KeyDefinition();
+  KeyDefinition(const std::string& secret,
                 const std::string& label,
-                int /*AuthKeyPrivileges*/ privileges);
+                int privileges);
   ~KeyDefinition();
 
   bool operator==(const KeyDefinition& other) const;
 
+  Type type;
   std::string label;
-
-  int revision;
-  std::string key;
-
-  std::string encryption_key;
-  std::string signature_key;
   // Privileges associated with key. Combination of |AuthKeyPrivileges| values.
   int privileges;
+  int revision;
+  std::string secret;
+
+  std::vector<AuthorizationData> authorization_data;
+  std::vector<ProviderData> provider_data;
 };
 
 // Authorization attempt data for user.
@@ -64,38 +123,6 @@ struct CHROMEOS_EXPORT Authorization {
 
   std::string key;
   std::string label;
-};
-
-// Information about keys returned by GetKeyDataEx().
-struct CHROMEOS_EXPORT RetrievedKeyData {
-  enum Type {
-    TYPE_PASSWORD = 0
-  };
-
-  enum AuthorizationType {
-    AUTHORIZATION_TYPE_HMACSHA256 = 0,
-    AUTHORIZATION_TYPE_AES256CBC_HMACSHA256
-  };
-
-  struct ProviderData {
-    explicit ProviderData(const std::string& name);
-    ~ProviderData();
-
-    std::string name;
-    scoped_ptr<int64> number;
-    scoped_ptr<std::string> bytes;
-  };
-
-  RetrievedKeyData(Type type, const std::string& label, int64 revision);
-  ~RetrievedKeyData();
-
-  Type type;
-  std::string label;
-  // Privileges associated with key. Combination of |AuthKeyPrivileges| values.
-  int privileges;
-  int64 revision;
-  std::vector<AuthorizationType> authorization_types;
-  ScopedVector<ProviderData> provider_data;
 };
 
 // Parameters for Mount call.

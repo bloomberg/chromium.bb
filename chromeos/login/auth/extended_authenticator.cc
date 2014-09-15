@@ -89,7 +89,7 @@ void ExtendedAuthenticator::CreateMount(
     mount.create_keys.push_back(keys[i]);
   }
   UserContext context(user_id);
-  Key key(keys.front().key);
+  Key key(keys.front().secret);
   key.SetLabel(keys.front().label);
   context.SetKey(key);
 

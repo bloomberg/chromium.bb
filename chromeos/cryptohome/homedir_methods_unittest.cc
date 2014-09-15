@@ -55,9 +55,10 @@ class HomedirMethodsTest : public testing::Test {
   void RunProtobufMethodCallback(
       const chromeos::CryptohomeClient::ProtobufMethodCallback& callback);
 
-  void StoreGetKeyDataExResult(bool success,
-                               MountError return_code,
-                               ScopedVector<RetrievedKeyData> key_data);
+  void StoreGetKeyDataExResult(
+      bool success,
+      MountError return_code,
+      const std::vector<KeyDefinition>& key_definitions);
 
  protected:
   chromeos::MockCryptohomeClient* cryptohome_client_;
@@ -68,7 +69,7 @@ class HomedirMethodsTest : public testing::Test {
   // The results of the most recent |HomedirMethods| method call.
   bool success_;
   MountError return_code_;
-  ScopedVector<RetrievedKeyData> key_data_;
+  std::vector<KeyDefinition> key_definitions_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HomedirMethodsTest);
@@ -106,10 +107,10 @@ void HomedirMethodsTest::RunProtobufMethodCallback(
 void HomedirMethodsTest::StoreGetKeyDataExResult(
     bool success,
     MountError return_code,
-    ScopedVector<RetrievedKeyData> key_data) {
+    const std::vector<KeyDefinition>& key_definitions) {
   success_ = success;
   return_code_ = return_code;
-  key_data_.swap(key_data);
+  key_definitions_ = key_definitions;
 }
 
 // Verifies that the result of a GetKeyDataEx() call is correctly parsed.
@@ -158,23 +159,23 @@ TEST_F(HomedirMethodsTest, GetKeyDataEx) {
   // Verify that the call was successful and the result was correctly parsed.
   EXPECT_TRUE(success_);
   EXPECT_EQ(MOUNT_ERROR_NONE, return_code_);
-  ASSERT_EQ(1u, key_data_.size());
-  const RetrievedKeyData* retrieved_key_data = key_data_.front();
-  EXPECT_EQ(RetrievedKeyData::TYPE_PASSWORD, retrieved_key_data->type);
+  ASSERT_EQ(1u, key_definitions_.size());
+  const KeyDefinition& key_definition = key_definitions_.front();
+  EXPECT_EQ(KeyDefinition::TYPE_PASSWORD, key_definition.type);
   EXPECT_EQ(PRIV_MOUNT | PRIV_ADD | PRIV_REMOVE,
-            retrieved_key_data->privileges);
-  EXPECT_EQ(kKeyRevision, retrieved_key_data->revision);
-  ASSERT_EQ(1u, retrieved_key_data->authorization_types.size());
-  EXPECT_EQ(RetrievedKeyData::AUTHORIZATION_TYPE_HMACSHA256,
-            retrieved_key_data->authorization_types.front());
-  ASSERT_EQ(2u, retrieved_key_data->provider_data.size());
-  const RetrievedKeyData::ProviderData* provider_data =
-      retrieved_key_data->provider_data[0];
+            key_definition.privileges);
+  EXPECT_EQ(kKeyRevision, key_definition.revision);
+  ASSERT_EQ(1u, key_definition.authorization_data.size());
+  EXPECT_EQ(KeyDefinition::AuthorizationData::TYPE_HMACSHA256,
+            key_definition.authorization_data.front().type);
+  ASSERT_EQ(2u, key_definition.provider_data.size());
+  const KeyDefinition::ProviderData* provider_data =
+      &key_definition.provider_data[0];
   EXPECT_EQ(kProviderData1Name, provider_data->name);
   ASSERT_TRUE(provider_data->number);
   EXPECT_EQ(kProviderData1Number, *provider_data->number.get());
   EXPECT_FALSE(provider_data->bytes);
-  provider_data = retrieved_key_data->provider_data[1];
+  provider_data = &key_definition.provider_data[1];
   EXPECT_EQ(kProviderData2Name, provider_data->name);
   EXPECT_FALSE(provider_data->number);
   ASSERT_TRUE(provider_data->bytes);

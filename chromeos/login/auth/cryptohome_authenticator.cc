@@ -4,6 +4,8 @@
 
 #include "chromeos/login/auth/cryptohome_authenticator.h"
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -175,32 +177,33 @@ void OnGetSystemSalt(AuthAttemptState* attempt,
 //   |attempt->user_context| can be transformed with Chrome's default hashing
 //   algorithm and the system salt.
 // The resulting key is then passed to cryptohome's MountEx().
-void OnGetKeyDataEx(AuthAttemptState* attempt,
-                    scoped_refptr<CryptohomeAuthenticator> resolver,
-                    bool ephemeral,
-                    bool create_if_nonexistent,
-                    bool success,
-                    cryptohome::MountError return_code,
-                    ScopedVector<cryptohome::RetrievedKeyData> key_data) {
+void OnGetKeyDataEx(
+    AuthAttemptState* attempt,
+    scoped_refptr<CryptohomeAuthenticator> resolver,
+    bool ephemeral,
+    bool create_if_nonexistent,
+    bool success,
+    cryptohome::MountError return_code,
+    const std::vector<cryptohome::KeyDefinition>& key_definitions) {
   if (success) {
-    if (key_data.size() == 1) {
-      cryptohome::RetrievedKeyData* key_data_entry = key_data.front();
-      DCHECK_EQ(kCryptohomeGAIAKeyLabel, key_data_entry->label);
+    if (key_definitions.size() == 1) {
+      const cryptohome::KeyDefinition& key_definition = key_definitions.front();
+      DCHECK_EQ(kCryptohomeGAIAKeyLabel, key_definition.label);
 
-      // Extract the key type and salt from |key_data|, if present.
+      // Extract the key type and salt from |key_definition|, if present.
       scoped_ptr<int64> type;
       scoped_ptr<std::string> salt;
-      for (ScopedVector<cryptohome::RetrievedKeyData::ProviderData>::
-               const_iterator it = key_data_entry->provider_data.begin();
-           it != key_data_entry->provider_data.end(); ++it) {
-        if ((*it)->name == kKeyProviderDataTypeName) {
-          if ((*it)->number)
-            type.reset(new int64(*(*it)->number));
+      for (std::vector<cryptohome::KeyDefinition::ProviderData>::
+               const_iterator it = key_definition.provider_data.begin();
+           it != key_definition.provider_data.end(); ++it) {
+        if (it->name == kKeyProviderDataTypeName) {
+          if (it->number)
+            type.reset(new int64(*it->number));
           else
             NOTREACHED();
-        } else if ((*it)->name == kKeyProviderDataSaltName) {
-          if ((*it)->bytes)
-            salt.reset(new std::string(*(*it)->bytes));
+        } else if (it->name == kKeyProviderDataSaltName) {
+          if (it->bytes)
+            salt.reset(new std::string(*it->bytes));
           else
             NOTREACHED();
         }
@@ -226,7 +229,7 @@ void OnGetKeyDataEx(AuthAttemptState* attempt,
         return;
       }
     } else {
-      LOG(ERROR) << "GetKeyDataEx() returned " << key_data.size()
+      LOG(ERROR) << "GetKeyDataEx() returned " << key_definitions.size()
                  << " entries.";
     }
   }

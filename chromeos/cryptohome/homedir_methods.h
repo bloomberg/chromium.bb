@@ -6,10 +6,10 @@
 #define CHROMEOS_CRYPTOHOME_HOMEDIR_METHODS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/memory/scoped_vector.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -27,7 +27,7 @@ class CHROMEOS_EXPORT HomedirMethods {
   typedef base::Callback<void(
       bool success,
       MountError return_code,
-      ScopedVector<RetrievedKeyData> key_data)> GetKeyDataCallback;
+      const std::vector<KeyDefinition>& key_definitions)> GetKeyDataCallback;
   typedef base::Callback<
       void(bool success, MountError return_code, const std::string& mount_hash)>
       MountCallback;
