@@ -87,7 +87,7 @@ private:
     virtual CSSRule* parentRule() const OVERRIDE;
     virtual unsigned length() const OVERRIDE;
     virtual String item(unsigned index) const OVERRIDE;
-    PassRefPtr<RenderStyle> computeRenderStyle(CSSPropertyID) const;
+    PassRefPtr<RenderStyle> computeRenderStyle() const;
     virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE;
     virtual String getPropertyValue(const String& propertyName) OVERRIDE;
     virtual String getPropertyPriority(const String& propertyName) OVERRIDE;

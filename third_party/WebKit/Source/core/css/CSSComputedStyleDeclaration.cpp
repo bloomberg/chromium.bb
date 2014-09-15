@@ -1527,7 +1527,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     }
 }
 
-PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle(CSSPropertyID propertyID) const
+PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle() const
 {
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
@@ -1589,7 +1589,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         styledNode = this->styledNode();
         renderer = styledNode->renderer();
 
-        style = computeRenderStyle(propertyID);
+        style = computeRenderStyle();
 
         bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
             || styledNode->isInShadowTree()
@@ -1598,11 +1598,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         if (forceFullLayout) {
             document.updateLayoutIgnorePendingStylesheets();
             styledNode = this->styledNode();
-            style = computeRenderStyle(propertyID);
+            style = computeRenderStyle();
             renderer = styledNode->renderer();
         }
     } else {
-        style = computeRenderStyle(propertyID);
+        style = computeRenderStyle();
     }
 
     if (!style)
