@@ -29,8 +29,6 @@ enum ProfileType { NORMAL_PROFILE, INCOGNITO_PROFILE };
 
 scoped_ptr<TestingProfile> CreateProfile(ProfileType type) {
   TestingProfile::Builder builder;
-  if (type == INCOGNITO_PROFILE)
-    builder.SetIncognito();
   scoped_ptr<TestingProfile> profile(builder.Build());
 #if !defined(NDEBUG)
   // During the test cases, the profiles may get created on the same address. To
@@ -38,6 +36,10 @@ scoped_ptr<TestingProfile> CreateProfile(ProfileType type) {
   // See declaration of MarkBrowserContextLiveForTesting for more details.
   BrowserContextDependencyManager::GetInstance()
       ->MarkBrowserContextLiveForTesting(profile.get());
+  if (type == INCOGNITO_PROFILE) {
+    BrowserContextDependencyManager::GetInstance()
+        ->MarkBrowserContextLiveForTesting(profile->GetOffTheRecordProfile());
+  }
 #endif
   return profile.Pass();
 }
@@ -69,9 +71,11 @@ TEST(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
 TEST(PasswordManagerInternalsServiceTest, ServiceNotActiveIncognito) {
   scoped_ptr<TestingProfile> profile(CreateProfile(INCOGNITO_PROFILE));
   ASSERT_TRUE(profile);
+
+  Profile* incognito_profile = profile->GetOffTheRecordProfile();
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          profile.get());
+          incognito_profile);
   // BrowserContextKeyedBaseFactory::GetBrowserContextToUse should return NULL
   // for |profile|, because |profile| is incognito. Therefore the returned
   // |service| should also be NULL.

@@ -92,10 +92,7 @@ class HotwordServiceTest : public extensions::ExtensionServiceTestBase {
 
 TEST_F(HotwordServiceTest, IsHotwordAllowedBadFieldTrial) {
   TestingProfile::Builder profile_builder;
-  TestingProfile::Builder otr_profile_builder;
-  otr_profile_builder.SetIncognito();
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
-  scoped_ptr<TestingProfile> otr_profile = otr_profile_builder.Build();
 
   HotwordServiceFactory* hotword_service_factory =
       HotwordServiceFactory::GetInstance();
@@ -126,15 +123,13 @@ TEST_F(HotwordServiceTest, IsHotwordAllowedBadFieldTrial) {
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
 
   // Test that incognito returns false as well.
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile.get()));
+  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(
+      profile->GetOffTheRecordProfile()));
 }
 
 TEST_F(HotwordServiceTest, IsHotwordAllowedLocale) {
   TestingProfile::Builder profile_builder;
-  TestingProfile::Builder otr_profile_builder;
-  otr_profile_builder.SetIncognito();
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
-  scoped_ptr<TestingProfile> otr_profile = otr_profile_builder.Build();
 
   HotwordServiceFactory* hotword_service_factory =
       HotwordServiceFactory::GetInstance();
@@ -167,8 +162,9 @@ TEST_F(HotwordServiceTest, IsHotwordAllowedLocale) {
 
   // Test that incognito even with a valid locale and valid field trial
   // still returns false.
-  SetApplicationLocale(static_cast<Profile*>(otr_profile.get()), "en");
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile.get()));
+  Profile* otr_profile = profile->GetOffTheRecordProfile();
+  SetApplicationLocale(otr_profile, "en");
+  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile));
 }
 
 TEST_F(HotwordServiceTest, AudioLoggingPrefSetCorrectly) {

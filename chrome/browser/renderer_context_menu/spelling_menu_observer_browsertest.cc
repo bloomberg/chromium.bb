@@ -81,7 +81,10 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
 
   // A dummy profile used in this test. Call GetPrefs() when a test needs to
   // change this profile and use PrefService methods.
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingProfile> original_profile_;
+
+  // Either |original_profile_| or its incognito profile.
+  Profile* profile_;
 
   // A list of menu items added by the SpellingMenuObserver class.
   std::vector<MockMenuItem> items_;
@@ -91,10 +94,9 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
 
 MockRenderViewContextMenu::MockRenderViewContextMenu(bool incognito)
     : observer_(NULL) {
-  TestingProfile::Builder builder;
-  if (incognito)
-    builder.SetIncognito();
-  profile_ = builder.Build();
+  original_profile_ = TestingProfile::Builder().Build();
+  profile_ = incognito ? original_profile_->GetOffTheRecordProfile()
+                       : original_profile_.get();
 }
 
 MockRenderViewContextMenu::~MockRenderViewContextMenu() {
@@ -170,7 +172,7 @@ WebContents* MockRenderViewContextMenu::GetWebContents() const {
 }
 
 content::BrowserContext* MockRenderViewContextMenu::GetBrowserContext() const {
-  return profile_.get();
+  return profile_;
 }
 
 size_t MockRenderViewContextMenu::GetMenuSize() const {

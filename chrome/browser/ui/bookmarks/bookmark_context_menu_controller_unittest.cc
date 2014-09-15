@@ -240,14 +240,8 @@ TEST_F(BookmarkContextMenuControllerTest, MultipleFoldersWithURLs) {
 
 // Tests the enabled state of open incognito.
 TEST_F(BookmarkContextMenuControllerTest, DisableIncognito) {
-  // Create an incognito Profile. It must be associated with the original
-  // Profile, so that GetOriginalProfile() works as expected.
-  TestingProfile::Builder builder;
-  builder.SetIncognito();
-  scoped_ptr<TestingProfile> testing_incognito = builder.Build();
-  testing_incognito->SetOriginalProfile(profile_.get());
-  TestingProfile* incognito = testing_incognito.get();
-  profile_->SetOffTheRecordProfile(testing_incognito.PassAs<Profile>());
+  TestingProfile* incognito =
+      TestingProfile::Builder().BuildIncognito(profile_.get());
 
   incognito->CreateBookmarkModel(true);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(incognito);

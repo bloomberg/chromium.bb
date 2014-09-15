@@ -158,10 +158,8 @@ TEST_F(PrefProviderTest, Incognito) {
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
   TestingProfile::Builder otr_profile_builder;
-  otr_profile_builder.SetIncognito();
   otr_profile_builder.SetPrefService(make_scoped_ptr(otr_prefs));
-  scoped_ptr<TestingProfile> otr_profile(otr_profile_builder.Build());
-  profile->SetOffTheRecordProfile(otr_profile.PassAs<Profile>());
+  otr_profile_builder.BuildIncognito(profile.get());
 
   PrefProvider pref_content_settings_provider(regular_prefs, false);
   PrefProvider pref_content_settings_provider_incognito(otr_prefs, true);

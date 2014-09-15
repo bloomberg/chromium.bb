@@ -97,9 +97,6 @@ class TestingProfile : public Profile {
     // Sets the PrefService to be used by this profile.
     void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
 
-    // Makes the Profile being built an incognito profile.
-    void SetIncognito();
-
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
 
@@ -113,6 +110,11 @@ class TestingProfile : public Profile {
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
+    // Build an incognito profile, owned by |original_profile|. Note: unless you
+    // need to customize the Builder, or access TestingProfile member functions,
+    // you can use original_profile->GetOffTheRecordProfile().
+    TestingProfile* BuildIncognito(TestingProfile* original_profile);
+
    private:
     // If true, Build() has already been called.
     bool build_called_;
@@ -124,7 +126,6 @@ class TestingProfile : public Profile {
 #endif
     base::FilePath path_;
     Delegate* delegate_;
-    bool incognito_;
     bool guest_session_;
     std::string supervised_user_id_;
     scoped_ptr<policy::PolicyService> policy_service_;
@@ -154,7 +155,7 @@ class TestingProfile : public Profile {
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
                  scoped_ptr<PrefServiceSyncable> prefs,
-                 bool incognito,
+                 TestingProfile* parent,
                  bool guest_session,
                  const std::string& supervised_user_id,
                  scoped_ptr<policy::PolicyService> policy_service,
@@ -209,6 +210,11 @@ class TestingProfile : public Profile {
 
   TestingPrefServiceSyncable* GetTestingPrefService();
 
+  // Called on the parent of an incognito |profile|. Usually called from the
+  // constructor of an incognito TestingProfile, but can also be used by tests
+  // to provide an OffTheRecordProfileImpl instance.
+  void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
+
   // content::BrowserContext
   virtual base::FilePath GetPath() const OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
@@ -250,8 +256,6 @@ class TestingProfile : public Profile {
     force_incognito_ = force_incognito;
   }
 
-  virtual void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
-  virtual void SetOriginalProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
   virtual bool HasOffTheRecordProfile() OVERRIDE;
@@ -349,6 +353,10 @@ class TestingProfile : public Profile {
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
+  // Initializes |prefs_| for an incognito profile, derived from
+  // |original_profile_|.
+  void CreateIncognitoPrefService();
+
   // Creates a ProfilePolicyConnector that the ProfilePolicyConnectorFactory
   // maps to this profile.
   void CreateProfilePolicyConnector();
@@ -357,10 +365,9 @@ class TestingProfile : public Profile {
   // request context. Currently, only the CookieMonster is hooked up.
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
-  bool incognito_;
   bool force_incognito_;
   scoped_ptr<Profile> incognito_profile_;
-  Profile* original_profile_;
+  TestingProfile* original_profile_;
 
   bool guest_session_;
 

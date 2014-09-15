@@ -392,10 +392,12 @@ class OneClickSigninHelperIncognitoTest : public OneClickSigninHelperTest {
 
 content::BrowserContext*
 OneClickSigninHelperIncognitoTest::CreateBrowserContext() {
-  // Builds an incognito profile to run this test.
-  TestingProfile::Builder builder;
-  builder.SetIncognito();
-  return builder.Build().release();
+  // Simulate an incognito profile to run this test. RenderViewHostTestHarness
+  // takes ownership of the return value, so it can't be a "proper" incognito
+  // profile, since they are owned by their parent, non-incognito profile.
+  scoped_ptr<TestingProfile> profile = TestingProfile::Builder().Build();
+  profile->ForceIncognito(true);
+  return profile.release();
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {

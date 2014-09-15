@@ -760,13 +760,6 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
       static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path1));
   ASSERT_TRUE(profile1);
 
-  // Incognito profiles should not be managed by the profile manager but by the
-  // original profile.
-  TestingProfile::Builder builder;
-  builder.SetIncognito();
-  scoped_ptr<TestingProfile> profile2 = builder.Build();
-  profile1->SetOffTheRecordProfile(profile2.PassAs<Profile>());
-
   std::vector<Profile*> last_opened_profiles =
       profile_manager->GetLastOpenedProfiles();
   ASSERT_EQ(0U, last_opened_profiles.size());

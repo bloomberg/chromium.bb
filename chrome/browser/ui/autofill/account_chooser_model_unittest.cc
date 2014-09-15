@@ -95,19 +95,14 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
   }
   // In incognito, use local data regardless of the pref.
   {
-    TestingProfile::Builder builder;
-    builder.SetIncognito();
-    scoped_ptr<TestingProfile> incognito = builder.Build();
-    incognito->SetOriginalProfile(profile());
+    Profile* incognito = profile()->GetOffTheRecordProfile();
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
     incognito->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
 
-    TestAccountChooserModel model(delegate(),
-                                  incognito.get(),
-                                  false,
-                                  metric_logger());
+    TestAccountChooserModel model(
+        delegate(), incognito, false, metric_logger());
     EXPECT_FALSE(model.WalletIsSelected());
   }
 }
