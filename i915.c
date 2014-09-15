@@ -25,7 +25,7 @@ struct gbm_i915_device
 static int get_gen(int device_id)
 {
 	const uint16_t gen3_ids[] = {0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE, 0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011};
-	int i;
+	unsigned i;
 	for(i = 0; i < ARRAY_SIZE(gen3_ids); i++)
 		if (gen3_ids[i] == device_id)
 			return 3;
