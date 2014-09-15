@@ -94,7 +94,7 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       has_ever_been_drawn_(false),
       render_surface_layer_list_id_(0),
       top_controls_layout_height_(0),
-      top_controls_top_offset_(0),
+      top_controls_content_offset_(0),
       top_controls_delta_(0),
       sent_top_controls_delta_(0) {
 }
@@ -205,7 +205,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->PassSwapPromises(&swap_promise_list_);
 
   target_tree->top_controls_layout_height_ = top_controls_layout_height_;
-  target_tree->top_controls_top_offset_ = top_controls_top_offset_;
+  target_tree->top_controls_content_offset_ = top_controls_content_offset_;
   target_tree->top_controls_delta_ =
       target_tree->top_controls_delta_ -
           target_tree->sent_top_controls_delta_;
@@ -387,7 +387,7 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   page_scale_delta_ /= sent_page_scale_delta_;
   sent_page_scale_delta_ = 1.f;
 
-  top_controls_top_offset_ += sent_top_controls_delta_;
+  top_controls_content_offset_ += sent_top_controls_delta_;
   top_controls_delta_ -= sent_top_controls_delta_;
   sent_top_controls_delta_ = 0.f;
 

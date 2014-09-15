@@ -348,17 +348,10 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
-  float top_controls_height = 0.f;
-
-  if (host_impl->top_controls_manager())
-    top_controls_height = host_impl->top_controls_manager()->controls_height();
-
   sync_tree->set_top_controls_layout_height(top_controls_layout_height_);
-  sync_tree->set_top_controls_top_offset(top_controls_content_offset_ -
-      top_controls_height);
-  sync_tree->set_top_controls_delta(
-      sync_tree->top_controls_delta() -
-          sync_tree->sent_top_controls_delta());
+  sync_tree->set_top_controls_content_offset(top_controls_content_offset_);
+  sync_tree->set_top_controls_delta(sync_tree->top_controls_delta() -
+      sync_tree->sent_top_controls_delta());
   sync_tree->set_sent_top_controls_delta(0.f);
 
   host_impl->SetUseGpuRasterization(UseGpuRasterization());

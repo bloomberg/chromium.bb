@@ -273,6 +273,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 
   SetDebugState(settings.initial_debug_state);
 
+  // LTHI always has an active tree.
+  active_tree_ = LayerTreeImpl::create(this);
+  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
+
   if (settings.calculate_top_controls_position) {
     top_controls_manager_ =
         TopControlsManager::Create(this,
@@ -280,13 +285,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                                    settings.top_controls_show_threshold,
                                    settings.top_controls_hide_threshold);
   }
-
-  SetDebugState(settings.initial_debug_state);
-
-  // LTHI always has an active tree.
-  active_tree_ = LayerTreeImpl::create(this);
-  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -1694,8 +1692,7 @@ void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
   if (top_controls_manager_) {
     container_layer->SetBoundsDelta(
         gfx::Vector2dF(0, active_tree_->top_controls_layout_height() -
-            active_tree_->total_top_controls_top_offset() -
-            top_controls_manager_->controls_height()));
+            active_tree_->total_top_controls_content_offset()));
   }
 }
 
@@ -1821,7 +1818,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     if (top_controls_manager_) {
       top_controls_manager_->SetControlsTopOffset(
-          active_tree_->total_top_controls_top_offset());
+          active_tree_->total_top_controls_content_offset() -
+          top_controls_manager_->top_controls_height());
     }
 
     UpdateInnerViewportContainerSize();
@@ -2230,12 +2228,14 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
 }
 
 void LayerTreeHostImpl::SetControlsTopOffset(float offset) {
-  active_tree_->set_top_controls_delta(
-      offset - active_tree_->top_controls_top_offset());
+  float current_top_offset = active_tree_->top_controls_content_offset() -
+      top_controls_manager_->top_controls_height();
+  active_tree_->set_top_controls_delta(offset - current_top_offset);
 }
 
 float LayerTreeHostImpl::ControlsTopOffset() const {
-  return active_tree_->total_top_controls_top_offset();
+  return active_tree_->total_top_controls_content_offset() -
+      top_controls_manager_->top_controls_height();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {

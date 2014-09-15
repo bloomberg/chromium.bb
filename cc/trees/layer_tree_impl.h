@@ -295,8 +295,8 @@ class CC_EXPORT LayerTreeImpl {
   void set_top_controls_layout_height(float height) {
     top_controls_layout_height_ = height;
   }
-  void set_top_controls_top_offset(float offset) {
-    top_controls_top_offset_ = offset;
+  void set_top_controls_content_offset(float offset) {
+    top_controls_content_offset_ = offset;
   }
   void set_top_controls_delta(float delta) {
     top_controls_delta_ = delta;
@@ -308,8 +308,8 @@ class CC_EXPORT LayerTreeImpl {
   float top_controls_layout_height() const {
     return top_controls_layout_height_;
   }
-  float top_controls_top_offset() const {
-    return top_controls_top_offset_;
+  float top_controls_content_offset() const {
+    return top_controls_content_offset_;
   }
   float top_controls_delta() const {
     return top_controls_delta_;
@@ -317,8 +317,8 @@ class CC_EXPORT LayerTreeImpl {
   float sent_top_controls_delta() const {
     return sent_top_controls_delta_;
   }
-  float total_top_controls_top_offset() const {
-    return top_controls_top_offset_ + top_controls_delta_;
+  float total_top_controls_content_offset() const {
+    return top_controls_content_offset_ + top_controls_delta_;
   }
 
  protected:
@@ -388,7 +388,7 @@ class CC_EXPORT LayerTreeImpl {
 
   // The up-to-date content offset of the top controls, i.e. the amount that the
   // web contents have been shifted down from the top of the device viewport.
-  float top_controls_top_offset_;
+  float top_controls_content_offset_;
   float top_controls_delta_;
   float sent_top_controls_delta_;
 

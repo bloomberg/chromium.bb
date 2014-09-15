@@ -83,7 +83,6 @@ class CC_EXPORT TopControlsManager
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
   TopControlsState permitted_state_;
-  float controls_top_offset_;
   float top_controls_height_;
 
   float current_scroll_delta_;
