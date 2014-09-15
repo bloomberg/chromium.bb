@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "sync/api/attachments/attachment.h"
+#include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -55,7 +55,7 @@ class SYNC_EXPORT SyncData {
   // primarily for debug purposes, and will be overwritten if the datatype is
   // encrypted.
   //
-  // For data with attachments: |attachments| must not contain duplicates.
+  // For data with attachments: |attachment_ids| must not contain duplicates.
   static SyncData CreateLocalDelete(
       const std::string& sync_tag,
       ModelType datatype);
@@ -67,7 +67,7 @@ class SYNC_EXPORT SyncData {
       const std::string& sync_tag,
       const std::string& non_unique_title,
       const sync_pb::EntitySpecifics& specifics,
-      const AttachmentList& attachments);
+      const AttachmentIdList& attachment_ids);
 
   // Helper method for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
@@ -136,8 +136,6 @@ class SYNC_EXPORT SyncData {
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 
-  Immutable<AttachmentList> attachments_;
-
   AttachmentServiceProxy attachment_service_;
 
  private:
@@ -147,7 +145,6 @@ class SYNC_EXPORT SyncData {
   // Clears |entity| and |attachments|.
   SyncData(int64 id,
            sync_pb::SyncEntity* entity,
-           AttachmentList* attachments,
            const base::Time& remote_modification_time,
            const syncer::AttachmentServiceProxy& attachment_service);
 };
@@ -160,9 +157,6 @@ class SYNC_EXPORT SyncDataLocal : public SyncData {
   // |sync_data|'s IsLocal() must be true.
   explicit SyncDataLocal(const SyncData& sync_data);
   ~SyncDataLocal();
-
-  // Return a list of this SyncData's attachments.
-  const AttachmentList& GetLocalAttachmentsForUpload() const;
 
   // Return the value of the unique client tag. This is only set for data going
   // TO the syncer, not coming from.

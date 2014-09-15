@@ -117,30 +117,25 @@ class GenericChangeProcessor : public ChangeProcessor,
                                     const syncer::ModelType& type,
                                     const syncer::WriteTransaction& trans,
                                     syncer::WriteNode* sync_node,
-                                    syncer::AttachmentList* new_attachments);
+                                    syncer::AttachmentIdList* new_attachments);
 
   // Logically part of ProcessSyncChanges.
   //
   // |new_attachments| is an output parameter containing newly added attachments
   // that need to be stored.  This method will append to it.
-  syncer::SyncError HandleActionUpdate(const syncer::SyncChange& change,
-                                       const std::string& type_str,
-                                       const syncer::ModelType& type,
-                                       const syncer::WriteTransaction& trans,
-                                       syncer::WriteNode* sync_node,
-                                       syncer::AttachmentList* new_attachments);
+  syncer::SyncError HandleActionUpdate(
+      const syncer::SyncChange& change,
+      const std::string& type_str,
+      const syncer::ModelType& type,
+      const syncer::WriteTransaction& trans,
+      syncer::WriteNode* sync_node,
+      syncer::AttachmentIdList* new_attachments);
 
-  // Store |attachments| locally then upload them to the sync server.
+  // Upload |attachments| to the sync server.
   //
-  // Store and uploading are asynchronous operations.  |WriteAttachmentsDone|
-  // will be invoked once the attachments have been stored on the local device.
-  void StoreAndUploadAttachments(const syncer::AttachmentList& attachments);
-
-  // Invoked once attachments have been stored locally.
-  //
-  // See also AttachmentStore::WriteCallback.
-  void WriteAttachmentsDone(const syncer::AttachmentList& attachments,
-                            const syncer::AttachmentStore::Result& result);
+  // This function assumes that attachments were already stored in
+  // AttachmentStore.
+  void UploadAttachments(const syncer::AttachmentIdList& attachment_ids);
 
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;

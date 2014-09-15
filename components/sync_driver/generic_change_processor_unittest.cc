@@ -33,8 +33,6 @@ namespace sync_driver {
 
 namespace {
 
-const char kTestData[] = "some data";
-
 // A mock that keeps track of attachments passed to UploadAttachments.
 class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
@@ -347,12 +345,10 @@ TEST_F(SyncGenericChangeProcessorTest,
   sync_pb::EntitySpecifics specifics;
   sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
   pref_specifics->set_name("test");
-  syncer::AttachmentList attachments;
-  scoped_refptr<base::RefCountedString> attachment_data =
-      new base::RefCountedString;
-  attachment_data->data() = kTestData;
-  attachments.push_back(syncer::Attachment::Create(attachment_data));
-  attachments.push_back(syncer::Attachment::Create(attachment_data));
+
+  syncer::AttachmentIdList attachment_ids;
+  attachment_ids.push_back(syncer::AttachmentId::Create());
+  attachment_ids.push_back(syncer::AttachmentId::Create());
 
   // Add a SyncData with two attachments.
   syncer::SyncChangeList change_list;
@@ -360,7 +356,7 @@ TEST_F(SyncGenericChangeProcessorTest,
       syncer::SyncChange(FROM_HERE,
                          syncer::SyncChange::ACTION_ADD,
                          syncer::SyncData::CreateLocalDataWithAttachments(
-                             tag, title, specifics, attachments)));
+                             tag, title, specifics, attachment_ids)));
   ASSERT_FALSE(
       change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   RunLoop();
@@ -369,20 +365,20 @@ TEST_F(SyncGenericChangeProcessorTest,
   ASSERT_EQ(mock_attachment_service()->attachment_id_sets()->size(), 1U);
   const syncer::AttachmentIdSet& attachments_added =
       mock_attachment_service()->attachment_id_sets()->front();
-  ASSERT_THAT(attachments_added,
-              testing::UnorderedElementsAre(attachments[0].GetId(),
-                                            attachments[1].GetId()));
+  ASSERT_THAT(
+      attachments_added,
+      testing::UnorderedElementsAre(attachment_ids[0], attachment_ids[1]));
 
   // Update the SyncData, replacing its two attachments with one new attachment.
-  syncer::AttachmentList new_attachments;
-  new_attachments.push_back(syncer::Attachment::Create(attachment_data));
+  syncer::AttachmentIdList new_attachment_ids;
+  new_attachment_ids.push_back(syncer::AttachmentId::Create());
   mock_attachment_service()->attachment_id_sets()->clear();
   change_list.clear();
   change_list.push_back(
       syncer::SyncChange(FROM_HERE,
                          syncer::SyncChange::ACTION_UPDATE,
                          syncer::SyncData::CreateLocalDataWithAttachments(
-                             tag, title, specifics, new_attachments)));
+                             tag, title, specifics, new_attachment_ids)));
   ASSERT_FALSE(
       change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   RunLoop();
@@ -392,7 +388,7 @@ TEST_F(SyncGenericChangeProcessorTest,
   const syncer::AttachmentIdSet& new_attachments_added =
       mock_attachment_service()->attachment_id_sets()->front();
   ASSERT_THAT(new_attachments_added,
-              testing::UnorderedElementsAre(new_attachments[0].GetId()));
+              testing::UnorderedElementsAre(new_attachment_ids[0]));
 }
 
 // Verify that after attachment is uploaded GenericChangeProcessor updates
@@ -403,11 +399,9 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
   pref_specifics->set_name("test");
-  syncer::AttachmentList attachments;
-  scoped_refptr<base::RefCountedString> attachment_data =
-      new base::RefCountedString;
-  attachment_data->data() = kTestData;
-  attachments.push_back(syncer::Attachment::Create(attachment_data));
+
+  syncer::AttachmentIdList attachment_ids;
+  attachment_ids.push_back(syncer::AttachmentId::Create());
 
   // Add a SyncData with two attachments.
   syncer::SyncChangeList change_list;
@@ -415,12 +409,11 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
       syncer::SyncChange(FROM_HERE,
                          syncer::SyncChange::ACTION_ADD,
                          syncer::SyncData::CreateLocalDataWithAttachments(
-                             tag, title, specifics, attachments)));
+                             tag, title, specifics, attachment_ids)));
   ASSERT_FALSE(
       change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
 
-  sync_pb::AttachmentIdProto attachment_id_proto =
-      attachments[0].GetId().GetProto();
+  sync_pb::AttachmentIdProto attachment_id_proto = attachment_ids[0].GetProto();
   syncer::AttachmentId attachment_id =
       syncer::AttachmentId::CreateFromProto(attachment_id_proto);
 
@@ -429,7 +422,7 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
   syncer::ReadNode node(&read_transaction);
   ASSERT_EQ(node.InitByClientTagLookup(syncer::PREFERENCES, tag),
             syncer::BaseNode::INIT_OK);
-  syncer::AttachmentIdList attachment_ids = node.GetAttachmentIds();
+  attachment_ids = node.GetAttachmentIds();
   EXPECT_EQ(1U, attachment_ids.size());
 }
 

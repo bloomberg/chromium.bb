@@ -85,11 +85,6 @@ syncer::SyncData BuildRemoteSyncData(
                                             attachment_service_proxy);
 }
 
-const syncer::AttachmentId& AttachmentToAttachmentId(
-    const syncer::Attachment& attachment) {
-  return attachment.GetId();
-}
-
 }  // namespace
 
 GenericChangeProcessor::GenericChangeProcessor(
@@ -410,7 +405,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
 
   // Keep track of brand new attachments so we can persist them on this device
   // and upload them to the server.
-  syncer::AttachmentList new_attachments;
+  syncer::AttachmentIdList new_attachments;
 
   syncer::WriteTransaction trans(from_here, share_handle());
 
@@ -476,7 +471,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       NOTREACHED();
       return error;
     }
-    StoreAndUploadAttachments(new_attachments);
+    UploadAttachments(new_attachments);
   }
 
   return syncer::SyncError();
@@ -492,7 +487,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     const syncer::ModelType& type,
     const syncer::WriteTransaction& trans,
     syncer::WriteNode* sync_node,
-    syncer::AttachmentList* new_attachments) {
+    syncer::AttachmentIdList* new_attachments) {
   // TODO(sync): Handle other types of creation (custom parents, folders,
   // etc.).
   syncer::ReadNode root_node(&trans);
@@ -560,12 +555,8 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
   SetAttachmentMetadata(attachment_ids, sync_node);
 
   // Return any newly added attachments.
-  const syncer::AttachmentList& local_attachments_for_upload =
-      sync_data_local.GetLocalAttachmentsForUpload();
-  new_attachments->insert(new_attachments->end(),
-                          local_attachments_for_upload.begin(),
-                          local_attachments_for_upload.end());
-
+  new_attachments->insert(
+      new_attachments->end(), attachment_ids.begin(), attachment_ids.end());
   if (merge_result_.get()) {
     merge_result_->set_num_items_added(merge_result_->num_items_added() + 1);
   }
@@ -581,7 +572,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     const syncer::ModelType& type,
     const syncer::WriteTransaction& trans,
     syncer::WriteNode* sync_node,
-    syncer::AttachmentList* new_attachments) {
+    syncer::AttachmentIdList* new_attachments) {
   // TODO(zea): consider having this logic for all possible changes?
 
   const syncer::SyncDataLocal sync_data_local(change.sync_data());
@@ -663,14 +654,12 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
 
   sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
-  SetAttachmentMetadata(sync_data_local.GetAttachmentIds(), sync_node);
+  syncer::AttachmentIdList attachment_ids = sync_data_local.GetAttachmentIds();
+  SetAttachmentMetadata(attachment_ids, sync_node);
 
   // Return any newly added attachments.
-  const syncer::AttachmentList& local_attachments_for_upload =
-      sync_data_local.GetLocalAttachmentsForUpload();
-  new_attachments->insert(new_attachments->end(),
-                          local_attachments_for_upload.begin(),
-                          local_attachments_for_upload.end());
+  new_attachments->insert(
+      new_attachments->end(), attachment_ids.begin(), attachment_ids.end());
 
   if (merge_result_.get()) {
     merge_result_->set_num_items_modified(merge_result_->num_items_modified() +
@@ -722,42 +711,14 @@ syncer::UserShare* GenericChangeProcessor::share_handle() const {
   return share_handle_;
 }
 
-void GenericChangeProcessor::StoreAndUploadAttachments(
-    const syncer::AttachmentList& attachments) {
+void GenericChangeProcessor::UploadAttachments(
+    const syncer::AttachmentIdList& attachment_ids) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_service_.get() != NULL);
-  attachment_service_->GetStore()->Write(
-      attachments,
-      base::Bind(&GenericChangeProcessor::WriteAttachmentsDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 attachments));
-}
 
-void GenericChangeProcessor::WriteAttachmentsDone(
-    const syncer::AttachmentList& attachments,
-    const syncer::AttachmentStore::Result& result) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(attachment_service_.get() != NULL);
-  if (result != syncer::AttachmentStore::SUCCESS) {
-    // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
-    return;
-  }
-
-  // TODO(maniscalco): Here is where we're going to update the in-directory
-  // entry to indicate that the attachments have been successfully stored on
-  // disk.  Why do we care?  Because we might crash after persisting the
-  // directory to disk, but before we have persisted its attachments, leaving us
-  // with danging attachment ids.  Having a flag that indicates we've stored the
-  // entry will allow us to detect and filter entries with dangling attachment
-  // ids (bug 368353).
-
-  // Begin uploading the attachments now that they are safe on disk.
-  syncer::AttachmentIdSet attachment_ids;
-  std::transform(attachments.begin(),
-                 attachments.end(),
-                 std::inserter(attachment_ids, attachment_ids.end()),
-                 AttachmentToAttachmentId);
-  attachment_service_->UploadAttachments(attachment_ids);
+  syncer::AttachmentIdSet attachment_id_set;
+  attachment_id_set.insert(attachment_ids.begin(), attachment_ids.end());
+  attachment_service_->UploadAttachments(attachment_id_set);
 }
 
 }  // namespace sync_driver
