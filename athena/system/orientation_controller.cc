@@ -76,7 +76,7 @@ OrientationController::~OrientationController() {
 }
 
 void OrientationController::Shutdown() {
-  CHECK(file_task_runner_);
+  CHECK(file_task_runner_.get());
   StopListening();
   file_task_runner_->PostTask(
       FROM_HERE,
