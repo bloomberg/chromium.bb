@@ -17,7 +17,7 @@ google.load('visualization', '1', {packages:['corechart', 'table']});
 google.setOnLoadCallback(drawVisualization);
 function drawVisualization() {
   // Apply policy 'l2' by default.
-  var default_policy = 'l2';
+  var default_policy = '$DEF_POLICY';
   document.getElementById(default_policy).style.fontWeight = 'bold';
   turnOn(default_policy);
 }
@@ -66,6 +66,11 @@ Click to change an applied policy.
 
 def _GenerateGraph(json_data):
   policies = list(json_data['policies'])
+
+  default_policy = "l2"
+  if default_policy not in policies:
+    default_policy = policies[0]
+
   policies = "".join(map(lambda x: '<li id="'+x+'">'+x+'</li>', policies))
 
   all_data = {}
@@ -83,6 +88,7 @@ def _GenerateGraph(json_data):
 
   print Template(_HTML_TEMPLATE).safe_substitute(
       {'POLICIES': policies,
+       'DEF_POLICY': default_policy,
        'ALL_DATA': json.dumps(all_data)})
 
 
