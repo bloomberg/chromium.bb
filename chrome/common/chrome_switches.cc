@@ -1080,6 +1080,20 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 // Simulates that current version is outdated and auto-update is off.
 const char kSimulateOutdatedNoAU[]           = "simulate-outdated-no-au";
 
+// Speculative resource prefetching.
+const char kSpeculativeResourcePrefetching[] =
+    "speculative-resource-prefetching";
+
+// Speculative resource prefetching is disabled.
+const char kSpeculativeResourcePrefetchingDisabled[] = "disabled";
+
+// Speculative resource prefetching will only learn about resources that need to
+// be prefetched but will not prefetch them.
+const char kSpeculativeResourcePrefetchingLearning[] = "learning";
+
+// Speculative resource prefetching is enabled.
+const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
+
 // Specifies the URL where spelling service feedback data will be sent instead
 // of the default URL. This switch is for temporary testing only.
 // TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by

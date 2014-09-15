@@ -42,6 +42,9 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
@@ -356,6 +359,13 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
 #endif
+
+  if (predictors::ResourcePrefetchPredictor* predictor =
+          predictors::ResourcePrefetchPredictorFactory::GetForProfile(
+              profile)) {
+    resource_prefetch_predictor_observer_.reset(
+        new chrome_browser_net::ResourcePrefetchPredictorObserver(predictor));
+  }
 
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
@@ -1053,6 +1063,11 @@ void ProfileIOData::Init(
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
+
+  if (profile_params_->resource_prefetch_predictor_observer_) {
+    resource_prefetch_predictor_observer_.reset(
+        profile_params_->resource_prefetch_predictor_observer_.release());
+  }
 
 #if defined(ENABLE_MANAGED_USERS)
   supervised_user_url_filter_ = profile_params_->supervised_user_url_filter;
