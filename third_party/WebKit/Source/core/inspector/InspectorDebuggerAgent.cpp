@@ -1183,10 +1183,12 @@ void InspectorDebuggerAgent::disablePromiseTracker(ErrorString*)
     promiseTracker().setEnabled(false);
 }
 
-void InspectorDebuggerAgent::getPromises(ErrorString*, RefPtr<Array<PromiseDetails> >& promises)
+void InspectorDebuggerAgent::getPromises(ErrorString* errorString, RefPtr<Array<PromiseDetails> >& promises)
 {
-    if (!promiseTracker().isEnabled())
+    if (!promiseTracker().isEnabled()) {
+        *errorString = "Promise tracking is disabled";
         return;
+    }
     promises = promiseTracker().promises();
 }
 

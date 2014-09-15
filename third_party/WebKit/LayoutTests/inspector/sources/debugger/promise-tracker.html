@@ -25,8 +25,6 @@ function errorCallback() { }
 
 var test = function ()
 {
-    var output = [];
-
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
@@ -42,6 +40,8 @@ var test = function ()
 
     function didGetPromises(error, response)
     {
+        InspectorTest.assertTrue(!error, "FAIL: " + error);
+
         function comparePromiseData(x, y)
         {
             if (x.id < y.id)
@@ -59,6 +59,8 @@ var test = function ()
                 minPromiseId = Math.min(minPromiseId, response[i].id);
         }
         response.sort(comparePromiseData);
+
+        var output = [];
         for (var i = 0; i < response.length; i++) {
             var promise = response[i];
             var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
@@ -74,6 +76,13 @@ var test = function ()
 
         InspectorTest.addResults(output);
         DebuggerAgent.disablePromiseTracker();
+        DebuggerAgent.getPromises(didGetPromises2);
+    }
+
+    function didGetPromises2(error, response)
+    {
+        var hasData = !error && response && response.length > 0;
+        InspectorTest.assertTrue(!hasData, "FAIL: expected error or no data after disabling promise tracker.");
         InspectorTest.completeDebuggerTest();
     }
 }
