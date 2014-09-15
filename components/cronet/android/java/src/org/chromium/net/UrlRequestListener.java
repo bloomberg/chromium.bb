@@ -9,9 +9,9 @@ import java.nio.ByteBuffer;
 
 /**
  * Note:  All methods will be called on the thread of the Executor used during
- * construction of the AsyncUrlRequest.
+ * construction of the UrlRequest.
  */
-public abstract interface AsyncUrlRequestListener {
+public interface UrlRequestListener {
     /**
      * Called before following redirects.  The redirect will automatically be
      * followed, unless the request is paused or cancelled during this
@@ -20,10 +20,10 @@ public abstract interface AsyncUrlRequestListener {
      *
      * @param request Request being redirected.
      * @param info Response information.
-     * @param new_location Location where request is redirected.
+     * @param newLocation Location where request is redirected.
      */
-    public void onRedirect(AsyncUrlRequest request, ResponseInfo info,
-                           URL new_location);
+    public void onRedirect(UrlRequest request, ResponseInfo info,
+                           URL newLocation);
 
     /**
      * Called when the final set of headers, after all redirects,
@@ -32,7 +32,7 @@ public abstract interface AsyncUrlRequestListener {
      * @param request Request that started to get response.
      * @param info Response information.
      */
-    public void onResponseStarted(AsyncUrlRequest request, ResponseInfo info);
+    public void onResponseStarted(UrlRequest request, ResponseInfo info);
 
     /**
      * Called whenever data is received.  The ByteBuffer remains
@@ -43,23 +43,23 @@ public abstract interface AsyncUrlRequestListener {
      * @param request Request that received data.
      * @param byteBuffer Received data.
      */
-    public void onDataReceived(AsyncUrlRequest request, ByteBuffer byteBuffer);
+    public void onDataReceived(UrlRequest request, ByteBuffer byteBuffer);
 
     /**
      * Called when request is complete, no callbacks will be called afterwards.
      *
      * @param request Request that is complete.
      */
-    public void onComplete(AsyncUrlRequest request);
+    public void onComplete(UrlRequest request);
 
     /**
      * Can be called at any point between start() and onComplete().  Once
-     * called, no other functions can be called.  AsyncUrlRequestException
+     * called, no other functions can be called.  UrlRequestException
      * provides information about error.
      *
      * @param request Request that received an error.
      * @param error information about error.
      */
-    public void onError(AsyncUrlRequest request,
-                        AsyncUrlRequestException error);
+    public void onError(UrlRequest request,
+                        UrlRequestException error);
 }

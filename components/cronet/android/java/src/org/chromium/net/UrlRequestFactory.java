@@ -7,20 +7,20 @@ package org.chromium.net;
 import java.util.concurrent.Executor;
 
 /**
- * A factory for {@link AsyncUrlRequest}'s, which uses the best HTTP stack
+ * A factory for {@link UrlRequest}'s, which uses the best HTTP stack
  * available on the current platform.
  */
-public abstract class AsyncUrlRequestFactory {
+public interface UrlRequestFactory {
     /**
-     * Creates an AsyncUrlRequest object. All AsyncUrlRequest functions must
+     * Creates an UrlRequest object. All UrlRequest functions must
      * be called on the Executor's thread, and all callbacks will be called
      * on the Executor's thread as well.
-     * createAsyncRequest itself may be called on any thread.
+     * createRequest itself may be called on any thread.
      * @param url URL for the request.
      * @param listener Callback interface that gets called on different events.
      * @param executor Executor on which all callbacks will be called.
      * @return new request.
      */
-    public abstract AsyncUrlRequest createAsyncRequest(String url,
-            AsyncUrlRequestListener listener, Executor executor);
+    public abstract UrlRequest createRequest(String url,
+            UrlRequestListener listener, Executor executor);
 }

@@ -8,7 +8,7 @@ package org.chromium.net;
  * HTTP request (GET, PUT or POST).
  * Note:  All methods must be called on the Executor passed in during creation.
  */
-public abstract interface AsyncUrlRequest {
+public interface UrlRequest {
     /**
      * More setters go here.  They may only be called before start (Maybe
      * also allow during redirects).  Could optionally instead use arguments
@@ -21,7 +21,7 @@ public abstract interface AsyncUrlRequest {
      * <p>The default when this method is not called is "GET" if the request has
      * no body or "POST" if it does.
      *
-     * @param method Either "POST" or "PUT".
+     * @param method "GET", "HEAD", "DELETE", "POST" or "PUT".
      */
     public void setHttpMethod(String method);
 
@@ -37,7 +37,7 @@ public abstract interface AsyncUrlRequest {
      * Starts the request, all callbacks go to listener.
      * @param listener
      */
-    public void start(AsyncUrlRequestListener listener);
+    public void start(UrlRequestListener listener);
 
     /**
      * Can be called at any time.

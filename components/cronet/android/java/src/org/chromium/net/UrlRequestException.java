@@ -9,5 +9,5 @@ import java.io.IOException;
 /**
  *
  */
-public class AsyncUrlRequestException extends IOException {
+public class UrlRequestException extends IOException {
 }
