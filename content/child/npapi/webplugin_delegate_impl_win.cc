@@ -1029,7 +1029,7 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     NPEvent pos_changed_event;
     pos_changed_event.event = WM_WINDOWPOSCHANGED;
     pos_changed_event.wParam = 0;
-    pos_changed_event.lParam = PtrToUlong(&win_pos);
+    pos_changed_event.lParam = reinterpret_cast<uintptr_t>(&win_pos);
 
     instance()->NPP_HandleEvent(&pos_changed_event);
   }
@@ -1051,9 +1051,8 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
 
   NPEvent paint_event;
   paint_event.event = WM_PAINT;
-  // NOTE: NPAPI is not 64bit safe.  It puts pointers into 32bit values.
   paint_event.wParam = PtrToUlong(hdc);
-  paint_event.lParam = PtrToUlong(&damage_rect_win);
+  paint_event.lParam = reinterpret_cast<uintptr_t>(&damage_rect_win);
   base::StatsRate plugin_paint("Plugin.Paint");
   base::StatsScope<base::StatsRate> scope(plugin_paint);
   instance()->NPP_HandleEvent(&paint_event);
