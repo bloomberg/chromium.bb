@@ -2310,7 +2310,7 @@
         'chromium_win_pch': 0,
         # goma doesn't support PDB yet, so win_z7=1 or fastbuild=1.
         'conditions': [
-          ['win_z7==0', {
+          ['win_z7==0 and fastbuild==0', {
             'fastbuild': 1,
           }],
         ],
