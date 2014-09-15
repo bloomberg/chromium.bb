@@ -294,7 +294,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "exceptionZoomHeader", IDS_EXCEPTIONS_ZOOM_HEADER },
     { "embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST },
     // Cookies filter.
-    { "cookies_tab_label", IDS_COOKIES_TAB_LABEL },
+    { "cookiesTabLabel", IDS_COOKIES_TAB_LABEL },
     { "cookies_header", IDS_COOKIES_HEADER },
     { "cookiesAllow", IDS_COOKIES_ALLOW_RADIO },
     { "cookiesBlock", IDS_COOKIES_BLOCK_RADIO },
@@ -310,45 +310,45 @@ void ContentSettingsHandler::GetLocalizedValues(
        IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX },
 #endif
     // Image filter.
-    { "images_tab_label", IDS_IMAGES_TAB_LABEL },
+    { "imagesTabLabel", IDS_IMAGES_TAB_LABEL },
     { "images_header", IDS_IMAGES_HEADER },
     { "imagesAllow", IDS_IMAGES_LOAD_RADIO },
     { "imagesBlock", IDS_IMAGES_NOLOAD_RADIO },
     // JavaScript filter.
-    { "javascript_tab_label", IDS_JAVASCRIPT_TAB_LABEL },
+    { "javascriptTabLabel", IDS_JAVASCRIPT_TAB_LABEL },
     { "javascript_header", IDS_JAVASCRIPT_HEADER },
     { "javascriptAllow", IDS_JS_ALLOW_RADIO },
     { "javascriptBlock", IDS_JS_DONOTALLOW_RADIO },
     // Plug-ins filter.
-    { "plugins_tab_label", IDS_PLUGIN_TAB_LABEL },
+    { "pluginsTabLabel", IDS_PLUGIN_TAB_LABEL },
     { "plugins_header", IDS_PLUGIN_HEADER },
     { "pluginsAsk", IDS_PLUGIN_ASK_RADIO },
     { "pluginsAllow", IDS_PLUGIN_LOAD_RADIO },
     { "pluginsBlock", IDS_PLUGIN_NOLOAD_RADIO },
     { "disableIndividualPlugins", IDS_PLUGIN_SELECTIVE_DISABLE },
     // Pop-ups filter.
-    { "popups_tab_label", IDS_POPUP_TAB_LABEL },
+    { "popupsTabLabel", IDS_POPUP_TAB_LABEL },
     { "popups_header", IDS_POPUP_HEADER },
     { "popupsAllow", IDS_POPUP_ALLOW_RADIO },
     { "popupsBlock", IDS_POPUP_BLOCK_RADIO },
     // Location filter.
-    { "location_tab_label", IDS_GEOLOCATION_TAB_LABEL },
+    { "locationTabLabel", IDS_GEOLOCATION_TAB_LABEL },
     { "location_header", IDS_GEOLOCATION_HEADER },
     { "locationAllow", IDS_GEOLOCATION_ALLOW_RADIO },
     { "locationAsk", IDS_GEOLOCATION_ASK_RADIO },
     { "locationBlock", IDS_GEOLOCATION_BLOCK_RADIO },
     { "set_by", IDS_GEOLOCATION_SET_BY_HOVER },
     // Notifications filter.
-    { "notifications_tab_label", IDS_NOTIFICATIONS_TAB_LABEL },
+    { "notificationsTabLabel", IDS_NOTIFICATIONS_TAB_LABEL },
     { "notifications_header", IDS_NOTIFICATIONS_HEADER },
     { "notificationsAllow", IDS_NOTIFICATIONS_ALLOW_RADIO },
     { "notificationsAsk", IDS_NOTIFICATIONS_ASK_RADIO },
     { "notificationsBlock", IDS_NOTIFICATIONS_BLOCK_RADIO },
     // Fullscreen filter.
-    { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
+    { "fullscreenTabLabel", IDS_FULLSCREEN_TAB_LABEL },
     { "fullscreen_header", IDS_FULLSCREEN_HEADER },
     // Mouse Lock filter.
-    { "mouselock_tab_label", IDS_MOUSE_LOCK_TAB_LABEL },
+    { "mouselockTabLabel", IDS_MOUSE_LOCK_TAB_LABEL },
     { "mouselock_header", IDS_MOUSE_LOCK_HEADER },
     { "mouselockAllow", IDS_MOUSE_LOCK_ALLOW_RADIO },
     { "mouselockAsk", IDS_MOUSE_LOCK_ASK_RADIO },
@@ -387,7 +387,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "ppapiBrokerAsk", IDS_PPAPI_BROKER_ASK_RADIO },
     { "ppapiBrokerBlock", IDS_PPAPI_BROKER_BLOCK_RADIO },
     // Multiple automatic downloads
-    { "multiple-automatic-downloads_header",
+    { "multipleAutomaticDownloadsTabLabel",
       IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL },
     { "multipleAutomaticDownloadsAllow",
       IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO },

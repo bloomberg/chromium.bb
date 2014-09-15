@@ -175,10 +175,6 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     }
   }
 
-  // The method GetDefaultContentSetting always has to return an explicit
-  // value that is to be used as default. We here rely on the
-  // DefaultProvider to always provide a value.
-  NOTREACHED();
   return CONTENT_SETTING_DEFAULT;
 }
 

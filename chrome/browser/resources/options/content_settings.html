@@ -4,8 +4,8 @@
   <div class="content-area">
     <!-- Cookie filter tab contents -->
     <section>
-      <h3 i18n-content="cookies_tab_label"></h3>
-      <div>
+      <h3 i18n-content="cookiesTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="cookies" value="allow">
@@ -58,11 +58,20 @@
               i18n-content="cookies_show_cookies"></button>
         </div>
      </div>
+      <div class="experimental-website-settings" hidden>
+        <span id="cookies-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="cookies" i18n-content="websitesManage"></button>
+          <button id="show-cookies-button"
+              i18n-content="cookies_show_cookies"></button>
+        </div>
+      </div>
     </section>
     <!-- Image filter -->
     <section>
-      <h3 i18n-content="images_tab_label"></h3>
-      <div>
+      <h3 i18n-content="imagesTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="images" value="allow">
@@ -85,11 +94,18 @@
               i18n-content="manageExceptions"></button>
         </div>
       </div>
+      <div class="experimental-website-settings" hidden>
+        <span id="images-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="images" i18n-content="websitesManage"></button>
+        </div>
+      </div>
     </section>
     <!-- JavaScript filter -->
     <section>
-      <h3 i18n-content="javascript_tab_label"></h3>
-      <div>
+      <h3 i18n-content="javascriptTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="javascript" value="allow">
@@ -109,6 +125,13 @@
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="javascript"
               i18n-content="manageExceptions"></button>
+        </div>
+      </div>
+      <div class="experimental-website-settings" hidden>
+        <span id="javascript-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="javascript" i18n-content="websitesManage"></button>
         </div>
       </div>
     </section>
@@ -138,8 +161,8 @@
     </section>
     <!-- Plug-ins filter -->
     <section>
-      <h3 i18n-content="plugins_tab_label"></h3>
-      <div>
+      <h3 i18n-content="pluginsTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="plugins" value="allow">
@@ -173,11 +196,18 @@
               target="_blank"></a>
         </div>
       </div>
+    <div class="experimental-website-settings" hidden>
+        <span id="plugins-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="plugins" i18n-content="websitesManage"></button>
+        </div>
+      </div>
     </section>
     <!-- Pop-ups filter -->
     <section>
-      <h3 i18n-content="popups_tab_label" class="content-settings-header"></h3>
-      <div>
+      <h3 i18n-content="popupsTabLabel" class="content-settings-header"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="popups" value="allow">
@@ -199,11 +229,18 @@
               i18n-content="manageExceptions"></button>
         </div>
       </div>
+    <div class="experimental-website-settings" hidden>
+        <span id="popups-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="popups" i18n-content="websitesManage"></button>
+        </div>
+      </div>
     </section>
     <!-- Location filter -->
     <section>
-      <h3 i18n-content="location_tab_label"></h3>
-      <div>
+      <h3 i18n-content="locationTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="location" value="allow">
@@ -247,11 +284,18 @@
               i18n-content="manageExceptions"></button>
         </div>
       </div>
+    <div class="experimental-website-settings" hidden>
+        <span id="location-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="geolocation" i18n-content="websitesManage"></button>
+        </div>
+      </div>
     </section>
     <!-- Notifications filter tab contents -->
     <section id="notifications-section">
-      <h3 i18n-content="notifications_tab_label"></h3>
-      <div>
+      <h3 i18n-content="notificationsTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="notifications" value="allow">
@@ -281,10 +325,18 @@
               i18n-content="manageExceptions"></button>
         </div>
       </div>
+    <div class="experimental-website-settings" hidden>
+        <span id="notifications-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="notifications"
+              i18n-content="websitesManage"></button>
+        </div>
+      </div>
     </section>
     <!-- Fullscreen filter -->
     <section>
-      <h3 i18n-content="fullscreen_tab_label"></h3>
+      <h3 i18n-content="fullscreenTabLabel"></h3>
       <div class="settings-row">
         <button class="exceptions-list-button" contentType="fullscreen"
             i18n-content="manageExceptions"></button>
@@ -292,7 +344,7 @@
     </section>
     <!-- Mouse Lock filter -->
     <section>
-      <h3 i18n-content="mouselock_tab_label"></h3>
+      <h3 i18n-content="mouselockTabLabel"></h3>
       <div>
         <div class="radio">
           <label>
@@ -377,7 +429,7 @@
           <span class="controlled-setting-indicator"
               content-setting="media-stream" value="block"></span>
         </div>
-        <div class="settings-row">
+        <div class="settings-row replace-with-website-settings">
           <button class="exceptions-list-button" contentType="media-stream"
               i18n-content="manageExceptions"></button>
         </div>
@@ -387,6 +439,12 @@
               i18n-values="href:mediaPepperFlashGlobalPrivacyURL"></a>
         </div>
       </div>
+    <div class="experimental-website-settings" hidden>
+      <div class="settings-row">
+        <button class="website-settings-permission-button"
+            contentType="media-stream" i18n-content="websitesManage"></button>
+      </div>
+    </div>
     </section>
     <!-- PPAPI broker -->
     <section>
@@ -418,8 +476,8 @@
     </section>
     <!-- Automatic Downloads filter -->
     <section>
-      <h3 i18n-content="multiple-automatic-downloads_header"></h3>
-      <div>
+      <h3 i18n-content="multipleAutomaticDownloadsTabLabel"></h3>
+      <div class="replace-with-website-settings">
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="multiple-automatic-downloads"
@@ -452,6 +510,14 @@
           <button class="exceptions-list-button"
               contentType="multiple-automatic-downloads"
               i18n-content="manageExceptions"></button>
+        </div>
+      </div>
+    <div class="experimental-website-settings" hidden>
+        <span id="multiple-automatic-downloads-default-string"></span>
+        <div class="settings-row">
+          <button class="website-settings-permission-button"
+              contentType="multiple-automatic-downloads"
+              i18n-content="websitesManage"></button>
         </div>
       </div>
     </section>

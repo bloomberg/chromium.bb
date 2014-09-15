@@ -97,6 +97,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesImagesDescription", IDS_WEBSITE_SETTINGS_IMAGES_DESCRIPTION},
       {"websitesButtonClear", IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON},
       {"websitesButtonStop", IDS_WEBSITE_SETTINGS_BATTERY_STOP_BUTTON},
+      {"websitesAllowedListTitle", IDS_WEBSITE_SETTINGS_ALLOWED_LIST_TITLE},
       {"websitesBlockedListTitle", IDS_WEBSITE_SETTINGS_BLOCKED_LIST_TITLE},
   };
 

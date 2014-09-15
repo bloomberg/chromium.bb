@@ -6,6 +6,19 @@ cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
+  // Lookup table to generate the i18n strings.
+  /** @const */ var permissionsLookup = {
+    'location': 'location',
+    'notifications': 'notifications',
+    'media-stream': 'mediaStream',
+    'cookies': 'cookies',
+    'multiple-automatic-downloads': 'multipleAutomaticDownloads',
+    'images': 'images',
+    'plugins': 'plugins',
+    'popups': 'popups',
+    'javascript': 'javascript'
+  };
+
   //////////////////////////////////////////////////////////////////////////////
   // ContentSettings class:
 
@@ -36,6 +49,21 @@ cr.define('options', function() {
           var hash = event.currentTarget.getAttribute('contentType');
           PageManager.showPageByName('contentExceptions', true,
                                      {hash: '#' + hash});
+        };
+      }
+
+      var experimentalExceptionsButtons =
+          this.pageDiv.querySelectorAll('.website-settings-permission-button');
+      for (var i = 0; i < experimentalExceptionsButtons.length; i++) {
+        experimentalExceptionsButtons[i].onclick = function(event) {
+          var page = WebsiteSettingsManager.getInstance();
+          var hash = event.currentTarget.getAttribute('contentType');
+          var url = page.name + '#' + hash;
+          uber.pushState({pageName: page.name}, url);
+
+          // Navigate after the local history has been replaced in order to have
+          // the correct hash loaded.
+          PageManager.showPageByName('websiteSettings', false);
         };
       }
 
@@ -70,6 +98,20 @@ cr.define('options', function() {
           ContentSettings.setDefaultMicrophone_);
       $('media-select-camera').addEventListener('change',
           ContentSettings.setDefaultCamera_);
+
+      if (loadTimeData.getBoolean('websiteSettingsManagerEnabled')) {
+        var oldUI =
+            this.pageDiv.querySelectorAll('.replace-with-website-settings');
+        for (var i = 0; i < oldUI.length; i++) {
+          oldUI[i].hidden = true;
+        }
+
+        var newUI =
+            this.pageDiv.querySelectorAll('.experimental-website-settings');
+        for (var i = 0; i < newUI.length; i++) {
+          newUI[i].hidden = false;
+        }
+      }
     },
   };
 
@@ -80,12 +122,20 @@ cr.define('options', function() {
   };
 
   /**
-   * Sets the values for all the content settings radios.
+   * Sets the values for all the content settings radios and labels.
    * @param {Object} dict A mapping from radio groups to the checked value for
    *     that group.
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
+      var settingLabel = $(group + '-default-string');
+      if (settingLabel) {
+        var value = dict[group].value;
+        var valueId =
+            permissionsLookup[group] + value[0].toUpperCase() + value.slice(1);
+        settingLabel.textContent = loadTimeData.getString(valueId);
+      }
+
       var managedBy = dict[group].managedBy;
       var controlledBy = managedBy == 'policy' || managedBy == 'extension' ?
           managedBy : null;

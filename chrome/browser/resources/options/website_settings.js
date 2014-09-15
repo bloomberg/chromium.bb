@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
+cr.define('options.ContentSettings', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
@@ -60,12 +60,6 @@ cr.define('options', function() {
       $('website-settings-overlay-confirm').onclick =
           PageManager.closeOverlay.bind(PageManager);
 
-      $('resourceType').onchange = function(event) {
-        var target = event.target;
-        assert(target.tagName == 'SELECT');
-        WebsiteSettingsManager.getInstance().updatePage_(target.value);
-      };
-
       $('global-setting').onchange = function(event) {
         chrome.send('setDefaultContentSetting', [this.value]);
       };
@@ -94,8 +88,6 @@ cr.define('options', function() {
       else
         hash = 'geolocation';
       this.updatePage_(hash);
-
-      $('resourceType').value = hash;
     },
 
     /**
@@ -239,6 +231,9 @@ cr.define('options', function() {
         $('website-settings-global-controls').hidden = false;
         chrome.send('updateDefaultSetting');
       }
+
+      $('website-settings-title').textContent =
+          loadTimeData.getString(permissionString + 'TabLabel');
     }
   };
 
