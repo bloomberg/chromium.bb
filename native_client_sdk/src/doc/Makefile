@@ -6,6 +6,7 @@ SPHINXOPTS    = -W
 SPHINXBUILD   = sphinx-build
 BUILDDIR      = _build
 CHROMESITE_BUILDDIR = $(realpath ../../doc_generated)
+PORT = 8000
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -69,5 +70,5 @@ presubmit:
 	-rm $(BUILDDIR)/.buildinfo
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(BUILDDIR)
 
-serve:
-	../../../chrome/common/extensions/docs/server2/preview.py
+serve: chromesite_rst
+	../../../chrome/common/extensions/docs/server2/preview.py -p $(PORT)
