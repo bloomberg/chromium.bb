@@ -212,7 +212,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   const std::string& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
       net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
-  if (!cert_x509)
+  if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 
   chromeos::platform_keys::ImportCertificate(
@@ -250,7 +250,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   const std::string& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
       net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
-  if (!cert_x509)
+  if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 
   chromeos::platform_keys::RemoveCertificate(

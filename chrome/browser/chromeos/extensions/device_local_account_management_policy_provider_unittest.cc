@@ -79,7 +79,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // public sessions, the extension can be installed.
   scoped_refptr<const extensions::Extension> extension =
       CreateExternalComponentExtension();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   base::string16 error;
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
@@ -88,7 +88,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // Verify that if an extension's type has been whitelisted for use in
   // device-local accounts, the extension can be installed.
   extension = CreateHostedApp();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
   error.clear();
@@ -96,7 +96,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // Verify that if an extension's ID has been explicitly whitelisted for use in
   // device-local accounts, the extension can be installed.
   extension = CreateRegularExtension(kWhitelistedId);
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
   error.clear();
@@ -105,7 +105,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // been  whitelisted for use in public sessions, the extension cannot be
   // installed.
   extension = CreateRegularExtension(std::string());
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);
   error.clear();
@@ -117,7 +117,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
 
   // Verify that a platform app can be installed.
   scoped_refptr<const extensions::Extension> extension = CreatePlatformApp();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   base::string16 error;
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
@@ -127,7 +127,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // other types of device-local accounts cannot be installed in a single-app
   // kiosk session.
   extension = CreateExternalComponentExtension();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);
   error.clear();
@@ -136,7 +136,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // types of device-local accounts cannot be installed in a single-app kiosk
   // session.
   extension = CreateHostedApp();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);
   error.clear();
@@ -145,7 +145,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // types of device-local accounts cannot be installed in a single-app kiosk
   // session.
   extension = CreateRegularExtension(kWhitelistedId);
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);
   error.clear();

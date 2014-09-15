@@ -158,7 +158,7 @@ TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
@@ -203,7 +203,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
@@ -236,7 +236,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
@@ -276,7 +276,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
@@ -313,7 +313,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
@@ -343,7 +343,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
@@ -378,7 +378,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
       browser(),
       extension_function_test_utils::NONE));
 
-  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function));
+  EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
 
 }  // namespace

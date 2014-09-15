@@ -620,7 +620,7 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
-  DCHECK(file_system_context);
+  DCHECK(file_system_context.get());
 
   const storage::ExternalFileSystemBackend* external_backend =
       file_system_context->external_backend();

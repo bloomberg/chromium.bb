@@ -715,7 +715,7 @@ void UsbRequestAccessFunction::AsyncWorkStart() {
 #if defined(OS_CHROMEOS)
   scoped_refptr<UsbDevice> device =
       GetDeviceOrCompleteWithError(parameters_->device);
-  if (!device)
+  if (!device.get())
     return;
 
   device->RequestUsbAccess(
