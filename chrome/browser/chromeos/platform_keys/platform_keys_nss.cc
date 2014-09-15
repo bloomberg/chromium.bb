@@ -476,7 +476,7 @@ void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
   net::CertDatabase* db = net::CertDatabase::GetInstance();
 
   const net::Error cert_status =
-      static_cast<net::Error>(db->CheckUserCert(state->certificate_));
+      static_cast<net::Error>(db->CheckUserCert(state->certificate_.get()));
   if (cert_status == net::ERR_NO_PRIVATE_KEY_FOR_CERT) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
     return;
