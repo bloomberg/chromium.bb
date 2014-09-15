@@ -33,6 +33,7 @@ class Value;
 }
 
 namespace content_settings {
+class ObservableProvider;
 class ProviderInterface;
 class PrefProvider;
 }
@@ -46,6 +47,9 @@ class HostContentSettingsMap
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   enum ProviderType {
+    // EXTENSION names is a layering violation when this class will move to
+    // components.
+    // TODO(mukai): find the solution.
     INTERNAL_EXTENSION_PROVIDER = 0,
     POLICY_PROVIDER,
     CUSTOM_EXTENSION_PROVIDER,
@@ -56,14 +60,12 @@ class HostContentSettingsMap
 
   HostContentSettingsMap(PrefService* prefs, bool incognito);
 
-#if defined(ENABLE_EXTENSIONS)
-  // In some cases, the ExtensionService is not available at the time the
-  // HostContentSettingsMap is constructed. In these cases, we register the
-  // service once it's available.
-  void RegisterExtensionService(ExtensionService* extension_service);
-#endif
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Adds a new provider for |type|.
+  void RegisterProvider(
+      ProviderType type,
+      scoped_ptr<content_settings::ObservableProvider> provider);
 
   // Returns the default setting for a particular content type. If |provider_id|
   // is not NULL, the id of the provider which provided the default setting is

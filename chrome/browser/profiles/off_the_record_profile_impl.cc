@@ -20,6 +20,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
@@ -357,8 +358,10 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
 #if defined(ENABLE_EXTENSIONS)
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(this)->extension_service();
-    if (extension_service)
-      host_content_settings_map_->RegisterExtensionService(extension_service);
+    if (extension_service) {
+      extension_service->RegisterContentSettings(
+          host_content_settings_map_.get());
+    }
 #endif
   }
   return host_content_settings_map_.get();

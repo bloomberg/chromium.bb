@@ -33,6 +33,7 @@
 
 class ExtensionSyncService;
 class GURL;
+class HostContentSettingsMap;
 class Profile;
 
 namespace base {
@@ -364,6 +365,10 @@ class ExtensionService
   // doesn't notify the user that the extension was terminated, if such a
   // notification is desired the calling code is responsible for doing that.
   void TerminateExtension(const std::string& extension_id);
+
+  // Register self and content settings API with the specified map.
+  void RegisterContentSettings(
+      HostContentSettingsMap* host_content_settings_map);
 
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);

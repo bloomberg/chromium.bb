@@ -993,8 +993,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // During tests, when |profile| is an instance of TestingProfile,
   // ExtensionSystem might not create an ExtensionService.
   if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
-    profile->GetHostContentSettingsMap()->RegisterExtensionService(
-        extensions::ExtensionSystem::Get(profile)->extension_service());
+    extensions::ExtensionSystem::Get(profile)->extension_service()->
+        RegisterContentSettings(profile->GetHostContentSettingsMap());
   }
 #endif
 #if defined(ENABLE_MANAGED_USERS) && !defined(OS_ANDROID)

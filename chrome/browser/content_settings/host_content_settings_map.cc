@@ -13,39 +13,29 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_default_provider.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #endif
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace {
@@ -111,40 +101,6 @@ HostContentSettingsMap::HostContentSettingsMap(
   }
 }
 
-#if defined(ENABLE_EXTENSIONS)
-void HostContentSettingsMap::RegisterExtensionService(
-    ExtensionService* extension_service) {
-  DCHECK(extension_service);
-  DCHECK(!content_settings_providers_[INTERNAL_EXTENSION_PROVIDER]);
-  DCHECK(!content_settings_providers_[CUSTOM_EXTENSION_PROVIDER]);
-
-  content_settings::InternalExtensionProvider* internal_extension_provider =
-      new content_settings::InternalExtensionProvider(extension_service);
-  internal_extension_provider->AddObserver(this);
-  content_settings_providers_[INTERNAL_EXTENSION_PROVIDER] =
-      internal_extension_provider;
-
-  content_settings::ObservableProvider* custom_extension_provider =
-      new content_settings::CustomExtensionProvider(
-          extensions::ContentSettingsService::Get(
-              extension_service->GetBrowserContext())->content_settings_store(),
-          is_off_the_record_);
-  custom_extension_provider->AddObserver(this);
-  content_settings_providers_[CUSTOM_EXTENSION_PROVIDER] =
-      custom_extension_provider;
-
-#ifndef NDEBUG
-  DCHECK(used_from_thread_id_ != base::kInvalidThreadId)
-      << "Used from multiple threads before initialization complete.";
-#endif
-
-  OnContentSettingChanged(ContentSettingsPattern(),
-                          ContentSettingsPattern(),
-                          CONTENT_SETTINGS_TYPE_DEFAULT,
-                          std::string());
-}
-#endif
-
 // static
 void HostContentSettingsMap::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -161,6 +117,24 @@ void HostContentSettingsMap::RegisterProfilePrefs(
   content_settings::DefaultProvider::RegisterProfilePrefs(registry);
   content_settings::PrefProvider::RegisterProfilePrefs(registry);
   content_settings::PolicyProvider::RegisterProfilePrefs(registry);
+}
+
+void HostContentSettingsMap::RegisterProvider(
+    ProviderType type,
+    scoped_ptr<content_settings::ObservableProvider> provider) {
+  DCHECK(!content_settings_providers_[type]);
+  provider->AddObserver(this);
+  content_settings_providers_[type] = provider.release();
+
+#ifndef NDEBUG
+  DCHECK_NE(used_from_thread_id_, base::kInvalidThreadId)
+      << "Used from multiple threads before initialization complete.";
+#endif
+
+  OnContentSettingChanged(ContentSettingsPattern(),
+                          ContentSettingsPattern(),
+                          CONTENT_SETTINGS_TYPE_DEFAULT,
+                          std::string());
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(

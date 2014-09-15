@@ -18,6 +18,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
+#include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -1913,6 +1917,22 @@ void ExtensionService::PromoteEphemeralApp(
 const Extension* ExtensionService::GetPendingExtensionUpdate(
     const std::string& id) const {
   return delayed_installs_.GetByID(id);
+}
+
+void ExtensionService::RegisterContentSettings(
+    HostContentSettingsMap* host_content_settings_map) {
+  host_content_settings_map->RegisterProvider(
+      HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
+      scoped_ptr<content_settings::ObservableProvider>(
+          new content_settings::InternalExtensionProvider(this)));
+
+  host_content_settings_map->RegisterProvider(
+      HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
+      scoped_ptr<content_settings::ObservableProvider>(
+          new content_settings::CustomExtensionProvider(
+              extensions::ContentSettingsService::Get(
+                  profile_)->content_settings_store(),
+              profile_->GetOriginalProfile() != profile_)));
 }
 
 void ExtensionService::TrackTerminatedExtension(const Extension* extension) {

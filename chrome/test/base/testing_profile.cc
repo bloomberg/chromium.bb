@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -811,8 +812,10 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
 #if defined(ENABLE_EXTENSIONS)
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(this)->extension_service();
-    if (extension_service)
-      host_content_settings_map_->RegisterExtensionService(extension_service);
+    if (extension_service) {
+      extension_service->RegisterContentSettings(
+          host_content_settings_map_.get());
+    }
 #endif
   }
   return host_content_settings_map_.get();
