@@ -108,8 +108,13 @@ PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
 
 // static
 const void* PluginDispatcher::GetBrowserInterface(const char* interface_name) {
-  // CAUTION: This function is called directly from the plugin, but we *don't*
-  // lock the ProxyLock to avoid excessive locking from C++ wrappers.
+  if (!interface_name) {
+    DLOG(WARNING) << "|interface_name| is null. Did you forget to add "
+        "the |interface_name()| template function to the interface's C++ "
+        "wrapper?";
+    return NULL;
+  }
+
   return InterfaceList::GetInstance()->GetInterfaceForPPB(interface_name);
 }
 

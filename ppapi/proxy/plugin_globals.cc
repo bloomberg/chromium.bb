@@ -192,8 +192,11 @@ void PluginGlobals::MarkPluginIsActive() {
 }
 
 IPC::Sender* PluginGlobals::GetBrowserSender() {
-  // CAUTION: This function is called without the ProxyLock. See also
-  // InterfaceList::GetInterfaceForPPB.
+  if (!browser_sender_.get()) {
+    browser_sender_.reset(
+        new BrowserSender(plugin_proxy_delegate_->GetBrowserSender()));
+  }
+
   return browser_sender_.get();
 }
 
@@ -212,12 +215,6 @@ PP_Resource PluginGlobals::CreateBrowserFont(
     const ppapi::Preferences& prefs) {
   return plugin_proxy_delegate_->CreateBrowserFont(
       connection, instance, desc, prefs);
-}
-
-void PluginGlobals::SetPluginProxyDelegate(PluginProxyDelegate* delegate) {
-  plugin_proxy_delegate_ = delegate;
-  browser_sender_.reset(
-      new BrowserSender(plugin_proxy_delegate_->GetBrowserSender()));
 }
 
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {

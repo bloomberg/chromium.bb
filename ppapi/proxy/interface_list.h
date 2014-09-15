@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/containers/scoped_ptr_hash_map.h"
-#include "base/synchronization/lock.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
@@ -49,39 +47,30 @@ class PPAPI_PROXY_EXPORT InterfaceList {
  private:
   friend class InterfaceListTest;
 
-  class InterfaceInfo {
-   public:
+  struct InterfaceInfo {
+    InterfaceInfo()
+        : iface(NULL),
+          required_permission(PERMISSION_NONE),
+          interface_logged(false) {
+    }
     InterfaceInfo(const void* in_interface, Permission in_perm)
-        : iface_(in_interface),
-          required_permission_(in_perm),
-          sent_to_uma_(false) {
+        : iface(in_interface),
+          required_permission(in_perm),
+          interface_logged(false) {
     }
 
-    const void* iface() { return iface_; }
+    const void* iface;
 
     // Permission required to return non-null for this interface. This will
     // be checked with the value set via SetProcessGlobalPermissionBits when
     // an interface is requested.
-    Permission required_permission() { return required_permission_; };
+    Permission required_permission;
 
-    // Call this any time the interface is requested. It will log a UMA count
-    // only the first time. This is safe to call from any thread, regardless of
-    // whether the proxy lock is held.
-    void LogWithUmaOnce(IPC::Sender* sender, const std::string& name);
-   private:
-    DISALLOW_COPY_AND_ASSIGN(InterfaceInfo);
-
-    const void* const iface_;
-    const Permission required_permission_;
-
-    bool sent_to_uma_;
-    base::Lock sent_to_uma_lock_;
+    // Interface usage is logged just once per-interface-per-plugin-process.
+    bool interface_logged;
   };
-  // Give friendship for HashInterfaceName.
-  friend class InterfaceInfo;
 
-  typedef base::ScopedPtrHashMap<std::string, InterfaceInfo>
-      NameToInterfaceInfoMap;
+  typedef std::map<std::string, InterfaceInfo> NameToInterfaceInfoMap;
 
   void AddProxy(ApiID id, InterfaceProxy::Factory factory);
 
