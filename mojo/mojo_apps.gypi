@@ -46,6 +46,7 @@
       ],
     },
     {
+      # GN version: //mojo/apps/js/test:js_to_cpp_bindings
       'target_name': 'mojo_apps_js_bindings',
       'type': 'static_library',
       'sources': [
@@ -79,6 +80,7 @@
       ],
     },
     {
+      # GN version: //mojo/apps/js:mojo_js
       'target_name': 'mojo_js',
       'type': 'loadable_module',
       'dependencies': [

@@ -1,0 +1,68 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_html_viewer
+shared_library("html_viewer") {
+  output_name = "mojo_html_viewer"
+
+  sources = [
+    "blink_basic_type_converters.cc",
+    "blink_basic_type_converters.h",
+    "blink_input_events_type_converters.cc",
+    "blink_input_events_type_converters.h",
+    "blink_platform_impl.cc",
+    "blink_platform_impl.h",
+    "blink_url_request_type_converters.cc",
+    "blink_url_request_type_converters.h",
+    "html_viewer.cc",
+    "html_document_view.cc",
+    "html_document_view.h",
+    "webcookiejar_impl.cc",
+    "webcookiejar_impl.h",
+    "webmediaplayer_factory.cc",
+    "webmediaplayer_factory.h",
+    "webmimeregistry_impl.cc",
+    "webmimeregistry_impl.h",
+    "websockethandle_impl.cc",
+    "websockethandle_impl.h",
+    "webstoragenamespace_impl.cc",
+    "webstoragenamespace_impl.h",
+    "webthemeengine_impl.cc",
+    "webthemeengine_impl.h",
+    "webthread_impl.cc",
+    "webthread_impl.h",
+    "weburlloader_impl.cc",
+    "weburlloader_impl.h",
+    "weblayertreeview_impl.cc",
+    "weblayertreeview_impl.h",
+  ]
+
+  include_dirs = [ "third_party/WebKit" ]
+
+  deps = [
+    "//cc",
+    "//cc/blink",
+    "//cc/surfaces",
+    "//media",
+    "//media/blink",
+    "//mojo/cc",
+    "//mojo/common",
+    "//mojo/application",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/utility",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/content_handler",
+    "//mojo/services/public/interfaces/gpu",
+    "//mojo/services/public/interfaces/navigation",
+    "//mojo/services/public/interfaces/network",
+    "//mojo/services/public/interfaces/surfaces",
+    "//net",
+    "//skia",
+    "//third_party/WebKit/public:blink",
+    "//ui/native_theme",
+    "//url",
+  ] + mojo_system_for_shared_library
+}

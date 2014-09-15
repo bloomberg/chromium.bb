@@ -16,3 +16,21 @@ source_set("tests") {
     "macros_unittest.cc",
   ]
 }
+
+# GYP version: mojo/mojo_public_tests.gypi:mojo_public_system_perftests
+executable("perftests") {
+  testonly = true
+  output_name = "mojo_public_system_perftests"
+
+  sources = [
+    "core_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/common/test:run_all_perftests",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/cpp/utility",
+    "//testing/gtest",
+  ]
+}

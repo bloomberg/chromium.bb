@@ -1,0 +1,43 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//mojo/system.gni")
+
+assert(use_aura)
+
+# GYP version: mojo/mojo_examples.gypi:mojo_browser
+shared_library("browser") {
+  output_name = "mojo_browser"
+
+  sources = [
+    "browser.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//mojo/application",
+    "//mojo/aura",
+    "//mojo/common",
+    "//mojo/examples/window_manager:bindings",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/input_events",
+    "//mojo/services/public/interfaces/navigation",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/views",
+    "//third_party/icu",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/resources",
+    "//ui/views",
+    "//url",
+  ] + mojo_system_for_shared_library
+}

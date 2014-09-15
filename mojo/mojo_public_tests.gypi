@@ -173,6 +173,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/c/system/tests:perftests
       'target_name': 'mojo_public_system_perftests',
       'type': 'executable',
       'dependencies': [

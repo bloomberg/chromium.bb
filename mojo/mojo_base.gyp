@@ -73,6 +73,7 @@
       ],
     },
     {
+      # GN version: //mojo/common/test:run_all_perftests
       'target_name': 'mojo_run_all_perftests',
       'type': 'static_library',
       'dependencies': [
@@ -514,6 +515,7 @@
       ],
     },
     {
+      # GN version: //mojo/tools:message_generator
       'target_name': 'mojo_message_generator',
       'type': 'executable',
       'dependencies': [

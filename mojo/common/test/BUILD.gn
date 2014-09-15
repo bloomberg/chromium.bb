@@ -17,6 +17,21 @@ source_set("run_all_unittests") {
   sources = [ "run_all_unittests.cc" ]
 }
 
+# GYP version: mojo/mojo_base.gyp:mojo_run_all_perftests
+source_set("run_all_perftests") {
+  testonly = true
+  deps = [
+    ":test_support_impl",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/public/c/test_support",
+    "//mojo/system",
+  ]
+
+  sources = [ "run_all_perftests.cc" ]
+}
+
+
 # GYP version: mojo/mojo_base.gyp:mojo_test_support_impl
 source_set("test_support_impl") {
   testonly = true

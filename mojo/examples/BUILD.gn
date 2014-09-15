@@ -2,11 +2,40 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 group("examples") {
+  testonly = true
+
   deps = [
+    "//mojo/examples/apptest",
+    "//mojo/examples/compositor_app",
+    "//mojo/examples/content_handler_demo",
     "//mojo/examples/echo",
+    "//mojo/examples/pepper_container_app",
+    "//mojo/examples/png_viewer",
     "//mojo/examples/sample_app",
     "//mojo/examples/surfaces_app",
     "//mojo/examples/wget",
   ]
+
+  if (use_aura) {
+    deps += [
+      "//mojo/examples/aura_demo:mojo_aura_demo",
+      "//mojo/examples/browser",
+      "//mojo/examples/demo_launcher",
+      "//mojo/examples/embedded_app",
+      "//mojo/examples/media_viewer",
+      "//mojo/examples/nesting_app",
+      "//mojo/examples/keyboard",
+      "//mojo/examples/window_manager",
+      "//mojo/examples/wm_flow",
+    ]
+  }
+
+  if (is_linux) {
+    deps += [
+      "//mojo/examples/dbus_echo",
+    ]
+  }
 }

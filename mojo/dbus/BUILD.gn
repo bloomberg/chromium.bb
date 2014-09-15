@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_linux)
+
+# GYP version: mojo/mojo.gyp:mojo_dbus_service
+source_set("dbus") {
+  sources = [
+    "dbus_external_service.cc",
+    "dbus_external_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//dbus",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/shell:external_service_bindings",
+    "//mojo/system",
+  ]
+}

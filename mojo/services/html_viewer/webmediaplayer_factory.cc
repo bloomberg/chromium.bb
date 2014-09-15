@@ -44,6 +44,9 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
+#if defined(OS_ANDROID)
+  return NULL;
+#else
 
   media::WebMediaPlayerParams params(
       media::WebMediaPlayerParams::DeferLoadCB(),
@@ -57,6 +60,7 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
   return new media::WebMediaPlayerImpl(frame, client, delegate, params);
+#endif
 }
 
 const media::AudioHardwareConfig&

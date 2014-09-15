@@ -1,0 +1,41 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//mojo/system.gni")
+
+if (use_aura) {
+
+# GYP version: mojo/mojo_examples.gypi:mojo_media_viewer
+shared_library("media_viewer") {
+  output_name = "mojo_media_viewer"
+
+  sources = [
+    "media_viewer.cc"
+  ]
+
+  deps = [
+    ":bindings",
+    "//base",
+    "//mojo/application",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/navigation",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/views",
+    "//skia",
+    "//ui/gfx/geometry",
+    "//ui/views",
+  ] + mojo_system_for_shared_library
+}
+
+}  # use_aura
+
+# GYP version: mojo/mojo_examples.gypi:mojo_media_viewer_bindings
+mojom("bindings") {
+  sources = [
+    "media_viewer.mojom",
+  ]
+}

@@ -53,6 +53,13 @@ component("blink") {
     "websourcebuffer_impl.cc",
     "websourcebuffer_impl.h",
   ]
+
+  if (is_android) {
+    sources -= [
+      "webmediaplayer_impl.cc",
+      "webmediaplayer_impl.h",
+    ]
+  }
 }
 
 test("media_blink_unittests") {

@@ -1,0 +1,23 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo_base.gyp:mojo_message_generator
+executable("message_generator") {
+  testonly = true
+  output_name = "mojo_message_generator"
+
+  sources = [
+    "message_generator.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/common",
+    "//mojo/public/cpp/bindings",
+    "//mojo/environment:chromium",
+    "//mojo/system",
+    "//testing/gtest",
+  ]
+}
+

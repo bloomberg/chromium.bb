@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //mojo/services/html_viewer
       'target_name': 'mojo_html_viewer',
       'type': 'loadable_module',
       'dependencies': [
@@ -395,7 +396,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/network
+      # GN version: //mojo/services/network:lib
       'target_name': 'mojo_network_service_lib',
       'type': 'static_library',
       'dependencies': [
@@ -423,6 +424,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/network
       'target_name': 'mojo_network_service',
       'type': 'loadable_module',
       'dependencies': [

@@ -21,6 +21,7 @@
   ],
   'targets': [
     {
+      # GN version: //mojo
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
@@ -112,6 +113,7 @@
       ],
     },
     {
+      # GN version: //mojo/spy
       'target_name': 'mojo_spy',
       'type': 'static_library',
       'dependencies': [
@@ -447,6 +449,7 @@
     ['OS=="linux"', {
       'targets': [
         {
+          # GN version: //mojo/dbus
           'target_name': 'mojo_dbus_service',
           'type': 'static_library',
           'dependencies': [
@@ -498,12 +501,12 @@
           ],
         },
         {
+          # GN version: //mojo/views
           'target_name': 'mojo_views_support',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../skia/skia.gyp:skia',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
@@ -525,6 +528,7 @@
           ],
         },
         {
+          # GN version: //mojo/views:views_internal
           'target_name': 'mojo_views_support_internal',
           'type': '<(component)',
           'dependencies': [
@@ -532,7 +536,6 @@
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../skia/skia.gyp:skia',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',

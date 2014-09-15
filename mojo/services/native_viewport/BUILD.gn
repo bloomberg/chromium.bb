@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//mojo/system.gni")
 
+# GYP version: mojo/mojo_services.gypi:mojo_native_viewport_service_lib
 static_library("native_viewport") {
   output_name = "mojo_native_viewport"
 

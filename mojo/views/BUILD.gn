@@ -1,0 +1,58 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+assert(use_aura)
+
+# GYP version: mojo/mojo.gyp:mojo_views_support
+source_set("views") {
+  sources = [
+    "input_method_mojo_linux.cc",
+    "input_method_mojo_linux.h",
+    "native_widget_view_manager.cc",
+    "native_widget_view_manager.h",
+    "views_init.cc",
+    "views_init.h",
+  ]
+
+  deps = [
+    ":views_internal",
+    "//base",
+    "//base:i18n",
+    "//skia",
+    "//third_party/icu",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/views",
+    "//ui/wm",
+    "//mojo/aura",
+  ]
+}
+
+# GYP version: mojo/mojo.gyp:mojo_views_support_internal
+component("views_internal") {
+  output_name = "mojo_views_support_internal"
+
+  visibility = ":views"
+
+  sources = [
+    "mojo_views_export.h",
+    "views_init_internal.cc",
+    "views_init_internal.h",
+  ]
+
+  defines = [ "MOJO_VIEWS_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base:base_static",
+    "//base/third_party/dynamic_annotations",
+    "//skia",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/gfx",
+  ]
+}

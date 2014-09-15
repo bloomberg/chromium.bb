@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+shared_library("embedded_app") {
+  output_name = "mojo_embedded_app"
+
+  sources = [
+    "embedded_app.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/examples/window_manager:bindings",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/utility",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/navigation",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//url",
+  ] + mojo_system_for_shared_library + mojo_gles2_for_shared_library
+}

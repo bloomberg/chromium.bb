@@ -7,6 +7,8 @@ import("//build/config/ui.gni")
 group("services") {
   deps = [
     "//mojo/services/gles2:bindings",
+    "//mojo/services/html_viewer",
+    "//mojo/services/native_viewport",
     "//mojo/services/network",
     "//mojo/services/public/interfaces/content_handler",
     "//mojo/services/public/interfaces/geometry",

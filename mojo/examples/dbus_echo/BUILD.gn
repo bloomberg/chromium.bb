@@ -1,0 +1,48 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+group("dbus_echo") {
+  deps = [
+    ":dbus_echo_app",
+    ":dbus_echo_service",
+  ]
+}
+
+# GYP version: mojo/mojo_examples.gypi:mojo_dbus_echo
+shared_library("dbus_echo_app") {
+  output_name = "mojo_dbus_echo"
+
+  sources = [
+    "dbus_echo_app.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/utility",
+    "//mojo/examples/echo:bindings",
+  ] + mojo_system_for_shared_library
+}
+
+# GYP version: mojo/mojo_examples.gypi:mojo_dbus_echo_service
+executable("dbus_echo_service") {
+  output_name = "mojo_dbus_service"
+
+  sources = [
+    "dbus_echo_service.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//dbus",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/dbus",
+    "//mojo/examples/echo:bindings",
+    "//mojo/system",
+  ]
+}
