@@ -569,8 +569,7 @@ public class Tab implements NavigationClient {
      * @return The web contents associated with this tab.
      */
     public WebContents getWebContents() {
-        if (mNativeTabAndroid == 0) return null;
-        return nativeGetWebContents(mNativeTabAndroid);
+        return mContentViewCore != null ? mContentViewCore.getWebContents() : null;
     }
 
     /**
@@ -1200,7 +1199,6 @@ public class Tab implements NavigationClient {
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
-    private native WebContents nativeGetWebContents(long nativeTabAndroid);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
             byte[] postData, int transition, String referrerUrl, int referrerPolicy,

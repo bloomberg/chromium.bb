@@ -440,14 +440,6 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   }
 }
 
-base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetWebContents(
-    JNIEnv* env,
-    jobject obj) {
-  if (!web_contents_.get())
-    return base::android::ScopedJavaLocalRef<jobject>();
-  return web_contents_->GetJavaWebContents();
-}
-
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
     JNIEnv* env,
     jobject obj) {
