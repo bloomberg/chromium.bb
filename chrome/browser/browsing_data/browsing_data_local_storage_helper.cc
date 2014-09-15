@@ -81,18 +81,7 @@ void BrowsingDataLocalStorageHelper::CallCompletionCallback() {
 
 CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
     Profile* profile)
-    : BrowsingDataLocalStorageHelper(profile),
-      profile_(profile) {
-}
-
-CannedBrowsingDataLocalStorageHelper*
-CannedBrowsingDataLocalStorageHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataLocalStorageHelper* clone =
-      new CannedBrowsingDataLocalStorageHelper(profile_);
-
-  clone->pending_local_storage_info_ = pending_local_storage_info_;
-  return clone;
+    : BrowsingDataLocalStorageHelper(profile) {
 }
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(

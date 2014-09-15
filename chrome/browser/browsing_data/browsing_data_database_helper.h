@@ -115,11 +115,6 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
 
   explicit CannedBrowsingDataDatabaseHelper(Profile* profile);
 
-  // Return a copy of the database helper. Only one consumer can use the
-  // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
-  CannedBrowsingDataDatabaseHelper* Clone();
-
   // Add a database to the set of canned databases that is returned by this
   // helper.
   void AddDatabase(const GURL& origin,
@@ -149,8 +144,6 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   virtual ~CannedBrowsingDataDatabaseHelper();
 
   std::set<PendingDatabaseInfo> pending_database_info_;
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataDatabaseHelper);
 };

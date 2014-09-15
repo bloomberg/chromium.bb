@@ -194,21 +194,7 @@ CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
     Profile* profile) {
 }
 
-CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper() {
-}
-
 CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}
-
-CannedBrowsingDataFileSystemHelper*
-    CannedBrowsingDataFileSystemHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataFileSystemHelper* clone =
-      new CannedBrowsingDataFileSystemHelper();
-  // This list only mutates on the UI thread, so it's safe to work with it here
-  // (given the DCHECK above).
-  clone->file_system_info_ = file_system_info_;
-  return clone;
-}
 
 void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin,

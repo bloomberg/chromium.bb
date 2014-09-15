@@ -96,11 +96,6 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   explicit CannedBrowsingDataCookieHelper(
       net::URLRequestContextGetter* request_context);
 
-  // Return a copy of the cookie helper. Only one consumer can use the
-  // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
-  CannedBrowsingDataCookieHelper* Clone();
-
   // Adds the cookies from |cookie_list|. Current cookies that have the same
   // cookie name, cookie domain, cookie path, host-only-flag tuple as passed
   // cookies are replaced by the passed cookies.

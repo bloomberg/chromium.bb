@@ -122,17 +122,6 @@ CannedBrowsingDataServiceWorkerHelper::
     ~CannedBrowsingDataServiceWorkerHelper() {
 }
 
-CannedBrowsingDataServiceWorkerHelper*
-CannedBrowsingDataServiceWorkerHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataServiceWorkerHelper* clone =
-      new CannedBrowsingDataServiceWorkerHelper(service_worker_context_);
-
-  clone->pending_service_worker_info_ = pending_service_worker_info_;
-  clone->service_worker_info_ = service_worker_info_;
-  return clone;
-}
-
 void CannedBrowsingDataServiceWorkerHelper::AddServiceWorker(
     const GURL& origin, const std::vector<GURL>& scopes) {
   if (!BrowsingDataHelper::HasWebScheme(origin))

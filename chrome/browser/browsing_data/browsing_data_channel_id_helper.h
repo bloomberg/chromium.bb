@@ -53,11 +53,6 @@ class CannedBrowsingDataChannelIDHelper
  public:
   CannedBrowsingDataChannelIDHelper();
 
-  // Return a copy of the ChannelID helper. Only one consumer can use the
-  // StartFetching method at a time, so we need to create a copy of the helper
-  // every time we instantiate a cookies tree model for it.
-  CannedBrowsingDataChannelIDHelper* Clone();
-
   // Add an ChannelID to the set of canned channel IDs that is
   // returned by this helper.
   void AddChannelID(

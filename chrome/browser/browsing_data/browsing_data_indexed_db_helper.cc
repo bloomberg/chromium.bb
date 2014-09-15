@@ -112,16 +112,6 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
-CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataIndexedDBHelper* clone =
-      new CannedBrowsingDataIndexedDBHelper(indexed_db_context_.get());
-
-  clone->pending_indexed_db_info_ = pending_indexed_db_info_;
-  clone->indexed_db_info_ = indexed_db_info_;
-  return clone;
-}
-
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
     const GURL& origin, const base::string16& name) {
   if (!BrowsingDataHelper::HasWebScheme(origin))

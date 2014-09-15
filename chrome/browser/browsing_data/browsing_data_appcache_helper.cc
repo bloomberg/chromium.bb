@@ -88,18 +88,8 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
     Profile* profile)
-    : BrowsingDataAppCacheHelper(profile),
-      profile_(profile) {
+    : BrowsingDataAppCacheHelper(profile) {
   info_collection_ = new content::AppCacheInfoCollection;
-}
-
-CannedBrowsingDataAppCacheHelper* CannedBrowsingDataAppCacheHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataAppCacheHelper* clone =
-      new CannedBrowsingDataAppCacheHelper(profile_);
-
-  clone->info_collection_->infos_by_origin = info_collection_->infos_by_origin;
-  return clone;
 }
 
 void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {

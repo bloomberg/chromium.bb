@@ -108,20 +108,6 @@ CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {
   Reset();
 }
 
-CannedBrowsingDataCookieHelper* CannedBrowsingDataCookieHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataCookieHelper* clone =
-      new CannedBrowsingDataCookieHelper(request_context_getter());
-
-  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
-       it != origin_cookie_set_map_.end();
-       ++it) {
-    canonical_cookie::CookieHashSet* cookies = clone->GetCookiesFor(it->first);
-    cookies->insert(it->second->begin(), it->second->end());
-  }
-  return clone;
-}
-
 void CannedBrowsingDataCookieHelper::AddReadCookies(
     const GURL& frame_url,
     const GURL& url,

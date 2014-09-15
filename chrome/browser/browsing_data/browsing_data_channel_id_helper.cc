@@ -165,16 +165,6 @@ CannedBrowsingDataChannelIDHelper() {}
 CannedBrowsingDataChannelIDHelper::
 ~CannedBrowsingDataChannelIDHelper() {}
 
-CannedBrowsingDataChannelIDHelper*
-CannedBrowsingDataChannelIDHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataChannelIDHelper* clone =
-      new CannedBrowsingDataChannelIDHelper();
-
-  clone->channel_id_map_ = channel_id_map_;
-  return clone;
-}
-
 void CannedBrowsingDataChannelIDHelper::AddChannelID(
     const net::ChannelIDStore::ChannelID& channel_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

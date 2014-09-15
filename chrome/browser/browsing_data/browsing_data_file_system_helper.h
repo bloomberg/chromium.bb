@@ -97,16 +97,6 @@ class CannedBrowsingDataFileSystemHelper
   // we're writing to, so we'll accept it, but not store it.
   explicit CannedBrowsingDataFileSystemHelper(Profile* profile);
 
-  // Creates a copy of the file system helper. StartFetching can only respond
-  // to one client at a time; we need to be able to act on multiple parallel
-  // requests in certain situations (see CookiesTreeModel and its clients). For
-  // these cases, simply clone the object and fire off another fetching process.
-  //
-  // Clone() is safe to call while StartFetching() is running. Clients of the
-  // newly created object must themselves execute StartFetching(), however: the
-  // copy will not have a pending fetch.
-  CannedBrowsingDataFileSystemHelper* Clone();
-
   // Manually adds a filesystem to the set of canned file systems that this
   // helper returns via StartFetching. If an origin contains both a temporary
   // and a persistent filesystem, AddFileSystem must be called twice (once for
@@ -140,8 +130,6 @@ class CannedBrowsingDataFileSystemHelper
   virtual void DeleteFileSystemOrigin(const GURL& origin) OVERRIDE {}
 
  private:
-  // Used by Clone() to create an object without a Profile
-  CannedBrowsingDataFileSystemHelper();
   virtual ~CannedBrowsingDataFileSystemHelper();
 
   // Holds the current list of filesystems returned to the client.

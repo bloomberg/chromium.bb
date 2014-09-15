@@ -107,11 +107,6 @@ class CannedBrowsingDataServiceWorkerHelper
   explicit CannedBrowsingDataServiceWorkerHelper(
       content::ServiceWorkerContext* context);
 
-  // Return a copy of the ServiceWorker helper. Only one consumer can use the
-  // StartFetching method at a time, so we need to create a copy of the helper
-  // every time we instantiate a cookies tree model for it.
-  CannedBrowsingDataServiceWorkerHelper* Clone();
-
   // Add a Service Worker to the set of canned Service Workers that is
   // returned by this helper.
   void AddServiceWorker(const GURL& origin, const std::vector<GURL>& scopes);

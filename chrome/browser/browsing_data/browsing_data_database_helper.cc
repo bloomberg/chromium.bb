@@ -147,17 +147,7 @@ bool CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::operator<(
 
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
     Profile* profile)
-    : BrowsingDataDatabaseHelper(profile),
-      profile_(profile) {
-}
-
-CannedBrowsingDataDatabaseHelper* CannedBrowsingDataDatabaseHelper::Clone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CannedBrowsingDataDatabaseHelper* clone =
-      new CannedBrowsingDataDatabaseHelper(profile_);
-
-  clone->pending_database_info_ = pending_database_info_;
-  return clone;
+    : BrowsingDataDatabaseHelper(profile) {
 }
 
 void CannedBrowsingDataDatabaseHelper::AddDatabase(
