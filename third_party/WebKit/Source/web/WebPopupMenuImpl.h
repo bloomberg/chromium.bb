@@ -87,8 +87,8 @@ public:
     virtual void willCloseLayerTreeView() OVERRIDE FINAL;
 
     // WebContentLayerClient
-    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebFloatRect& opaque,
-        WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebFloatRect& opaque, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
 
     // WebPopupMenuImpl
     void initialize(PopupContainer* widget, const WebRect& bounds);

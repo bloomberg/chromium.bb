@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
+#include "platform/graphics/ContentLayerDelegate.h"
 
 #include "platform/EventTracer.h"
 #include "platform/geometry/IntRect.h"
@@ -35,43 +35,38 @@
 
 namespace blink {
 
-OpaqueRectTrackingContentLayerDelegate::OpaqueRectTrackingContentLayerDelegate(GraphicsContextPainter* painter)
+ContentLayerDelegate::ContentLayerDelegate(GraphicsContextPainter* painter)
     : m_painter(painter)
     , m_opaque(false)
 {
 }
 
-OpaqueRectTrackingContentLayerDelegate::~OpaqueRectTrackingContentLayerDelegate()
+ContentLayerDelegate::~ContentLayerDelegate()
 {
 }
 
-void OpaqueRectTrackingContentLayerDelegate::paintContents(
-    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque,
+void ContentLayerDelegate::paintContents(
+    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect&,
+    WebContentLayerClient::GraphicsContextStatus contextStatus)
+{
+    paintContents(canvas, clip, canPaintLCDText, contextStatus);
+}
+
+void ContentLayerDelegate::paintContents(
+    SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText,
     WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     static const unsigned char* annotationsEnabled = 0;
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    GraphicsContext context(canvas,
-        contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
-    context.setRegionTrackingMode(m_opaque ? GraphicsContext::RegionTrackingDisabled : GraphicsContext::RegionTrackingOpaque);
+    GraphicsContext context(canvas, contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
-
     if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
 
-    // Record transform prior to painting, as all opaque tracking will be
-    // relative to this current value.
-    AffineTransform canvasToContentTransform = context.getCTM().inverse();
-
     m_painter->paint(context, clip);
-
-    // Transform tracked opaque paints back to our layer's content space.
-    ASSERT(canvasToContentTransform.isInvertible());
-    ASSERT(canvasToContentTransform.preservesAxisAlignment());
-    opaque = canvasToContentTransform.mapRect(context.opaqueRegion().asRect());
 }
 
 } // namespace blink

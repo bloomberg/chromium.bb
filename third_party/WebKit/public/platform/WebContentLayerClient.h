@@ -48,6 +48,8 @@ public:
     // The |disableContext| enum controls most processing in
     // GraphicsContext to isolate the painting code in performance tests.
     virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque, GraphicsContextStatus = GraphicsContextEnabled) = 0;
+    // FIXME: Replace the above method with this one.
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, GraphicsContextStatus = GraphicsContextEnabled) = 0;
 
 protected:
     virtual ~WebContentLayerClient() { }

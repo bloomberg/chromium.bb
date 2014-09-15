@@ -1100,6 +1100,11 @@ crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Imag
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
+crbug.com/413479 compositing/overflow/clip-content-under-overflow-controls.html [ NeedsRebaseline ]
+crbug.com/413479 compositing/scrollbar-painting.html [ NeedsRebaseline ]
+crbug.com/413479 fast/scrolling/scrollbar-tickmarks-styled.html [ NeedsRebaseline ]
+crbug.com/413479 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-content-under-overflow-controls.html [ NeedsRebaseline ]
+
 crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure ]

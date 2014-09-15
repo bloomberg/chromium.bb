@@ -22,8 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OpaqueRectTrackingContentLayerDelegate_h
-#define OpaqueRectTrackingContentLayerDelegate_h
+#ifndef ContentLayerDelegate_h
+#define ContentLayerDelegate_h
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebContentLayerClient.h"
@@ -45,19 +45,22 @@ protected:
     virtual ~GraphicsContextPainter() { }
 };
 
-class PLATFORM_EXPORT OpaqueRectTrackingContentLayerDelegate : public WebContentLayerClient {
-    WTF_MAKE_NONCOPYABLE(OpaqueRectTrackingContentLayerDelegate);
-public:
-    explicit OpaqueRectTrackingContentLayerDelegate(GraphicsContextPainter*);
-    virtual ~OpaqueRectTrackingContentLayerDelegate();
+class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
+    WTF_MAKE_NONCOPYABLE(ContentLayerDelegate);
 
-    // If we know that everything that will be painted through this delegate, then we don't bother
-    // tracking opaqueness.
-    void setOpaque(bool opaque) { m_opaque = opaque; }
+public:
+    explicit ContentLayerDelegate(GraphicsContextPainter*);
+    virtual ~ContentLayerDelegate();
+
+    // When we know everything painted through this delegate will be opaque, allow for optimizations to take place.
+    void setOpaque(bool opaque)
+    {
+        m_opaque = opaque;
+    }
 
     // WebContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque,
-        WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
 
 private:
     GraphicsContextPainter* m_painter;
@@ -66,4 +69,4 @@ private:
 
 } // namespace blink
 
-#endif // OpaqueRectTrackingContentLayerDelegate_h
+#endif // ContentLayerDelegate_h

@@ -252,8 +252,12 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     return pathHasChanged;
 }
 
-void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, bool, WebFloatRect&,
-    WebContentLayerClient::GraphicsContextStatus contextStatus)
+void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, bool canPaintLCDText, WebFloatRect&, WebContentLayerClient::GraphicsContextStatus contextStatus)
+{
+    paintContents(canvas, webClipRect, canPaintLCDText, contextStatus);
+}
+
+void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, bool, WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     if (!m_node || !m_node->renderer())
         return;

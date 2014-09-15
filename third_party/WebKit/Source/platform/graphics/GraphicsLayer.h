@@ -33,9 +33,9 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
-#include "platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
@@ -336,7 +336,7 @@ private:
 
     Vector<LinkHighlightClient*> m_linkHighlights;
 
-    OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
+    OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 
     ScrollableArea* m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;

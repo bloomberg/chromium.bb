@@ -112,8 +112,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
         m_client->verifyNotPainting();
 #endif
 
-    m_opaqueRectTrackingContentLayerDelegate = adoptPtr(new OpaqueRectTrackingContentLayerDelegate(this));
-    m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_opaqueRectTrackingContentLayerDelegate.get()));
+    m_contentLayerDelegate = adoptPtr(new ContentLayerDelegate(this));
+    m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
     m_layer->layer()->setWebLayerClient(this);
     m_layer->setAutomaticallyComputeRasterScale(true);
@@ -824,7 +824,7 @@ void GraphicsLayer::setContentsOpaque(bool opaque)
 {
     m_contentsOpaque = opaque;
     m_layer->layer()->setOpaque(m_contentsOpaque);
-    m_opaqueRectTrackingContentLayerDelegate->setOpaque(m_contentsOpaque);
+    m_contentLayerDelegate->setOpaque(m_contentsOpaque);
     clearContentsLayerIfUnregistered();
     if (m_contentsLayer)
         m_contentsLayer->setOpaque(opaque);

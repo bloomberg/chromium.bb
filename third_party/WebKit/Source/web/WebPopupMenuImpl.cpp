@@ -209,8 +209,12 @@ void WebPopupMenuImpl::layout()
 {
 }
 
-void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebFloatRect&,
-    WebContentLayerClient::GraphicsContextStatus contextStatus)
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool canPaintLCDText, WebFloatRect&, WebContentLayerClient::GraphicsContextStatus contextStatus)
+{
+    paintContents(canvas, rect, canPaintLCDText, contextStatus);
+}
+
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebContentLayerClient::GraphicsContextStatus contextStatus)
 {
     if (!m_widget)
         return;
