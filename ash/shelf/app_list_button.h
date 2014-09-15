@@ -22,6 +22,10 @@ class AppListButton : public views::ImageButton {
                 ShelfWidget* shelf_widget);
   virtual ~AppListButton();
 
+  bool draw_background_as_active() {
+    return draw_background_as_active_;
+  }
+
  protected:
   // views::ImageButton overrides:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -38,6 +42,17 @@ class AppListButton : public views::ImageButton {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
+  // Toggles the active state for painting the background and schedules a paint.
+  void SetDrawBackgroundAsActive(bool draw_background_as_active);
+
+  // True if the background should render as active, regardless of the state of
+  // the application list.
+  bool draw_background_as_active_;
+
+  // True if touch view feedback command line flag has been enabled. When
+  // enabled touch gestures will toggle rendering the background as active.
+  bool touch_feedback_enabled_;
+
   ShelfButtonHost* host_;
   // Reference to the shelf widget containing this button, owned by the
   // root window controller.

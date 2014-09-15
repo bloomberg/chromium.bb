@@ -9,6 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
@@ -295,6 +296,8 @@ class ShelfViewTest : public AshTestBase {
   virtual ~ShelfViewTest() {}
 
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTouchViewTouchFeedback);
     AshTestBase::SetUp();
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.shelf_model();
@@ -1668,6 +1671,53 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
 
   TestDraggingAnItemFromOverflowToShelf(false);
   TestDraggingAnItemFromOverflowToShelf(true);
+}
+
+// Tests that the AppListButton renders as active in response to touches.
+TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
+  AppListButton* app_list_button =
+      static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
+  EXPECT_FALSE(app_list_button->draw_background_as_active());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(app_list_button->
+      GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(app_list_button->draw_background_as_active());
+
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(app_list_button->draw_background_as_active());
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+}
+
+// Tests that a touch that slides out of the bounds of the AppListButton leads
+// to the end of rendering an active state.
+TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
+  AppListButton* app_list_button =
+      static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
+  EXPECT_FALSE(app_list_button->draw_background_as_active());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(app_list_button->
+      GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(app_list_button->draw_background_as_active());
+
+  gfx::Point moved_point(app_list_button->GetBoundsInScreen().right() + 1,
+                         app_list_button->
+                             GetBoundsInScreen().CenterPoint().y());
+  generator.MoveTouch(moved_point);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(app_list_button->draw_background_as_active());
+
+  generator.set_current_location(moved_point);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(app_list_button->draw_background_as_active());
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
