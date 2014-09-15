@@ -860,7 +860,10 @@ void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
     return;
-  GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
+  InputMethod* input_method = GetWidget()->GetInputMethod();
+  if (!input_method)
+    return;
+  input_method->DispatchKeyEvent(*event);
   if (switches::IsTextInputFocusManagerEnabled()) {
     FocusManager* focus_manager = GetWidget()->GetFocusManager();
     delegate_->OnKeyEvent(event);
