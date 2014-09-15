@@ -12,6 +12,10 @@ executable("mojo_shell") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/application_manager",
+    "//mojo/system",
+    "//third_party/icu",
+    "//ui/gl",
+    "//url",
   ]
 
   if (use_ozone) {
@@ -36,9 +40,13 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/gles2",
     "//mojo/public/interfaces/application",
+    "//mojo/services/native_viewport",
+    "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/network",
     "//mojo/spy",
     "//mojo/system",
+    "//net",
+    "//url",
   ]
 
   sources = [
@@ -81,12 +89,23 @@ source_set("lib") {
     ]
   } else if (is_android) {
     deps += [
-      "//mojo/services/native_viewport:lib",
       "//mojo/services/network:lib",
     ]
     sources += [
       "network_application_loader.cc",
       "network_application_loader.h",
+    ]
+  }
+  if (use_aura) {
+    deps += [
+      # These are only necessary as long as we hard code use of ViewManager.
+      "//skia",
+      "//mojo/services/view_manager",
+      "//mojo/services/public/interfaces/view_manager",
+    ]
+    sources += [
+      "view_manager_loader.cc",
+      "view_manager_loader.h",
     ]
   }
 }

@@ -16,10 +16,12 @@ source_set("run_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ui/gl",
   ]
   if (is_linux || is_win) {
     deps += [
-      "//mojo/services/public/interfaces/native_viewport",
+      "//third_party/mesa:osmesa",
+      "//mojo/services/native_viewport",
     ]
   }
   if (use_x11) {

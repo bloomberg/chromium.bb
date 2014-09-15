@@ -37,7 +37,7 @@
         'mojo_geometry_lib',
         'mojo_html_viewer',
         'mojo_js',
-        'mojo_native_viewport_service',
+        'mojo_native_viewport_service_lib',
         'mojo_network_service',
         'mojo_pepper_container_app',
         'mojo_png_viewer',
@@ -144,6 +144,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'mojo_application_manager',
         'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_common_lib',
@@ -151,6 +153,7 @@
         'mojo_base.gyp:mojo_system_impl',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_external_service_bindings',
+        'mojo_native_viewport_service_lib',
         'mojo_network_bindings',
         'mojo_spy',
       ],
@@ -188,13 +191,10 @@
         'shell/test_child_process.h',
         'shell/ui_application_loader_android.cc',
         'shell/ui_application_loader_android.h',
+        'shell/view_manager_loader.cc',
+        'shell/view_manager_loader.h',
       ],
       'conditions': [
-        ['component=="shared_library"', {
-          'dependencies': [
-            '../ui/gl/gl.gyp:gl',
-          ],
-        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
@@ -204,11 +204,23 @@
         ['OS=="android"', {
           'dependencies': [
             'mojo_network_service_lib',
-            'mojo_native_viewport_service_lib',
           ],
           'sources': [
             'shell/network_application_loader.cc',
             'shell/network_application_loader.h',
+          ],
+        }],
+        ['use_aura==1', {
+          'dependencies': [
+            # These are only necessary as long as we hard code use of ViewManager.
+            '../skia/skia.gyp:skia',
+            'mojo_view_manager',
+            'mojo_view_manager_bindings',
+          ],
+        }, {  # use_aura==0
+          'sources!': [
+            'shell/view_manager_loader.cc',
+            'shell/view_manager_loader.h',
           ],
         }],
       ],
@@ -236,9 +248,12 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/gl/gl.gyp:gl',
+        '../url/url.gyp:url_lib',
         'mojo_application_manager',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_environment_chromium',
+        'mojo_base.gyp:mojo_system_impl',
         'mojo_shell_lib',
       ],
       'conditions': [
@@ -262,6 +277,8 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../net/net.gyp:net_test_support',
+        # TODO(vtl): We don't currently need this, but I imagine we will soon.
+        # '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
         'mojo_application_manager',
         'mojo_base.gyp:mojo_common_lib',
@@ -299,6 +316,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_content_handler_bindings',
         'mojo_network_bindings',
@@ -459,6 +477,7 @@
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/events/events.gyp:events',
             '../ui/events/events.gyp:events_base',
+            '../ui/gl/gl.gyp:gl',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             'mojo_cc_support',
             'mojo_native_viewport_bindings',

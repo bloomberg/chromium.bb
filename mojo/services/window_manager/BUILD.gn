@@ -68,7 +68,8 @@ test("mojo_core_window_manager_unittests") {
   ]
   if (is_linux) {
     deps += [
-      "//mojo/services/public/interfaces/native_viewport",
+      "//third_party/mesa:osmesa",
+      "//mojo/services/native_viewport",
     ]
   }
   if (use_x11) {

@@ -5,21 +5,9 @@
 import("//build/config/ui.gni")
 import("//mojo/system.gni")
 
-if (!is_android) {
-  shared_library("native_viewport") {
-    output_name = "mojo_native_viewport_service"
+static_library("native_viewport") {
+  output_name = "mojo_native_viewport"
 
-    deps = [
-      ":lib",
-      "//mojo/services/public/interfaces/native_viewport",
-    ]
-    deps += mojo_system_for_shared_library
-
-    sources = [ "main.cc" ]
-  }
-}
-
-source_set("lib") {
   deps = [
     "//base",
     "//cc/surfaces",
@@ -59,6 +47,13 @@ source_set("lib") {
 
   if (is_android) {
     deps += [ "//mojo:jni_headers" ]
+  }
+
+  if (is_win) {
+    deps += [
+      # TODO(GYP)
+      # '../ui/platform_window/win/win_window.gyp:win_window',
+    ]
   }
 
   if (use_x11) {

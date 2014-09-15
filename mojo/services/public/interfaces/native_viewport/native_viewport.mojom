@@ -26,11 +26,4 @@ interface NativeViewportClient {
   OnEvent(Event event) => ();
 };
 
-// Connect to this interface before any other connections are made and call
-// UseTestConfig(), blocking on the reply. This will ensure that the correct
-// global initialization is done before subsequent connections.
-interface NativeViewportConfig {
-  UseTestConfig() => ();
-};
-
 }

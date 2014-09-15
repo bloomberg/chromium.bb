@@ -343,21 +343,6 @@
       ],
     },
     {
-      'target_name': 'mojo_native_viewport_service',
-      'type': 'loadable_module',
-      'dependencies': [
-        'mojo_native_viewport_bindings',
-        'mojo_native_viewport_service_lib',
-        '<(mojo_system_for_loadable_module)',
-      ],
-      'export_dependent_settings': [
-        'mojo_native_viewport_bindings',
-      ],
-      'sources': [
-        'services/native_viewport/main.cc',
-      ],
-    },
-    {
       # GN version: //mojo/services/public/interfaces/navigation
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
@@ -718,7 +703,7 @@
         {
           # GN version: //mojo/services/view_manager
           'target_name': 'mojo_view_manager',
-          'type': 'loadable_module',
+          'type': '<(component)',
           'dependencies': [
             '../base/base.gyp:base',
             '../cc/cc.gyp:cc_surfaces',
@@ -728,8 +713,6 @@
             '../ui/events/events.gyp:events_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-            'mojo_base.gyp:mojo_common_lib',
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_base.gyp:mojo_common_lib',
             'mojo_geometry_bindings',
@@ -742,8 +725,7 @@
             'mojo_surfaces_lib',
             'mojo_view_manager_bindings',
             'mojo_view_manager_common',
-            'mojo_gpu_bindings',
-            '<(mojo_system_for_loadable_module)',
+            '<(mojo_system_for_component)',
           ],
           'sources': [
             'services/view_manager/access_policy.h',
@@ -769,9 +751,6 @@
             'services/view_manager/window_manager_access_policy.cc',
             'services/view_manager/window_manager_access_policy.h',
           ],
-          'includes': [
-            'mojo_public_gles2_for_loadable_module.gypi',
-          ],
           'defines': [
             'MOJO_VIEW_MANAGER_IMPLEMENTATION',
           ],
@@ -783,6 +762,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
+            '../ui/gl/gl.gyp:gl',
           ],
           'sources': [
             'services/public/cpp/view_manager/lib/view_manager_test_suite.cc',
@@ -814,6 +794,7 @@
             '../testing/gtest.gyp:gtest',
             '../ui/aura/aura.gyp:aura',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gl/gl.gyp:gl',
             'mojo_application_manager',
             'mojo_base.gyp:mojo_system_impl',
             'mojo_base.gyp:mojo_application_chromium',
@@ -882,6 +863,7 @@
           'dependencies': [
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
+            '../ui/gl/gl.gyp:gl',
             'mojo_application_manager',
             'mojo_base.gyp:mojo_system_impl',
             'mojo_base.gyp:mojo_environment_chromium',
