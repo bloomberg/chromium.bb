@@ -15,6 +15,7 @@
 #include "base/base_export.h"
 #include "base/location.h"
 #include "base/profiler/tracked_time.h"
+#include "base/tracked_objects.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 
@@ -57,7 +58,7 @@ class BASE_EXPORT ScopedProfile {
 
  private:
   Births* birth_;  // Place in code where tracking started.
-  const TrackedTime start_of_run_;
+  TaskStopwatch stopwatch_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedProfile);
 };

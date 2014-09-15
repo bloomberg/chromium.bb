@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 
 #include "base/bind.h"
+#include "base/tracked_objects.h"
 
 #if defined(OS_WIN)
 #include "base/message_loop/message_pump_dispatcher.h"
@@ -46,7 +47,13 @@ RunLoop::~RunLoop() {
 void RunLoop::Run() {
   if (!BeforeRun())
     return;
+
+  // Use task stopwatch to exclude the loop run time from the current task, if
+  // any.
+  tracked_objects::TaskStopwatch stopwatch;
   loop_->RunHandler();
+  stopwatch.Stop();
+
   AfterRun();
 }
 

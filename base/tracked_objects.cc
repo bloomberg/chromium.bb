@@ -237,6 +237,9 @@ void Births::Clear() { birth_count_ = 0; }
 // static
 NowFunction* ThreadData::now_function_ = NULL;
 
+// static
+bool ThreadData::now_function_is_time_ = false;
+
 // A TLS slot which points to the ThreadData instance for the current thread. We
 // do a fake initialization here (zeroing out data), and then the real in-place
 // construction happens when we call tls_index_.Initialize().
@@ -269,7 +272,8 @@ ThreadData::ThreadData(const std::string& suggested_name)
     : next_(NULL),
       next_retired_worker_(NULL),
       worker_thread_number_(0),
-      incarnation_count_for_pool_(-1) {
+      incarnation_count_for_pool_(-1),
+      current_stopwatch_(NULL) {
   DCHECK_GE(suggested_name.size(), 0u);
   thread_name_ = suggested_name;
   PushToHeadOfList();  // Which sets real incarnation_count_for_pool_.
@@ -279,7 +283,8 @@ ThreadData::ThreadData(int thread_number)
     : next_(NULL),
       next_retired_worker_(NULL),
       worker_thread_number_(thread_number),
-      incarnation_count_for_pool_(-1)  {
+      incarnation_count_for_pool_(-1),
+      current_stopwatch_(NULL) {
   CHECK_GT(thread_number, 0);
   base::StringAppendF(&thread_name_, "WorkerThread-%d", thread_number);
   PushToHeadOfList();  // Which sets real incarnation_count_for_pool_.
@@ -434,7 +439,9 @@ Births* ThreadData::TallyABirth(const Location& location) {
 
 void ThreadData::TallyADeath(const Births& birth,
                              int32 queue_duration,
-                             int32 run_duration) {
+                             const TaskStopwatch& stopwatch) {
+  int32 run_duration = stopwatch.RunDurationMs();
+
   // Stir in some randomness, plus add constant in case durations are zero.
   const int32 kSomePrimeNumber = 2147483647;
   random_number_ += queue_duration + run_duration + kSomePrimeNumber;
@@ -443,9 +450,13 @@ void ThreadData::TallyADeath(const Births& birth,
 
   // We don't have queue durations without OS timer. OS timer is automatically
   // used for task-post-timing, so the use of an alternate timer implies all
-  // queue times are invalid.
-  if (kAllowAlternateTimeSourceHandling && now_function_)
+  // queue times are invalid, unless it was explicitly said that we can trust
+  // the alternate timer.
+  if (kAllowAlternateTimeSourceHandling &&
+      now_function_ &&
+      !now_function_is_time_) {
     queue_duration = 0;
+  }
 
   DeathMap::iterator it = death_map_.find(&birth);
   DeathData* death_data;
@@ -481,8 +492,7 @@ Births* ThreadData::TallyABirthIfActive(const Location& location) {
 // static
 void ThreadData::TallyRunOnNamedThreadIfTracking(
     const base::TrackingInfo& completed_task,
-    const TrackedTime& start_of_run,
-    const TrackedTime& end_of_run) {
+    const TaskStopwatch& stopwatch) {
   if (!kTrackAllTaskObjects)
     return;  // Not compiled in.
 
@@ -492,7 +502,7 @@ void ThreadData::TallyRunOnNamedThreadIfTracking(
   const Births* birth = completed_task.birth_tally;
   if (!birth)
     return;
-  ThreadData* current_thread_data = Get();
+  ThreadData* current_thread_data = stopwatch.GetThreadData();
   if (!current_thread_data)
     return;
 
@@ -501,23 +511,20 @@ void ThreadData::TallyRunOnNamedThreadIfTracking(
   // get a time value since we "weren't tracking" and we were trying to be
   // efficient by not calling for a genuine time value. For simplicity, we'll
   // use a default zero duration when we can't calculate a true value.
+  TrackedTime start_of_run = stopwatch.StartTime();
   int32 queue_duration = 0;
-  int32 run_duration = 0;
   if (!start_of_run.is_null()) {
     queue_duration = (start_of_run - completed_task.EffectiveTimePosted())
         .InMilliseconds();
-    if (!end_of_run.is_null())
-      run_duration = (end_of_run - start_of_run).InMilliseconds();
   }
-  current_thread_data->TallyADeath(*birth, queue_duration, run_duration);
+  current_thread_data->TallyADeath(*birth, queue_duration, stopwatch);
 }
 
 // static
 void ThreadData::TallyRunOnWorkerThreadIfTracking(
     const Births* birth,
     const TrackedTime& time_posted,
-    const TrackedTime& start_of_run,
-    const TrackedTime& end_of_run) {
+    const TaskStopwatch& stopwatch) {
   if (!kTrackAllTaskObjects)
     return;  // Not compiled in.
 
@@ -536,25 +543,22 @@ void ThreadData::TallyRunOnWorkerThreadIfTracking(
   // other thread that might like to run).  Also, the worker threads tasks are
   // generally longer, and hence the cost of the lock may perchance be amortized
   // over the long task's lifetime.
-  ThreadData* current_thread_data = Get();
+  ThreadData* current_thread_data = stopwatch.GetThreadData();
   if (!current_thread_data)
     return;
 
+  TrackedTime start_of_run = stopwatch.StartTime();
   int32 queue_duration = 0;
-  int32 run_duration = 0;
   if (!start_of_run.is_null()) {
     queue_duration = (start_of_run - time_posted).InMilliseconds();
-    if (!end_of_run.is_null())
-      run_duration = (end_of_run - start_of_run).InMilliseconds();
   }
-  current_thread_data->TallyADeath(*birth, queue_duration, run_duration);
+  current_thread_data->TallyADeath(*birth, queue_duration, stopwatch);
 }
 
 // static
 void ThreadData::TallyRunInAScopedRegionIfTracking(
     const Births* birth,
-    const TrackedTime& start_of_run,
-    const TrackedTime& end_of_run) {
+    const TaskStopwatch& stopwatch) {
   if (!kTrackAllTaskObjects)
     return;  // Not compiled in.
 
@@ -564,15 +568,12 @@ void ThreadData::TallyRunInAScopedRegionIfTracking(
   if (!birth)
     return;
 
-  ThreadData* current_thread_data = Get();
+  ThreadData* current_thread_data = stopwatch.GetThreadData();
   if (!current_thread_data)
     return;
 
   int32 queue_duration = 0;
-  int32 run_duration = 0;
-  if (!start_of_run.is_null() && !end_of_run.is_null())
-    run_duration = (end_of_run - start_of_run).InMilliseconds();
-  current_thread_data->TallyADeath(*birth, queue_duration, run_duration);
+  current_thread_data->TallyADeath(*birth, queue_duration, stopwatch);
 }
 
 // static
@@ -758,18 +759,12 @@ bool ThreadData::TrackingParentChildStatus() {
 }
 
 // static
-TrackedTime ThreadData::NowForStartOfRun(const Births* parent) {
+void ThreadData::PrepareForStartOfRun(const Births* parent) {
   if (kTrackParentChildLinks && parent && status_ > PROFILING_ACTIVE) {
     ThreadData* current_thread_data = Get();
     if (current_thread_data)
       current_thread_data->parent_stack_.push(parent);
   }
-  return Now();
-}
-
-// static
-TrackedTime ThreadData::NowForEndOfRun() {
-  return Now();
 }
 
 // static
@@ -855,6 +850,85 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
       delete it->second;  // Delete the Birth Records.
     delete next_thread_data;  // Includes all Death Records.
   }
+}
+
+//------------------------------------------------------------------------------
+TaskStopwatch::TaskStopwatch()
+    : start_time_(ThreadData::Now()),
+      current_thread_data_(ThreadData::Get()),
+      excluded_duration_ms_(0),
+      parent_(NULL) {
+#if DCHECK_IS_ON
+  state_ = RUNNING;
+  child_ = NULL;
+#endif
+
+  wallclock_duration_ms_ = 0;
+  if (!current_thread_data_)
+    return;
+
+  parent_ = current_thread_data_->current_stopwatch_;
+#if DCHECK_IS_ON
+  if (parent_) {
+    DCHECK(parent_->state_ == RUNNING);
+    DCHECK(parent_->child_ == NULL);
+    parent_->child_ = this;
+  }
+#endif
+  current_thread_data_->current_stopwatch_ = this;
+}
+
+TaskStopwatch::~TaskStopwatch() {
+#if DCHECK_IS_ON
+  DCHECK(state_ != RUNNING);
+  DCHECK(child_ == NULL);
+#endif
+}
+
+void TaskStopwatch::Stop() {
+  const TrackedTime end_time = ThreadData::Now();
+#if DCHECK_IS_ON
+  DCHECK(state_ == RUNNING);
+  state_ = STOPPED;
+  DCHECK(child_ == NULL);
+#endif
+
+  if (!start_time_.is_null() && !end_time.is_null()) {
+    wallclock_duration_ms_ = (end_time - start_time_).InMilliseconds();
+  }
+
+  if (!current_thread_data_)
+    return;
+
+  DCHECK(current_thread_data_->current_stopwatch_ == this);
+  current_thread_data_->current_stopwatch_ = parent_;
+  if (!parent_)
+    return;
+
+#if DCHECK_IS_ON
+  DCHECK(parent_->state_ == RUNNING);
+  DCHECK(parent_->child_ == this);
+  parent_->child_ = NULL;
+#endif
+  parent_->excluded_duration_ms_ +=
+      wallclock_duration_ms_;
+  parent_ = NULL;
+}
+
+TrackedTime TaskStopwatch::StartTime() const {
+  return start_time_;
+}
+
+int32 TaskStopwatch::RunDurationMs() const {
+#if DCHECK_IS_ON
+  DCHECK(state_ == STOPPED);
+#endif
+
+  return wallclock_duration_ms_ - excluded_duration_ms_;
+}
+
+ThreadData* TaskStopwatch::GetThreadData() const {
+  return current_thread_data_;
 }
 
 //------------------------------------------------------------------------------

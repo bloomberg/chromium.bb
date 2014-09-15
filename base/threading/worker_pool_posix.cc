@@ -95,14 +95,14 @@ void WorkerThread::ThreadMain() {
         "src_file", pending_task.posted_from.file_name(),
         "src_func", pending_task.posted_from.function_name());
 
-    TrackedTime start_time =
-        tracked_objects::ThreadData::NowForStartOfRun(pending_task.birth_tally);
-
+    tracked_objects::ThreadData::PrepareForStartOfRun(pending_task.birth_tally);
+    tracked_objects::TaskStopwatch stopwatch;
     pending_task.task.Run();
+    stopwatch.Stop();
 
     tracked_objects::ThreadData::TallyRunOnWorkerThreadIfTracking(
         pending_task.birth_tally, TrackedTime(pending_task.time_posted),
-        start_time, tracked_objects::ThreadData::NowForEndOfRun());
+        stopwatch);
   }
 
   // The WorkerThread is non-joinable, so it deletes itself.

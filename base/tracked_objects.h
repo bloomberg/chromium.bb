@@ -352,6 +352,8 @@ struct BASE_EXPORT TaskSnapshot {
 // harvest data from all existing instances.
 
 struct ProcessDataSnapshot;
+class BASE_EXPORT TaskStopwatch;
+
 class BASE_EXPORT ThreadData {
  public:
   // Current allowable states of the tracking system.  The states can vary
@@ -403,8 +405,7 @@ class BASE_EXPORT ThreadData {
   // finished). It is provided as an argument to help with testing.
   static void TallyRunOnNamedThreadIfTracking(
       const base::TrackingInfo& completed_task,
-      const TrackedTime& start_of_run,
-      const TrackedTime& end_of_run);
+      const TaskStopwatch& stopwatch);
 
   // Record the end of a timed run of an object.  The |birth| is the record for
   // the instance, the |time_posted| records that instant, which is presumed to
@@ -416,15 +417,13 @@ class BASE_EXPORT ThreadData {
   static void TallyRunOnWorkerThreadIfTracking(
       const Births* birth,
       const TrackedTime& time_posted,
-      const TrackedTime& start_of_run,
-      const TrackedTime& end_of_run);
+      const TaskStopwatch& stopwatch);
 
   // Record the end of execution in region, generally corresponding to a scope
   // being exited.
   static void TallyRunInAScopedRegionIfTracking(
       const Births* birth,
-      const TrackedTime& start_of_run,
-      const TrackedTime& end_of_run);
+      const TaskStopwatch& stopwatch);
 
   const std::string& thread_name() const { return thread_name_; }
 
@@ -460,14 +459,12 @@ class BASE_EXPORT ThreadData {
   // on.  This is currently a compiled option, atop TrackingStatus().
   static bool TrackingParentChildStatus();
 
-  // Special versions of Now() for getting times at start and end of a tracked
-  // run.  They are super fast when tracking is disabled, and have some internal
-  // side effects when we are tracking, so that we can deduce the amount of time
-  // accumulated outside of execution of tracked runs.
+  // Marks a start of a tracked run. It's super fast when tracking is disabled,
+  // and has some internal side effects when we are tracking, so that we can
+  // deduce the amount of time accumulated outside of execution of tracked runs.
   // The task that will be tracked is passed in as |parent| so that parent-child
   // relationships can be (optionally) calculated.
-  static TrackedTime NowForStartOfRun(const Births* parent);
-  static TrackedTime NowForEndOfRun();
+  static void PrepareForStartOfRun(const Births* parent);
 
   // Provide a time function that does nothing (runs fast) when we don't have
   // the profiler enabled.  It will generally be optimized away when it is
@@ -487,6 +484,7 @@ class BASE_EXPORT ThreadData {
   static void EnsureCleanupWasCalled(int major_threads_shutdown_count);
 
  private:
+  friend class TaskStopwatch;
   // Allow only tests to call ShutdownSingleThreadedCleanup.  We NEVER call it
   // in production code.
   // TODO(jar): Make this a friend in DEBUG only, so that the optimizer has a
@@ -523,7 +521,9 @@ class BASE_EXPORT ThreadData {
   Births* TallyABirth(const Location& location);
 
   // Find a place to record a death on this thread.
-  void TallyADeath(const Births& birth, int32 queue_duration, int32 duration);
+  void TallyADeath(const Births& birth,
+                   int32 queue_duration,
+                   const TaskStopwatch& stopwatch);
 
   // Snapshot (under a lock) the profiled data for the tasks in each ThreadData
   // instance.  Also updates the |birth_counts| tally for each task to keep
@@ -581,6 +581,10 @@ class BASE_EXPORT ThreadData {
   // When non-null, this specifies an external function that supplies monotone
   // increasing time functcion.
   static NowFunction* now_function_;
+
+  // If true, now_function_ returns values that can be used to calculate queue
+  // time.
+  static bool now_function_is_time_;
 
   // We use thread local store to identify which ThreadData to interact with.
   static base::ThreadLocalStorage::StaticSlot tls_index_;
@@ -665,9 +669,9 @@ class BASE_EXPORT ThreadData {
   mutable base::Lock map_lock_;
 
   // The stack of parents that are currently being profiled. This includes only
-  // tasks that have started a timer recently via NowForStartOfRun(), but not
-  // yet concluded with a NowForEndOfRun().  Usually this stack is one deep, but
-  // if a scoped region is profiled, or <sigh> a task runs a nested-message
+  // tasks that have started a timer recently via PrepareForStartOfRun(), but
+  // not yet concluded with a NowForEndOfRun().  Usually this stack is one deep,
+  // but if a scoped region is profiled, or <sigh> a task runs a nested-message
   // loop, then the stack can grow larger.  Note that we don't try to deduct
   // time in nested porfiles, as our current timer is based on wall-clock time,
   // and not CPU time (and we're hopeful that nested timing won't be a
@@ -686,7 +690,71 @@ class BASE_EXPORT ThreadData {
   // incarnations).
   int incarnation_count_for_pool_;
 
+  // Most recently started (i.e. most nested) stopwatch on the current thread,
+  // if it exists; NULL otherwise.
+  TaskStopwatch* current_stopwatch_;
+
   DISALLOW_COPY_AND_ASSIGN(ThreadData);
+};
+
+//------------------------------------------------------------------------------
+// Stopwatch to measure task run time or simply create a time interval that will
+// be subtracted from the current most nested task's run time. Stopwatches
+// coordinate with the stopwatches in which they are nested to avoid
+// double-counting nested tasks run times.
+
+class BASE_EXPORT TaskStopwatch {
+ public:
+  // Starts the stopwatch.
+  TaskStopwatch();
+  ~TaskStopwatch();
+
+  // Stops stopwatch.
+  void Stop();
+
+  // Returns the start time.
+  TrackedTime StartTime() const;
+
+  // Task's duration is calculated as the wallclock duration between starting
+  // and stopping this stopwatch, minus the wallclock durations of any other
+  // instances that are immediately nested in this one, started and stopped on
+  // this thread during that period.
+  int32 RunDurationMs() const;
+
+  // Returns tracking info for the current thread.
+  ThreadData* GetThreadData() const;
+
+ private:
+  // Time when the stopwatch was started.
+  TrackedTime start_time_;
+
+  // Wallclock duration of the task.
+  int32 wallclock_duration_ms_;
+
+  // Tracking info for the current thread.
+  ThreadData* current_thread_data_;
+
+  // Sum of wallclock durations of all stopwatches that were directly nested in
+  // this one.
+  int32 excluded_duration_ms_;
+
+  // Stopwatch which was running on our thread when this stopwatch was started.
+  // That preexisting stopwatch must be adjusted to the exclude the wallclock
+  // duration of this stopwatch.
+  TaskStopwatch* parent_;
+
+#if DCHECK_IS_ON
+  // State of the stopwatch. Stopwatch is first constructed in a running state,
+  // then stopped, then destructed.
+  enum {
+    RUNNING,
+    STOPPED
+  } state_;
+
+  // Currently running stopwatch that is directly nested in this one, if such
+  // stopwatch exists. NULL otherwise.
+  TaskStopwatch* child_;
+#endif
 };
 
 //------------------------------------------------------------------------------

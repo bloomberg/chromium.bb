@@ -755,13 +755,13 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
           this_worker->set_running_task_info(
               SequenceToken(task.sequence_token_id), task.shutdown_behavior);
 
-          tracked_objects::TrackedTime start_time =
-              tracked_objects::ThreadData::NowForStartOfRun(task.birth_tally);
-
+          tracked_objects::ThreadData::PrepareForStartOfRun(task.birth_tally);
+          tracked_objects::TaskStopwatch stopwatch;
           task.task.Run();
+          stopwatch.Stop();
 
-          tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking(task,
-              start_time, tracked_objects::ThreadData::NowForEndOfRun());
+          tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking(
+              task, stopwatch);
 
           // Make sure our task is erased outside the lock for the
           // same reason we do this with delete_these_oustide_lock.

@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/tracked_objects.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_memory_buffer_factory_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -196,6 +197,11 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   {
+    // Since the current task synchronously waits for establishing a GPU
+    // channel, it shouldn't be tallied because its execution time has nothing
+    // to do with its efficiency. Using task stopwatch to exclude the waiting
+    // time from the current task run time.
+    tracked_objects::TaskStopwatch stopwatch;
     // We're blocking the UI thread, which is generally undesirable.
     // In this case we need to wait for this before we can show any UI
     // /anyway/, so it won't cause additional jank.
@@ -204,6 +210,8 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
                  "BrowserGpuChannelHostFactory::EstablishGpuChannelSync");
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     event_.Wait();
+
+    stopwatch.Stop();
   }
   FinishOnMain();
 }

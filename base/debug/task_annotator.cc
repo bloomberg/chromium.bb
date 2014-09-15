@@ -28,10 +28,10 @@ void TaskAnnotator::DidQueueTask(const char* queue_function,
 void TaskAnnotator::RunTask(const char* queue_function,
                             const char* run_function,
                             const PendingTask& pending_task) {
-  tracked_objects::TrackedTime start_time =
-      tracked_objects::ThreadData::NowForStartOfRun(pending_task.birth_tally);
+  tracked_objects::ThreadData::PrepareForStartOfRun(pending_task.birth_tally);
+  tracked_objects::TaskStopwatch stopwatch;
   tracked_objects::Duration queue_duration =
-      start_time - pending_task.EffectiveTimePosted();
+      stopwatch.StartTime() - pending_task.EffectiveTimePosted();
 
   TRACE_EVENT_FLOW_END1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                         queue_function,
@@ -61,8 +61,9 @@ void TaskAnnotator::RunTask(const char* queue_function,
 
   pending_task.task.Run();
 
+  stopwatch.Stop();
   tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking(
-      pending_task, start_time, tracked_objects::ThreadData::NowForEndOfRun());
+      pending_task, stopwatch);
 }
 
 uint64 TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {
