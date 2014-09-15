@@ -42,10 +42,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onWebContentsInstantSupportDisabled() { }
 
     @Override
-    public void onLoadStarted(Tab tabBase) { }
+    public void onLoadStarted(Tab tab) { }
 
     @Override
-    public void onLoadStopped(Tab tabBase) { }
+    public void onLoadStopped(Tab tab) { }
 
     @Override
     public void onLoadProgressChanged(Tab tab, int progress) { }
