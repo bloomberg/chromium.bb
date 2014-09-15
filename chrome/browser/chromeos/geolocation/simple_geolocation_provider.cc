@@ -35,7 +35,7 @@ void SimpleGeolocationProvider::RequestGeolocation(
     SimpleGeolocationRequest::ResponseCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SimpleGeolocationRequest* request(
-      new SimpleGeolocationRequest(url_context_getter_, url_, timeout));
+      new SimpleGeolocationRequest(url_context_getter_.get(), url_, timeout));
   requests_.push_back(request);
 
   // SimpleGeolocationProvider owns all requests. It is safe to pass unretained
