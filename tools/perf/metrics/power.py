@@ -15,15 +15,16 @@ class PowerMetric(Metric):
   # System power draw while idle.
   _quiescent_power_draw_mwh = 0
 
-  def __init__(self, browser, quiescent_measurement_time_s=0):
+  def __init__(self, platform, quiescent_measurement_time_s=0):
     """PowerMetric Constructor.
 
     Args:
-        browser: browser object to use.
+        platform: platform object to use.
         quiescent_measurement_time_s: time to measure quiescent power,
             in seconds. 0 means don't measure quiescent power."""
     super(PowerMetric, self).__init__()
-    self._browser = browser
+    self._browser = None
+    self._platform = platform
     self._running = False
     self._starting_cpu_stats = None
     self._results = None
@@ -43,16 +44,15 @@ class PowerMetric(Metric):
     if not self._running:
       return
     self._running = False
-    self._results = self._browser.platform.StopMonitoringPower()
+    self._results = self._platform.StopMonitoringPower()
     if self._results: # StopMonitoringPower() can return None.
       self._results['cpu_stats'] = (
           _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
 
   def _MeasureQuiescentPower(self, measurement_time_s):
     """Measure quiescent power draw for the system."""
-    platform = self._browser.platform
-    if not platform.CanMonitorPower() or \
-        platform.CanMeasurePerApplicationPower() or \
+    if not self._platform.CanMonitorPower() or \
+        self._platform.CanMeasurePerApplicationPower() or \
         not measurement_time_s:
       return
 
@@ -60,14 +60,16 @@ class PowerMetric(Metric):
     if PowerMetric._quiescent_power_draw_mwh:
       return
 
-    platform.StartMonitoringPower(self._browser)
+    self._platform.StartMonitoringPower(self._browser)
     time.sleep(measurement_time_s)
-    power_results = platform.StopMonitoringPower()
+    power_results = self._platform.StopMonitoringPower()
     PowerMetric._quiescent_power_draw_mwh = (
         power_results.get('energy_consumption_mwh', 0))
 
   def Start(self, _, tab):
-    if not tab.browser.platform.CanMonitorPower():
+    self._browser = tab.browser
+
+    if not self._platform.CanMonitorPower():
       return
 
     self._results = None
@@ -75,11 +77,11 @@ class PowerMetric(Metric):
 
     # This line invokes top a few times, call before starting power measurement.
     self._starting_cpu_stats = self._browser.cpu_stats
-    self._browser.platform.StartMonitoringPower(self._browser)
+    self._platform.StartMonitoringPower(self._browser)
     self._running = True
 
   def Stop(self, _, tab):
-    if not tab.browser.platform.CanMonitorPower():
+    if not self._platform.CanMonitorPower():
       return
 
     self._StopInternal()

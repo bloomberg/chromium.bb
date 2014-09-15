@@ -20,8 +20,8 @@ class ImageDecoding(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
+  def WillStartBrowser(self, platform):
+    self._power_metric = power.PowerMetric(platform)
 
   def WillNavigateToPage(self, page, tab):
     tab.ExecuteJavaScript("""

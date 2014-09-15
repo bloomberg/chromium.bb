@@ -84,9 +84,9 @@ class PageCycler(page_test.PageTest):
     else:
       cls._cold_run_start_index = args.pageset_repeat * args.page_repeat
 
-  def WillStartBrowser(self, browser):
+  def WillStartBrowser(self, platform):
     """Initialize metrics once right before the browser has been launched."""
-    self._power_metric = power.PowerMetric(browser)
+    self._power_metric = power.PowerMetric(platform)
 
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""

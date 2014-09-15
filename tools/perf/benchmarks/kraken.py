@@ -73,8 +73,8 @@ class _KrakenMeasurement(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def WillStartBrowser(self, browser):
-    self._power_metric = power.PowerMetric(browser)
+  def WillStartBrowser(self, platform):
+    self._power_metric = power.PowerMetric(platform)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)

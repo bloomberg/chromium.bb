@@ -38,9 +38,9 @@ class TabSwitching(page_test.PageTest):
     options.disable_background_networking = False
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def WillStartBrowser(self, browser):
+  def WillStartBrowser(self, platform):
     self._first_page_in_pageset = True
-    self._power_metric = power.PowerMetric(browser, TabSwitching.SAMPLE_TIME)
+    self._power_metric = power.PowerMetric(platform, TabSwitching.SAMPLE_TIME)
 
   def TabForPage(self, page, browser):
     if self._first_page_in_pageset:

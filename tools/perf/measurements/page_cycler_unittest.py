@@ -120,7 +120,7 @@ class PageCyclerUnitTest(unittest.TestCase):
       try:
         page_cycler.memory = mock_memory_module
         browser = FakeBrowser()
-        cycler.WillStartBrowser(browser)
+        cycler.WillStartBrowser(options.browser_options.platform)
         cycler.DidStartBrowser(browser)
       finally:
         page_cycler.memory = real_memory_module
