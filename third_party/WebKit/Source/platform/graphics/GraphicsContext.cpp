@@ -100,11 +100,13 @@ struct GraphicsContext::CanvasSaveState {
 };
 
 struct GraphicsContext::RecordingState {
-    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix, PassRefPtr<DisplayList> displayList)
+    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix,
+        PassRefPtr<DisplayList> displayList, RegionTrackingMode trackingMode)
         : m_displayList(displayList)
         , m_recorder(recorder)
         , m_savedCanvas(currentCanvas)
-        , m_savedMatrix(currentMatrix) { }
+        , m_savedMatrix(currentMatrix)
+        , m_regionTrackingMode(trackingMode) { }
 
     ~RecordingState() { }
 
@@ -112,6 +114,7 @@ struct GraphicsContext::RecordingState {
     SkPictureRecorder* m_recorder;
     SkCanvas* m_savedCanvas;
     const SkMatrix m_savedMatrix;
+    RegionTrackingMode m_regionTrackingMode;
 };
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOrPainting)
@@ -534,7 +537,11 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
         }
     }
 
-    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, displayList));
+    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, displayList,
+        static_cast<RegionTrackingMode>(m_regionTrackingMode)));
+
+    // Disable region tracking during recording.
+    setRegionTrackingMode(RegionTrackingDisabled);
 }
 
 PassRefPtr<DisplayList> GraphicsContext::endRecording()
@@ -546,6 +553,7 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
         recording.m_displayList->setPicture(recording.m_recorder->endRecording());
 
     m_canvas = recording.m_savedCanvas;
+    setRegionTrackingMode(recording.m_regionTrackingMode);
     delete recording.m_recorder;
     m_recordingStateStack.removeLast();
 
@@ -584,6 +592,14 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
         m_canvas->drawPicture(displayList->picture(), &m, 0);
     } else {
         m_canvas->drawPicture(displayList->picture());
+    }
+
+    if (regionTrackingEnabled()) {
+        // Since we don't track regions within display lists, conservatively
+        // mark the bounds as non-opaque.
+        SkPaint paint;
+        paint.setXfermodeMode(SkXfermode::kClear_Mode);
+        m_trackedRegion.didDrawBounded(this, displayList->bounds(), paint);
     }
 
     if (performClip || performTransform)
