@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/threading/thread_collision_warner.h"
 
 namespace leveldb {
@@ -27,9 +28,8 @@ class LevelDB {
   virtual ~LevelDB();
 
   virtual bool Init(const base::FilePath& database_dir);
-  virtual bool Save(
-      const std::vector<std::pair<std::string, std::string> >& pairs_to_save,
-      const std::vector<std::string>& keys_to_remove);
+  virtual bool Save(const base::StringPairs& pairs_to_save,
+                    const std::vector<std::string>& keys_to_remove);
   virtual bool Load(std::vector<std::string>* entries);
 
  private:

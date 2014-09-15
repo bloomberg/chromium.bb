@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -51,15 +52,14 @@ bool LevelDB::Init(const base::FilePath& database_dir) {
   return false;
 }
 
-bool LevelDB::Save(
-    const std::vector<std::pair<std::string, std::string> >& entries_to_save,
-    const std::vector<std::string>& keys_to_remove) {
+bool LevelDB::Save(const base::StringPairs& entries_to_save,
+                   const std::vector<std::string>& keys_to_remove) {
   DFAKE_SCOPED_LOCK(thread_checker_);
 
   leveldb::WriteBatch updates;
-  for (std::vector<std::pair<std::string, std::string> >::const_iterator it =
-           entries_to_save.begin();
-       it != entries_to_save.end(); ++it) {
+  for (base::StringPairs::const_iterator it = entries_to_save.begin();
+       it != entries_to_save.end();
+       ++it) {
     updates.Put(leveldb::Slice(it->first), leveldb::Slice(it->second));
   }
   for (std::vector<std::string>::const_iterator it = keys_to_remove.begin();

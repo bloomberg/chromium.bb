@@ -44,23 +44,25 @@ bool ParseHeader(const std::string& header,
   if (header.empty())
     return false;
 
-  std::vector<std::pair<std::string, std::string> > pairs;
+  base::StringPairs pairs;
   if (!base::SplitStringIntoKeyValuePairs(header, '=', '&', &pairs))
     return false;
 
   // Parse the information from the |header| string.
   HeaderData local_params;
-  for (size_t i = 0; i < pairs.size(); ++i) {
-    const std::pair<std::string, std::string>& pair = pairs[i];
-    std::string unescaped_value(net::UnescapeURLComponent(
-          pair.second, net::UnescapeRule::URL_SPECIAL_CHARS));
-    if (pair.first == "realm") {
+  for (base::StringPairs::const_iterator it = pairs.begin(); it != pairs.end();
+       ++it) {
+    const std::string& key = it->first;
+    const std::string& value = it->second;
+    std::string unescaped_value(
+        net::UnescapeURLComponent(value, net::UnescapeRule::URL_SPECIAL_CHARS));
+    if (key == "realm") {
       if (!MatchRealm(unescaped_value, realm_restriction))
         return false;
       local_params.realm = unescaped_value;
-    } else if (pair.first == "account") {
+    } else if (key == "account") {
       local_params.account = unescaped_value;
-    } else if (pair.first == "args") {
+    } else if (key == "args") {
       local_params.args = unescaped_value;
     }
   }

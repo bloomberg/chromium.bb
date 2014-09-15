@@ -802,14 +802,16 @@ class WalletClientTest : public testing::Test {
     EXPECT_EQ("GoogleLogin auth=gdToken", auth_header_value);
 
     const std::string& upload_data = fetcher->upload_data();
-    std::vector<std::pair<std::string, std::string> > tokens;
+    base::StringPairs tokens;
     base::SplitStringIntoKeyValuePairs(upload_data, '=', '&', &tokens);
     EXPECT_EQ(tokens.size(), expected_parameter_number);
 
     size_t num_params = 0U;
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      const std::string& key = tokens[i].first;
-      const std::string& value = tokens[i].second;
+    for (base::StringPairs::const_iterator iter = tokens.begin();
+         iter != tokens.end();
+         ++iter) {
+      const std::string& key = iter->first;
+      const std::string& value = iter->second;
 
       if (key == "request_content_type") {
         EXPECT_EQ("application/json", value);
