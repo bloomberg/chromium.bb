@@ -52,7 +52,7 @@ anchoredAt:(NSPoint)anchorPoint
     windowFrame.size.width = NSWidth(contentFrame) + kWindowPadding * 2;
     windowFrame.size.height = NSHeight(contentFrame) + kWindowPadding * 2
         + info_bubble::kBubbleArrowHeight;
-    [window setFrame:windowFrame display:nil];
+    [window setFrame:windowFrame display:NO];
 
     [self showWindow:nil];
   }
