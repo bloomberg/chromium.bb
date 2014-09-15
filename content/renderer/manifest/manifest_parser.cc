@@ -54,7 +54,7 @@ base::NullableString16 ParseShortName(
 namespace content {
 
 Manifest ManifestParser::Parse(const base::StringPiece& json) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+  base::Value* value = base::JSONReader::Read(json);
   if (!value) {
     // TODO(mlamouri): get the JSON parsing error and report it to the developer
     // console.
