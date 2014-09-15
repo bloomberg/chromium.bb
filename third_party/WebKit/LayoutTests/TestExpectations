@@ -218,6 +218,31 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/395877 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
 
+# Now that the frame's overflow control host layer clips, it has bounds that appear in the layer tree dumps. No pixel changes.
+Bug(vollick) compositing/iframes/invisible-nested-iframe-hide.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/overlapped-nested-iframes.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/iframe-resize.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/connect-compositing-iframe-delayed.html [ NeedsRebaseline ]
+Bug(vollick) compositing/rtl/rtl-iframe-fixed.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/overlapped-iframe-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/overlapped-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/force-compositing-mode/overflow-iframe-enter-compositing.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/become-overlapped-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/rtl/rtl-iframe-absolute.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/connect-compositing-iframe3.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/enter-compositing-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/rtl/rtl-iframe-relative.html [ NeedsRebaseline ]
+Bug(vollick) compositing/force-compositing-mode/overflow-iframe-layer.html [ NeedsRebaseline ]
+Bug(vollick) inspector/layers/layer-tree-model.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/connect-compositing-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/become-composited-nested-iframes.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/iframe-size-from-zero.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/composited-parent-iframe.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/invisible-nested-iframe-show.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/resizer.html [ NeedsRebaseline ]
+Bug(vollick) compositing/iframes/connect-compositing-iframe2.html [ NeedsRebaseline ]
+Bug(vollick) [ Linux Win ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+
 # Untriaged Linux-specific Aura failures
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
