@@ -261,7 +261,7 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
 
   // Drop it to the slot on the right of first slot.
   gfx::Rect drop_target_tile(first_slot_tile);
-  drop_target_tile.Offset(first_slot_tile.width(), 0);
+  drop_target_tile.Offset(first_slot_tile.width() * 2, 0);
   gfx::Point point = drop_target_tile.CenterPoint();
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
