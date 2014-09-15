@@ -409,12 +409,6 @@ class SerialApiTest : public ApiTestBase {
         &SerialApiTest::CreateSerialService, base::Unretained(this)));
   }
 
-  virtual void TearDown() OVERRIDE {
-    if (io_handler_.get())
-      EXPECT_TRUE(io_handler_->HasOneRef());
-    ApiTestBase::TearDown();
-  }
-
   scoped_refptr<TestIoHandlerBase> io_handler_;
 
  private:

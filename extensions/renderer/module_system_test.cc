@@ -211,11 +211,14 @@ v8::Handle<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
 
 ModuleSystemTest::ModuleSystemTest()
     : isolate_(v8::Isolate::GetCurrent()),
-      env_(CreateEnvironment()),
       should_assertions_be_made_(true) {
 }
 
 ModuleSystemTest::~ModuleSystemTest() {
+}
+
+void ModuleSystemTest::SetUp() {
+  env_ = CreateEnvironment();
 }
 
 void ModuleSystemTest::TearDown() {
@@ -223,6 +226,18 @@ void ModuleSystemTest::TearDown() {
   EXPECT_EQ(should_assertions_be_made_,
             env_->assert_natives()->assertion_made());
   EXPECT_FALSE(env_->assert_natives()->failed());
+  env_.reset();
+  v8::HeapStatistics stats;
+  isolate_->GetHeapStatistics(&stats);
+  size_t old_heap_size = 0;
+  // Run the GC until the heap size reaches a steady state to ensure that
+  // all the garbage is collected.
+  while (stats.used_heap_size() != old_heap_size) {
+    old_heap_size = stats.used_heap_size();
+    isolate_->RequestGarbageCollectionForTesting(
+        v8::Isolate::kFullGarbageCollection);
+    isolate_->GetHeapStatistics(&stats);
+  }
 }
 
 scoped_ptr<ModuleSystemTestEnvironment> ModuleSystemTest::CreateEnvironment() {

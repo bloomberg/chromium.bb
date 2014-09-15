@@ -81,6 +81,7 @@ class ModuleSystemTest : public testing::Test {
   ModuleSystemTest();
   virtual ~ModuleSystemTest();
 
+  virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
  protected:
