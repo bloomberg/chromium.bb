@@ -370,7 +370,7 @@
     "dependencies": ["permission:embeddedExtensionOptions"]
   }, {
     "internal": true,
-    "channel": "dev",
+    "channel": "trunk",
     "contexts": ["webui"],
     "matches": ["chrome://extensions-frame/*", "chrome://extensions/*"]
   }],

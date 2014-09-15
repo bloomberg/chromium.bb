@@ -1333,6 +1333,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kEnableAppView,
       extensions::switches::kEnableAppWindowControls,
+      extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kEnableScriptsRequireAction,
       extensions::switches::kExtensionsOnChromeURLs,

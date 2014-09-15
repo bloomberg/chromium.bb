@@ -19,6 +19,10 @@ const char kAllowLegacyExtensionManifests[] =
 // Enables the <appview> tag in platform apps.
 const char kAppView[] = "app-view";
 
+// Enables extension options to be embedded in chrome://extensions rather than
+// a new tab.
+const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
+
 // Show apps windows after the first paint. Windows will be shown significantly
 // later for heavy apps loading resources synchronously but it will be
 // insignificant for apps that load most of their resources asynchronously.
@@ -30,6 +34,11 @@ const char kEnableAppView[] = "enable-app-view";
 
 // Enables the <window-controls> tag in platform apps.
 const char kEnableAppWindowControls[] = "enable-app-window-controls";
+
+// Hack so that feature switch can work with about_flags. See
+// kEnableScriptsRequireAction.
+const char kEnableEmbeddedExtensionOptions[] =
+    "enable-embedded-extension-options";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =

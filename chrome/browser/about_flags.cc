@@ -1854,6 +1854,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwording)
   },
   {
+    "enable-embedded-extension-options",
+    IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME,
+    IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)
+  },
+  {
     "enable-website-settings-manager",
     IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,
     IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION,

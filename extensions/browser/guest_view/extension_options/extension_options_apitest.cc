@@ -14,6 +14,20 @@ using extensions::Extension;
 using extensions::FeatureSwitch;
 
 class ExtensionOptionsApiTest : public ExtensionApiTest {
+ private:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+
+    enable_options_.reset(new FeatureSwitch::ScopedOverride(
+        FeatureSwitch::embedded_extension_options(), true));
+    // Need to add a command line flag as well as a FeatureSwitch because the
+    // FeatureSwitch is not copied over to the renderer process from the
+    // browser process.
+    command_line->AppendSwitch(
+        extensions::switches::kEnableEmbeddedExtensionOptions);
+  }
+
+  scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest, ExtensionCanEmbedOwnOptions) {

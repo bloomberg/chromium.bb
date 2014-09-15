@@ -112,10 +112,11 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
     base::string16* error) {
   GURL options_page;
   bool chrome_style = false;
-  bool open_in_tab = false;
+  bool open_in_tab = !FeatureSwitch::embedded_extension_options()->IsEnabled();
 
   // Parse the options_ui object.
-  if (options_ui_value) {
+  if (options_ui_value &&
+      FeatureSwitch::embedded_extension_options()->IsEnabled()) {
     base::string16 options_ui_error;
 
     scoped_ptr<OptionsUI> options_ui =

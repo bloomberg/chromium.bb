@@ -41,6 +41,9 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
+        embedded_extension_options(
+            switches::kEmbeddedExtensionOptions,
+            FeatureSwitch::DEFAULT_DISABLED),
         app_view(switches::kAppView,
                  FeatureSwitch::DEFAULT_DISABLED),
         mime_handler_view(switches::kMimeHandlerView,
@@ -60,6 +63,7 @@ class CommonSwitches {
   FeatureSwitch enable_override_bookmarks_ui;
   FeatureSwitch extension_action_redesign;
   FeatureSwitch scripts_require_action;
+  FeatureSwitch embedded_extension_options;
   FeatureSwitch app_view;
   FeatureSwitch mime_handler_view;
 };
@@ -89,6 +93,9 @@ FeatureSwitch* FeatureSwitch::extension_action_redesign() {
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {
   return &g_common_switches.Get().scripts_require_action;
+}
+FeatureSwitch* FeatureSwitch::embedded_extension_options() {
+  return &g_common_switches.Get().embedded_extension_options;
 }
 FeatureSwitch* FeatureSwitch::app_view() {
   return &g_common_switches.Get().app_view;

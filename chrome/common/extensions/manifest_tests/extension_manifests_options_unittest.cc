@@ -46,6 +46,9 @@ TEST_F(OptionsPageManifestTest, OptionsPageInApps) {
 
 // Tests for the options_ui.page manifest field.
 TEST_F(OptionsPageManifestTest, OptionsUIPage) {
+  FeatureSwitch::ScopedOverride enable_flag(
+      FeatureSwitch::embedded_extension_options(), true);
+
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("options_ui_page_basic.json");
   EXPECT_EQ(base::StringPrintf("chrome-extension://%s/options.html",
@@ -64,6 +67,9 @@ TEST_F(OptionsPageManifestTest, OptionsUIPage) {
 
 // Tests for the options_ui.chrome_style and options_ui.open_in_tab fields.
 TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTab) {
+  FeatureSwitch::ScopedOverride enable_flag(
+      FeatureSwitch::embedded_extension_options(), true);
+
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("options_ui_flags_true.json");
   EXPECT_TRUE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
@@ -77,4 +83,24 @@ TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTab) {
   extension = LoadAndExpectSuccess("options_ui_page_basic.json");
   EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
   EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+}
+
+// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields when
+// the flag for embedded extension options is turned off. chrome_style should
+// always be false, open_in_tab should always be true.
+TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTabNoFlag) {
+  ASSERT_FALSE(FeatureSwitch::embedded_extension_options()->IsEnabled());
+
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("options_ui_flags_true.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+  extension = LoadAndExpectSuccess("options_ui_flags_false.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+  extension = LoadAndExpectSuccess("options_ui_page_basic.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
 }
