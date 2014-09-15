@@ -667,21 +667,15 @@ size_t GpuChannel::MatchSwapBufferMessagesPattern(
   DCHECK(current_message);
   if (deferred_messages_.empty() || !current_message)
     return 0;
-  // Only care about SetLatencyInfo and AsyncFlush message.
-  if (current_message->type() != GpuCommandBufferMsg_SetLatencyInfo::ID &&
-      current_message->type() != GpuCommandBufferMsg_AsyncFlush::ID)
+  // Only care about AsyncFlush message.
+  if (current_message->type() != GpuCommandBufferMsg_AsyncFlush::ID)
     return 0;
 
   size_t index = 0;
   int32 routing_id = current_message->routing_id();
 
-  // In case of the current message is SetLatencyInfo, we try to look ahead one
-  // more deferred messages.
-  IPC::Message *first_message = NULL;
-  IPC::Message *second_message = NULL;
-
   // Fetch the first message and move index to point to the second message.
-  first_message = deferred_messages_[index++];
+  IPC::Message* first_message = deferred_messages_[index++];
 
   // If the current message is AsyncFlush, the expected message sequence for
   // SwapBuffer should be AsyncFlush->Echo. We only try to match Echo message.
@@ -691,20 +685,6 @@ size_t GpuChannel::MatchSwapBufferMessagesPattern(
     return 1;
   }
 
-  // If the current message is SetLatencyInfo, the expected message sequence
-  // for SwapBuffer should be SetLatencyInfo->AsyncFlush->Echo (optional).
-  if (current_message->type() == GpuCommandBufferMsg_SetLatencyInfo::ID &&
-      first_message->type() == GpuCommandBufferMsg_AsyncFlush::ID &&
-      first_message->routing_id() == routing_id) {
-    if (deferred_messages_.size() >= 2)
-      second_message = deferred_messages_[index];
-    if (!second_message)
-      return 1;
-    if (second_message->type() == GpuCommandBufferMsg_Echo::ID &&
-        second_message->routing_id() == routing_id) {
-      return 2;
-    }
-  }
   // No matched message is found.
   return 0;
 }
@@ -771,7 +751,7 @@ void GpuChannel::HandleMessage() {
     // We process the pending messages immediately if these messages matches
     // the pattern of SwapBuffers, for example, GLRenderer always issues
     // SwapBuffers calls with a specific IPC message patterns, for example,
-    // it should be SetLatencyInfo->AsyncFlush->Echo sequence.
+    // it should be AsyncFlush->Echo sequence.
     //
     // Instead of posting a task to message loop, it could avoid the possibility
     // of being blocked by other channels, and make SwapBuffers executed as soon

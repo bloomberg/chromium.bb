@@ -164,7 +164,8 @@ class GpuCommandBufferStub
   void OnWaitForGetOffsetInRange(int32 start,
                                  int32 end,
                                  IPC::Message* reply_message);
-  void OnAsyncFlush(int32 put_offset, uint32 flush_count);
+  void OnAsyncFlush(int32 put_offset, uint32 flush_count,
+                    const std::vector<ui::LatencyInfo>& latency_info);
   void OnEcho(const IPC::Message& message);
   void OnRescheduled();
   void OnRegisterTransferBuffer(int32 id,
@@ -205,7 +206,6 @@ class GpuCommandBufferStub
 
   void OnCommandProcessed();
   void OnParseError();
-  void OnSetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   void OnCreateStreamTexture(
       uint32 texture_id, int32 stream_id, bool* succeeded);
 

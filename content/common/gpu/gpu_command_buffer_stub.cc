@@ -229,8 +229,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   if (decoder_.get() && message.type() != GpuCommandBufferMsg_Echo::ID &&
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
-      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
-      message.type() != GpuCommandBufferMsg_SetLatencyInfo::ID) {
+      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID) {
     if (!MakeCurrent())
       return false;
     have_context = true;
@@ -252,7 +251,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
                                     OnWaitForGetOffsetInRange);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetLatencyInfo, OnSetLatencyInfo);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
                         OnRegisterTransferBuffer);
@@ -630,15 +628,6 @@ void GpuCommandBufferStub::OnInitialize(
   }
 }
 
-void GpuCommandBufferStub::OnSetLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  if (!ui::LatencyInfo::Verify(latency_info,
-                               "GpuCommandBufferStub::OnSetLatencyInfo"))
-    return;
-  if (!latency_info_callback_.is_null())
-    latency_info_callback_.Run(latency_info);
-}
-
 void GpuCommandBufferStub::OnCreateStreamTexture(
     uint32 texture_id, int32 stream_id, bool* succeeded) {
 #if defined(OS_ANDROID)
@@ -758,9 +747,18 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
   }
 }
 
-void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
+void GpuCommandBufferStub::OnAsyncFlush(
+    int32 put_offset,
+    uint32 flush_count,
+    const std::vector<ui::LatencyInfo>& latency_info) {
   TRACE_EVENT1(
       "gpu", "GpuCommandBufferStub::OnAsyncFlush", "put_offset", put_offset);
+
+  if (ui::LatencyInfo::Verify(latency_info,
+                              "GpuCommandBufferStub::OnAsyncFlush") &&
+      !latency_info_callback_.is_null()) {
+    latency_info_callback_.Run(latency_info);
+  }
   DCHECK(command_buffer_.get());
   if (flush_count - last_flush_count_ < 0x8000000U) {
     last_flush_count_ = flush_count;

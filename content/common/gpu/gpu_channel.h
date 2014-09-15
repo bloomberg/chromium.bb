@@ -170,7 +170,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   // Try to match the messages pattern for GL SwapBuffers operation in the
   // deferred message queue starting from the current processing message.
   // Return the number of messages that matches the given pattern, e.g.
-  // SetLatencyInfo -> AsyncFlush -> Echo sequence.
+  // AsyncFlush -> Echo sequence.
   size_t MatchSwapBufferMessagesPattern(IPC::Message* current_message);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.

@@ -204,6 +204,8 @@ class CommandBufferProxyImpl
 
   gpu::Capabilities capabilities_;
 
+  std::vector<ui::LatencyInfo> latency_info_;
+
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
 

@@ -35,7 +35,6 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
   CommandBufferProxyImpl* command_buffer_proxy =
       provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);
-  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 
   if (reflector_.get()) {

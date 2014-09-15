@@ -189,15 +189,15 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
 
   Send(new GpuCommandBufferMsg_AsyncFlush(route_id_,
                                           put_offset,
-                                          ++flush_count_));
+                                          ++flush_count_,
+                                          latency_info_));
+  latency_info_.clear();
 }
 
 void CommandBufferProxyImpl::SetLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  if (last_state_.error != gpu::error::kNoError ||
-      latency_info.empty())
-    return;
-  Send(new GpuCommandBufferMsg_SetLatencyInfo(route_id_, latency_info));
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 }
 
 void CommandBufferProxyImpl::WaitForTokenInRange(int32 start, int32 end) {
