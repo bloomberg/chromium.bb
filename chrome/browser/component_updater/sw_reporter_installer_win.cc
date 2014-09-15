@@ -224,7 +224,7 @@ wchar_t SwReporterInstallerTraits::version_dir_[] = {};
 void RegisterSwReporterComponent(ComponentUpdateService* cus,
                                  PrefService* prefs) {
   // The Sw reporter shouldn't run if the user isn't reporting metrics.
-  if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() && false)
+  if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled())
     return;
 
   // Install the component.
