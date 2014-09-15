@@ -11,7 +11,12 @@ from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 
 
-def _CreatePageSetFromPath(path):
+BLINK_PERF_BASE_DIR = os.path.join(util.GetChromiumSrcDir(),
+                                   'third_party', 'WebKit', 'PerformanceTests')
+SKIPPED_FILE = os.path.join(BLINK_PERF_BASE_DIR, 'Skipped')
+
+
+def _CreatePageSetFromPath(path, skipped_file):
   assert os.path.exists(path)
 
   page_urls = []
@@ -40,7 +45,6 @@ def _CreatePageSetFromPath(path):
 
   if os.path.isdir(path):
     skipped = []
-    skipped_file = os.path.join(path, 'Skipped')
     if os.path.exists(skipped_file):
       for line in open(skipped_file, 'r').readlines():
         line = line.strip()
@@ -93,22 +97,142 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     print log
 
 
+# TODO(dtu): Remove this benchmark once desktop chromium.perf bots are on
+# recipes and running the split-up blink_perf benchmark.
+@benchmark.Disabled('android')
 class BlinkPerfAll(benchmark.Benchmark):
   tag = 'all'
   test = _BlinkPerfMeasurement
 
   def CreatePageSet(self, options):
-    path = os.path.join(util.GetChromiumSrcDir(),
-        'third_party', 'WebKit', 'PerformanceTests')
-    return _CreatePageSetFromPath(path)
+    return _CreatePageSetFromPath(BLINK_PERF_BASE_DIR, SKIPPED_FILE)
 
 
-@benchmark.Disabled
+@benchmark.Enabled('android')
 class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
 
   def CreatePageSet(self, options):
-    path = os.path.join(util.GetChromiumSrcDir(),
-        'third_party', 'WebKit', 'PerformanceTests', 'Animation')
-    return _CreatePageSetFromPath(path)
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Animation')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfBindings(benchmark.Benchmark):
+  tag = 'bindings'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Bindings')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfCSS(benchmark.Benchmark):
+  tag = 'css'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'CSS')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfCanvas(benchmark.Benchmark):
+  tag = 'canvas'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Canvas')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfDOM(benchmark.Benchmark):
+  tag = 'dom'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'DOM')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfEvents(benchmark.Benchmark):
+  tag = 'events'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Events')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfInteractive(benchmark.Benchmark):
+  tag = 'interactive'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Interactive')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfLayout(benchmark.Benchmark):
+  tag = 'layout'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Layout')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfMutation(benchmark.Benchmark):
+  tag = 'mutation'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Mutation')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfParser(benchmark.Benchmark):
+  tag = 'parser'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'Parser')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfSVG(benchmark.Benchmark):
+  tag = 'svg'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfShadowDOM(benchmark.Benchmark):
+  tag = 'shadow_dom'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'ShadowDOM')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('android')
+class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
+  tag = 'xml_http_request'
+  test = _BlinkPerfMeasurement
+
+  def CreatePageSet(self, options):
+    path = os.path.join(BLINK_PERF_BASE_DIR, 'XMLHttpRequest')
+    return _CreatePageSetFromPath(path, SKIPPED_FILE)
