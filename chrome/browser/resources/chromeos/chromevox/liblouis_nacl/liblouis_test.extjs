@@ -1,0 +1,130 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Tests for the liblouis Native Client wrapper, as seen from
+ *    the JavaScript interface.
+ */
+
+// Include test fixture.
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js',
+             '../testing/assert_additions.js']);
+
+/**
+ * @constructor
+ * @extends {ChromeVoxE2ETest}
+ */
+function CvoxLibLouisTest() {}
+
+CvoxLibLouisTest.prototype = {
+  __proto__: ChromeVoxE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    // Avoid loading a second liblouis instance and get the one that chromevox
+    // is already creating.
+    this.instance = cvox.ChromeVox.braille.getLibLouisForTest();
+  },
+};
+
+function assertEqualsUint8Array(expected, actual) {
+  var as_array = [];
+  var uint8array = new Uint8Array(actual);
+  for (var i = 0; i < uint8array.length; ++i) {
+    as_array[i] = uint8array[i];
+  }
+  assertEqualsJSON(expected, as_array);
+}
+
+TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
+  cvox.BrailleTable.getAll(function(all_tables) {
+    var i = 0;
+    var checkNextTable = function() {
+      var table = all_tables[i++];
+      if (table) {
+        this.instance.getTranslator(table.fileName, function(translator) {
+          assertNotEquals(null, translator,
+                             'Table ' + table + ' should be valid');
+          checkNextTable();
+        });
+      } else {
+        testDone();
+      }
+    }.bind(this);
+    checkNextTable();
+  }.bind(this));
+});
+
+TEST_F('CvoxLibLouisTest', 'testTranslateComputerBraille', function () {
+  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+    translator.translate(
+        'Hello!', function(cells, textToBraille, brailleToText) {
+          assertEqualsUint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e], cells);
+          assertEqualsJSON([0, 1, 2, 3, 4, 5], textToBraille);
+          assertEqualsJSON([0, 1, 2, 3, 4, 5], brailleToText);
+          testDone();
+        });
+  });
+});
+
+TEST_F('CvoxLibLouisTest', 'testBackTranslateComputerBraille', function() {
+  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+    var cells = new Uint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e]);
+    translator.backTranslate(cells.buffer, function(text) {
+      assertEquals('Hello!', text);
+      testDone();
+    });
+  });
+});
+
+TEST_F('CvoxLibLouisTest', 'testTranslateGermanGrade2Braille', function() {
+  // This is one of the moderately large tables.
+  this.instance.getTranslator('de-de-g2.ctb', function(translator) {
+    translator.translate(
+         'München', function(cells, textToBraille, brailleToText) {
+           assertEqualsUint8Array([0x0d, 0x33, 0x1d, 0x39, 0x09], cells);
+           assertEqualsJSON([0, 1, 2, 3, 3, 4, 4], textToBraille);
+           assertEqualsJSON([0, 1, 2, 3, 5], brailleToText);
+           testDone();
+         });
+  });
+});
+
+TEST_F('CvoxLibLouisTest', 'testBackTranslateGermanComputerBraille', function() {
+  this.instance.getTranslator('de-de-comp8.ctb', function(translator) {
+    var cells = new Uint8Array([0xb3]);
+    translator.backTranslate(cells.buffer, function(text) {
+      assertEquals('ü', text);
+      testDone();
+    });
+  });
+});
+
+TEST_F('CvoxLibLouisTest', 'testBackTranslateEmptyCells', function() {
+  this.instance.getTranslator('de-de-comp8.ctb', function(translator) {
+    var cells = new Uint8Array();
+    translator.backTranslate(cells.buffer, function(text) {
+      assertNotEquals(null, text);
+      assertEquals(0, text.length);
+      testDone();
+    });
+  });
+});
+
+TEST_F('CvoxLibLouisTest', 'testGetTranslatorBeforeAttach', function() {
+  this.instance.detach();
+   assertFalse(this.instance.isAttached());
+  this.instance.getTranslator('en-us-comp8.ctb', function(translator) {
+    assertNotEquals(null, translator);
+    testDone();
+  });
+  this.instance.attachToElement(document.body);
+});
+
+TEST_F('CvoxLibLouisTest', 'testGetInvalidTranslator', function() {
+  this.instance.getTranslator('nonexistant-table', function(translator) {
+    assertEquals(null, translator);
+    testDone();
+  });
+});

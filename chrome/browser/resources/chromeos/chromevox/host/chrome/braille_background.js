@@ -179,6 +179,15 @@ cvox.BrailleBackground.prototype.onBrailleMessage = function(msg) {
 
 
 /**
+ * @return {cvox.LibLouis} The liblouis instance used by this object, or null
+ * if not initialized yet.
+ */
+cvox.BrailleBackground.prototype.getLibLouisForTest = function() {
+  return this.liblouis_;
+};
+
+
+/**
  * Initialization to be done after part of the background page's DOM has been
  * constructed. Currently only used on ChromeOS.
  * @param {number} retries Number of retries.
