@@ -61,26 +61,11 @@ void TouchEditableImplAura::UpdateEditingController() {
 }
 
 void TouchEditableImplAura::OverscrollStarted() {
-  overscroll_in_progress_ = true;
+  scrolls_in_progress_++;
 }
 
 void TouchEditableImplAura::OverscrollCompleted() {
-  // We might receive multiple OverscrollStarted() and OverscrollCompleted()
-  // during the same scroll session (for example, when the scroll direction
-  // changes). We want to show the handles only when:
-  // 1. Overscroll has completed
-  // 2. Scrolling session is over, i.e. we have received ET_GESTURE_SCROLL_END.
-  // 3. If we had hidden the handles when scrolling started
-  // 4. If there is still a need to show handles (there is a non-empty selection
-  // or non-NONE |text_input_type_|)
-  if (overscroll_in_progress_ && !scroll_in_progress_ &&
-      handles_hidden_due_to_scroll_ &&
-      (selection_anchor_rect_ != selection_focus_rect_ ||
-          text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)) {
-    StartTouchEditing();
-    UpdateEditingController();
-  }
-  overscroll_in_progress_ = false;
+  ScrollEnded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,12 +101,10 @@ void TouchEditableImplAura::OnSelectionOrCursorChanged(const gfx::Rect& anchor,
   selection_anchor_rect_ = anchor;
   selection_focus_rect_ = focus;
 
-  // If touch editing handles were not visible, we bring them up only if
-  // there is non-zero selection on the page. And the current event is a
-  // gesture event (we dont want to show handles if the user is selecting
-  // using mouse or keyboard).
-  if (selection_gesture_in_process_ && !scroll_in_progress_ &&
-      !overscroll_in_progress_ &&
+  // If touch editing handles were not visible, we bring them up only if the
+  // current event is a gesture event, no scroll/fling/overscoll is in progress,
+  // and there is non-zero selection on the page
+  if (selection_gesture_in_process_ && !scrolls_in_progress_ &&
       selection_anchor_rect_ != selection_focus_rect_) {
     StartTouchEditing();
     selection_gesture_in_process_ = false;
@@ -163,36 +146,29 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       }
       // For single taps, not inside selected region, we want to show handles
       // only when the tap is on an already focused textfield.
-      textfield_was_focused_on_tap_ = false;
-      if (gesture_event->details().tap_count() == 1 &&
-          text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)
-        textfield_was_focused_on_tap_ = true;
+      textfield_was_focused_on_tap_ =
+          gesture_event->details().tap_count() == 1 &&
+          text_input_type_ != ui::TEXT_INPUT_TYPE_NONE;
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       selection_gesture_in_process_ = true;
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      // If selection handles are currently visible, we want to get them back up
-      // when scrolling ends. So we set |handles_hidden_due_to_scroll_| so that
-      // we can re-start touch editing on scroll end gesture.
-      scroll_in_progress_ = true;
-      handles_hidden_due_to_scroll_ = false;
-      if (touch_selection_controller_)
-        handles_hidden_due_to_scroll_ = true;
+      scrolls_in_progress_++;
+      // We need to hide selection handles during scroll (including fling and
+      // overscroll), but they should be re-activated after scrolling if:
+      //  - an existing scroll decided that handles should be shown after
+      //    scrolling; or
+      //  - the gesture in progress is going to end in selection; or
+      //  - selection handles are currently active.
+      handles_hidden_due_to_scroll_ = handles_hidden_due_to_scroll_ ||
+                                      selection_gesture_in_process_ ||
+                                      touch_selection_controller_ != NULL;
+      selection_gesture_in_process_ = false;
       EndTouchEditing(true);
       break;
     case ui::ET_GESTURE_SCROLL_END:
-      // Scroll has ended, but we might still be in overscroll animation.
-      if (handles_hidden_due_to_scroll_ && !overscroll_in_progress_ &&
-          (selection_anchor_rect_ != selection_focus_rect_ ||
-              text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)) {
-        StartTouchEditing();
-        UpdateEditingController();
-      }
-      // fall through to reset |scroll_in_progress_|.
-    case ui::ET_SCROLL_FLING_START:
-      selection_gesture_in_process_ = false;
-      scroll_in_progress_ = false;
+      ScrollEnded();
       break;
     default:
       break;
@@ -208,6 +184,10 @@ void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
     StartTouchEditing();
     UpdateEditingController();
   }
+}
+
+void TouchEditableImplAura::DidStopFlinging() {
+  ScrollEnded();
 }
 
 void TouchEditableImplAura::OnViewDestroyed() {
@@ -364,9 +344,21 @@ TouchEditableImplAura::TouchEditableImplAura()
       rwhva_(NULL),
       selection_gesture_in_process_(false),
       handles_hidden_due_to_scroll_(false),
-      scroll_in_progress_(false),
-      overscroll_in_progress_(false),
+      scrolls_in_progress_(0),
       textfield_was_focused_on_tap_(false) {
+}
+
+void TouchEditableImplAura::ScrollEnded() {
+  scrolls_in_progress_--;
+  // If there is no scrolling left in progress, show selection handles if they
+  // were hidden due to scroll and there is a selection.
+  if (!scrolls_in_progress_ && handles_hidden_due_to_scroll_ &&
+      (selection_anchor_rect_ != selection_focus_rect_ ||
+          text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)) {
+    StartTouchEditing();
+    UpdateEditingController();
+    handles_hidden_due_to_scroll_ = false;
+  }
 }
 
 void TouchEditableImplAura::Cleanup() {
@@ -378,8 +370,7 @@ void TouchEditableImplAura::Cleanup() {
   EndTouchEditing(true);
   selection_gesture_in_process_ = false;
   handles_hidden_due_to_scroll_ = false;
-  scroll_in_progress_ = false;
-  overscroll_in_progress_ = false;
+  scrolls_in_progress_ = 0;
 }
 
 }  // namespace content

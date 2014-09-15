@@ -1046,6 +1046,11 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   }
 }
 
+void RenderWidgetHostViewAura::DidStopFlinging() {
+  if (touch_editing_client_)
+    touch_editing_client_->DidStopFlinging();
+}
+
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {

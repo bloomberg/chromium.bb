@@ -116,6 +116,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     // Notifies the client that a gesture event ack was received.
     virtual void GestureEventAck(int gesture_event_type) = 0;
 
+    // Notifies the client that the fling has ended, so it can activate touch
+    // editing if needed.
+    virtual void DidStopFlinging() = 0;
+
     // This is called when the view is destroyed, so that the client can
     // perform any necessary clean-up.
     virtual void OnViewDestroyed() = 0;
@@ -228,6 +232,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
+  virtual void DidStopFlinging() OVERRIDE;
 
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(

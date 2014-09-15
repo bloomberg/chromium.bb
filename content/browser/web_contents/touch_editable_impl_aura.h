@@ -49,6 +49,7 @@ class CONTENT_EXPORT TouchEditableImplAura
   virtual void OnTextInputTypeChanged(ui::TextInputType type) OVERRIDE;
   virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type) OVERRIDE;
+  virtual void DidStopFlinging() OVERRIDE;
   virtual void OnViewDestroyed() OVERRIDE;
 
   // Overridden from ui::TouchEditable:
@@ -76,6 +77,10 @@ class CONTENT_EXPORT TouchEditableImplAura
  private:
   friend class TouchEditableImplAuraTest;
 
+  // A convenience function that is called after scroll/fling/overscroll ends to
+  // re-activate touch selection if necessary.
+  void ScrollEnded();
+
   void Cleanup();
 
   // Rectangles for the selection anchor and focus.
@@ -96,11 +101,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   // whether to re-show handles after a scrolling session.
   bool handles_hidden_due_to_scroll_;
 
-  // Keeps track of when the user is scrolling.
-  bool scroll_in_progress_;
-
-  // Set to true when the page starts an overscroll.
-  bool overscroll_in_progress_;
+  // Keeps track of number of scrolls/flings/overscrolls in progress.
+  int scrolls_in_progress_;
 
   // Used to track if a textfield was focused when the current tap gesture
   // happened.

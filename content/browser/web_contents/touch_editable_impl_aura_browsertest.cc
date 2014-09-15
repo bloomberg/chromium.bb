@@ -36,13 +36,17 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
       : selection_changed_callback_arrived_(false),
         waiting_for_selection_changed_callback_(false),
         waiting_for_gesture_ack_type_(WebInputEvent::Undefined),
-        last_gesture_ack_type_(WebInputEvent::Undefined) {}
+        last_gesture_ack_type_(WebInputEvent::Undefined),
+        fling_stop_callback_arrived_(false),
+        waiting_for_fling_stop_callback_(false) {}
 
   virtual void Reset() {
     selection_changed_callback_arrived_ = false;
     waiting_for_selection_changed_callback_ = false;
     waiting_for_gesture_ack_type_ = WebInputEvent::Undefined;
     last_gesture_ack_type_ = WebInputEvent::Undefined;
+    fling_stop_callback_arrived_ = false;
+    waiting_for_fling_stop_callback_ = false;
   }
 
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
@@ -61,6 +65,13 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
       gesture_ack_wait_run_loop_->Quit();
   }
 
+  virtual void DidStopFlinging() OVERRIDE {
+    fling_stop_callback_arrived_ = true;
+    TouchEditableImplAura::DidStopFlinging();
+    if (waiting_for_fling_stop_callback_)
+      fling_stop_wait_run_loop_->Quit();
+  }
+
   virtual void WaitForSelectionChangeCallback() {
     if (selection_changed_callback_arrived_)
       return;
@@ -77,6 +88,14 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
     gesture_ack_wait_run_loop_->Run();
   }
 
+  virtual void WaitForFlingStopCallback() {
+    if (fling_stop_callback_arrived_)
+      return;
+    waiting_for_fling_stop_callback_ = true;
+    fling_stop_wait_run_loop_.reset(new base::RunLoop());
+    fling_stop_wait_run_loop_->Run();
+  }
+
  protected:
   virtual ~TestTouchEditableImplAura() {}
 
@@ -85,8 +104,11 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   bool waiting_for_selection_changed_callback_;
   WebInputEvent::Type waiting_for_gesture_ack_type_;
   WebInputEvent::Type last_gesture_ack_type_;
+  bool fling_stop_callback_arrived_;
+  bool waiting_for_fling_stop_callback_;
   scoped_ptr<base::RunLoop> selection_changed_wait_run_loop_;
   scoped_ptr<base::RunLoop> gesture_ack_wait_run_loop_;
+  scoped_ptr<base::RunLoop> fling_stop_wait_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditableImplAura);
 };
@@ -239,6 +261,62 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       ui::EventTimeForNow(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0));
   rwhva->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+}
+
+IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
+                       TestTouchSelectionReshownAfterFling) {
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
+      web_contents->GetView());
+  TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
+  view_aura->SetTouchEditableForTest(touch_editable);
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
+
+  // Long press to select word.
+  ui::GestureEvent long_press(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+  touch_editable->Reset();
+  rwhva->OnGestureEvent(&long_press);
+  touch_editable->WaitForSelectionChangeCallback();
+
+  // Check if selection handles are showing.
+  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
+  std::string selection;
+  value->GetAsString(&selection);
+  EXPECT_STREQ("Some", selection.c_str());
+
+  // Start scrolling. Handles should get hidden.
+  ui::GestureEvent scroll_begin(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+  rwhva->OnGestureEvent(&scroll_begin);
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+  // Start a fling. Handles should come back after fling stops.
+  ui::GestureEvent fling_start(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, 1, 0));
+  rwhva->OnGestureEvent(&fling_start);
+  touch_editable->WaitForFlingStopCallback();
   EXPECT_TRUE(GetTouchSelectionController(touch_editable));
 }
 
