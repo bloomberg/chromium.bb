@@ -365,22 +365,14 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
-void SVGRenderSupport::fillOrStrokePrimitive(GraphicsContext* context, unsigned short resourceMode, const Path* path, const RenderSVGShape* shape)
+void SVGRenderSupport::fillOrStrokePath(GraphicsContext* context, unsigned short resourceMode, const Path& path)
 {
     ASSERT(resourceMode != ApplyToDefaultMode);
 
-    if (resourceMode & ApplyToFillMode) {
-        if (path)
-            context->fillPath(*path);
-        else if (shape)
-            shape->fillShape(context);
-    }
-    if (resourceMode & ApplyToStrokeMode) {
-        if (path)
-            context->strokePath(*path);
-        else if (shape)
-            shape->strokeShape(context);
-    }
+    if (resourceMode & ApplyToFillMode)
+        context->fillPath(path);
+    if (resourceMode & ApplyToStrokeMode)
+        context->strokePath(path);
 }
 
 bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)

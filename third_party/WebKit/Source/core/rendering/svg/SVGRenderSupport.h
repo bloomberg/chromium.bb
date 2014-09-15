@@ -82,8 +82,8 @@ public:
     static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle*, const RenderObject*);
     static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const RenderObject*);
 
-    // Fill and/or stroke the primitive provide as either |path| or |shape|. The former has precedence if both are non-zero.
-    static void fillOrStrokePrimitive(GraphicsContext*, unsigned short resourceMode, const Path*, const RenderSVGShape*);
+    // Fill and/or stroke the provided |path|.
+    static void fillOrStrokePath(GraphicsContext*, unsigned short resourceMode, const Path&);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(RenderObject*);

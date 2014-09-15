@@ -76,13 +76,11 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     return true;
 }
 
-void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsContext*& context,
-    unsigned short resourceMode, const Path*, const RenderSVGShape*)
+void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);
     ASSERT(style());
-    ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();

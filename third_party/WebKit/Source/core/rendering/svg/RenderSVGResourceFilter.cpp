@@ -337,11 +337,10 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     return true;
 }
 
-void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsContext*& context, unsigned short resourceMode, const Path*, const RenderSVGShape*)
+void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);
-    ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
     FilterData* filterData = m_filter.get(object);
     if (!filterData)

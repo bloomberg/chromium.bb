@@ -70,7 +70,7 @@ public:
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
 
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
-    virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short resourceMode, const Path*, const RenderSVGShape*) OVERRIDE;
+    virtual void postApplyResource(RenderObject*, GraphicsContext*&) OVERRIDE;
 
     FloatRect resourceBoundingBox(const RenderObject*);
 

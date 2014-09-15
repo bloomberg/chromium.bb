@@ -37,6 +37,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/FloatConversion.h"
@@ -353,7 +354,7 @@ public:
     ~PaintingResourceScope() { ASSERT(!m_paintingResource); }
 
     bool acquirePaintingResource(GraphicsContext*&, float scalingFactor, RenderStyle*, RenderSVGResourceModeFlags);
-    void releasePaintingResource(GraphicsContext*&, const Path*, RenderSVGResourceModeFlags);
+    void releasePaintingResource(GraphicsContext*&);
 
 private:
     RenderObject& m_renderer;
@@ -401,12 +402,11 @@ bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, f
     return true;
 }
 
-void PaintingResourceScope::releasePaintingResource(GraphicsContext*& context, const Path* path,
-    RenderSVGResourceModeFlags resourceMode)
+void PaintingResourceScope::releasePaintingResource(GraphicsContext*& context)
 {
     ASSERT(m_paintingResource);
 
-    m_paintingResource->postApplyResource(&m_renderer, context, resourceMode, path, 0);
+    m_paintingResource->postApplyResource(&m_renderer, context);
     m_paintingResource = 0;
 
 #if ENABLE(SVG_FONTS)
@@ -590,8 +590,10 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
     // acquirePaintingResource also modifies state if the scalingFactor is non-identity.
     // Above we have saved the state for this case.
     PaintingResourceScope resourceScope(*decorationRenderer);
-    if (resourceScope.acquirePaintingResource(context, scalingFactor, decorationStyle, resourceMode))
-        resourceScope.releasePaintingResource(context, &path, resourceMode);
+    if (resourceScope.acquirePaintingResource(context, scalingFactor, decorationStyle, resourceMode)) {
+        SVGRenderSupport::fillOrStrokePath(context, resourceMode, path);
+        resourceScope.releasePaintingResource(context);
+    }
 }
 
 void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyle* style,
@@ -633,7 +635,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
             textSize.width(), textSize.height());
 
         scaledFont.drawText(context, textRunPaintInfo, textOrigin);
-        resourceScope.releasePaintingResource(context, 0, resourceMode);
+        resourceScope.releasePaintingResource(context);
     }
 
     if (scalingFactor != 1)

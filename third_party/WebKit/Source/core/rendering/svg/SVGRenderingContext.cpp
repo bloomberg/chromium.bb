@@ -63,7 +63,7 @@ SVGRenderingContext::~SVGRenderingContext()
 
         if (m_filter) {
             ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
-            m_filter->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
+            m_filter->postApplyResource(m_object, m_paintInfo->context);
             m_paintInfo->context = m_savedContext;
             m_paintInfo->rect = m_savedPaintRect;
         }
@@ -75,7 +75,7 @@ SVGRenderingContext::~SVGRenderingContext()
 
         if (m_masker) {
             ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
-            m_masker->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
+            m_masker->postApplyResource(m_object, m_paintInfo->context);
         }
     }
 

@@ -49,7 +49,7 @@ public:
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE FINAL;
 
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE FINAL;
-    virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short resourceMode, const Path*, const RenderSVGShape*) OVERRIDE FINAL;
+    virtual void postApplyResource(RenderObject*, GraphicsContext*&) OVERRIDE FINAL;
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;

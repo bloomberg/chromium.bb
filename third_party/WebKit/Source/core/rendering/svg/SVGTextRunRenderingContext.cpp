@@ -26,6 +26,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -164,7 +165,8 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
             float strokeThickness = context->strokeThickness();
             if (renderObject && renderObject->isSVGInlineText())
                 context->setStrokeThickness(strokeThickness * toRenderSVGInlineText(renderObject)->scalingFactor());
-            activePaintingResource->postApplyResource(parentRenderObject, context, resourceMode, &glyphPath, 0);
+            SVGRenderSupport::fillOrStrokePath(context, resourceMode, glyphPath);
+            activePaintingResource->postApplyResource(parentRenderObject, context);
             context->setStrokeThickness(strokeThickness);
         }
 

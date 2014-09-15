@@ -205,11 +205,14 @@ void RenderSVGShape::fillShape(RenderStyle* style, GraphicsContext* context)
     bool hasFallback;
     if (RenderSVGResource* fillPaintingResource = RenderSVGResource::fillPaintingResource(this, style, hasFallback)) {
         if (fillPaintingResource->applyResource(this, style, context, ApplyToFillMode)) {
-            fillPaintingResource->postApplyResource(this, context, ApplyToFillMode, 0, this);
+            fillShape(context);
+            fillPaintingResource->postApplyResource(this, context);
         } else if (hasFallback) {
             RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
-            if (fallbackResource->applyResource(this, style, context, ApplyToFillMode))
-                fallbackResource->postApplyResource(this, context, ApplyToFillMode, 0, this);
+            if (fallbackResource->applyResource(this, style, context, ApplyToFillMode)) {
+                fillShape(context);
+                fallbackResource->postApplyResource(this, context);
+            }
         }
     }
 }
@@ -219,11 +222,14 @@ void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
     bool hasFallback;
     if (RenderSVGResource* strokePaintingResource = RenderSVGResource::strokePaintingResource(this, style, hasFallback)) {
         if (strokePaintingResource->applyResource(this, style, context, ApplyToStrokeMode)) {
-            strokePaintingResource->postApplyResource(this, context, ApplyToStrokeMode, 0, this);
+            strokeShape(context);
+            strokePaintingResource->postApplyResource(this, context);
         } else if (hasFallback) {
             RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
-            if (fallbackResource->applyResource(this, style, context, ApplyToStrokeMode))
-                fallbackResource->postApplyResource(this, context, ApplyToStrokeMode, 0, this);
+            if (fallbackResource->applyResource(this, style, context, ApplyToStrokeMode)) {
+                strokeShape(context);
+                fallbackResource->postApplyResource(this, context);
+            }
         }
     }
 }

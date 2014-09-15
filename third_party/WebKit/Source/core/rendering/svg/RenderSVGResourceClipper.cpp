@@ -208,8 +208,8 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     return true;
 }
 
-void RenderSVGResourceClipper::postApplyResource(RenderObject*, GraphicsContext*&, unsigned short,
-    const Path*, const RenderSVGShape*) {
+void RenderSVGResourceClipper::postApplyResource(RenderObject*, GraphicsContext*&)
+{
     // Clippers are always applied using stateful methods.
     ASSERT_NOT_REACHED();
 }

@@ -171,11 +171,9 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     return true;
 }
 
-void RenderSVGResourcePattern::postApplyResource(RenderObject*, GraphicsContext*& context, unsigned short resourceMode, const Path* path, const RenderSVGShape* shape)
+void RenderSVGResourcePattern::postApplyResource(RenderObject*, GraphicsContext*& context)
 {
     ASSERT(context);
-    SVGRenderSupport::fillOrStrokePrimitive(context, resourceMode, path, shape);
-
     context->restore();
 }
 

@@ -81,10 +81,4 @@ bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyl
     return true;
 }
 
-void RenderSVGResourceSolidColor::postApplyResource(RenderObject*, GraphicsContext*& context, unsigned short resourceMode, const Path* path, const RenderSVGShape* shape)
-{
-    ASSERT(context);
-    SVGRenderSupport::fillOrStrokePrimitive(context, resourceMode, path, shape);
-}
-
 }
