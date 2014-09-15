@@ -113,6 +113,7 @@ class ManagePasswordsUIController
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
 
   // We create copies of PasswordForm objects that come in with unclear lifetime
   // and store them in this vector as well as in |password_form_map_| to ensure

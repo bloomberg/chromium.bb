@@ -64,6 +64,10 @@ void ShowManagePasswordsBubble(content::WebContents* webContents) {
           : ManagePasswordsBubble::USER_ACTION,
       [bwc locationBarBridge]->manage_passwords_decoration()->icon());
 }
+
+void CloseManagePasswordsBubble(content::WebContents* web_contents) {
+  // The bubble is closed when it loses the focus.
+}
 }  // namespace chrome
 
 ManagePasswordsBubbleCocoa::ManagePasswordsBubbleCocoa(

@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -237,6 +238,12 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   state_ = password_manager::ui::INACTIVE_STATE;
   UpdateBubbleAndIconVisibility();
   timer_.reset(new base::ElapsedTimer());
+}
+
+void ManagePasswordsUIController::WasHidden() {
+#if !defined(OS_ANDROID)
+  chrome::CloseManagePasswordsBubble(web_contents());
+#endif
 }
 
 const autofill::PasswordForm& ManagePasswordsUIController::

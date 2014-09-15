@@ -160,6 +160,15 @@ void ShowManagePasswordsBubble(content::WebContents* web_contents) {
           : ManagePasswordsBubbleView::USER_ACTION);
 }
 
+void CloseManagePasswordsBubble(content::WebContents* web_contents) {
+  if (!ManagePasswordsBubbleView::IsShowing())
+    return;
+  content::WebContents* bubble_web_contents =
+      ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
+  if (web_contents == bubble_web_contents)
+    ManagePasswordsBubbleView::CloseBubble();
+}
+
 }  // namespace chrome
 
 
@@ -769,6 +778,10 @@ bool ManagePasswordsBubbleView::IsShowing() {
   // The bubble may be in the process of closing.
   return (manage_passwords_bubble_ != NULL) &&
       manage_passwords_bubble_->GetWidget()->IsVisible();
+}
+
+content::WebContents* ManagePasswordsBubbleView::web_contents() const {
+  return model()->web_contents();
 }
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(

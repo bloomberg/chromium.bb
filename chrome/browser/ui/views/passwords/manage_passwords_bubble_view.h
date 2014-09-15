@@ -43,6 +43,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     return manage_passwords_bubble_;
   }
 
+  content::WebContents* web_contents() const;
+
   const View* initially_focused_view() const {
     return initially_focused_view_;
   }

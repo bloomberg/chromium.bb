@@ -271,3 +271,21 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnKey) {
       false, false, false, false));
   EXPECT_TRUE(key_observer.was_called());
 }
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
+  // Set up the first tab with the bubble.
+  SetupPendingPassword();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  // Set up the second tab.
+  AddTabAtIndex(0, GURL("chrome://newtab"), content::PAGE_TRANSITION_TYPED);
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  ManagePasswordsBubbleView::ShowBubble(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      ManagePasswordsBubble::AUTOMATIC);
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  TabStripModel* tab_model = browser()->tab_strip_model();
+  EXPECT_EQ(0, tab_model->active_index());
+  // Back to the first tab.
+  tab_model->ActivateTabAt(1, true);
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+}

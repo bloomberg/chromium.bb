@@ -117,6 +117,9 @@ void ShowSignedCertificateTimestampsViewer(
 // Shows the ManagePasswords bubble for a particular |web_contents|.
 void ShowManagePasswordsBubble(content::WebContents* web_contents);
 
+// Closes the bubble if it's shown for |web_contents|.
+void CloseManagePasswordsBubble(content::WebContents* web_contents);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
