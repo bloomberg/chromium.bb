@@ -258,6 +258,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         isolated_hash,
         StorageFake(files),
         run_isolated.isolateserver.MemoryCache(),
+        False,
         [])
     self.assertEqual(0, ret)
     return subprocess_call, make_tree_call
@@ -428,6 +429,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         isolated_hash,
         store,
         run_isolated.isolateserver.MemoryCache(),
+        False,
         [])
     self.assertEqual(0, ret)
 
