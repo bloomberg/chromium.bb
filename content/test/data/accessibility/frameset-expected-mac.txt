@@ -1,0 +1,17 @@
+#<skip -- Flaky failure crbug.com/414157>
+AXWebArea
+    AXUnknown
+        AXUnknown
+            AXWebArea
+                AXGroup
+                    AXStaticText AXValue='My favorite browser is'
+                    AXStaticText AXValue='ABC'
+                    AXStaticText AXValue='Chrome'
+                    AXStaticText AXValue='!'
+    AXUnknown
+        AXUnknown
+            AXWebArea
+                AXGroup
+                    AXStaticText AXValue='This test is to check '
+                    AXStaticText AXValue='mark tag'
+                    AXStaticText AXValue='.'

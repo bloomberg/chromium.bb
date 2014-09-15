@@ -1,0 +1,14 @@
+android.webkit.WebView focusable focused scrollable
+    android.widget.GridView collection name='Browser and Engine' row_count=3 column_count=2
+        android.view.View
+            android.view.View clickable collection_item name='Browser' row_span=1 column_span=1
+            android.view.View clickable collection_item name='Engine' row_span=1 column_index=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='Chrome' row_index=1 row_span=1 column_span=1
+            android.view.View clickable collection_item name='Blink' row_index=1 row_span=1 column_index=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='Safari' row_index=2 row_span=1 column_span=1
+            android.view.View clickable collection_item name='WebKit' row_index=2 row_span=1 column_index=1 column_span=1
+        android.view.View
+        android.view.View
+        android.view.View
