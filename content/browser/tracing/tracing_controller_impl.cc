@@ -135,7 +135,9 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
       result += ",\"systemTraceEvents\": " + system_trace_;
     result += "}";
 
-    completion_callback_.Run(base::RefCountedString::TakeString(&result));
+    scoped_refptr<base::RefCountedString> str =
+        base::RefCountedString::TakeString(&result);
+    completion_callback_.Run(str.get());
   }
 
  private:
