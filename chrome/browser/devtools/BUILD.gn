@@ -31,6 +31,8 @@ static_library("devtools") {
     "devtools_network_controller.h",
     "devtools_network_interceptor.cc",
     "devtools_network_interceptor.h",
+    "devtools_network_protocol_handler.cc",
+    "devtools_network_protocol_handler.h",
     "devtools_network_transaction.cc",
     "devtools_network_transaction.h",
     "devtools_network_transaction_factory.cc",

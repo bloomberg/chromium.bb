@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
@@ -29,19 +30,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
       base::DictionaryValue* command_dict) OVERRIDE;
 
  private:
-  Profile* GetProfile(content::DevToolsAgentHost* agent_host);
-
-  scoped_ptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
-      content::DevToolsAgentHost* agent_host,
-      DevToolsProtocol::Command* command);
-
-  scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
-      content::DevToolsAgentHost* agent_host,
-      DevToolsProtocol::Command* command);
-
-  void UpdateNetworkState(
-      content::DevToolsAgentHost* agent_host,
-      scoped_ptr<DevToolsNetworkConditions> conditions);
+  scoped_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };

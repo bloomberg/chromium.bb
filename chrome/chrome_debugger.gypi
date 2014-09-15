@@ -27,6 +27,8 @@
         'browser/devtools/devtools_network_controller.h',
         'browser/devtools/devtools_network_interceptor.cc',
         'browser/devtools/devtools_network_interceptor.h',
+        'browser/devtools/devtools_network_protocol_handler.cc',
+        'browser/devtools/devtools_network_protocol_handler.h',
         'browser/devtools/devtools_network_transaction.cc',
         'browser/devtools/devtools_network_transaction.h',
         'browser/devtools/devtools_network_transaction_factory.cc',
