@@ -171,8 +171,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
   gl_context_ = gfx::GLContext::CreateGLContext(
-      NULL, gl_surface_, gfx::PreferIntegratedGpu);
-  gl_context_->MakeCurrent(gl_surface_);
+      NULL, gl_surface_.get(), gfx::PreferIntegratedGpu);
+  gl_context_->MakeCurrent(gl_surface_.get());
 
   CHECK_GT(params.window_sizes.size(), 0U);
   videos_.resize(params.window_sizes.size());
@@ -317,7 +317,7 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
   }
 
-  gl_context_->ReleaseCurrent(gl_surface_);
+  gl_context_->ReleaseCurrent(gl_surface_.get());
   gl_context_ = NULL;
   gl_surface_ = NULL;
 
