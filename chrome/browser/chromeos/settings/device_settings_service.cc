@@ -233,14 +233,14 @@ void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
 
 DeviceSettingsService::OwnershipStatus
     DeviceSettingsService::GetOwnershipStatus() {
-  if (public_key_)
+  if (public_key_.get())
     return public_key_->is_loaded() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
   return OWNERSHIP_UNKNOWN;
 }
 
 void DeviceSettingsService::GetOwnershipStatusAsync(
     const OwnershipStatusCallback& callback) {
-  if (public_key_) {
+  if (public_key_.get()) {
     // If there is a key, report status immediately.
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, GetOwnershipStatus()));

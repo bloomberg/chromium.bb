@@ -74,7 +74,7 @@ void SessionManagerOperation::ReportResult(
 }
 
 void SessionManagerOperation::EnsurePublicKey(const base::Closure& callback) {
-  if (force_key_load_ || !public_key_ || !public_key_->is_loaded()) {
+  if (force_key_load_ || !public_key_.get() || !public_key_->is_loaded()) {
     scoped_refptr<base::TaskRunner> task_runner =
         content::BrowserThread::GetBlockingPool()
             ->GetTaskRunnerWithShutdownBehavior(
@@ -100,7 +100,7 @@ scoped_refptr<PublicKey> SessionManagerOperation::LoadPublicKey(
   scoped_refptr<PublicKey> public_key(new PublicKey());
 
   // Keep already-existing public key.
-  if (current_key && current_key->is_loaded()) {
+  if (current_key.get() && current_key->is_loaded()) {
     public_key->data() = current_key->data();
   }
   if (!public_key->is_loaded() && util->IsPublicKeyPresent()) {
@@ -116,7 +116,7 @@ void SessionManagerOperation::StorePublicKey(const base::Closure& callback,
   force_key_load_ = false;
   public_key_ = new_key;
 
-  if (!public_key_ || !public_key_->is_loaded()) {
+  if (!public_key_.get() || !public_key_->is_loaded()) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
