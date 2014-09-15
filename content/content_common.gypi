@@ -71,6 +71,8 @@
       'public/common/injection_test_mac.h',
       'public/common/injection_test_win.h',
       'public/common/javascript_message_type.h',
+      'public/common/manifest.cc',
+      'public/common/manifest.h',
       'public/common/main_function_params.h',
       'public/common/media_stream_request.cc',
       'public/common/media_stream_request.h',

@@ -698,6 +698,7 @@
         'renderer/ico_image_decoder_unittest.cc',
         'renderer/input/input_event_filter_unittest.cc',
         'renderer/input/input_handler_proxy_unittest.cc',
+        'renderer/manifest/manifest_parser_unittest.cc',
         'renderer/media/android/media_info_loader_unittest.cc',
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/audio_renderer_mixer_manager_unittest.cc',

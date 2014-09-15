@@ -214,6 +214,8 @@
       'renderer/java/gin_java_bridge_object.h',
       'renderer/java/gin_java_bridge_value_converter.cc',
       'renderer/java/gin_java_bridge_value_converter.h',
+      'renderer/manifest/manifest_parser.cc',
+      'renderer/manifest/manifest_parser.h',
       'renderer/media/aec_dump_message_filter.cc',
       'renderer/media/aec_dump_message_filter.h',
       'renderer/media/android/audio_decoder_android.cc',
