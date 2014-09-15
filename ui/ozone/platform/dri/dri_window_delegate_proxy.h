@@ -35,7 +35,10 @@ class DriWindowDelegateProxy : public DriWindowDelegate,
 
  private:
   gfx::AcceleratedWidget widget_;
-  GpuPlatformSupportHostGbm* sender_;
+  GpuPlatformSupportHostGbm* sender_;  // Not owned.
+
+  // Cached state for the window. If the GPU process crashes, this state is used
+  // to update the GPU side when it comes back.
   gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindowDelegateProxy);

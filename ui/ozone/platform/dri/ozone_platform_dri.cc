@@ -14,6 +14,7 @@
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -70,6 +71,7 @@ class OzonePlatformDri : public OzonePlatform {
         scoped_ptr<DriWindowDelegate>(new DriWindowDelegateImpl(
             window_manager_.NextAcceleratedWidget(), screen_manager_.get())),
         event_factory_ozone_.get(),
+        &window_delegate_manager_,
         &window_manager_,
         cursor_.get()));
     platform_window->Initialize();
@@ -85,9 +87,10 @@ class OzonePlatformDri : public OzonePlatform {
   virtual void InitializeUI() OVERRIDE {
     dri_->Initialize();
     surface_factory_ozone_.reset(new DriSurfaceFactory(
-        dri_.get(), screen_manager_.get(), &window_manager_));
+        dri_.get(), screen_manager_.get(), &window_delegate_manager_));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    cursor_.reset(new DriCursor(surface_factory_ozone_.get()));
+    cursor_.reset(
+        new DriCursor(surface_factory_ozone_.get(), &window_manager_));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
     if (surface_factory_ozone_->InitializeHardware() !=
@@ -111,6 +114,7 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   DriWindowManager window_manager_;
+  DriWindowDelegateManager window_delegate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);
 };

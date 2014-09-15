@@ -16,7 +16,7 @@
 namespace ui {
 
 class DriBuffer;
-class DriWindowManager;
+class DriWindowDelegateManager;
 class DriWrapper;
 class ScreenManager;
 class SurfaceOzoneCanvas;
@@ -31,7 +31,7 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
 
   DriSurfaceFactory(DriWrapper* drm,
                     ScreenManager* screen_manager,
-                    DriWindowManager* window_manager);
+                    DriWindowDelegateManager* window_manager);
   virtual ~DriSurfaceFactory();
 
   // Describes the state of the hardware after initialization.
@@ -71,7 +71,7 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
 
   DriWrapper* drm_;  // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
-  DriWindowManager* window_manager_;  // Not owned.
+  DriWindowDelegateManager* window_manager_;  // Not owned.
   HardwareState state_;
 
   scoped_refptr<DriBuffer> cursor_buffers_[2];

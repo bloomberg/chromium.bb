@@ -9,15 +9,17 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_window.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 
 namespace ui {
 
-DriCursor::DriCursor(HardwareCursorDelegate* hardware) : hardware_(hardware) {
-  // TODO(dnicoara) Assume the first widget since at this point there are no
-  // widgets initialized.
-  cursor_window_ = DriSurfaceFactory::kDefaultWidgetHandle;
-  cursor_location_ = gfx::PointF(2560 / 2, 1700 / 2);  // TODO(spang): Argh!
+DriCursor::DriCursor(HardwareCursorDelegate* hardware,
+                     DriWindowManager* window_manager)
+    : hardware_(hardware),
+      window_manager_(window_manager),
+      cursor_window_(DriSurfaceFactory::kDefaultWidgetHandle) {
 }
 
 DriCursor::~DriCursor() {
@@ -25,6 +27,7 @@ DriCursor::~DriCursor() {
 
 void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
                           PlatformCursor platform_cursor) {
+  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
   scoped_refptr<BitmapCursorOzone> cursor =
       BitmapCursorFactoryOzone::GetBitmapCursor(platform_cursor);
   if (cursor_ == cursor || cursor_window_ != widget)
@@ -35,7 +38,8 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
 }
 
 void DriCursor::ShowCursor() {
-   if (cursor_.get())
+  DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
+  if (cursor_.get())
     hardware_->SetHardwareCursor(cursor_window_,
                                  cursor_->bitmaps(),
                                  bitmap_location(),
@@ -45,19 +49,24 @@ void DriCursor::ShowCursor() {
 }
 
 void DriCursor::HideCursor() {
+  DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
   hardware_->SetHardwareCursor(
       cursor_window_, std::vector<SkBitmap>(), gfx::Point(), 0);
 }
 
 void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
                              const gfx::PointF& location) {
-  if (widget != cursor_window_)
+  if (widget != cursor_window_ && cursor_window_ != gfx::kNullAcceleratedWidget)
     HideCursor();
 
   cursor_window_ = widget;
   cursor_location_ = location;
 
-  gfx::Size size = gfx::Size(2560, 1700);  // TODO(spang): Fix.
+  if (cursor_window_ == gfx::kNullAcceleratedWidget)
+    return;
+
+  DriWindow* window = window_manager_->GetWindow(cursor_window_);
+  const gfx::Size& size = window->GetBounds().size();
   cursor_location_.SetToMax(gfx::PointF(0, 0));
   cursor_location_.SetToMin(gfx::PointF(size.width(), size.height()));
 

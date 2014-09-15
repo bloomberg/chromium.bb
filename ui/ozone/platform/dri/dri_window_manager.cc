@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 
-#include "ui/ozone/platform/dri/dri_window_delegate.h"
+#include "base/logging.h"
 
 namespace ui {
 
@@ -12,7 +12,6 @@ DriWindowManager::DriWindowManager() : last_allocated_widget_(0) {
 }
 
 DriWindowManager::~DriWindowManager() {
-  DCHECK(delegate_map_.empty());
 }
 
 gfx::AcceleratedWidget DriWindowManager::NextAcceleratedWidget() {
@@ -21,33 +20,28 @@ gfx::AcceleratedWidget DriWindowManager::NextAcceleratedWidget() {
   return ++last_allocated_widget_;
 }
 
-void DriWindowManager::AddWindowDelegate(
-    gfx::AcceleratedWidget widget,
-    scoped_ptr<DriWindowDelegate> delegate) {
-  std::pair<WidgetToDelegateMap::iterator, bool> result =
-      delegate_map_.add(widget, delegate.Pass());
-  DCHECK(result.second) << "Delegate already added.";
+void DriWindowManager::AddWindow(gfx::AcceleratedWidget widget,
+                                 DriWindow* window) {
+  std::pair<WidgetToWindowMap::iterator, bool> result = window_map_.insert(
+      std::pair<gfx::AcceleratedWidget, DriWindow*>(widget, window));
+  DCHECK(result.second) << "Window for " << widget << " already added.";
 }
 
-scoped_ptr<DriWindowDelegate> DriWindowManager::RemoveWindowDelegate(
-    gfx::AcceleratedWidget widget) {
-  scoped_ptr<DriWindowDelegate> delegate = delegate_map_.take_and_erase(widget);
-  DCHECK(delegate) << "Attempting to remove non-existing delegate.";
-  return delegate.Pass();
+void DriWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
+  WidgetToWindowMap::iterator it = window_map_.find(widget);
+  if (it != window_map_.end())
+    window_map_.erase(it);
+  else
+    NOTREACHED() << "Attempting to remove non-existing window " << widget;
 }
 
-DriWindowDelegate* DriWindowManager::GetWindowDelegate(
-    gfx::AcceleratedWidget widget) {
-  WidgetToDelegateMap::iterator it = delegate_map_.find(widget);
-  if (it != delegate_map_.end())
+DriWindow* DriWindowManager::GetWindow(gfx::AcceleratedWidget widget) {
+  WidgetToWindowMap::iterator it = window_map_.find(widget);
+  if (it != window_map_.end())
     return it->second;
 
-  NOTREACHED();
+  NOTREACHED() << "Attempting to get non-existing window " << widget;
   return NULL;
-}
-
-bool DriWindowManager::HasWindowDelegate(gfx::AcceleratedWidget widget) {
-  return delegate_map_.find(widget) != delegate_map_.end();
 }
 
 }  // namespace ui

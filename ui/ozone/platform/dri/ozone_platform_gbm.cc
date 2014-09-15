@@ -15,6 +15,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_proxy.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
@@ -105,10 +106,11 @@ class OzonePlatformGbm : public OzonePlatform {
         new DriWindow(delegate,
                       bounds,
                       scoped_ptr<DriWindowDelegate>(new DriWindowDelegateProxy(
-                          ui_window_manager_.NextAcceleratedWidget(),
+                          window_manager_->NextAcceleratedWidget(),
                           gpu_platform_support_host_.get())),
                       event_factory_ozone_.get(),
-                      &ui_window_manager_,
+                      ui_window_delegate_manager_.get(),
+                      window_manager_.get(),
                       cursor_.get()));
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
@@ -122,13 +124,16 @@ class OzonePlatformGbm : public OzonePlatform {
 #endif
   virtual void InitializeUI() OVERRIDE {
     vt_manager_.reset(new VirtualTerminalManager());
+    ui_window_delegate_manager_.reset(new DriWindowDelegateManager());
+    window_manager_.reset(new DriWindowManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    cursor_.reset(new DriCursor(gpu_platform_support_host_.get()));
+    cursor_.reset(
+        new DriCursor(gpu_platform_support_host_.get(), window_manager_.get()));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
   }
@@ -139,16 +144,17 @@ class OzonePlatformGbm : public OzonePlatform {
     buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));
     screen_manager_.reset(new ScreenManager(dri_.get(),
                                             buffer_generator_.get()));
+    gpu_window_delegate_manager_.reset(new DriWindowDelegateManager());
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     surface_factory_ozone_->InitializeGpu(dri_.get(),
                                           buffer_generator_->device(),
                                           screen_manager_.get(),
-                                          &gpu_window_manager_);
+                                          gpu_window_delegate_manager_.get());
     gpu_platform_support_.reset(
         new GpuPlatformSupportGbm(surface_factory_ozone_.get(),
-                                  &gpu_window_manager_,
+                                  gpu_window_delegate_manager_.get(),
                                   screen_manager_.get()));
 #if defined(OS_CHROMEOS)
     gpu_platform_support_->AddHandler(scoped_ptr<GpuPlatformSupport>(
@@ -179,8 +185,13 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<GpuPlatformSupportGbm> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHostGbm> gpu_platform_support_host_;
 
-  DriWindowManager gpu_window_manager_;
-  DriWindowManager ui_window_manager_;
+  scoped_ptr<DriWindowDelegateManager> gpu_window_delegate_manager_;
+  // TODO(dnicoara) Once we have a mock channel for the software path the window
+  // can own the delegates on the browser side. Remove this then.
+  scoped_ptr<DriWindowDelegateManager> ui_window_delegate_manager_;
+
+  // Browser side object only.
+  scoped_ptr<DriWindowManager> window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

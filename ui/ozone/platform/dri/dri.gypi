@@ -62,6 +62,8 @@
         'dri_window_delegate.h',
         'dri_window_delegate_impl.cc',
         'dri_window_delegate_impl.h',
+        'dri_window_delegate_manager.cc',
+        'dri_window_delegate_manager.h',
         'dri_window_manager.cc',
         'dri_window_manager.h',
         'dri_wrapper.cc',

@@ -15,7 +15,7 @@
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
-#include "ui/ozone/platform/dri/dri_window_manager.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -50,7 +50,7 @@ const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 
 DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
                                      ScreenManager* screen_manager,
-                                     DriWindowManager* window_manager)
+                                     DriWindowDelegateManager* window_manager)
     : drm_(drm),
       screen_manager_(screen_manager),
       window_manager_(window_manager),

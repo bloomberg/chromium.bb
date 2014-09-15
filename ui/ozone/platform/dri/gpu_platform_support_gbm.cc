@@ -8,13 +8,14 @@
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
-#include "ui/ozone/platform/dri/dri_window_manager.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 
 namespace ui {
 
-GpuPlatformSupportGbm::GpuPlatformSupportGbm(DriSurfaceFactory* dri,
-                                             DriWindowManager* window_manager,
-                                             ScreenManager* screen_manager)
+GpuPlatformSupportGbm::GpuPlatformSupportGbm(
+    DriSurfaceFactory* dri,
+    DriWindowDelegateManager* window_manager,
+    ScreenManager* screen_manager)
     : sender_(NULL),
       dri_(dri),
       window_manager_(window_manager),

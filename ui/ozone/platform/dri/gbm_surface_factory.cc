@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
-#include "ui/ozone/platform/dri/dri_window_manager.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
@@ -74,10 +74,11 @@ GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
-void GbmSurfaceFactory::InitializeGpu(DriWrapper* dri,
-                                      gbm_device* device,
-                                      ScreenManager* screen_manager,
-                                      DriWindowManager* window_manager) {
+void GbmSurfaceFactory::InitializeGpu(
+    DriWrapper* dri,
+    gbm_device* device,
+    ScreenManager* screen_manager,
+    DriWindowDelegateManager* window_manager) {
   drm_ = dri;
   device_ = device;
   screen_manager_ = screen_manager;

@@ -19,11 +19,13 @@ namespace ui {
 
 class BitmapCursorOzone;
 class BitmapCursorFactoryOzone;
+class DriWindowManager;
 class HardwareCursorDelegate;
 
 class DriCursor : public CursorDelegateEvdev {
  public:
-  explicit DriCursor(HardwareCursorDelegate* hardware);
+  explicit DriCursor(HardwareCursorDelegate* hardware,
+                     DriWindowManager* window_manager);
   virtual ~DriCursor();
 
   void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor platform_cursor);
@@ -44,6 +46,8 @@ class DriCursor : public CursorDelegateEvdev {
 
   // The DRI implementation for setting the hardware cursor.
   HardwareCursorDelegate* hardware_;
+
+  DriWindowManager* window_manager_;  // Not owned.
 
   // The current cursor bitmap.
   scoped_refptr<BitmapCursorOzone> cursor_;

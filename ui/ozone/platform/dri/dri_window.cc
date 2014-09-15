@@ -11,6 +11,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -21,6 +22,7 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
                      scoped_ptr<DriWindowDelegate> dri_window_delegate,
                      EventFactoryEvdev* event_factory,
+                     DriWindowDelegateManager* window_delegate_manager,
                      DriWindowManager* window_manager,
                      DriCursor* cursor)
     : delegate_(delegate),
@@ -28,15 +30,19 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
       widget_(dri_window_delegate->GetAcceleratedWidget()),
       dri_window_delegate_(dri_window_delegate.get()),
       event_factory_(event_factory),
+      window_delegate_manager_(window_delegate_manager),
       window_manager_(window_manager),
       cursor_(cursor) {
-  window_manager_->AddWindowDelegate(widget_, dri_window_delegate.Pass());
+  window_delegate_manager_->AddWindowDelegate(widget_,
+                                              dri_window_delegate.Pass());
+  window_manager_->AddWindow(widget_, this);
 }
 
 DriWindow::~DriWindow() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   dri_window_delegate_->Shutdown();
-  window_manager_->RemoveWindowDelegate(widget_);
+  window_manager_->RemoveWindow(widget_);
+  window_delegate_manager_->RemoveWindowDelegate(widget_);
 }
 
 void DriWindow::Initialize() {

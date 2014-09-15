@@ -15,6 +15,7 @@ namespace ui {
 
 class DriCursor;
 class DriWindowDelegate;
+class DriWindowDelegateManager;
 class DriWindowManager;
 class EventFactoryEvdev;
 
@@ -25,6 +26,7 @@ class DriWindow : public PlatformWindow,
             const gfx::Rect& bounds,
             scoped_ptr<DriWindowDelegate> dri_window_delegate,
             EventFactoryEvdev* event_factory,
+            DriWindowDelegateManager* window_delegate_manager,
             DriWindowManager* window_manager,
             DriCursor* cursor);
   virtual ~DriWindow();
@@ -56,6 +58,7 @@ class DriWindow : public PlatformWindow,
   gfx::AcceleratedWidget widget_;
   DriWindowDelegate* dri_window_delegate_;
   EventFactoryEvdev* event_factory_;
+  DriWindowDelegateManager* window_delegate_manager_;
   DriWindowManager* window_manager_;
   DriCursor* cursor_;
 

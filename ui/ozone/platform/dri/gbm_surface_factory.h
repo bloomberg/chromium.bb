@@ -12,7 +12,7 @@ struct gbm_device;
 namespace ui {
 
 class DriWindowDelegate;
-class DriWindowManager;
+class DriWindowDelegateManager;
 
 class GbmSurfaceFactory : public DriSurfaceFactory {
  public:
@@ -22,7 +22,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   void InitializeGpu(DriWrapper* dri,
                      gbm_device* device,
                      ScreenManager* screen_manager,
-                     DriWindowManager* window_manager);
+                     DriWindowDelegateManager* window_manager);
 
   // DriSurfaceFactory:
   virtual intptr_t GetNativeDisplay() OVERRIDE;
