@@ -5823,22 +5823,6 @@
    fun:_ZN5blink11RenderBlock18paintAsInlineBlockEPNS_12RenderObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
 {
-   bug_381584
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN4base26PostTaskAndReplyWithResultI13scoped_refptrIN*KeyEES4_EEbPNS_10TaskRunnerERKN15tracked_objects8LocationERKNS_8CallbackIFT_vEEERKNSB_IFvT0_EEE
-   fun:_ZN8chromeos23SessionManagerOperation*Ensure*KeyERKN4base8CallbackIFvvEEE
-   fun:_ZN8chromeos23SessionManagerOperation12StartLoadingEv
-   fun:_ZN8chromeos21LoadSettingsOperation3RunEv
-   fun:_ZN8chromeos23SessionManagerOperation5StartEPNS_20SessionManagerClientE13scoped_refptrIN*
-   fun:_ZN8chromeos21DeviceSettingsService18StartNextOperationEv
-   fun:_ZN8chromeos21DeviceSettingsService7EnqueueEPNS_23SessionManagerOperationE
-   fun:_ZN8chromeos21DeviceSettingsService11EnqueueLoadEb
-   fun:_ZN8chromeos21DeviceSettingsService4LoadEv
-}
-{
    bug_385381
    Memcheck:Unaddressable
    fun:_ZN5blink23FrameLoaderStateMachine9advanceToENS0_5StateE
