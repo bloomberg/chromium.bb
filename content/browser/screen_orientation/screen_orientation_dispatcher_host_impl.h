@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_IMPL_H_
+#define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_IMPL_H_
 
-#include "base/id_map.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/WebLockOrientationError.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace content {
 
@@ -21,27 +19,22 @@ class WebContents;
 // ScreenOrientationDispatcherHost receives lock and unlock requests from the
 // RenderFrames and dispatch them to the ScreenOrientationProvider. It also
 // make sure that the right RenderFrame get replied for each lock request.
-class CONTENT_EXPORT ScreenOrientationDispatcherHost
-    : public WebContentsObserver {
+class CONTENT_EXPORT ScreenOrientationDispatcherHostImpl
+    : public ScreenOrientationDispatcherHost,
+      public WebContentsObserver {
  public:
-  explicit ScreenOrientationDispatcherHost(WebContents* web_contents);
-  virtual ~ScreenOrientationDispatcherHost();
+  explicit ScreenOrientationDispatcherHostImpl(WebContents* web_contents);
+  virtual ~ScreenOrientationDispatcherHostImpl();
 
-  // WebContentsObserver
+  // ScreenOrientationDispatcherHost:
+  virtual void NotifyLockSuccess(int request_id) OVERRIDE;
+  virtual void NotifyLockError(int request_id,
+                               blink::WebLockOrientationError error) OVERRIDE;
+  virtual void OnOrientationChange() OVERRIDE;
+
+  // WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message&,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
-
-  // Notifies that the lock with the given |request_id| has succeeded.
-  // The renderer process will be notified that the lock succeeded only if
-  // |request_id| matches the |current_lock_|.
-  void NotifyLockSuccess(int request_id);
-
-  // Notifies that the lock with the given |request_id| has failed.
-  // The renderer process will be notified that the lock succeeded only if
-  // |request_id| matches the |current_lock_|.
-  void NotifyLockError(int request_id, blink::WebLockOrientationError error);
-
-  void OnOrientationChange();
 
  private:
   void OnLockRequest(RenderFrameHost* render_frame_host,
@@ -69,9 +62,9 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   // current_lock_ will be NULL if there are no current lock.
   LockInformation* current_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDispatcherHost);
+  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDispatcherHostImpl);
 };
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
+#endif // CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_IMPL_H_

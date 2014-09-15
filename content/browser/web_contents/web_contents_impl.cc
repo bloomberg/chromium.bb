@@ -48,7 +48,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
+#include "content/browser/screen_orientation/screen_orientation_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
@@ -77,6 +77,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -1203,7 +1204,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   midi_dispatcher_host_.reset(new MidiDispatcherHost(this));
 
   screen_orientation_dispatcher_host_.reset(
-      new ScreenOrientationDispatcherHost(this));
+      new ScreenOrientationDispatcherHostImpl(this));
 
 #if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());

@@ -8,11 +8,12 @@
 #include <jni.h>
 
 #include "base/compiler_specific.h"
-#include "content/browser/screen_orientation/screen_orientation_provider.h"
+#include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 
+class ScreenOrientationDispatcherHost;
 class WebContentsImpl;
 
 class ScreenOrientationProviderAndroid : public ScreenOrientationProvider,

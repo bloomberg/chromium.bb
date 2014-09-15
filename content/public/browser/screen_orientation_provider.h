@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
-#define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
+#define CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
@@ -15,7 +16,7 @@ class WebContents;
 
 // Interface that needs to be implemented by any backend that wants to handle
 // screen orientation lock/unlock.
-class ScreenOrientationProvider {
+class CONTENT_EXPORT ScreenOrientationProvider {
  public:
   // Lock the screen orientation to |orientations|.
   virtual void LockOrientation(
@@ -32,7 +33,7 @@ class ScreenOrientationProvider {
   virtual ~ScreenOrientationProvider() {}
 
  protected:
-  friend class ScreenOrientationDispatcherHost;
+  friend class ScreenOrientationDispatcherHostImpl;
 
   static ScreenOrientationProvider* Create(
       ScreenOrientationDispatcherHost* dispatcher_host,
@@ -54,4 +55,4 @@ ScreenOrientationProvider* ScreenOrientationProvider::Create(
 
 } // namespace content
 
-#endif // CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
+#endif // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_

@@ -5,10 +5,10 @@
 #include "content/browser/screen_orientation/screen_orientation_provider_android.h"
 
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "jni/ScreenOrientationProvider_jni.h"
 #include "third_party/WebKit/public/platform/WebLockOrientationError.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
