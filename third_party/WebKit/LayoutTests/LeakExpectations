@@ -83,3 +83,5 @@ crbug.com/405125 media/media-controls-clone-crash.html [ Leak Pass ]
 crbug.com/413731 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak Failure ]
 crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak Failure ]
 crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak Failure ]
+
+crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
