@@ -18,7 +18,7 @@ from telemetry.page import test_expectations
 # Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
 # Device IDs must be paired with a GPU vendor.
 
-class MemoryTestExpectations(test_expectations.TestExpectations):
+class MemoryExpectations(test_expectations.TestExpectations):
   def SetExpectations(self):
     # Sample Usage:
     # self.Fail('Memory.CSS3D',

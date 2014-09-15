@@ -36,12 +36,13 @@ class _GpuProcessValidator(page_test.PageTest):
 class GpuProcess(benchmark.Benchmark):
   """Tests that accelerated content triggers the creation of a GPU process"""
   test = _GpuProcessValidator
+  page_set = page_sets.GpuProcessTestsPageSet
 
   def CreateExpectations(self, page_set):
     return expectations.GpuProcessExpectations()
 
   def CreatePageSet(self, options):
-    page_set = page_sets.GpuProcessTestsPageSet()
+    page_set = super(GpuProcess, self).CreatePageSet(options)
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set

@@ -148,6 +148,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
 
 class Pixel(cloud_storage_test_base.TestBase):
   test = _PixelValidator
+  page_set = page_sets.PixelTestsPageSet
 
   @classmethod
   def AddTestCommandLineArgs(cls, group):
@@ -158,7 +159,7 @@ class Pixel(cloud_storage_test_base.TestBase):
         default=default_reference_image_dir)
 
   def CreatePageSet(self, options):
-    page_set = page_sets.PixelTestsPageSet()
+    page_set = super(Pixel, self).CreatePageSet(options)
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script
     return page_set
