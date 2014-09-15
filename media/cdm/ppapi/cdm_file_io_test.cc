@@ -75,6 +75,10 @@ FileIOTestRunner::FileIOTestRunner(const CreateFileIOCB& create_file_io_cb)
   for (size_t i = 0; i < kLargeDataSize; ++i)
     large_data_[i] = i % kuint8max;
 
+  // Generate |corrupted_big_data_|.
+  corrupted_big_data_.assign(kData, kData + kDataSize);
+  corrupted_big_data_.resize(kBigDataSize, 0);
+
   AddTests();
 }
 
@@ -267,6 +271,36 @@ void FileIOTestRunner::AddTests() {
     CLOSE_FILE
   END_TEST_CASE
 
+  START_TEST_CASE("CloseDuringPendingOverwriteWithLargerData")
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    WRITE_FILE(kData, kDataSize)
+    EXPECT_FILE_WRITTEN(kSuccess)
+    WRITE_FILE(kBigData, kBigDataSize)
+    CLOSE_FILE
+    // The file is corrupted. See http://crbug.com/410630
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, &corrupted_big_data_[0], kBigDataSize)
+  END_TEST_CASE
+
+  START_TEST_CASE("CloseDuringPendingOverwriteWithSmallerData")
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    WRITE_FILE(kBigData, kBigDataSize)
+    EXPECT_FILE_WRITTEN(kSuccess)
+    WRITE_FILE(kData, kDataSize)
+    CLOSE_FILE
+    // The file is corrupted. See http://crbug.com/410630
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, kBigData, kDataSize)
+  END_TEST_CASE
+
   START_TEST_CASE("CloseDuringPendingRead")
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
@@ -274,6 +308,12 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_WRITTEN(kSuccess)
     READ_FILE
     CLOSE_FILE
+    // Make sure the file is not modified.
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, kData, kDataSize)
   END_TEST_CASE
 }
 

@@ -146,6 +146,7 @@ class FileIOTestRunner {
   CompletionCB completion_cb_;
   std::list<FileIOTest> remaining_tests_;
   std::vector<uint8> large_data_;
+  std::vector<uint8> corrupted_big_data_;
   size_t total_num_tests_;  // Total number of tests.
   size_t num_passed_tests_;  // Number of passed tests.
 
