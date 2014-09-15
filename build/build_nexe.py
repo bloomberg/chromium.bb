@@ -631,6 +631,8 @@ class Builder(object):
         compile_options.append('-arch')
         compile_options.append(self.arch)
     elif ext in ['.cc', '.cpp']:
+      compile_options.append('-std=gnu++0x')
+      compile_options.append('-Wno-deprecated-register')
       bin_name = self.GetCXXCompiler()
     else:
       if ext != '.h':
