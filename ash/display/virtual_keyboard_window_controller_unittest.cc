@@ -39,44 +39,6 @@ class VirtualKeyboardWindowControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWindowControllerTest);
 };
 
-class VirtualKeyboardUsabilityExperimentTest
-    : public VirtualKeyboardWindowControllerTest {
- public:
-  VirtualKeyboardUsabilityExperimentTest()
-    : VirtualKeyboardWindowControllerTest() {}
-  virtual ~VirtualKeyboardUsabilityExperimentTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    if (SupportsMultipleDisplays()) {
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          keyboard::switches::kKeyboardUsabilityExperiment);
-    }
-    test::AshTestBase::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardUsabilityExperimentTest);
-};
-
-TEST_F(VirtualKeyboardUsabilityExperimentTest, VirtualKeyboardWindowTest) {
-  if (!SupportsMultipleDisplays())
-    return;
-  RunAllPendingInMessageLoop();
-  set_virtual_keyboard_window_controller(
-      Shell::GetInstance()->display_controller()->
-          virtual_keyboard_window_controller());
-  EXPECT_TRUE(root_window_controller());
-  aura::Window* container = root_window_controller()->GetContainer(
-      kShellWindowId_VirtualKeyboardContainer);
-  // Keyboard container is added to virtual keyboard window and its bounds is
-  // the same as root window.
-  EXPECT_TRUE(container);
-  EXPECT_EQ(container->bounds(),
-            root_window_controller()->GetRootWindow()->bounds());
-}
-
 // Tests that the onscreen keyboard becomes enabled when maximize mode is
 // enabled.
 TEST_F(VirtualKeyboardWindowControllerTest, EnabledDuringMaximizeMode) {
