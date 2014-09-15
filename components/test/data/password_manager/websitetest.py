@@ -303,18 +303,20 @@ class WebsiteTest:
           not like we expected or if the password is saved.
     """
     logging.info("\nWrong Login Test for %s \n" % self.name)
-    correct_password = self.password
-    self.password = self.password + "1"
-    self.LoginWhenNotAutofilled()
-    self.password = correct_password
-    self.Wait(2)
-    self.environment.SwitchToInternals()
-    self.environment.CheckForNewMessage(
-        environment.MESSAGE_SAVE,
-        False,
-        "Error: password manager thinks that a login with wrong password was "
-        "successful for the following website : %s \n" % self.name)
-    self.environment.SwitchFromInternals()
+    try:
+      correct_password = self.password
+      self.password = self.password + "1"
+      self.LoginWhenNotAutofilled()
+      self.password = correct_password
+      self.Wait(2)
+      self.environment.SwitchToInternals()
+      self.environment.CheckForNewMessage(
+          environment.MESSAGE_SAVE,
+          False,
+          "Error: password manager thinks that a login with wrong password was "
+          "successful for the following website : %s \n" % self.name)
+    finally:
+      self.environment.SwitchFromInternals()
 
   def SuccessfulLoginTest(self):
     """Does the successful login when the password is not expected to be
@@ -329,17 +331,19 @@ class WebsiteTest:
           saved.
     """
     logging.info("\nSuccessful Login Test for %s \n" % self.name)
-    self.LoginWhenNotAutofilled()
-    self.Wait(2)
-    self.environment.SwitchToInternals()
-    self.environment.CheckForNewMessage(
-        environment.MESSAGE_SAVE,
-        True,
-        "Error: password manager hasn't detected a successful login for the "
-        "following website : %s \n"
-        % self.name)
-    self.environment.SwitchFromInternals()
-    self.Logout()
+    try:
+      self.LoginWhenNotAutofilled()
+      self.Wait(2)
+      self.environment.SwitchToInternals()
+      self.environment.CheckForNewMessage(
+          environment.MESSAGE_SAVE,
+          True,
+          "Error: password manager hasn't detected a successful login for the "
+          "following website : %s \n"
+          % self.name)
+    finally:
+      self.environment.SwitchFromInternals()
+      self.Logout()
 
   def SuccessfulLoginWithAutofilledPasswordTest(self):
     """Does the successful login when the password is expected to be autofilled
@@ -355,17 +359,19 @@ class WebsiteTest:
     """
     logging.info("\nSuccessful Login With Autofilled Password"
                         " Test %s \n" % self.name)
-    self.LoginWhenAutofilled()
-    self.Wait(2)
-    self.environment.SwitchToInternals()
-    self.environment.CheckForNewMessage(
-        environment.MESSAGE_SAVE,
-        True,
-        "Error: password manager hasn't detected a successful login for the "
-        "following website : %s \n"
-        % self.name)
-    self.environment.SwitchFromInternals()
-    self.Logout()
+    try:
+      self.LoginWhenAutofilled()
+      self.Wait(2)
+      self.environment.SwitchToInternals()
+      self.environment.CheckForNewMessage(
+          environment.MESSAGE_SAVE,
+          True,
+          "Error: password manager hasn't detected a successful login for the "
+          "following website : %s \n"
+          % self.name)
+    finally:
+      self.environment.SwitchFromInternals()
+      self.Logout()
 
   def PromptTest(self):
     """Does the prompt test: Tries to login with a wrong password and
@@ -380,25 +386,27 @@ class WebsiteTest:
           password or is shown for a wrong one.
     """
     logging.info("\nPrompt Test for %s \n" % self.name)
-    correct_password = self.password
-    self.password = self.password + "1"
-    self.LoginWhenNotAutofilled()
-    self.password = correct_password
-    self.Wait(2)
-    self.environment.SwitchToInternals()
-    self.environment.CheckForNewMessage(
-        environment.MESSAGE_ASK,
-        False,
-        "Error: password manager thinks that a login with wrong password was "
-        "successful for the following website : %s \n" % self.name)
-    self.environment.SwitchFromInternals()
+    try:
+      correct_password = self.password
+      self.password = self.password + "1"
+      self.LoginWhenNotAutofilled()
+      self.password = correct_password
+      self.Wait(2)
+      self.environment.SwitchToInternals()
+      self.environment.CheckForNewMessage(
+          environment.MESSAGE_ASK,
+          False,
+          "Error: password manager thinks that a login with wrong password was "
+          "successful for the following website : %s \n" % self.name)
+      self.environment.SwitchFromInternals()
 
-    self.LoginWhenNotAutofilled()
-    self.Wait(2)
-    self.environment.SwitchToInternals()
-    self.environment.CheckForNewMessage(
-        environment.MESSAGE_ASK,
-        True,
-        "Error: password manager hasn't detected a successful login for the "
-        "following website : %s \n" % self.name)
-    self.environment.SwitchFromInternals()
+      self.LoginWhenNotAutofilled()
+      self.Wait(2)
+      self.environment.SwitchToInternals()
+      self.environment.CheckForNewMessage(
+          environment.MESSAGE_ASK,
+          True,
+          "Error: password manager hasn't detected a successful login for the "
+          "following website : %s \n" % self.name)
+    finally:
+      self.environment.SwitchFromInternals()
