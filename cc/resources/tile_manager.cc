@@ -538,6 +538,10 @@ void TileManager::DidFinishRunningTasks() {
 }
 
 void TileManager::DidFinishRunningTasksRequiredForActivation() {
+  TRACE_EVENT1("cc",
+               "TileManager::DidFinishRunningTasksRequiredForActivation",
+               "all_tiles_required_for_activation_have_memory",
+               all_tiles_required_for_activation_have_memory_);
   // This is only a true indication that all tiles required for
   // activation are initialized when no tiles are OOM. We need to
   // wait for DidFinishRunningTasks() to be called, try to re-assign

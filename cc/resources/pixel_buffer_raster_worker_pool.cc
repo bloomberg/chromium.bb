@@ -290,9 +290,11 @@ void PixelBufferRasterWorkerPool::OnRasterFinished() {
 }
 
 void PixelBufferRasterWorkerPool::OnRasterRequiredForActivationFinished() {
-  TRACE_EVENT0(
+  TRACE_EVENT1(
       "cc",
-      "PixelBufferRasterWorkerPool::OnRasterRequiredForActivationFinished");
+      "PixelBufferRasterWorkerPool::OnRasterRequiredForActivationFinished",
+      "should_notify_client_if_no_tasks_required_for_activation_are_pending",
+      should_notify_client_if_no_tasks_required_for_activation_are_pending_);
 
   // Analogous to OnRasterTasksFinished(), there's no need to call
   // CheckForCompletedRasterTasks() if the client has already been notified.
