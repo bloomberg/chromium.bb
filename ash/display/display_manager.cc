@@ -884,13 +884,6 @@ void DisplayManager::UpdateDisplays(
   scoped_ptr<NonDesktopDisplayUpdater> non_desktop_display_updater(
       new NonDesktopDisplayUpdater(this, delegate_));
 
-  // Do not update |displays_| if there's nothing to be updated. Without this,
-  // it will not update the display layout, which causes the bug
-  // http://crbug.com/155948.
-  if (display_changes.empty() && added_display_indices.empty() &&
-      removed_displays.empty()) {
-    return;
-  }
   // Clear focus if the display has been removed, but don't clear focus if
   // the destkop has been moved from one display to another
   // (mirror -> docked, docked -> single internal).
@@ -899,6 +892,22 @@ void DisplayManager::UpdateDisplays(
       !(removed_displays.size() == 1 && added_display_indices.size() == 1);
   if (delegate_)
     delegate_->PreDisplayConfigurationChange(clear_focus);
+
+  // Do not update |displays_| if there's nothing to be updated. Without this,
+  // it will not update the display layout, which causes the bug
+  // http://crbug.com/155948.
+  if (display_changes.empty() && added_display_indices.empty() &&
+      removed_displays.empty()) {
+    // When changing from software mirroring mode to sinlge display mode, it
+    // is possible there is no need to update |displays_| and we early out
+    // here. But we still want to run the PostDisplayConfigurationChange()
+    // cause there are some clients need to act on this, e.g.
+    // TouchTransformerController needs to adjust the TouchTransformer when
+    // switching from dual displays to single display.
+    if (delegate_)
+      delegate_->PostDisplayConfigurationChange();
+    return;
+  }
 
   size_t updated_index;
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
