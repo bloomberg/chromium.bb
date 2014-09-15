@@ -917,6 +917,7 @@ action("make_core_generated_private_script") {
   inputs = [
     "../bindings/core/v8/PrivateScriptRunner.js",
     "html/HTMLMarqueeElement.js",
+    "html/shadow/PluginPlaceholderElement.js",
     "xml/DocumentXMLTreeViewer.js",
   ]
   outputs = [

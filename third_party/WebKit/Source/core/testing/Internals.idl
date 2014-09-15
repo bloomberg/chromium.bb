@@ -277,7 +277,8 @@
     DOMString serializeNavigationMarkup();
     void hideAllTransitionElements();
 
-    [RaisesException] void forcePluginPlaceholder(HTMLElement plugin, DOMString htmlSource);
+    [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, DOMString htmlSource);
+    [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, Dictionary options);
 
     DictionaryTest dictionaryTest();
 };

@@ -1,0 +1,12 @@
+Ensures that the private PluginPlaceholderElement interface is not exposed.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.PluginPlaceholderElement is undefined.
+PASS PluginPlaceholderElement threw exception ReferenceError: PluginPlaceholderElement is not defined.
+PASS PluginPlaceholderElement.prototype threw exception ReferenceError: PluginPlaceholderElement is not defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

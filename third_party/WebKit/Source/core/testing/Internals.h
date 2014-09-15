@@ -318,6 +318,7 @@ public:
     unsigned countHitRegions(CanvasRenderingContext2D*);
 
     void forcePluginPlaceholder(HTMLElement* plugin, const String& htmlSource, ExceptionState&);
+    void forcePluginPlaceholder(HTMLElement* plugin, const Dictionary& options, ExceptionState&);
 
     Iterator* iterator(ScriptState*, ExceptionState&);
 

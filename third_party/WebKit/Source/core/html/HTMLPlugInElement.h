@@ -63,7 +63,7 @@ public:
     void requestPluginCreationWithoutRendererIfPossible();
     void createPluginWithoutRenderer();
 
-    bool usePlaceholderContent() { return m_usePlaceholderContent; }
+    bool usePlaceholderContent() const { return m_usePlaceholderContent; }
     void setUsePlaceholderContent(bool);
 
 protected:

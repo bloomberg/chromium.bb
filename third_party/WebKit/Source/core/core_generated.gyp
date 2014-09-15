@@ -151,6 +151,7 @@
           'private_script_files': [
              '../bindings/core/v8/PrivateScriptRunner.js',
              'html/HTMLMarqueeElement.js',
+             'html/shadow/PluginPlaceholderElement.js',
              'xml/DocumentXMLTreeViewer.js',
           ],
           'inputs': [

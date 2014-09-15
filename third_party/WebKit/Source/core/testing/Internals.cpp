@@ -84,6 +84,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/shadow/PluginPlaceholderElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/inspector/ConsoleMessageStorage.h"
@@ -2247,15 +2248,36 @@ void Internals::hideAllTransitionElements()
 
 void Internals::forcePluginPlaceholder(HTMLElement* element, const String& htmlSource, ExceptionState& exceptionState)
 {
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLElement"));
-        return;
-    }
     if (!element->isPluginElement()) {
         exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
         return;
     }
+
     element->ensureUserAgentShadowRoot().setInnerHTML(htmlSource, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
+}
+
+void Internals::forcePluginPlaceholder(HTMLElement* element, const Dictionary& options, ExceptionState& exceptionState)
+{
+    if (!element->isPluginElement()) {
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
+        return;
+    }
+
+    RefPtrWillBeRawPtr<PluginPlaceholderElement> placeholder = PluginPlaceholderElement::create(element->document());
+    String stringValue;
+    if (DictionaryHelper::get(options, "message", stringValue))
+        placeholder->setMessage(stringValue);
+
+    ShadowRoot& shadowRoot = element->ensureUserAgentShadowRoot();
+    shadowRoot.removeChildren();
+    shadowRoot.appendChild(placeholder.release(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
 }
 
