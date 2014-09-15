@@ -28,6 +28,7 @@
 #include "core/frame/FrameView.h"
 
 #include "core/HTMLNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -105,7 +106,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
-    , m_mediaType("screen")
+    , m_mediaType(MediaTypeNames::screen)
     , m_overflowStatusDirty(true)
     , m_viewportRenderer(0)
     , m_wasScrolledByUser(false)
@@ -1092,7 +1093,7 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
     if (printing) {
         if (m_mediaTypeWhenNotPrinting.isNull())
             m_mediaTypeWhenNotPrinting = mediaType();
-            setMediaType("print");
+            setMediaType(MediaTypeNames::print);
     } else {
         if (!m_mediaTypeWhenNotPrinting.isNull())
             setMediaType(m_mediaTypeWhenNotPrinting);

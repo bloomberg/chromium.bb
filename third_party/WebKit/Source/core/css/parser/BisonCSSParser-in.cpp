@@ -28,6 +28,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
@@ -1522,12 +1523,12 @@ MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor rest
 
 MediaQuery* BisonCSSParser::createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
 {
-    return createFloatingMediaQuery(MediaQuery::None, AtomicString("all", AtomicString::ConstructFromLiteral), expressions);
+    return createFloatingMediaQuery(MediaQuery::None, MediaTypeNames::all, expressions);
 }
 
 MediaQuery* BisonCSSParser::createFloatingNotAllQuery()
 {
-    return createFloatingMediaQuery(MediaQuery::Not, AtomicString("all", AtomicString::ConstructFromLiteral), sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
+    return createFloatingMediaQuery(MediaQuery::Not, MediaTypeNames::all, sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
 }
 
 PassOwnPtrWillBeRawPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQuery* query)

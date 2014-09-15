@@ -107,12 +107,6 @@ const AtomicString& sliderTrack()
     return name;
 }
 
-const AtomicString& speechButton()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, name, ("speech", AtomicString::ConstructFromLiteral));
-    return name;
-}
-
 const AtomicString& textFieldContainer()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("text-field-container", AtomicString::ConstructFromLiteral));
