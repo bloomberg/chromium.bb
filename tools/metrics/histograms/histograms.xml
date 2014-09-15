@@ -5839,6 +5839,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.AuthenticationSuccess" enum="BooleanSuccess">
+  <owner>joshwoodward@google.com</owner>
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    When Easy Unlock attempts to authenticate the secure connection between a
+    Chromebook (or other Chrome device) and an Android phone, whether the
+    authentication succeeded.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.ClickedButton" enum="EasyUnlockButton">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
