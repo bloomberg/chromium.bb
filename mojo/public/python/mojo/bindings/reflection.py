@@ -4,6 +4,12 @@
 
 """The metaclasses used by the mojo python bindings."""
 
+import itertools
+
+# pylint: disable=F0401
+import mojo.bindings.serialization as serialization
+
+
 class MojoEnumType(type):
   """Meta class for enumerations.
 
@@ -85,11 +91,21 @@ class MojoStructType(type):
       dictionary[key] = MojoEnumType(key, (object,), { 'VALUES': enums[key] })
 
     # Add fields
-    for field in descriptor.get('fields', []):
+    groups = descriptor.get('fields', [])
+
+    fields = list(
+        itertools.chain.from_iterable([group.descriptors for group in groups]))
+    for field in fields:
       dictionary[field.name] = _BuildProperty(field)
 
     # Add init
     dictionary['__init__'] = _StructInit
+
+    # Add serialization method
+    serialization_object = serialization.Serialization(groups)
+    def Serialize(self, handle_offset=0):
+      return serialization_object.Serialize(self, handle_offset)
+    dictionary['Serialize'] = Serialize
 
     return type.__new__(mcs, name, bases, dictionary)
 

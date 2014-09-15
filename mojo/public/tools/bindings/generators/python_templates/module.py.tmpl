@@ -46,9 +46,9 @@ class {{struct|name}}(object):
 {%   if struct.fields %}
     'fields': [
 {%    for byte in struct.bytes %}
-{%     for packed_field in byte.packed_fields %}
-      {{packed_field|field_descriptor}},
-{%     endfor %}
+{%      if byte.packed_fields %}
+      {{byte|field_group}},
+{%      endif %}
 {%   endfor %}
     ],
 {%   endif %}
