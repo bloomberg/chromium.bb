@@ -98,6 +98,7 @@ void SearchResultView::SetResult(SearchResult* result) {
   UpdateTitleText();
   UpdateDetailsText();
   OnIsInstallingChanged();
+  OnPercentDownloadedChanged();
   SchedulePaint();
 }
 

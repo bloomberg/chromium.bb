@@ -26,6 +26,9 @@ class MenuRunner;
 }
 
 namespace app_list {
+namespace test {
+class SearchResultListViewTest;
+}  // namespace test
 
 class ProgressBarView;
 class SearchResult;
@@ -57,6 +60,8 @@ class SearchResultView : public views::CustomButton,
   void ClearSelectedAction();
 
  private:
+  friend class app_list::test::SearchResultListViewTest;
+
   void UpdateTitleText();
   void UpdateDetailsText();
 
