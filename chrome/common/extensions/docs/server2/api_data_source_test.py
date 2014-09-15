@@ -9,14 +9,14 @@ from api_data_source import APIDataSource
 from extensions_paths import CHROME_EXTENSIONS
 from servlet import Request
 from server_instance import ServerInstance
-from test_data.api_data_source.canned_trunk_fs import CANNED_TRUNK_FS_DATA
+from test_data.api_data_source.canned_master_fs import CANNED_MASTER_FS_DATA
 from test_file_system import TestFileSystem
 
 
 class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
     self.server_instance = ServerInstance.ForTest(
-        TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=CHROME_EXTENSIONS))
+        TestFileSystem(CANNED_MASTER_FS_DATA, relative_to=CHROME_EXTENSIONS))
 
   def testGet(self):
     api_ds = APIDataSource(self.server_instance, Request.ForTest('/'))

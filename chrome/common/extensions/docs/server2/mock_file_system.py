@@ -85,6 +85,12 @@ class MockFileSystem(FileSystem):
 
     return stat
 
+  def GetCommitID(self):
+    return Future(value=self._stat_tracker.GetVersion(''))
+
+  def GetPreviousCommitID(self):
+    return Future(value=self._stat_tracker.GetVersion('') - 1)
+
   def GetIdentity(self):
     return self._file_system.GetIdentity()
 

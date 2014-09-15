@@ -10,7 +10,7 @@ from test_file_system import MoveAllTo, MoveTo
 
 
 CANNED_CHANNELS = OrderedDict([
-  ('trunk', 'trunk'),
+  ('master', 'master'),
   ('dev', 31),
   ('beta', 30),
   ('stable', 29)
@@ -18,7 +18,7 @@ CANNED_CHANNELS = OrderedDict([
 
 
 CANNED_BRANCHES = OrderedDict([
-  ('trunk', 'trunk'),
+  ('master', 'master'),
   (31, '1612'),
   (30, '1599'),
   (29, '1547'),
@@ -70,8 +70,8 @@ CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(CHROME_EXTENSIONS, {
       },
       'json': {
         'api_availabilities.json': json.dumps({
-          'trunk_api': {
-            'channel': 'trunk'
+          'master_api': {
+            'channel': 'master'
           },
           'dev_api': {
             'channel': 'dev'
@@ -108,7 +108,7 @@ CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(CHROME_EXTENSIONS, {
       },
       'private': {
         'intro_tables': {
-          'trunk_message.html': 'available on trunk'
+          'master_message.html': 'available on master'
         },
         'table_of_contents.html': '<table-of-contents>',
       }
@@ -137,7 +137,7 @@ _TEST_WHATS_NEW_JSON = {
 
 
 CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
-  'trunk': {
+  'master': {
     'api': {
       '_api_features.json': json.dumps({
         'alarm': {
@@ -185,7 +185,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'beta'
         },
         'sync': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'web_request': {
           'channel': 'stable'
@@ -205,7 +205,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta',
@@ -222,8 +222,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'systemInfo.display': {
           'channel': 'stable'
         },
-        'trunkAPI': {
-          'channel': 'trunk'
+        'masterAPI': {
+          'channel': 'master'
         }
       }),
       'alarm.json': json.dumps([{
@@ -275,8 +275,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -328,7 +328,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'events': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'extension': {
           'channel': 'stable'
@@ -342,7 +342,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }),
       '_manifest_features.json': json.dumps({
         'contextMenus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'notifications': {
           'channel': 'beta'
@@ -357,7 +357,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'sync': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'system_info_display': {
           'channel': 'stable'
@@ -384,7 +384,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -416,8 +416,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -467,7 +467,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'events': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'extension': {
           'channel': 'stable'
@@ -481,7 +481,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }),
       '_manifest_features.json': json.dumps({
         'contextMenus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'notifications': {
           'channel': 'dev'
@@ -496,7 +496,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'sync': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'system_info_display': {
           'channel': 'stable'
@@ -523,7 +523,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -555,8 +555,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -606,7 +606,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'events': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'extension': {
           'channel': 'stable'
@@ -617,7 +617,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }),
       '_manifest_features.json': json.dumps({
         'contextMenus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'notifications': {
           'channel': 'dev'
@@ -632,7 +632,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'sync': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'system_info_display': {
           'channel': 'stable'
@@ -659,7 +659,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -691,8 +691,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -742,7 +742,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'events': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'extension': {
           'channel': 'stable'
@@ -753,7 +753,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }),
       '_manifest_features.json': json.dumps({
         'contextMenus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'notifications': {
           'channel': 'dev'
@@ -768,7 +768,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'sync': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'system_info_display': {
           'channel': 'stable'
@@ -795,7 +795,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -827,8 +827,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -922,10 +922,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'context_menus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -957,8 +957,8 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       'templates': {
         'json': {
           'api_availabilities.json': json.dumps({
-            'jsonTrunkAPI': {
-              'channel': 'trunk'
+            'jsonMasterAPI': {
+              'channel': 'master'
             },
             'jsonDevAPI': {
               'channel': 'dev'
@@ -1039,10 +1039,10 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'stable'
         },
         'context_menus': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeContent': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
@@ -1226,7 +1226,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
     'api': {
       '_manifest_features.json': json.dumps({
         'bookmarks': {
-          'channel': 'trunk'
+          'channel': 'master'
         },
         'page_action': {
           'channel': 'stable'

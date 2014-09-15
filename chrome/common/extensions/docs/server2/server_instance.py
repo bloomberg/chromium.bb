@@ -56,7 +56,7 @@ class ServerInstance(object):
     self.compiled_fs_factory = compiled_fs_factory
 
     self.host_file_system_provider = host_file_system_provider
-    host_fs_at_trunk = host_file_system_provider.GetTrunk()
+    host_fs_at_master = host_file_system_provider.GetMaster()
 
     self.github_file_system_provider = github_file_system_provider
     self.gcs_file_system_provider = gcs_file_system_provider
@@ -71,7 +71,7 @@ class ServerInstance(object):
     self.platform_bundle = PlatformBundle(
         branch_utility,
         self.compiled_fs_factory,
-        host_fs_at_trunk,
+        host_fs_at_master,
         self.host_file_system_iterator,
         self.object_store_creator,
         self.base_path)
@@ -79,7 +79,7 @@ class ServerInstance(object):
     self.content_providers = ContentProviders(
         object_store_creator,
         self.compiled_fs_factory,
-        host_fs_at_trunk,
+        host_fs_at_master,
         self.github_file_system_provider,
         self.gcs_file_system_provider)
 
@@ -92,7 +92,7 @@ class ServerInstance(object):
     # TemplateDataSource itself rather than depending on template_renderer, but
     # for that the above todo should be addressed.
     self.document_renderer = DocumentRenderer(
-        TableOfContentsRenderer(host_fs_at_trunk,
+        TableOfContentsRenderer(host_fs_at_master,
                                 compiled_fs_factory,
                                 self.template_renderer),
         self.platform_bundle)

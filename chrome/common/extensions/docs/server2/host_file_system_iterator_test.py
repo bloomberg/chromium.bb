@@ -47,15 +47,15 @@ class HostFileSystemIteratorTest(unittest.TestCase):
     return self._branch_utility.GetChannelInfo(channel_name)
 
   def testAscending(self):
-    # Start at |stable| version 5, and move up towards |trunk|.
+    # Start at |stable| version 5, and move up towards |master|.
     # Total: 28 file systems.
     iterations, callback = _GetIterationTracker(0)
     self.assertEqual(
         self._iterator.Ascending(self._GetStableChannelInfo(5), callback),
-        self._GetChannelInfo('trunk'))
+        self._GetChannelInfo('master'))
     self.assertEqual(len(iterations), 28)
 
-    # Start at |stable| version 5, and move up towards |trunk|. The callback
+    # Start at |stable| version 5, and move up towards |master|. The callback
     # fails at |beta|, so the last successful callback was the latest version
     # of |stable|. Total: 25 file systems.
     iterations, callback = _GetIterationTracker(
@@ -82,8 +82,8 @@ class HostFileSystemIteratorTest(unittest.TestCase):
     self.assertEqual([self._GetStableChannelInfo(5)], iterations)
 
     # Start at the latest version of |stable|, and the callback fails at
-    # |trunk|. Total: 3 file systems.
-    iterations, callback = _GetIterationTracker('trunk')
+    # |master|. Total: 3 file systems.
+    iterations, callback = _GetIterationTracker('master')
     self.assertEqual(
         self._iterator.Ascending(self._GetChannelInfo('stable'), callback),
         self._GetChannelInfo('dev'))
@@ -91,8 +91,8 @@ class HostFileSystemIteratorTest(unittest.TestCase):
                       self._GetChannelInfo('beta'),
                       self._GetChannelInfo('dev')], iterations)
 
-    # Start at |stable| version 10, and the callback fails at |trunk|.
-    iterations, callback = _GetIterationTracker('trunk')
+    # Start at |stable| version 10, and the callback fails at |master|.
+    iterations, callback = _GetIterationTracker('master')
     self.assertEqual(
         self._iterator.Ascending(self._GetStableChannelInfo(10), callback),
         self._GetChannelInfo('dev'))
@@ -120,28 +120,28 @@ class HostFileSystemIteratorTest(unittest.TestCase):
                       self._GetChannelInfo('dev')], iterations)
 
   def testDescending(self):
-    # Start at |trunk|, and the callback fails immediately. No file systems
+    # Start at |master|, and the callback fails immediately. No file systems
     # are successfully processed, so Descending() will return None.
-    iterations, callback = _GetIterationTracker('trunk')
+    iterations, callback = _GetIterationTracker('master')
     self.assertEqual(
-        self._iterator.Descending(self._GetChannelInfo('trunk'), callback),
+        self._iterator.Descending(self._GetChannelInfo('master'), callback),
         None)
     self.assertEqual([], iterations)
 
-    # Start at |trunk|, and the callback fails at |dev|. Last good iteration
-    # should be |trunk|.
+    # Start at |master|, and the callback fails at |dev|. Last good iteration
+    # should be |master|.
     iterations, callback = _GetIterationTracker(
         self._GetChannelInfo('dev').version)
     self.assertEqual(
-        self._iterator.Descending(self._GetChannelInfo('trunk'), callback),
-        self._GetChannelInfo('trunk'))
-    self.assertEqual([self._GetChannelInfo('trunk')], iterations)
+        self._iterator.Descending(self._GetChannelInfo('master'), callback),
+        self._GetChannelInfo('master'))
+    self.assertEqual([self._GetChannelInfo('master')], iterations)
 
-    # Start at |trunk|, and then move from |dev| down to |stable| at version 5.
+    # Start at |master|, and then move from |dev| down to |stable| at version 5.
     # Total: 28 file systems.
     iterations, callback = _GetIterationTracker(0)
     self.assertEqual(
-        self._iterator.Descending(self._GetChannelInfo('trunk'), callback),
+        self._iterator.Descending(self._GetChannelInfo('master'), callback),
         self._GetStableChannelInfo(5))
     self.assertEqual(len(iterations), 28)
 

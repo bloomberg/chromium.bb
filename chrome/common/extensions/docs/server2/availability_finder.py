@@ -59,7 +59,7 @@ def _GetAPISchemaFilename(api_name, file_system, version):
   single _EXTENSION_API file which all APIs share in older versions of Chrome,
   in which case it is unknown whether the API actually exists there.
   '''
-  if version == 'trunk' or version > _ORIGINAL_FEATURES_MIN_VERSION:
+  if version == 'master' or version > _ORIGINAL_FEATURES_MIN_VERSION:
     # API schema filenames switch format to unix_hacker_style.
     api_name = UnixName(api_name)
 
@@ -368,8 +368,8 @@ class AvailabilityFinder(object):
         self._branch_utility.GetChannelInfo('dev'),
         check_api_availability)
     if channel_info is None:
-      # The API wasn't available on 'dev', so it must be a 'trunk'-only API.
-      channel_info = self._branch_utility.GetChannelInfo('trunk')
+      # The API wasn't available on 'dev', so it must be a 'master'-only API.
+      channel_info = self._branch_utility.GetChannelInfo('master')
 
     # If the API is not stable, check when it will be scheduled to be stable.
     if channel_info.channel == 'stable':
@@ -396,8 +396,8 @@ class AvailabilityFinder(object):
 
     availability_graph = APISchemaGraph()
     host_fs = self._host_file_system
-    trunk_stat = assert_not_none(host_fs.Stat(_GetAPISchemaFilename(
-        api_name, host_fs, 'trunk')))
+    master_stat = assert_not_none(host_fs.Stat(_GetAPISchemaFilename(
+        api_name, host_fs, 'master')))
 
     # Weird object thing here because nonlocal is Python 3.
     previous = type('previous', (object,), {'stat': None, 'graph': None})
@@ -446,8 +446,8 @@ class AvailabilityFinder(object):
       previous.graph = version_graph
 
       # Continue looping until there are no longer differences between this
-      # version and trunk.
-      return version_stat != trunk_stat
+      # version and master.
+      return version_stat != master_stat
 
     self._file_system_iterator.Ascending(
         self.GetAPIAvailability(api_name).channel_info,

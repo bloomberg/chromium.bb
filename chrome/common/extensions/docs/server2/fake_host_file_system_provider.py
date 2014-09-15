@@ -11,8 +11,8 @@ class FakeHostFileSystemProvider(object):
   def __init__(self, file_system_data):
     self._file_system_data = file_system_data
 
-  def GetTrunk(self):
-    return self.GetBranch('trunk')
+  def GetMaster(self):
+    return self.GetBranch('master')
 
   @memoize
   def GetBranch(self, branch):

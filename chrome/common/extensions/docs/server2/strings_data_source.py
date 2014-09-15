@@ -14,7 +14,7 @@ class StringsDataSource(DataSource):
   '''
   def __init__(self, server_instance, _):
     self._cache = server_instance.compiled_fs_factory.ForJson(
-        server_instance.host_file_system_provider.GetTrunk())
+        server_instance.host_file_system_provider.GetMaster())
 
   def _GetStringsData(self):
     return self._cache.GetFromFile('%sstrings.json' % JSON_TEMPLATES)

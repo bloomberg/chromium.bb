@@ -23,8 +23,8 @@ class TemplateDataSource(DataSource):
     AssertIsDirectory(self._dir)
     self._request = request
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
-        server_instance.host_file_system_provider.GetTrunk())
-    self._file_system = server_instance.host_file_system_provider.GetTrunk()
+        server_instance.host_file_system_provider.GetMaster())
+    self._file_system = server_instance.host_file_system_provider.GetMaster()
 
   def get(self, path):
     try:

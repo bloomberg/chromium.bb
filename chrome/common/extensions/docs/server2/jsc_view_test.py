@@ -22,7 +22,7 @@ from jsc_view import JSCView, _FormatValue
 from object_store_creator import ObjectStoreCreator
 from schema_processor import SchemaProcessorFactoryForTest
 from server_instance import ServerInstance
-from test_data.api_data_source.canned_trunk_fs import CANNED_TRUNK_FS_DATA
+from test_data.api_data_source.canned_master_fs import CANNED_MASTER_FS_DATA
 from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
 from test_file_system import TestFileSystem
@@ -57,7 +57,7 @@ class _FakeAvailabilityFinder(object):
   def GetAPINodeAvailability(self, api_name):
     schema_graph = APISchemaGraph()
     api_graph = APISchemaGraph(json.loads(
-        CANNED_TRUNK_FS_DATA['api'][api_name + '.json']))
+        CANNED_MASTER_FS_DATA['api'][api_name + '.json']))
     # Give the graph fake ChannelInfo; it's not used in tests.
     channel_info = ChannelInfo('stable', '28', 28)
     schema_graph.Update(api_graph, lambda _: channel_info)
@@ -69,8 +69,8 @@ class JSCViewTest(unittest.TestCase):
     self._base_path = Server2Path('test_data', 'test_json')
 
     server_instance = ServerInstance.ForTest(
-        TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=CHROME_EXTENSIONS))
-    file_system = server_instance.host_file_system_provider.GetTrunk()
+        TestFileSystem(CANNED_MASTER_FS_DATA, relative_to=CHROME_EXTENSIONS))
+    file_system = server_instance.host_file_system_provider.GetMaster()
     self._json_cache = server_instance.compiled_fs_factory.ForJson(file_system)
     self._features_bundle = FeaturesBundle(file_system,
                                            server_instance.compiled_fs_factory,
@@ -266,7 +266,7 @@ class JSCViewWithoutNodeAvailabilityTest(unittest.TestCase):
     self._api_models = server_instance.platform_bundle.GetAPIModels(
         'extensions')
     self._json_cache = server_instance.compiled_fs_factory.ForJson(
-        server_instance.host_file_system_provider.GetTrunk())
+        server_instance.host_file_system_provider.GetMaster())
     self._avail_finder = server_instance.platform_bundle.GetAvailabilityFinder(
         'extensions')
 
@@ -274,7 +274,7 @@ class JSCViewWithoutNodeAvailabilityTest(unittest.TestCase):
   def testGetAPIAvailability(self):
     api_availabilities = {
       'bluetooth': 31,
-      'contextMenus': 'trunk',
+      'contextMenus': 'master',
       'jsonStableAPI': 20,
       'idle': 5,
       'input.ime': 18,
@@ -310,7 +310,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
         self._branch_utility,
         CompiledFileSystem.Factory(test_object_store),
         self._node_fs_iterator,
-        self._node_fs_creator.GetTrunk(),
+        self._node_fs_creator.GetMaster(),
         test_object_store,
         'extensions',
         SchemaProcessorFactoryForTest())
@@ -321,7 +321,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
     self._api_models = server_instance.platform_bundle.GetAPIModels(
         'extensions')
     self._json_cache = server_instance.compiled_fs_factory.ForJson(
-        server_instance.host_file_system_provider.GetTrunk())
+        server_instance.host_file_system_provider.GetMaster())
 
     # Imitate the actual SVN file system by incrementing the stats for paths
     # where an API schema has changed.
@@ -333,7 +333,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
       # HACK: |file_system| is a MockFileSystem backed by a TestFileSystem.
       # Increment the TestFileSystem stat count.
       file_system._file_system.IncrementStat(by=last_stat.val)
-      # Continue looping. The iterator will stop after 'trunk' automatically.
+      # Continue looping. The iterator will stop after 'master' automatically.
       return True
 
     # Use the HostFileSystemIterator created above to change global stat values

@@ -59,7 +59,7 @@ class SidenavDataSource(DataSource):
   '''
   def __init__(self, server_instance, request):
     self._cache = server_instance.compiled_fs_factory.Create(
-        server_instance.host_file_system_provider.GetTrunk(),
+        server_instance.host_file_system_provider.GetMaster(),
         self._CreateSidenavDict,
         SidenavDataSource)
     self._server_instance = server_instance

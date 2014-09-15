@@ -47,7 +47,7 @@ class _FakeGitilesFetcher(object):
   def __init__(self, fs):
     self._fs = fs
 
-  def FetchAsync(self, url):
+  def FetchAsync(self, url, access_token=None):
     def resolve():
       assert '?' in url
       if url == _BASE_URL + '?format=JSON':

@@ -12,7 +12,7 @@ import url_constants
 
 class ChannelInfo(object):
   '''Represents a Chrome channel with three pieces of information. |channel| is
-  one of 'stable', 'beta', 'dev', or 'trunk'. |branch| and |version| correspond
+  one of 'stable', 'beta', 'dev', or 'master'. |branch| and |version| correspond
   with each other, and represent different releases of Chrome. Note that
   |branch| and |version| can occasionally be the same for separate channels
   (i.e. 'beta' and 'dev'), so all three fields are required to uniquely
@@ -24,7 +24,7 @@ class ChannelInfo(object):
     assert isinstance(branch, basestring), branch
     # TODO(kalman): Assert that this is a string. One day Chromium will probably
     # be served out of a git repository and the versions will no longer be ints.
-    assert isinstance(version, int) or version == 'trunk', version
+    assert isinstance(version, int) or version == 'master', version
     self.channel = channel
     self.branch = branch
     self.version = version
@@ -65,7 +65,7 @@ class BranchUtility(object):
 
   @staticmethod
   def GetAllChannelNames():
-    return ('stable', 'beta', 'dev', 'trunk')
+    return ('stable', 'beta', 'dev', 'master')
 
   @staticmethod
   def NewestChannel(channels):
@@ -78,7 +78,7 @@ class BranchUtility(object):
     '''Given a ChannelInfo object, returns a new ChannelInfo object
     representing the next most recent Chrome version/branch combination.
     '''
-    if channel_info.channel == 'trunk':
+    if channel_info.channel == 'master':
       return None
     if channel_info.channel == 'stable':
       stable_info = self.GetChannelInfo('stable')
@@ -128,7 +128,7 @@ class BranchUtility(object):
 
   def GetChannelInfo(self, channel):
     version = self._ExtractFromVersionJson(channel, 'version')
-    if version != 'trunk':
+    if version != 'master':
       version = int(version)
     return ChannelInfo(channel,
                        self._ExtractFromVersionJson(channel, 'branch'),
@@ -143,8 +143,8 @@ class BranchUtility(object):
   def _ExtractFromVersionJson(self, channel_name, data_type):
     '''Returns the branch or version number for a channel name.
     '''
-    if channel_name == 'trunk':
-      return 'trunk'
+    if channel_name == 'master':
+      return 'master'
 
     if data_type == 'branch':
       object_store = self._branch_object_store
@@ -159,10 +159,10 @@ class BranchUtility(object):
       version_json = json.loads(self._fetch_result.Get().content)
     except Exception as e:
       # This can happen if omahaproxy is misbehaving, which we've seen before.
-      # Quick hack fix: just serve from trunk until it's fixed.
+      # Quick hack fix: just serve from master until it's fixed.
       logging.error('Failed to fetch or parse branch from omahaproxy: %s! '
-                    'Falling back to "trunk".' % e)
-      return 'trunk'
+                    'Falling back to "master".' % e)
+      return 'master'
 
     numbers = {}
     for entry in version_json:
@@ -190,8 +190,8 @@ class BranchUtility(object):
     '''Returns the most recent branch for a given chrome version number using
     data stored on omahaproxy (see url_constants).
     '''
-    if version == 'trunk':
-      return 'trunk'
+    if version == 'master':
+      return 'master'
 
     branch = self._branch_object_store.Get(str(version)).Get()
     if branch is not None:

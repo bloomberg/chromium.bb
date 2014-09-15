@@ -10,7 +10,7 @@ from environment import GetAppVersion
 from future import Future
 
 
-def _MakeHeaders(username, password):
+def _MakeHeaders(username, password, access_token):
   headers = {
     'User-Agent': 'Chromium docserver %s' % GetAppVersion(),
     'Cache-Control': 'max-age=0',
@@ -18,6 +18,8 @@ def _MakeHeaders(username, password):
   if username is not None and password is not None:
     headers['Authorization'] = 'Basic %s' % base64.b64encode(
         '%s:%s' % (username, password))
+  if access_token is not None:
+    headers['Authorization'] = 'OAuth %s' % access_token
   return headers
 
 
@@ -29,19 +31,24 @@ class AppEngineUrlFetcher(object):
     assert base_path is None or not base_path.endswith('/'), base_path
     self._base_path = base_path
 
-  def Fetch(self, url, username=None, password=None):
+  def Fetch(self, url, username=None, password=None, access_token=None):
     """Fetches a file synchronously.
     """
     return urlfetch.fetch(self._FromBasePath(url),
-                          headers=_MakeHeaders(username, password))
+                          deadline=20,
+                          headers=_MakeHeaders(username,
+                                               password,
+                                               access_token))
 
-  def FetchAsync(self, url, username=None, password=None):
+  def FetchAsync(self, url, username=None, password=None, access_token=None):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
-    rpc = urlfetch.create_rpc()
+    rpc = urlfetch.create_rpc(deadline=20)
     urlfetch.make_fetch_call(rpc,
                              self._FromBasePath(url),
-                             headers=_MakeHeaders(username, password))
+                             headers=_MakeHeaders(username,
+                                                  password,
+                                                  access_token))
     return Future(callback=lambda: rpc.get_result())
 
   def _FromBasePath(self, url):

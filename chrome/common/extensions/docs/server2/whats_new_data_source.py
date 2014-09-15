@@ -18,7 +18,7 @@ class WhatsNewDataSource(DataSource):
 
   def __init__(self, server_instance, _):
     self._parse_cache = server_instance.compiled_fs_factory.ForJson(
-        server_instance.host_file_system_provider.GetTrunk())
+        server_instance.host_file_system_provider.GetMaster())
     self._object_store = server_instance.object_store_creator.Create(
         WhatsNewDataSource)
     self._platform_bundle = server_instance.platform_bundle

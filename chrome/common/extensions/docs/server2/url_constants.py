@@ -4,6 +4,7 @@
 
 GITILES_BASE = 'https://chromium.googlesource.com/chromium/src/+'
 GITILES_BRANCH_BASE = '%s/refs/branch-heads' % GITILES_BASE
+GITILES_OAUTH2_SCOPE = 'https://www.googleapis.com/auth/gerritcodereview'
 
 GITHUB_REPOS = 'https://api.github.com/repos'
 GITHUB_BASE = 'https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples'

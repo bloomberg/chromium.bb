@@ -53,7 +53,7 @@ class APIListDataSource(DataSource):
 
     def make_dict_for_platform(platform):
       platform_dict = {
-        'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []},
+        'chrome': {'stable': [], 'beta': [], 'dev': [], 'master': []},
       }
       private_apis = []
       experimental_apis = []

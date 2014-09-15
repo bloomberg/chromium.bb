@@ -96,9 +96,9 @@ class CronServlet(Servlet):
 
     def CreateHostFileSystemProvider(self,
                                      object_store_creator,
-                                     max_trunk_revision=None):
+                                     pinned_commit=None):
       return HostFileSystemProvider(object_store_creator,
-                                    max_trunk_revision=max_trunk_revision)
+                                    pinned_commit=pinned_commit)
 
     def CreateGithubFileSystemProvider(self, object_store_creator):
       return GithubFileSystemProvider(object_store_creator)
@@ -140,7 +140,7 @@ class CronServlet(Servlet):
     # TODO(kalman): IMPORTANT. This sometimes throws an exception, breaking
     # everything. Need retry logic at the fetcher level.
     server_instance = self._GetSafeServerInstance()
-    trunk_fs = server_instance.host_file_system_provider.GetTrunk()
+    master_fs = server_instance.host_file_system_provider.GetMaster()
 
     def render(path):
       request = Request(path, self._request.host, self._request.headers)
@@ -158,7 +158,7 @@ class CronServlet(Servlet):
         base, ext = posixpath.splitext(name)
         return base if ext in strip_ext else name
       files = [maybe_strip_ext(name)
-               for name, _ in CreateURLsFromPaths(trunk_fs, path, prefix)]
+               for name, _ in CreateURLsFromPaths(master_fs, path, prefix)]
       return _RequestEachItem(path, files, render)
 
     results = []
@@ -233,19 +233,19 @@ class CronServlet(Servlet):
               Response.InternalError('Failure'))
 
   def _GetSafeServerInstance(self):
-    '''Returns a ServerInstance with a host file system at a safe revision,
-    meaning the last revision that the current running version of the server
+    '''Returns a ServerInstance with a host file system at a safe commit,
+    meaning the last commit that the current running version of the server
     existed.
     '''
     delegate = self._delegate
 
-    # IMPORTANT: Get a ServerInstance pinned to the most recent revision, not
+    # IMPORTANT: Get a ServerInstance pinned to the most recent commit, not
     # HEAD. These cron jobs take a while and run very frequently such that
     # there is usually one running at any given time, and eventually a file
     # that we're dealing with will change underneath it, putting the server in
     # an undefined state.
     server_instance_near_head = self._CreateServerInstance(
-        self._GetMostRecentRevision())
+        self._GetMostRecentCommit())
 
     app_yaml_handler = AppYamlHelper(
         server_instance_near_head.object_store_creator,
@@ -264,24 +264,24 @@ class CronServlet(Servlet):
 
     return self._CreateServerInstance(safe_revision)
 
-  def _GetMostRecentRevision(self):
-    '''Gets the revision of the most recent patch submitted to the host file
-    system. This is similar to HEAD but it's a concrete revision so won't
+  def _GetMostRecentCommit(self):
+    '''Gets the commit of the most recent patch submitted to the host file
+    system. This is similar to HEAD but it's a concrete commit so won't
     change as the cron runs.
     '''
     head_fs = (
-        self._CreateServerInstance(None).host_file_system_provider.GetTrunk())
-    return head_fs.Stat('').version
+        self._CreateServerInstance(None).host_file_system_provider.GetMaster())
+    return head_fs.GetCommitID().Get()
 
-  def _CreateServerInstance(self, revision):
-    '''Creates a ServerInstance pinned to |revision|, or HEAD if None.
+  def _CreateServerInstance(self, commit):
+    '''Creates a ServerInstance pinned to |commit|, or HEAD if None.
     NOTE: If passed None it's likely that during the cron run patches will be
     submitted at HEAD, which may change data underneath the cron run.
     '''
     object_store_creator = ObjectStoreCreator(start_empty=True)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
     host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
-        object_store_creator, max_trunk_revision=revision)
+        object_store_creator, pinned_commit=commit)
     github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
         object_store_creator)
     gcs_file_system_provider = self._delegate.CreateGCSFileSystemProvider(

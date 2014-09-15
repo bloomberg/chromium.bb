@@ -18,6 +18,7 @@ def IsDownloadError(error):
 # This will attempt to import the actual App Engine modules, and if it fails,
 # they will be replaced with fake modules. This is useful during testing.
 try:
+  import google.appengine.api.app_identity as app_identity
   import google.appengine.api.files as files
   import google.appengine.api.logservice as logservice
   import google.appengine.api.memcache as memcache
@@ -61,6 +62,12 @@ except ImportError:
     def wait(self):
       pass
 
+  class FakeAppIdentity(object):
+    """A fake app_identity module that returns no access tokens."""
+    def get_access_token(self, scope):
+      return (None, None)
+  app_identity = FakeAppIdentity()
+
   class FakeUrlFetch(object):
     """A fake urlfetch module that uses the current
     |FAKE_URL_FETCHER_CONFIGURATION| to map urls to fake fetchers.
@@ -81,7 +88,7 @@ except ImportError:
         response.status_code = 404
       return response
 
-    def create_rpc(self):
+    def create_rpc(self, **kwargs):
       return _RPC()
 
     def make_fetch_call(self, rpc, url, **kwargs):

@@ -5,7 +5,7 @@
 import json
 
 
-CANNED_TRUNK_FS_DATA = {
+CANNED_MASTER_FS_DATA = {
   'api': {
     '_api_features.json': json.dumps({
       'add_rules_tester': { 'dependencies': ['permission:add_rules_tester'] },
@@ -177,8 +177,8 @@ CANNED_TRUNK_FS_DATA = {
       },
       'json': {
         'api_availabilities.json': json.dumps({
-          'trunk_api': {
-            'channel': 'trunk'
+          'master_api': {
+            'channel': 'master'
           },
           'dev_api': {
             'channel': 'dev'
@@ -215,7 +215,7 @@ CANNED_TRUNK_FS_DATA = {
       },
       'private': {
         'intro_tables': {
-          'trunk_message.html': 'available on trunk',
+          'master_message.html': 'available on master',
           'stable_message.html': 'Since {{content.version}}.',
           'content_scripts.html': 'Content Scripts'
         }

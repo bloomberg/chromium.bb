@@ -32,7 +32,7 @@ FAKE_TABS_WITH_INLINING_IDL = '\n'.join([
   '};'])
 
 TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
-  'trunk': {
+  'master': {
     'docs': {
       'templates': {
         'json': {

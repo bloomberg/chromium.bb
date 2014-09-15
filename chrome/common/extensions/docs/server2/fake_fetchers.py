@@ -82,8 +82,7 @@ _GITILES_BRANCH_BASE_RE = re.escape(url_constants.GITILES_BRANCH_BASE)
 # NOTE: _GITILES_BRANCH_BASE_RE must be first, because _GITILES_BASE_RE is
 # a more general pattern.
 _GITILES_URL_RE = r'(%s|%s)/' % (_GITILES_BRANCH_BASE_RE, _GITILES_BASE_RE)
-_GITILES_URL_TO_COMMIT_PATTERN = re.compile(
-    r'%s[^/]+\?format=JSON' % _GITILES_URL_RE)
+_GITILES_URL_TO_COMMIT_PATTERN = re.compile(r'%s[^/]+$' % _GITILES_URL_RE)
 _GITILES_URL_TO_PATH_PATTERN = re.compile(r'%s.+?/(.*)' % _GITILES_URL_RE)
 def _ExtractPathFromGitilesUrl(url):
   return _GITILES_URL_TO_PATH_PATTERN.match(url).group(2)

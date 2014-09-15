@@ -34,7 +34,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     object_store_creator = ObjectStoreCreator(start_empty=False)
 
     unpatched_file_system = self._delegate.CreateHostFileSystemProvider(
-        object_store_creator).GetTrunk()
+        object_store_creator).GetMaster()
 
     rietveld_patcher = CachingRietveldPatcher(
         RietveldPatcher(self._issue,
@@ -50,8 +50,8 @@ class _PatchServletDelegate(RenderServlet.Delegate):
             # The patched file system needs to be online otherwise it'd be
             # impossible to add files in the patches.
             offline=False,
-            # The trunk file system for this creator should be the patched one.
-            default_trunk_instance=patched_file_system))
+            # The master file system for this creator should be the patched one.
+            default_master_instance=patched_file_system))
 
     combined_compiled_fs_factory = ChainedCompiledFileSystem.Factory(
         [unpatched_file_system], object_store_creator)

@@ -127,7 +127,7 @@ class SchemaUtilTest(unittest.TestCase):
                                        _FakeFeaturesBundle(),
                                        CompiledFileSystem.Factory(
                                            object_store_creator),
-                                       host_file_system_provider.GetTrunk(),
+                                       host_file_system_provider.GetMaster(),
                                        True)
     schema_processor._RemoveNoDocs(nodoc_data)
     self.assertEquals(expected_nodoc, nodoc_data)
@@ -199,7 +199,7 @@ class SchemaUtilTest(unittest.TestCase):
                                        _FakeFeaturesBundle(),
                                        CompiledFileSystem.Factory(
                                            object_store_creator),
-                                       host_file_system_provider.GetTrunk(),
+                                       host_file_system_provider.GetMaster(),
                                        False)
     inlined_schema = deepcopy(schema)
     schema_processor._InlineDocs(inlined_schema)
@@ -239,7 +239,7 @@ class SchemaUtilTest(unittest.TestCase):
                                        _FakeFeaturesBundle(),
                                        CompiledFileSystem.Factory(
                                            object_store_creator),
-                                       host_file_system_provider.GetTrunk(),
+                                       host_file_system_provider.GetMaster(),
                                        False)
     schema_processor._DetectInlineableTypes(schema)
     schema_processor._InlineDocs(schema)

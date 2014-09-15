@@ -29,7 +29,7 @@ class RenderServletTest(unittest.TestCase):
         self._Render('storage'))
 
   def testChannelRedirect(self):
-    for channel in ('stable', 'beta', 'dev', 'trunk'):
+    for channel in ('stable', 'beta', 'dev', 'master'):
       self.assertEqual(
           Response.Redirect('/extensions/storage', permanent=True),
           self._Render('%s/extensions/storage' % channel))

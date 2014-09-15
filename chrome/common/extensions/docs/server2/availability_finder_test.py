@@ -35,7 +35,7 @@ class AvailabilityFinderTest(unittest.TestCase):
         self._branch_utility,
         CompiledFileSystem.Factory(test_object_store),
         host_fs_iterator,
-        host_fs_creator.GetTrunk(),
+        host_fs_creator.GetMaster(),
         test_object_store,
         platform,
         SchemaProcessorFactoryForTest())
@@ -64,7 +64,7 @@ class AvailabilityFinderTest(unittest.TestCase):
       # HACK: |file_system| is a MockFileSystem backed by a TestFileSystem.
       # Increment the TestFileSystem stat count.
       file_system._file_system.IncrementStat(by=last_stat.val)
-      # Continue looping. The iterator will stop after 'trunk' automatically.
+      # Continue looping. The iterator will stop after 'master' automatically.
       return True
 
     # Use the HostFileSystemIterator created above to change global stat values
@@ -116,7 +116,7 @@ class AvailabilityFinderTest(unittest.TestCase):
                          get_availability(api))
 
     # Testing APIs with predetermined availability.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'jsonTrunkAPI')
+    assertGet(ChannelInfo('master', 'master', 'master'), 'jsonMasterAPI')
     assertGet(ChannelInfo('dev', CANNED_BRANCHES[31], 31), 'jsonDevAPI')
     assertGet(ChannelInfo('beta', CANNED_BRANCHES[30], 30), 'jsonBetaAPI')
     assertGet(ChannelInfo('stable', CANNED_BRANCHES[20], 20), 'jsonStableAPI')
@@ -139,22 +139,22 @@ class AvailabilityFinderTest(unittest.TestCase):
               scheduled=31)
 
     # Testing API channel existence for _manifest_features.json.
-    # Listed as 'trunk' on all channels.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'sync')
-    # No records of API until |trunk|.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'history')
+    # Listed as 'master' on all channels.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'sync')
+    # No records of API until |master|.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'history')
     # Listed as 'dev' on |dev|.
     assertGet(ChannelInfo('dev', CANNED_BRANCHES[31], 31), 'storage')
     # Stable in _manifest_features and into pre-18 versions.
     assertGet(ChannelInfo('stable', CANNED_BRANCHES[8], 8), 'pageAction')
 
     # Testing API channel existence for _permission_features.json.
-    # Listed as 'beta' on |trunk|.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'falseBetaAPI')
-    # Listed as 'trunk' on |trunk|.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'trunkAPI')
-    # Listed as 'trunk' on all development channels.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'declarativeContent')
+    # Listed as 'beta' on |master|.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'falseBetaAPI')
+    # Listed as 'master' on |master|.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'masterAPI')
+    # Listed as 'master' on all development channels.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'declarativeContent')
     # Listed as 'dev' on all development channels.
     assertGet(ChannelInfo('dev', CANNED_BRANCHES[31], 31), 'bluetooth')
     # Listed as 'dev' on |dev|.
@@ -168,8 +168,8 @@ class AvailabilityFinderTest(unittest.TestCase):
     assertGet(ChannelInfo('stable', CANNED_BRANCHES[5], 5), 'idle')
 
     # Switches between _features.json files across branches.
-    # Listed as 'trunk' on all channels, in _api, _permission, or _manifest.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'contextMenus')
+    # Listed as 'master' on all channels, in _api, _permission, or _manifest.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'contextMenus')
     # Moves between _permission and _manifest as file system is traversed.
     assertGet(ChannelInfo('stable', CANNED_BRANCHES[23], 23),
               'systemInfo.display')
@@ -178,8 +178,8 @@ class AvailabilityFinderTest(unittest.TestCase):
     # Mid-upgrade cases:
     # Listed as 'dev' on |beta| and 'beta' on |dev|.
     assertGet(ChannelInfo('dev', CANNED_BRANCHES[31], 31), 'notifications')
-    # Listed as 'beta' on |stable|, 'dev' on |beta|...until |stable| on trunk.
-    assertGet(ChannelInfo('trunk', 'trunk', 'trunk'), 'events')
+    # Listed as 'beta' on |stable|, 'dev' on |beta|...until |stable| on master.
+    assertGet(ChannelInfo('master', 'master', 'master'), 'events')
 
     # Check for differing availability across apps|extensions
     assertGet(ChannelInfo('stable', CANNED_BRANCHES[26], 26),
@@ -207,7 +207,7 @@ class AvailabilityFinderTest(unittest.TestCase):
       tabs_graph = avail_finder.GetAPINodeAvailability('tabs')
       fake_tabs_graph = avail_finder.GetAPINodeAvailability('fakeTabs')
 
-      assertEquals(True, self._branch_utility.GetChannelInfo('trunk'),
+      assertEquals(True, self._branch_utility.GetChannelInfo('master'),
           tabs_graph.Lookup('tabs', 'properties', 'fakeTabsProperty3'))
       assertEquals(True, self._branch_utility.GetChannelInfo('dev'),
           tabs_graph.Lookup('tabs', 'events', 'onActivated', 'parameters',
@@ -230,7 +230,7 @@ class AvailabilityFinderTest(unittest.TestCase):
           tabs_graph.Lookup('tabs', 'types', 'InjectDetails'))
 
       # Test inlined type.
-      assertEquals(True, self._branch_utility.GetChannelInfo('trunk'),
+      assertEquals(True, self._branch_utility.GetChannelInfo('master'),
           tabs_graph.Lookup('tabs', 'types', 'InlinedType'))
 
       # Test implicitly inlined type.

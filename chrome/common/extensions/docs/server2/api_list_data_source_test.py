@@ -174,7 +174,7 @@ class APIListDataSourceTest(unittest.TestCase):
             'description': u'<code>sockets.udp</code>'
           }],
         'beta': [],
-        'trunk': []
+        'master': []
         }, self._api_list.get('apps').get('chrome'))
 
   def testExperimentalApps(self):
@@ -226,7 +226,7 @@ class APIListDataSourceTest(unittest.TestCase):
             'description': u'<code>sockets.udp</code>'
           }],
         'beta': [],
-        'trunk': []
+        'master': []
         }, self._api_list.get('extensions').get('chrome'))
 
   def testExperimentalExtensions(self):

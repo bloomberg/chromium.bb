@@ -88,16 +88,16 @@ class AppYamlHelperTest(unittest.TestCase):
       file_system_at_head.Update(update)
       updates.append(update)
 
-    def host_file_system_constructor(branch, revision=None):
-      self.assertEqual('trunk', branch)
-      self.assertTrue(revision is not None)
+    def host_file_system_constructor(branch, commit=None):
+      self.assertEqual('master', branch)
+      self.assertTrue(commit is not None)
       return MockFileSystem.Create(
-          TestFileSystem(test_data, relative_to=SERVER2), updates[:revision])
+          TestFileSystem(test_data, relative_to=SERVER2), updates[:commit])
 
     object_store_creator = ObjectStoreCreator.ForTest()
     host_file_system_provider = HostFileSystemProvider(
         object_store_creator,
-        default_trunk_instance=file_system_at_head,
+        default_master_instance=file_system_at_head,
         constructor_for_test=host_file_system_constructor)
     helper = AppYamlHelper(object_store_creator, host_file_system_provider)
 

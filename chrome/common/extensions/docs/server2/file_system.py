@@ -29,6 +29,14 @@ class FileNotFoundError(_BaseFileSystemException):
     _BaseFileSystemException.__init__(self, filename)
 
 
+class FileSystemThrottledError(_BaseFileSystemException):
+  '''Raised when access to a file system resource is temporarily unavailable
+  due to service throttling.
+  '''
+  def __init__(self, filename):
+    _BaseFileSystemException.__init__(self, filename)
+
+
 class FileSystemError(_BaseFileSystemException):
   '''Raised on when there are errors reading or statting files, such as a
   network timeout.

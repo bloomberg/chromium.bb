@@ -25,7 +25,7 @@ class AppYamlHelper(object):
                host_file_system_provider):
     self._store = object_store_creator.Create(
         AppYamlHelper,
-        category=host_file_system_provider.GetTrunk().GetIdentity(),
+        category=host_file_system_provider.GetMaster().GetIdentity(),
         start_empty=False)
     self._host_file_system_provider = host_file_system_provider
 
@@ -74,7 +74,7 @@ class AppYamlHelper(object):
     checked into the host file system.
     '''
     checked_in_app_version = AppYamlHelper.ExtractVersion(
-        self._host_file_system_provider.GetTrunk().ReadSingle(APP_YAML).Get())
+        self._host_file_system_provider.GetMaster().ReadSingle(APP_YAML).Get())
     if app_version == checked_in_app_version:
       return True
     if AppYamlHelper.IsGreater(app_version, checked_in_app_version):
@@ -100,6 +100,8 @@ class AppYamlHelper(object):
     return stored
 
   def _GetFirstRevisionGreaterThanImpl(self, app_version):
+    # XXX(ahernandez): Tricky. The 'version' of app.yaml coming from
+    # GitilesFileSystem is a blob ID.
     def get_app_yaml_revision(file_system):
       return int(file_system.Stat(APP_YAML).version)
 
@@ -109,7 +111,7 @@ class AppYamlHelper(object):
       return AppYamlHelper.IsGreater(app_version_in_file_system, app_version)
 
     found = None
-    next_file_system = self._host_file_system_provider.GetTrunk()
+    next_file_system = self._host_file_system_provider.GetMaster()
 
     while has_greater_app_version(next_file_system):
       found = get_app_yaml_revision(next_file_system)
@@ -117,8 +119,8 @@ class AppYamlHelper(object):
       if found == 0:
         logging.warning('All revisions are greater than %s' % app_version)
         return 0
-      next_file_system = self._host_file_system_provider.GetTrunk(
-          revision=found - 1)
+      next_file_system = self._host_file_system_provider.GetMaster(
+          commit=next_file_system.GetPreviousCommitID().Get())
 
     if found is None:
       raise ValueError('All revisions are less than %s' % app_version)

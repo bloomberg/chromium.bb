@@ -3,90 +3,93 @@
 # found in the LICENSE file.
 
 from caching_file_system import CachingFileSystem
+from gitiles_file_system import GitilesFileSystem
 from local_file_system import LocalFileSystem
 from offline_file_system import OfflineFileSystem
-from subversion_file_system import SubversionFileSystem
+from gitiles_file_system import GitilesFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
 
 class HostFileSystemProvider(object):
   '''Provides host file systems ("host" meaning the file system that hosts the
-  server's source code and templates) tracking trunk, or any branch.
+  server's source code and templates) tracking master, or any branch.
 
   File system instances are memoized to maintain the in-memory caches across
   multiple callers.
   '''
   def __init__(self,
                object_store_creator,
-               max_trunk_revision=None,
-               default_trunk_instance=None,
+               pinned_commit=None,
+               default_master_instance=None,
                offline=False,
                constructor_for_test=None):
     '''
     |object_store_creator|
       Provides caches for file systems that need one.
-    |max_trunk_revision|
-      If not None, the maximum revision that a 'trunk' file system will be
-      created at. If None, 'trunk' file systems will use HEAD.
-    |default_trunk_instance|
-      If not None, 'trunk' file systems provided by this class without a
-      specific revision will return |default_trunk_instance| instead.
+    |pinned_commit|
+      If not None, the commit at which a 'master' file system will be created.
+      If None, 'master' file systems will use HEAD.
+    |default_master_instance|
+      If not None, 'master' file systems provided by this class without a
+      specific commit will return |default_master_instance| instead.
     |offline|
       If True all provided file systems will be wrapped in an OfflineFileSystem.
     |constructor_for_test|
-      Provides a custom constructor rather than creating SubversionFileSystems.
+      Provides a custom constructor rather than creating GitilesFileSystems.
     '''
     self._object_store_creator = object_store_creator
-    self._max_trunk_revision = max_trunk_revision
-    self._default_trunk_instance = default_trunk_instance
+    self._pinned_commit = pinned_commit
+    self._default_master_instance = default_master_instance
     self._offline = offline
     self._constructor_for_test = constructor_for_test
 
   @memoize
-  def GetTrunk(self, revision=None):
-    '''Gets a file system tracking 'trunk'. Use this method rather than
-    GetBranch('trunk') because the behaviour is subtly different; 'trunk' can
-    be pinned to a max revision (|max_trunk_revision| in constructor) and can
-    have its default instance overridden (|default_trunk_instance| in
+  def GetMaster(self, commit=None):
+    '''Gets a file system tracking 'master'. Use this method rather than
+    GetBranch('master') because the behaviour is subtly different; 'master' can
+    be pinned to a specific commit (|pinned_commit| in constructor) and can have
+    have its default instance overridden (|default_master_instance| in the
     constructor).
 
-    |revision| if non-None determines a specific revision to pin the host file
-    system at, though it will be ignored if it exceeds |max_trunk_revision|.
-    If None then |revision| will track |max_trunk_revision| if is has been
+    |commit| if non-None determines a specific commit to pin the host file
+    system at, though it will be ignored if it's newer than |pinned_commit|.
+    If None then |commit| will track |pinned_commit| if is has been
     set, or just HEAD (which might change during server runtime!).
     '''
-    if revision is None:
-      if self._default_trunk_instance is not None:
-        return self._default_trunk_instance
-      return self._Create('trunk', revision=self._max_trunk_revision)
-    if self._max_trunk_revision is not None:
-      revision = min(revision, self._max_trunk_revision)
-    return self._Create('trunk', revision=revision)
+    if commit is None:
+      if self._default_master_instance is not None:
+        return self._default_master_instance
+      return self._Create('master', commit=self._pinned_commit)
+    if self._pinned_commit is not None:
+      # XXX(ahernandez): THIS IS WRONG. Should be
+      # commit = Oldest(commit, self._pinned_commit).
+      commit = min(commit, self._pinned_commit)
+    return self._Create('master', commit=commit)
 
   @memoize
   def GetBranch(self, branch):
     '''Gets a file system tracking |branch|, for example '1150' - anything other
-    than 'trunk', which must be constructed via the GetTrunk() method.
+    than 'master', which must be constructed via the GetMaster() method.
 
-    Note: Unlike GetTrunk this function doesn't take a |revision| argument
-    since we assume that branches hardly ever change, while trunk frequently
+    Note: Unlike GetMaster this function doesn't take a |commit| argument
+    since we assume that branches hardly ever change, while master frequently
     changes.
     '''
     assert isinstance(branch, basestring), 'Branch %s must be a string' % branch
-    assert branch != 'trunk', 'Cannot specify branch=\'trunk\', use GetTrunk()'
+    assert branch != 'master', (
+        'Cannot specify branch=\'master\', use GetMaster()')
     return self._Create(branch)
 
-  def _Create(self, branch, revision=None):
-    '''Creates SVN file systems (or if in a test, potentially whatever
+  def _Create(self, branch, commit=None):
+    '''Creates Gitiles file systems (or if in a test, potentially whatever
     |self._constructor_for_test specifies). Wraps the resulting file system in
     an Offline file system if the offline flag is set, and finally wraps it in
     a Caching file system.
     '''
     if self._constructor_for_test is not None:
-      file_system = self._constructor_for_test(branch=branch, revision=revision)
+      file_system = self._constructor_for_test(branch=branch, commit=commit)
     else:
-      file_system = SubversionFileSystem.Create(branch=branch,
-                                                revision=revision)
+      file_system = GitilesFileSystem.Create(branch=branch, commit=commit)
     if self._offline:
       file_system = OfflineFileSystem(file_system)
     return CachingFileSystem(file_system, self._object_store_creator)

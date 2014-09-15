@@ -17,7 +17,7 @@ class APIDataSource(DataSource):
   |compiled_fs_factory|, so the APIs can be plugged into templates.
   '''
   def __init__(self, server_instance, request):
-    file_system = server_instance.host_file_system_provider.GetTrunk()
+    file_system = server_instance.host_file_system_provider.GetMaster()
     self._json_cache = server_instance.compiled_fs_factory.ForJson(file_system)
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         file_system)

@@ -31,7 +31,7 @@ from test_util import EnableLogging, ReadFile
 class _TestDelegate(CronServlet.Delegate):
   def __init__(self, create_file_system):
     self.file_systems = []
-    # A callback taking a revision and returning a file system.
+    # A callback taking a commit and returning a file system.
     self._create_file_system = create_file_system
     self._app_version = GetAppVersion()
 
@@ -40,13 +40,13 @@ class _TestDelegate(CronServlet.Delegate):
 
   def CreateHostFileSystemProvider(self,
                                   object_store_creator,
-                                  max_trunk_revision=None):
-    def constructor(branch=None, revision=None):
-      file_system = self._create_file_system(revision)
+                                  pinned_commit=None):
+    def constructor(branch=None, commit=None):
+      file_system = self._create_file_system(commit)
       self.file_systems.append(file_system)
       return file_system
     return HostFileSystemProvider(object_store_creator,
-                                  max_trunk_revision=max_trunk_revision,
+                                  pinned_commit=pinned_commit,
                                   constructor_for_test=constructor)
 
   def CreateGithubFileSystemProvider(self, object_store_creator):
@@ -174,14 +174,14 @@ class CronServletTest(unittest.TestCase):
     storage_html_path = PUBLIC_TEMPLATES + 'apps/storage.html'
     static_txt_path = STATIC_DOCS + 'static.txt'
 
-    def create_file_system(revision=None):
-      '''Creates a MockFileSystem at |revision| by applying that many |updates|
+    def create_file_system(commit=None):
+      '''Creates a MockFileSystem at |commit| by applying that many |updates|
       to it.
       '''
       mock_file_system = MockFileSystem(TestFileSystem(test_data))
-      updates_for_revision = (
-          updates if revision is None else updates[:int(revision)])
-      for update in updates_for_revision:
+      updates_for_commit = (
+          updates if commit is None else updates[:int(commit)])
+      for update in updates_for_commit:
         mock_file_system.Update(update)
       return mock_file_system
 

@@ -20,8 +20,8 @@ class HostFileSystemIterator(object):
     '''
     last_true = None
     while channel_info is not None:
-      if channel_info.branch == 'trunk':
-        file_system = self._file_system_provider.GetTrunk()
+      if channel_info.branch == 'master':
+        file_system = self._file_system_provider.GetMaster()
       else:
         file_system = self._file_system_provider.GetBranch(channel_info.branch)
       if not callback(file_system, channel_info):
