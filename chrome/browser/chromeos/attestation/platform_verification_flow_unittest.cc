@@ -96,7 +96,7 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
 
   virtual HostContentSettingsMap* GetContentSettings(
       content::WebContents* web_contents) OVERRIDE {
-    return content_settings_;
+    return content_settings_.get();
   }
 
   virtual bool IsGuestOrIncognito(content::WebContents* web_contents) OVERRIDE {
