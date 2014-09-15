@@ -61,7 +61,6 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   // WebRtcVideoCapturerAdapter is destroyed.
   uint8* buffer_;
   size_t buffer_size_;
-  scoped_ptr<cricket::CapturedFrame> captured_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCapturerAdapter);
 };
