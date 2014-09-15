@@ -247,14 +247,9 @@ ProcessManager::ProcessManager(BrowserContext* context,
       weak_ptr_factory_(this) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
+  extension_registry_->AddObserver(this);
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<BrowserContext>(original_context));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<BrowserContext>(original_context));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -291,6 +286,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
 }
 
 ProcessManager::~ProcessManager() {
+  extension_registry_->RemoveObserver(this);
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
   content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
@@ -688,33 +684,6 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      BrowserContext* context = content::Source<BrowserContext>(source).ptr();
-      ExtensionSystem* system = ExtensionSystem::Get(context);
-      if (system->ready().is_signaled()) {
-        // The extension system is ready, so create the background host.
-        const Extension* extension =
-            content::Details<const Extension>(details).ptr();
-        CreateBackgroundHostForExtensionLoad(this, extension);
-      }
-      break;
-    }
-
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      for (ExtensionHostSet::iterator iter = background_hosts_.begin();
-           iter != background_hosts_.end(); ++iter) {
-        ExtensionHost* host = *iter;
-        if (host->extension_id() == extension->id()) {
-          CloseBackgroundHost(host);
-          break;
-        }
-      }
-      UnregisterExtension(extension->id());
-      break;
-    }
-
     case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host)) {
@@ -778,6 +747,31 @@ void ProcessManager::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void ProcessManager::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const extensions::Extension* extension) {
+  ExtensionSystem* system = ExtensionSystem::Get(browser_context);
+  if (system->ready().is_signaled()) {
+    // The extension system is ready, so create the background host.
+    CreateBackgroundHostForExtensionLoad(this, extension);
+  }
+}
+
+void ProcessManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
+       iter != background_hosts_.end();
+       ++iter) {
+    ExtensionHost* host = *iter;
+    if (host->extension_id() == extension->id()) {
+      CloseBackgroundHost(host);
+      break;
+    }
+  }
+  UnregisterExtension(extension->id());
 }
 
 void ProcessManager::OnDevToolsStateChanged(
