@@ -18,8 +18,7 @@
 #include "base/logging.h"
 
 #include "content/public/common/sandbox_init.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
 #endif  // defined(USE_SECCOMP_BPF)
@@ -30,27 +29,28 @@ namespace nacl {
 
 namespace {
 
-class NaClBPFSandboxPolicy : public sandbox::SandboxBPFPolicy {
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::ResultExpr;
+
+class NaClBPFSandboxPolicy : public sandbox::bpf_dsl::SandboxBPFDSLPolicy {
  public:
   NaClBPFSandboxPolicy()
       : baseline_policy_(content::GetBPFSandboxBaselinePolicy()) {}
   virtual ~NaClBPFSandboxPolicy() {}
 
-  virtual sandbox::ErrorCode EvaluateSyscall(
-      sandbox::SandboxBPF* sandbox_compiler,
-      int system_call_number) const OVERRIDE;
-  virtual sandbox::ErrorCode InvalidSyscall(
-      sandbox::SandboxBPF* sandbox_compiler) const OVERRIDE {
-    return baseline_policy_->InvalidSyscall(sandbox_compiler);
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
+  virtual ResultExpr InvalidSyscall() const OVERRIDE {
+    return baseline_policy_->InvalidSyscall();
   }
 
  private:
-  scoped_ptr<sandbox::SandboxBPFPolicy> baseline_policy_;
+  scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy> baseline_policy_;
+
   DISALLOW_COPY_AND_ASSIGN(NaClBPFSandboxPolicy);
 };
 
-sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
-    sandbox::SandboxBPF* sb, int sysno) const {
+ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
   DCHECK(baseline_policy_);
   switch (sysno) {
     // TODO(jln): NaCl's GDB debug stub uses the following socket system calls,
@@ -98,16 +98,16 @@ sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // See crbug.com/264856 for details.
     case __NR_times:
     case __NR_uname:
-      return sandbox::ErrorCode(sandbox::ErrorCode::ERR_ALLOWED);
+      return Allow();
     case __NR_ioctl:
     case __NR_ptrace:
-      return sandbox::ErrorCode(EPERM);
+      return Error(EPERM);
     default:
-      return baseline_policy_->EvaluateSyscall(sb, sysno);
+      return baseline_policy_->EvaluateSyscall(sysno);
   }
   NOTREACHED();
   // GCC wants this.
-  return sandbox::ErrorCode(EPERM);
+  return Error(EPERM);
 }
 
 void RunSandboxSanityChecks() {
@@ -130,7 +130,8 @@ void RunSandboxSanityChecks() {
 bool InitializeBPFSandbox() {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<sandbox::SandboxBPFPolicy>(new NaClBPFSandboxPolicy));
+      scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>(
+          new NaClBPFSandboxPolicy));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;

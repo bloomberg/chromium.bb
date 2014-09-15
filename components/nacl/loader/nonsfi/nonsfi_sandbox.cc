@@ -23,7 +23,6 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
 #if defined(__arm__) && !defined(MAP_STACK)
@@ -304,7 +303,7 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::InvalidSyscall() const {
 
 bool InitializeBPFSandbox() {
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<sandbox::SandboxBPFPolicy>(
+      scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>(
           new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy()));
   if (!sandbox_is_initialized)
     return false;

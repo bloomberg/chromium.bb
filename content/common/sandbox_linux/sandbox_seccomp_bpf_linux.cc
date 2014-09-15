@@ -8,8 +8,6 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/types.h>
 
 #include "base/basictypes.h"
@@ -17,7 +15,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
 #if defined(USE_SECCOMP_BPF)
 
@@ -274,7 +272,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
 }
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-    scoped_ptr<sandbox::SandboxBPFPolicy> policy) {
+    scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy> policy) {
 #if defined(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
@@ -285,12 +283,12 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
   return false;
 }
 
-scoped_ptr<sandbox::SandboxBPFPolicy>
+scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>
 SandboxSeccompBPF::GetBaselinePolicy() {
 #if defined(USE_SECCOMP_BPF)
-  return scoped_ptr<sandbox::SandboxBPFPolicy>(new BaselinePolicy);
+  return scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>(new BaselinePolicy);
 #else
-  return scoped_ptr<sandbox::SandboxBPFPolicy>();
+  return scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>();
 #endif  // defined(USE_SECCOMP_BPF)
 }
 

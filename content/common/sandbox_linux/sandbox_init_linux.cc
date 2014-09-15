@@ -6,15 +6,17 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
 namespace content {
 
-bool InitializeSandbox(scoped_ptr<sandbox::SandboxBPFPolicy> policy) {
+bool InitializeSandbox(
+    scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy> policy) {
   return SandboxSeccompBPF::StartSandboxWithExternalPolicy(policy.Pass());
 }
 
-scoped_ptr<sandbox::SandboxBPFPolicy> GetBPFSandboxBaselinePolicy() {
+scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>
+GetBPFSandboxBaselinePolicy() {
   return SandboxSeccompBPF::GetBaselinePolicy().Pass();
 }
 

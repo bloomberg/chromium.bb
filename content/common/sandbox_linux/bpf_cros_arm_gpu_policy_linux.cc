@@ -23,7 +23,6 @@
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::SyscallSets;
@@ -97,7 +96,7 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
 
 class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
  public:
-  static sandbox::SandboxBPFPolicy* Create() {
+  static sandbox::bpf_dsl::SandboxBPFDSLPolicy* Create() {
     return new CrosArmGpuBrokerProcessPolicy();
   }
   virtual ~CrosArmGpuBrokerProcessPolicy() {}

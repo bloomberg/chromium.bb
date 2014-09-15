@@ -4,9 +4,8 @@
 
 #include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
 
+#include <sys/syscall.h>
 #include <sys/types.h>
-
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
