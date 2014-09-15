@@ -81,18 +81,6 @@ if (is_mac || is_ios) {
   }
 }
 
-# Default yasm include dirs. Make it match the native build (source root and
-# root generated code directory).
-_yasm_flags += [
-  "-I.",
-  # Using "//." will produce a relative path "../.." which looks better than
-  # "../../" which will result from using "//" as the base (although both
-  # work). This is because rebase_path will terminate the result in a slash if
-  # the input ends in a slash.
-  "-I" + rebase_path("//.", root_build_dir),
-  "-I" + rebase_path(root_gen_dir, root_build_dir),
-]
-
 if (is_win) {
   asm_obj_extension = "obj"
 } else {
@@ -142,12 +130,25 @@ template("yasm_assemble") {
       args += invoker.yasm_flags
     }
 
-    # Extra include directories.
+    # User defined include dirs go first.
     if (defined(invoker.include_dirs)) {
       foreach(include, invoker.include_dirs) {
         args += [ "-I" + rebase_path(include, root_build_dir) ]
       }
     }
+
+    # Default yasm include dirs. Make it match the native build (source root and
+    # root generated code directory).
+    # This goes to the end of include list.
+    args += [
+      # Using "//." will produce a relative path "../.." which looks better than
+      # "../../" which will result from using "//" as the base (although both
+      # work). This is because rebase_path will terminate the result in a
+      # slash if the input ends in a slash.
+      "-I" + rebase_path("//.", root_build_dir),
+      "-I" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
 
     # Extra defines.
     if (defined(invoker.defines)) {

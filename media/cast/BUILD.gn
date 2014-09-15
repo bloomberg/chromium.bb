@@ -126,8 +126,8 @@ source_set("sender") {
     "sender/video_encoder_impl.cc",
     "sender/video_sender.h",
     "sender/video_sender.cc",
-#    "sender/vp8_encoder.cc",
-#    "sender/vp8_encoder.h",
+    "sender/vp8_encoder.cc",
+    "sender/vp8_encoder.h",
   ]
 
   deps = [
@@ -135,9 +135,8 @@ source_set("sender") {
     ":net",
     "//media",
     "//media:shared_memory_support",
+    "//third_party/libvpx",
     "//third_party/opus",
-# TODO(hclam): libvpx support.
-#    "//third_party/libvpx",
   ]
 }
 
@@ -146,14 +145,12 @@ source_set("receiver") {
     "cast_receiver.h",
     "receiver/audio_decoder.cc",
     "receiver/audio_decoder.h",
-# TODO(hclam): Libvpx support.
-#    "receiver/cast_receiver_impl.cc",
-#    "receiver/cast_receiver_impl.h",
+    "receiver/cast_receiver_impl.cc",
+    "receiver/cast_receiver_impl.h",
     "receiver/frame_receiver.cc",
     "receiver/frame_receiver.h",
-# TODO(hclam): Need libvpx support.
-#    "receiver/video_decoder.cc",
-#    "receiver/video_decoder.h",
+    "receiver/video_decoder.cc",
+    "receiver/video_decoder.h",
   ]
 
   deps = [
@@ -162,8 +159,7 @@ source_set("receiver") {
     "//media",
     "//media:shared_memory_support",
     "//third_party/opus",
-# TODO(hclam): libvpx support.
-#    "//third_party/libvpx",
+    "//third_party/libvpx",
     "//ui/gfx",
   ]
 }
@@ -188,9 +184,8 @@ source_set("test_support") {
     "test/utility/barcode.h",
     "test/utility/default_config.cc",
     "test/utility/default_config.h",
-# TODO(hclam): libvpx support.
-#    "test/utility/in_process_receiver.cc",
-#    "test/utility/in_process_receiver.h",
+    "test/utility/in_process_receiver.cc",
+    "test/utility/in_process_receiver.h",
     "test/utility/input_builder.cc",
     "test/utility/input_builder.h",
     "test/utility/net_utility.cc",
@@ -253,16 +248,14 @@ test("cast_unittests") {
     "net/udp_transport_unittest.cc",
     "receiver/audio_decoder_unittest.cc",
     "receiver/frame_receiver_unittest.cc",
-# TODO(hclam): libvpx support.
-#    "receiver/video_decoder_unittest.cc",
+    "receiver/video_decoder_unittest.cc",
     "sender/audio_encoder_unittest.cc",
     "sender/audio_sender_unittest.cc",
     "sender/congestion_control_unittest.cc",
     "sender/external_video_encoder_unittest.cc",
-# TODO(hclam): libvpx support.
-#    "sender/video_encoder_impl_unittest.cc",
-#    "sender/video_sender_unittest.cc",
-#    "test/end2end_unittest.cc",
+    "sender/video_encoder_impl_unittest.cc",
+    "sender/video_sender_unittest.cc",
+    "test/end2end_unittest.cc",
     "test/fake_receiver_time_offset_estimator.cc",
     "test/fake_receiver_time_offset_estimator.h",
     "test/fake_video_encode_accelerator.cc",

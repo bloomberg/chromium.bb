@@ -16,7 +16,7 @@ linux_link_pulseaudio = false
 
 # TODO(ajwong): Enable libvpx once that's converted.
 media_use_ffmpeg = true
-media_use_libvpx = false
+media_use_libvpx = true
 if (is_android || is_ios) {
   # Android and iOS don't use ffmpeg or libvpx.
   media_use_ffmpeg = false
