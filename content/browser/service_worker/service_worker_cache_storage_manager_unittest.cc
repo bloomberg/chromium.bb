@@ -223,21 +223,6 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     return !error;
   }
 
-  bool VerifyKeys(const std::vector<std::string>& expected_keys) {
-    if (expected_keys.size() != callback_strings_.size())
-      return false;
-
-    std::set<std::string> found_set;
-    for (int i = 0, max = callback_strings_.size(); i < max; ++i)
-      found_set.insert(callback_strings_[i]);
-
-    for (int i = 0, max = expected_keys.size(); i < max; ++i) {
-      if (found_set.find(expected_keys[i]) == found_set.end())
-        return false;
-    }
-    return true;
-  }
-
  protected:
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -355,7 +340,7 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, SomeKeys) {
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("bar");
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  EXPECT_TRUE(expected_keys == callback_strings_);
   EXPECT_TRUE(Keys(origin2_));
   EXPECT_EQ(1u, callback_strings_.size());
   EXPECT_STREQ("baz", callback_strings_[0].c_str());
@@ -408,7 +393,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("baz");
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  EXPECT_TRUE(expected_keys == callback_strings_);
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {

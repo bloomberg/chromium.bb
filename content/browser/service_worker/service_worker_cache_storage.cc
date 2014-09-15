@@ -31,7 +31,7 @@ class ServiceWorkerCacheStorage::CacheLoader {
       CacheCallback;
   typedef base::Callback<void(bool)> BoolCallback;
   typedef base::Callback<void(scoped_ptr<std::vector<std::string> >)>
-      StringsCallback;
+      StringVectorCallback;
 
   CacheLoader(base::SequencedTaskRunner* cache_task_runner,
               net::URLRequestContext* request_context,
@@ -57,12 +57,12 @@ class ServiceWorkerCacheStorage::CacheLoader {
                                    const BoolCallback& callback) = 0;
 
   // Writes the cache names (and sizes) to disk if applicable.
-  virtual void WriteIndex(const CacheMap& caches,
+  virtual void WriteIndex(const StringVector& cache_names,
                           const BoolCallback& callback) = 0;
 
   // Loads the cache names from disk if applicable.
   virtual void LoadIndex(scoped_ptr<std::vector<std::string> > cache_names,
-                         const StringsCallback& callback) = 0;
+                         const StringVectorCallback& callback) = 0;
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
@@ -104,13 +104,13 @@ class ServiceWorkerCacheStorage::MemoryLoader
     callback.Run(true);
   }
 
-  virtual void WriteIndex(const CacheMap& caches,
+  virtual void WriteIndex(const StringVector& cache_names,
                           const BoolCallback& callback) OVERRIDE {
     callback.Run(false);
   }
 
   virtual void LoadIndex(scoped_ptr<std::vector<std::string> > cache_names,
-                         const StringsCallback& callback) OVERRIDE {
+                         const StringVectorCallback& callback) OVERRIDE {
     callback.Run(cache_names.Pass());
   }
 
@@ -208,7 +208,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     original_loop->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
 
-  virtual void WriteIndex(const CacheMap& caches,
+  virtual void WriteIndex(const StringVector& cache_names,
                           const BoolCallback& callback) OVERRIDE {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -217,10 +217,9 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
 
     ServiceWorkerCacheStorageIndex index;
 
-    for (CacheMap::const_iterator it = caches.begin(); it != caches.end();
-         ++it) {
+    for (size_t i = 0u, max = cache_names.size(); i < max; ++i) {
       ServiceWorkerCacheStorageIndex::Cache* index_cache = index.add_cache();
-      index_cache->set_name(it->first);
+      index_cache->set_name(cache_names[i]);
       index_cache->set_size(0);  // TODO(jkarlin): Make this real.
     }
 
@@ -259,7 +258,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   }
 
   virtual void LoadIndex(scoped_ptr<std::vector<std::string> > names,
-                         const StringsCallback& callback) OVERRIDE {
+                         const StringVectorCallback& callback) OVERRIDE {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // 1. Read the file from disk. (LoadIndexReadFileInPool)
@@ -279,7 +278,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   static void LoadIndexReadFileInPool(
       const base::FilePath& index_path,
       scoped_ptr<std::vector<std::string> > names,
-      const StringsCallback& callback,
+      const StringVectorCallback& callback,
       const scoped_refptr<base::MessageLoopProxy>& original_loop) {
     std::string body;
     base::ReadFileToString(index_path, &body);
@@ -292,7 +291,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   }
 
   static void LoadIndexDidReadFile(scoped_ptr<std::vector<std::string> > names,
-                                   const StringsCallback& callback,
+                                   const StringVectorCallback& callback,
                                    const std::string& serialized) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -442,9 +441,15 @@ void ServiceWorkerCacheStorage::DeleteCache(
 
   cache_map_.erase(it);
 
+  // Delete the name from ordered_cache_names_.
+  StringVector::iterator iter = std::find(
+      ordered_cache_names_.begin(), ordered_cache_names_.end(), cache_name);
+  DCHECK(iter != ordered_cache_names_.end());
+  ordered_cache_names_.erase(iter);
+
   // Update the Index
   cache_loader_->WriteIndex(
-      cache_map_,
+      ordered_cache_names_,
       base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidWriteIndex,
                  weak_factory_.GetWeakPtr(),
                  cache_name,
@@ -462,13 +467,7 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
     return;
   }
 
-  std::vector<std::string> names;
-  for (CacheMap::const_iterator it = cache_map_.begin(); it != cache_map_.end();
-       ++it) {
-    names.push_back(it->first);
-  }
-
-  callback.Run(names, CACHE_STORAGE_ERROR_NO_ERROR);
+  callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
 // Init is run lazily so that it is called on the proper MessageLoop.
@@ -506,6 +505,7 @@ void ServiceWorkerCacheStorage::LazyInitDidLoadIndex(
   for (size_t i = 0u, max = indexed_cache_names->size(); i < max; ++i) {
     cache_map_.insert(std::make_pair(indexed_cache_names->at(i),
                                      base::WeakPtr<ServiceWorkerCache>()));
+    ordered_cache_names_.push_back(indexed_cache_names->at(i));
   }
 
   initialized_ = true;
@@ -530,9 +530,10 @@ void ServiceWorkerCacheStorage::CreateCacheDidCreateCache(
   }
 
   cache_map_.insert(std::make_pair(cache_name, cache->AsWeakPtr()));
+  ordered_cache_names_.push_back(cache_name);
 
   cache_loader_->WriteIndex(
-      cache_map_,
+      ordered_cache_names_,
       base::Bind(&ServiceWorkerCacheStorage::CreateCacheDidWriteIndex,
                  weak_factory_.GetWeakPtr(),
                  callback,

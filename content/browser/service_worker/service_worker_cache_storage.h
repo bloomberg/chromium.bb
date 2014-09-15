@@ -42,12 +42,12 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
     CACHE_STORAGE_ERROR_STORAGE,
     CACHE_STORAGE_ERROR_CLOSING
   };
-
+  typedef std::vector<std::string> StringVector;
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
   typedef base::Callback<void(const scoped_refptr<ServiceWorkerCache>&,
                               CacheStorageError)> CacheAndErrorCallback;
-  typedef base::Callback<void(const std::vector<std::string>&,
-                              CacheStorageError)> StringsAndErrorCallback;
+  typedef base::Callback<void(const StringVector&, CacheStorageError)>
+      StringsAndErrorCallback;
 
   ServiceWorkerCacheStorage(
       const base::FilePath& origin_path,
@@ -95,7 +95,8 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   scoped_refptr<ServiceWorkerCache> GetLoadedCache(
       const std::string& cache_name);
 
-  // Initializer and its callback are below.
+  // Initializer and its callback are below. While LazyInit is running any new
+  // operations will be queued and started in order after initialization.
   void LazyInit(const base::Closure& closure);
   void LazyInitDidLoadIndex(
       const base::Closure& callback,
@@ -128,6 +129,9 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
 
   // The map of cache names to ServiceWorkerCache objects.
   CacheMap cache_map_;
+
+  // The names of caches in the order that they were created.
+  StringVector ordered_cache_names_;
 
   // The file path for this CacheStorage.
   base::FilePath origin_path_;
