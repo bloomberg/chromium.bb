@@ -41,6 +41,7 @@
       <include name="IDR_INSPECTOR_DEBUGGER_SCRIPT_SOURCE_JS" file="../Source/bindings/core/v8/DebuggerScript.js" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_HTMLMARQUEEELEMENT_JS" file="../Source/core/html/HTMLMarqueeElement.js" type="BINDATA"/>
+      <include name="IDR_PRIVATE_SCRIPT_PLUGINPLACEHOLDERELEMENT_JS" file="../Source/core/html/shadow/PluginPlaceholderElement.js" type="BINDATA"/>
       <include name="IDR_PRIVATE_SCRIPT_PRIVATESCRIPTRUNNER_JS" file="../Source/bindings/core/v8/PrivateScriptRunner.js" type="BINDATA"/>
       <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA"/>
       <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA"/>
