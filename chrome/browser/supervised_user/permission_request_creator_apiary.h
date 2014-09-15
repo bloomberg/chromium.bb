@@ -53,6 +53,8 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
+  std::string GetApiScopeToUse() const;
+
   // Requests an access token, which is the first thing we need. This is where
   // we restart when the returned access token has expired.
   void StartFetching();

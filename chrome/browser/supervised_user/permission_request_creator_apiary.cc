@@ -69,15 +69,19 @@ void PermissionRequestCreatorApiary::CreatePermissionRequest(
   StartFetching();
 }
 
-void PermissionRequestCreatorApiary::StartFetching() {
-  OAuth2TokenService::ScopeSet scopes;
+std::string PermissionRequestCreatorApiary::GetApiScopeToUse() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPermissionRequestApiScope)) {
-    scopes.insert(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kPermissionRequestApiScope));
+    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kPermissionRequestApiScope);
   } else {
-    scopes.insert(signin_wrapper_->GetSyncScopeToUse());
+    return signin_wrapper_->GetSyncScopeToUse();
   }
+}
+
+void PermissionRequestCreatorApiary::StartFetching() {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(GetApiScopeToUse());
   access_token_request_ = oauth2_token_service_->StartRequest(
       signin_wrapper_->GetAccountIdToUse(), scopes, this);
 }
@@ -132,7 +136,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
   if (response_code == net::HTTP_UNAUTHORIZED && !access_token_expired_) {
     access_token_expired_ = true;
     OAuth2TokenService::ScopeSet scopes;
-    scopes.insert(signin_wrapper_->GetSyncScopeToUse());
+    scopes.insert(GetApiScopeToUse());
     oauth2_token_service_->InvalidateToken(
         signin_wrapper_->GetAccountIdToUse(), scopes, access_token_);
     StartFetching();
