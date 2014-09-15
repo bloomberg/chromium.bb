@@ -43,6 +43,8 @@
 #include "qcms.h"
 #endif
 
+typedef Vector<char> ColorProfile;
+
 namespace blink {
 
 // ImagePlanes can be used to decode color components into provided buffers instead of using an ImageFrame.
@@ -196,16 +198,15 @@ public:
         OutputDeviceProfile()
             : m_outputDeviceProfile(0)
         {
-            // FIXME: Add optional ICCv4 support.
-            // FIXME: add support for multiple monitors.
-            ColorProfile profile;
-            screenColorProfile(profile);
+            ColorProfile profile = screenColorProfile();
             if (!profile.isEmpty())
                 m_outputDeviceProfile = qcms_profile_from_memory(profile.data(), profile.size());
+
             if (m_outputDeviceProfile && qcms_profile_is_bogus(m_outputDeviceProfile)) {
                 qcms_profile_release(m_outputDeviceProfile);
                 m_outputDeviceProfile = 0;
             }
+
             if (!m_outputDeviceProfile)
                 m_outputDeviceProfile = qcms_profile_sRGB();
             if (m_outputDeviceProfile)
@@ -215,6 +216,17 @@ public:
         qcms_profile* profile() const { return m_outputDeviceProfile; }
 
     private:
+        static ColorProfile screenColorProfile()
+        {
+            // FIXME: Add optional ICCv4 support and support for multiple monitors.
+            WebVector<char> profile;
+            Platform::current()->screenColorProfile(&profile);
+
+            ColorProfile colorProfile;
+            colorProfile.append(profile.data(), profile.size());
+            return colorProfile;
+        }
+
         qcms_profile* m_outputDeviceProfile;
     };
 
