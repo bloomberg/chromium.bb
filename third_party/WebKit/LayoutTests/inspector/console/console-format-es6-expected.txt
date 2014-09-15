@@ -14,6 +14,16 @@ CONSOLE MESSAGE: line 11: [object Set]
 CONSOLE MESSAGE: line 12: [object Set]
 CONSOLE MESSAGE: line 11: [object WeakSet]
 CONSOLE MESSAGE: line 12: [object WeakSet]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
 Tests that console properly displays information about ES6 features.
 
 console-format-es6.html:11 Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
@@ -37,8 +47,10 @@ console-format-es6.html:12 [Symbol(a)]
     __proto__: Array[0]
 globals[2]
 Symbol(a)
-console-format-es6.html:11 Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}
+console-format-es6.html:11 Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}
     a: Symbol()
+    getter: (...)
+    get getter: function getter() {}
     Symbol(): 1
     Symbol(a): 2
     __proto__: Object
@@ -47,37 +59,106 @@ console-format-es6.html:12 [Object]
     length: 1
     __proto__: Array[0]
 globals[3]
-Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}
+Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}
     a: Symbol()
+    getter: (...)
+    get getter: function getter() {}
     Symbol(): 1
     Symbol(a): 2
     __proto__: Object
-console-format-es6.html:11 Map
+console-format-es6.html:11 Map {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+    size: (...)
+    __proto__: Map
+    <entries>
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
     __proto__: Array[0]
 globals[4]
-Map
-console-format-es6.html:11 WeakMap
+Map {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+    size: (...)
+    __proto__: Map
+    <entries>
+console-format-es6.html:11 WeakMap {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+    __proto__: WeakMap
+    <entries>
 console-format-es6.html:12 [WeakMap]
     0: WeakMap
     length: 1
     __proto__: Array[0]
 globals[5]
-WeakMap
-console-format-es6.html:11 Set
+WeakMap {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+    __proto__: WeakMap
+    <entries>
+console-format-es6.html:11 Set {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+    size: (...)
+    __proto__: Set
+    <entries>
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
     __proto__: Array[0]
 globals[6]
-Set
-console-format-es6.html:11 WeakSet
+Set {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+    size: (...)
+    __proto__: Set
+    <entries>
+console-format-es6.html:11 WeakSet {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+    __proto__: WeakSet
+    <entries>
 console-format-es6.html:12 [WeakSet]
     0: WeakSet
     length: 1
     __proto__: Array[0]
 globals[7]
-WeakSet
+WeakSet {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+    __proto__: WeakSet
+    <entries>
+console-format-es6.html:11 Map {Map {} => WeakMap {}}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[8]
+Map {Map {} => WeakMap {}}
+console-format-es6.html:11 Map {Map {…} => WeakMap {…}}
+    size: (...)
+    __proto__: Map
+    <entries>
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[9]
+Map {Map {…} => WeakMap {…}}
+    size: (...)
+    __proto__: Map
+    <entries>
+console-format-es6.html:11 Set {WeakSet {}}
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[10]
+Set {WeakSet {}}
+console-format-es6.html:11 Set {WeakSet {…}}
+    size: (...)
+    __proto__: Set
+    <entries>
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[11]
+Set {WeakSet {…}}
+    size: (...)
+    __proto__: Set
+    <entries>
+console-format-es6.html:11 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[12]
+Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
 

@@ -16,7 +16,9 @@ function onload()
 {
     var smb1 = Symbol();
     var smb2 = Symbol("a");
-    var obj = {};
+    var obj = {
+        get getter() {}
+    };
     obj[Symbol()] = 1;
     obj[smb2] = 2;
     obj["a"] = smb1;
@@ -25,18 +27,32 @@ function onload()
     var weakMap = new WeakMap();
     map.set(obj, {foo: 1});
     weakMap.set(obj, {foo: 1});
-    weakMap.set(smb1, {foo: 2});
-    weakMap.set(smb2, {foo: 3});
 
     var set = new Set();
     var weakSet = new WeakSet();
     set.add(obj);
     weakSet.add(obj);
-    weakSet.add(smb1);
-    weakSet.add(smb2);
+
+    var mapMap0 = new Map();
+    mapMap0.set(new Map(), new WeakMap());
+    var mapMap = new Map();
+    mapMap.set(map, weakMap);
+
+    var setSet0 = new Set();
+    setSet0.add(new WeakSet());
+    var setSet = new Set();
+    setSet.add(weakSet);
+
+    var bigmap = new Map();
+    bigmap.set(" from str ", " to str ");
+    bigmap.set(undefined, undefined);
+    bigmap.set(null, null);
+    bigmap.set(42, 42);
+    bigmap.set({foo:"from"}, {foo:"to"});
 
     globals = [
-        Promise.reject(-0), smb1, smb2, obj, map, weakMap, set, weakSet
+        Promise.reject(-0), smb1, smb2, obj, map, weakMap, set, weakSet,
+        mapMap0, mapMap, setSet0, setSet, bigmap
     ];
 
     runTest();

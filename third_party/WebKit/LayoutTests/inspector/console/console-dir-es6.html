@@ -26,6 +26,13 @@ function onload()
         console.dir(s);
     });
 
+    // Test circular dependency by entries.
+    var s1 = new Set();
+    var s2 = new Set();
+    s1.add(s2);
+    s2.add(s1);
+    console.dir(s1);
+
     runTest();
 }
 

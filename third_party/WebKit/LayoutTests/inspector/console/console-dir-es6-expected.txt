@@ -4,6 +4,7 @@ CONSOLE MESSAGE: line 22: [object Map]
 CONSOLE MESSAGE: line 22: [object WeakMap]
 CONSOLE MESSAGE: line 26: [object Set]
 CONSOLE MESSAGE: line 26: [object WeakSet]
+CONSOLE MESSAGE: line 34: [object Set]
 Tests that console logging dumps proper messages.
 
 console-dir-es6.html:15 Object
@@ -45,7 +46,7 @@ console-dir-es6.html:22 Map
     Symbol(Symbol.iterator): function entries() { [native code] }
     __proto__: Object
     <entries>[1]
-    0: {key:Object, value:Object}
+    0: {Object => Object}
 console-dir-es6.html:22 WeakMap
     __proto__: WeakMap
     clear: function clear() { [native code] }
@@ -56,7 +57,7 @@ console-dir-es6.html:22 WeakMap
     set: function set() { [native code] }
     __proto__: Object
     <entries>[1]
-    0: {key:Object, value:Object}
+    0: {Object => Object}
 console-dir-es6.html:26 Set
     size: (...)
     __proto__: Set
@@ -85,4 +86,22 @@ console-dir-es6.html:26 WeakSet
     __proto__: Object
     <entries>[1]
     0: Object
+console-dir-es6.html:34 Set
+    size: (...)
+    __proto__: Set
+    add: function add() { [native code] }
+    clear: function clear() { [native code] }
+    constructor: function Set() { [native code] }
+    delete: function delete() { [native code] }
+    entries: function entries() { [native code] }
+    forEach: function forEach() { [native code] }
+    has: function has() { [native code] }
+    keys: function values() { [native code] }
+    size: (...)
+    get size: function size() { [native code] }
+    values: function values() { [native code] }
+    Symbol(Symbol.iterator): function values() { [native code] }
+    __proto__: Object
+    <entries>[1]
+    0: Set
 

@@ -1091,10 +1091,14 @@ var injectedScript = new InjectedScript();
  * @param {boolean=} generatePreview
  * @param {?Array.<string>=} columnNames
  * @param {boolean=} isTable
+ * @param {boolean=} skipEntriesPreview
  */
-InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable)
+InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable, skipEntriesPreview)
 {
     this.type = typeof object;
+    if (this.type === "undefined" && injectedScript._isHTMLAllCollection(object))
+        this.type = "object";
+
     if (injectedScript.isPrimitiveValue(object) || object === null || forceValueType) {
         // We don't send undefined values over JSON.
         if (this.type !== "undefined")
@@ -1132,30 +1136,46 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
         this.className = className;
     this.description = injectedScript._describe(object);
 
-    if (generatePreview && (this.type === "object" || injectedScript._isHTMLAllCollection(object)))
-        this.preview = this._generatePreview(object, undefined, columnNames, isTable);
+    if (generatePreview && this.type === "object")
+        this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
 }
 
 InjectedScript.RemoteObject.prototype = {
+    /**
+     * @return {!RuntimeAgent.ObjectPreview} preview
+     */
+    _createEmptyPreview: function()
+    {
+        var preview = {
+            type: /** @type {!RuntimeAgent.ObjectPreviewType.<string>} */ (this.type),
+            description: this.description || toStringDescription(this.value),
+            lossless: true,
+            overflow: false,
+            properties: [],
+            __proto__: null
+        };
+        if (this.subtype)
+            preview.subtype = /** @type {!RuntimeAgent.ObjectPreviewSubtype.<string>} */ (this.subtype);
+        return preview;
+    },
+
     /**
      * @param {!Object} object
      * @param {?Array.<string>=} firstLevelKeys
      * @param {?Array.<string>=} secondLevelKeys
      * @param {boolean=} isTable
+     * @param {boolean=} skipEntriesPreview
      * @return {!RuntimeAgent.ObjectPreview} preview
      */
-    _generatePreview: function(object, firstLevelKeys, secondLevelKeys, isTable)
+    _generatePreview: function(object, firstLevelKeys, secondLevelKeys, isTable, skipEntriesPreview)
     {
-        var preview = { __proto__: null };
-        preview.lossless = true;
-        preview.overflow = false;
-        preview.properties = [];
-
+        var preview = this._createEmptyPreview();
         var firstLevelKeysCount = firstLevelKeys ? firstLevelKeys.length : 0;
 
         var propertiesThreshold = {
             properties: isTable ? 1000 : max(5, firstLevelKeysCount),
-            indexes: isTable ? 1000 : max(100, firstLevelKeysCount)
+            indexes: isTable ? 1000 : max(100, firstLevelKeysCount),
+            __proto__: null
         };
 
         try {
@@ -1183,6 +1203,9 @@ InjectedScript.RemoteObject.prototype = {
                 internalProperties[i].enumerable = true;
             }
             this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
+
+            if (this.subtype === "map" || this.subtype === "set")
+                this._appendEntriesPreview(object, preview, skipEntriesPreview);
 
         } catch (e) {
             preview.lossless = false;
@@ -1287,6 +1310,57 @@ InjectedScript.RemoteObject.prototype = {
             preview.lossless = false;
         } else {
             push(preview.properties, property);
+        }
+    },
+
+    /**
+     * @param {!Object} object
+     * @param {!RuntimeAgent.ObjectPreview} preview
+     * @param {boolean=} skipEntriesPreview
+     */
+    _appendEntriesPreview: function(object, preview, skipEntriesPreview)
+    {
+        var entries = InjectedScriptHost.collectionEntries(object);
+        if (!entries)
+            return;
+        if (skipEntriesPreview) {
+            if (entries.length) {
+                preview.overflow = true;
+                preview.lossless = false;
+            }
+            return;
+        }
+        preview.entries = [];
+        var entriesThreshold = 5;
+        for (var i = 0; i < entries.length; ++i) {
+            if (preview.entries.length >= entriesThreshold) {
+                preview.overflow = true;
+                preview.lossless = false;
+                break;
+            }
+            var entry = nullifyObjectProto(entries[i]);
+            var previewEntry = {
+                value: generateValuePreview(entry.value),
+                __proto__: null
+            };
+            if ("key" in entry)
+                previewEntry.key = generateValuePreview(entry.key);
+            push(preview.entries, previewEntry);
+        }
+
+        /**
+         * @param {*} value
+         * @return {!RuntimeAgent.ObjectPreview}
+         */
+        function generateValuePreview(value)
+        {
+            var remoteObject = new InjectedScript.RemoteObject(value, undefined, undefined, true, undefined, undefined, true);
+            var valuePreview = remoteObject.preview || remoteObject._createEmptyPreview();
+            if (remoteObject.objectId)
+                injectedScript.releaseObject(remoteObject.objectId);
+            if (!valuePreview.lossless)
+                preview.lossless = false;
+            return valuePreview;
         }
     },
 
