@@ -616,7 +616,8 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     return;
 
   last_drag_point_ = point;
-  const Index last_drop_target = drop_target_;
+  const Index last_reorder_drop_target = reorder_drop_target_;
+  const Index last_folder_drop_target = folder_drop_target_;
   DropAttempt last_drop_attempt = drop_attempt_;
   CalculateDropTarget(last_drag_point_, false);
 
@@ -633,14 +634,15 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   }
 
   if (!EnableFolderDragDropUI()) {
-    if (last_drop_target != drop_target_)
+    if (last_reorder_drop_target != reorder_drop_target_)
       AnimateToIdealBounds();
     drag_view_->SetPosition(drag_view_start_ + drag_vector);
     return;
   }
 
   // Update drag with folder UI enabled.
-  if (last_drop_target != drop_target_ ||
+  if (last_folder_drop_target != folder_drop_target_ ||
+      last_reorder_drop_target != reorder_drop_target_ ||
       last_drop_attempt != drop_attempt_) {
     if (drop_attempt_ == DROP_FOR_REORDER) {
       folder_dropping_timer_.Stop();
@@ -655,7 +657,7 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     }
 
     // Reset the previous drop target.
-    SetAsFolderDroppingTarget(last_drop_target, false);
+    SetAsFolderDroppingTarget(last_folder_drop_target, false);
   }
 
   drag_view_->SetPosition(drag_view_start_ + drag_vector);
@@ -698,15 +700,11 @@ void AppsGridView::EndDrag(bool cancel) {
     if (!cancel && dragging()) {
       // Regular drag ending path, ie, not for reparenting.
       CalculateDropTarget(last_drag_point_, true);
-      if (IsValidIndex(drop_target_)) {
-        if (!EnableFolderDragDropUI()) {
-            MoveItemInModel(drag_view_, drop_target_);
-        } else {
-          if (drop_attempt_ == DROP_FOR_REORDER)
-            MoveItemInModel(drag_view_, drop_target_);
-          else if (drop_attempt_ == DROP_FOR_FOLDER)
-            MoveItemToFolder(drag_view_, drop_target_);
-        }
+      if (EnableFolderDragDropUI() && drop_attempt_ == DROP_FOR_FOLDER &&
+          IsValidIndex(folder_drop_target_)) {
+        MoveItemToFolder(drag_view_, folder_drop_target_);
+      } else if (IsValidIndex(reorder_drop_target_)) {
+        MoveItemInModel(drag_view_, reorder_drop_target_);
       }
     }
   }
@@ -718,7 +716,7 @@ void AppsGridView::EndDrag(bool cancel) {
     if (landed_in_drag_and_drop_host) {
       // Move the item directly to the target location, avoiding the "zip back"
       // animation if the user was pinning it to the shelf.
-      int i = drop_target_.slot;
+      int i = reorder_drop_target_.slot;
       gfx::Rect bounds = view_model_.ideal_bounds(i);
       drag_view_->SetBoundsRect(bounds);
     }
@@ -732,7 +730,7 @@ void AppsGridView::EndDrag(bool cancel) {
   // is Run().
   CleanUpSynchronousDrag();
 
-  SetAsFolderDroppingTarget(drop_target_, false);
+  SetAsFolderDroppingTarget(folder_drop_target_, false);
   ClearDragState();
   AnimateToIdealBounds();
 
@@ -833,7 +831,8 @@ bool AppsGridView::IsDraggedView(const views::View* view) const {
 void AppsGridView::ClearDragState() {
   drop_attempt_ = DROP_FOR_NONE;
   drag_pointer_ = NONE;
-  drop_target_ = Index();
+  reorder_drop_target_ = Index();
+  folder_drop_target_ = Index();
   drag_start_grid_view_ = gfx::Point();
   drag_start_page_ = -1;
   drag_view_offset_ = gfx::Point();
@@ -1187,14 +1186,11 @@ void AppsGridView::CalculateIdealBounds() {
 
     Index view_index = GetIndexFromModelIndex(slot_index);
 
-    if (drop_target_ == view_index) {
-      if (EnableFolderDragDropUI() && drop_attempt_ == DROP_FOR_FOLDER) {
-        view_index = GetIndexFromModelIndex(slot_index);
-      } else if (!EnableFolderDragDropUI() ||
-                 drop_attempt_ == DROP_FOR_REORDER) {
-        ++slot_index;
-        view_index = GetIndexFromModelIndex(slot_index);
-      }
+    // Leaves a blank space in the grid for the current reorder drop target.
+    if (reorder_drop_target_ == view_index &&
+        drop_attempt_ == DROP_FOR_REORDER) {
+      ++slot_index;
+      view_index = GetIndexFromModelIndex(slot_index);
     }
 
     // Decide the x or y offset for current item.
@@ -1352,6 +1348,8 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     return;
   }
 
+  drop_attempt_ = DROP_FOR_REORDER;
+
   int current_page = pagination_model_.selected_page();
   gfx::Point point(drag_point);
   if (!IsPointWithinDragBuffer(drag_point)) {
@@ -1366,8 +1364,8 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
                                       &page_switcher_point);
     int page = page_switcher_view_->GetPageForPoint(page_switcher_point);
     if (pagination_model_.is_valid_page(page)) {
-      drop_target_.page = page;
-      drop_target_.slot = tiles_per_page() - 1;
+      reorder_drop_target_.page = page;
+      reorder_drop_target_.slot = tiles_per_page() - 1;
     }
   } else {
     gfx::Rect bounds(GetContentsBounds());
@@ -1375,17 +1373,16 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     const int drop_col = std::min(cols_ - 1,
         (point.x() - bounds.x()) / kPreferredTileWidth);
 
-    drop_target_.page = current_page;
-    drop_target_.slot = std::max(0, std::min(
-        tiles_per_page() - 1,
-        drop_row * cols_ + drop_col));
+    reorder_drop_target_.page = current_page;
+    reorder_drop_target_.slot = std::max(
+        0, std::min(tiles_per_page() - 1, drop_row * cols_ + drop_col));
   }
 
   // Limits to the last possible slot on last page.
-  if (drop_target_.page == pagination_model_.total_pages() - 1) {
-    drop_target_.slot = std::min(
-        (view_model_.view_size() - 1) % tiles_per_page(),
-        drop_target_.slot);
+  if (reorder_drop_target_.page == pagination_model_.total_pages() - 1) {
+    reorder_drop_target_.slot =
+        std::min((view_model_.view_size() - 1) % tiles_per_page(),
+                 reorder_drop_target_.slot);
   }
 }
 
@@ -1409,7 +1406,7 @@ void AppsGridView::CalculateDropTargetWithFolderEnabled(
   } else {
     DCHECK(drag_view_);
     // Try to find the nearest target for folder dropping or re-ordering.
-    drop_target_ = GetNearestTileForDragView();
+    CalculateNearestTileForDragView();
   }
 }
 
@@ -1434,7 +1431,7 @@ void AppsGridView::OnFolderItemReparentTimer() {
 
 void AppsGridView::OnFolderDroppingTimer() {
   if (drop_attempt_ == DROP_FOR_FOLDER)
-    SetAsFolderDroppingTarget(drop_target_, true);
+    SetAsFolderDroppingTarget(folder_drop_target_, true);
 }
 
 void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
@@ -1517,12 +1514,12 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   bool cancel_reparent = cancel_drag || drop_attempt_ == DROP_FOR_NONE;
   if (!events_forwarded_to_drag_drop_host && !cancel_reparent) {
     CalculateDropTarget(last_drag_point_, true);
-    if (IsValidIndex(drop_target_)) {
-      if (drop_attempt_ == DROP_FOR_REORDER) {
-        ReparentItemForReorder(drag_view_, drop_target_);
-      } else if (drop_attempt_ == DROP_FOR_FOLDER) {
-        ReparentItemToAnotherFolder(drag_view_, drop_target_);
-      }
+    if (drop_attempt_ == DROP_FOR_REORDER &&
+        IsValidIndex(reorder_drop_target_)) {
+      ReparentItemForReorder(drag_view_, reorder_drop_target_);
+    } else if (drop_attempt_ == DROP_FOR_FOLDER &&
+               IsValidIndex(folder_drop_target_)) {
+      ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
     }
     SetViewHidden(drag_view_, false /* show */, true /* no animate */);
   }
@@ -1531,7 +1528,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   // is Run().
   CleanUpSynchronousDrag();
 
-  SetAsFolderDroppingTarget(drop_target_, false);
+  SetAsFolderDroppingTarget(folder_drop_target_, false);
   if (cancel_reparent) {
     CancelFolderItemReparent(drag_view_);
   } else {
@@ -1558,7 +1555,7 @@ void AppsGridView::EndDragForReparentInHiddenFolderGridView() {
   // is Run().
   CleanUpSynchronousDrag();
 
-  SetAsFolderDroppingTarget(drop_target_, false);
+  SetAsFolderDroppingTarget(folder_drop_target_, false);
   ClearDragState();
 }
 
@@ -2047,7 +2044,7 @@ bool AppsGridView::EnableFolderDragDropUI() {
   // Enable drag and drop folder UI only if it is at the app list root level
   // and the switch is on and the target folder can still accept new items.
   return model_->folders_enabled() && !folder_delegate_ &&
-      CanDropIntoTarget(drop_target_);
+         CanDropIntoTarget(folder_drop_target_);
 }
 
 bool AppsGridView::CanDropIntoTarget(const Index& drop_target) {
@@ -2065,7 +2062,7 @@ bool AppsGridView::CanDropIntoTarget(const Index& drop_target) {
 }
 
 // TODO(jennyz): Optimize the calculation for finding nearest tile.
-AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
+void AppsGridView::CalculateNearestTileForDragView() {
   Index nearest_tile;
   nearest_tile.page = -1;
   nearest_tile.slot = -1;
@@ -2096,7 +2093,8 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
   if (IsLastPossibleDropTarget(nearest_tile) && d_min < d_reorder) {
     drop_attempt_ = DROP_FOR_REORDER;
     nearest_tile.slot = nearest_tile.slot - 1;
-    return nearest_tile;
+    reorder_drop_target_ = nearest_tile;
+    return;
   }
 
   if (IsValidIndex(nearest_tile)) {
@@ -2108,23 +2106,25 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
         // sitting on it, attempt to drop the dragged item into the folder
         // containing the item on nearest_tile.
         drop_attempt_ = DROP_FOR_FOLDER;
-        return nearest_tile;
+        folder_drop_target_ = nearest_tile;
+        return;
       } else {
         // If the target slot is blank, or the dragged item is a folder, attempt
         // to re-order.
         drop_attempt_ = DROP_FOR_REORDER;
-        return nearest_tile;
+        reorder_drop_target_ = nearest_tile;
+        return;
       }
     } else if (d_min < d_reorder) {
       // Entering the re-order circle of the slot.
       drop_attempt_ = DROP_FOR_REORDER;
-      return nearest_tile;
+      reorder_drop_target_ = nearest_tile;
+      return;
     }
   }
 
-  // If |drag_view| is not entering the re-order or fold dropping region of
-  // any items, cancel any previous re-order or folder dropping timer, and
-  // return itself.
+  // If |drag_view| is not entering the re-order or folder dropping region of
+  // any items, cancel any previous re-order or folder dropping timer.
   drop_attempt_ = DROP_FOR_NONE;
   reorder_timer_.Stop();
   folder_dropping_timer_.Stop();
@@ -2133,10 +2133,8 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
   // folder item if there is no drop target.
   if (IsDraggingForReparentInRootLevelGridView()) {
     DCHECK(activated_folder_item_view_);
-    return GetIndexOfView(activated_folder_item_view_);
+    folder_drop_target_ = GetIndexOfView(activated_folder_item_view_);
   }
-
-  return GetIndexOfView(drag_view_);
 }
 
 void AppsGridView::CalculateNearestTileForVertex(const gfx::Point& vertex,

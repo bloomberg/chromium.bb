@@ -288,14 +288,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void ExtractDragLocation(const ui::LocatedEvent& event,
                            gfx::Point* drag_point);
 
-  // Calculates |drop_target_| based on |drag_point|. |drag_point| is in the
-  // grid view's coordinates. When |use_page_button_hovering| is true and
-  // |drag_point| is hovering on a page button, use the last slot on that page
-  // as drop target.
+  // Calculates reorder and folder drop targets based on |drag_point|.
+  // |drag_point| is in the grid view's coordinates. When
+  // |use_page_button_hovering| is true and |drag_point| is hovering on a page
+  // button, use the last slot on that page as drop target.
   void CalculateDropTarget(const gfx::Point& drag_point,
                            bool use_page_button_hovering);
 
-  // Same as CalculateDropTarget, but with folder UI enabled. The |drop_target_|
+  // Same as CalculateDropTarget, but with folder UI enabled. The drop target
   // can be either a target for re-ordering, or a target folder to move the
   // dragged item into if |drag_view_| enters its re-ordering or folder
   // dropping circle.
@@ -390,9 +390,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // dropped into it.
   bool CanDropIntoTarget(const Index& drop_target);
 
-  // Returns the visual index of the nearest tile in which |drag_view_| enters
-  // either its re-ordering or folder dropping circle.
-  Index GetNearestTileForDragView();
+  // Calculates the visual index of the nearest tile for which |drag_view_|
+  // enters either its re-ordering or folder dropping circle.
+  void CalculateNearestTileForDragView();
 
   // Calculates |nearest_tile| in which |vertex| of the |drag_view| is
   // enclosed.
@@ -513,7 +513,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 #endif
 
   Pointer drag_pointer_;
-  Index drop_target_;
+
+  // The most recent reorder drop target.
+  Index reorder_drop_target_;
+
+  // The most recent folder drop target.
+  Index folder_drop_target_;
+
+  // The current action that ending a drag will perform.
   DropAttempt drop_attempt_;
 
   // Timer for re-ordering the |drop_target_| and |drag_view_|.

@@ -408,13 +408,10 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   test_api_->LayoutToIdealBounds();
 
   // Dragging the last item over the folder, the folder won't accept the new
-  // item, instead, it will re-order the items.
+  // item.
   SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
-            model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(1)->id());
   EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();
 }
