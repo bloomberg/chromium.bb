@@ -264,6 +264,9 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Turns on new (nicer, hopefully faster) SkPicture backend.
 #define SK_PICTURE_USE_SK_RECORD 1
 
+// Run a few optimization passes over the SkRecord after recording.
+#define SK_PICTURE_OPTIMIZE_SK_RECORD 1
+
 // ===== End Chrome-specific definitions =====
 
 #endif
