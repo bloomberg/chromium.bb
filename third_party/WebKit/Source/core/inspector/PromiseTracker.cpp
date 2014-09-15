@@ -27,7 +27,13 @@ public:
     int promiseHash() const { return m_promiseHash; }
     ScopedPersistent<v8::Object>& promise() { return m_promise; }
 
-#if !ENABLE(OILPAN)
+#if ENABLE(OILPAN)
+    void dispose()
+    {
+        m_promise.clear();
+        m_parentPromise.clear();
+    }
+#else
     WeakPtr<PromiseData> createWeakPtr()
     {
         return m_weakPtrFactory.createWeakPtr();
@@ -103,9 +109,23 @@ public:
         WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> promiseData = wrapper->m_data;
         if (!promiseData || !wrapper->m_tracker)
             return;
+
+#if ENABLE(OILPAN)
+        // Oilpan: let go of ScopedPersistent<>s right here (and not wait until the
+        // PromiseDataWrapper is GCed later.) The v8 weak callback handling expects
+        // to see the callback data upon return.
+        promiseData->dispose();
+#endif
         PromiseTracker::PromiseDataMap& map = wrapper->m_tracker->promiseDataMap();
         int promiseHash = promiseData->promiseHash();
-        PromiseTracker::PromiseDataVector* vector = &map.find(promiseHash)->value;
+
+        PromiseTracker::PromiseDataMap::iterator it = map.find(promiseHash);
+        // The PromiseTracker may have been disabled (and, possibly, re-enabled later),
+        // leaving the promiseHash as unmapped.
+        if (it == map.end())
+            return;
+
+        PromiseTracker::PromiseDataVector* vector = &it->value;
         int index = indexOf(vector, promiseData->promise());
         ASSERT(index >= 0);
         vector->remove(index);
