@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/base/network_change_notifier.h"
 #include "sync/api/attachments/attachment_store.h"
 #include "sync/internal_api/public/attachments/attachment_downloader.h"
 #include "sync/internal_api/public/attachments/attachment_service.h"
@@ -20,8 +21,10 @@
 namespace syncer {
 
 // Implementation of AttachmentService.
-class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
-                                          public base::NonThreadSafe {
+class SYNC_EXPORT AttachmentServiceImpl
+    : public AttachmentService,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public base::NonThreadSafe {
  public:
   // |attachment_uploader| is optional. If null, attachments will never be
   // uploaded to the sync server and |delegate|'s OnAttachmentUploaded will
@@ -64,6 +67,15 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                const DropCallback& callback) OVERRIDE;
   virtual void UploadAttachments(
       const AttachmentIdSet& attachment_ids) OVERRIDE;
+
+  // NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
+  // Use |timer| in the underlying TaskQueue.
+  //
+  // Used in tests.  See also MockTimer.
+  void SetTimerForTest(scoped_ptr<base::Timer> timer);
 
  private:
   class GetOrDownloadState;

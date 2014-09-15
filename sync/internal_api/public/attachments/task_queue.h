@@ -122,13 +122,19 @@ class TaskQueue : base::NonThreadSafe {
   // |task|.
   void Cancel(const T& task);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(TaskQueueTest, Retry);
+  // Reset any backoff delay and resume dispatching of tasks.
+  //
+  // Useful for when you know the cause of previous failures has been resolved
+  // and you want don't want to wait for the accumulated backoff delay to
+  // elapse.
+  void ResetBackoff();
 
   // Use |timer| for scheduled events.
   //
   // Used in tests.  See also MockTimer.
   void SetTimerForTest(scoped_ptr<base::Timer> timer);
+
+ private:
   void FinishTask(const T& task);
   void ScheduleDispatch();
   void Dispatch();
@@ -214,6 +220,13 @@ template <typename T>
 void TaskQueue<T>::Cancel(const T& task) {
   DCHECK(CalledOnValidThread());
   FinishTask(task);
+  ScheduleDispatch();
+}
+
+template <typename T>
+void TaskQueue<T>::ResetBackoff() {
+  backoff_timer_->Stop();
+  backoff_entry_->Reset();
   ScheduleDispatch();
 }
 

@@ -105,7 +105,7 @@ TEST_F(TaskQueueTest, Retry) {
   // 1st attempt.
   queue_->AddToQueue(1);
   ASSERT_TRUE(mock_timer->IsRunning());
-  ASSERT_EQ(TimeDelta(), mock_timer->GetCurrentDelay());
+  ASSERT_EQ(kZero, mock_timer->GetCurrentDelay());
   TimeDelta last_delay = mock_timer->GetCurrentDelay();
   mock_timer->Fire();
   RunLoop();
@@ -192,6 +192,42 @@ TEST_F(TaskQueueTest, Cancel) {
   RunLoop();
 
   ASSERT_TRUE(dispatched_.empty());
+}
+
+// See that ResetBackoff resets the backoff delay.
+TEST_F(TaskQueueTest, ResetBackoff) {
+  scoped_ptr<base::MockTimer> timer_to_pass(new base::MockTimer(false, false));
+  base::MockTimer* mock_timer = timer_to_pass.get();
+  queue_->SetTimerForTest(timer_to_pass.PassAs<base::Timer>());
+
+  // Add an item, mark it as failed, re-add it and see that we now have a
+  // backoff delay.
+  queue_->AddToQueue(1);
+  ASSERT_TRUE(mock_timer->IsRunning());
+  ASSERT_EQ(kZero, mock_timer->GetCurrentDelay());
+  mock_timer->Fire();
+  RunLoop();
+  ASSERT_FALSE(mock_timer->IsRunning());
+  ASSERT_EQ(1U, dispatched_.size());
+  EXPECT_EQ(1, dispatched_.front());
+  dispatched_.clear();
+  queue_->MarkAsFailed(1);
+  queue_->AddToQueue(1);
+  ASSERT_TRUE(mock_timer->IsRunning());
+  EXPECT_GT(mock_timer->GetCurrentDelay(), kZero);
+  EXPECT_LE(mock_timer->GetCurrentDelay(), TimeDelta::FromMinutes(1));
+
+  // Call ResetBackoff and see that there is no longer a delay.
+  queue_->ResetBackoff();
+  ASSERT_TRUE(mock_timer->IsRunning());
+  ASSERT_EQ(kZero, mock_timer->GetCurrentDelay());
+  mock_timer->Fire();
+  RunLoop();
+  ASSERT_FALSE(mock_timer->IsRunning());
+  ASSERT_EQ(1U, dispatched_.size());
+  EXPECT_EQ(1, dispatched_.front());
+  dispatched_.clear();
+  queue_->MarkAsSucceeded(1);
 }
 
 }  // namespace syncer

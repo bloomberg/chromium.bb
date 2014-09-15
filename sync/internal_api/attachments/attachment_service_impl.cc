@@ -134,10 +134,13 @@ AttachmentServiceImpl::AttachmentServiceImpl(
                  weak_ptr_factory_.GetWeakPtr()),
       initial_backoff_delay,
       max_backoff_delay));
+
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 AttachmentServiceImpl::~AttachmentServiceImpl() {
   DCHECK(CalledOnValidThread());
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 // Static.
@@ -288,6 +291,13 @@ void AttachmentServiceImpl::UploadAttachments(
   }
 }
 
+void AttachmentServiceImpl::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
+    upload_task_queue_->ResetBackoff();
+  }
+}
+
 void AttachmentServiceImpl::ReadDoneNowUpload(
     const AttachmentStore::Result& result,
     scoped_ptr<AttachmentMap> attachments,
@@ -311,6 +321,10 @@ void AttachmentServiceImpl::ReadDoneNowUpload(
         base::Bind(&AttachmentServiceImpl::UploadDone,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void AttachmentServiceImpl::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+  upload_task_queue_->SetTimerForTest(timer.Pass());
 }
 
 }  // namespace syncer
