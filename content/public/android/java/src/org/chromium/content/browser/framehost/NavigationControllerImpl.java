@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -51,6 +52,7 @@ import org.chromium.content_public.browser.NavigationHistory;
     }
 
     @Override
+    @VisibleForTesting
     public boolean canGoToOffset(int offset) {
         return mNativeNavigationControllerAndroid != 0
                 && nativeCanGoToOffset(mNativeNavigationControllerAndroid, offset);
@@ -146,6 +148,7 @@ import org.chromium.content_public.browser.NavigationHistory;
     }
 
     @Override
+    @VisibleForTesting
     public void clearHistory() {
         if (mNativeNavigationControllerAndroid != 0) {
             nativeClearHistory(mNativeNavigationControllerAndroid);
