@@ -50,9 +50,6 @@ DOMWindowProperty::~DOMWindowProperty()
 {
     if (m_associatedDOMWindow)
         m_associatedDOMWindow->unregisterProperty(this);
-
-    m_associatedDOMWindow = nullptr;
-    m_frame = nullptr;
 }
 #endif
 
@@ -62,10 +59,10 @@ void DOMWindowProperty::willDestroyGlobalObjectInFrame()
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
 
-    // DOMWindowProperty lifetime isn't tied directly to the LocalDOMWindow itself so it is important that it unregister
-    // itself from any LocalDOMWindow it is associated with if that LocalDOMWindow is going away.
-    if (m_associatedDOMWindow)
-        m_associatedDOMWindow->unregisterProperty(this);
+    // LocalDOMWindow will along with notifying DOMWindowProperty objects of
+    // impending destruction, unilaterally clear out its registered set.
+    // Consequently, no explicit unregisteration required by DOMWindowProperty;
+    // here or when finalized.
     m_associatedDOMWindow = nullptr;
     m_frame = nullptr;
 }

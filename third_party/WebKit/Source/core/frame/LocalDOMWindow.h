@@ -366,7 +366,7 @@ private:
     bool m_hasBeenReset;
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeMember<DOMWindowProperty> > m_properties;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty> > m_properties;
 
     mutable RefPtrWillBeMember<Screen> m_screen;
     mutable RefPtrWillBeMember<History> m_history;
