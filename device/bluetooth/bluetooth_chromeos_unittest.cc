@@ -56,7 +56,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
                                      bool present) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++present_changed_count_;
     last_present_ = present;
@@ -64,7 +64,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
                                      bool powered) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++powered_changed_count_;
     last_powered_ = powered;
@@ -72,14 +72,14 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
                                           bool discoverable) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++discoverable_changed_count_;
   }
 
   virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
                                          bool discovering) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++discovering_changed_count_;
     last_discovering_ = discovering;
@@ -87,7 +87,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void DeviceAdded(BluetoothAdapter* adapter,
                            BluetoothDevice* device) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_added_count_;
     last_device_ = device;
@@ -98,7 +98,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void DeviceChanged(BluetoothAdapter* adapter,
                              BluetoothDevice* device) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_changed_count_;
     last_device_ = device;
@@ -109,7 +109,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void DeviceRemoved(BluetoothAdapter* adapter,
                              BluetoothDevice* device) OVERRIDE {
-    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(adapter_.get(), adapter);
 
     ++device_removed_count_;
     // Can't save device, it may be freed

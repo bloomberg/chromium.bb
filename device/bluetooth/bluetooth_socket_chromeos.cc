@@ -245,7 +245,7 @@ void BluetoothSocketChromeOS::RegisterProfile(
   // Before reaching out to the Bluetooth Daemon to register a listening socket,
   // make sure it's actually running. If not, report success and carry on;
   // the profile will be registered when the daemon becomes available.
-  if (adapter_ && !adapter_->IsPresent()) {
+  if (adapter_.get() && !adapter_->IsPresent()) {
     VLOG(1) << object_path_.value() << ": Delaying profile registration.";
     success_callback.Run();
     return;
