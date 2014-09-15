@@ -5,14 +5,13 @@
 #include "components/feedback/tracing_manager.h"
 
 #include "base/bind.h"
-#include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace {
+
 // Only once trace manager can exist at a time.
 TracingManager* g_tracing_manager = NULL;
 // Trace IDs start at 1 and increase.
@@ -43,9 +42,9 @@ int TracingManager::RequestTrace() {
   current_trace_id_ = g_next_trace_id;
   ++g_next_trace_id;
   content::TracingController::GetInstance()->DisableRecording(
-      base::FilePath(),
-      base::Bind(&TracingManager::OnTraceDataCollected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      content::TracingController::CreateStringSink(
+          base::Bind(&TracingManager::OnTraceDataCollected,
+                     weak_ptr_factory_.GetWeakPtr())));
   return current_trace_id_;
 }
 
@@ -96,20 +95,13 @@ void TracingManager::StartTracing() {
       content::TracingController::EnableRecordingDoneCallback());
 }
 
-void TracingManager::OnTraceDataCollected(const base::FilePath& path) {
+void TracingManager::OnTraceDataCollected(base::RefCountedString* trace_data) {
   if (!current_trace_id_)
     return;
 
-  std::string data;
-  if (!base::ReadFileToString(path, &data)) {
-    LOG(ERROR) << "Failed to read trace data from: " << path.value();
-    return;
-  }
-  base::DeleteFile(path, false);
-
   std::string output_val;
   feedback_util::ZipString(
-      base::FilePath(kTracingFilename), data, &output_val);
+      base::FilePath(kTracingFilename), trace_data->data(), &output_val);
 
   scoped_refptr<base::RefCountedString> output(
       base::RefCountedString::TakeString(&output_val));

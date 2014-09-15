@@ -14,8 +14,8 @@
 #include "base/test/test_timeouts.h"
 #include "content/public/app/content_main.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_launcher.h"
@@ -301,8 +301,11 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // Wait for tracing to collect results from the renderers.
     base::RunLoop run_loop;
     TracingController::GetInstance()->DisableRecording(
-        trace_file,
-        base::Bind(&TraceDisableRecordingComplete, run_loop.QuitClosure()));
+        TracingControllerImpl::CreateFileSink(
+            trace_file,
+            base::Bind(&TraceDisableRecordingComplete,
+                       run_loop.QuitClosure(),
+                       trace_file)));
     run_loop.Run();
   }
 }

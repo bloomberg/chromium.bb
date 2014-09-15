@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -136,23 +135,6 @@ void OnTraceBufferPercentFullResult(
   callback.Run(base::RefCountedString::TakeString(&str));
 }
 
-void ReadRecordingResult(const WebUIDataSource::GotDataCallback& callback,
-                         const base::FilePath& path) {
-  std::string tmp;
-  if (!base::ReadFileToString(path, &tmp))
-    LOG(ERROR) << "Failed to read file " << path.value();
-  base::DeleteFile(path, false);
-  callback.Run(base::RefCountedString::TakeString(&tmp));
-}
-
-void BeginReadingRecordingResult(
-    const WebUIDataSource::GotDataCallback& callback,
-    const base::FilePath& path) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(ReadRecordingResult, callback, path));
-}
-
 void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
 bool EnableMonitoring(const std::string& data64,
@@ -205,21 +187,9 @@ void GetMonitoringStatus(const WebUIDataSource::GotDataCallback& callback) {
   callback.Run(monitoring_options_base64);
 }
 
-void ReadMonitoringSnapshot(const WebUIDataSource::GotDataCallback& callback,
-                            const base::FilePath& path) {
-  std::string tmp;
-  if (!base::ReadFileToString(path, &tmp))
-    LOG(ERROR) << "Failed to read file " << path.value();
-  base::DeleteFile(path, false);
-  callback.Run(base::RefCountedString::TakeString(&tmp));
-}
-
-void OnMonitoringSnapshotCaptured(
-    const WebUIDataSource::GotDataCallback& callback,
-    const base::FilePath& path) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(ReadMonitoringSnapshot, callback, path));
+void TracingCallbackWrapper(const WebUIDataSource::GotDataCallback& callback,
+                            base::RefCountedString* data) {
+  callback.Run(data);
 }
 
 bool OnBeginJSONRequest(const std::string& path,
@@ -240,7 +210,8 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/end_recording") {
     return TracingController::GetInstance()->DisableRecording(
-        base::FilePath(), base::Bind(BeginReadingRecordingResult, callback));
+        TracingControllerImpl::CreateStringSink(
+            base::Bind(TracingCallbackWrapper, callback)));
   }
 
   const char* enableMonitoringPath = "json/begin_monitoring?";
@@ -254,7 +225,8 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/capture_monitoring") {
     TracingController::GetInstance()->CaptureMonitoringSnapshot(
-        base::FilePath(), base::Bind(OnMonitoringSnapshotCaptured, callback));
+        TracingControllerImpl::CreateStringSink(
+            base::Bind(TracingCallbackWrapper, callback)));
     return true;
   }
   if (path == "json/get_monitoring_status") {

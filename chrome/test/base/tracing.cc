@@ -19,6 +19,30 @@ namespace {
 
 using content::BrowserThread;
 
+class StringTraceSink : public content::TracingController::TraceDataSink {
+ public:
+  StringTraceSink(std::string* result, const base::Closure& callback)
+      : result_(result), completion_callback_(callback) {}
+
+  virtual void AddTraceChunk(const std::string& chunk) OVERRIDE {
+    *result_ += result_->empty() ? "[" : ",";
+    *result_ += chunk;
+  }
+  virtual void Close() OVERRIDE {
+    if (!result_->empty())
+      *result_ += "]";
+    completion_callback_.Run();
+  }
+
+ private:
+  virtual ~StringTraceSink() {}
+
+  std::string* result_;
+  base::Closure completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringTraceSink);
+};
+
 class InProcessTraceController {
  public:
   static InProcessTraceController* GetInstance() {
@@ -87,12 +111,12 @@ class InProcessTraceController {
     using namespace base::debug;
 
     if (!content::TracingController::GetInstance()->DisableRecording(
-        base::FilePath(),
-        base::Bind(&InProcessTraceController::OnTraceDataCollected,
-                   base::Unretained(this),
-                   base::Unretained(json_trace_output))))
+            new StringTraceSink(
+                json_trace_output,
+                base::Bind(&InProcessTraceController::OnTracingComplete,
+                           base::Unretained(this))))) {
       return false;
-
+    }
     // Wait for OnEndTracingComplete() to quit the message loop.
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
@@ -110,38 +134,7 @@ class InProcessTraceController {
     message_loop_runner_->Quit();
   }
 
-  void OnEndTracingComplete() {
-    message_loop_runner_->Quit();
-  }
-
-  void OnTraceDataCollected(std::string* json_trace_output,
-                            const base::FilePath& path) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&InProcessTraceController::ReadTraceData,
-                   base::Unretained(this),
-                   base::Unretained(json_trace_output),
-                   path));
-  }
-
-  void ReadTraceData(std::string* json_trace_output,
-                     const base::FilePath& path) {
-    json_trace_output->clear();
-    bool ok = base::ReadFileToString(path, json_trace_output);
-    DCHECK(ok);
-    base::DeleteFile(path, false);
-
-    // The callers expect an array of trace events.
-    const char* preamble = "{\"traceEvents\": ";
-    const char* trailout = "}";
-    DCHECK(StartsWithASCII(*json_trace_output, preamble, true));
-    DCHECK(EndsWith(*json_trace_output, trailout, true));
-    json_trace_output->erase(0, strlen(preamble));
-    json_trace_output->erase(json_trace_output->end() - 1);
-
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&InProcessTraceController::OnEndTracingComplete,
-                   base::Unretained(this)));
-  }
+  void OnTracingComplete() { message_loop_runner_->Quit(); }
 
   void OnWatchEventMatched() {
     if (watch_notification_count_ == 0)

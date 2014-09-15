@@ -54,11 +54,12 @@ void TracingControllerAndroid::StopTracing(JNIEnv* env,
   base::FilePath file_path(
       base::android::ConvertJavaStringToUTF8(env, jfilepath));
   if (!TracingController::GetInstance()->DisableRecording(
-      file_path,
-      base::Bind(&TracingControllerAndroid::OnTracingStopped,
-                 weak_factory_.GetWeakPtr()))) {
+          TracingController::CreateFileSink(
+              file_path,
+              base::Bind(&TracingControllerAndroid::OnTracingStopped,
+                         weak_factory_.GetWeakPtr())))) {
     LOG(ERROR) << "EndTracingAsync failed, forcing an immediate stop";
-    OnTracingStopped(file_path);
+    OnTracingStopped();
   }
 }
 
@@ -71,8 +72,7 @@ void TracingControllerAndroid::GenerateTracingFilePath(
       base::android::ConvertJavaStringToUTF8(env, jfilename.obj()));
 }
 
-void TracingControllerAndroid::OnTracingStopped(
-    const base::FilePath& file_path) {
+void TracingControllerAndroid::OnTracingStopped() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = weak_java_object_.get(env);
   if (obj.obj())

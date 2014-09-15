@@ -58,7 +58,7 @@ class TracingManager {
   TracingManager();
 
   void StartTracing();
-  void OnTraceDataCollected(const base::FilePath& path);
+  void OnTraceDataCollected(base::RefCountedString* data);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

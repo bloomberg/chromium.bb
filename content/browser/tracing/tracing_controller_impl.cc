@@ -34,133 +34,125 @@ namespace {
 base::LazyInstance<TracingControllerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
+class FileTraceDataSink : public TracingController::TraceDataSink {
+ public:
+  explicit FileTraceDataSink(const base::FilePath& trace_file_path,
+                             const base::Closure& callback)
+      : file_path_(trace_file_path),
+        completion_callback_(callback),
+        file_(NULL) {}
+
+  virtual void AddTraceChunk(const std::string& chunk) OVERRIDE {
+    std::string tmp = chunk;
+    scoped_refptr<base::RefCountedString> chunk_ptr =
+        base::RefCountedString::TakeString(&tmp);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &FileTraceDataSink::AddTraceChunkOnFileThread, this, chunk_ptr));
+  }
+  virtual void SetSystemTrace(const std::string& data) OVERRIDE {
+    system_trace_ = data;
+  }
+  virtual void Close() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&FileTraceDataSink::CloseOnFileThread, this));
+  }
+
+ private:
+  virtual ~FileTraceDataSink() { DCHECK(file_ == NULL); }
+
+  void AddTraceChunkOnFileThread(
+      const scoped_refptr<base::RefCountedString> chunk) {
+    if (!OpenFileIfNeededOnFileThread())
+      return;
+    fwrite(chunk->data().c_str(), strlen(chunk->data().c_str()), 1, file_);
+  }
+
+  bool OpenFileIfNeededOnFileThread() {
+    if (file_ != NULL)
+      return true;
+    file_ = base::OpenFile(file_path_, "w");
+    if (file_ == NULL) {
+      LOG(ERROR) << "Failed to open " << file_path_.value();
+      return false;
+    }
+    const char preamble[] = "{\"traceEvents\": [";
+    fwrite(preamble, strlen(preamble), 1, file_);
+    return true;
+  }
+
+  void CloseOnFileThread() {
+    if (OpenFileIfNeededOnFileThread()) {
+      fputc(']', file_);
+      if (!system_trace_.empty()) {
+        const char systemTraceEvents[] = ",\"systemTraceEvents\": ";
+        fwrite(systemTraceEvents, strlen(systemTraceEvents), 1, file_);
+        fwrite(system_trace_.c_str(), strlen(system_trace_.c_str()), 1, file_);
+      }
+      fputc('}', file_);
+      base::CloseFile(file_);
+      file_ = NULL;
+    }
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&FileTraceDataSink::FinalizeOnUIThread, this));
+  }
+
+  void FinalizeOnUIThread() { completion_callback_.Run(); }
+
+  base::FilePath file_path_;
+  base::Closure completion_callback_;
+  FILE* file_;
+  std::string system_trace_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileTraceDataSink);
+};
+
+class StringTraceDataSink : public TracingController::TraceDataSink {
+ public:
+  typedef base::Callback<void(base::RefCountedString*)> CompletionCallback;
+
+  explicit StringTraceDataSink(CompletionCallback callback)
+      : completion_callback_(callback) {}
+
+  // TracingController::TraceDataSink implementation
+  virtual void AddTraceChunk(const std::string& chunk) OVERRIDE {
+    if (!trace_.empty())
+      trace_ += ",";
+    trace_ += chunk;
+  }
+  virtual void SetSystemTrace(const std::string& data) OVERRIDE {
+    system_trace_ = data;
+  }
+  virtual void Close() OVERRIDE {
+    std::string result = "{\"traceEvents\":[" + trace_ + "]";
+    if (!system_trace_.empty())
+      result += ",\"systemTraceEvents\": " + system_trace_;
+    result += "}";
+
+    completion_callback_.Run(base::RefCountedString::TakeString(&result));
+  }
+
+ private:
+  virtual ~StringTraceDataSink() {}
+
+  std::string trace_;
+  std::string system_trace_;
+  CompletionCallback completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringTraceDataSink);
+};
+
 }  // namespace
 
 TracingController* TracingController::GetInstance() {
   return TracingControllerImpl::GetInstance();
 }
-
-class TracingControllerImpl::ResultFile {
- public:
-  explicit ResultFile(const base::FilePath& path);
-  void Write(const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&TracingControllerImpl::ResultFile::WriteTask,
-                   base::Unretained(this), events_str_ptr));
-  }
-  void Close(const base::Closure& callback) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&TracingControllerImpl::ResultFile::CloseTask,
-                   base::Unretained(this), callback));
-  }
-  void WriteSystemTrace(
-      const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&TracingControllerImpl::ResultFile::WriteSystemTraceTask,
-                   base::Unretained(this), events_str_ptr));
-  }
-
-  const base::FilePath& path() const { return path_; }
-
- private:
-  void OpenTask();
-  void WriteTask(const scoped_refptr<base::RefCountedString>& events_str_ptr);
-  void WriteSystemTraceTask(
-      const scoped_refptr<base::RefCountedString>& events_str_ptr);
-  void CloseTask(const base::Closure& callback);
-
-  FILE* file_;
-  base::FilePath path_;
-  bool has_at_least_one_result_;
-  scoped_refptr<base::RefCountedString> system_trace_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultFile);
-};
-
-TracingControllerImpl::ResultFile::ResultFile(const base::FilePath& path)
-    : file_(NULL),
-      path_(path),
-      has_at_least_one_result_(false) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TracingControllerImpl::ResultFile::OpenTask,
-                 base::Unretained(this)));
-}
-
-void TracingControllerImpl::ResultFile::OpenTask() {
-  if (path_.empty())
-    base::CreateTemporaryFile(&path_);
-  file_ = base::OpenFile(path_, "w");
-  if (!file_) {
-    LOG(ERROR) << "Failed to open " << path_.value();
-    return;
-  }
-  const char* preamble = "{\"traceEvents\": [";
-  size_t written = fwrite(preamble, strlen(preamble), 1, file_);
-  DCHECK(written == 1);
-}
-
-void TracingControllerImpl::ResultFile::WriteTask(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  if (!file_ || !events_str_ptr->data().size())
-    return;
-
-  // If there is already a result in the file, then put a comma
-  // before the next batch of results.
-  if (has_at_least_one_result_) {
-    size_t written = fwrite(",", 1, 1, file_);
-    DCHECK(written == 1);
-  }
-  has_at_least_one_result_ = true;
-  size_t written = fwrite(events_str_ptr->data().c_str(),
-                          events_str_ptr->data().size(), 1,
-                          file_);
-  DCHECK(written == 1);
-}
-
-void TracingControllerImpl::ResultFile::WriteSystemTraceTask(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  system_trace_ = events_str_ptr;
-}
-
-void TracingControllerImpl::ResultFile::CloseTask(
-    const base::Closure& callback) {
-  if (!file_)
-    return;
-
-  const char* trailevents = "]";
-  size_t written = fwrite(trailevents, strlen(trailevents), 1, file_);
-  DCHECK(written == 1);
-
-  if (system_trace_.get()) {
-#if defined(OS_WIN)
-    // The Windows kernel events are kept into a JSon format stored as string
-    // and must not be escaped.
-    std::string json_string = system_trace_->data();
-#else
-    std::string json_string = base::GetQuotedJSONString(system_trace_->data());
-#endif
-
-    const char* systemTraceHead = ",\n\"systemTraceEvents\": ";
-    written = fwrite(systemTraceHead, strlen(systemTraceHead), 1, file_);
-    DCHECK(written == 1);
-
-    written = fwrite(json_string.data(), json_string.size(), 1, file_);
-    DCHECK(written == 1);
-
-    system_trace_ = NULL;
-  }
-
-  const char* trailout = "}";
-  written = fwrite(trailout, strlen(trailout), 1, file_);
-  DCHECK(written == 1);
-  base::CloseFile(file_);
-  file_ = NULL;
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
 
 TracingControllerImpl::TracingControllerImpl() :
     pending_disable_recording_ack_count_(0),
@@ -199,7 +191,7 @@ bool TracingControllerImpl::GetCategories(
     return false;
   }
 
-  bool ok = DisableRecording(base::FilePath(), TracingFileResultCallback());
+  bool ok = DisableRecording(NULL);
   DCHECK(ok);
   return true;
 }
@@ -286,20 +278,18 @@ void TracingControllerImpl::OnEnableRecordingDone(
 }
 
 bool TracingControllerImpl::DisableRecording(
-    const base::FilePath& result_file_path,
-    const TracingFileResultCallback& callback) {
+    const scoped_refptr<TraceDataSink>& trace_data_sink) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_disable_recording())
     return false;
 
+  trace_data_sink_ = trace_data_sink;
   trace_options_ = TraceOptions();
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
-  base::Closure on_disable_recording_done_callback =
-      base::Bind(&TracingControllerImpl::OnDisableRecordingDone,
-                 base::Unretained(this),
-                 result_file_path, callback);
+  base::Closure on_disable_recording_done_callback = base::Bind(
+      &TracingControllerImpl::OnDisableRecordingDone, base::Unretained(this));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetDisabledOnFileThread,
                  base::Unretained(this),
@@ -307,20 +297,13 @@ bool TracingControllerImpl::DisableRecording(
   return true;
 }
 
-void TracingControllerImpl::OnDisableRecordingDone(
-    const base::FilePath& result_file_path,
-    const TracingFileResultCallback& callback) {
+void TracingControllerImpl::OnDisableRecordingDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  pending_disable_recording_done_callback_ = callback;
 
 #if defined(OS_ANDROID)
   if (pending_get_categories_done_callback_.is_null())
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
-
-  if (!callback.is_null() || !result_file_path.empty())
-    result_file_.reset(new ResultFile(result_file_path));
 
   // Count myself (local trace) in pending_disable_recording_ack_count_,
   // acked below.
@@ -431,6 +414,18 @@ bool TracingControllerImpl::DisableMonitoring(
   return true;
 }
 
+scoped_refptr<TracingController::TraceDataSink>
+TracingController::CreateStringSink(
+    const base::Callback<void(base::RefCountedString*)>& callback) {
+  return new StringTraceDataSink(callback);
+}
+
+scoped_refptr<TracingController::TraceDataSink>
+TracingController::CreateFileSink(const base::FilePath& file_path,
+                                  const base::Closure& callback) {
+  return new FileTraceDataSink(file_path, callback);
+}
+
 void TracingControllerImpl::OnDisableMonitoringDone(
     const DisableMonitoringDoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -442,7 +437,6 @@ void TracingControllerImpl::OnDisableMonitoringDone(
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendDisableMonitoring();
   }
-
   if (!callback.is_null())
     callback.Run();
 }
@@ -457,18 +451,16 @@ void TracingControllerImpl::GetMonitoringStatus(
 }
 
 bool TracingControllerImpl::CaptureMonitoringSnapshot(
-    const base::FilePath& result_file_path,
-    const TracingFileResultCallback& callback) {
+    const scoped_refptr<TraceDataSink>& monitoring_data_sink) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_disable_monitoring())
     return false;
 
-  if (callback.is_null() && result_file_path.empty())
+  if (!monitoring_data_sink.get())
     return false;
 
-  pending_capture_monitoring_snapshot_done_callback_ = callback;
-  monitoring_snapshot_file_.reset(new ResultFile(result_file_path));
+  monitoring_data_sink_ = monitoring_data_sink;
 
   // Count myself in pending_capture_monitoring_snapshot_ack_count_,
   // acked below.
@@ -685,10 +677,6 @@ void TracingControllerImpl::OnDisableRecordingAcked(
   if (pending_disable_recording_ack_count_ != 0)
     return;
 
-  OnDisableRecordingComplete();
-}
-
-void TracingControllerImpl::OnDisableRecordingComplete() {
   // All acks (including from the subprocesses and the local trace) have been
   // received.
   is_recording_ = false;
@@ -697,24 +685,10 @@ void TracingControllerImpl::OnDisableRecordingComplete() {
   if (!pending_get_categories_done_callback_.is_null()) {
     pending_get_categories_done_callback_.Run(known_category_groups_);
     pending_get_categories_done_callback_.Reset();
-  } else if (result_file_) {
-    result_file_->Close(
-        base::Bind(&TracingControllerImpl::OnResultFileClosed,
-                   base::Unretained(this)));
+  } else if (trace_data_sink_.get()) {
+    trace_data_sink_->Close();
+    trace_data_sink_ = NULL;
   }
-}
-
-void TracingControllerImpl::OnResultFileClosed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!result_file_)
-    return;
-
-  if (!pending_disable_recording_done_callback_.is_null()) {
-    pending_disable_recording_done_callback_.Run(result_file_->path());
-    pending_disable_recording_done_callback_.Reset();
-  }
-  result_file_.reset();
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
@@ -722,9 +696,17 @@ void TracingControllerImpl::OnEndSystemTracingAcked(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (result_file_)
-    result_file_->WriteSystemTrace(events_str_ptr);
-
+  if (trace_data_sink_.get()) {
+#if defined(OS_WIN)
+    // The Windows kernel events are kept into a JSon format stored as string
+    // and must not be escaped.
+    std::string json_string = events_str_ptr->data();
+#else
+    std::string json_string =
+        base::GetQuotedJSONString(events_str_ptr->data());
+#endif
+    trace_data_sink_->SetSystemTrace(json_string);
+  }
   DCHECK(!is_system_tracing_);
   std::vector<std::string> category_groups;
   OnDisableRecordingAcked(NULL, category_groups);
@@ -763,25 +745,10 @@ void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked(
   if (pending_capture_monitoring_snapshot_ack_count_ != 0)
     return;
 
-  if (monitoring_snapshot_file_) {
-    monitoring_snapshot_file_->Close(
-        base::Bind(&TracingControllerImpl::OnMonitoringSnapshotFileClosed,
-                   base::Unretained(this)));
+  if (monitoring_data_sink_.get()) {
+    monitoring_data_sink_->Close();
+    monitoring_data_sink_ = NULL;
   }
-}
-
-void TracingControllerImpl::OnMonitoringSnapshotFileClosed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!monitoring_snapshot_file_)
-    return;
-
-  if (!pending_capture_monitoring_snapshot_done_callback_.is_null()) {
-    pending_capture_monitoring_snapshot_done_callback_.Run(
-        monitoring_snapshot_file_->path());
-    pending_capture_monitoring_snapshot_done_callback_.Reset();
-  }
-  monitoring_snapshot_file_.reset();
 }
 
 void TracingControllerImpl::OnTraceDataCollected(
@@ -795,8 +762,8 @@ void TracingControllerImpl::OnTraceDataCollected(
     return;
   }
 
-  if (result_file_)
-    result_file_->Write(events_str_ptr);
+  if (trace_data_sink_.get())
+    trace_data_sink_->AddTraceChunk(events_str_ptr->data());
 }
 
 void TracingControllerImpl::OnMonitoringTraceDataCollected(
@@ -808,8 +775,8 @@ void TracingControllerImpl::OnMonitoringTraceDataCollected(
     return;
   }
 
-  if (monitoring_snapshot_file_)
-    monitoring_snapshot_file_->Write(events_str_ptr);
+  if (monitoring_data_sink_.get())
+    monitoring_data_sink_->AddTraceChunk(events_str_ptr->data());
 }
 
 void TracingControllerImpl::OnLocalTraceDataCollected(

@@ -29,7 +29,7 @@ class TracingControllerAndroid {
 
  private:
   ~TracingControllerAndroid();
-  void OnTracingStopped(const base::FilePath& file_path);
+  void OnTracingStopped();
   void OnKnownCategoriesReceived(
       const std::set<std::string>& categories_received);
 
