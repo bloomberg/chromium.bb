@@ -23,7 +23,8 @@ class BlinkAXTreeSource
   // node ids to the frame routing id for an out-of-process iframe during
   // calls to SerializeNode.
   void CollectChildFrameIdMapping(
-      std::map<int32, int>* node_to_frame_routing_id_map);
+      std::map<int32, int>* node_to_frame_routing_id_map,
+      std::map<int32, int>* node_to_browser_plugin_instance_id_map);
 
   // Walks up the ancestor chain to see if this is a descendant of the root.
   bool IsInTree(blink::WebAXObject node) const;
@@ -49,7 +50,7 @@ class BlinkAXTreeSource
  private:
   RenderFrameImpl* render_frame_;
   std::map<int32, int>* node_to_frame_routing_id_map_;
-
+  std::map<int32, int>* node_to_browser_plugin_instance_id_map_;
 };
 
 }  // namespace content

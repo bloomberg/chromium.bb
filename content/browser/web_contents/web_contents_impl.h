@@ -386,6 +386,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual AccessibilityMode GetAccessibilityMode() const OVERRIDE;
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) OVERRIDE;
+  virtual RenderFrameHost* GetGuestByInstanceID(int browser_plugin_instance_id)
+      OVERRIDE;
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
 #endif

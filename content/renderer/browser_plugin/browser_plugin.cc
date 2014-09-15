@@ -41,7 +41,25 @@ using blink::WebRect;
 using blink::WebURL;
 using blink::WebVector;
 
+namespace {
+typedef std::map<blink::WebPluginContainer*, content::BrowserPlugin*>
+    PluginContainerMap;
+static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
 namespace content {
+
+// static
+BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
+  blink::WebPluginContainer* container = node.pluginContainer();
+  if (!container)
+    return NULL;
+
+  PluginContainerMap* browser_plugins = g_plugin_container_map.Pointer();
+  PluginContainerMap::iterator it = browser_plugins->find(container);
+  return it == browser_plugins->end() ? NULL : it->second;
+}
 
 BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
                              blink::WebFrame* frame,
@@ -378,6 +396,8 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
   container_->setWantsWheelEvents(true);
 
+  g_plugin_container_map.Get().insert(std::make_pair(container_, this));
+
   // This is a way to notify observers of our attributes that this plugin is
   // available in render tree.
   // TODO(lazyboy): This should be done through the delegate instead. Perhaps
@@ -417,6 +437,10 @@ void BrowserPlugin::destroy() {
   DCHECK(!npp_ || container_);
   if (container_)
     container_->clearScriptObjects();
+
+  // The BrowserPlugin's WebPluginContainer is deleted immediately after this
+  // call returns, so let's not keep a reference to it around.
+  g_plugin_container_map.Get().erase(container_);
 
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();

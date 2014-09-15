@@ -15,6 +15,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
+#include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -32,6 +33,8 @@ class CONTENT_EXPORT BrowserPlugin :
     NON_EXPORTED_BASE(public blink::WebPlugin),
     public MouseLockDispatcher::LockTarget {
  public:
+  static BrowserPlugin* GetFromNode(blink::WebNode& node);
+
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }

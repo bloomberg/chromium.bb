@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
+#include "content/browser/frame_host/frame_accessibility.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -42,6 +43,8 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_notification_delegate.h"
@@ -202,6 +205,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   if (delegate_)
     delegate_->RenderFrameDeleted(this);
+
+  FrameAccessibility::GetInstance()->OnRenderFrameHostDestroyed(this);
 
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
@@ -473,35 +478,50 @@ gfx::NativeViewAccessible
 }
 
 BrowserAccessibilityManager* RenderFrameHostImpl::AccessibilityGetChildFrame(
-    int64 frame_tree_node_id) {
-  FrameTreeNode* child_node = FrameTree::GloballyFindByID(frame_tree_node_id);
-  if (!child_node)
+    int accessibility_node_id) {
+  RenderFrameHostImpl* child_frame =
+      FrameAccessibility::GetInstance()->GetChild(this, accessibility_node_id);
+  if (!child_frame)
     return NULL;
-
-  // We should have gotten a node in the same frame tree.
-  CHECK(child_node->frame_tree() == frame_tree_node()->frame_tree());
-
-  RenderFrameHostImpl* child_rfhi = child_node->current_frame_host();
 
   // Return NULL if this isn't an out-of-process iframe. Same-process iframes
   // are already part of the accessibility tree.
-  if (child_rfhi->GetProcess()->GetID() == GetProcess()->GetID())
+  if (child_frame->GetProcess()->GetID() == GetProcess()->GetID())
     return NULL;
 
-  return child_rfhi->GetOrCreateBrowserAccessibilityManager();
+  // As a sanity check, make sure the frame we're going to return belongs
+  // to the same BrowserContext.
+  if (GetSiteInstance()->GetBrowserContext() !=
+      child_frame->GetSiteInstance()->GetBrowserContext()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return child_frame->GetOrCreateBrowserAccessibilityManager();
 }
 
-BrowserAccessibilityManager*
-RenderFrameHostImpl::AccessibilityGetParentFrame() {
-  FrameTreeNode* parent_node = frame_tree_node()->parent();
-  if (!parent_node)
+BrowserAccessibility* RenderFrameHostImpl::AccessibilityGetParentFrame() {
+  RenderFrameHostImpl* parent_frame = NULL;
+  int parent_node_id = 0;
+  if (!FrameAccessibility::GetInstance()->GetParent(
+      this, &parent_frame, &parent_node_id)) {
+    return NULL;
+  }
+
+  // As a sanity check, make sure the frame we're going to return belongs
+  // to the same BrowserContext.
+  if (GetSiteInstance()->GetBrowserContext() !=
+      parent_frame->GetSiteInstance()->GetBrowserContext()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  BrowserAccessibilityManager* manager =
+      parent_frame->browser_accessibility_manager();
+  if (!manager)
     return NULL;
 
-  RenderFrameHostImpl* parent_frame = parent_node->current_frame_host();
-  if (!parent_frame)
-    return NULL;
-
-  return parent_frame->GetOrCreateBrowserAccessibilityManager();
+  return manager->GetFromID(parent_node_id);
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
@@ -1012,28 +1032,15 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
     }
 
     if (browser_accessibility_manager_) {
-      // Get the frame routing ids from out-of-process iframes and use them
-      // to notify our BrowserAccessibilityManager of the frame tree node id of
-      // any of its child frames.
+      // Get the frame routing ids from out-of-process iframes and
+      // browser plugin instance ids from guests and update the mappings in
+      // FrameAccessibility.
       for (unsigned int i = 0; i < params.size(); ++i) {
         const AccessibilityHostMsg_EventParams& param = params[i];
-        std::map<int32, int>::const_iterator iter;
-        for (iter = param.node_to_frame_routing_id_map.begin();
-             iter != param.node_to_frame_routing_id_map.end();
-             ++iter) {
-          // This is the id of the accessibility node that has a child frame.
-          int32 node_id = iter->first;
-          // The routing id from either a RenderFrame or a RenderFrameProxy.
-          int frame_routing_id = iter->second;
-
-          FrameTree* frame_tree = frame_tree_node()->frame_tree();
-          FrameTreeNode* child_frame_tree_node = frame_tree->FindByRoutingID(
-              GetProcess()->GetID(), frame_routing_id);
-          if (child_frame_tree_node) {
-            browser_accessibility_manager_->SetChildFrameTreeNodeId(
-                 node_id, child_frame_tree_node->frame_tree_node_id());
-          }
-        }
+        UpdateCrossProcessIframeAccessibility(
+            param.node_to_frame_routing_id_map);
+        UpdateGuestFrameAccessibility(
+            param.node_to_browser_plugin_instance_id_map);
       }
     }
 
@@ -1302,6 +1309,42 @@ void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
     int request_id, blink::WebNotificationPermission permission) {
   Send(new PlatformNotificationMsg_PermissionRequestComplete(
       routing_id_, request_id, permission));
+}
+
+void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(
+    const std::map<int32, int> node_to_frame_routing_id_map) {
+  std::map<int32, int>::const_iterator iter;
+  for (iter = node_to_frame_routing_id_map.begin();
+       iter != node_to_frame_routing_id_map.end();
+       ++iter) {
+    // This is the id of the accessibility node that has a child frame.
+    int32 node_id = iter->first;
+    // The routing id from either a RenderFrame or a RenderFrameProxy.
+    int frame_routing_id = iter->second;
+
+    FrameTree* frame_tree = frame_tree_node()->frame_tree();
+    FrameTreeNode* child_frame_tree_node = frame_tree->FindByRoutingID(
+        GetProcess()->GetID(), frame_routing_id);
+    if (child_frame_tree_node) {
+      FrameAccessibility::GetInstance()->AddChildFrame(
+          this, node_id, child_frame_tree_node->frame_tree_node_id());
+    }
+  }
+}
+
+void RenderFrameHostImpl::UpdateGuestFrameAccessibility(
+    const std::map<int32, int> node_to_browser_plugin_instance_id_map) {
+  std::map<int32, int>::const_iterator iter;
+  for (iter = node_to_browser_plugin_instance_id_map.begin();
+       iter != node_to_browser_plugin_instance_id_map.end();
+       ++iter) {
+    // This is the id of the accessibility node that hosts a plugin.
+    int32 node_id = iter->first;
+    // The id of the browser plugin.
+    int browser_plugin_instance_id = iter->second;
+    FrameAccessibility::GetInstance()->AddGuestWebContents(
+        this, node_id, browser_plugin_instance_id);
+  }
 }
 
 void RenderFrameHostImpl::SetAccessibilityMode(AccessibilityMode mode) {

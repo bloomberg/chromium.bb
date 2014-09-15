@@ -48,6 +48,11 @@ AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
   return AccessibilityModeOff;
 }
 
+RenderFrameHost* RenderFrameHostDelegate::GetGuestByInstanceID(
+    int browser_plugin_instance_id) {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
     RenderFrameHostDelegate::GetParentNativeViewAccessible() {

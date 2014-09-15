@@ -319,7 +319,12 @@
     update_location_only,
 
     // Set on a canvas element if it has fallback content.
-    canvas_has_fallback
+    canvas_has_fallback,
+
+    // Set if this node is the host of an external AXTree, for
+    // example a web view that's a child of a native view, or a
+    // web iframe that's the child of another web frame.
+    is_ax_tree_host
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {

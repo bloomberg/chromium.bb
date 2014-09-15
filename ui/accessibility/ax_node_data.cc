@@ -343,6 +343,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_CANVAS_HAS_FALLBACK:
         result += " has_fallback=" + value;
         break;
+      case AX_ATTR_IS_AX_TREE_HOST:
+        result += " is_ax_tree_host=" + value;
+        break;
       case AX_BOOL_ATTRIBUTE_NONE:
         break;
     }

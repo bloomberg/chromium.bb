@@ -19,6 +19,7 @@ namespace content {
 // static
 BrowserPluginManagerFactory* BrowserPluginManager::factory_ = NULL;
 
+// static
 BrowserPluginManager* BrowserPluginManager::Create(
     RenderViewImpl* render_view) {
   if (factory_)

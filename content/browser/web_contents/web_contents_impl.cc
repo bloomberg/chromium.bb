@@ -1796,6 +1796,17 @@ void WebContentsImpl::AccessibilityEventReceived(
       WebContentsObserver, observers_, AccessibilityEventReceived(details));
 }
 
+RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
+    int browser_plugin_instance_id) {
+  BrowserPluginGuestManager* guest_manager =
+      GetBrowserContext()->GetGuestManager();
+  WebContents* guest = guest_manager->GetGuestByInstanceID(
+      this, browser_plugin_instance_id);
+  if (!guest)
+    return NULL;
+  return guest->GetMainFrame();
+}
+
 void WebContentsImpl::OnShowValidationMessage(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,

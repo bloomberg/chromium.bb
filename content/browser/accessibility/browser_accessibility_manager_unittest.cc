@@ -98,10 +98,10 @@ class TestBrowserAccessibilityDelegate
     return NULL;
   }
   virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int64 frame_tree_node_id) OVERRIDE {
+      int accessibility_node_id) OVERRIDE {
     return NULL;
   }
-  virtual BrowserAccessibilityManager* AccessibilityGetParentFrame() OVERRIDE {
+  virtual BrowserAccessibility* AccessibilityGetParentFrame() OVERRIDE {
     return NULL;
   }
 

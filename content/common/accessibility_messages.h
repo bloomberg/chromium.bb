@@ -68,6 +68,10 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // iframe.
   IPC_STRUCT_MEMBER(FrameIDMap, node_to_frame_routing_id_map)
 
+  // Mapping from node id to the browser plugin instance id of a child
+  // browser plugin.
+  IPC_STRUCT_MEMBER(FrameIDMap, node_to_browser_plugin_instance_id_map)
+
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)
 

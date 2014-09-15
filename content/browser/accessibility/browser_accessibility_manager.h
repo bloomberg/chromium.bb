@@ -71,8 +71,8 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int64 frame_tree_node_id) = 0;
-  virtual BrowserAccessibilityManager* AccessibilityGetParentFrame() = 0;
+      int accessibility_node_id) = 0;
+  virtual BrowserAccessibility* AccessibilityGetParentFrame() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -201,10 +201,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
-
-  // Frame tree support.
-  void SetChildFrameTreeNodeId(int32 node_id, int64 child_frame_tree_node_id);
-  BrowserAccessibility* GetCrossFrameParent();
 
  protected:
   BrowserAccessibilityManager(

@@ -137,6 +137,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
 
+  // Find a guest RenderFrameHost by its browser plugin instance id.
+  virtual RenderFrameHost* GetGuestByInstanceID(
+      int browser_plugin_instance_id);
+
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();

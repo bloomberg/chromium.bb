@@ -11,34 +11,6 @@
 
 namespace content {
 
-namespace {
-
-// Recursively searches |ancestor_node| and its descendants for a
-// BrowserAccessibility with |child| as its immediate and only child.
-// Searches only the frame that |ancestor_node| belongs to, does not descend
-// into child frames (but |child| can be the root of another frame).
-BrowserAccessibility* FindParentOfNode(
-    BrowserAccessibility* ancestor_node, BrowserAccessibility* child) {
-  if (ancestor_node->PlatformChildCount() == 1 &&
-      ancestor_node->PlatformGetChild(0) == child) {
-    return ancestor_node;
-  }
-
-  if (ancestor_node->InternalChildCount() == 0)
-    return NULL;
-
-  for (uint32 i = 0; i < ancestor_node->PlatformChildCount(); ++i) {
-    BrowserAccessibility* result = FindParentOfNode(
-        ancestor_node->PlatformGetChild(i), child);
-    if (result)
-      return result;
-  }
-
-  return NULL;
-}
-
-}  // namespace.
-
 ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node1,
     const ui::AXNodeData& node2 /* = ui::AXNodeData() */,
@@ -399,33 +371,6 @@ ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
   ui::AXTreeUpdate update;
   serializer.SerializeChanges(tree_->GetRoot(), &update);
   return update;
-}
-
-void BrowserAccessibilityManager::SetChildFrameTreeNodeId(
-    int32 node_id, int64 child_frame_tree_node_id) {
-  BrowserAccessibility* node = GetFromID(node_id);
-  if (node) {
-    // The node id passed to us is the web area for the proxy frame.
-    // In order to replace this node with the child frame, set the
-    // child frame id on its parent.
-    BrowserAccessibility* node_parent = node->GetParent();
-    if (node_parent)
-      node_parent->SetChildFrameTreeNodeId(child_frame_tree_node_id);
-  }
-}
-
-BrowserAccessibility* BrowserAccessibilityManager::GetCrossFrameParent() {
-  if (!delegate_)
-    return NULL;
-
-  BrowserAccessibilityManager* parent_frame =
-      delegate_->AccessibilityGetParentFrame();
-  if (!parent_frame)
-    return NULL;
-
-  // Recursively search the parent frame to find the node that has this
-  // frame as its child.
-  return FindParentOfNode(parent_frame->GetRoot(), GetRoot());
 }
 
 }  // namespace content

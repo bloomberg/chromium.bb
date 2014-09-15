@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
@@ -25,8 +26,9 @@
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using base::ASCIIToUTF16;
@@ -37,6 +39,8 @@ using blink::WebDocumentType;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebNode;
+using blink::WebPlugin;
+using blink::WebPluginContainer;
 using blink::WebVector;
 using blink::WebView;
 
@@ -97,7 +101,9 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
 }  // Anonymous namespace
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
-    : render_frame_(render_frame) {
+    : render_frame_(render_frame),
+      node_to_frame_routing_id_map_(NULL),
+      node_to_browser_plugin_instance_id_map_(NULL) {
 }
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
@@ -114,8 +120,11 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
 }
 
 void BlinkAXTreeSource::CollectChildFrameIdMapping(
-    std::map<int32, int>* node_to_frame_routing_id_map) {
+    std::map<int32, int>* node_to_frame_routing_id_map,
+    std::map<int32, int>* node_to_browser_plugin_instance_id_map) {
   node_to_frame_routing_id_map_ = node_to_frame_routing_id_map;
+  node_to_browser_plugin_instance_id_map_ =
+      node_to_browser_plugin_instance_id_map;
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
@@ -350,6 +359,16 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     live_busy = UTF16ToUTF8(element.getAttribute("aria-busy"));
     live_status = UTF16ToUTF8(element.getAttribute("aria-live"));
     live_relevant = UTF16ToUTF8(element.getAttribute("aria-relevant"));
+
+    // Browser plugin (used in a <webview>).
+    if (node_to_browser_plugin_instance_id_map_) {
+      BrowserPlugin* browser_plugin = BrowserPlugin::GetFromNode(element);
+      if (browser_plugin) {
+        (*node_to_browser_plugin_instance_id_map_)[dst->id] =
+            browser_plugin->browser_plugin_instance_id();
+        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
+      }
+    }
   }
 
   // Walk up the parent chain to set live region attributes of containers
@@ -461,14 +480,16 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       WebLocalFrame* frame = document.frame();
       RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
       if (render_frame) {
-        node_to_frame_routing_id_map_->insert(std::pair<int32, int>(
-            dst->id, render_frame->GetRoutingID()));
+        (*node_to_frame_routing_id_map_)[dst->id] =
+            render_frame->GetRoutingID();
+        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
       } else {
         RenderFrameProxy* render_frame_proxy =
             RenderFrameProxy::FromWebFrame(frame);
         if (render_frame_proxy) {
-          node_to_frame_routing_id_map_->insert(std::pair<int32, int>(
-              dst->id, render_frame_proxy->routing_id()));
+          (*node_to_frame_routing_id_map_)[dst->id] =
+              render_frame_proxy->routing_id();
+          dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
         }
       }
     }

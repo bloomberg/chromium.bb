@@ -111,8 +111,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
       OVERRIDE;
   virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int64 frame_tree_node_id) OVERRIDE;
-  virtual BrowserAccessibilityManager* AccessibilityGetParentFrame() OVERRIDE;
+      int accessibility_node_id) OVERRIDE;
+  virtual BrowserAccessibility* AccessibilityGetParentFrame() OVERRIDE;
 
   bool CreateRenderFrame(int parent_routing_id);
   bool IsRenderFrameLive();
@@ -378,6 +378,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void PlatformNotificationPermissionRequestDone(
       int request_id, blink::WebNotificationPermission permission);
+
+  // Update the the singleton FrameAccessibility instance with a map
+  // from accessibility node id to the frame routing id of a cross-process
+  // iframe.
+  void UpdateCrossProcessIframeAccessibility(
+      const std::map<int32, int> node_to_frame_routing_id_map);
+
+  // Update the the singleton FrameAccessibility instance with a map
+  // from accessibility node id to the browser plugin instance id of a
+  // guest WebContents.
+  void UpdateGuestFrameAccessibility(
+      const std::map<int32, int> node_to_browser_plugin_instance_id_map);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
