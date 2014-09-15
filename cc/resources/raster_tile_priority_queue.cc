@@ -63,6 +63,34 @@ class RasterOrderComparator {
   TreePriority tree_priority_;
 };
 
+WhichTree HigherPriorityTree(
+    TreePriority tree_priority,
+    const PictureLayerImpl::LayerRasterTileIterator* active_iterator,
+    const PictureLayerImpl::LayerRasterTileIterator* pending_iterator,
+    const Tile* shared_tile) {
+  switch (tree_priority) {
+    case SMOOTHNESS_TAKES_PRIORITY:
+      return ACTIVE_TREE;
+    case NEW_CONTENT_TAKES_PRIORITY:
+      return PENDING_TREE;
+    case SAME_PRIORITY_FOR_BOTH_TREES: {
+      const Tile* active_tile = shared_tile ? shared_tile : **active_iterator;
+      const Tile* pending_tile = shared_tile ? shared_tile : **pending_iterator;
+
+      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
+      const TilePriority& pending_priority =
+          pending_tile->priority(PENDING_TREE);
+
+      if (active_priority.IsHigherPriorityThan(pending_priority))
+        return ACTIVE_TREE;
+      return PENDING_TREE;
+    }
+    default:
+      NOTREACHED();
+      return ACTIVE_TREE;
+  }
+}
+
 }  // namespace
 
 RasterTilePriorityQueue::RasterTilePriorityQueue() {
@@ -122,7 +150,8 @@ RasterTilePriorityQueue::PairedPictureLayerQueue::PairedPictureLayerQueue(
                            ? PictureLayerImpl::LayerRasterTileIterator(
                                  layer_pair.pending,
                                  tree_priority == SMOOTHNESS_TAKES_PRIORITY)
-                           : PictureLayerImpl::LayerRasterTileIterator()) {
+                           : PictureLayerImpl::LayerRasterTileIterator()),
+      has_both_layers(layer_pair.active && layer_pair.pending) {
 }
 
 RasterTilePriorityQueue::PairedPictureLayerQueue::~PairedPictureLayerQueue() {
@@ -141,9 +170,7 @@ Tile* RasterTilePriorityQueue::PairedPictureLayerQueue::Top(
       next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
   DCHECK(*next_iterator);
   Tile* tile = **next_iterator;
-  DCHECK(std::find(returned_shared_tiles.begin(),
-                   returned_shared_tiles.end(),
-                   tile) == returned_shared_tiles.end());
+  DCHECK(returned_tiles_for_debug.find(tile) == returned_tiles_for_debug.end());
   return tile;
 }
 
@@ -155,25 +182,32 @@ void RasterTilePriorityQueue::PairedPictureLayerQueue::Pop(
   PictureLayerImpl::LayerRasterTileIterator* next_iterator =
       next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
   DCHECK(*next_iterator);
-  returned_shared_tiles.push_back(**next_iterator);
+  DCHECK(returned_tiles_for_debug.insert(**next_iterator).second);
   ++(*next_iterator);
 
-  if (IsEmpty())
-    return;
+  if (has_both_layers) {
+    // We have both layers (active and pending) thus we can encounter shared
+    // tiles twice (from the active iterator and from the pending iterator).
+    for (; !IsEmpty(); ++(*next_iterator)) {
+      next_tree = NextTileIteratorTree(tree_priority);
+      next_iterator =
+          next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
 
-  next_tree = NextTileIteratorTree(tree_priority);
-  next_iterator =
-      next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
-  while (std::find(returned_shared_tiles.begin(),
-                   returned_shared_tiles.end(),
-                   **next_iterator) != returned_shared_tiles.end()) {
-    ++(*next_iterator);
-    if (IsEmpty())
-      break;
-    next_tree = NextTileIteratorTree(tree_priority);
-    next_iterator =
-        next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
+      // Accept all non-shared tiles.
+      const Tile* tile = **next_iterator;
+      if (!tile->is_shared())
+        break;
+
+      // Accept a shared tile if the next tree is the higher priority one
+      // corresponding the iterator (active or pending) which usually (but due
+      // to spiral iterators not always) returns the shared tile first.
+      if (next_tree == HigherPriorityTree(tree_priority, NULL, NULL, tile))
+        break;
+    }
   }
+
+  // If no empty, use Top to do DCHECK the next iterator.
+  DCHECK(IsEmpty() || Top(tree_priority));
 }
 
 WhichTree
@@ -188,32 +222,8 @@ RasterTilePriorityQueue::PairedPictureLayerQueue::NextTileIteratorTree(
     return ACTIVE_TREE;
 
   // Now both iterators have tiles, so we have to decide based on tree priority.
-  switch (tree_priority) {
-    case SMOOTHNESS_TAKES_PRIORITY:
-      return ACTIVE_TREE;
-    case NEW_CONTENT_TAKES_PRIORITY:
-      return PENDING_TREE;
-    case SAME_PRIORITY_FOR_BOTH_TREES: {
-      const Tile* active_tile = *active_iterator;
-      const Tile* pending_tile = *pending_iterator;
-      if (active_tile == pending_tile)
-        return ACTIVE_TREE;
-
-      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
-      const TilePriority& pending_priority =
-          pending_tile->priority(PENDING_TREE);
-
-      if (active_priority.IsHigherPriorityThan(pending_priority))
-        return ACTIVE_TREE;
-      return PENDING_TREE;
-    }
-    default:
-      NOTREACHED();
-  }
-
-  NOTREACHED();
-  // Keep the compiler happy.
-  return ACTIVE_TREE;
+  return HigherPriorityTree(
+      tree_priority, &active_iterator, &pending_iterator, NULL);
 }
 
 }  // namespace cc

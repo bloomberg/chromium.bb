@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_RASTER_TILE_PRIORITY_QUEUE_H_
 #define CC_RESOURCES_RASTER_TILE_PRIORITY_QUEUE_H_
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -30,9 +31,10 @@ class CC_EXPORT RasterTilePriorityQueue {
 
     PictureLayerImpl::LayerRasterTileIterator active_iterator;
     PictureLayerImpl::LayerRasterTileIterator pending_iterator;
+    bool has_both_layers;
 
-    // TODO(vmpstr): Investigate removing this.
-    std::vector<Tile*> returned_shared_tiles;
+    // Set of returned tiles (excluding the current one) for DCHECKing.
+    std::set<const Tile*> returned_tiles_for_debug;
   };
 
   RasterTilePriorityQueue();
