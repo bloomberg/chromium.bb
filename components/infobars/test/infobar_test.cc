@@ -7,11 +7,11 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 
-// Provides dummy definitions of static variables and functions that are
-// declared in the component but defined in the embedder in order to allow
-// components_unittests to link.
+// Provides definitions of static variables and functions that are declared in
+// the component but defined in the embedder.
 // TODO(blundell): The component shouldn't be declaring statics that it's not
-// defining. crbug.com/386171
+// defining; instead, this information should be obtained via a client,
+// which can have a test implementation. crbug.com/386171
 
 // On Android, these variables are defined in ../core/infobar_android.cc.
 #if !defined(OS_ANDROID)
@@ -24,8 +24,10 @@ const int infobars::InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int infobars::InfoBar::kDefaultBarTargetHeight = 36;
 #endif
 
+// Some components' unittests exercise code that requires that
+// ConfirmInfoBarDelegate::CreateInfoBar() return a non-NULL infobar.
 scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  NOTREACHED();
-  return scoped_ptr<infobars::InfoBar>();
+  return scoped_ptr<infobars::InfoBar>(new infobars::InfoBar(
+      delegate.PassAs<infobars::InfoBarDelegate>()));
 }

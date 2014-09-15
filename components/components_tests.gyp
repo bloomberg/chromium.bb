@@ -128,6 +128,7 @@
             'gcm_driver/gcm_delayed_task_controller_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
+            'google/core/browser/google_url_tracker_unittest.cc',
             'google/core/browser/google_util_unittest.cc',
             'history/core/browser/url_database_unittest.cc',
             'history/core/common/thumbnail_score_unittest.cc',

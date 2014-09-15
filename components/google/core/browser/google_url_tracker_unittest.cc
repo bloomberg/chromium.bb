@@ -9,18 +9,18 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/prefs/testing_pref_service.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
 #include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -71,7 +71,7 @@ void TestCallbackListener::RegisterCallback(
 
 class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
  public:
-  explicit TestGoogleURLTrackerClient(Profile* profile_);
+  explicit TestGoogleURLTrackerClient(PrefService* prefs_);
   virtual ~TestGoogleURLTrackerClient();
 
   virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
@@ -81,14 +81,17 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
  private:
-  Profile* profile_;
+  PrefService* prefs_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   bool observe_nav_start_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGoogleURLTrackerClient);
 };
 
-TestGoogleURLTrackerClient::TestGoogleURLTrackerClient(Profile* profile)
-    : profile_(profile),
+TestGoogleURLTrackerClient::TestGoogleURLTrackerClient(PrefService* prefs)
+    : prefs_(prefs),
+      request_context_(new net::TestURLRequestContextGetter(
+          base::MessageLoopProxy::current())),
       observe_nav_start_(false) {
 }
 
@@ -108,11 +111,11 @@ bool TestGoogleURLTrackerClient::IsBackgroundNetworkingEnabled() {
 }
 
 PrefService* TestGoogleURLTrackerClient::GetPrefs() {
-  return profile_->GetPrefs();
+  return prefs_;
 }
 
 net::URLRequestContextGetter* TestGoogleURLTrackerClient::GetRequestContext() {
-  return profile_->GetRequestContext();
+  return request_context_.get();
 }
 
 
@@ -243,16 +246,14 @@ class GoogleURLTrackerTest : public testing::Test {
   void clear_listener_notified() { listener_.clear_notified(); }
 
  private:
-  // These are required by the TestURLFetchers GoogleURLTracker will create (see
-  // test_url_fetcher_factory.h).
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  TestingPrefServiceSimple prefs_;
 
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   net::TestURLFetcherFactory fetcher_factory_;
   GoogleURLTrackerClient* client_;
-  TestingProfile profile_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   TestCallbackListener listener_;
   // This tracks the different "tabs" a test has "opened", so we can close them
@@ -260,10 +261,13 @@ class GoogleURLTrackerTest : public testing::Test {
   std::set<infobars::InfoBarManager*> infobar_managers_seen_;
 };
 
-GoogleURLTrackerTest::GoogleURLTrackerTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  GoogleURLTrackerFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(&profile_);
+GoogleURLTrackerTest::GoogleURLTrackerTest() {
+  prefs_.registry()->RegisterStringPref(
+      prefs::kLastKnownGoogleURL,
+      GoogleURLTracker::kDefaultGoogleHomepage);
+  prefs_.registry()->RegisterStringPref(
+      prefs::kLastPromptedGoogleURL,
+      std::string());
 }
 
 GoogleURLTrackerTest::~GoogleURLTrackerTest() {
@@ -273,7 +277,7 @@ void GoogleURLTrackerTest::SetUp() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
   // Ownership is passed to google_url_tracker_, but a weak pointer is kept;
   // this is safe since GoogleURLTracker keeps the client for its lifetime.
-  client_ = new TestGoogleURLTrackerClient(&profile_);
+  client_ = new TestGoogleURLTrackerClient(&prefs_);
   scoped_ptr<GoogleURLTrackerClient> client(client_);
   google_url_tracker_.reset(new GoogleURLTracker(
       client.Pass(), GoogleURLTracker::UNIT_TEST_MODE));
@@ -323,11 +327,11 @@ void GoogleURLTrackerTest::NotifyNetworkChanged() {
 }
 
 void GoogleURLTrackerTest::SetLastPromptedGoogleURL(const GURL& url) {
-  profile_.GetPrefs()->SetString(prefs::kLastPromptedGoogleURL, url.spec());
+  prefs_.SetString(prefs::kLastPromptedGoogleURL, url.spec());
 }
 
 GURL GoogleURLTrackerTest::GetLastPromptedGoogleURL() {
-  return GURL(profile_.GetPrefs()->GetString(prefs::kLastPromptedGoogleURL));
+  return GURL(prefs_.GetString(prefs::kLastPromptedGoogleURL));
 }
 
 void GoogleURLTrackerTest::SetNavigationPending(
