@@ -2202,3 +2202,13 @@ INVALID HEAP ARGUMENT
 name=bug_413215
 *!replace_operator_delete*
 v8.dll!*
+
+UNINITIALIZED READ
+name=bug_414268
+pdf.dll!chrome_pdf::PDFiumEngine::OnMouseMove
+pdf.dll!chrome_pdf::PDFiumEngine::HandleEvent
+pdf.dll!chrome_pdf::OutOfProcessInstance::HandleInputEvent
+pdf.dll!pp::InputEvent_HandleEvent
+ppapi_proxy.dll!ppapi::CallWhileUnlocked<>
+ppapi_proxy.dll!ppapi::proxy::PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent
+
