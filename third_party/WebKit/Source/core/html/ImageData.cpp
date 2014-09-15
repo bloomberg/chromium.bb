@@ -125,23 +125,13 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(Uint8ClampedArray* data, uns
     return adoptRefWillBeNoop(new ImageData(IntSize(width, height), data));
 }
 
-v8::Handle<v8::Object> ImageData::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    v8::Handle<v8::Object> wrapper = ScriptWrappable::wrap(creationContext, isolate);
-    return associateWithWrapperInternal(wrapper, creationContext, isolate);
-}
-
 v8::Handle<v8::Object> ImageData::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
     ScriptWrappable::associateWithWrapper(wrapperType, wrapper, isolate);
-    return associateWithWrapperInternal(wrapper, wrapper, isolate);
-}
 
-v8::Handle<v8::Object> ImageData::associateWithWrapperInternal(v8::Handle<v8::Object> wrapper, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
     if (!wrapper.IsEmpty()) {
         // Create a V8 Uint8ClampedArray object.
-        v8::Handle<v8::Value> pixelArray = toV8(data(), creationContext, isolate);
+        v8::Handle<v8::Value> pixelArray = toV8(data(), wrapper, isolate);
         // Set the "data" property of the ImageData object to
         // the created v8 object, eliminating the C++ callback
         // when accessing the "data" property.
@@ -164,4 +154,4 @@ ImageData::ImageData(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArra
     ASSERT_WITH_SECURITY_IMPLICATION(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
 }
 
-}
+} // namespace blink

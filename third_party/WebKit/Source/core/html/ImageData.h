@@ -55,14 +55,11 @@ public:
 
     void trace(Visitor*) { }
 
-    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
     virtual v8::Handle<v8::Object> associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*) OVERRIDE;
 
 private:
     explicit ImageData(const IntSize&);
     ImageData(const IntSize&, PassRefPtr<Uint8ClampedArray>);
-
-    v8::Handle<v8::Object> associateWithWrapperInternal(v8::Handle<v8::Object> wrapper, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
     IntSize m_size;
     RefPtr<Uint8ClampedArray> m_data;
