@@ -15,6 +15,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 
 namespace mojo {
@@ -35,6 +36,15 @@ ASSERT_ENUM_VALUES_EQUAL(SURFACE_CONTENT);
 ASSERT_ENUM_VALUES_EQUAL(TEXTURE_CONTENT);
 ASSERT_ENUM_VALUES_EQUAL(TILED_CONTENT);
 ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
+
+COMPILE_ASSERT(
+    cc::YUVVideoDrawQuad::REC_601 ==
+        static_cast<cc::YUVVideoDrawQuad::ColorSpace>(YUV_COLOR_SPACE_REC_601),
+    rec_601_enum_matches);
+COMPILE_ASSERT(cc::YUVVideoDrawQuad::REC_601_JPEG ==
+                   static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
+                       YUV_COLOR_SPACE_REC_601_JPEG),
+               rec_601_jpeg_enum_matches);
 
 namespace {
 
@@ -145,6 +155,26 @@ bool ConvertDrawQuad(const QuadPtr& input,
                         tile_state->tex_coord_rect.To<gfx::RectF>(),
                         tile_state->texture_size.To<gfx::Size>(),
                         tile_state->swizzle_contents);
+      break;
+    }
+    case MATERIAL_YUV_VIDEO_CONTENT: {
+      YUVVideoQuadStatePtr& yuv_state = input->yuv_video_quad_state;
+      if (yuv_state.is_null())
+        return false;
+      cc::YUVVideoDrawQuad* yuv_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
+      yuv_quad->SetAll(sqs,
+                       input->rect.To<gfx::Rect>(),
+                       input->opaque_rect.To<gfx::Rect>(),
+                       input->visible_rect.To<gfx::Rect>(),
+                       input->needs_blending,
+                       yuv_state->tex_coord_rect.To<gfx::RectF>(),
+                       yuv_state->y_plane_resource_id,
+                       yuv_state->u_plane_resource_id,
+                       yuv_state->v_plane_resource_id,
+                       yuv_state->a_plane_resource_id,
+                       static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
+                           yuv_state->color_space));
       break;
     }
     default:
@@ -276,6 +306,21 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       quad->tile_quad_state = tile_state.Pass();
       break;
     }
+    case cc::DrawQuad::YUV_VIDEO_CONTENT: {
+      const cc::YUVVideoDrawQuad* yuv_quad =
+          cc::YUVVideoDrawQuad::MaterialCast(&input);
+      YUVVideoQuadStatePtr yuv_state = YUVVideoQuadState::New();
+      yuv_state->tex_coord_rect = RectF::From(yuv_quad->tex_coord_rect);
+      yuv_state->y_plane_resource_id = yuv_quad->y_plane_resource_id;
+      yuv_state->u_plane_resource_id = yuv_quad->u_plane_resource_id;
+      yuv_state->v_plane_resource_id = yuv_quad->v_plane_resource_id;
+      yuv_state->a_plane_resource_id = yuv_quad->a_plane_resource_id;
+      yuv_state->color_space =
+          static_cast<YUVColorSpace>(yuv_quad->color_space);
+      quad->yuv_video_quad_state = yuv_state.Pass();
+      break;
+    }
+
     default:
       NOTREACHED() << "Unsupported material " << input.material;
   }

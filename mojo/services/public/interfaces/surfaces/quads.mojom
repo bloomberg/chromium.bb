@@ -74,7 +74,19 @@ struct TileQuadState {
 
 struct StreamVideoQuadState {};
 
-struct YUVVideoQuadState {};
+enum YUVColorSpace {
+  REC_601,       // SDTV standard with restricted "studio swing" color range.
+  REC_601_JPEG,  // Full color range [0, 255] variant of the above.
+};
+
+struct YUVVideoQuadState {
+  RectF tex_coord_rect;
+  uint32 y_plane_resource_id;
+  uint32 u_plane_resource_id;
+  uint32 v_plane_resource_id;
+  uint32 a_plane_resource_id;
+  YUVColorSpace color_space;
+};
 
 enum Material {
   CHECKERBOARD = 1,
