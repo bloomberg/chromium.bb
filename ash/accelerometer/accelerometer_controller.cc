@@ -17,7 +17,8 @@ AccelerometerController::~AccelerometerController() {
 void AccelerometerController::Initialize(
     scoped_refptr<base::TaskRunner> blocking_task_runner) {
 #if defined(OS_CHROMEOS)
-  reader_.reset(new chromeos::AccelerometerReader(blocking_task_runner, this));
+  reader_.reset(
+      new chromeos::AccelerometerReader(blocking_task_runner.get(), this));
 #endif
 }
 
