@@ -417,8 +417,14 @@ void View::SetVisible(bool visible) {
     UpdateLayerVisibility();
 
     // If we are newly visible, schedule paint.
-    if (visible_)
+    if (visible_) {
       SchedulePaint();
+    } else {
+      // We're never painted when hidden, so no need to be in the BoundsTree.
+      BoundsTree* bounds_tree = GetBoundsTreeFromPaintRoot();
+      if (bounds_tree)
+        RemoveRootBounds(bounds_tree);
+    }
   }
 }
 
@@ -2011,6 +2017,14 @@ void View::SetRootBoundsDirty(bool origin_changed) {
 }
 
 void View::UpdateRootBounds(BoundsTree* tree, const gfx::Vector2d& offset) {
+  // If we're not visible no need to update BoundsTree. When we are made visible
+  // the BoundsTree will be updated appropriately.
+  if (!visible_)
+    return;
+
+  if (!root_bounds_dirty_ && children_.empty())
+    return;
+
   // No need to recompute bounds if we haven't flagged ours as dirty.
   TRACE_EVENT1("views", "View::UpdateRootBounds", "class", GetClassName());
 
