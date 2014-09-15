@@ -68,7 +68,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
 
     tab = FakeTab()
     measurement = smoothness.Smoothness()
-    measurement.WillStartBrowser(tab.browser.platform)
+    measurement.WillStartBrowser(tab.browser)
     measurement.WillNavigateToPage(test_page, tab)
     measurement.WillRunActions(test_page, tab)
 
@@ -166,8 +166,8 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     class BuggyMeasurement(smoothness.Smoothness):
       fake_power = None
       # Inject fake power metric.
-      def WillStartBrowser(self, platform):
-        self.fake_power = self._power_metric = FakePowerMetric(platform)
+      def WillStartBrowser(self, browser):
+        self.fake_power = self._power_metric = FakePowerMetric(browser)
 
     measurement = BuggyMeasurement()
     try:
