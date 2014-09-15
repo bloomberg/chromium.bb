@@ -82,6 +82,9 @@
     'owners': {
       'filepath': 'OWNERS',
     },
+    'preloadScanner': {
+      'filepath': 'Source/core/html/parser/HTMLPreloadScanner',
+    },
     'public_api': {
       'filepath': 'public'
     },
@@ -371,7 +374,9 @@
                    'blink-reviews-rendering@chromium.org' ],
     'compositing': [ 'abarth@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
-    'prerender': [ 'gavinp+prerender@chromium.org' ],
+    'prerender': [ 'gavinp+prerender@chromium.org',
+                   'yoav@yoav.ws' ],
+    'preloadScanner': [ 'yoav@yoav.ws' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
     'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com',
