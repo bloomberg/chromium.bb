@@ -177,7 +177,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestWaitsForNSSInitAndSucceeds) {
       ClientCertStoreChromeOS::PasswordDelegateFactory());
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user.username_hash(), "client_1.pem", "client_1.pk8"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   // Request any client certificate, which is expected to match client_1.
   scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
@@ -217,7 +217,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
       ClientCertStoreChromeOS::PasswordDelegateFactory());
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user.username_hash(), "client_1.pem", "client_1.pk8"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
 
@@ -254,10 +254,10 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadOtherUserDB) {
 
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user1.username_hash(), "client_1.pem", "client_1.pk8"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
   scoped_refptr<X509Certificate> cert_2(
       ImportCertForUser(user2.username_hash(), "client_2.pem", "client_2.pk8"));
-  ASSERT_TRUE(cert_2);
+  ASSERT_TRUE(cert_2.get());
 
   scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
 
@@ -275,11 +275,11 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadOtherUserDB) {
 
   // store1 should only return certs of user1, namely cert_1.
   ASSERT_EQ(1u, selected_certs1.size());
-  EXPECT_TRUE(cert_1->Equals(selected_certs1[0]));
+  EXPECT_TRUE(cert_1->Equals(selected_certs1[0].get()));
 
   // store2 should only return certs of user2, namely cert_2.
   ASSERT_EQ(1u, selected_certs2.size());
-  EXPECT_TRUE(cert_2->Equals(selected_certs2[0]));
+  EXPECT_TRUE(cert_2->Equals(selected_certs2[0].get()));
 }
 
 // This verifies that a request in the context of User1 doesn't see certificates
@@ -299,13 +299,13 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSystemDB) {
 
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user1.username_hash(), "client_1.pem", "client_1.pk8"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
   scoped_refptr<X509Certificate> cert_2(
       ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
                                      "client_2.pem",
                                      "client_2.pk8",
                                      system_slot.slot()));
-  ASSERT_TRUE(cert_2);
+  ASSERT_TRUE(cert_2.get());
 
   scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
 
@@ -318,7 +318,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSystemDB) {
 
   // store should only return certs of the user, namely cert_1.
   ASSERT_EQ(1u, selected_certs.size());
-  EXPECT_TRUE(cert_1->Equals(selected_certs[0]));
+  EXPECT_TRUE(cert_1->Equals(selected_certs[0].get()));
 }
 
 }  // namespace net

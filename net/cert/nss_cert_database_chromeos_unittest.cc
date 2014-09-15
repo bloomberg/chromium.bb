@@ -170,11 +170,11 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
 
   // Check that the imported certs only shows up in the list for the user that
   // imported them.
-  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist));
-  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist));
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist));
+  EXPECT_FALSE(IsCertInCertificateList(certs_1[0].get(), user_2_certlist));
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist));
-  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist));
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0].get(), user_2_certlist));
+  EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
   base::RunLoop().RunUntilIdle();
@@ -196,11 +196,13 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist_async));
-  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist_async));
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs_1[0].get(), user_2_certlist_async));
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist_async));
-  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist_async));
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0].get(), user_2_certlist_async));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs_2[0].get(), user_1_certlist_async));
 }
 
 // Test that ImportServerCerts imports the cert to the correct slot, and that
@@ -236,11 +238,11 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
 
   // Check that the imported certs only shows up in the list for the user that
   // imported them.
-  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist));
-  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist));
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist));
+  EXPECT_FALSE(IsCertInCertificateList(certs_1[0].get(), user_2_certlist));
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist));
-  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist));
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0].get(), user_2_certlist));
+  EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
   base::RunLoop().RunUntilIdle();
@@ -259,11 +261,13 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_1[0], user_1_certlist_async));
-  EXPECT_FALSE(IsCertInCertificateList(certs_1[0], user_2_certlist_async));
+  EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs_1[0].get(), user_2_certlist_async));
 
-  EXPECT_TRUE(IsCertInCertificateList(certs_2[0], user_2_certlist_async));
-  EXPECT_FALSE(IsCertInCertificateList(certs_2[0], user_1_certlist_async));
+  EXPECT_TRUE(IsCertInCertificateList(certs_2[0].get(), user_2_certlist_async));
+  EXPECT_FALSE(
+      IsCertInCertificateList(certs_2[0].get(), user_1_certlist_async));
 }
 
 // Tests that There is no crash if the database is deleted while ListCerts
