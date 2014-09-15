@@ -296,6 +296,7 @@ var availableTests = [
         assertEq({ "Cellular": {
                      "ActivationState": "NotActivated",
                      "AllowRoaming": false,
+                     "AutoConnect": true,
                      "Carrier": "Cellular1_Carrier",
                      "HomeProvider": {
                        "country": "us",

@@ -249,6 +249,7 @@ const OncFieldSignature cellular_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
     { ::onc::cellular::kAPN, &kCellularApnSignature },
     { ::onc::cellular::kAPNList, &kCellularApnListSignature},
+    { ::onc::vpn::kAutoConnect, &kBoolSignature},
     {NULL}};
 
 const OncFieldSignature cellular_with_state_fields[] = {

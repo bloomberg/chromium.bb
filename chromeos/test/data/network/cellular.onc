@@ -6,6 +6,7 @@
       "AccessPointName": "test-apn",
       "Username": "test-username",
       "Password": "test-password"
-    }
+    },
+    "AutoConnect": true
   }
 }

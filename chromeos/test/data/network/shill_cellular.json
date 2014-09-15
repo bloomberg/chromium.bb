@@ -1,4 +1,5 @@
 {
+  "AutoConnect": true,
   "Type": "cellular",
   "Cellular.APN": {
     "apn": "test-apn",

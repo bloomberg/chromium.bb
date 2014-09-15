@@ -1307,13 +1307,14 @@ cr.define('options.internet', function() {
       $('prefer-network-wifi').checked = priority > 0;
       $('prefer-network-wifi').disabled = !remembered;
       $('auto-connect-network-wifi').checked =
-          onc.getActiveValue('AutoConnect');
+          onc.getActiveValue('WiFi.AutoConnect');
       $('auto-connect-network-wifi').disabled = !remembered;
     } else if (type == 'Wimax') {
       OptionsPage.showTab($('wimax-network-nav-tab'));
       $('wimax-restricted-connectivity').textContent = restrictedString;
+
       $('auto-connect-network-wimax').checked =
-          onc.getActiveValue('AutoConnect');
+          onc.getActiveValue('Wimax.AutoConnect');
       $('auto-connect-network-wimax').disabled = !remembered;
       var identity = onc.getActiveValue('Wimax.EAP.Identity');
       setOrHideParent('wimax-eap-identity', identity);
@@ -1380,7 +1381,7 @@ cr.define('options.internet', function() {
         detailsPage.initializeApnList_(onc);
       }
       $('auto-connect-network-cellular').checked =
-          onc.getActiveValue('AutoConnect');
+          onc.getActiveValue('Cellular.AutoConnect');
       $('auto-connect-network-cellular').disabled = false;
     } else if (type == 'VPN') {
       OptionsPage.showTab($('vpn-nav-tab'));
@@ -1388,9 +1389,18 @@ cr.define('options.internet', function() {
       $('inet-provider-type').textContent =
           onc.getTranslatedValue('VPN.Type');
       var providerType = onc.getActiveValue('VPN.Type');
-      var providerKey = 'VPN.' + providerType;
-      $('inet-username').textContent =
-          onc.getActiveValue(providerKey + '.Username');
+      var usernameKey;
+      if (providerType == 'OpenVPN')
+        usernameKey = 'VPN.OpenVPN.Username';
+      else if (providerType == 'L2TP-IPsec')
+        usernameKey = 'VPN.L2TP.Username';
+
+      if (usernameKey) {
+        $('inet-username').parentElement.hidden = false;
+        $('inet-username').textContent = onc.getActiveValue(usernameKey);
+      } else {
+        $('inet-username').parentElement.hidden = true;
+      }
       var inetServerHostname = $('inet-server-hostname');
       inetServerHostname.value = onc.getActiveValue('VPN.Host');
       inetServerHostname.resetHandler = function() {
@@ -1400,7 +1410,7 @@ cr.define('options.internet', function() {
           inetServerHostname.value = recommended;
       };
       $('auto-connect-network-vpn').checked =
-          onc.getActiveValue('AutoConnect');
+          onc.getActiveValue('VPN.AutoConnect');
       $('auto-connect-network-vpn').disabled = false;
     } else {
       OptionsPage.showTab($('internet-nav-tab'));

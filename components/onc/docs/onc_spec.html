@@ -1869,12 +1869,23 @@
     <span class="value">Cellular</span> and the
     field <span class="field">Cellular</span> must be set to an object of
     type <span class="type">Cellular</span>. Currently only used for
-    representing an existing configuraiton; ONC configuration of
+    representing an existing configuration; ONC configuration of
     of <span class="field">Cellular</span> networks is not yet supported.
     Contains the following fields:
   </p>
 
   <dl class="field_list">
+    <dt class="field">AutoConnect</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, defaults to <span class="value">false</span>)
+        <span class="type">boolean</span>
+      </span>
+      Indicating that the network should be connected to automatically when
+      possible. Note, that disabled <span class="field">AllowRoaming</span>
+      takes precedence over autoconnect.
+    </dd>
+
     <dt class="field">APN</dt>
     <dd>
       <span class="field_meta">(optional)

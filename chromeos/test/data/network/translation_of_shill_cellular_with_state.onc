@@ -5,6 +5,7 @@
     "ActivationState": "Activated",
     "ActivationType": "OTASP",
     "AllowRoaming": true,
+    "AutoConnect": true,
     "HomeProvider": {
       "country": "us",
       "name": "cellular_provider"

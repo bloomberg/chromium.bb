@@ -217,6 +217,10 @@ class ExtensionNetworkingPrivateApiTest
     // Note: These properties will show up in a "Cellular" object in ONC.
     service_test_->SetServiceProperty(
         "stub_cellular1",
+        shill::kAutoConnectProperty,
+        base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        "stub_cellular1",
         shill::kNetworkTechnologyProperty,
         base::StringValue(shill::kNetworkTechnologyGsm));
     service_test_->SetServiceProperty(
