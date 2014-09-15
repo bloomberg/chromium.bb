@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/rendering/InlineBox.h"
 
+#include "core/paint/BlockPainter.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
@@ -200,7 +201,7 @@ void InlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, Layo
     if (parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(renderer()), childPoint);
 
-    RenderBlock::paintAsInlineBlock(&renderer(), paintInfo, childPoint);
+    BlockPainter::paintAsInlineBlock(&renderer(), paintInfo, childPoint);
 }
 
 bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)

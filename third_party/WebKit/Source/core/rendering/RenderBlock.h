@@ -53,6 +53,10 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
+typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<RenderInline*> > > ContinuationOutlineTableMap;
+
+ContinuationOutlineTableMap* continuationOutlineTable();
+
 class RenderBlock : public RenderBox {
 public:
     virtual void destroy() OVERRIDE;
@@ -82,9 +86,9 @@ public:
 
     LayoutUnit minLineHeightForReplacedRenderer(bool isFirstLine, LayoutUnit replacedHeight) const;
 
-protected:
     RenderLineBoxList* lineBoxes() { return &m_lineBoxes; }
 
+protected:
     InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
     InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
 
@@ -179,7 +183,6 @@ public:
     void adjustForColumnRect(LayoutSize& offset, const LayoutPoint& locationInContainer) const;
 
     void addContinuationWithOutline(RenderInline*);
-    bool paintsContinuationOutline(RenderInline*);
 
     virtual RenderBoxModelObject* virtualContinuation() const OVERRIDE FINAL { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
@@ -237,17 +240,19 @@ public:
     LayoutUnit startOffsetForContent() const { return style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
     LayoutUnit endOffsetForContent() const { return !style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
 
+    virtual LayoutUnit logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
+    virtual LayoutUnit logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
+
+    GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
+
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
+    bool paintsContinuationOutline(RenderInline* flow);
 #endif
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
 #endif
-
-    // inline-block elements paint all phases atomically. This function ensures that. Certain other elements
-    // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
-    // It is expected that the caller will call this function independent of the value of paintInfo.phase.
-    static void paintAsInlineBlock(RenderObject*, PaintInfo&, const LayoutPoint&);
 
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
@@ -274,11 +279,14 @@ protected:
     int beforeMarginInLineDirection(LineDirectionMode) const;
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+public:
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintChildren(PaintInfo&, const LayoutPoint&);
-    void paintChild(RenderBox*, PaintInfo&, const LayoutPoint&);
-    void paintChildAsInlineBlock(RenderBox*, PaintInfo&, const LayoutPoint&);
 
+    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
+    virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool) { }
+
+protected:
     virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, float& /* logicalLeft */, float& /* logicalWidth */) const { }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
@@ -362,16 +370,7 @@ private:
 
     Node* nodeForHitTest() const;
 
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
-    virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool) { }
-    void paintContents(PaintInfo&, const LayoutPoint&);
-    void paintColumnContents(PaintInfo&, const LayoutPoint&, bool paintFloats = false);
-    void paintColumnRules(PaintInfo&, const LayoutPoint&);
-    void paintSelection(PaintInfo&, const LayoutPoint&);
-    void paintCarets(PaintInfo&, const LayoutPoint&);
-
-    bool hasCaret() const;
-
+private:
     virtual bool avoidsFloats() const OVERRIDE { return true; }
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
@@ -398,14 +397,10 @@ private:
         return selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     }
     bool isSelectionRoot() const;
-    GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                           LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
     GapRects blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
                                 LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
     LayoutRect blockSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
                                  LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo*) const;
-    virtual LayoutUnit logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
-    virtual LayoutUnit logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const { };
@@ -415,8 +410,7 @@ private:
 
     LayoutUnit desiredColumnWidth() const;
 
-    void paintContinuationOutlines(PaintInfo&, const LayoutPoint&);
-
+private:
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE FINAL;
 
     void adjustPointToColumnContents(LayoutPoint&) const;

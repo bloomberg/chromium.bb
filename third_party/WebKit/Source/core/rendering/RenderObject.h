@@ -1108,7 +1108,9 @@ protected:
         BoxSide, Color, int adjacentWidth1, int adjacentWidth2, bool antialias);
 
     void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
+public:
     void paintOutline(PaintInfo&, const LayoutRect&);
+protected:
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const;
 
     void clearLayoutRootIfNeeded() const;

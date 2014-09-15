@@ -32,6 +32,7 @@
 #include "core/rendering/RenderFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
+#include "core/paint/BlockPainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
@@ -282,7 +283,7 @@ void RenderFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)
 void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next())
-        paintChildAsInlineBlock(child, paintInfo, paintOffset);
+        BlockPainter(*this).paintChildAsInlineBlock(child, paintInfo, paintOffset);
 }
 
 void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineContext>& lineContexts)

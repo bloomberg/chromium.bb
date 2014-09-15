@@ -1448,6 +1448,13 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
     }
 }
 
+void RenderGrid::paintChild(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    LayoutPoint childPoint = flipForWritingModeForChild(child, paintOffset);
+    if (!child->hasSelfPaintingLayer() && !child->isFloating())
+        child->paint(paintInfo, childPoint);
+}
+
 const char* RenderGrid::renderName() const
 {
     if (isFloating())
