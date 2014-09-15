@@ -664,6 +664,30 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoDiscontinuity) {
   CheckReadsThenReadStalls(audio_.get(), "7:0 19");
 }
 
+TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
+  // Tests that a new media segment is not forcibly signalled for audio frame
+  // partial front trim, to prevent incorrect introduction of a discontinuity
+  // and potentially a non-keyframe video frame to be processed next after the
+  // discontinuity.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | HAS_VIDEO);
+  new_media_segment_ = true;
+  frame_processor_->SetSequenceMode(GetParam());
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("", "0K");
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("-5K", "");
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_* 2));
+  ProcessFrames("", "10");
+
+  EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+  EXPECT_FALSE(new_media_segment_);
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,5) }");
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [0,20) }");
+  CheckReadsThenReadStalls(audio_.get(), "0:-5");
+  CheckReadsThenReadStalls(video_.get(), "0 10");
+}
+
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
 INSTANTIATE_TEST_CASE_P(SegmentsMode, FrameProcessorTest, Values(false));
 
