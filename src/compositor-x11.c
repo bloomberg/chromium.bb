@@ -869,7 +869,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
 	output->base.current_mode = &output->mode;
-	output->base.make = "xwayland";
+	output->base.make = "weston-X11";
 	output->base.model = "none";
 
 	if (configured_name)
