@@ -203,6 +203,11 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
             return mAllowPermission ? PackageManager.PERMISSION_GRANTED :
                 PackageManager.PERMISSION_DENIED;
         }
+
+        @Override
+        public String getPackageName() {
+            return "org.some.app.package";
+        }
     }
 
     // Our test objects.

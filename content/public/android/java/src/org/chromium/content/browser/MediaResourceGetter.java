@@ -37,8 +37,6 @@ class MediaResourceGetter {
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
 
-    private static String PACKAGE_NAME = null;
-
     @VisibleForTesting
     static class MediaMetadata {
         private final int mDurationInMilliseconds;
@@ -115,7 +113,6 @@ class MediaResourceGetter {
                                                       final String url,
                                                       final String cookies,
                                                       final String userAgent) {
-        PACKAGE_NAME = context.getPackageName();
         return new MediaResourceGetter().extract(
                 context, url, cookies, userAgent);
     }
@@ -225,7 +222,7 @@ class MediaResourceGetter {
                 Log.e(TAG, "File does not exist.");
                 return false;
             }
-            if (!filePathAcceptable(file)) {
+            if (!filePathAcceptable(file, context)) {
                 Log.e(TAG, "Refusing to read from unsafe file location.");
                 return false;
             }
@@ -304,7 +301,7 @@ class MediaResourceGetter {
      * safe to read from, such as /mnt/sdcard.
      */
     @VisibleForTesting
-    boolean filePathAcceptable(File file) {
+    boolean filePathAcceptable(File file, Context context) {
         final String path;
         try {
             path = file.getCanonicalPath();
@@ -317,7 +314,7 @@ class MediaResourceGetter {
         // well-known paths we are matching against. If we don't, then we can
         // get unusual results in testing systems or possibly on rooted devices.
         // Note that canonicalized directory paths always end with '/'.
-        List<String> acceptablePaths = canonicalize(getRawAcceptableDirectories());
+        List<String> acceptablePaths = canonicalize(getRawAcceptableDirectories(context));
         acceptablePaths.add(getExternalStorageDirectory());
         Log.d(TAG, "canonicalized file path: " + path);
         for (String acceptablePath : acceptablePaths) {
@@ -363,12 +360,11 @@ class MediaResourceGetter {
         return info.getType();
     }
 
-    private List<String> getRawAcceptableDirectories() {
+    private List<String> getRawAcceptableDirectories(Context context) {
         List<String> result = new ArrayList<String>();
         result.add("/mnt/sdcard/");
         result.add("/sdcard/");
-        if (PACKAGE_NAME != null)
-            result.add("/data/data/" + PACKAGE_NAME + "/cache/");
+        result.add("/data/data/" + context.getPackageName() + "/cache/");
         return result;
     }
 
