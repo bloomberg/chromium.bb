@@ -105,6 +105,7 @@ DocumentLoader::~DocumentLoader()
     ASSERT(!m_frame || !isLoading());
     m_fetcher->clearDocumentLoader();
     clearMainResourceHandle();
+    m_applicationCacheHost->dispose();
 }
 
 unsigned long DocumentLoader::mainResourceIdentifier() const

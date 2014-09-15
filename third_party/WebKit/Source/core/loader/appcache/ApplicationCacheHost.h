@@ -52,6 +52,8 @@ namespace blink {
         }
         virtual ~ApplicationCacheHost();
 
+        void dispose();
+
         // The Status numeric values are specified in the HTML5 spec.
         enum Status {
             UNCACHED = 0,

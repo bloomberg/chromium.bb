@@ -164,6 +164,19 @@ void ApplicationCacheHost::setApplicationCache(ApplicationCache* domApplicationC
     m_domApplicationCache = domApplicationCache;
 }
 
+void ApplicationCacheHost::dispose()
+{
+    // FIXME: Oilpan: remove the dispose step when the owning DocumentLoader
+    // becomes a garbage collected object. Until that time, have the
+    // DocumentLoader dispose and disable this ApplicationCacheHost when
+    // it is finalized. Releasing the WebApplicationCacheHost is needed
+    // to prevent further embedder notifications, which risk accessing an
+    // invalid DocumentLoader.
+    setApplicationCache(0);
+    m_host.clear();
+    m_documentLoader = nullptr;
+}
+
 void ApplicationCacheHost::notifyApplicationCache(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
     if (id != PROGRESS_EVENT)
