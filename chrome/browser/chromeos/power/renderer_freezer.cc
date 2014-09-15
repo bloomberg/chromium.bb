@@ -23,14 +23,21 @@ const char kThawCommand[] = "THAWED";
 }  // namespace
 
 void RendererFreezer::SuspendImminent() {
+  // SuspendImminent() might end up being called multiple times before we run
+  // OnReadyToSuspend() (crbug.com/414396).  In case a callback is already
+  // pending, we only store the new callback and do nothing else.
+  if (suspend_readiness_callback_.is_null()) {
+    // There is no callback pending so post the task.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererFreezer::OnReadyToSuspend,
+                   weak_factory_.GetWeakPtr()));
+  }
+
+  // Always update the callback because only the most recent one matters.
   suspend_readiness_callback_ = DBusThreadManager::Get()
                                     ->GetPowerManagerClient()
                                     ->GetSuspendReadinessCallback();
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererFreezer::OnReadyToSuspend,
-                 weak_factory_.GetWeakPtr()));
 }
 
 void RendererFreezer::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -56,7 +63,7 @@ void RendererFreezer::OnReadyToSuspend() {
     frozen_ = true;
   }
 
-  DCHECK(!suspend_readiness_callback_.is_null());
+  CHECK(!suspend_readiness_callback_.is_null());  // crbug.com/414396
   suspend_readiness_callback_.Run();
   suspend_readiness_callback_.Reset();
 }
