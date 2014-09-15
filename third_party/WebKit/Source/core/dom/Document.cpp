@@ -5204,8 +5204,6 @@ void Document::cancelAnimationFrame(int id)
 
 void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    WTF_LOG(ScriptedAnimationController, "Document::serviceScriptedAnimations: controller = %d",
-        m_scriptedAnimationController ? 1 : 0);
     if (!m_scriptedAnimationController)
         return;
     m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);

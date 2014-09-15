@@ -1765,7 +1765,6 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
         }
     }
 
-    WTF_LOG(ScriptedAnimationController, "WebViewImpl::beginFrame: page = %d", !m_page ? 0 : 1);
     if (!m_page)
         return;
 
@@ -4037,7 +4036,6 @@ GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 
 void WebViewImpl::scheduleAnimation()
 {
-    WTF_LOG(ScriptedAnimationController, "WebViewImpl::scheduleAnimation: accelerated = %d", isAcceleratedCompositingActive() ? 1 : 0);
     if (isAcceleratedCompositingActive()) {
         ASSERT(m_layerTreeView);
         m_layerTreeView->setNeedsAnimate();

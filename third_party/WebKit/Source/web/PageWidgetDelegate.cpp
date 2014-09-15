@@ -61,7 +61,6 @@ static inline FrameView* rootFrameView(Page* page, LocalFrame* rootFrame)
 void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime, LocalFrame* rootFrame)
 {
     RefPtr<FrameView> view = rootFrameView(page, rootFrame);
-    WTF_LOG(ScriptedAnimationController, "PageWidgetDelegate::animate: view = %d", !view ? 0 : 1);
     if (!view)
         return;
     page->autoscrollController().animate(monotonicFrameBeginTime);

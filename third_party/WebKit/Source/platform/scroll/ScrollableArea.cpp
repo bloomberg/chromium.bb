@@ -419,8 +419,6 @@ bool ScrollableArea::hasLayerForScrollCorner() const
 
 bool ScrollableArea::scheduleAnimation()
 {
-    WTF_LOG(ScriptedAnimationController, "ScrollableArea::scheduleAnimation: window = %d",
-        hostWindow() ? 1 : 0);
     if (HostWindow* window = hostWindow()) {
         window->scheduleAnimation();
         return true;
