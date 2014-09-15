@@ -827,6 +827,8 @@ const DataResource kDataResources[] = {
     ui::SCALE_FACTOR_NONE },
   { "HTMLMarqueeElement.js", IDR_PRIVATE_SCRIPT_HTMLMARQUEEELEMENT_JS,
     ui::SCALE_FACTOR_NONE },
+  { "PluginPlaceholderElement.js",
+    IDR_PRIVATE_SCRIPT_PLUGINPLACEHOLDERELEMENT_JS, ui::SCALE_FACTOR_NONE },
   { "PrivateScriptRunner.js", IDR_PRIVATE_SCRIPT_PRIVATESCRIPTRUNNER_JS,
     ui::SCALE_FACTOR_NONE },
 #ifdef IDR_PICKER_COMMON_JS
