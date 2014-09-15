@@ -245,7 +245,7 @@ void WindowsWlanApi::LogWlanInterfaceCount(int count) {
       count,
       1,
       5,
-      5);
+      6);
 }
 
 bool WindowsWlanApi::GetAccessPointData(
