@@ -942,7 +942,8 @@ action("make_core_generated_private_script_for_testing") {
     "$blink_core_output_dir/PrivateScriptSourcesForTesting.h",
   ]
 
-  args = rebase_path(outputs, root_build_dir)
+  args = [ "--for-testing" ]
+  args += rebase_path(outputs, root_build_dir)
   args += rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
