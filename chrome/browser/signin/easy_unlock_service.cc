@@ -196,9 +196,12 @@ bool EasyUnlockService::IsAllowed() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
     return false;
 
-  // It is disabled when the trial exists and is in "Disable" group.
-  if (base::FieldTrialList::FindFullName("EasyUnlock") == "Disable")
-    return false;
+  // Respect existing policy and skip finch test.
+  if (!profile_->GetPrefs()->IsManagedPreference(prefs::kEasyUnlockAllowed)) {
+    // It is disabled when the trial exists and is in "Disable" group.
+    if (base::FieldTrialList::FindFullName("EasyUnlock") == "Disable")
+      return false;
+  }
 
   if (!bluetooth_detector_->IsPresent())
     return false;

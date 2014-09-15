@@ -201,19 +201,20 @@ class EasyUnlockServiceFinchDisabledTest : public EasyUnlockServiceTest {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceFinchDisabledTest);
 };
 
-// Tests that easy unlock is off when finch is disabled.
-IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchDisabledTest, StayDisabled) {
+// Tests that easy unlock is off when finch is disabled and policy overrides
+// finch.
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchDisabledTest, PolicyOverride) {
   // Finch is disabled.
   EXPECT_FALSE(service()->IsAllowed());
 #if defined(GOOGLE_CHROME_BUILD)
   EXPECT_FALSE(HasEasyUnlockApp());
 #endif
 
-  // Easy unlock stays off even when it is allowed by policy.
+  // Policy overrides finch and turns on Easy unlock.
   SetEasyUnlockAllowedPolicy(true);
-  EXPECT_FALSE(service()->IsAllowed());
+  EXPECT_TRUE(service()->IsAllowed());
 #if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_FALSE(HasEasyUnlockApp());
+  EXPECT_TRUE(HasEasyUnlockApp());
 #endif
 }
 
