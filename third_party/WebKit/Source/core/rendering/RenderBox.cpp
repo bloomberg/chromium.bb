@@ -1469,15 +1469,23 @@ static LayoutUnit portionOfMarginNotConsumedByFloat(LayoutUnit childMargin, Layo
 LayoutUnit RenderBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb) const
 {
     LayoutUnit logicalTopPosition = logicalTop();
-    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - std::max<LayoutUnit>(0, childMarginStart) - std::max<LayoutUnit>(0, childMarginEnd);
+    LayoutUnit startOffsetForContent = cb->startOffsetForContent();
+    LayoutUnit endOffsetForContent = cb->endOffsetForContent();
+    LayoutUnit startOffsetForLine = cb->startOffsetForLine(logicalTopPosition, false);
+    LayoutUnit endOffsetForLine = cb->endOffsetForLine(logicalTopPosition, false);
 
+    // If there aren't any floats constraining us then allow the margins to shrink/expand the width as much as they want.
+    if (startOffsetForContent == startOffsetForLine && endOffsetForContent == endOffsetForLine)
+        return cb->availableLogicalWidthForLine(logicalTopPosition, false) - childMarginStart - childMarginEnd;
+
+    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - std::max<LayoutUnit>(0, childMarginStart) - std::max<LayoutUnit>(0, childMarginEnd);
     // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
     // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
     // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
     // doesn't fit, we can use the line offset, but we need to grow it by the margin to reflect the fact that the margin was
     // "consumed" by the float. Negative margins aren't consumed by the float, and so we ignore them.
-    width += portionOfMarginNotConsumedByFloat(childMarginStart, cb->startOffsetForContent(), cb->startOffsetForLine(logicalTopPosition, false));
-    width += portionOfMarginNotConsumedByFloat(childMarginEnd, cb->endOffsetForContent(), cb->endOffsetForLine(logicalTopPosition, false));
+    width += portionOfMarginNotConsumedByFloat(childMarginStart, startOffsetForContent, startOffsetForLine);
+    width += portionOfMarginNotConsumedByFloat(childMarginEnd, endOffsetForContent, endOffsetForLine);
     return width;
 }
 
