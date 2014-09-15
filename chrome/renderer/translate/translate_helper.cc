@@ -81,12 +81,12 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       page_seq_no_(0),
       translation_pending_(false),
-      weak_method_factory_(this),
       cld_data_provider_(translate::CreateRendererCldDataProviderFor(this)),
       cld_data_polling_started_(false),
       cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
-      deferred_page_seq_no_(-1) {
+      deferred_page_seq_no_(-1),
+      weak_method_factory_(this) {
 }
 
 TranslateHelper::~TranslateHelper() {

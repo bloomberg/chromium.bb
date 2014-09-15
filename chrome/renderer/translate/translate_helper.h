@@ -238,9 +238,6 @@ class TranslateHelper : public content::RenderViewObserver {
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;
 
-  // Method factory used to make calls to TranslatePageImpl.
-  base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
-
   // Provides CLD data for this process.
   scoped_ptr<translate::RendererCldDataProvider> cld_data_provider_;
 
@@ -261,6 +258,9 @@ class TranslateHelper : public content::RenderViewObserver {
   // The contents of the page most recently reported to PageCaptured if
   // deferred_page_capture_ is true.
   base::string16 deferred_contents_;
+
+  // Method factory used to make calls to TranslatePageImpl.
+  base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };
