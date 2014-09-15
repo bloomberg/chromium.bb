@@ -21,17 +21,18 @@ import re
 import sys
 
 from itertools import izip
-from subprocess import Popen, PIPE
+from subprocess import check_output, Popen, PIPE
 from textwrap import dedent
 
 
 SHA1_RE = re.compile('^[a-fA-F0-9]{40}$')
 GIT_SVN_ID_RE = re.compile('^git-svn-id: .*@([0-9]+) .*$')
-ROLL_DESCRIPTION_STR = '''Roll %s from %s to %s
+ROLL_DESCRIPTION_STR = (
+'''Roll %(dep_path)s %(before_rev)s:%(after_rev)s%(svn_range)s
 
 Summary of changes available at:
-%s
-'''
+%(revlog_url)s
+''')
 
 
 def shorten_dep_path(dep):
@@ -255,13 +256,30 @@ def update_var(deps_lines, deps_ast, var_name, git_revision):
   return update_node(deps_lines, deps_ast, val_node, git_revision)
 
 
-def generate_commit_message(deps_section, dep_name, new_rev):
+def short_rev(rev, dep_path):
+  return check_output(['git', 'rev-parse', '--short', rev],
+                      cwd=dep_path).rstrip()
+
+
+def generate_commit_message(deps_section, dep_path, dep_name, new_rev):
   (url, _, old_rev) = deps_section[dep_name].partition('@')
   if url.endswith('.git'):
     url = url[:-4]
-  url += '/+log/%s..%s' % (old_rev[:12], new_rev[:12])
-  return dedent(ROLL_DESCRIPTION_STR % (
-      shorten_dep_path(dep_name), old_rev[:12], new_rev[:12], url))
+  old_rev_short = short_rev(old_rev, dep_path)
+  new_rev_short = short_rev(new_rev, dep_path)
+  url += '/+log/%s..%s' % (old_rev_short, new_rev_short)
+  old_svn_rev = get_svn_revision(dep_path, old_rev)
+  new_svn_rev = get_svn_revision(dep_path, new_rev)
+  svn_range_str = ''
+  if old_svn_rev and new_svn_rev:
+    svn_range_str = ' (svn %s:%s)' % (old_svn_rev, new_svn_rev)
+  return dedent(ROLL_DESCRIPTION_STR % {
+    'dep_path': shorten_dep_path(dep_name),
+    'before_rev': old_rev_short,
+    'after_rev': new_rev_short,
+    'svn_range': svn_range_str,
+    'revlog_url': url,
+  })
 
 def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
   line_idx = update_node(deps_lines, deps_ast, value_node, new_rev)
@@ -271,7 +289,7 @@ def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
   else:
     deps_lines[line_idx] = content.rstrip()
 
-def update_deps(soln_path, dep_name, new_rev, comment):
+def update_deps(soln_path, dep_path, dep_name, new_rev, comment):
   """Update the DEPS file with the new git revision."""
   commit_msg = ''
   deps_file = os.path.join(soln_path, 'DEPS')
@@ -290,7 +308,8 @@ def update_deps(soln_path, dep_name, new_rev, comment):
   if dep_idx is not None:
     value_node = deps_node.values[dep_idx]
     update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
-    commit_msg = generate_commit_message(deps_locals['deps'], dep_name, new_rev)
+    commit_msg = generate_commit_message(deps_locals['deps'], dep_path,
+                                         dep_name, new_rev)
   deps_os_node = find_deps_section(deps_ast, 'deps_os')
   if deps_os_node:
     for (os_name, os_node) in izip(deps_os_node.keys, deps_os_node.values):
@@ -302,7 +321,7 @@ def update_deps(soln_path, dep_name, new_rev, comment):
         else:
           update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
           commit_msg = generate_commit_message(
-              deps_locals['deps_os'][os_name], dep_name, new_rev)
+              deps_locals['deps_os'][os_name], dep_path, dep_name, new_rev)
   if commit_msg:
     print 'Pinning %s' % dep_name
     print 'to revision %s' % new_rev
@@ -331,7 +350,7 @@ def main(argv):
   (git_rev, svn_rev) = get_git_revision(dep_path, revision)
   comment = ('from svn revision %s' % svn_rev) if svn_rev else None
   assert git_rev, 'Could not find git revision matching %s.' % revision
-  return update_deps(soln_path, dep_name, git_rev, comment)
+  return update_deps(soln_path, dep_path, dep_name, git_rev, comment)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
