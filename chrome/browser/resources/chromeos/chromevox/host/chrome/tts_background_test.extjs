@@ -1,0 +1,68 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_e2e_test_base.js',
+             '../../testing/assert_additions.js']);
+
+// E2E tests for TtsBackground.
+
+/**
+ * Test fixture.
+ * @constructor
+ * @extends {ChromeVoxE2ETest}
+ */
+function CvoxTtsBackgroundTest() {}
+
+CvoxTtsBackgroundTest.prototype = {
+  __proto__: ChromeVoxE2ETest.prototype
+};
+
+SYNC_TEST_F('CvoxTtsBackgroundTest', 'Preprocess', function() {
+  var tts = new cvox.TtsBackground(false);
+  var preprocess = tts.preprocess.bind(tts);
+
+  // Punctuation.
+  assertEquals('dot', preprocess('.'));
+  assertEquals('x.', preprocess('x.'));
+  assertEquals('.x', preprocess('.x'));
+  assertEquals('space', preprocess(' '));
+  assertEquals('', preprocess('  '));
+  assertEquals('A', preprocess('a'));
+  assertEquals('A', preprocess('A'));
+  assertEquals('a.', preprocess('a.'));
+  assertEquals('.a', preprocess('.a'));
+
+  // All-caps words and camel case.
+  assertEquals('please avoid shouting', preprocess('PLEASE AVOID SHOUTING'));
+  assertEquals('abcd', preprocess('ABCD'));
+  assertEquals('L P T R', preprocess('LPTR'));
+  assertEquals('background T T S', preprocess('backgroundTTS'));
+  assertEquals('camel Case', preprocess('camelCase'));
+
+  // Pronunciation dictionary.
+  assertEquals('gee mail', preprocess('gmail'));
+  assertEquals('control', preprocess('ctrl'));
+  assertEquals('control', preprocess('CTRL'));
+  assertEquals('control', preprocess('Ctrl'));
+  assertEquals('control', preprocess(' ctrl'));
+  assertEquals('control', preprocess('ctrl '));
+  assertEquals('control plus x', preprocess('ctrl+x'));
+  assertEquals('ctrlpt', preprocess('ctrlpt'));
+  assertEquals('Press control plus f while in chrome vox.',
+               preprocess('Press ctrl+f while in ChromeVox.'));
+
+  // Other special-case pronunciation rules.
+  assertEquals('welcome to google plus.',
+               preprocess('welcome to google+.'));
+
+  assertEquals('U P S', preprocess('UPS'));
+
+  assertEquals('UPS does deliver', preprocess('UPS DOES DELIVER'));
+
+  assertEquals('10 equal signs', preprocess('=========='));
+
+  assertEquals('new line', preprocess('\n'));
+  assertEquals('return', preprocess('\r'));
+});

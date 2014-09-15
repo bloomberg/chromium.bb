@@ -145,6 +145,7 @@
         'host/chrome/braille_integration_test.unitjs',
         'host/chrome/braille_table_test.extjs',
         'host/chrome/expanding_braille_translator_test.unitjs',
+        'host/chrome/tts_background_test.extjs',
         'liblouis_nacl/liblouis_test.extjs',
       ],
       'conditions': [
