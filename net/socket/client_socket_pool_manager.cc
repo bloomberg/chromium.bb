@@ -171,15 +171,18 @@ int InitSocketPoolHelper(const GURL& request_url,
                                       &user_agent);
       scoped_refptr<SSLSocketParams> ssl_params;
       if (proxy_info.is_https()) {
-        // TODO (jri): Enable a finch trial to use
-        // COMBINE_CONNECT_AND_WRITE_DESIRED for SSL sockets.
-        proxy_tcp_params =
-            new TransportSocketParams(
-                *proxy_host_port,
-                disable_resolver_cache,
-                ignore_limits,
-                resolution_callback,
-                TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+        // Combine connect and write for SSL sockets in TCP FastOpen
+        // field trial.
+        TransportSocketParams::CombineConnectAndWritePolicy
+            combine_connect_and_write =
+                session->params().enable_tcp_fast_open_for_ssl ?
+                    TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED :
+                    TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
+        proxy_tcp_params = new TransportSocketParams(*proxy_host_port,
+                                                     disable_resolver_cache,
+                                                     ignore_limits,
+                                                     resolution_callback,
+                                                     combine_connect_and_write);
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params = new SSLSocketParams(proxy_tcp_params,
                                          NULL,
@@ -229,15 +232,17 @@ int InitSocketPoolHelper(const GURL& request_url,
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_info.is_direct()) {
       // Setup TCP params if non-proxied SSL connection.
-      // TODO (jri): Enable a finch trial to use
-      // COMBINE_CONNECT_AND_WRITE_DESIRED for SSL sockets.
-      ssl_tcp_params =
-          new TransportSocketParams(
-              origin_host_port,
-              disable_resolver_cache,
-              ignore_limits,
-              resolution_callback,
-              TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+      // Combine connect and write for SSL sockets in TCP FastOpen field trial.
+      TransportSocketParams::CombineConnectAndWritePolicy
+          combine_connect_and_write =
+              session->params().enable_tcp_fast_open_for_ssl ?
+                  TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED :
+                  TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
+      ssl_tcp_params = new TransportSocketParams(origin_host_port,
+                                                 disable_resolver_cache,
+                                                 ignore_limits,
+                                                 resolution_callback,
+                                                 combine_connect_and_write);
     }
     scoped_refptr<SSLSocketParams> ssl_params =
         new SSLSocketParams(ssl_tcp_params,

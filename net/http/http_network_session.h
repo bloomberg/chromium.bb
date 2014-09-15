@@ -81,6 +81,7 @@ class NET_EXPORT HttpNetworkSession
     bool ignore_certificate_errors;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
+    bool enable_tcp_fast_open_for_ssl;
 
     bool force_spdy_single_domain;
     bool enable_spdy_compression;

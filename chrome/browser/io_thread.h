@@ -170,6 +170,7 @@ class IOThread : public content::BrowserThreadDelegate {
     bool ignore_certificate_errors;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
+    Optional<bool> enable_tcp_fast_open_for_ssl;
 
     Optional<size_t> initial_max_spdy_concurrent_streams;
     Optional<bool> force_spdy_single_domain;
@@ -268,6 +269,9 @@ class IOThread : public content::BrowserThreadDelegate {
       net::HttpNetworkSession::Params* params);
 
   void InitializeNetworkOptions(const base::CommandLine& parsed_command_line);
+
+  // Sets up TCP FastOpen if enabled via field trials or via the command line.
+  void ConfigureTCPFastOpen(const base::CommandLine& command_line);
 
   // Enable SPDY with the given mode, which may contain the following:
   //

@@ -116,6 +116,9 @@ class SafeBrowsingURLRequestContext;
 
 namespace {
 
+const char kTCPFastOpenFieldTrialName[] = "TCPFastOpen";
+const char kTCPFastOpenHttpsEnabledGroupName[] = "HttpsEnabled";
+
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
@@ -843,13 +846,21 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
       globals_->enable_websocket_over_spdy.set(true);
   }
 
+  ConfigureTCPFastOpen(command_line);
+
   // TODO(rch): Make the client socket factory a per-network session
   // instance, constructed from a NetworkSession::Params, to allow us
   // to move this option to IOThread::Globals &
   // HttpNetworkSession::Params.
+}
 
+void IOThread::ConfigureTCPFastOpen(const CommandLine& command_line) {
+  const std::string trial_group =
+      base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
+  if (trial_group == kTCPFastOpenHttpsEnabledGroupName)
+    globals_->enable_tcp_fast_open_for_ssl.set(true);
   bool always_enable_if_supported =
-    command_line.HasSwitch(switches::kEnableTcpFastOpen);
+      command_line.HasSwitch(switches::kEnableTcpFastOpen);
   // Check for OS support of TCP FastOpen, and turn it on for all connections
   // if indicated by user.
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
@@ -1018,6 +1029,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->ignore_certificate_errors = globals.ignore_certificate_errors;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;
   params->testing_fixed_https_port = globals.testing_fixed_https_port;
+  globals.enable_tcp_fast_open_for_ssl.CopyToIfSet(
+      &params->enable_tcp_fast_open_for_ssl);
 
   globals.initial_max_spdy_concurrent_streams.CopyToIfSet(
       &params->spdy_initial_max_concurrent_streams);

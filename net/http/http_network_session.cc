@@ -75,6 +75,7 @@ HttpNetworkSession::Params::Params()
       ignore_certificate_errors(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
+      enable_tcp_fast_open_for_ssl(false),
       force_spdy_single_domain(false),
       enable_spdy_compression(true),
       enable_spdy_ping_based_connection_checking(true),
