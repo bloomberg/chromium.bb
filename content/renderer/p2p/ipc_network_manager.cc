@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/p2p/ipc_network_manager.h"
-
+#include <string>
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -35,17 +35,17 @@ rtc::AdapterType ConvertConnectionTypeToAdapterType(
 
 }  // namespace
 
-IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
-    : socket_dispatcher_(socket_dispatcher),
+IpcNetworkManager::IpcNetworkManager(NetworkListManager* network_list_manager)
+    : network_list_manager_(network_list_manager),
       start_count_(0),
       network_list_received_(false),
       weak_factory_(this) {
-  socket_dispatcher_->AddNetworkListObserver(this);
+  network_list_manager_->AddNetworkListObserver(this);
 }
 
 IpcNetworkManager::~IpcNetworkManager() {
   DCHECK(!start_count_);
-  socket_dispatcher_->RemoveNetworkListObserver(this);
+  network_list_manager_->RemoveNetworkListObserver(this);
 }
 
 void IpcNetworkManager::StartUpdating() {
@@ -71,8 +71,6 @@ void IpcNetworkManager::OnNetworkListChanged(
   if (!network_list_received_)
     network_list_received_ = true;
 
-  // Note: 32 and 64 are the arbitrary(kind of) prefix length used to
-  // differentiate IPv4 and IPv6 addresses.
   // rtc::Network uses these prefix_length to compare network
   // interfaces discovered.
   std::vector<rtc::Network*> networks;
@@ -84,9 +82,14 @@ void IpcNetworkManager::OnNetworkListChanged(
       uint32 address;
       memcpy(&address, &it->address[0], sizeof(uint32));
       address = rtc::NetworkToHost32(address);
-      rtc::Network* network = new rtc::Network(
-          it->name, it->name, rtc::IPAddress(address), 32,
-          ConvertConnectionTypeToAdapterType(it->type));
+      rtc::IPAddress prefix =
+          rtc::TruncateIP(rtc::IPAddress(address), it->network_prefix);
+      rtc::Network* network =
+          new rtc::Network(it->name,
+                           it->name,
+                           prefix,
+                           it->network_prefix,
+                           ConvertConnectionTypeToAdapterType(it->type));
       network->AddIP(rtc::IPAddress(address));
       networks.push_back(network);
       ++ipv4_interfaces;
@@ -95,9 +98,14 @@ void IpcNetworkManager::OnNetworkListChanged(
       memcpy(&address, &it->address[0], sizeof(in6_addr));
       rtc::IPAddress ip6_addr(address);
       if (!rtc::IPIsPrivate(ip6_addr)) {
-        rtc::Network* network = new rtc::Network(
-            it->name, it->name, ip6_addr, 64,
-            ConvertConnectionTypeToAdapterType(it->type));
+        rtc::IPAddress prefix =
+            rtc::TruncateIP(rtc::IPAddress(ip6_addr), it->network_prefix);
+        rtc::Network* network =
+            new rtc::Network(it->name,
+                             it->name,
+                             prefix,
+                             it->network_prefix,
+                             ConvertConnectionTypeToAdapterType(it->type));
         network->AddIP(ip6_addr);
         networks.push_back(network);
         ++ipv6_interfaces;

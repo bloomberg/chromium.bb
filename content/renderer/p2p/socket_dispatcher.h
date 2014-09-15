@@ -30,6 +30,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
+#include "content/renderer/p2p/network_list_manager.h"
 #include "ipc/message_filter.h"
 #include "net/base/net_util.h"
 
@@ -48,19 +49,16 @@ class P2PAsyncAddressResolver;
 class P2PSocketClientImpl;
 class RenderViewImpl;
 
-class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter {
+class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
+                                           public NetworkListManager {
  public:
   explicit P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
 
-  // Add a new network list observer. Each observer is called
-  // immidiately after it is registered and then later whenever
-  // network configuration changes. Can be called on any thread. The
-  // observer is always called on the thread it was added.
-  void AddNetworkListObserver(NetworkListObserver* network_list_observer);
-
-  // Removes network list observer. Must be called on the thread on
-  // which the observer was added.
-  void RemoveNetworkListObserver(NetworkListObserver* network_list_observer);
+  // NetworkListManager interface:
+  virtual void AddNetworkListObserver(
+      NetworkListObserver* network_list_observer) OVERRIDE;
+  virtual void RemoveNetworkListObserver(
+      NetworkListObserver* network_list_observer) OVERRIDE;
 
  protected:
   virtual ~P2PSocketDispatcher();

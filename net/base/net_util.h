@@ -447,7 +447,7 @@ struct NET_EXPORT NetworkInterface {
                    uint32 interface_index,
                    NetworkChangeNotifier::ConnectionType type,
                    const IPAddressNumber& address,
-                   size_t network_prefix);
+                   uint32 network_prefix);
   ~NetworkInterface();
 
   std::string name;
@@ -455,7 +455,7 @@ struct NET_EXPORT NetworkInterface {
   uint32 interface_index;  // Always 0 on Android.
   NetworkChangeNotifier::ConnectionType type;
   IPAddressNumber address;
-  size_t network_prefix;
+  uint32 network_prefix;
 };
 
 typedef std::vector<NetworkInterface> NetworkInterfaceList;

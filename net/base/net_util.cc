@@ -1004,7 +1004,7 @@ NetworkInterface::NetworkInterface(const std::string& name,
                                    uint32 interface_index,
                                    NetworkChangeNotifier::ConnectionType type,
                                    const IPAddressNumber& address,
-                                   size_t network_prefix)
+                                   uint32 network_prefix)
     : name(name),
       friendly_name(friendly_name),
       interface_index(interface_index),
