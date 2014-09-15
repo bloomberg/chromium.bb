@@ -254,7 +254,7 @@ You are signing in with a managed account and giving its administrator control o
         There was a problem printing the page. Please try again.
       </message>
       <message name="IDS_ACCESSIBILITY_MENU_BOOKMARK" desc="Content description for the bookmark button when the page is not currently bookmarked.">
-        Bookmark page
+        Bookmark this page
       </message>
       <message name="IDS_ACCESSIBILITY_MENU_FORWARD" desc="Content description for the forward navigation button.">
         Go forward
