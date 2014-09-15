@@ -4,6 +4,8 @@
 
 #include "mojo/bindings/js/handle.h"
 
+#include "mojo/bindings/js/handle_close_observer.h"
+
 namespace gin {
 
 gin::WrapperInfo HandleWrapper::kWrapperInfo = { gin::kEmbedderNativeGin };
@@ -13,6 +15,27 @@ HandleWrapper::HandleWrapper(MojoHandle handle)
 }
 
 HandleWrapper::~HandleWrapper() {
+  NotifyCloseObservers();
+}
+
+void HandleWrapper::Close() {
+  NotifyCloseObservers();
+  handle_.reset();
+}
+
+void HandleWrapper::AddCloseObserver(HandleCloseObserver* observer) {
+  close_observers_.AddObserver(observer);
+}
+
+void HandleWrapper::RemoveCloseObserver(HandleCloseObserver* observer) {
+  close_observers_.RemoveObserver(observer);
+}
+
+void HandleWrapper::NotifyCloseObservers() {
+  if (!handle_.is_valid())
+    return;
+
+  FOR_EACH_OBSERVER(HandleCloseObserver, close_observers_, OnWillCloseHandle());
 }
 
 v8::Handle<v8::Value> Converter<mojo::Handle>::ToV8(v8::Isolate* isolate,

@@ -5,12 +5,14 @@
 #ifndef MOJO_BINDINGS_JS_HANDLE_H_
 #define MOJO_BINDINGS_JS_HANDLE_H_
 
+#include "base/observer_list.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace gin {
+class HandleCloseObserver;
 
 // Wrapper for mojo Handles exposed to JavaScript. This ensures the Handle
 // is Closed when its JS object is garbage collected.
@@ -25,12 +27,18 @@ class HandleWrapper : public gin::Wrappable<HandleWrapper> {
 
   mojo::Handle get() const { return handle_.get(); }
   mojo::Handle release() { return handle_.release(); }
-  void Close() { handle_.reset(); }
+  void Close();
+
+  void AddCloseObserver(HandleCloseObserver* observer);
+  void RemoveCloseObserver(HandleCloseObserver* observer);
 
  protected:
   HandleWrapper(MojoHandle handle);
   virtual ~HandleWrapper();
+  void NotifyCloseObservers();
+
   mojo::ScopedHandle handle_;
+  ObserverList<HandleCloseObserver> close_observers_;
 };
 
 // Note: It's important to use this converter rather than the one for

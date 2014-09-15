@@ -9,6 +9,7 @@ source_set("js") {
     "core.h",
     "handle.cc",
     "handle.h",
+    "handle_close_observer.h",
     "support.cc",
     "support.h",
     "waiting_callback.cc",

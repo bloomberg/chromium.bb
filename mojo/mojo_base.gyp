@@ -506,6 +506,7 @@
         'bindings/js/core.h',
         'bindings/js/handle.cc',
         'bindings/js/handle.h',
+        'bindings/js/handle_close_observer.h',
         'bindings/js/support.cc',
         'bindings/js/support.h',
         'bindings/js/waiting_callback.cc',

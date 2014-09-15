@@ -24,12 +24,12 @@ gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
 gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Function> callback,
-    mojo::Handle handle,
+    gin::Handle<gin::HandleWrapper> handle_wrapper,
     MojoHandleSignals signals) {
-  gin::Handle<WaitingCallback> waiting_callback =
-      gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
+  gin::Handle<WaitingCallback> waiting_callback = gin::CreateHandle(
+      isolate, new WaitingCallback(isolate, callback, handle_wrapper));
   waiting_callback->wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      handle.value(),
+      handle_wrapper->get().value(),
       signals,
       MOJO_DEADLINE_INDEFINITE,
       &WaitingCallback::CallOnHandleReady,
@@ -41,13 +41,17 @@ void WaitingCallback::Cancel() {
   if (!wait_id_)
     return;
 
+  handle_wrapper_->RemoveCloseObserver(this);
+  handle_wrapper_ = NULL;
   Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
   wait_id_ = 0;
 }
 
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
-                                 v8::Handle<v8::Function> callback)
-      : wait_id_() {
+                                 v8::Handle<v8::Function> callback,
+                                 gin::Handle<gin::HandleWrapper> handle_wrapper)
+    : wait_id_(0), handle_wrapper_(handle_wrapper.get()) {
+  handle_wrapper_->AddCloseObserver(this);
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
   GetWrapper(isolate)->SetHiddenValue(GetHiddenPropertyName(isolate), callback);
@@ -64,6 +68,8 @@ void WaitingCallback::CallOnHandleReady(void* closure, MojoResult result) {
 
 void WaitingCallback::OnHandleReady(MojoResult result) {
   wait_id_ = 0;
+  handle_wrapper_->RemoveCloseObserver(this);
+  handle_wrapper_ = NULL;
 
   if (!runner_)
     return;
@@ -78,6 +84,11 @@ void WaitingCallback::OnHandleReady(MojoResult result) {
 
   v8::Handle<v8::Value> args[] = { gin::ConvertToV8(isolate, result) };
   runner_->Call(callback, runner_->global(), 1, args);
+}
+
+void WaitingCallback::OnWillCloseHandle() {
+  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
+  OnHandleReady(MOJO_RESULT_INVALID_ARGUMENT);
 }
 
 }  // namespace js

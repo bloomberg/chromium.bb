@@ -73,6 +73,7 @@
         'mojo_js_lib',
       ],
       'sources': [
+        'apps/js/test/handle_unittest.cc',
         'apps/js/test/js_to_cpp_unittest.cc',
         'apps/js/test/run_apps_js_tests.cc',
       ],

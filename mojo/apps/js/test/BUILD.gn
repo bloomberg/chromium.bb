@@ -17,6 +17,7 @@ test("mojo_apps_js_unittests") {
   ]
 
   sources = [
+    "handle_unittest.cc",
     "js_to_cpp_unittest.cc",
     "run_apps_js_tests.cc",
   ]
