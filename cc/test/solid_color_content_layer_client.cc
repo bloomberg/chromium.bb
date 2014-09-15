@@ -14,7 +14,6 @@ namespace cc {
 void SolidColorContentLayerClient::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& rect,
-    gfx::RectF* opaque_rect,
     ContentLayerClient::GraphicsContextStatus gc_status) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
@@ -24,9 +23,6 @@ void SolidColorContentLayerClient::PaintContents(
   canvas->drawRect(
       SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()),
       paint);
-
-  if (SkColorGetA(color_) == 255)
-    *opaque_rect = rect;
 }
 
 bool SolidColorContentLayerClient::FillsBoundsCompletely() const {

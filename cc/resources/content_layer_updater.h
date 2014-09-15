@@ -34,8 +34,7 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& content_rect,
                      float contents_width_scale,
-                     float contents_height_scale,
-                     gfx::Rect* resulting_opaque_rect);
+                     float contents_height_scale);
   gfx::Rect content_rect() const { return content_rect_; }
 
   bool layer_is_opaque() const { return layer_is_opaque_; }

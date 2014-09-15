@@ -124,7 +124,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return managed_state_.tile_versions[HIGH_QUALITY_RASTER_MODE];
   }
 
-  gfx::Rect opaque_rect() const { return opaque_rect_; }
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
 
@@ -167,7 +166,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
        PicturePileImpl* picture_pile,
        const gfx::Size& tile_size,
        const gfx::Rect& content_rect,
-       const gfx::Rect& opaque_rect,
        float contents_scale,
        int layer_id,
        int source_frame_number,
@@ -185,7 +183,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   gfx::Size size_;
   gfx::Rect content_rect_;
   float contents_scale_;
-  gfx::Rect opaque_rect_;
   bool is_occluded_[NUM_TREES];
 
   TilePriority priority_[NUM_TREES];

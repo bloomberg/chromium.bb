@@ -69,10 +69,7 @@ class BlueYellowLayerClient : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      gfx::RectF* opaque,
       ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
-    *opaque = gfx::RectF(layer_rect_.width(), layer_rect_.height());
-
     SkPaint paint;
     paint.setColor(SK_ColorBLUE);
     canvas->drawRect(SkRect::MakeWH(layer_rect_.width(),

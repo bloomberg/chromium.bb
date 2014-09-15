@@ -257,9 +257,7 @@ void Picture::Record(ContentLayerClient* painter,
                                          layer_rect_.height());
   canvas->clipRect(layer_skrect);
 
-  gfx::RectF opaque_layer_rect;
-  painter->PaintContents(
-      canvas.get(), layer_rect_, &opaque_layer_rect, graphics_context_status);
+  painter->PaintContents(canvas.get(), layer_rect_, graphics_context_status);
 
   canvas->restore();
   picture_ = skia::AdoptRef(recorder.endRecording());

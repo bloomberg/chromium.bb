@@ -21,9 +21,7 @@ class CC_EXPORT ContentLayerPainter : public LayerPainter {
  public:
   static scoped_ptr<ContentLayerPainter> Create(ContentLayerClient* client);
 
-  virtual void Paint(SkCanvas* canvas,
-                     const gfx::Rect& content_rect,
-                     gfx::RectF* opaque) OVERRIDE;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE;
 
  private:
   explicit ContentLayerPainter(ContentLayerClient* client);

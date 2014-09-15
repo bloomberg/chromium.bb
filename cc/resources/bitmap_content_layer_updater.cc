@@ -54,12 +54,10 @@ scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(
       new Resource(this, PrioritizedResource::Create(manager)));
 }
 
-void BitmapContentLayerUpdater::PrepareToUpdate(
-    const gfx::Rect& content_rect,
-    const gfx::Size& tile_size,
-    float contents_width_scale,
-    float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect) {
+void BitmapContentLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
+                                                const gfx::Size& tile_size,
+                                                float contents_width_scale,
+                                                float contents_height_scale) {
   if (canvas_size_ != content_rect.size()) {
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);
@@ -74,11 +72,8 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
 
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
-  PaintContents(canvas_.get(),
-                content_rect,
-                contents_width_scale,
-                contents_height_scale,
-                resulting_opaque_rect);
+  PaintContents(
+      canvas_.get(), content_rect, contents_width_scale, contents_height_scale);
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddPaint(

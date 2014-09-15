@@ -1455,94 +1455,6 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   EXPECT_EQ(visible_tiles3, layer->fake_layer_updater()->update_count());
 }
 
-TEST_F(TiledLayerTest, VisibleContentOpaqueRegion) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
-  RenderSurfaceLayerList render_surface_layer_list;
-  TestOcclusionTracker occluded;
-  occlusion_ = &occluded;
-  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
-
-  layer_tree_host_->root_layer()->AddChild(layer);
-
-  // The tile size is 100x100, so this invalidates and then paints two tiles in
-  // various ways.
-
-  gfx::Rect opaque_paint_rect;
-  SimpleEnclosedRegion opaque_contents;
-
-  gfx::Rect content_bounds = gfx::Rect(0, 0, 100, 200);
-  gfx::Rect visible_bounds = gfx::Rect(0, 0, 100, 150);
-
-  layer->SetBounds(content_bounds.size());
-  CalcDrawProps(&render_surface_layer_list);
-  layer->draw_properties().drawable_content_rect = visible_bounds;
-  layer->draw_properties().visible_content_rect = visible_bounds;
-
-  // If the layer doesn't paint opaque content, then the
-  // VisibleContentOpaqueRegion should be empty.
-  layer->fake_layer_updater()->SetOpaquePaintRect(gfx::Rect());
-  layer->InvalidateContentRect(content_bounds);
-  layer->SetTexturePriorities(priority_calculator_);
-  resource_manager_->PrioritizeTextures();
-  layer->SavePaintProperties();
-  layer->Update(queue_.get(), &occluded);
-  opaque_contents = layer->VisibleContentOpaqueRegion();
-  EXPECT_TRUE(opaque_contents.IsEmpty());
-
-  // VisibleContentOpaqueRegion should match the visible part of what is painted
-  // opaque.
-  opaque_paint_rect = gfx::Rect(10, 10, 90, 190);
-  layer->fake_layer_updater()->SetOpaquePaintRect(opaque_paint_rect);
-  layer->InvalidateContentRect(content_bounds);
-  layer->SetTexturePriorities(priority_calculator_);
-  resource_manager_->PrioritizeTextures();
-  layer->SavePaintProperties();
-  layer->Update(queue_.get(), &occluded);
-  UpdateTextures();
-  opaque_contents = layer->VisibleContentOpaqueRegion();
-  EXPECT_EQ(gfx::IntersectRects(opaque_paint_rect, visible_bounds).ToString(),
-            opaque_contents.ToString());
-
-  // If we paint again without invalidating, the same stuff should be opaque.
-  layer->fake_layer_updater()->SetOpaquePaintRect(gfx::Rect());
-  layer->SetTexturePriorities(priority_calculator_);
-  resource_manager_->PrioritizeTextures();
-  layer->SavePaintProperties();
-  layer->Update(queue_.get(), &occluded);
-  UpdateTextures();
-  opaque_contents = layer->VisibleContentOpaqueRegion();
-  EXPECT_EQ(gfx::IntersectRects(opaque_paint_rect, visible_bounds).ToString(),
-            opaque_contents.ToString());
-
-  // If we repaint a non-opaque part of the tile, then it shouldn't lose its
-  // opaque-ness. And other tiles should not be affected.
-  layer->fake_layer_updater()->SetOpaquePaintRect(gfx::Rect());
-  layer->InvalidateContentRect(gfx::Rect(0, 0, 1, 1));
-  layer->SetTexturePriorities(priority_calculator_);
-  resource_manager_->PrioritizeTextures();
-  layer->SavePaintProperties();
-  layer->Update(queue_.get(), &occluded);
-  UpdateTextures();
-  opaque_contents = layer->VisibleContentOpaqueRegion();
-  EXPECT_EQ(gfx::IntersectRects(opaque_paint_rect, visible_bounds).ToString(),
-            opaque_contents.ToString());
-
-  // If we repaint an opaque part of the tile, then it should lose its
-  // opaque-ness. But other tiles should still not be affected.
-  layer->fake_layer_updater()->SetOpaquePaintRect(gfx::Rect());
-  layer->InvalidateContentRect(gfx::Rect(10, 10, 1, 1));
-  layer->SetTexturePriorities(priority_calculator_);
-  resource_manager_->PrioritizeTextures();
-  layer->SavePaintProperties();
-  layer->Update(queue_.get(), &occluded);
-  UpdateTextures();
-  opaque_contents = layer->VisibleContentOpaqueRegion();
-  EXPECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100),
-                                visible_bounds).ToString(),
-            opaque_contents.ToString());
-}
-
 TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
   // Tile size is 100x100.
   gfx::Rect root_rect(0, 0, 300, 200);
@@ -1710,9 +1622,7 @@ class TrackingLayerPainter : public LayerPainter {
     return make_scoped_ptr(new TrackingLayerPainter());
   }
 
-  virtual void Paint(SkCanvas* canvas,
-                     const gfx::Rect& content_rect,
-                     gfx::RectF* opaque) OVERRIDE {
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE {
     painted_rect_ = content_rect;
   }
 

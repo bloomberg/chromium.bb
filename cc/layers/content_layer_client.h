@@ -25,7 +25,6 @@ class CC_EXPORT ContentLayerClient {
 
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& clip,
-                             gfx::RectF* opaque,
                              GraphicsContextStatus gc_status) = 0;
 
   // Called by the content layer during the update phase.

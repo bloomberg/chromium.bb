@@ -53,12 +53,8 @@ class TiledLayerImplTest : public testing::Test {
 
     ResourceProvider::ResourceId resource_id = 1;
     for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
-      for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {
-        gfx::Rect opaque_rect(
-            layer->TilingForTesting()->tile_bounds(i, j).origin(),
-            gfx::Size(1, 1));
-        layer->PushTileProperties(i, j, resource_id++, opaque_rect, false);
-      }
+      for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j)
+        layer->PushTileProperties(i, j, resource_id++, false);
     }
 
     return layer.Pass();
@@ -178,7 +174,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
 
   for (int i = 0; i < num_tiles_x; ++i)
     for (int j = 0; j < num_tiles_y; ++j)
-      layer->PushTileProperties(i, j, 0, gfx::Rect(), false);
+      layer->PushTileProperties(i, j, 0, false);
 
   // All checkerboarding
   {
@@ -275,8 +271,6 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
         << LayerTestCommon::quad_string << i;
     EXPECT_EQ(tile_size, quad->texture_size) << LayerTestCommon::quad_string
                                              << i;
-    EXPECT_EQ(gfx::Size(1, 1).ToString(), quad->opaque_rect.size().ToString())
-        << LayerTestCommon::quad_string << i;
   }
 }
 
@@ -293,18 +287,18 @@ TEST_F(TiledLayerImplTest, GPUMemoryUsage) {
   EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
 
   ResourceProvider::ResourceId resource_id = 1;
-  layer->PushTileProperties(0, 1, resource_id++, gfx::Rect(0, 0, 1, 1), false);
-  layer->PushTileProperties(2, 3, resource_id++, gfx::Rect(0, 0, 1, 1), false);
-  layer->PushTileProperties(2, 0, resource_id++, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(0, 1, resource_id++, false);
+  layer->PushTileProperties(2, 3, resource_id++, false);
+  layer->PushTileProperties(2, 0, resource_id++, false);
 
   EXPECT_EQ(
       layer->GPUMemoryUsageInBytes(),
       static_cast<size_t>(3 * 4 * tile_size.width() * tile_size.height()));
 
   ResourceProvider::ResourceId empty_resource(0);
-  layer->PushTileProperties(0, 1, empty_resource, gfx::Rect(0, 0, 1, 1), false);
-  layer->PushTileProperties(2, 3, empty_resource, gfx::Rect(0, 0, 1, 1), false);
-  layer->PushTileProperties(2, 0, empty_resource, gfx::Rect(0, 0, 1, 1), false);
+  layer->PushTileProperties(0, 1, empty_resource, false);
+  layer->PushTileProperties(2, 3, empty_resource, false);
+  layer->PushTileProperties(2, 0, empty_resource, false);
 
   EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
 }
@@ -341,7 +335,7 @@ TEST_F(TiledLayerImplTest, Occlusion) {
   ResourceProvider::ResourceId resource_id = 1;
   for (int i = 0; i < tiled_layer->TilingForTesting()->num_tiles_x(); ++i) {
     for (int j = 0; j < tiled_layer->TilingForTesting()->num_tiles_y(); ++j)
-      tiled_layer->PushTileProperties(i, j, resource_id++, gfx::Rect(), false);
+      tiled_layer->PushTileProperties(i, j, resource_id++, false);
   }
 
   impl.CalcDrawProps(viewport_size);

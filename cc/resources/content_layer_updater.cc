@@ -37,8 +37,7 @@ void ContentLayerUpdater::set_rendering_stats_instrumentation(
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                                         const gfx::Rect& content_rect,
                                         float contents_width_scale,
-                                        float contents_height_scale,
-                                        gfx::Rect* resulting_opaque_rect) {
+                                        float contents_height_scale) {
   TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   if (!canvas)
     return;
@@ -71,13 +70,8 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
     canvas->drawColor(SK_ColorTRANSPARENT, SkXfermode::kSrc_Mode);
   }
 
-  gfx::RectF opaque_layer_rect;
-  painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
+  painter_->Paint(canvas, layer_rect);
   canvas->restore();
-
-  gfx::Rect opaque_content_rect = gfx::ToEnclosedRect(gfx::ScaleRect(
-      opaque_layer_rect, contents_width_scale, contents_height_scale));
-  *resulting_opaque_rect = opaque_content_rect;
 
   content_rect_ = content_rect;
 }

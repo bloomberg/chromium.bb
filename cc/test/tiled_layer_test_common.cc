@@ -36,8 +36,7 @@ FakeLayerUpdater::~FakeLayerUpdater() {}
 void FakeLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
                                        const gfx::Size& tile_size,
                                        float contents_width_scale,
-                                       float contents_height_scale,
-                                       gfx::Rect* resulting_opaque_rect) {
+                                       float contents_height_scale) {
   prepare_count_++;
   last_update_rect_ = content_rect;
   if (!rect_to_invalidate_.IsEmpty()) {
@@ -45,7 +44,6 @@ void FakeLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
     rect_to_invalidate_ = gfx::Rect();
     layer_ = NULL;
   }
-  *resulting_opaque_rect = opaque_paint_rect_;
 }
 
 void FakeLayerUpdater::SetRectToInvalidate(const gfx::Rect& rect,

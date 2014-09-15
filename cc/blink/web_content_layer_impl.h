@@ -38,7 +38,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   // ContentLayerClient implementation.
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& clip,
-                             gfx::RectF* opaque,
                              ContentLayerClient::GraphicsContextStatus
                                  graphics_context_status) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE;

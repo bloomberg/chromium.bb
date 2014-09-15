@@ -221,7 +221,6 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
         i,
         j,
         tile->managed_resource()->resource_id(),
-        tile->opaque_rect(),
         tile->managed_resource()->contents_swizzled());
   }
   for (std::vector<UpdatableTile*>::const_iterator iter = invalid_tiles.begin();
@@ -477,12 +476,8 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
   // the SkCanvas until the paint finishes, so we grab a local reference here to
   // hold the updater alive until the paint completes.
   scoped_refptr<LayerUpdater> protector(Updater());
-  gfx::Rect painted_opaque_rect;
-  Updater()->PrepareToUpdate(paint_rect,
-                             tiler_->tile_size(),
-                             1.f / width_scale,
-                             1.f / height_scale,
-                             &painted_opaque_rect);
+  Updater()->PrepareToUpdate(
+      paint_rect, tiler_->tile_size(), 1.f / width_scale, 1.f / height_scale);
 
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
@@ -499,27 +494,6 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
       gfx::Rect dirty_rect = tile->update_rect;
       if (dirty_rect.IsEmpty())
         continue;
-
-      // Save what was painted opaque in the tile. Keep the old area if the
-      // paint didn't touch it, and didn't paint some other part of the tile
-      // opaque.
-      gfx::Rect tile_painted_rect = gfx::IntersectRects(tile_rect, paint_rect);
-      gfx::Rect tile_painted_opaque_rect =
-          gfx::IntersectRects(tile_rect, painted_opaque_rect);
-      if (!tile_painted_rect.IsEmpty()) {
-        gfx::Rect paint_inside_tile_opaque_rect =
-            gfx::IntersectRects(tile->opaque_rect(), tile_painted_rect);
-        bool paint_inside_tile_opaque_rect_is_non_opaque =
-            !paint_inside_tile_opaque_rect.IsEmpty() &&
-            !tile_painted_opaque_rect.Contains(paint_inside_tile_opaque_rect);
-        bool opaque_paint_not_inside_tile_opaque_rect =
-            !tile_painted_opaque_rect.IsEmpty() &&
-            !tile->opaque_rect().Contains(tile_painted_opaque_rect);
-
-        if (paint_inside_tile_opaque_rect_is_non_opaque ||
-            opaque_paint_not_inside_tile_opaque_rect)
-          tile->set_opaque_rect(tile_painted_opaque_rect);
-      }
 
       // source_rect starts as a full-sized tile with border texels included.
       gfx::Rect source_rect = tiler_->TileRect(tile);
@@ -643,9 +617,7 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
 SimpleEnclosedRegion TiledLayer::VisibleContentOpaqueRegion() const {
   if (skips_draw_)
     return SimpleEnclosedRegion();
-  if (contents_opaque())
-    return SimpleEnclosedRegion(visible_content_rect());
-  return tiler_->OpaqueRegionInContentRect(visible_content_rect());
+  return Layer::VisibleContentOpaqueRegion();
 }
 
 void TiledLayer::ResetUpdateState() {

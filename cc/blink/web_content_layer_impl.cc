@@ -50,7 +50,6 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
 void WebContentLayerImpl::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& clip,
-    gfx::RectF* opaque,
     ContentLayerClient::GraphicsContextStatus graphics_context_status) {
   if (!client_)
     return;
@@ -60,11 +59,10 @@ void WebContentLayerImpl::PaintContents(
       canvas,
       clip,
       can_use_lcd_text_,
-      web_opaque,
+      web_opaque,  // TODO(danakj): Remove this.
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
-  *opaque = web_opaque;
 }
 
 void WebContentLayerImpl::DidChangeLayerCanUseLCDText() {

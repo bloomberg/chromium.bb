@@ -92,28 +92,6 @@ gfx::Rect LayerTilingData::TileRect(const Tile* tile) const {
   return tile_rect;
 }
 
-SimpleEnclosedRegion LayerTilingData::OpaqueRegionInContentRect(
-    const gfx::Rect& content_rect) const {
-  if (content_rect.IsEmpty())
-    return SimpleEnclosedRegion();
-
-  Region opaque_region;
-  int left, top, right, bottom;
-  ContentRectToTileIndices(content_rect, &left, &top, &right, &bottom);
-  for (int j = top; j <= bottom; ++j) {
-    for (int i = left; i <= right; ++i) {
-      Tile* tile = TileAt(i, j);
-      if (!tile)
-        continue;
-
-      gfx::Rect tile_opaque_rect =
-          gfx::IntersectRects(content_rect, tile->opaque_rect());
-      opaque_region.Union(tile_opaque_rect);
-    }
-  }
-  return SimpleEnclosedRegion(opaque_region);
-}
-
 void LayerTilingData::SetTilingSize(const gfx::Size& tiling_size) {
   tiling_data_.SetTilingSize(tiling_size);
   if (tiling_size.IsEmpty()) {

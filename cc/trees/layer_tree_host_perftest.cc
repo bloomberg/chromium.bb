@@ -42,7 +42,6 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         full_damage_each_frame_(false),
         begin_frame_driven_drawing_(false),
         measure_commit_cost_(false) {
-    fake_content_layer_client_.set_paint_all_opaque(true);
   }
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {

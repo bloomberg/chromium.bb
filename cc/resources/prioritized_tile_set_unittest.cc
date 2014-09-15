@@ -73,7 +73,6 @@ class PrioritizedTileSetTest : public testing::Test {
     return tile_manager_->CreateTile(picture_pile_.get(),
                                      settings_.default_tile_size,
                                      gfx::Rect(),
-                                     gfx::Rect(),
                                      1.0,
                                      0,
                                      0,

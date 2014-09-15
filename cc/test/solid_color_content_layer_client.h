@@ -20,7 +20,6 @@ class SolidColorContentLayerClient : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& rect,
-      gfx::RectF* opaque_rect,
       ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE;
   virtual bool FillsBoundsCompletely() const OVERRIDE;
 

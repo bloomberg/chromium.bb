@@ -26,8 +26,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     const gfx::Rect& content_rect,
     const gfx::Size&,
     float contents_width_scale,
-    float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect) {
+    float contents_height_scale) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(
       content_rect.width(), content_rect.height(), NULL, 0);
@@ -35,11 +34,8 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
   DCHECK_EQ(content_rect.height(), canvas->getBaseLayerSize().height());
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
-  PaintContents(canvas,
-                content_rect,
-                contents_width_scale,
-                contents_height_scale,
-                resulting_opaque_rect);
+  PaintContents(
+      canvas, content_rect, contents_width_scale, contents_height_scale);
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddRecord(

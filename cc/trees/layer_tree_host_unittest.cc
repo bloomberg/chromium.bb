@@ -944,7 +944,6 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      gfx::RectF* opaque,
       ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
     // Set layer opacity to 0.
     if (test_layer_)
@@ -2141,7 +2140,6 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
     virtual void PaintContents(
         SkCanvas* canvas,
         const gfx::Rect& clip,
-        gfx::RectF* opaque,
         ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
       ++paint_count_;
     }
@@ -2388,7 +2386,6 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     virtual void PaintContents(
         SkCanvas* canvas,
         const gfx::Rect& clip,
-        gfx::RectF* opaque,
         ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
       layer_->SetBounds(gfx::Size(2, 2));
     }

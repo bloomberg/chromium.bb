@@ -63,14 +63,9 @@ class CC_EXPORT LayerTilingData {
       j_ = j;
     }
 
-    gfx::Rect opaque_rect() const { return opaque_rect_; }
-    void set_opaque_rect(const gfx::Rect& opaque_rect) {
-      opaque_rect_ = opaque_rect;
-    }
    private:
     int i_;
     int j_;
-    gfx::Rect opaque_rect_;
     DISALLOW_COPY_AND_ASSIGN(Tile);
   };
   typedef std::pair<int, int> TileMapKey;
@@ -90,8 +85,6 @@ class CC_EXPORT LayerTilingData {
                                 int* right,
                                 int* bottom) const;
   gfx::Rect TileRect(const Tile* tile) const;
-
-  SimpleEnclosedRegion OpaqueRegionInContentRect(const gfx::Rect& rect) const;
 
   void reset() { tiles_.clear(); }
 

@@ -47,8 +47,7 @@ class FakeLayerUpdater : public LayerUpdater {
   virtual void PrepareToUpdate(const gfx::Rect& content_rect,
                                const gfx::Size& tile_size,
                                float contents_width_scale,
-                               float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
+                               float contents_height_scale) OVERRIDE;
   // Sets the rect to invalidate during the next call to PrepareToUpdate().
   // After the next call to PrepareToUpdate() the rect is reset.
   void SetRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer* layer);
@@ -64,10 +63,6 @@ class FakeLayerUpdater : public LayerUpdater {
   void ClearUpdateCount() { update_count_ = 0; }
   void Update() { update_count_++; }
 
-  void SetOpaquePaintRect(const gfx::Rect& opaque_paint_rect) {
-    opaque_paint_rect_ = opaque_paint_rect;
-  }
-
  protected:
   virtual ~FakeLayerUpdater();
 
@@ -76,7 +71,6 @@ class FakeLayerUpdater : public LayerUpdater {
   int update_count_;
   gfx::Rect rect_to_invalidate_;
   gfx::Rect last_update_rect_;
-  gfx::Rect opaque_paint_rect_;
   scoped_refptr<FakeTiledLayer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLayerUpdater);

@@ -278,6 +278,7 @@ void PictureLayerImpl::AppendQuads(
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
+    gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
         geometry_rect, scaled_draw_transform);
     if (visible_geometry_rect.IsEmpty())
@@ -293,8 +294,6 @@ void PictureLayerImpl::AppendQuads(
       switch (tile_version.mode()) {
         case ManagedTileState::TileVersion::RESOURCE_MODE: {
           gfx::RectF texture_rect = iter.texture_rect();
-          gfx::Rect opaque_rect = iter->opaque_rect();
-          opaque_rect.Intersect(geometry_rect);
 
           // The raster_contents_scale_ is the best scale that the layer is
           // trying to produce, even though it may not be ideal. Since that's
@@ -330,8 +329,6 @@ void PictureLayerImpl::AppendQuads(
           }
 
           gfx::RectF texture_rect = iter.texture_rect();
-          gfx::Rect opaque_rect = iter->opaque_rect();
-          opaque_rect.Intersect(geometry_rect);
 
           ResourceProvider* resource_provider =
               layer_tree_impl()->resource_provider();
@@ -588,7 +585,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       pile_.get(),
       content_rect.size(),
       content_rect,
-      contents_opaque() ? content_rect : gfx::Rect(),
       tiling->contents_scale(),
       id(),
       layer_tree_impl()->source_frame_number(),

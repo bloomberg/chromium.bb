@@ -19,9 +19,7 @@ namespace cc {
 class CC_EXPORT LayerPainter {
  public:
   virtual ~LayerPainter() {}
-  virtual void Paint(SkCanvas* canvas,
-                     const gfx::Rect& content_rect,
-                     gfx::RectF* opaque) = 0;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) = 0;
 };
 
 }  // namespace cc
