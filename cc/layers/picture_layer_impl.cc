@@ -1120,7 +1120,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
   // TODO(danakj): Adjust raster source scale closer to ideal source scale at
   // a throttled rate. Possibly make use of invalidation_.IsEmpty() on pending
   // tree. This will allow CSS scale changes to get re-rastered at an
-  // appropriate rate.
+  // appropriate rate. (crbug.com/413636)
   if (raster_source_scale_is_fixed_) {
     raster_contents_scale_ /= raster_source_scale_;
     raster_source_scale_ = 1.f;
