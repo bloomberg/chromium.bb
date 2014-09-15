@@ -10,6 +10,7 @@ import android.speech.tts.UtteranceProgressListener;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -237,6 +238,8 @@ class TtsPlatformImpl {
     private void initialize() {
         assert mNativeTtsPlatformImplAndroid != 0;
 
+        TraceEvent.begin("TtsPlatformImpl:initialize");
+
         // Note: Android supports multiple speech engines, but querying the
         // metadata about all of them is expensive. So we deliberately only
         // support the default speech engine, and expose the different
@@ -268,6 +271,8 @@ class TtsPlatformImpl {
         nativeVoicesChanged(mNativeTtsPlatformImplAndroid);
 
         if (mPendingUtterance != null) mPendingUtterance.speak();
+
+        TraceEvent.end("TtsPlatformImpl:initialize");
     }
 
     private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);
