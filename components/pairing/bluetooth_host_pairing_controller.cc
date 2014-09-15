@@ -66,7 +66,7 @@ void BluetoothHostPairingController::SendHostStatus() {
 void BluetoothHostPairingController::AbortWithError(
     int code,
     const std::string& message) {
-  if (controller_socket_) {
+  if (controller_socket_.get()) {
     pairing_api::Error error;
 
     error.set_api_version(kPairingAPIVersion);
@@ -88,12 +88,12 @@ void BluetoothHostPairingController::AbortWithError(
 }
 
 void BluetoothHostPairingController::Reset() {
-  if (controller_socket_) {
+  if (controller_socket_.get()) {
     controller_socket_->Close();
     controller_socket_ = NULL;
   }
 
-  if (service_socket_) {
+  if (service_socket_.get()) {
     service_socket_->Close();
     service_socket_ = NULL;
   }
@@ -103,7 +103,7 @@ void BluetoothHostPairingController::Reset() {
 void BluetoothHostPairingController::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!adapter_);
+  DCHECK(!adapter_.get());
   adapter_ = adapter;
 
   // TODO(zork): Make the device name prettier. (http://crbug.com/405774)

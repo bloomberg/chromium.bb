@@ -56,12 +56,12 @@ void BluetoothControllerPairingController::Reset() {
   controller_device_id_.clear();
   discovery_session_.reset();
 
-  if (socket_) {
+  if (socket_.get()) {
     socket_->Close();
     socket_ = NULL;
   }
 
-  if (adapter_) {
+  if (adapter_.get()) {
     adapter_->RemoveObserver(this);
     adapter_ = NULL;
   }
@@ -104,7 +104,7 @@ void BluetoothControllerPairingController::OnSetPowered() {
 void BluetoothControllerPairingController::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!adapter_);
+  DCHECK(!adapter_.get());
   adapter_ = adapter;
   adapter_->AddObserver(this);
 
