@@ -72,6 +72,7 @@ test("mojo_view_manager_unittests") {
     "//mojo/services/public/cpp/view_manager/lib:run_unittests",
     "//mojo/services/public/cpp/view_manager:common",
     "//mojo/services/public/interfaces/input_events",
+    "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/shell:test_support",

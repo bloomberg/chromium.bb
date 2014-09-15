@@ -16,10 +16,14 @@
 
 namespace {
 
-void RunApps(mojo::shell::Context* context, std::vector<GURL> app_urls) {
-  for (std::vector<GURL>::const_iterator it = app_urls.begin();
-       it != app_urls.end(); ++it) {
-    context->Run(*it);
+void RunApps(mojo::shell::Context* context) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line.GetArgs();
+  for (base::CommandLine::StringVector::const_iterator it = args.begin();
+       it != args.end();
+       ++it) {
+    context->Run(GURL(*it));
   }
 }
 
@@ -43,8 +47,9 @@ int main(int argc, char** argv) {
               *base::CommandLine::ForCurrentProcess())) {
     child_process->Main();
   } else {
+#if defined(COMPONENT_BUILD)
     gfx::GLSurface::InitializeOneOff();
-
+#endif
     // We want the shell::Context to outlive the MessageLoop so that pipes are
     // all gracefully closed / error-out before we try to shut the Context down.
     mojo::shell::Context shell_context;
@@ -59,17 +64,7 @@ int main(int argc, char** argv) {
             GURL(command_line.GetSwitchValueASCII(switches::kOrigin)));
       }
 
-      std::vector<GURL> app_urls;
-      base::CommandLine::StringVector args = command_line.GetArgs();
-      for (base::CommandLine::StringVector::const_iterator it = args.begin();
-           it != args.end();
-           ++it)
-        app_urls.push_back(GURL(*it));
-
-      message_loop.PostTask(FROM_HERE,
-                            base::Bind(RunApps,
-                                       &shell_context,
-                                       app_urls));
+      message_loop.PostTask(FROM_HERE, base::Bind(RunApps, &shell_context));
       message_loop.Run();
     }
   }

@@ -16,6 +16,13 @@
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
+#if !defined(COMPONENT_BUILD)
+#include "base/i18n/icu_util.h"
+#include "base/path_service.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
+#endif
+
 namespace mojo {
 
 class HTMLViewer;
@@ -63,6 +70,16 @@ class HTMLViewer : public ApplicationDelegate,
     shell_ = app->shell();
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
+#if !defined(COMPONENT_BUILD)
+  base::i18n::InitializeICU();
+
+  ui::RegisterPathProvider();
+
+  base::FilePath ui_test_pak_path;
+  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+#endif
+
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(
         compositor_thread_.message_loop_proxy()));
