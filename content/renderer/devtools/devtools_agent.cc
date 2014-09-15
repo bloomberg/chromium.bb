@@ -171,7 +171,6 @@ void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
 }
 
 void DevToolsAgent::enableTracing(const WebString& category_filter) {
-  Send(new DevToolsHostMsg_EnableTracing(routing_id(), category_filter.utf8()));
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(base::debug::CategoryFilter(category_filter.utf8()),
                         TraceLog::RECORDING_MODE,
@@ -180,7 +179,6 @@ void DevToolsAgent::enableTracing(const WebString& category_filter) {
 
 void DevToolsAgent::disableTracing() {
   TraceLog::GetInstance()->SetDisabled();
-  Send(new DevToolsHostMsg_DisableTracing(routing_id()));
 }
 
 // static

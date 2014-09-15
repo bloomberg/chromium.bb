@@ -30,9 +30,6 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
 
   void OnClientDetached();
 
-  void EnableTracing(const std::string& category_filter);
-  void DisableTracing();
-
   void OnTraceDataCollected(const std::string& trace_fragment);
   void OnTraceComplete();
 

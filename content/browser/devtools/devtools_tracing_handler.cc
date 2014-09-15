@@ -113,11 +113,9 @@ base::debug::TraceOptions DevToolsTracingHandler::TraceOptionsFromString(
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnStart(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  // If inspected target is a render process Tracing.start will be handled by
-  // tracing agent in the renderer.
-  if (target_ == Renderer)
-    return NULL;
-
+  if (is_recording_) {
+    return command->InternalErrorResponse("Tracing is already started");
+  }
   is_recording_ = true;
 
   std::string categories;
@@ -138,6 +136,16 @@ DevToolsTracingHandler::OnStart(
   }
 
   SetupTimer(usage_reporting_interval);
+
+  // If inspected target is a render process Tracing.start will be handled by
+  // tracing agent in the renderer.
+  if (target_ == Renderer) {
+    TracingController::GetInstance()->EnableRecording(
+        base::debug::CategoryFilter(categories),
+        options,
+        TracingController::EnableRecordingDoneCallback());
+    return NULL;
+  }
 
   TracingController::GetInstance()->EnableRecording(
       base::debug::CategoryFilter(categories),
@@ -182,11 +190,14 @@ void DevToolsTracingHandler::OnBufferUsage(float usage) {
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnEnd(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  if (!is_recording_) {
+    return command->InternalErrorResponse("Tracing is not started");
+  }
+  DisableRecording(false);
   // If inspected target is a render process Tracing.end will be handled by
   // tracing agent in the renderer.
   if (target_ == Renderer)
     return NULL;
-  DisableRecording(false);
   return command->SuccessResponse(NULL);
 }
 
@@ -226,27 +237,5 @@ void DevToolsTracingHandler::OnCategoriesReceived(
                 category_list);
   SendAsyncResponse(command->SuccessResponse(response));
 }
-
-void DevToolsTracingHandler::EnableTracing(const std::string& category_filter) {
-  if (is_recording_)
-    return;
-  is_recording_ = true;
-
-  SetupTimer(kDefaultReportingInterval);
-
-  TracingController::GetInstance()->EnableRecording(
-      base::debug::CategoryFilter(category_filter),
-      base::debug::TraceOptions(),
-      TracingController::EnableRecordingDoneCallback());
-  SendNotification(devtools::Tracing::started::kName, NULL);
-}
-
-void DevToolsTracingHandler::DisableTracing() {
-  if (!is_recording_)
-    return;
-  is_recording_ = false;
-  DisableRecording(false);
-}
-
 
 }  // namespace content
