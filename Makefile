@@ -14,6 +14,8 @@ CFLAGS += -Wall -Wsign-compare -Wpointer-arith -Wcast-qual -Wcast-align
 CPPFLAGS += $(PC_CFLAGS)
 LDLIBS += $(PC_LIBS)
 
+LIBDIR ?= /usr/lib/
+
 CC_LIBRARY(libgbm.so): $(C_OBJECTS)
 
 all: CC_LIBRARY(libgbm.so)
@@ -21,5 +23,5 @@ all: CC_LIBRARY(libgbm.so)
 clean: CLEAN(libgbm.so)
 
 install: all
-	mkdir -p $(DESTDIR)/usr/lib
-	install -m 755 $(OUT)/libgbm.so $(DESTDIR)/usr/lib/
+	mkdir -p $(DESTDIR)/$(LIBDIR)
+	install -m 755 $(OUT)/libgbm.so $(DESTDIR)/$(LIBDIR)
