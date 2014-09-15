@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
@@ -21,27 +22,37 @@ class SurfaceIdAllocator;
 }
 
 namespace mojo {
+class ViewManagerClientImpl;
 
 class BitmapUploader : public SurfaceClient {
  public:
-  BitmapUploader(SurfacesServicePtr surfaces_service, GpuPtr gpu_service);
+  BitmapUploader(ViewManagerClientImpl* client,
+                 Id view_id,
+                 SurfacesServicePtr surfaces_service,
+                 GpuPtr gpu_service);
   virtual ~BitmapUploader();
 
-  void Upload(SkBitmap bitmap,
-              const base::Callback<void(SurfaceIdPtr)>& done_callback);
+  void SetSize(const gfx::Size& size);
+  void SetColor(SkColor color);
+  void SetBitmap(SkBitmap bitmap);
+  void SetDoneCallback(const base::Callback<void(SurfaceIdPtr)>& done_callback);
 
  private:
+  void Upload();
   void OnSurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   uint32_t BindTextureForSize(const gfx::Size size);
 
   // SurfaceClient implementation.
   virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
 
+  ViewManagerClientImpl* client_;
+  Id view_id_;
   SurfacesServicePtr surfaces_service_;
   GpuPtr gpu_service_;
   MojoGLES2Context gles2_context_;
 
-  // Used to hold on to the bitmap until we can upload it.
+  gfx::Size size_;
+  SkColor color_;
   SkBitmap bitmap_;
   base::Callback<void(SurfaceIdPtr)> done_callback_;
   SurfacePtr surface_;

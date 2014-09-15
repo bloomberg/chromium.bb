@@ -21,6 +21,7 @@ class SkBitmap;
 
 namespace mojo {
 
+class BitmapUploader;
 class ServiceProviderImpl;
 class View;
 class ViewManager;
@@ -104,6 +105,7 @@ class View {
   // Returns true if the order actually changed.
   bool LocalReorder(View* relative, OrderDirection direction);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
+  void CreateBitmapUploader();
 
   ViewManager* manager_;
   Id id_;
@@ -113,6 +115,9 @@ class View {
   ObserverList<ViewObserver> observers_;
 
   gfx::Rect bounds_;
+  // TODO(jamesr): Temporary, remove when all clients are using surfaces
+  // directly.
+  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

@@ -12,14 +12,11 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
-#include "mojo/services/public/cpp/view_manager/lib/bitmap_uploader.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
-#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
-#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -97,29 +94,6 @@ class RootObserver : public ViewObserver {
   DISALLOW_COPY_AND_ASSIGN(RootObserver);
 };
 
-bool CreateMapAndDupSharedBuffer(size_t size,
-                                  void** memory,
-                                  ScopedSharedBufferHandle* handle,
-                                  ScopedSharedBufferHandle* duped) {
-  MojoResult result = CreateSharedBuffer(NULL, size, handle);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(handle->is_valid());
-
-  result = DuplicateBuffer(handle->get(), NULL, duped);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(duped->is_valid());
-
-  result = MapBuffer(
-      handle->get(), 0, size, memory, MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(*memory);
-
-  return true;
-}
-
 ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
                                              Shell* shell)
     : connected_(false),
@@ -159,6 +133,7 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
   // NOTE: we manually delete as we're a friend.
   for (size_t i = 0; i < non_owned.size(); ++i)
     delete non_owned[i];
+
   delegate_->OnViewManagerDisconnected(this);
 }
 
@@ -209,32 +184,6 @@ void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
     return;
   service_->SetViewSurfaceId(
       view_id, surface_id.Pass(), ActionCompletedCallback());
-}
-
-void ViewManagerClientImpl::SetViewContents(Id view_id,
-                                            const SkBitmap& contents) {
-  DCHECK(connected_);
-  if (!bitmap_uploader_) {
-    SurfacesServicePtr surfaces_service;
-    InterfacePtr<ServiceProvider> surfaces_service_provider;
-    shell_->ConnectToApplication("mojo:mojo_surfaces_service",
-                                 Get(&surfaces_service_provider));
-    ConnectToService(surfaces_service_provider.get(), &surfaces_service);
-    GpuPtr gpu_service;
-    InterfacePtr<ServiceProvider> gpu_service_provider;
-    shell_->ConnectToApplication("mojo:mojo_native_viewport_service",
-                                 Get(&gpu_service_provider));
-    ConnectToService(gpu_service_provider.get(), &gpu_service);
-    bitmap_uploader_.reset(
-        new BitmapUploader(surfaces_service.Pass(), gpu_service.Pass()));
-  }
-  bitmap_uploader_->Upload(
-      contents,
-      base::Bind(&ViewManagerClientImpl::SetSurfaceId,
-                 // We'll destroy the bitmap_uploader before we are destroyed,
-                 // so we can use an unretained pointer here.
-                 base::Unretained(this),
-                 view_id));
 }
 
 void ViewManagerClientImpl::SetFocus(Id view_id) {

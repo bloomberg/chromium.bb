@@ -201,8 +201,6 @@ class RootLayoutManager : public ViewObserver {
 
     View* content_view = view_manager_->GetViewById(content_view_id_);
     content_view->SetBounds(new_bounds);
-    // Force the view's bitmap to be recreated
-    content_view->SetColor(SK_ColorBLUE);
 
     int delta_width = new_bounds.width() - old_bounds.width();
     int delta_height = new_bounds.height() - old_bounds.height();
@@ -374,8 +372,6 @@ class WindowManager
     root->AddChild(view);
     view->SetBounds(gfx::Rect(root->bounds().size()));
     content_view_id_ = view->id();
-
-    root->SetColor(SK_ColorBLUE);
 
     Id launcher_ui_id = CreateLauncherUI();
     Id control_panel_id = CreateControlPanel(view);

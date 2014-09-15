@@ -29,16 +29,23 @@ gfx::Rect ConvertRectToRoot(const ServerView* view, const gfx::Rect& bounds) {
   return gfx::Rect(origin, bounds.size());
 }
 
-void DrawViewTree(Pass* pass, const ServerView* view) {
+void DrawViewTree(Pass* pass, const ServerView* view, gfx::Vector2d offset) {
   if (!view->visible())
     return;
+
+  gfx::Rect node_bounds = view->bounds() + offset;
+  std::vector<const ServerView*> children(view->GetChildren());
+  for (std::vector<const ServerView*>::reverse_iterator it = children.rbegin();
+       it != children.rend();
+       ++it) {
+    DrawViewTree(pass, *it, offset + view->bounds().OffsetFromOrigin());
+  }
 
   cc::SurfaceId node_id = view->surface_id();
 
   SurfaceQuadStatePtr surface_quad_state = SurfaceQuadState::New();
   surface_quad_state->surface = SurfaceId::From(node_id);
 
-  const gfx::Rect& node_bounds = view->bounds();
   gfx::Transform node_transform;
   node_transform.Translate(node_bounds.x(), node_bounds.y());
 
@@ -57,13 +64,6 @@ void DrawViewTree(Pass* pass, const ServerView* view) {
 
   pass->quads.push_back(surface_quad.Pass());
   pass->shared_quad_states.push_back(sqs.Pass());
-
-  std::vector<const ServerView*> children(view->GetChildren());
-  for (std::vector<const ServerView*>::reverse_iterator it = children.rbegin();
-       it != children.rend();
-       ++it) {
-    DrawViewTree(pass, *it);
-  }
 }
 
 }  // namespace
@@ -126,7 +126,7 @@ void DisplayManager::Draw() {
   PassPtr pass = CreateDefaultPass(1, gfx::Rect(bounds_));
   pass->damage_rect = Rect::From(dirty_rect_);
 
-  DrawViewTree(pass.get(), connection_manager_->root());
+  DrawViewTree(pass.get(), connection_manager_->root(), gfx::Vector2d());
 
   FramePtr frame = Frame::New();
   frame->passes.push_back(pass.Pass());

@@ -4,10 +4,15 @@
 
 #include "mojo/services/public/cpp/view_manager/view.h"
 
+#include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/services/public/cpp/view_manager/lib/bitmap_uploader.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "ui/gfx/canvas.h"
 
 namespace mojo {
@@ -299,15 +304,20 @@ void View::SetSurfaceId(SurfaceIdPtr id) {
 
 void View::SetContents(const SkBitmap& contents) {
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->SetViewContents(id_,
-        contents);
+    if (!bitmap_uploader_)
+      CreateBitmapUploader();
+    bitmap_uploader_->SetSize(bounds_.size());
+    bitmap_uploader_->SetBitmap(contents);
   }
 }
 
 void View::SetColor(SkColor color) {
-  gfx::Canvas canvas(bounds_.size(), 1.0f, true);
-  canvas.DrawColor(color);
-  SetContents(skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
+  if (manager_) {
+    if (!bitmap_uploader_)
+      CreateBitmapUploader();
+    bitmap_uploader_->SetSize(bounds_.size());
+    bitmap_uploader_->SetColor(color);
+  }
 }
 
 void View::SetFocus() {
@@ -388,6 +398,22 @@ void View::LocalSetBounds(const gfx::Rect& old_bounds,
   DCHECK(old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;
+}
+
+void View::CreateBitmapUploader() {
+  ViewManagerClientImpl* vmci = static_cast<ViewManagerClientImpl*>(manager_);
+  SurfacesServicePtr surfaces_service;
+  InterfacePtr<ServiceProvider> surfaces_service_provider;
+  vmci->shell()->ConnectToApplication("mojo:mojo_surfaces_service",
+                                      Get(&surfaces_service_provider));
+  ConnectToService(surfaces_service_provider.get(), &surfaces_service);
+  GpuPtr gpu_service;
+  InterfacePtr<ServiceProvider> gpu_service_provider;
+  vmci->shell()->ConnectToApplication("mojo:mojo_native_viewport_service",
+                                      Get(&gpu_service_provider));
+  ConnectToService(gpu_service_provider.get(), &gpu_service);
+  bitmap_uploader_.reset(new BitmapUploader(
+      vmci, id_, surfaces_service.Pass(), gpu_service.Pass()));
 }
 
 }  // namespace mojo

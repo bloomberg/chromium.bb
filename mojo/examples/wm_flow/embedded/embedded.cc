@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "mojo/application/application_runner_chromium.h"
 #include "mojo/examples/wm_flow/app/embedder.mojom.h"
 #include "mojo/examples/wm_flow/embedded/embeddee.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -84,11 +85,8 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
 
 }  // namespace examples
 
-namespace mojo {
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::WMFlowEmbedded;
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new examples::WMFlowEmbedded);
+  return runner.Run(shell_handle);
 }
 
-}  // namespace
