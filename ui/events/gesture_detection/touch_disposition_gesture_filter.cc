@@ -21,7 +21,7 @@ GestureEventData CreateGesture(EventType type,
                                const GestureEventDataPacket& packet) {
   // As the event is purely synthetic, we needn't be strict with event flags.
   int flags = EF_NONE;
-  return GestureEventData(GestureEventDetails(type),
+  return GestureEventData(GestureEventDetails(type, 0, 0),
                           motion_event_id,
                           primary_tool_type,
                           packet.timestamp(),

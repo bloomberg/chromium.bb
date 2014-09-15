@@ -1322,7 +1322,7 @@ TEST_F(WindowEventDispatcherTest, RepostTapdownGestureTest) {
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
 
-  ui::GestureEventDetails details(ui::ET_GESTURE_TAP_DOWN);
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP_DOWN, 0.0f, 0.0f);
   gfx::Point point(10, 10);
   ui::GestureEvent event(point.x(),
                          point.y(),

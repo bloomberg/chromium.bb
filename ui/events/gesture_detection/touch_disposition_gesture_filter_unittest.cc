@@ -230,7 +230,7 @@ class TouchDispositionGestureFilterTest
                                  float y,
                                  float diameter) {
     return GestureEventData(
-        GestureEventDetails(type),
+        GestureEventDetails(type, 0, 0),
         0,
         MotionEvent::TOOL_TYPE_FINGER,
         base::TimeTicks(),
