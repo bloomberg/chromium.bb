@@ -352,6 +352,11 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
   cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
 
+  // Mark that we are using the profile name on purpose, so that we don't
+  // fallback to testing the algorithm that chooses which default name
+  // should be used.
+  cache->SetProfileIsUsingDefaultNameAtIndex(0, false);
+
   // Set up the signin manager and the OAuth2Tokens.
   Profile* profile = browser()->profile();
   SigninManagerFactory::GetForProfile(profile)->

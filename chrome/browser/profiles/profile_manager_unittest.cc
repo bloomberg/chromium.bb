@@ -1171,6 +1171,66 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
+
+TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+  // The command line is reset at the end of every test by the test suite.
+  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+
+  // Create two signed in profiles, with both new and legacy default names, and
+  // a profile with a custom name.
+  Profile* profile1 = AddProfileToCache(
+      profile_manager, "path_1", ASCIIToUTF16("Person 1"));
+  Profile* profile2 = AddProfileToCache(
+      profile_manager, "path_2", ASCIIToUTF16("Default Profile"));
+  const base::string16 profile_name3(ASCIIToUTF16("Batman"));
+  Profile* profile3 = AddProfileToCache(
+      profile_manager, "path_3", profile_name3);
+  EXPECT_EQ(3u, cache.GetNumberOfProfiles());
+
+  // Sign in all profiles, and make sure they do not have a Gaia name set.
+  const base::string16 email1(ASCIIToUTF16("user1@gmail.com"));
+  const base::string16 email2(ASCIIToUTF16("user2@gmail.com"));
+  const base::string16 email3(ASCIIToUTF16("user3@gmail.com"));
+
+  int index = cache.GetIndexOfProfileWithPath(profile1->GetPath());
+  cache.SetUserNameOfProfileAtIndex(index, email1);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
+
+  // This may resort the cache, so be extra cautious to use the right profile.
+  index = cache.GetIndexOfProfileWithPath(profile2->GetPath());
+  cache.SetUserNameOfProfileAtIndex(index, email2);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
+
+  index = cache.GetIndexOfProfileWithPath(profile3->GetPath());
+  cache.SetUserNameOfProfileAtIndex(index, email3);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
+
+  // The profiles with default names should display the email address.
+  EXPECT_EQ(email1, profiles::GetAvatarNameForProfile(profile1->GetPath()));
+  EXPECT_EQ(email2, profiles::GetAvatarNameForProfile(profile2->GetPath()));
+
+  // The profile with the custom name should display that.
+  EXPECT_EQ(profile_name3,
+            profiles::GetAvatarNameForProfile(profile3->GetPath()));
+
+  // Adding a Gaia name to a profile that previously had a default name should
+  // start displaying it.
+  const base::string16 gaia_given_name(ASCIIToUTF16("Robin"));
+  cache.SetGAIAGivenNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile1->GetPath()), gaia_given_name);
+  EXPECT_EQ(gaia_given_name,
+            profiles::GetAvatarNameForProfile(profile1->GetPath()));
+}
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

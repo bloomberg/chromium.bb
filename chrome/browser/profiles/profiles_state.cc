@@ -67,16 +67,18 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
     // Using the --new-avatar-menu flag, there's a couple of rules about what
     // the avatar button displays. If there's a single profile, with a default
     // name (i.e. of the form Person %d) not manually set, it should display
-    // IDS_SINGLE_PROFILE_DISPLAY_NAME. Otherwise, it will return the actual
-    // name of the profile.
-    base::string16 profile_name = cache.GetNameOfProfileAtIndex(index);
-    bool has_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index) &&
+    // IDS_SINGLE_PROFILE_DISPLAY_NAME. If the profile is signed in but is using
+    // a default name, use the profiles's email address. Otherwise, it
+    // will return the actual name of the profile.
+    const base::string16 profile_name = cache.GetNameOfProfileAtIndex(index);
+    const base::string16 email = cache.GetUserNameOfProfileAtIndex(index);
+    bool is_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index) &&
         cache.IsDefaultProfileName(profile_name);
 
-    if (cache.GetNumberOfProfiles() == 1 && has_default_name)
+    if (cache.GetNumberOfProfiles() == 1 && is_default_name)
       display_name = l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
     else
-      display_name = profile_name;
+      display_name = (is_default_name && !email.empty()) ? email : profile_name;
   }
   return display_name;
 }
