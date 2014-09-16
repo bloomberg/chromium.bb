@@ -31,7 +31,6 @@
           },
           'sources': [
             'cvox2/background/loader.js',
-            'cvox2/injected/loader.js',
           ],
           'includes': [ '../chromevox/copy_js.gypi', ],
         },
@@ -43,7 +42,6 @@
           },
           'sources': [
             'cvox2/background/loader.js',
-            'cvox2/injected/loader.js',
           ],
           'includes': ['../chromevox/generate_deps.gypi'],
         },

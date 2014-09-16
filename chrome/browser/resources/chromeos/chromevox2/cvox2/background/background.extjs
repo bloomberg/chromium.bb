@@ -45,7 +45,7 @@ MockTts.prototype = {
    * @return {boolean} True if the string was spoken (possibly as part of a
    * larger utterance).
    */
-  checkIfTextWasSpoken: function(textString) {
+  checkIfSubstringWasSpoken: function(textString) {
     return this.utterances.some(function(t) {
       return t.indexOf(textString) != -1;
     });
@@ -68,7 +68,8 @@ SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
 TEST_F('BackgroundTest', 'DesktopFocus', function() {
   function findStatusTray(root) {
     if (root.role == chrome.automation.RoleType.button &&
-        root.attributes.name == 'Status tray') {
+        root.attributes.name &&
+        root.attributes.name.indexOf('Status tray') != -1) {
       return root;
     }
     for (var i = 0; i < root.children().length; i++) {
@@ -84,7 +85,7 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
     testButton.addEventListener(chrome.automation.EventType.focus,
         function(e) {
           var result =
-              cvox.ChromeVox.tts.checkIfTextWasSpoken('Status tray button');
+              cvox.ChromeVox.tts.checkIfSubstringWasSpoken('Status tray');
           testDone([result, '']);
         },
         true);

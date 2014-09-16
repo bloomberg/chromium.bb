@@ -18,63 +18,56 @@ cvox2.global.accessibility =
  * ChromeVox2 background page.
  */
 cvox2.Background = function() {
+  /**
+   * A list of site substring patterns to use with ChromeVox next. Keep these
+   * strings relatively specific.
+   * @type {!Array.<string>}
+   */
+  this.whitelist_ = ['http://www.chromevox.com/', 'chromevox_next_test'];
+
   // Only needed with unmerged ChromeVox classic loaded before.
+  // TODO(dtseng): Refactor all tabs handlers out of
+  // accessibility_api_handler.js.
   cvox2.global.accessibility.setAccessibilityEnabled(false);
+
+  // Manually bind all functions to |this|.
+  for (var func in this) {
+    if (typeof(this[func]) == 'function')
+      this[func] = this[func].bind(this);
+  }
 
   // Register listeners for ...
   // Desktop.
-  chrome.automation.getDesktop(this.onGotTree.bind(this));
+  chrome.automation.getDesktop(this.onGotTree);
 
   // Tabs.
-  chrome.tabs.onUpdated.addListener(this.onTabUpdated.bind(this));
-
-  // Keyboard events (currently Messages from content script).
-  chrome.extension.onConnect.addListener(this.onConnect.bind(this));
+  chrome.tabs.onUpdated.addListener(this.onTabUpdated);
 };
 
 cvox2.Background.prototype = {
   /**
-   * ID of the port used to communicate between content script and background
-   * page.
-   * @const {string}
-   */
-  PORT_ID: 'chromevox2',
-
-  /**
-   * Handles chrome.extension.onConnect.
-   * @param {Object} port The port.
-   */
-  onConnect: function(port) {
-    if (port.name != this.PORT_ID)
-      return;
-    port.onMessage.addListener(this.onMessage.bind(this));
-  },
-
-  /**
-   * Dispatches messages to specific handlers.
-   * @param {Object} message The message.
-   */
-  onMessage: function(message) {
-    if (message.keyDown)
-      this.onKeyDown(message);
-  },
-
-  /**
-   * Handles key down messages from the content script.
-   * @param {Object} message The key down message.
-   */
-  onKeyDown: function(message) {
-    // TODO(dtseng): Implement.
-  },
-
-  /**
-   * Handles chrome.tabs.onUpdate.
-   * @param {number} tabId The tab id.
-   * @param {Object.<string, (string|boolean)>} changeInfo Information about
-   * the updated tab.
+   * Handles chrome.tabs.onUpdated.
+   * @param {number} tabId
+   * @param {Object} changeInfo
    */
   onTabUpdated: function(tabId, changeInfo) {
-    chrome.automation.getTree(this.onGotTree.bind(this));
+    chrome.tabs.get(tabId, function(tab) {
+      if (!tab.url)
+        return;
+
+      if (!this.isWhitelisted_(tab.url)) {
+        chrome.commands.onCommand.removeListener(this.onGotCommand);
+        return;
+      }
+
+      if (!chrome.commands.onCommand.hasListeners()) {
+        chrome.commands.onCommand.addListener(this.onGotCommand);
+      }
+
+      this.disableClassicChromeVox_(tab.id);
+
+      chrome.automation.getTree(this.onGotTree.bind(this));
+    }.bind(this));
   },
 
   /**
@@ -94,8 +87,37 @@ cvox2.Background.prototype = {
    */
   onAutomationEvent: function(evt) {
     var output = evt.target.attributes.name + ' ' + evt.target.role;
-    cvox.ChromeVox.tts.speak(output);
+    cvox.ChromeVox.tts.speak(output, cvox.AbstractTts.QUEUE_MODE_FLUSH);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
+  },
+
+  /**
+   * Handles chrome.commands.onCommand.
+   * @param {string} command
+   */
+  onGotCommand: function(command) {
+  },
+
+  /**
+   * @private
+   * @param {string} url
+   * @return {boolean} Whether the given |url| is whitelisted.
+   */
+  isWhitelisted_: function(url) {
+    return this.whitelist_.some(function(item) {
+      return url.indexOf(item) != -1;
+    }.bind(this));
+  },
+
+  /**
+   * Disables classic ChromeVox.
+   * @param {number} tabId The tab where ChromeVox classic is running.
+   */
+  disableClassicChromeVox_: function(tabId) {
+    chrome.tabs.executeScript(
+          tabId,
+          {'code': 'try { window.disableChromeVox(); } catch(e) { }\n',
+           'allFrames': true});
   }
 };
 

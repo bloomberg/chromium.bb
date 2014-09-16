@@ -20,6 +20,9 @@
     "accessibilityPrivate",
     "bookmarks",
     "brailleDisplayPrivate",
+{% if use_chromevox_next == '1' %}
+    "commands.accessibility",
+{% endif %}
     "commandLinePrivate",
     "experimental",
     "history",
@@ -36,14 +39,7 @@
       "exclude_globs": [ "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/chromevox/background/background.html" ],
       "all_frames": true,
       "js": [
-{% if use_chromevox_next == '1' %}
-        "closure/closure_preinit.js",
-        "closure/base.js",
-        "deps.js",
-        "cvox2/injected/loader.js"
-{% else %}
         "chromeVoxChromePageScript.js"
-{% endif %}
       ]
     }
   ],
@@ -56,6 +52,32 @@
 {% if use_chromevox_next == '1' %}
   "automation": {
     "desktop": true
+  },
+  "commands": {
+    "nextElement": {
+      "description": "Moves to the next element",
+      "suggested_key": {
+        "chromeos": "Search+Shift+Right"
+      }
+    },
+    "previousElement": {
+      "description": "Moves to the previous element",
+      "suggested_key": {
+        "chromeos": "Search+Shift+Left"
+      }
+    },
+    "nextLine": {
+      "description": "Moves to the next line",
+      "suggested_key": {
+        "chromeos": "Search+Shift+Down"
+      }
+    },
+    "previousLine": {
+      "description": "Moves to the previous line",
+      "suggested_key": {
+        "chromeos": "Search+Shift+Up"
+      }
+    }
   },
 {% endif %}
   "default_locale": "en"
