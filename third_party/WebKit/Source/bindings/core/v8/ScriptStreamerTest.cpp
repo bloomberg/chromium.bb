@@ -37,6 +37,11 @@ public:
     ScriptState* scriptState() const { return m_scope.scriptState(); }
     v8::Isolate* isolate() const { return m_scope.isolate(); }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_pendingScript);
+    }
+
 protected:
     void appendData(const char* data)
     {
