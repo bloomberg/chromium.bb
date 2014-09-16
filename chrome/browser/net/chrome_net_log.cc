@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_log_logger.h"
+#include "net/base/trace_net_log_observer.h"
 
 ChromeNetLog::ChromeNetLog()
     : net_log_temp_file_(new NetLogTempFile(this)) {
@@ -59,6 +60,9 @@ ChromeNetLog::ChromeNetLog()
       net_log_logger_->StartObserving(this);
     }
   }
+
+  trace_net_log_observer_.reset(new net::TraceNetLogObserver());
+  trace_net_log_observer_->WatchForTraceStart(this);
 }
 
 ChromeNetLog::~ChromeNetLog() {
@@ -66,5 +70,7 @@ ChromeNetLog::~ChromeNetLog() {
   // Remove the observers we own before we're destroyed.
   if (net_log_logger_)
     RemoveThreadSafeObserver(net_log_logger_.get());
+  if (trace_net_log_observer_)
+    trace_net_log_observer_->StopWatchForTraceStart();
 }
 

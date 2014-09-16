@@ -13,6 +13,7 @@
 
 namespace net {
 class NetLogLogger;
+class TraceNetLogObserver;
 }
 
 class NetLogTempFile;
@@ -31,6 +32,8 @@ class ChromeNetLog : public net::NetLog {
  private:
   scoped_ptr<net::NetLogLogger> net_log_logger_;
   scoped_ptr<NetLogTempFile> net_log_temp_file_;
+
+  scoped_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);
 };
