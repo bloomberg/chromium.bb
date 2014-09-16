@@ -105,6 +105,10 @@ class ATHENA_EXPORT SplitViewController
   // container_ coordinates (along the x axis).
   int separator_position_;
 
+  // Windows which should be hidden when the animation initiated by
+  // UpdateLayout() completes.
+  std::vector<aura::Window*> to_hide_;
+
   base::WeakPtrFactory<SplitViewController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);

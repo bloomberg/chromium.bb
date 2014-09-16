@@ -65,14 +65,9 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   aura::Window::Windows windows = window_list_provider_->GetWindowList();
   aura::Window::Windows::reverse_iterator iter = windows.rbegin();
   if (state_ == ACTIVE) {
-    if (left_window_ == right)
-      left_window_ = left;
-    if (right_window_ == left)
-      right_window_ = right;
-
-    if (!left)
+    if (!left && left_window_ != right)
       left = left_window_;
-    if (!right)
+    if (!right && right_window_ != left)
       right = right_window_;
   }
 
@@ -93,6 +88,12 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
       iter++;
     }
   }
+
+  to_hide_.clear();
+  if (left_window_ && left_window_ != left && left_window_ != right)
+    to_hide_.push_back(left_window_);
+  if (right_window_ && right_window_ != left && right_window_ != right)
+    to_hide_.push_back(right_window_);
 
   SetState(ACTIVE);
   right_window_ = right;
@@ -228,6 +229,10 @@ void SplitViewController::OnAnimationCompleted() {
   if (left_window_ == NULL)
     return;
   UpdateLayout(false);
+
+  for (size_t i = 0; i < to_hide_.size(); ++i)
+    to_hide_[i]->Hide();
+  to_hide_.clear();
 
   if (state_ == INACTIVE) {
     left_window_ = NULL;

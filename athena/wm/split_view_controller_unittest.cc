@@ -46,6 +46,22 @@ class SplitViewControllerTest : public test::AthenaTestBase {
             second_topmost == controller->right_window());
   }
 
+  // Returns whether only the split view windows are visible.
+  bool OnlySplitViewWindowsVisible() const {
+    SplitViewController* controller = api_->GetSplitViewController();
+    DCHECK(controller->IsSplitViewModeActive());
+    aura::Window::Windows list =
+        api_->GetWindowListProvider()->GetWindowList();
+    for (aura::Window::Windows::const_iterator it = list.begin();
+         it != list.end(); ++it) {
+      bool in_split_view = (*it == controller->left_window() ||
+                            *it == controller->right_window());
+      if (in_split_view != (*it)->IsVisible())
+        return false;
+    }
+    return true;
+  }
+
   bool IsSplitViewAllowed() const {
     return api_->GetSplitViewController()->CanScroll();
   }
@@ -69,7 +85,10 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   for (size_t i = 0; i < kNumWindows; ++i) {
     scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
     windows.push_back(window.release());
+    windows[i]->Hide();
   }
+
+  windows[kNumWindows - 1]->Show();
 
   SplitViewController* controller = api()->GetSplitViewController();
   ASSERT_FALSE(controller->IsSplitViewModeActive());
@@ -80,6 +99,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   // Select the window that is currently on the left for the right panel. The
   // windows should switch.
@@ -87,11 +107,13 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_EQ(windows[kNumWindows - 2], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 1], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   controller->ActivateSplitMode(windows[kNumWindows - 1], NULL);
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   // Select one of the windows behind the stacks for the right panel. The window
   // on the left should remain unchanged.
@@ -99,21 +121,25 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   controller->ActivateSplitMode(windows[1], NULL);
   EXPECT_EQ(windows[1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   controller->ActivateSplitMode(windows[4], windows[5]);
   EXPECT_EQ(windows[4], controller->left_window());
   EXPECT_EQ(windows[5], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   controller->ActivateSplitMode(windows[0], NULL);
   EXPECT_EQ(windows[0], controller->left_window());
   EXPECT_EQ(windows[5], controller->right_window());
   EXPECT_TRUE(SplitViewWindowsTopmost());
+  EXPECT_TRUE(OnlySplitViewWindowsVisible());
 }
 
 TEST_F(SplitViewControllerTest, LandscapeOnly) {
