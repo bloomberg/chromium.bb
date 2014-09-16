@@ -4178,8 +4178,25 @@ bool Document::isValidName(const String& name)
     return isValidNameNonASCII(characters, length);
 }
 
+enum QualifiedNameStatus {
+    QNValid,
+    QNMultipleColons,
+    QNInvalidStartChar,
+    QNInvalidChar,
+    QNEmptyPrefix,
+    QNEmptyLocalName
+};
+
+struct ParseQualifiedNameResult {
+    QualifiedNameStatus status;
+    UChar32 character;
+    ParseQualifiedNameResult() { }
+    explicit ParseQualifiedNameResult(QualifiedNameStatus status) : status(status) { }
+    ParseQualifiedNameResult(QualifiedNameStatus status, UChar32 character) : status(status), character(character) { }
+};
+
 template<typename CharType>
-static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const CharType* characters, unsigned length, AtomicString& prefix, AtomicString& localName, ExceptionState& exceptionState)
+static ParseQualifiedNameResult parseQualifiedNameInternal(const AtomicString& qualifiedName, const CharType* characters, unsigned length, AtomicString& prefix, AtomicString& localName)
 {
     bool nameStart = true;
     bool sawColon = false;
@@ -4189,36 +4206,18 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
         UChar32 c;
         U16_NEXT(characters, i, length, c)
         if (c == ':') {
-            if (sawColon) {
-                exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') contains multiple colons.");
-                return false; // multiple colons: not allowed
-            }
+            if (sawColon)
+                return ParseQualifiedNameResult(QNMultipleColons);
             nameStart = true;
             sawColon = true;
             colonPos = i - 1;
         } else if (nameStart) {
-            if (!isValidNameStart(c)) {
-                StringBuilder message;
-                message.appendLiteral("The qualified name provided ('");
-                message.append(qualifiedName);
-                message.appendLiteral("') contains the invalid name-start character '");
-                message.append(c);
-                message.appendLiteral("'.");
-                exceptionState.throwDOMException(InvalidCharacterError, message.toString());
-                return false;
-            }
+            if (!isValidNameStart(c))
+                return ParseQualifiedNameResult(QNInvalidStartChar, c);
             nameStart = false;
         } else {
-            if (!isValidNamePart(c)) {
-                StringBuilder message;
-                message.appendLiteral("The qualified name provided ('");
-                message.append(qualifiedName);
-                message.appendLiteral("') contains the invalid character '");
-                message.append(c);
-                message.appendLiteral("'.");
-                exceptionState.throwDOMException(InvalidCharacterError, message.toString());
-                return false;
-            }
+            if (!isValidNamePart(c))
+                return ParseQualifiedNameResult(QNInvalidChar, c);
         }
     }
 
@@ -4227,20 +4226,16 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
         localName = qualifiedName;
     } else {
         prefix = AtomicString(characters, colonPos);
-        if (prefix.isEmpty()) {
-            exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') has an empty namespace prefix.");
-            return false;
-        }
+        if (prefix.isEmpty())
+            return ParseQualifiedNameResult(QNEmptyPrefix);
         int prefixStart = colonPos + 1;
         localName = AtomicString(characters + prefixStart, length - prefixStart);
     }
 
-    if (localName.isEmpty()) {
-        exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') has an empty local name.");
-        return false;
-    }
+    if (localName.isEmpty())
+        return ParseQualifiedNameResult(QNEmptyLocalName);
 
-    return true;
+    return ParseQualifiedNameResult(QNValid);
 }
 
 bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicString& prefix, AtomicString& localName, ExceptionState& exceptionState)
@@ -4252,9 +4247,41 @@ bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicStrin
         return false;
     }
 
+    ParseQualifiedNameResult returnValue;
     if (qualifiedName.is8Bit())
-        return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters8(), length, prefix, localName, exceptionState);
-    return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName, exceptionState);
+        returnValue = parseQualifiedNameInternal(qualifiedName, qualifiedName.characters8(), length, prefix, localName);
+    else
+        returnValue = parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName);
+    if (returnValue.status == QNValid)
+        return true;
+
+    StringBuilder message;
+    message.appendLiteral("The qualified name provided ('");
+    message.append(qualifiedName);
+    message.appendLiteral("') ");
+
+    if (returnValue.status == QNMultipleColons) {
+        message.appendLiteral("contains multiple colons.");
+    } else if (returnValue.status == QNInvalidStartChar) {
+        message.appendLiteral("contains the invalid name-start character '");
+        message.append(returnValue.character);
+        message.appendLiteral("'.");
+    } else if (returnValue.status == QNInvalidChar) {
+        message.appendLiteral("contains the invalid character '");
+        message.append(returnValue.character);
+        message.appendLiteral("'.");
+    } else if (returnValue.status == QNEmptyPrefix) {
+        message.appendLiteral("has an empty namespace prefix.");
+    } else {
+        ASSERT(returnValue.status == QNEmptyLocalName);
+        message.appendLiteral("has an empty local name.");
+    }
+
+    if (returnValue.status == QNInvalidStartChar || returnValue.status == QNInvalidChar)
+        exceptionState.throwDOMException(InvalidCharacterError, message.toString());
+    else
+        exceptionState.throwDOMException(NamespaceError, message.toString());
+    return false;
 }
 
 void Document::setEncodingData(const DocumentEncodingData& newData)
