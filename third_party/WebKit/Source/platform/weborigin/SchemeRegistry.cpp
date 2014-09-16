@@ -142,6 +142,18 @@ static URLSchemesMap& CORSEnabledSchemes()
     return CORSEnabledSchemes;
 }
 
+static URLSchemesMap& LegacySchemes()
+{
+    DEFINE_STATIC_LOCAL(URLSchemesMap, LegacySchemes, ());
+
+    if (LegacySchemes.isEmpty()) {
+        LegacySchemes.add("ftp");
+        LegacySchemes.add("gopher");
+    }
+
+    return LegacySchemes;
+}
+
 static URLSchemesMap& ContentSecurityPolicyBypassingSchemes()
 {
     DEFINE_STATIC_LOCAL(URLSchemesMap, schemes, ());
@@ -272,6 +284,18 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
         builder.append(*it);
     }
     return builder.toString();
+}
+
+void SchemeRegistry::registerURLSchemeAsLegacy(const String& scheme)
+{
+    LegacySchemes().add(scheme);
+}
+
+bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme)
+{
+    if (scheme.isEmpty())
+        return false;
+    return LegacySchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)

@@ -66,6 +66,7 @@
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
@@ -554,6 +555,16 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     if (type != Resource::MainResource) {
         if (frame() && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
             return false;
+    }
+
+    // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
+    // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
+    // block them at some point in the future.
+    if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
+        if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->securityOrigin()->protocol()))
+            UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
+        if (!url.user().isEmpty() || !url.pass().isEmpty())
+            UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
     }
 
     // Last of all, check for mixed content. We do this last so that when
