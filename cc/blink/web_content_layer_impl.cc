@@ -54,12 +54,10 @@ void WebContentLayerImpl::PaintContents(
   if (!client_)
     return;
 
-  blink::WebFloatRect web_opaque;
   client_->paintContents(
       canvas,
       clip,
       can_use_lcd_text_,
-      web_opaque,  // TODO(danakj): Remove this.
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
