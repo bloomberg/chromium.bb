@@ -605,13 +605,13 @@ int TCPSocketLibevent::TcpFastOpenWrite(
     return rv;
 
   int flags = 0x20000000;  // Magic flag to enable TCP_FASTOPEN.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   // sendto() will fail with EPIPE when the system doesn't support TCP Fast
   // Open. Theoretically that shouldn't happen since the caller should check
   // for system support on startup, but users may dynamically disable TCP Fast
   // Open via sysctl.
   flags |= MSG_NOSIGNAL;
-#endif // defined(OS_LINUX)
+#endif // defined(OS_LINUX) || defined(OS_ANDROID)
   rv = HANDLE_EINTR(sendto(socket_->socket_fd(),
                            buf->data(),
                            buf_len,

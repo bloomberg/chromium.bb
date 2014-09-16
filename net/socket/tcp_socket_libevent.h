@@ -87,49 +87,49 @@ class NET_EXPORT TCPSocketLibevent {
   const BoundNetLog& net_log() const { return net_log_; }
 
  private:
-  // States that a fast open socket attempt can result in.
+  // States that using a socket with TCP FastOpen can lead to.
   enum FastOpenStatus {
     FAST_OPEN_STATUS_UNKNOWN,
 
-    // The initial fast open connect attempted returned synchronously,
+    // The initial TCP FastOpen connect attempted returned synchronously,
     // indicating that we had and sent a cookie along with the initial data.
     FAST_OPEN_FAST_CONNECT_RETURN,
 
-    // The initial fast open connect attempted returned asynchronously,
+    // The initial TCP FastOpen connect attempted returned asynchronously,
     // indicating that we did not have a cookie for the server.
     FAST_OPEN_SLOW_CONNECT_RETURN,
 
     // Some other error occurred on connection, so we couldn't tell if
-    // fast open would have worked.
+    // TCP FastOpen would have worked.
     FAST_OPEN_ERROR,
 
-    // An attempt to do a fast open succeeded immediately
+    // An attempt to do a TCP FastOpen succeeded immediately
     // (FAST_OPEN_FAST_CONNECT_RETURN) and we later confirmed that the server
     // had acked the data we sent.
     FAST_OPEN_SYN_DATA_ACK,
 
-    // An attempt to do a fast open succeeded immediately
+    // An attempt to do a TCP FastOpen succeeded immediately
     // (FAST_OPEN_FAST_CONNECT_RETURN) and we later confirmed that the server
     // had nacked the data we sent.
     FAST_OPEN_SYN_DATA_NACK,
 
-    // An attempt to do a fast open succeeded immediately
+    // An attempt to do a TCP FastOpen succeeded immediately
     // (FAST_OPEN_FAST_CONNECT_RETURN) and our probe to determine if the
-    // socket was using fast open failed.
+    // socket was using TCP FastOpen failed.
     FAST_OPEN_SYN_DATA_FAILED,
 
-    // An attempt to do a fast open failed (FAST_OPEN_SLOW_CONNECT_RETURN)
+    // An attempt to do a TCP FastOpen failed (FAST_OPEN_SLOW_CONNECT_RETURN)
     // and we later confirmed that the server had acked initial data.  This
     // should never happen (we didn't send data, so it shouldn't have
     // been acked).
     FAST_OPEN_NO_SYN_DATA_ACK,
 
-    // An attempt to do a fast open failed (FAST_OPEN_SLOW_CONNECT_RETURN)
+    // An attempt to do a TCP FastOpen failed (FAST_OPEN_SLOW_CONNECT_RETURN)
     // and we later discovered that the server had nacked initial data.  This
     // is the expected case results for FAST_OPEN_SLOW_CONNECT_RETURN.
     FAST_OPEN_NO_SYN_DATA_NACK,
 
-    // An attempt to do a fast open failed (FAST_OPEN_SLOW_CONNECT_RETURN)
+    // An attempt to do a TCP FastOpen failed (FAST_OPEN_SLOW_CONNECT_RETURN)
     // and our later probe for ack/nack state failed.
     FAST_OPEN_NO_SYN_DATA_FAILED,
 
