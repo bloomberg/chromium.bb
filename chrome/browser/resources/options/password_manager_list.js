@@ -17,7 +17,7 @@ cr.define('options.passwordManager', function() {
    * @param {boolean} showPasswords If true, add a button to the element to
    *     allow the user to reveal the saved password.
    * @constructor
-   * @extends {cr.ui.ListItem}
+   * @extends {options.DeletableItem}
    */
   function PasswordListItem(dataModel, entry, showPasswords) {
     var el = cr.doc.createElement('div');
@@ -195,7 +195,7 @@ cr.define('options.passwordManager', function() {
    * Creates a new PasswordExceptions list item.
    * @param {Array} entry A pair of the form [url, username].
    * @constructor
-   * @extends {options.DeletableListItem}
+   * @extends {options.DeletableItem}
    */
   function PasswordExceptionsListItem(entry) {
     var el = cr.doc.createElement('div');

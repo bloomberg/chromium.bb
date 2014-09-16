@@ -178,7 +178,7 @@ cr.define('options', function() {
     /**
      * Updates the data model for the password exceptions list with the values
      * from |entries|.
-     * @param {Array} entries The list of password exception data.
+     * @param {!Array} entries The list of password exception data.
      */
     setPasswordExceptionsList_: function(entries) {
       this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);

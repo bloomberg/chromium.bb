@@ -551,7 +551,7 @@ cr.define('options', function() {
 
     /**
      * A function to handle key press events.
-     * @return {Event} a keydown event.
+     * @param {Event} event A keydown event.
      * @private
      */
     keyDownEventHandler_: function(event) {

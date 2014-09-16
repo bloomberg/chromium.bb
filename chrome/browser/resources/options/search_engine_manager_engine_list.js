@@ -2,6 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{canBeDefault: boolean,
+ *            canBeEdited: boolean,
+ *            canBeRemoved: boolean,
+ *            default: boolean,
+ *            displayName: string,
+ *            extension: (Object|undefined),
+ *            iconURL: (string|undefined),
+ *            isExtension: boolean,
+ *            keyword: string,
+ *            modelIndex: string,
+ *            name: string,
+ *            url: string,
+ *            urlLocked: boolean}}
+ * @see chrome/browser/ui/webui/options/search_engine_manager_handler.cc
+ */
+var SearchEngine;
+
 cr.define('options.search_engines', function() {
   /** @const */ var ControlledSettingIndicator =
                     options.ControlledSettingIndicator;
@@ -11,9 +29,9 @@ cr.define('options.search_engines', function() {
 
   /**
    * Creates a new search engine list item.
-   * @param {Object} searchEngine The search engine this represents.
+   * @param {SearchEngine} searchEngine The search engine this represents.
    * @constructor
-   * @extends {cr.ui.ListItem}
+   * @extends {options.InlineEditableItem}
    */
   function SearchEngineListItem(searchEngine) {
     var el = cr.doc.createElement('div');
@@ -68,6 +86,11 @@ cr.define('options.search_engines', function() {
      * @private
      */
     currentlyValid_: false,
+
+    /**
+     * @type {?SearchEngine}
+     */
+    searchEngine_: null,
 
     /** @override */
     decorate: function() {
@@ -146,11 +169,13 @@ cr.define('options.search_engines', function() {
       }
 
       // Do final adjustment to the input fields.
-      this.nameField_ = nameEl.querySelector('input');
+      this.nameField_ = /** @type {HTMLElement} */(
+          nameEl.querySelector('input'));
       // The editable field uses the raw name, not the display name.
       this.nameField_.value = engine.name;
-      this.keywordField_ = keywordEl.querySelector('input');
-      this.urlField_ = urlEl.querySelector('input');
+      this.keywordField_ = /** @type {HTMLElement} */(
+          keywordEl.querySelector('input'));
+      this.urlField_ = /** @type {HTMLElement} */(urlEl.querySelector('input'));
 
       if (engine.urlLocked)
         this.urlField_.disabled = true;
@@ -300,12 +325,19 @@ cr.define('options.search_engines', function() {
     },
   };
 
+  /**
+   * @constructor
+   * @extends {options.InlineEditableItemList}
+   */
   var SearchEngineList = cr.ui.define('list');
 
   SearchEngineList.prototype = {
     __proto__: InlineEditableItemList.prototype,
 
-    /** @override */
+    /**
+     * @override
+     * @param {SearchEngine} searchEngine
+     */
     createItem: function(searchEngine) {
       return new SearchEngineListItem(searchEngine);
     },

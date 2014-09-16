@@ -172,6 +172,10 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   TemplateURLTableModel* table_model = list_controller_->table_model();
   const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
 
+  // The items which are to be written into |dict| are also described in
+  // chrome/browser/resources/options/search_engine_manager_engine_list.js
+  // in @typedef for SearchEngine. Please update it whenever you add or remove
+  // any keys here.
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("name",  template_url->short_name());
   dict->SetString("displayName", table_model->GetText(

@@ -93,8 +93,8 @@ function load() {
           'do-not-track-confirm-overlay',
           /** @type {HTMLInputElement} */($('do-not-track-confirm-ok')),
           /** @type {HTMLInputElement} */($('do-not-track-confirm-cancel')),
-          $('do-not-track-enabled').pref,
-          $('do-not-track-enabled').metric),
+          $('do-not-track-enabled')['pref'],
+          $('do-not-track-enabled')['metric']),
       BrowserOptions.getInstance());
   // 'spelling-enabled-control' element is only present on Chrome branded
   // builds.
@@ -106,8 +106,8 @@ function load() {
             'spelling-confirm-overlay',
             /** @type {HTMLInputElement} */($('spelling-confirm-ok')),
             /** @type {HTMLInputElement} */($('spelling-confirm-cancel')),
-            $('spelling-enabled-control').pref,
-            $('spelling-enabled-control').metric),
+            $('spelling-enabled-control')['pref'],
+            $('spelling-enabled-control')['metric']),
         BrowserOptions.getInstance());
   }
   PageManager.registerOverlay(new HotwordConfirmDialog(),

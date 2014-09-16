@@ -62,7 +62,7 @@ cr.define('options', function() {
 
     /**
      * Sets up the given list as a search engine list
-     * @param {cr.ui.List} list The list to set up.
+     * @param {HTMLElement} list The list to set up.
      * @private
      */
     setUpList_: function(list) {
@@ -73,9 +73,9 @@ cr.define('options', function() {
     /**
      * Updates the search engine list with the given entries.
      * @private
-     * @param {Array} defaultEngines List of possible default search engines.
-     * @param {Array} otherEngines List of other search engines.
-     * @param {Array} keywords List of keywords from extensions.
+     * @param {!Array} defaultEngines List of possible default search engines.
+     * @param {!Array} otherEngines List of other search engines.
+     * @param {!Array} keywords List of keywords from extensions.
      */
     updateSearchEngineList_: function(defaultEngines, otherEngines, keywords) {
       this.defaultsList_.dataModel = new ArrayDataModel(defaultEngines);

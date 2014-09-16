@@ -24,8 +24,8 @@ cr.define('options', function() {
                        'hotword-confirm-overlay',  // pageDivName
                        $('hotword-confirm-ok'),  // okButton
                        $('hotword-confirm-cancel'),  // cancelButton
-                       $('hotword-search-enable').pref, // pref
-                       $('hotword-search-enable').metric); // metric
+                       $('hotword-search-enable')['pref'], // pref
+                       $('hotword-search-enable')['metric']); // metric
 
     this.indicator = $('hotword-search-setting-indicator');
   }
