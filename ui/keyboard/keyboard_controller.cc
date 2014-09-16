@@ -370,7 +370,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kHideAnimationDurationMs));
   gfx::Transform transform;
-  transform.Translate(0, proxy_->GetKeyboardWindow()->bounds().height());
+  transform.Translate(0, kAnimationDistance);
   container_->SetTransform(transform);
   container_->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
 }
@@ -523,7 +523,7 @@ void KeyboardController::ShowKeyboardInternal() {
   // are at begin states for animation.
   if (!container_animator->is_animating()) {
     gfx::Transform transform;
-    transform.Translate(0, proxy_->GetKeyboardWindow()->bounds().height());
+    transform.Translate(0, kAnimationDistance);
     container_->SetTransform(transform);
     container_->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
   }

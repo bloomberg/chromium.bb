@@ -520,7 +520,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_TRUE(keyboard_window()->IsVisible());
   float show_start_opacity = layer->opacity();
   gfx::Transform transform;
-  transform.Translate(0, keyboard_window()->bounds().height());
+  transform.Translate(0, kAnimationDistance);
   EXPECT_EQ(transform, layer->transform());
   EXPECT_EQ(gfx::Rect(), notified_bounds());
 

@@ -31,6 +31,9 @@ class WindowBoundsChangeObserver;
 class KeyboardControllerObserver;
 class KeyboardControllerProxy;
 
+// Animation distance.
+const int kAnimationDistance = 30;
+
 // Provides control of the virtual keyboard, including providing a container
 // and controlling visibility.
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
