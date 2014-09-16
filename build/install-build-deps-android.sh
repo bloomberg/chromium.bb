@@ -19,7 +19,7 @@ fi
 
 # Install first the default Linux build deps.
 "$(dirname "${BASH_SOURCE[0]}")/install-build-deps.sh" \
-    --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+    --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt "$@"
 
 # The temporary directory used to store output of update-java-alternatives
 TEMPDIR=$(mktemp -d)
