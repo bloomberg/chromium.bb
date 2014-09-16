@@ -466,7 +466,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_webview_glue.git' + '@' + '60e4952d02f2bfa3f0705043b792c01f79ffbfa6',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + '7fc902d157a9aed7a2b68adc9c69181b3a43cd58',
+     Var('chromium_git') + '/android_tools.git' + '@' + 'd2b86205ff973a3844020feacb35ca6b1d82efbe',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
