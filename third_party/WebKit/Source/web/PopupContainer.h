@@ -59,6 +59,8 @@ public:
     virtual void hide() OVERRIDE;
     virtual HostWindow* hostWindow() const OVERRIDE;
     virtual void invalidateRect(const IntRect&) OVERRIDE;
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const OVERRIDE;
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const OVERRIDE;
 
     // PopupContainer methods
 

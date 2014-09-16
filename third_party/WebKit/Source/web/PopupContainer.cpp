@@ -525,4 +525,18 @@ HostWindow* PopupContainer::hostWindow() const
     return const_cast<PopupContainerClient*>(m_client);
 }
 
+IntPoint PopupContainer::convertChildToSelf(const Widget* child, const IntPoint& point) const
+{
+    IntPoint newPoint = point;
+    newPoint.moveBy(child->location());
+    return newPoint;
+}
+
+IntPoint PopupContainer::convertSelfToChild(const Widget* child, const IntPoint& point) const
+{
+    IntPoint newPoint = point;
+    newPoint.moveBy(-child->location());
+    return newPoint;
+}
+
 } // namespace blink
