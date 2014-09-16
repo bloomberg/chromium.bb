@@ -87,6 +87,7 @@ group("root") {
     "//third_party/libwebm",
     "//third_party/libwebp",
     "//third_party/libxslt",
+    "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/lzma_sdk",
     "//third_party/mesa",
