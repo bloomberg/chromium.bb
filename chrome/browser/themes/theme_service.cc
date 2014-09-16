@@ -4,6 +4,8 @@
 
 #include "chrome/browser/themes/theme_service.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -76,6 +78,17 @@ void WritePackToDiskCallback(BrowserThemePack* pack,
                              const base::FilePath& path) {
   if (!pack->WriteToDisk(path))
     NOTREACHED() << "Could not write theme pack to disk";
+}
+
+// Heuristic to determine if color is grayscale. This is used to decide whether
+// to use the colorful or white logo, if a theme fails to specify which.
+bool IsColorGrayscale(SkColor color) {
+  const int kChannelTolerance = 9;
+  int r = SkColorGetR(color);
+  int g = SkColorGetG(color);
+  int b = SkColorGetB(color);
+  int range = std::max(r, std::max(g, b)) - std::min(r, std::min(g, b));
+  return range < kChannelTolerance;
 }
 
 }  // namespace
@@ -193,12 +206,15 @@ int ThemeService::GetDisplayProperty(int id) const {
     return result;
   }
 
-  if (id == Properties::NTP_LOGO_ALTERNATE &&
-      !UsingDefaultTheme() &&
-      !UsingSystemTheme()) {
-    // Use the alternate logo for themes from the web store except for
-    // |kDefaultThemeGalleryID|.
-    return 1;
+  if (id == Properties::NTP_LOGO_ALTERNATE) {
+    if (UsingDefaultTheme() || UsingSystemTheme())
+      return 0;  // Colorful logo.
+
+    if (HasCustomImage(IDR_THEME_NTP_BACKGROUND))
+      return 1;  // White logo.
+
+    SkColor background_color = GetColor(Properties::COLOR_NTP_BACKGROUND);
+    return IsColorGrayscale(background_color) ? 0 : 1;
   }
 
   return Properties::GetDefaultDisplayProperty(id);
