@@ -195,7 +195,7 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     // We do have to schedule layouts, though, since a style change can force us to
     // need to relayout.
     if (diff.needsFullLayout()) {
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalc();
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }
 
@@ -1418,7 +1418,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this RenderText has parent.
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalc();
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
@@ -1578,35 +1578,6 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
     if (!style()->isHorizontalWritingMode())
         rect = rect.transposedRect();
     return rect;
-}
-
-LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
-    const RenderObject* rendererToIssuePaintInvalidations = containingObjectForPaintInvalidation();
-    return rendererToIssuePaintInvalidations->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
-}
-
-const RenderLayerModelObject* RenderText::containingObjectForPaintInvalidation() const
-{
-    RenderLayerModelObject* rendererToIssuePaintInvalidations = containingBlock();
-
-    // Do not cross self-painting layer boundaries.
-    RenderLayer* layer = enclosingLayer();
-    if (layer) {
-        RenderLayerModelObject* enclosingLayerRenderer = layer->renderer();
-        if (enclosingLayerRenderer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(enclosingLayerRenderer))
-            rendererToIssuePaintInvalidations = enclosingLayerRenderer;
-    }
-    return rendererToIssuePaintInvalidations;
-}
-
-const RenderLayerModelObject* RenderText::containerForPaintInvalidation() const
-{
-    const RenderObject* rendererToIssuePaintInvalidations = containingObjectForPaintInvalidation();
-    if (rendererToIssuePaintInvalidations)
-        return rendererToIssuePaintInvalidations->containerForPaintInvalidation();
-    // This can happen for detached render subtrees.
-    return 0;
 }
 
 LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent) const
