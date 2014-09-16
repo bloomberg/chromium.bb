@@ -206,7 +206,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
     watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
-    watchdog_thread->Start();
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    watchdog_thread->StartWithOptions(options);
   }
 
   gpu::GPUInfo gpu_info;
@@ -300,7 +302,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 
     if (enable_watchdog && delayed_watchdog_enable) {
       watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
-      watchdog_thread->Start();
+      base::Thread::Options options;
+      options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+      watchdog_thread->StartWithOptions(options);
     }
 
     // OSMesa is expected to run very slowly, so disable the watchdog in that
@@ -495,7 +499,9 @@ bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
   // with only one thread.
   res = LinuxSandbox::InitializeSandbox();
   if (watchdog_thread) {
-    watchdog_thread->Start();
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    watchdog_thread->StartWithOptions(options);
   }
 
   return res;
