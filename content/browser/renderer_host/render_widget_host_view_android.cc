@@ -829,7 +829,7 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
   end_bound.edge_bottom = end_rect.bottom_left();
 
   if (params.anchor_rect == params.focus_rect) {
-    if (params.anchor_rect.x() && params.anchor_rect.y())
+    if (params.anchor_rect.x() || params.anchor_rect.y())
       start_bound.type = end_bound.type = cc::SELECTION_BOUND_CENTER;
   } else {
     start_bound.type = params.anchor_dir == blink::WebTextDirectionRightToLeft
