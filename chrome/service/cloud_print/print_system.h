@@ -74,12 +74,12 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
    public:
     // Callback interface for new printer notifications.
     class Delegate {
-      public:
-        virtual void OnPrinterAdded() = 0;
-        // TODO(gene): Do we need OnPrinterDeleted notification here?
+     public:
+      virtual void OnPrinterAdded() = 0;
+      // TODO(gene): Do we need OnPrinterDeleted notification here?
 
-      protected:
-        virtual ~Delegate() {}
+     protected:
+      virtual ~Delegate() {}
     };
 
     virtual bool StartWatching(PrintServerWatcher::Delegate* delegate) = 0;
@@ -94,13 +94,13 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
    public:
     // Callback interface for printer updates notifications.
     class Delegate {
-      public:
-        virtual void OnPrinterDeleted() = 0;
-        virtual void OnPrinterChanged() = 0;
-        virtual void OnJobChanged() = 0;
+     public:
+      virtual void OnPrinterDeleted() = 0;
+      virtual void OnPrinterChanged() = 0;
+      virtual void OnJobChanged() = 0;
 
-      protected:
-        virtual ~Delegate() {}
+     protected:
+      virtual ~Delegate() {}
     };
 
     virtual bool StartWatching(PrinterWatcher::Delegate* delegate) = 0;
