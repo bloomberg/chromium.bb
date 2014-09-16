@@ -22,13 +22,8 @@ cr.define('help', function() {
     __proto__: Page.prototype,
 
     /**
-     * True if after update powerwash button should be displayed.
-     * @private
-     */
-    powerwashAfterUpdate_: false,
-
-    /**
-     * List of the channel names.
+     * List of the channel names. Should be ordered in increasing level of
+     * stability.
      * @private
      */
     channelList_: ['dev-channel', 'beta-channel', 'stable-channel'],
@@ -44,6 +39,18 @@ cr.define('help', function() {
      * @private
      */
     targetChannel_: null,
+
+    /**
+     * Last status received from the version updater.
+     * @private
+     */
+    status_: null,
+
+    /**
+     * Last message received from the version updater.
+     * @private
+     */
+    message_: null,
 
     /** @override */
     initializePage: function() {
@@ -224,11 +231,52 @@ cr.define('help', function() {
     },
 
     /**
+     * @return {boolean} True if target channel is more stable than the current
+     *     one, and false otherwise.
+     * @private
+     */
+    targetChannelIsMoreStable_: function() {
+      var current = this.currentChannel_;
+      var target = this.targetChannel_;
+      if (current == null || target == null)
+        return false;
+      var currentIndex = this.channelList_.indexOf(current);
+      var targetIndex = this.channelList_.indexOf(target);
+      if (currentIndex < 0 || targetIndex < 0)
+        return false;
+      return currentIndex < targetIndex;
+    },
+
+    /**
      * @param {string} status The status of the update.
      * @param {string} message Failure message to display.
      * @private
      */
     setUpdateStatus_: function(status, message) {
+      this.status_ = status;
+      this.message_ = message;
+
+      this.updateUI_();
+    },
+
+    /**
+      * Updates UI elements on the page according to current state.
+      * @private
+      */
+    updateUI_: function() {
+      var status = this.status_;
+      var message = this.message_;
+      var channel = this.targetChannel_;
+
+      if (this.channelList_.indexOf(channel) >= 0) {
+        $('current-channel').textContent = loadTimeData.getStringF(
+            'currentChannel', this.channelTable_[channel].label);
+        this.updateChannelChangePageContainerVisibility_();
+      }
+
+      if (status == null)
+        return;
+
       if (cr.isMac &&
           $('update-status-message') &&
           $('update-status-message').hidden) {
@@ -238,7 +286,6 @@ cr.define('help', function() {
         return;
       }
 
-      var channel = this.targetChannel_;
       if (status == 'checking') {
         this.setUpdateImage_('working');
         $('update-status-message').innerHTML =
@@ -279,7 +326,7 @@ cr.define('help', function() {
         // when user explicitly decides to update to a more stable
         // channel.
         relaunchAndPowerwashHidden =
-            !this.powerwashAfterUpdate_ || status != 'nearly_updated';
+            !this.targetChannelIsMoreStable_() || status != 'nearly_updated';
         $('relaunch-and-powerwash').hidden = relaunchAndPowerwashHidden;
       }
 
@@ -407,6 +454,17 @@ cr.define('help', function() {
     },
 
     /**
+     * Updates page UI according to device owhership policy.
+     * @param {boolean} isEnterpriseManaged True if the device is
+     *     enterprise managed.
+     * @private
+     */
+    updateIsEnterpriseManaged_: function(isEnterpriseManaged) {
+      help.ChannelChangePage.updateIsEnterpriseManaged(isEnterpriseManaged);
+      this.updateUI_();
+    },
+
+    /**
      * Updates name of the current channel, i.e. the name of the
      * channel the device is currently on.
      * @param {string} channel The name of the current channel.
@@ -415,10 +473,23 @@ cr.define('help', function() {
     updateCurrentChannel_: function(channel) {
       if (this.channelList_.indexOf(channel) < 0)
         return;
-      $('current-channel').textContent = loadTimeData.getStringF(
-          'currentChannel', this.channelTable_[channel].label);
       this.currentChannel_ = channel;
       help.ChannelChangePage.updateCurrentChannel(channel);
+      this.updateUI_();
+    },
+
+    /**
+     * Updates name of the target channel, i.e. the name of the
+     * channel the device is supposed to be.
+     * @param {string} channel The name of the target channel.
+     * @private
+     */
+    updateTargetChannel_: function(channel) {
+      if (this.channelList_.indexOf(channel) < 0)
+        return;
+      this.targetChannel_ = channel;
+      help.ChannelChangePage.updateTargetChannel(channel);
+      this.updateUI_();
     },
 
     /**
@@ -438,12 +509,11 @@ cr.define('help', function() {
      * @private
      */
     setChannel_: function(channel, isPowerwashAllowed) {
-      this.powerwashAfterUpdate_ = isPowerwashAllowed;
-      this.targetChannel_ = channel;
       chrome.send('setChannel', [channel, isPowerwashAllowed]);
       $('channel-change-confirmation').hidden = false;
       $('channel-change-confirmation').textContent = loadTimeData.getStringF(
           'channel-changed', this.channelTable_[channel].name);
+      this.updateTargetChannel_(channel);
     },
 
     /**
@@ -526,7 +596,7 @@ cr.define('help', function() {
   HelpPage.updateIsEnterpriseManaged = function(isEnterpriseManaged) {
     if (!cr.isChromeOS)
       return;
-    help.ChannelChangePage.updateIsEnterpriseManaged(isEnterpriseManaged);
+    HelpPage.getInstance().updateIsEnterpriseManaged_(isEnterpriseManaged);
   };
 
   HelpPage.updateCurrentChannel = function(channel) {
@@ -538,7 +608,7 @@ cr.define('help', function() {
   HelpPage.updateTargetChannel = function(channel) {
     if (!cr.isChromeOS)
       return;
-    help.ChannelChangePage.updateTargetChannel(channel);
+    HelpPage.getInstance().updateTargetChannel_(channel);
   };
 
   HelpPage.updateEnableReleaseChannel = function(enabled) {
@@ -551,10 +621,6 @@ cr.define('help', function() {
 
   HelpPage.setBuildDate = function(buildDate) {
     HelpPage.getInstance().setBuildDate_(buildDate);
-  };
-
-  HelpPage.updateChannelChangePageContainerVisibility = function() {
-    HelpPage.getInstance().updateChannelChangePageContainerVisibility_();
   };
 
   // Export

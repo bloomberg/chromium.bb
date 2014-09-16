@@ -396,6 +396,11 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 // The UpdateEngineClient implementation used on Linux desktop,
 // which does nothing.
 class UpdateEngineClientStubImpl : public UpdateEngineClient {
+ public:
+  UpdateEngineClientStubImpl()
+      : current_channel_(kReleaseChannelBeta),
+        target_channel_(kReleaseChannelBeta) {}
+
   // UpdateEngineClient implementation:
   virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}
@@ -418,13 +423,20 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     VLOG(1) << "Requesting to set channel: "
             << "target_channel=" << target_channel << ", "
             << "is_powerwash_allowed=" << is_powerwash_allowed;
+    target_channel_ = target_channel;
   }
   virtual void GetChannel(bool get_current_channel,
                           const GetChannelCallback& callback) OVERRIDE {
     VLOG(1) << "Requesting to get channel, get_current_channel="
             << get_current_channel;
-    callback.Run(kReleaseChannelBeta);
+    if (get_current_channel)
+      callback.Run(current_channel_);
+    else
+      callback.Run(target_channel_);
   }
+
+  std::string current_channel_;
+  std::string target_channel_;
 };
 
 // The UpdateEngineClient implementation used on Linux desktop, which

@@ -195,7 +195,6 @@ cr.define('help', function() {
      */
     updateIsEnterpriseManaged_: function(isEnterpriseManaged) {
       this.isEnterpriseManaged_ = isEnterpriseManaged;
-      help.HelpPage.updateChannelChangePageContainerVisibility();
     },
 
     /**
@@ -209,7 +208,6 @@ cr.define('help', function() {
         return;
       this.currentChannel_ = channel;
       this.selectOption_(channel);
-      help.HelpPage.updateChannelChangePageContainerVisibility();
     },
 
     /**
@@ -223,7 +221,6 @@ cr.define('help', function() {
       if (this.channelList_.indexOf(channel) < 0)
         return;
       this.targetChannel_ = channel;
-      help.HelpPage.updateChannelChangePageContainerVisibility();
     },
 
     /**
