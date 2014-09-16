@@ -160,7 +160,7 @@ class TabHelper : public content::WebContentsObserver,
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // Message handlers.
-  void OnDidGetApplicationInfo(const WebApplicationInfo& info);
+  void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
   void OnInlineWebstoreInstall(int install_id,
                                int return_route_id,
                                const std::string& webstore_item_id,

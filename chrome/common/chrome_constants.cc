@@ -256,9 +256,7 @@ const char kTestUserProfileDir[] = "test-user";
 const char kApplicationClientIDStringForAVScanning[] =
     "2676A9A2-D919-4FEE-9187-152100393AB2";
 
-#if defined(OS_ANDROID)
 const size_t kMaxMetaTagAttributeLength = 2000;
-#endif
 
 }  // namespace chrome
 

@@ -2093,7 +2093,6 @@
             'browser/metrics/extensions_metrics_provider_unittest.cc',
             'browser/search/hotword_service_unittest.cc',
             'browser/signin/easy_unlock_screenlock_state_handler_unittest.cc',
-            'browser/web_applications/web_app_unittest.cc',
             'common/extensions/sync_type_unittest.cc',
             'common/extensions/features/chrome_channel_feature_filter_unittest.cc',
             'common/extensions/permissions/permission_set_unittest.cc',

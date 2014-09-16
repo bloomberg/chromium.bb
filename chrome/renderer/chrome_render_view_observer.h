@@ -67,10 +67,10 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnUpdateTopControlsState(content::TopControlsState constraints,
                                 content::TopControlsState current,
                                 bool animate);
-  void OnRetrieveWebappInformation(const GURL& expected_url);
   void OnRetrieveMetaTagContent(const GURL& expected_url,
                                 const std::string tag_name);
 #endif
+  void OnGetWebApplicationInfo();
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 

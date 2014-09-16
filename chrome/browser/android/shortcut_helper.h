@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/common/web_application_info.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -30,12 +31,6 @@ class GURL;
 // the ownership of the object. The instance will then destroy itself when done.
 class ShortcutHelper : public content::WebContentsObserver {
  public:
-  enum ShortcutType {
-    APP_SHORTCUT,
-    APP_SHORTCUT_APPLE,
-    BOOKMARK
-  };
-
   ShortcutHelper(JNIEnv* env,
                  jobject obj,
                  content::WebContents* web_contents);
@@ -50,10 +45,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   void TearDown(JNIEnv* env, jobject obj);
 
   // IPC message received when the initialization is finished.
-  void OnDidRetrieveWebappInformation(bool success,
-                                      bool is_mobile_webapp_capable,
-                                      bool is_apple_mobile_webapp_capable,
-                                      const GURL& expected_url);
+  void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
 
   // Adds a shortcut to the current URL to the Android home screen.
   void AddShortcut(JNIEnv* env,
@@ -72,7 +64,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   static void AddShortcutInBackground(
       const GURL& url,
       const base::string16& title,
-      ShortcutType shortcut_type,
+      WebApplicationInfo::MobileCapable mobile_capable,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Registers JNI hooks.
@@ -88,7 +80,7 @@ class ShortcutHelper : public content::WebContentsObserver {
   GURL url_;
   base::string16 title_;
   int launcher_large_icon_size_;
-  ShortcutType shortcut_type_;
+  WebApplicationInfo::MobileCapable web_app_capable_;
   favicon_base::FaviconRawBitmapResult icon_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 

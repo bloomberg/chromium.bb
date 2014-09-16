@@ -42,6 +42,14 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
             + "<head><title>" + NORMAL_TITLE + "</title></head>"
             + "<body>Not Webapp capable</body></html>");
 
+    private static final String META_APP_NAME_TITLE = "Web application-name";
+    private static final String META_APP_NAME_HTML = UrlUtils.encodeHtmlDataUri(
+            "<html><head>"
+            + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
+            + "<meta name=\"application-name\" content=\"" + META_APP_NAME_TITLE + "\">"
+            + "<title>Not the right title</title>"
+            + "</head><body>Webapp capable</body></html>");
+
     private static class TestObserver implements ChromeShellApplicationObserver {
         Intent mFiredIntent;
 
@@ -151,6 +159,19 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         addShortcutToURL(WEBAPP_HTML, EDITED_WEBAPP_TITLE);
         Intent firedIntent = mTestObserver.mFiredIntent;
         assertEquals(EDITED_WEBAPP_TITLE , firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+    }
+
+    /**
+     * @MediumTest
+     * @Feature("{Webapp}")
+     * crbug.com/303486
+     */
+    @FlakyTest
+    public void testAddWebappShortcutsWithApplicationName() throws InterruptedException {
+        // Add a webapp shortcut to check edited title.
+        addShortcutToURL(META_APP_NAME_HTML, "");
+        Intent firedIntent = mTestObserver.mFiredIntent;
+        assertEquals(META_APP_NAME_TITLE , firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
     }
 
     private void addShortcutToURL(String url, final String title) throws InterruptedException {

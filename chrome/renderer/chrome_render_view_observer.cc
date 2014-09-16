@@ -20,6 +20,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate/translate_helper.h"
+#include "chrome/renderer/web_apps.h"
 #include "chrome/renderer/webview_color_overlay.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/bindings_policy.h"
@@ -181,11 +182,11 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_RetrieveWebappInformation,
-                        OnRetrieveWebappInformation)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RetrieveMetaTagContent,
                         OnRetrieveMetaTagContent)
 #endif
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetWebApplicationInfo,
+                        OnGetWebApplicationInfo)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetWindowFeatures, OnSetWindowFeatures)
@@ -210,52 +211,6 @@ void ChromeRenderViewObserver::OnUpdateTopControlsState(
   render_view()->UpdateTopControlsState(constraints, current, animate);
 }
 
-void ChromeRenderViewObserver::OnRetrieveWebappInformation(
-    const GURL& expected_url) {
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  bool found_tag;
-  std::string content_str;
-
-  // Search for the "mobile-web-app-capable" tag.
-  bool mobile_parse_success = RetrieveMetaTagContent(
-      main_frame,
-      expected_url,
-      "mobile-web-app-capable",
-      &found_tag,
-      &content_str);
-  bool is_mobile_webapp_capable = mobile_parse_success && found_tag &&
-      LowerCaseEqualsASCII(content_str, "yes");
-
-  // Search for the "apple-mobile-web-app-capable" tag.
-  bool apple_parse_success = RetrieveMetaTagContent(
-      main_frame,
-      expected_url,
-      "apple-mobile-web-app-capable",
-      &found_tag,
-      &content_str);
-  bool is_apple_mobile_webapp_capable = apple_parse_success && found_tag &&
-      LowerCaseEqualsASCII(content_str, "yes");
-
-  bool is_only_apple_mobile_webapp_capable =
-      is_apple_mobile_webapp_capable && !is_mobile_webapp_capable;
-  if (main_frame && is_only_apple_mobile_webapp_capable) {
-    blink::WebConsoleMessage message(
-        blink::WebConsoleMessage::LevelWarning,
-        "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
-        "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
-        "content=\"yes\"> - "
-        "http://developers.google.com/chrome/mobile/docs/installtohomescreen");
-    main_frame->addMessageToConsole(message);
-  }
-
-  Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(
-      routing_id(),
-      mobile_parse_success && apple_parse_success,
-      is_mobile_webapp_capable,
-      is_apple_mobile_webapp_capable,
-      expected_url));
-}
-
 void ChromeRenderViewObserver::OnRetrieveMetaTagContent(
     const GURL& expected_url,
     const std::string tag_name) {
@@ -276,6 +231,48 @@ void ChromeRenderViewObserver::OnRetrieveMetaTagContent(
       expected_url));
 }
 #endif
+
+void ChromeRenderViewObserver::OnGetWebApplicationInfo() {
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  DCHECK(main_frame);
+
+  WebApplicationInfo web_app_info;
+  web_apps::ParseWebAppFromWebDocument(main_frame, &web_app_info);
+
+  // The warning below is specific to mobile but it doesn't hurt to show it even
+  // if the Chromium build is running on a desktop. It will get more exposition.
+  if (web_app_info.mobile_capable ==
+        WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
+    blink::WebConsoleMessage message(
+        blink::WebConsoleMessage::LevelWarning,
+        "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
+        "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
+        "content=\"yes\"> - "
+        "http://developers.google.com/chrome/mobile/docs/installtohomescreen");
+    main_frame->addMessageToConsole(message);
+  }
+
+  // Prune out any data URLs in the set of icons.  The browser process expects
+  // any icon with a data URL to have originated from a favicon.  We don't want
+  // to decode arbitrary data URLs in the browser process.  See
+  // http://b/issue?id=1162972
+  for (std::vector<WebApplicationInfo::IconInfo>::iterator it =
+          web_app_info.icons.begin(); it != web_app_info.icons.end();) {
+    if (it->url.SchemeIs(url::kDataScheme))
+      it = web_app_info.icons.erase(it);
+    else
+      ++it;
+  }
+
+  // Truncate the strings we send to the browser process.
+  web_app_info.title =
+      web_app_info.title.substr(0, chrome::kMaxMetaTagAttributeLength);
+  web_app_info.description =
+      web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
+
+  Send(new ChromeViewHostMsg_DidGetWebApplicationInfo(
+      routing_id(), web_app_info));
+}
 
 void ChromeRenderViewObserver::OnSetWindowFeatures(
     const WebWindowFeatures& window_features) {

@@ -112,7 +112,6 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/renderer/extensions/chrome_extension_helper.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/extensions/extension_frame_helper.h"
@@ -492,7 +491,6 @@ void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
 #if defined(ENABLE_EXTENSIONS)
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
-  new extensions::ChromeExtensionHelper(render_view);
   extension_dispatcher_->OnRenderViewCreated(render_view);
 #endif
   new PageLoadHistograms(render_view);

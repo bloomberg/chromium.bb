@@ -10,7 +10,8 @@ WebApplicationInfo::IconInfo::IconInfo() : width(0), height(0) {
 WebApplicationInfo::IconInfo::~IconInfo() {
 }
 
-WebApplicationInfo::WebApplicationInfo() {
+WebApplicationInfo::WebApplicationInfo()
+    : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED) {
 }
 
 WebApplicationInfo::~WebApplicationInfo() {

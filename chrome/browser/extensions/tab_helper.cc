@@ -250,8 +250,8 @@ void TabHelper::DidNavigateMainFrame(
 bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeExtensionHostMsg_DidGetApplicationInfo,
-                        OnDidGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
+                        OnDidGetWebApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
                         OnInlineWebstoreInstall)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
@@ -288,7 +288,7 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 
-void TabHelper::OnDidGetApplicationInfo(const WebApplicationInfo& info) {
+void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
 #if !defined(OS_MACOSX)
   web_app_info_ = info;
 
@@ -513,7 +513,7 @@ void TabHelper::GetApplicationInfo(WebAppAction action) {
   pending_web_app_action_ = action;
   last_committed_page_id_ = entry->GetPageID();
 
-  Send(new ChromeExtensionMsg_GetApplicationInfo(routing_id()));
+  Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
 }
 
 void TabHelper::Observe(int type,

@@ -25,6 +25,12 @@ struct WebApplicationInfo {
     SkBitmap data;
   };
 
+  enum MobileCapable {
+    MOBILE_CAPABLE_UNSPECIFIED,
+    MOBILE_CAPABLE,
+    MOBILE_CAPABLE_APPLE
+  };
+
   WebApplicationInfo();
   ~WebApplicationInfo();
 
@@ -39,6 +45,10 @@ struct WebApplicationInfo {
 
   // Set of available icons.
   std::vector<IconInfo> icons;
+
+  // Whether the page is marked as mobile-capable, including apple specific meta
+  // tag.
+  MobileCapable mobile_capable;
 };
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

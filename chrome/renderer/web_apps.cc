@@ -118,16 +118,15 @@ bool ParseIconSizes(const base::string16& text,
   return (*is_any || !sizes->empty());
 }
 
-bool ParseWebAppFromWebDocument(WebFrame* frame,
-                                WebApplicationInfo* app_info,
-                                base::string16* error) {
+void ParseWebAppFromWebDocument(WebFrame* frame,
+                                WebApplicationInfo* app_info) {
   WebDocument document = frame->document();
   if (document.isNull())
-    return true;
+    return;
 
   WebElement head = document.head();
   if (head.isNull())
-    return true;
+    return;
 
   GURL document_url = document.url();
   WebNodeList children = head.childNodes();
@@ -167,11 +166,17 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
             document_url.Resolve(url) : GURL(url);
         if (!app_info->app_url.is_valid())
           app_info->app_url = GURL();
+      } else if (name == "mobile-web-app-capable" &&
+                 LowerCaseEqualsASCII(content, "yes")) {
+        app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE;
+      } else if (name == "apple-mobile-web-app-capable" &&
+                 LowerCaseEqualsASCII(content, "yes") &&
+                 app_info->mobile_capable ==
+                     WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED) {
+        app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE_APPLE;
       }
     }
   }
-
-  return true;
 }
 
 }  // namespace web_apps

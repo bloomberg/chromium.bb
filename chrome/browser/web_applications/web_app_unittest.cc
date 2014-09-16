@@ -8,7 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +42,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.app_url = url;
 
   RenderViewHostTester::TestOnMessageReceived(
-      rvh(), ChromeExtensionHostMsg_DidGetApplicationInfo(0, web_app_info));
+      rvh(), ChromeViewHostMsg_DidGetWebApplicationInfo(0, web_app_info));
   web_app::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(web_contents(), &info);
 
@@ -52,6 +52,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
 }
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
 TEST_F(WebApplicationTest, AppDirWithId) {
   base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
   base::FilePath result(
@@ -69,3 +70,4 @@ TEST_F(WebApplicationTest, AppDirWithUrl) {
       .AppendASCII("example.com").AppendASCII("http_80");
   EXPECT_EQ(expected, result);
 }
+#endif // ENABLE_EXTENSIONS

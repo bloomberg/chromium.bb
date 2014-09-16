@@ -107,8 +107,6 @@
       'renderer/extensions/app_bindings.h',
       'renderer/extensions/automation_internal_custom_bindings.cc',
       'renderer/extensions/automation_internal_custom_bindings.h',
-      'renderer/extensions/chrome_extension_helper.cc',
-      'renderer/extensions/chrome_extension_helper.h',
       'renderer/extensions/chrome_extensions_dispatcher_delegate.cc',
       'renderer/extensions/chrome_extensions_dispatcher_delegate.h',
       'renderer/extensions/chrome_extensions_renderer_client.cc',

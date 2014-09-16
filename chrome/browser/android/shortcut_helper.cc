@@ -16,7 +16,9 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -44,38 +46,30 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       url_(web_contents->GetURL()),
-      shortcut_type_(BOOKMARK) {
+      web_app_capable_(WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED) {
 }
 
 void ShortcutHelper::Initialize() {
   // Send a message to the renderer to retrieve information about the page.
-  Send(new ChromeViewMsg_RetrieveWebappInformation(routing_id(), url_));
+  Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
 }
 
 ShortcutHelper::~ShortcutHelper() {
 }
 
-void ShortcutHelper::OnDidRetrieveWebappInformation(
-    bool success,
-    bool is_mobile_webapp_capable,
-    bool is_apple_mobile_webapp_capable,
-    const GURL& expected_url) {
-  // This should silently fail.
-  if (!success) {
-    LOG(ERROR) << "Failed to parse webpage.";
-  } else if (expected_url != url_) {
-    LOG(ERROR) << "Unexpected URL returned.";
-  }
+void ShortcutHelper::OnDidGetWebApplicationInfo(
+    const WebApplicationInfo& received_web_app_info) {
+  // Sanitize received_web_app_info.
+  WebApplicationInfo web_app_info = received_web_app_info;
+  web_app_info.title =
+      web_app_info.title.substr(0, chrome::kMaxMetaTagAttributeLength);
+  web_app_info.description =
+      web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
-  if (is_apple_mobile_webapp_capable && !is_mobile_webapp_capable) {
-    shortcut_type_ = APP_SHORTCUT_APPLE;
-  } else if (is_apple_mobile_webapp_capable || is_mobile_webapp_capable) {
-    shortcut_type_ = APP_SHORTCUT;
-  } else {
-    shortcut_type_ = BOOKMARK;
-  }
+  web_app_capable_ = web_app_info.mobile_capable;
 
-  title_ = web_contents()->GetTitle();
+  title_ = web_app_info.title.empty() ? web_contents()->GetTitle()
+                                      : web_app_info.title;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -137,7 +131,7 @@ void ShortcutHelper::FinishAddingShortcut(
       base::Bind(&ShortcutHelper::AddShortcutInBackground,
                  url_,
                  title_,
-                 shortcut_type_,
+                 web_app_capable_,
                  icon_),
       true);
 
@@ -148,8 +142,8 @@ bool ShortcutHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ShortcutHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidRetrieveWebappInformation,
-                        OnDidRetrieveWebappInformation)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
+                        OnDidGetWebApplicationInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -167,7 +161,7 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
 void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
-    ShortcutType shortcut_type,
+    WebApplicationInfo::MobileCapable web_app_capable,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
@@ -195,27 +189,28 @@ void ShortcutHelper::AddShortcutInBackground(
   if (favicon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
 
-  Java_ShortcutHelper_addShortcut(env,
-                                  base::android::GetApplicationContext(),
-                                  java_url.obj(),
-                                  java_title.obj(),
-                                  java_bitmap.obj(),
-                                  r_value,
-                                  g_value,
-                                  b_value,
-                                  shortcut_type != BOOKMARK);
+  Java_ShortcutHelper_addShortcut(
+      env,
+      base::android::GetApplicationContext(),
+      java_url.obj(),
+      java_title.obj(),
+      java_bitmap.obj(),
+      r_value,
+      g_value,
+      b_value,
+      web_app_capable != WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED);
 
   // Record what type of shortcut was added by the user.
-  switch (shortcut_type) {
-    case APP_SHORTCUT:
+  switch (web_app_capable) {
+    case WebApplicationInfo::MOBILE_CAPABLE:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
       break;
-    case APP_SHORTCUT_APPLE:
+    case WebApplicationInfo::MOBILE_CAPABLE_APPLE:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
       break;
-    case BOOKMARK:
+    case WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED:
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
       break;
