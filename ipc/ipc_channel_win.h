@@ -98,7 +98,16 @@ class ChannelWin : public Channel,
   bool writing_;
 
   // Tracks the lifetime of this object, for debugging purposes.
-  int32 debug_flags_;
+  uint32 debug_flags_;
+
+  // OS result for the current write. TODO(rvargas): remove this.
+  uint32 write_error_;
+
+  // OS result for a previous failed write. TODO(rvargas): remove this.
+  uint32 last_write_error_;
+
+  // Size of the current write. TODO(rvargas): remove this.
+  uint32 write_size_;
 
   // This is a unique per-channel value used to authenticate the client end of
   // a connection. If the value is non-zero, the client passes it in the hello

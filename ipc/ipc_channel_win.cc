@@ -66,6 +66,9 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle &channel_handle,
       validate_client_(false),
       writing_(false),
       debug_flags_(0),
+      write_error_(0),
+      last_write_error_(0),
+      write_size_(0),
       client_secret_(0),
       weak_factory_(this) {
   CreatePipe(channel_handle, mode);
@@ -439,14 +442,16 @@ bool ChannelWin::ProcessOutgoingMessages(
   debug_flags_ |= WRITE_MSG;
   CHECK(!writing_);
   writing_ = true;
+  write_size_ = static_cast<uint32>(m->size());
+  write_error_ = 0;
   BOOL ok = WriteFile(pipe_,
                       m->data(),
-                      static_cast<int>(m->size()),
-                      &bytes_written,
+                      write_size_,
+                      NULL,
                       &output_state_.context.overlapped);
   if (!ok) {
-    DWORD err = GetLastError();
-    if (err == ERROR_IO_PENDING) {
+    write_error_ = GetLastError();
+    if (write_error_ == ERROR_IO_PENDING) {
       output_state_.is_pending = true;
 
       DVLOG(2) << "sent pending message @" << m << " on channel @" << this
@@ -455,7 +460,8 @@ bool ChannelWin::ProcessOutgoingMessages(
       return true;
     }
     writing_ = false;
-    LOG(ERROR) << "pipe error: " << err;
+    last_write_error_ = write_error_;
+    LOG(ERROR) << "pipe error: " << write_error_;
     return false;
   }
 
