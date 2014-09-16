@@ -519,12 +519,12 @@ InspectorTest.TempFileMock = function(dirPath, name, callback)
 
 InspectorTest.TempFileMock.prototype = {
     /**
-     * @param {!string} data
+     * @param {!Array.<string>} strings
      * @param {!function(boolean)} callback
      */
-    write: function(data, callback)
+    write: function(strings, callback)
     {
-        this._chunks.push(data);
+        this._chunks.push.apply(this._chunks, strings);
         setTimeout(callback.bind(this, true), 0);
     },
 

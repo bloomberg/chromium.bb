@@ -32,18 +32,13 @@ function test()
             if (!event.picture)
                 continue;
             ++inFlightPictures;
-            processPicture(event.picture);
+            new WebInspector.LayerPaintEvent(event).loadPicture(onSnapshotLoaded);
         }
         if (!inFlightPictures)
             InspectorTest.completeTest();
     }
 
-    function processPicture(picture)
-    {
-        WebInspector.PaintProfilerSnapshot.load(WebInspector.targetManager.targets()[0], picture, onSnapshotLoaded);
-    }
-
-    function onSnapshotLoaded(snapshot)
+    function onSnapshotLoaded(rect, snapshot)
     {
         snapshot.commandLog(onGotLog);
     }
