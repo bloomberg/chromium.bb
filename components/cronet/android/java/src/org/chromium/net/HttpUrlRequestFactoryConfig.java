@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,6 +84,37 @@ public class HttpUrlRequestFactoryConfig {
      */
     public HttpUrlRequestFactoryConfig setStoragePath(String value) {
         return putString(UrlRequestContextConfig.STORAGE_PATH, value);
+    }
+
+    /**
+     * Explicitly mark |host| as supporting QUIC.
+     * Note that enableHttpCache(DISK) is needed to take advantage of 0-RTT
+     * connection establishment between sessions.
+     *
+     * @param host of the server that supports QUIC.
+     * @param port of the server that supports QUIC.
+     * @param alternatePort to use for QUIC.
+     */
+    public HttpUrlRequestFactoryConfig addQuicHint(String host,
+                                                   int port,
+                                                   int alternatePort) {
+        try {
+            JSONArray quicHints = mConfig.optJSONArray(
+                    UrlRequestContextConfig.QUIC_HINTS);
+            if (quicHints == null) {
+                quicHints = new JSONArray();
+                mConfig.put(UrlRequestContextConfig.QUIC_HINTS, quicHints);
+            }
+
+            JSONObject hint = new JSONObject();
+            hint.put(UrlRequestContextConfig.QUIC_HINT_HOST, host);
+            hint.put(UrlRequestContextConfig.QUIC_HINT_PORT, port);
+            hint.put(UrlRequestContextConfig.QUIC_HINT_ALT_PORT, alternatePort);
+            quicHints.put(hint);
+        } catch (JSONException e) {
+            ;
+        }
+        return this;
     }
 
     /**

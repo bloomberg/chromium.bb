@@ -9,6 +9,7 @@ import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.ChromiumUrlRequest;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
@@ -94,9 +95,36 @@ public class CronetUrlTest extends CronetTestBase {
         assertTrue(!file.exists());
     }
 
-    class BadHttpUrlRequestListener implements HttpUrlRequestListener {
-        static final String THROW_TAG = "BadListener";
+    class SimpleHttpUrlRequestListener implements HttpUrlRequestListener {
         ConditionVariable mComplete = new ConditionVariable();
+        public String negotiatedProtocol;
+        public int httpStatusCode = 0;
+
+        public SimpleHttpUrlRequestListener() {
+        }
+
+        @Override
+        public void onResponseStarted(HttpUrlRequest request) {
+            negotiatedProtocol = request.getNegotiatedProtocol();
+            httpStatusCode = request.getHttpStatusCode();
+        }
+
+        @Override
+        public void onRequestComplete(HttpUrlRequest request) {
+            mComplete.open();
+        }
+
+        public void blockForComplete() {
+            mComplete.block();
+        }
+
+        public void resetComplete() {
+            mComplete.close();
+        }
+    }
+
+    class BadHttpUrlRequestListener extends SimpleHttpUrlRequestListener {
+        static final String THROW_TAG = "BadListener";
 
         public BadHttpUrlRequestListener() {
         }
@@ -104,16 +132,6 @@ public class CronetUrlTest extends CronetTestBase {
         @Override
         public void onResponseStarted(HttpUrlRequest request) {
             throw new NullPointerException(THROW_TAG);
-        }
-
-        @Override
-        public void onRequestComplete(HttpUrlRequest request) {
-            mComplete.open();
-            throw new NullPointerException(THROW_TAG);
-        }
-
-        public void blockForComplete() {
-            mComplete.block();
         }
     }
 
@@ -163,6 +181,52 @@ public class CronetUrlTest extends CronetTestBase {
         } catch (NullPointerException e) {
             // Nothing to do here.
         }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void disabled_testQuicLoadUrl() throws Exception {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        // TODO(mef): Test Quic end-to-end using local QUIC server.
+        String quicURL = "https://www.google.com:443";
+        String quicNegotiatedProtocol = "quic/1+spdy/3";
+        config.enableQUIC(true);
+        config.addQuicHint("www.google.com", 443, 443);
+
+        String[] commandLineArgs = {
+                CronetTestActivity.CONFIG_KEY, config.toString() };
+        CronetTestActivity activity =
+                launchCronetTestAppWithUrlAndCommandLineArgs(quicURL,
+                                                             commandLineArgs);
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+        waitForActiveShellToBeDoneLoading();
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        SimpleHttpUrlRequestListener listener =
+                new SimpleHttpUrlRequestListener();
+
+        // Try several times as first request may not use QUIC.
+        // TODO(mef): Remove loop after adding http server properties manager.
+        for (int i = 0; i < 10; ++i) {
+            ChromiumUrlRequest request =
+                    activity.mChromiumRequestFactory.createRequest(
+                            quicURL,
+                            HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
+                            headers,
+                            listener);
+            request.start();
+            listener.blockForComplete();
+            assertEquals(200, listener.httpStatusCode);
+            if (listener.negotiatedProtocol.equals(quicNegotiatedProtocol))
+                break;
+
+            Thread.sleep(1000);
+            listener.resetComplete();
+        }
+
+        assertEquals(quicNegotiatedProtocol, listener.negotiatedProtocol);
     }
 
     @SmallTest

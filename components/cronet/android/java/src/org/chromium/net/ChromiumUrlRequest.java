@@ -390,17 +390,26 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
         }
     }
 
+    @Override
+    public String getNegotiatedProtocol() {
+        validateNotRecycled();
+        validateHeadersAvailable();
+        return nativeGetNegotiatedProtocol(mUrlRequestAdapter);
+    }
+
     public String getContentType() {
         return mContentType;
     }
 
     public String getHeader(String name) {
+        validateNotRecycled();
         validateHeadersAvailable();
         return nativeGetHeader(mUrlRequestAdapter, name);
     }
 
     // All response headers.
     public Map<String, List<String>> getAllHeaders() {
+        validateNotRecycled();
         validateHeadersAvailable();
         ResponseHeadersMap result = new ResponseHeadersMap();
         nativeGetAllHeaders(mUrlRequestAdapter, result);
@@ -647,7 +656,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     // Native methods are implemented in chromium_url_request.cc.
 
     private native long nativeCreateRequestAdapter(
-            long ChromiumUrlRequestContextAdapter, String url, int priority);
+            long urlRequestContextAdapter, String url, int priority);
 
     private native void nativeAddHeader(long urlRequestAdapter, String name,
             String value);
@@ -686,6 +695,8 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
 
     private native void nativeGetAllHeaders(long urlRequestAdapter,
             ResponseHeadersMap headers);
+
+    private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
 
     // Explicit class to work around JNI-generator generics confusion.
     private class ResponseHeadersMap extends HashMap<String, List<String>> {

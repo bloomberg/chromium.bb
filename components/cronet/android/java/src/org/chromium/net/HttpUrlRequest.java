@@ -102,6 +102,14 @@ public interface HttpUrlRequest {
     boolean isCanceled();
 
     /**
+     * Returns protocol (e.g. "quic/1+spdy/3") negotiated with server. Returns
+     * empty string if no protocol was negotiated, or the protocol is not known.
+     * Returns empty when using plain http or https. Must be called after
+     * onResponseStarted but before request is recycled.
+     */
+    String getNegotiatedProtocol();
+
+    /**
      * Returns the entire response as a ByteBuffer.
      */
     ByteBuffer getByteBuffer();

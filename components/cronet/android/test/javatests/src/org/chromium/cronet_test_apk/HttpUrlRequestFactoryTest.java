@@ -23,6 +23,9 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testCreateFactory() throws Throwable {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        config.enableQUIC(true);
+        config.addQuicHint("www.google.com", 443, 443);
+        config.addQuicHint("www.youtube.com", 443, 443);
         String[] commandLineArgs = {
                 CronetTestActivity.CONFIG_KEY, config.toString() };
         CronetTestActivity activity =
@@ -31,7 +34,6 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         // Make sure the activity was created as expected.
         assertNotNull(activity);
         waitForActiveShellToBeDoneLoading();
-
         HttpUrlRequestFactory factory = activity.mRequestFactory;
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is " +

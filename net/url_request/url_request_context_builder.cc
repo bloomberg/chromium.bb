@@ -193,7 +193,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       next_protos(NextProtosDefaults()),
-      use_alternate_protocols(true) {
+      use_alternate_protocols(true),
+      enable_quic(false) {
 }
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
@@ -236,6 +237,7 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
                                                      bool quic_enabled) {
   http_network_session_params_.next_protos =
       NextProtosWithSpdyAndQuic(spdy_enabled, quic_enabled);
+  http_network_session_params_.enable_quic = quic_enabled;
 }
 
 URLRequestContext* URLRequestContextBuilder::Build() {
@@ -352,6 +354,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   network_session_params.trusted_spdy_proxy =
       http_network_session_params_.trusted_spdy_proxy;
   network_session_params.next_protos = http_network_session_params_.next_protos;
+  network_session_params.enable_quic = http_network_session_params_.enable_quic;
 
   HttpTransactionFactory* http_transaction_factory = NULL;
   if (http_cache_enabled_) {

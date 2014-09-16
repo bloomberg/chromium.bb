@@ -33,7 +33,6 @@ public class CronetTestActivity extends Activity {
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
 
-
     ChromiumUrlRequestFactory mChromiumRequestFactory;
     HttpUrlRequestFactory mRequestFactory;
 
@@ -170,5 +169,4 @@ public class CronetTestActivity extends Activity {
     public void stopNetLog() {
         mChromiumRequestFactory.getRequestContext().stopNetLog();
     }
-
 }

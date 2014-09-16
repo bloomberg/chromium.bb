@@ -125,14 +125,14 @@ public class ChromiumUrlRequestContext {
             String userAgent, int loggingLevel, String config);
 
     private native void nativeReleaseRequestContextAdapter(
-            long ChromiumUrlRequestContextAdapter);
+            long chromiumUrlRequestContextAdapter);
 
     private native void nativeInitializeStatistics();
 
     private native String nativeGetStatisticsJSON(String filter);
 
     private native void nativeStartNetLogToFile(
-            long ChromiumUrlRequestContextAdapter, String fileName);
+            long chromiumUrlRequestContextAdapter, String fileName);
 
-    private native void nativeStopNetLog(long ChromiumUrlRequestContextAdapter);
+    private native void nativeStopNetLog(long chromiumUrlRequestContextAdapter);
 }

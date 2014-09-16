@@ -13,7 +13,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -143,6 +143,42 @@ void URLRequestContextAdapter::InitializeURLRequestContext(
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   context_.reset(context_builder.Build());
+
+  // Currently (circa M39) enabling QUIC requires setting probability threshold.
+  if (config->enable_quic) {
+    context_->http_server_properties()
+        ->SetAlternateProtocolProbabilityThreshold(1.0f);
+    for (size_t hint = 0; hint < config->quic_hints.size(); ++hint) {
+      const URLRequestContextConfig::QuicHint& quic_hint =
+          *config->quic_hints[hint];
+      if (quic_hint.host.empty()) {
+        LOG(ERROR) << "Empty QUIC hint host: " << quic_hint.host;
+        continue;
+      }
+
+      if (quic_hint.port <= std::numeric_limits<uint16>::min() ||
+          quic_hint.port > std::numeric_limits<uint16>::max()) {
+        LOG(ERROR) << "Invalid QUIC hint port: "
+                   << quic_hint.port;
+        continue;
+      }
+
+      if (quic_hint.alternate_port <= std::numeric_limits<uint16>::min() ||
+          quic_hint.alternate_port > std::numeric_limits<uint16>::max()) {
+        LOG(ERROR) << "Invalid QUIC hint alternate port: "
+                   << quic_hint.alternate_port;
+        continue;
+      }
+
+      net::HostPortPair quic_hint_host_port_pair(quic_hint.host,
+                                                 quic_hint.port);
+      context_->http_server_properties()->SetAlternateProtocol(
+          quic_hint_host_port_pair,
+          static_cast<uint16>(quic_hint.alternate_port),
+          net::AlternateProtocol::QUIC,
+          1.0f);
+    }
+  }
 
   if (VLOG_IS_ON(2)) {
     net_log_observer_.reset(new NetLogObserver());

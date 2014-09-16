@@ -12,6 +12,25 @@ namespace cronet {
 #include "components/cronet/url_request_context_config_list.h"
 #undef DEFINE_CONTEXT_CONFIG
 
+URLRequestContextConfig::QuicHint::QuicHint() {
+}
+
+URLRequestContextConfig::QuicHint::~QuicHint() {
+}
+
+// static
+void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
+    base::JSONValueConverter<URLRequestContextConfig::QuicHint>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_QUIC_HINT_HOST,
+                                 &URLRequestContextConfig::QuicHint::host);
+  converter->RegisterIntField(
+      REQUEST_CONTEXT_CONFIG_QUIC_HINT_PORT,
+      &URLRequestContextConfig::QuicHint::port);
+  converter->RegisterIntField(
+      REQUEST_CONTEXT_CONFIG_QUIC_HINT_ALT_PORT,
+      &URLRequestContextConfig::QuicHint::alternate_port);
+}
+
 URLRequestContextConfig::URLRequestContextConfig() {
 }
 
@@ -54,6 +73,8 @@ void URLRequestContextConfig::RegisterJSONConverter(
                               &URLRequestContextConfig::http_cache_max_size);
   converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_STORAGE_PATH,
                                  &URLRequestContextConfig::storage_path);
+  converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,
+                                     &URLRequestContextConfig::quic_hints);
 }
 
 }  // namespace cronet

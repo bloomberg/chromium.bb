@@ -411,7 +411,7 @@
           'target_name': 'libcronet_tests',
           'type': 'shared_library',
           'sources': [
-            'cronet/android/test/cronet_tests_jni.cc',
+            'cronet/android/test/cronet_test_jni.cc',
           ],
           'dependencies': [
             'cronet_static',

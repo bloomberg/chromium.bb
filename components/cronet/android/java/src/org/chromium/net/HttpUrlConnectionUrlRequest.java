@@ -422,6 +422,11 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
     }
 
     @Override
+    public String getNegotiatedProtocol() {
+        return "";
+    }
+
+    @Override
     public int getHttpStatusCode() {
         int httpStatusCode = mHttpStatusCode;
 

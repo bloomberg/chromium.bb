@@ -100,6 +100,12 @@ net::HttpResponseHeaders* URLRequestAdapter::GetResponseHeaders() const {
   return url_request_->response_headers();
 }
 
+std::string URLRequestAdapter::GetNegotiatedProtocol() const {
+  if (url_request_ == NULL)
+    return std::string();
+  return url_request_->response_info().npn_negotiated_protocol;
+}
+
 void URLRequestAdapter::Start() {
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,

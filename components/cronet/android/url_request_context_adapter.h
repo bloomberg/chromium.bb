@@ -77,7 +77,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
 
   virtual ~URLRequestContextAdapter();
 
-  // Initializes |context_| on the IO thread.
+  // Initializes |context_| on the Network thread.
   void InitializeURLRequestContext(scoped_ptr<URLRequestContextConfig> config);
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextAdapter);

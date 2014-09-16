@@ -44,15 +44,15 @@ def main():
   if (options.command=='sync'):
     return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
   if (options.command=='build'):
-    return run ('ninja -C ' + out_dir + ' cronet_sample_test_apk')
+    return run ('ninja -C ' + out_dir + ' cronet_test_instrumentation_apk')
   if (options.command=='install'):
     return run ('build/android/adb_install_apk.py ' + release_arg + \
-                ' --apk=CronetSample.apk')
+                ' --apk=CronetTest.apk')
   if (options.command=='proguard'):
-    return run ('ninja -C out/Release cronet_sample_proguard_apk')
+    return run ('ninja -C ' + out_dir + ' cronet_sample_proguard_apk')
   if (options.command=='test'):
     return run ('build/android/test_runner.py instrumentation '+ \
-                release_arg + ' --test-apk=CronetSampleTest')
+                release_arg + ' --test-apk=CronetTestInstrumentation')
 
   parser.print_help()
   return 1

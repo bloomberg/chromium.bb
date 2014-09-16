@@ -387,4 +387,16 @@ static void GetAllHeaders(JNIEnv* env,
       env, object, headersMap, NULL, status_line.Release());
 }
 
+static jstring GetNegotiatedProtocol(JNIEnv* env,
+                                     jobject object,
+                                     jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
+  if (request == NULL)
+    return ConvertUTF8ToJavaString(env, "").Release();
+
+  std::string negotiated_protocol = request->GetNegotiatedProtocol();
+  return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str()).Release();
+}
+
 }  // namespace cronet
