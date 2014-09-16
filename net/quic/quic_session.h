@@ -206,6 +206,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicFlowController* flow_controller() { return flow_controller_.get(); }
 
+  size_t get_max_open_streams() const { return max_open_streams_; }
+
  protected:
   typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
 
@@ -249,9 +251,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   std::vector<QuicDataStream*>* closed_streams() { return &closed_streams_; }
 
-  size_t get_max_open_streams() const {
-    return max_open_streams_;
-  }
+  void set_max_open_streams(size_t max_open_streams);
 
   scoped_ptr<QuicHeadersStream> headers_stream_;
 

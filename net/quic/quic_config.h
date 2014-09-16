@@ -311,6 +311,10 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 ReceivedInitialRoundTripTimeUs() const;
 
+  bool HasInitialRoundTripTimeUsToSend() const;
+
+  uint32 GetInitialRoundTripTimeUsToSend() const;
+
   // TODO(rjshade): Remove all InitialFlowControlWindow methods when removing
   // QUIC_VERSION_19.
   // Sets an initial stream flow control window size to transmit to the peer.

@@ -61,13 +61,16 @@ class QuicServerSessionPeer {
 
 namespace {
 
+const size_t kMaxStreamsForTest = 10;
+
 class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicServerSessionTest()
       : crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()) {
     config_.SetDefaults();
-    config_.set_max_streams_per_connection(3, 3);
+    config_.set_max_streams_per_connection(kMaxStreamsForTest,
+                                           kMaxStreamsForTest);
     config_.SetInitialFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
@@ -189,27 +192,66 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   EXPECT_TRUE(connection_->connected());
 }
 
-TEST_P(QuicServerSessionTest, MaxNumConnections) {
+TEST_P(QuicServerSessionTest, MaxOpenStreams) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
+  // Test that the server closes the connection if a client attempts to open too
+  // many data streams. The server accepts slightly more than the negotiated
+  // stream limit to deal with rare cases where a client FIN/RST is lost.
+
+  // The slightly increased stream limit is set during config negotiation.
+  EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
+  session_->OnConfigNegotiated();
+  EXPECT_EQ(kMaxStreamsMultiplier * kMaxStreamsForTest,
+            session_->get_max_open_streams());
+
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
-      session_.get(), kClientDataStreamId1));
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
-      session_.get(), kClientDataStreamId2));
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
-      session_.get(), kClientDataStreamId3));
+  QuicStreamId stream_id = kClientDataStreamId1;
+  // Open the max configured number of streams, should be no problem.
+  for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
+    EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                             stream_id));
+    stream_id += 2;
+  }
+
+  // Open one more stream: server should accept slightly more than the
+  // configured limit.
+  EXPECT_TRUE(
+      QuicServerSessionPeer::GetIncomingDataStream(session_.get(), stream_id));
+
+  // Now violate the server's internal stream limit.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDataStream(
-      session_.get(), kClientDataStreamId4));
+  stream_id += 2;
+  EXPECT_FALSE(
+      QuicServerSessionPeer::GetIncomingDataStream(session_.get(), stream_id));
 }
 
-TEST_P(QuicServerSessionTest, MaxNumConnectionsImplicit) {
+TEST_P(QuicServerSessionTest, MaxOpenStreamsImplicit) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
+  // Test that the server closes the connection if a client attempts to open too
+  // many data streams implicitly.  The server accepts slightly more than the
+  // negotiated stream limit to deal with rare cases where a client FIN/RST is
+  // lost.
+
+  // The slightly increased stream limit is set during config negotiation.
+  EXPECT_EQ(kMaxStreamsForTest, session_->get_max_open_streams());
+  session_->OnConfigNegotiated();
+  EXPECT_EQ(kMaxStreamsMultiplier * kMaxStreamsForTest,
+            session_->get_max_open_streams());
+
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
   EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
       session_.get(), kClientDataStreamId1));
-  // Implicitly opens two more streams.
+  // Implicitly open streams up to the server's limit.
+  const int kActualMaxStreams = kMaxStreamsMultiplier * kMaxStreamsForTest;
+  const int kMaxValidStreamId =
+      kClientDataStreamId1 + (kActualMaxStreams - 1) * 2;
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(
+      session_.get(), kMaxValidStreamId));
+
+  // Opening a further stream will result in connection close.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
   EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDataStream(
-      session_.get(), kClientDataStreamId4));
+      session_.get(), kMaxValidStreamId + 2));
 }
 
 TEST_P(QuicServerSessionTest, GetEvenIncomingError) {

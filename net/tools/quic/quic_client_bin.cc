@@ -32,6 +32,8 @@ bool FLAGS_secure = false;
 // QUIC version to speak, e.g. 21. Default value of 0 means 'use the latest
 // version'.
 int32 FLAGS_quic_version = 0;
+// Size of flow control receive window to advertize to the peer.
+int32 FLAGS_flow_control_window_bytes = 10 * 1024 * 1024;  // 10 Mb
 
 int main(int argc, char *argv[]) {
   base::CommandLine::Init(argc, argv);
@@ -54,7 +56,9 @@ int main(int argc, char *argv[]) {
         "--address=<address>         specify the IP address to connect to\n"
         "--host=<host>               specify the SNI hostname to use\n"
         "--secure                    check certificates\n"
-        "--quic-version=<quic version> specify QUIC version to speak\n";
+        "--quic-version=<quic version> specify QUIC version to speak\n"
+        "--flow-control-window-bytes=<bytes> specify size of flow control "
+        "receive window to advertize to the peer\n";
     std::cout << help_str;
     exit(0);
   }
@@ -78,6 +82,14 @@ int main(int argc, char *argv[]) {
     if (base::StringToInt(line->GetSwitchValueASCII("quic-version"),
                           &quic_version)) {
       FLAGS_quic_version = quic_version;
+    }
+  }
+  if (line->HasSwitch("flow-control-window-bytes")) {
+    int flow_control_window_bytes;
+    if (base::StringToInt(
+            line->GetSwitchValueASCII("flow-control-window-bytes"),
+            &flow_control_window_bytes)) {
+      FLAGS_flow_control_window_bytes = flow_control_window_bytes;
     }
   }
   VLOG(1) << "server port: " << FLAGS_port
@@ -107,6 +119,15 @@ int main(int argc, char *argv[]) {
   net::EpollServer epoll_server;
   net::QuicConfig config;
   config.SetDefaults();
+
+  // The default flow control window of 16 Kb is too small for practical
+  // purposes. Set it to the specified value, which has a large default.
+  config.SetInitialFlowControlWindowToSend(
+      FLAGS_flow_control_window_bytes);
+  config.SetInitialStreamFlowControlWindowToSend(
+      FLAGS_flow_control_window_bytes);
+  config.SetInitialSessionFlowControlWindowToSend(
+      FLAGS_flow_control_window_bytes);
 
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),

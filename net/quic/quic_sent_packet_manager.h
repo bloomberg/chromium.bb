@@ -133,7 +133,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
 
   // Requests retransmission of all unacked packets of |retransmission_type|.
-  void RetransmitUnackedPackets(RetransmissionType retransmission_type);
+  void RetransmitUnackedPackets(TransmissionType retransmission_type);
 
   // Retransmits the oldest pending packet there is still a tail loss probe
   // pending.  Invoked after OnRetransmissionTimeout.

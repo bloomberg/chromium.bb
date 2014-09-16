@@ -2411,7 +2411,7 @@ TEST_P(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
   SendStreamDataToPeer(2, "bar", 0, !kFin, NULL);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
 
-  connection_.RetransmitUnackedPackets(INITIAL_ENCRYPTION_ONLY);
+  connection_.RetransmitUnackedPackets(ALL_INITIAL_RETRANSMISSION);
 }
 
 TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
@@ -2652,16 +2652,27 @@ TEST_P(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
 TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
 
   QuicTime default_timeout = clock_.ApproximateNow().Add(
       QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
+  if (FLAGS_quic_timeouts_require_activity) {
+    // Simulate the timeout alarm firing.
+    clock_.AdvanceTime(
+        QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
+    connection_.GetTimeoutAlarm()->Fire();
+    // We should not actually timeout until a packet is sent.
+    EXPECT_TRUE(connection_.connected());
+    SendStreamDataToPeer(1, "GET /", 0, kFin, NULL);
+  }
+
   // Simulate the timeout alarm firing.
   clock_.AdvanceTime(
       QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs));
   connection_.GetTimeoutAlarm()->Fire();
+
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
   EXPECT_FALSE(connection_.connected());
 
@@ -2670,7 +2681,43 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, OverallTimeout) {
+  connection_.SetOverallConnectionTimeout(
+      QuicTime::Delta::FromSeconds(kDefaultMaxTimeForCryptoHandshakeSecs));
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_CONNECTION_OVERALL_TIMED_OUT, false));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+
+  QuicTime overall_timeout = clock_.ApproximateNow().Add(
+      QuicTime::Delta::FromSeconds(kDefaultMaxTimeForCryptoHandshakeSecs));
+  EXPECT_EQ(overall_timeout, connection_.GetTimeoutAlarm()->deadline());
+
+  EXPECT_TRUE(connection_.connected());
+  SendStreamDataToPeer(1, "GET /", 0, kFin, NULL);
+
+  clock_.AdvanceTime(
+      QuicTime::Delta::FromSeconds(2 * kDefaultInitialTimeoutSecs));
+
+  // Process an ack and see that the connection still times out.
+  QuicAckFrame frame = InitAckFrame(1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&frame);
+
+  // Simulate the timeout alarm firing.
+  connection_.GetTimeoutAlarm()->Fire();
+
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, PingAfterSend) {

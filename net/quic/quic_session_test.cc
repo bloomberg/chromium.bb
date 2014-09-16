@@ -583,7 +583,7 @@ TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
   session_.GetCryptoStream()->OnHandshakeMessage(msg);
-  EXPECT_EQ(kDefaultTimeoutSecs + 1,
+  EXPECT_EQ(kMaximumIdleTimeoutSecs + 1,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
 
@@ -934,7 +934,7 @@ TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
   }
   // If a buggy/malicious peer creates too many streams that are not ended with
   // a FIN or RST then we send a connection close.
-  ValueRestore<bool> old_flag(&FLAGS_close_quic_connection_unfinished_streams,
+  ValueRestore<bool> old_flag(&FLAGS_close_quic_connection_unfinished_streams_2,
                               true);
 
   EXPECT_CALL(*connection_,
@@ -955,6 +955,10 @@ TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
     EXPECT_EQ(1u, session_.GetNumOpenStreams());
     session_.CloseStream(i);
   }
+
+  // Called after any new data is received by the session, and triggers the call
+  // to close the connection.
+  session_.PostProcessAfterData();
 }
 
 }  // namespace

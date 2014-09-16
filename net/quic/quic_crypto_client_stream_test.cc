@@ -94,7 +94,7 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 
   const QuicConfig* config = session_->config();
   EXPECT_EQ(kQBIC, config->congestion_feedback());
-  EXPECT_EQ(kDefaultTimeoutSecs,
+  EXPECT_EQ(kMaximumIdleTimeoutSecs,
             config->idle_connection_state_lifetime().ToSeconds());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config->max_streams_per_connection());

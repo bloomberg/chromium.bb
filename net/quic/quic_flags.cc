@@ -30,7 +30,15 @@ bool FLAGS_send_quic_crypto_reject_reason = false;
 bool FLAGS_enable_quic_fec = false;
 
 // If true, a QUIC connection with too many unfinished streams will be closed.
-bool FLAGS_close_quic_connection_unfinished_streams = false;
+bool FLAGS_close_quic_connection_unfinished_streams_2 = false;
 
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
+
+// If true, only times out QUIC connections when there has been network
+// activity; packets sent or received.
+bool FLAGS_quic_timeouts_require_activity = false;
+
+// If true, the server will accept slightly more streams than the negotiated
+// limit.
+bool FLAGS_quic_allow_more_open_streams = false;

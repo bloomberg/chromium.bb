@@ -53,6 +53,7 @@ class QuicFecGroup;
 class QuicRandom;
 
 namespace test {
+class PacketSavingConnection;
 class QuicConnectionPeer;
 }  // namespace test
 
@@ -374,7 +375,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual QuicStopWaitingFrame* CreateStopWaitingFrame() OVERRIDE;
-  virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
+  virtual void OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
 
   // QuicSentPacketManager::NetworkChangeVisitor
   virtual void OnCongestionWindowChange(
@@ -452,11 +453,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   void OnRetransmissionTimeout();
 
   // Retransmits all unacked packets with retransmittable frames if
-  // |retransmission_type| is ALL_PACKETS, otherwise retransmits only initially
-  // encrypted packets. Used when the negotiated protocol version is different
-  // from what was initially assumed and when the visitor wants to re-transmit
-  // initially encrypted packets when the initial encrypter changes.
-  void RetransmitUnackedPackets(RetransmissionType retransmission_type);
+  // |retransmission_type| is ALL_UNACKED_PACKETS, otherwise retransmits only
+  // initially encrypted packets. Used when the negotiated protocol version is
+  // different from what was initially assumed and when the initial encryption
+  // changes.
+  void RetransmitUnackedPackets(TransmissionType retransmission_type);
 
   // Calls |sent_packet_manager_|'s NeuterUnencryptedPackets. Used when the
   // connection becomes forward secure and hasn't received acks for all packets.
@@ -521,23 +522,32 @@ class NET_EXPORT_PRIVATE QuicConnection
   };
 
  protected:
+  // Packets which have not been written to the wire.
+  // Owns the QuicPacket* packet.
+  struct QueuedPacket {
+    QueuedPacket(SerializedPacket packet,
+                 EncryptionLevel level);
+    QueuedPacket(SerializedPacket packet,
+                 EncryptionLevel level,
+                 TransmissionType transmission_type,
+                 QuicPacketSequenceNumber original_sequence_number);
+
+    SerializedPacket serialized_packet;
+    const EncryptionLevel encryption_level;
+    TransmissionType transmission_type;
+    // The packet's original sequence number if it is a retransmission.
+    // Otherwise it must be 0.
+    QuicPacketSequenceNumber original_sequence_number;
+  };
+
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
   // can be handled, false otherwise.
   virtual bool ProcessValidatedPacket();
 
-  // Send a packet to the peer using encryption |level|. If |sequence_number|
-  // is present in the |retransmission_map_|, then contents of this packet will
-  // be retransmitted with a new sequence number if it's not acked by the peer.
-  // Deletes |packet| if WritePacket call succeeds, or transfers ownership to
-  // QueuedPacket, ultimately deleted in WriteQueuedPackets. Updates the
-  // entropy map corresponding to |sequence_number| using |entropy_hash|.
-  // |transmission_type| and |retransmittable| are supplied to the congestion
-  // manager, and when |forced| is true, it bypasses the congestion manager.
-  // TODO(wtc): none of the callers check the return value.
-  virtual bool SendOrQueuePacket(EncryptionLevel level,
-                                 const SerializedPacket& packet,
-                                 TransmissionType transmission_type);
+  // Send a packet to the peer, and takes ownership of the packet if the packet
+  // cannot be written immediately.
+  virtual void SendOrQueuePacket(QueuedPacket packet);
 
   QuicConnectionHelperInterface* helper() { return helper_; }
 
@@ -556,30 +566,23 @@ class NET_EXPORT_PRIVATE QuicConnection
 
  private:
   friend class test::QuicConnectionPeer;
-
-  // Packets which have not been written to the wire.
-  // Owns the QuicPacket* packet.
-  struct QueuedPacket {
-    QueuedPacket(SerializedPacket packet,
-                 EncryptionLevel level,
-                 TransmissionType transmission_type);
-
-    SerializedPacket serialized_packet;
-    const EncryptionLevel encryption_level;
-    TransmissionType transmission_type;
-  };
+  friend class test::PacketSavingConnection;
 
   typedef std::list<QueuedPacket> QueuedPacketList;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
 
   // Writes the given packet to socket, encrypted with packet's
   // encryption_level. Returns true on successful write, and false if the writer
-  // was blocked and the write needs to be tried again.  Behavior is undefined
-  // if connection is not established or broken. Notifies the SentPacketManager
-  // when the write is successful.
+  // was blocked and the write needs to be tried again. Notifies the
+  // SentPacketManager when the write is successful and sets
+  // retransmittable frames to NULL.
   // Saves the connection close packet for later transmission, even if the
   // writer is write blocked.
-  bool WritePacket(const QueuedPacket& packet);
+  bool WritePacket(QueuedPacket* packet);
+
+  // Does the main work of WritePacket, but does not delete the packet or
+  // retransmittable frames upon success.
+  bool WritePacketInner(QueuedPacket* packet);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);

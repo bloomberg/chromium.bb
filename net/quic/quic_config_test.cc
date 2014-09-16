@@ -83,8 +83,8 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   cgst.push_back(kQBIC);
   client_config.set_congestion_feedback(cgst, kQBIC);
   client_config.set_idle_connection_state_lifetime(
-      QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
-      QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
+      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
+      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
   client_config.set_max_streams_per_connection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
   client_config.SetInitialRoundTripTimeUsToSend(
@@ -108,7 +108,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
   EXPECT_EQ(kQBIC, config_.congestion_feedback());
-  EXPECT_EQ(QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs),
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs),
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config_.max_streams_per_connection());
@@ -136,8 +136,8 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   cgst.push_back(kQBIC);
   server_config.set_congestion_feedback(cgst, kQBIC);
   server_config.set_idle_connection_state_lifetime(
-      QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2),
-      QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2));
+      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2),
+      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2));
   server_config.set_max_streams_per_connection(
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
@@ -159,7 +159,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
   EXPECT_EQ(kQBIC, config_.congestion_feedback());
-  EXPECT_EQ(QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2),
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2),
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.max_streams_per_connection());
@@ -240,8 +240,8 @@ TEST_F(QuicConfigTest, MissingValueInSHLO) {
 TEST_F(QuicConfigTest, OutOfBoundSHLO) {
   QuicConfig server_config;
   server_config.set_idle_connection_state_lifetime(
-      QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
-      QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs));
+      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
+      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs));
 
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);

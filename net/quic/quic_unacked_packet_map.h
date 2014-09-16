@@ -125,6 +125,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // other packets from other transmissions.
   void RemoveRetransmittability(QuicPacketSequenceNumber sequence_number);
 
+  // Removes any other retransmissions and marks all transmissions unackable.
+  void RemoveAckability(TransmissionInfo* info);
+
   // Increases the largest observed.  Any packets less or equal to
   // |largest_acked_packet| are discarded if they are only for the RTT purposes.
   void IncreaseLargestObserved(QuicPacketSequenceNumber largest_observed);

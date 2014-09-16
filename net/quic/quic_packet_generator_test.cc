@@ -42,7 +42,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
   MOCK_METHOD0(CreateStopWaitingFrame, QuicStopWaitingFrame*());
-  MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
+  MOCK_METHOD1(OnSerializedPacket, void(const SerializedPacket& packet));
   MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
   void SetCanWriteAnything() {
@@ -271,8 +271,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
 
   EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
 
   generator_.SetShouldSendAck(false, false);
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -305,8 +304,7 @@ TEST_F(QuicPacketGeneratorTest,
   EXPECT_CALL(delegate_, CreateStopWaitingFrame()).WillOnce(
       Return(CreateStopWaitingFrame()));
 
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
 
   generator_.SetShouldSendAck(true, true);
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -349,8 +347,7 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritableBatchThenFlush) {
   generator_.FinishBatchOperations();
   EXPECT_TRUE(generator_.HasQueuedFrames());
 
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   generator_.FlushAllQueuedFrames();
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
@@ -362,8 +359,7 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritableBatchThenFlush) {
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldFlush) {
   delegate_.SetCanWriteAnything();
 
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
 
   generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -397,8 +393,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_WritableAndShouldNotFlush) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_WritableAndShouldFlush) {
   delegate_.SetCanWriteAnything();
 
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   QuicConsumedData consumed = generator_.ConsumeData(
       kHeadersStreamId, MakeIOVector("foo"), 2, true, MAY_FEC_PROTECT, NULL);
   EXPECT_EQ(3u, consumed.bytes_consumed);
@@ -437,8 +432,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_BatchOperations) {
   EXPECT_TRUE(generator_.HasQueuedFrames());
 
   // Now both frames will be flushed out.
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   generator_.FinishBatchOperations();
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
@@ -456,15 +450,15 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFEC) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet_), Return(true)));
+        SaveArg<0>(&packet_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet4_), Return(true)));
+        SaveArg<0>(&packet4_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet5_), Return(true)));
+        SaveArg<0>(&packet5_));
   }
 
   // Send enough data to create 3 packets: two full and one partial. Send
@@ -493,11 +487,11 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet_), Return(true)));
+        SaveArg<0>(&packet_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
   }
 
   // Send enough data to create 2 packets: one full and one partial. Send
@@ -533,9 +527,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   {
      InSequence dummy;
      EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-         DoAll(SaveArg<0>(&packet_), Return(true)));
+         SaveArg<0>(&packet_));
      EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-         DoAll(SaveArg<0>(&packet2_), Return(true)));
+         SaveArg<0>(&packet2_));
   }
   generator_.StartBatchOperations();
   // Queue enough data to prevent a stream frame with a non-zero offset from
@@ -594,11 +588,11 @@ TEST_F(QuicPacketGeneratorTest, FecGroupSizeChangeWithOpenGroup) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet_), Return(true)));
+        SaveArg<0>(&packet_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
   }
   size_t data_len = 3 * kDefaultMaxPacketSize + 1;
   QuicConsumedData consumed = generator_.ConsumeData(
@@ -615,9 +609,9 @@ TEST_F(QuicPacketGeneratorTest, FecGroupSizeChangeWithOpenGroup) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet4_), Return(true)));
+        SaveArg<0>(&packet4_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet5_), Return(true)));
+        SaveArg<0>(&packet5_));
   }
   consumed = generator_.ConsumeData(7, CreateData(kDefaultMaxPacketSize), 0,
                                     true, MAY_FEC_PROTECT, NULL);
@@ -635,7 +629,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOff) {
 
   // Send one unprotected data packet.
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet_), Return(true)));
+        SaveArg<0>(&packet_));
   QuicConsumedData consumed =
       generator_.ConsumeData(5, CreateData(1u), 0, true, MAY_FEC_PROTECT,
                              NULL);
@@ -650,15 +644,15 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOff) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet4_), Return(true)));
+        SaveArg<0>(&packet4_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet5_), Return(true)));
+        SaveArg<0>(&packet5_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet6_), Return(true)));
+        SaveArg<0>(&packet6_));
   }
   // Send enough data to create 3 packets with MUST_FEC_PROTECT flag.
   size_t data_len = 2 * kDefaultMaxPacketSize + 100;
@@ -676,7 +670,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOff) {
 
   // Send one unprotected data packet.
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet7_), Return(true)));
+        SaveArg<0>(&packet7_));
   consumed = generator_.ConsumeData(7, CreateData(1u), 0, true,
                                     MAY_FEC_PROTECT, NULL);
   EXPECT_EQ(1u, consumed.bytes_consumed);
@@ -701,7 +695,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnWithPendingFrameInCreator) {
 
   // Queue protected data for sending. Should cause queued frames to be flushed.
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+      SaveArg<0>(&packet_));
   EXPECT_FALSE(creator_->IsFecProtected());
   consumed = generator_.ConsumeData(7, CreateData(1u), 0, true,
                                     MUST_FEC_PROTECT, NULL);
@@ -738,7 +732,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnWithPendingFramesInGenerator) {
 
   // Queue protected data for sending. Should cause queued frames to be flushed.
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+      SaveArg<0>(&packet_));
   QuicConsumedData consumed = generator_.ConsumeData(7, CreateData(1u), 0, true,
                                                      MUST_FEC_PROTECT, NULL);
   EXPECT_EQ(1u, consumed.bytes_consumed);
@@ -770,8 +764,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentFramesProtected) {
 
   // Add enough unprotected data to exceed size of current packet, so that
   // current packet is sent. Both frames will be sent out in a single packet.
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   size_t data_len = kDefaultMaxPacketSize;
   consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true,
                                     MAY_FEC_PROTECT, NULL);
@@ -793,8 +786,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentPacketsProtected) {
 
   generator_.StartBatchOperations();
   // Send first packet, FEC protected.
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   // Write enough data to cause a packet to be emitted.
   size_t data_len = kDefaultMaxPacketSize;
   QuicConsumedData consumed = generator_.ConsumeData(
@@ -814,9 +806,9 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentPacketsProtected) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
   }
   consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true,
                                     MAY_FEC_PROTECT, NULL);
@@ -844,7 +836,7 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffThenOnWithCreatorProtectionOn) {
 
   // Add more unprotected data causing first packet to be sent, FEC protected.
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+      SaveArg<0>(&packet_));
   size_t data_len = kDefaultMaxPacketSize;
   consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true,
                                     MAY_FEC_PROTECT, NULL);
@@ -862,9 +854,9 @@ TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffThenOnWithCreatorProtectionOn) {
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet2_), Return(true)));
+        SaveArg<0>(&packet2_));
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-        DoAll(SaveArg<0>(&packet3_), Return(true)));
+        SaveArg<0>(&packet3_));
   }
   consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true,
                                     MUST_FEC_PROTECT, NULL);
@@ -899,8 +891,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
 
   // All five frames will be flushed out in a single packet.
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(SaveArg<0>(&packet_));
   generator_.FinishBatchOperations();
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
@@ -932,11 +923,11 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
 
   {
     InSequence dummy;
-  // All five frames will be flushed out in a single packet
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet_), Return(true)));
-  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
-      DoAll(SaveArg<0>(&packet2_), Return(true)));
+    // All five frames will be flushed out in a single packet
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        SaveArg<0>(&packet_));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        SaveArg<0>(&packet2_));
   }
 
   // Send enough data to exceed one packet

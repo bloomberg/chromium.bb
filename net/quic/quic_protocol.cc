@@ -719,7 +719,8 @@ TransmissionInfo::TransmissionInfo()
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
       all_transmissions(NULL),
-      in_flight(false) {}
+      in_flight(false),
+      is_unackable(false) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
@@ -731,7 +732,8 @@ TransmissionInfo::TransmissionInfo(
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
       all_transmissions(NULL),
-      in_flight(false) {}
+      in_flight(false),
+      is_unackable(false) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
@@ -745,6 +747,7 @@ TransmissionInfo::TransmissionInfo(
       nack_count(0),
       transmission_type(transmission_type),
       all_transmissions(all_transmissions),
-      in_flight(false) {}
+      in_flight(false),
+      is_unackable(false) {}
 
 }  // namespace net

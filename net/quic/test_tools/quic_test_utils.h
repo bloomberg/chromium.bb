@@ -331,9 +331,7 @@ class PacketSavingConnection : public MockConnection {
 
   virtual ~PacketSavingConnection();
 
-  virtual bool SendOrQueuePacket(EncryptionLevel level,
-                                 const SerializedPacket& packet,
-                                 TransmissionType transmission_type) OVERRIDE;
+  virtual void SendOrQueuePacket(QueuedPacket packet) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
   std::vector<QuicEncryptedPacket*> encrypted_packets_;

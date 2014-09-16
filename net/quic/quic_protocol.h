@@ -108,11 +108,12 @@ const QuicStreamId kHeadersStreamId = 3;
 // Maximum delayed ack time, in ms.
 const int kMaxDelayedAckTimeMs = 25;
 
-// This is the default network timeout a for connection till the crypto
-// handshake succeeds and the negotiated timeout from the handshake is received.
+// The default idle timeout before the crypto handshake succeeds.
 const int64 kDefaultInitialTimeoutSecs = 120;  // 2 mins.
-const int64 kDefaultTimeoutSecs = 60 * 10;  // 10 minutes.
-const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
+// The maximum idle timeout that can be negotiated.
+const int64 kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
+// The default timeout for a connection until the crypto handshake succeeds.
+const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
 
 // Default ping timeout.
 const int64 kPingTimeoutSecs = 15;  // 15 secs.
@@ -122,6 +123,10 @@ const int kMinIntervalBetweenServerConfigUpdatesRTTs = 10;
 
 // Minimum time between Server Config Updates (SCUP) sent to client.
 const int kMinIntervalBetweenServerConfigUpdatesMs = 1000;
+
+// Multiplier that allows server to accept slightly more streams than
+// negotiated in handshake.
+const float kMaxStreamsMultiplier = 1.1f;
 
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
@@ -144,16 +149,12 @@ enum TransmissionType {
   NOT_RETRANSMISSION,
   FIRST_TRANSMISSION_TYPE = NOT_RETRANSMISSION,
   HANDSHAKE_RETRANSMISSION,  // Retransmits due to handshake timeouts.
-  ALL_UNACKED_RETRANSMISSION,  // Retransmits of all unacked packets.
+  ALL_UNACKED_RETRANSMISSION,  // Retransmits all unacked packets.
+  ALL_INITIAL_RETRANSMISSION,  // Retransmits all initially encrypted packets.
   LOSS_RETRANSMISSION,  // Retransmits due to loss detection.
   RTO_RETRANSMISSION,  // Retransmits due to retransmit time out.
   TLP_RETRANSMISSION,  // Tail loss probes.
   LAST_TRANSMISSION_TYPE = TLP_RETRANSMISSION,
-};
-
-enum RetransmissionType {
-  INITIAL_ENCRYPTION_ONLY,
-  ALL_PACKETS
 };
 
 enum HasRetransmittableData {
@@ -472,6 +473,8 @@ enum QuicErrorCode {
   QUIC_DECOMPRESSION_FAILURE = 24,
   // We hit our prenegotiated (or default) timeout
   QUIC_CONNECTION_TIMED_OUT = 25,
+  // We hit our overall connection timeout
+  QUIC_CONNECTION_OVERALL_TIMED_OUT = 67,
   // There was an error encountered migrating addresses
   QUIC_ERROR_MIGRATING_ADDRESS = 26,
   // There was an error while writing to the socket.
@@ -547,7 +550,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 67,
+  QUIC_LAST_ERROR = 68,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -1076,6 +1079,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   SequenceNumberList* all_transmissions;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
+  // True if the packet can never be acked, so it can be removed.
+  bool is_unackable;
 };
 
 }  // namespace net

@@ -302,15 +302,16 @@ PacketSavingConnection::~PacketSavingConnection() {
   STLDeleteElements(&encrypted_packets_);
 }
 
-bool PacketSavingConnection::SendOrQueuePacket(
-    EncryptionLevel level,
-    const SerializedPacket& packet,
-    TransmissionType transmission_type) {
-  packets_.push_back(packet.packet);
+void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
+  packets_.push_back(packet.serialized_packet.packet);
   QuicEncryptedPacket* encrypted = QuicConnectionPeer::GetFramer(this)->
-      EncryptPacket(level, packet.sequence_number, *packet.packet);
+      EncryptPacket(packet.encryption_level,
+                    packet.serialized_packet.sequence_number,
+                    *packet.serialized_packet.packet);
   encrypted_packets_.push_back(encrypted);
-  return true;
+  // Transfer ownership of the packet to the SentPacketManager and the
+  // ack notifier to the AckNotifierManager.
+  sent_packet_manager_.OnSerializedPacket(packet.serialized_packet);
 }
 
 MockSession::MockSession(QuicConnection* connection)

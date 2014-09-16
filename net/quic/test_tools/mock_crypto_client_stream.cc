@@ -88,8 +88,8 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   cgst.push_back(kQBIC);
   session()->config()->set_congestion_feedback(cgst, kQBIC);
   session()->config()->set_idle_connection_state_lifetime(
-      QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
-      QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
+      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
+      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
   session()->config()->set_max_streams_per_connection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
 

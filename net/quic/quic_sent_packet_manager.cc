@@ -97,6 +97,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       config.ReceivedInitialRoundTripTimeUs() > 0) {
     rtt_stats_.set_initial_rtt_us(min(kMaxInitialRoundTripTimeUs,
                                       config.ReceivedInitialRoundTripTimeUs()));
+  } else if (config.HasInitialRoundTripTimeUsToSend()) {
+    rtt_stats_.set_initial_rtt_us(
+        min(kMaxInitialRoundTripTimeUs,
+            config.GetInitialRoundTripTimeUsToSend()));
   }
   // TODO(ianswett): BBR is currently a server only feature.
   if (config.HasReceivedConnectionOptions() &&
@@ -310,17 +314,16 @@ bool QuicSentPacketManager::HasRetransmittableFrames(
 }
 
 void QuicSentPacketManager::RetransmitUnackedPackets(
-    RetransmissionType retransmission_type) {
+    TransmissionType retransmission_type) {
+  DCHECK(retransmission_type == ALL_UNACKED_RETRANSMISSION ||
+         retransmission_type == ALL_INITIAL_RETRANSMISSION);
   QuicPacketSequenceNumber sequence_number = unacked_packets_.GetLeastUnacked();
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++sequence_number) {
     const RetransmittableFrames* frames = it->retransmittable_frames;
-    // TODO(ianswett): Consider adding a new retransmission type which removes
-    // all these old packets from unacked and retransmits them as new sequence
-    // numbers with no connection to the previous ones.
-    if (frames != NULL && (retransmission_type == ALL_PACKETS ||
+    if (frames != NULL && (retransmission_type == ALL_UNACKED_RETRANSMISSION ||
                            frames->encryption_level() == ENCRYPTION_INITIAL)) {
-      MarkForRetransmission(sequence_number, ALL_UNACKED_RETRANSMISSION);
+      MarkForRetransmission(sequence_number, retransmission_type);
     }
   }
 }
@@ -717,8 +720,10 @@ bool QuicSentPacketManager::MaybeUpdateRTT(
   // sequence numbers will include the ACK aggregation delay.
   const TransmissionInfo& transmission_info =
       unacked_packets_.GetTransmissionInfo(ack_frame.largest_observed);
-  // Don't update the RTT if it hasn't been sent.
+  // Ensure the packet has a valid sent time.
   if (transmission_info.sent_time == QuicTime::Zero()) {
+    LOG(DFATAL) << "Acked packet has zero sent time, largest_observed:"
+                << ack_frame.largest_observed;
     return false;
   }
 
