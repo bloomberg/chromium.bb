@@ -28,8 +28,7 @@ namespace {
 
 // Partition time since login into successive intervals of this size. In each
 // interval, pick a random time to collect a profile.
-// This interval is twenty-four hours.
-const size_t kPerfProfilingIntervalMs = 24 * 60 * 60 * 1000;
+const size_t kPerfProfilingIntervalMs = 3 * 60 * 60 * 1000;
 
 // Default time in seconds perf is run for.
 const size_t kPerfCommandDurationDefaultSeconds = 2;
