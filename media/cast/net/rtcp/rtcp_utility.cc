@@ -215,7 +215,7 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
         event_log.packet_id = delay_delta_or_packet_id;
       } else {
         event_log.delay_delta = base::TimeDelta::FromMilliseconds(
-            delay_delta_or_packet_id);
+            static_cast<int16>(delay_delta_or_packet_id));
       }
       frame_log.event_log_messages_.push_back(event_log);
     }

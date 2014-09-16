@@ -367,7 +367,7 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {
 TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   static const uint32 kTimeBaseMs = 12345678;
   static const uint32 kTimeDelayMs = 10;
-  static const uint32 kDelayDeltaMs = 123;
+  static const int kDelayDeltaMs = 123;  // To be varied for every frame.
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
 
@@ -378,7 +378,8 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
     RtcpReceiverEventLogMessage event_log;
     event_log.type = FRAME_ACK_SENT;
     event_log.event_timestamp = testing_clock.NowTicks();
-    event_log.delay_delta = base::TimeDelta::FromMilliseconds(kDelayDeltaMs);
+    event_log.delay_delta =
+        base::TimeDelta::FromMilliseconds((j - 50) * kDelayDeltaMs);
     frame_log.event_log_messages_.push_back(event_log);
     receiver_log.push_back(frame_log);
     testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
@@ -390,7 +391,8 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   p.AddReceiverLog(kSenderSsrc);
   for (int i = 0; i < 100; ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs + i * kTimeDelayMs);
-    p.AddReceiverEventLog(kDelayDeltaMs, FRAME_ACK_SENT, 0);
+    const int delay = (i - 50) * kDelayDeltaMs;
+    p.AddReceiverEventLog(static_cast<uint16>(delay), FRAME_ACK_SENT, 0);
   }
 
   RtcpParser parser(kSourceSsrc, kSenderSsrc);
