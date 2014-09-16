@@ -53,9 +53,12 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 
 NextProtoVector SpdyNextProtos() {
   NextProtoVector next_protos;
-  for (int i = kProtoMinimumVersion; i <= kProtoMaximumVersion; ++i) {
-    next_protos.push_back(static_cast<NextProto>(i));
-  }
+  next_protos.push_back(kProtoHTTP11);
+  next_protos.push_back(kProtoDeprecatedSPDY2);
+  next_protos.push_back(kProtoSPDY3);
+  next_protos.push_back(kProtoSPDY31);
+  next_protos.push_back(kProtoSPDY4);
+  next_protos.push_back(kProtoQUIC1SPDY3);
   return next_protos;
 }
 

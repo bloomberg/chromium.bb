@@ -17450,9 +17450,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SpdyVersion" enum="ProtocolVersion">
+  <obsolete>
+    Deprecated on 2014-09-11, because the uploaded values were changing as
+    protocols were removed, therefore statistics couldn't be combined accross
+    different builds.  Replaced by Net.SpdyVersion2.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The SPDY protocol version that is used to talk to SPDY servers.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdyVersion2" enum="SpdyProtocolVersion">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    The SPDY protocol version that is used to talk to SPDY servers.  Logged
+    every time a SPDY session is initialized.
   </summary>
 </histogram>
 
@@ -48643,10 +48656,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ProtocolVersion" type="int">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="HTTP 1.1"/>
-  <int value="2" label="SPDY 1.0"/>
-  <int value="3" label="SPDY 2.0"/>
-  <int value="4" label="SPDY 2.1"/>
-  <int value="5" label="SPDY 3.0"/>
+  <int value="2" label="SPDY 2.0"/>
+  <int value="3" label="SPDY 3.0"/>
+  <int value="4" label="SPDY 3.1"/>
+  <int value="5" label="SPDY 4.0"/>
 </enum>
 
 <enum name="ProvisionalSaveFailure" type="int">
@@ -50041,6 +50054,16 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Connection established in response to CONNECT request was
              abnormally closed"/>
   <int value="34" label="Peer exhibiting suspect behavior."/>
+</enum>
+
+<enum name="SpdyProtocolVersion" type="int">
+  <summary>
+    |enum NextProto| values, with |kProtoSPDYMinimumVersion| subtracted.
+  </summary>
+  <int value="0" label="SPDY 2.0"/>
+  <int value="1" label="SPDY 3.0"/>
+  <int value="2" label="SPDY 3.1"/>
+  <int value="3" label="HTTP/2 draft-14"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">

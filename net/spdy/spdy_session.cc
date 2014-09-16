@@ -719,7 +719,10 @@ void SpdySession::InitializeWithSocket(
                              enable_compression_));
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol_, kProtoMaximumVersion);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.SpdyVersion2",
+      protocol_ - kProtoSPDYMinimumVersion,
+      kProtoSPDYMaximumVersion - kProtoSPDYMinimumVersion + 1);
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   UMA_HISTOGRAM_BOOLEAN("Net.SpdySessions_DataReductionProxy",
                         host_port_pair().Equals(HostPortPair::FromURL(
