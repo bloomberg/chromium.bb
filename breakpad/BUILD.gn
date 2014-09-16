@@ -53,6 +53,8 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/cfi_frame_info.h",
       "src/processor/disassembler_x86.cc",
       "src/processor/disassembler_x86.h",
+      "src/processor/dump_context.cc",
+      "src/processor/dump_object.cc",
       "src/processor/exploitability.cc",
       "src/processor/logging.cc",
       "src/processor/logging.h",
@@ -136,6 +138,8 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/basic_code_module.h",
       "src/processor/basic_code_modules.cc",
       "src/processor/basic_code_modules.h",
+      "src/processor/dump_context.cc",
+      "src/processor/dump_object.cc",
       "src/processor/logging.cc",
       "src/processor/logging.h",
       "src/processor/minidump.cc",
@@ -225,6 +229,7 @@ if (current_toolchain == host_toolchain && is_mac) {
 if (is_mac) {
   static_library("utilities") {
     sources = [
+      "src/client/mac/crash_generation/ConfigFile.mm",
       "src/client/mac/handler/breakpad_nlist_64.cc",
       "src/client/mac/handler/dynamic_images.cc",
       "src/client/mac/handler/minidump_generator.cc",
@@ -234,6 +239,7 @@ if (is_mac) {
       "src/common/mac/arch_utilities.cc",
       "src/common/mac/bootstrap_compat.cc",
       "src/common/mac/file_id.cc",
+      "src/common/mac/launch_reporter.cc",
       "src/common/mac/macho_id.cc",
       "src/common/mac/macho_utilities.cc",
       "src/common/mac/macho_walker.cc",
@@ -248,7 +254,6 @@ if (is_mac) {
 
   executable("crash_inspector") {
     sources = [
-      "src/client/mac/crash_generation/ConfigFile.mm",
       "src/client/mac/crash_generation/Inspector.mm",
       "src/client/mac/crash_generation/InspectorMain.mm",
     ]
@@ -469,6 +474,8 @@ if (is_linux || is_android) {
       "src/common/scoped_ptr.h",
       "src/processor/basic_code_modules.cc",
       "src/processor/basic_code_modules.h",
+      "src/processor/dump_context.cc",
+      "src/processor/dump_object.cc",
       "src/processor/logging.cc",
       "src/processor/logging.h",
       "src/processor/minidump.cc",
