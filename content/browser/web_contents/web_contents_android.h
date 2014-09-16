@@ -88,8 +88,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void EvaluateJavaScript(JNIEnv* env,
                           jobject obj,
                           jstring script,
-                          jobject callback,
-                          jboolean start_renderer);
+                          jobject callback);
 
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();

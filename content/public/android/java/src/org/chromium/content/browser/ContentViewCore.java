@@ -1214,18 +1214,7 @@ public class ContentViewCore
      */
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
         assert mWebContents != null;
-        mWebContents.evaluateJavaScript(script, callback, false);
-    }
-
-    /**
-     * Injects the passed Javascript code in the current page and evaluates it.
-     * If there is no page existing, a new one will be created.
-     *
-     * @param script The Javascript to execute.
-     */
-    public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
-        assert mWebContents != null;
-        mWebContents.evaluateJavaScript(script, null, true);
+        mWebContents.evaluateJavaScript(script, callback);
     }
 
     /**

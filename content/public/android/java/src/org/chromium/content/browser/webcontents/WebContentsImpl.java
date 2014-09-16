@@ -217,9 +217,8 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @Override
-    public void evaluateJavaScript(String script, JavaScriptCallback callback,
-            boolean startRenderer) {
-         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback, true);
+    public void evaluateJavaScript(String script, JavaScriptCallback callback) {
+         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
 
     @CalledByNative
@@ -258,5 +257,5 @@ import org.chromium.content_public.browser.WebContents;
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
             String cssSelector);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
-            String script, JavaScriptCallback callback, boolean startRenderer);
+            String script, JavaScriptCallback callback);
 }

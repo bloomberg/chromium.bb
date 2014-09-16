@@ -400,8 +400,7 @@ public class AwContentsTest extends AwTestBase {
                 awSettings.setJavaScriptEnabled(true);
                 awContents.addPossiblyUnsafeJavascriptInterface(
                         new JavaScriptObject(callback), "bridge", null);
-                awContents.evaluateJavaScriptEvenIfNotYetNavigated(
-                        "javascript:window.bridge.run();");
+                awContents.evaluateJavaScript("javascript:window.bridge.run();", null);
             }
         });
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);

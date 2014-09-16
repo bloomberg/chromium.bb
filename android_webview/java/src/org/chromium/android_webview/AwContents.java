@@ -1713,14 +1713,12 @@ public class AwContents {
             };
         }
 
-        mWebContents.evaluateJavaScript(script, jsCallback, false);
+        mWebContents.evaluateJavaScript(script, jsCallback);
     }
 
-    /**
-     * @see ContentViewCore.evaluateJavaScriptEvenIfNotYetNavigated(String)
-     */
+    // TODO(boliu): Remove this once Android side no longer calls this.
     public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
-        mWebContents.evaluateJavaScript(script, null, true);
+        mWebContents.evaluateJavaScript(script, null);
     }
 
     //--------------------------------------------------------------------------------------------

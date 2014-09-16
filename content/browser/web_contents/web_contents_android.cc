@@ -343,12 +343,11 @@ void WebContentsAndroid::DidStartNavigationTransitionForFrame(int64 frame_id) {
 void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
                                             jobject obj,
                                             jstring script,
-                                            jobject callback,
-                                            jboolean start_renderer) {
+                                            jobject callback) {
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   DCHECK(rvh);
 
-  if (start_renderer && !rvh->IsRenderViewLive()) {
+  if (!rvh->IsRenderViewLive()) {
     if (!static_cast<WebContentsImpl*>(web_contents_)->
         CreateRenderViewForInitialEmptyDocument()) {
       LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScript";
