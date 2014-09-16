@@ -506,6 +506,8 @@ void Node::remove(ExceptionState& exceptionState)
 
 void Node::normalize()
 {
+    document().updateDistributionForNodeIfNeeded(this);
+
     // Go through the subtree beneath us, normalizing all nodes. This means that
     // any two adjacent text nodes are merged and any empty text nodes are removed.
 
