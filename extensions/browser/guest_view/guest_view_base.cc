@@ -140,6 +140,9 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
                                             embedder_process_id),
       embedder_web_contents->GetLastCommittedURL());
   if (!availability.is_available()) {
+    // The derived class did not create a WebContents so this class serves no
+    // purpose. Let's self-destruct.
+    delete this;
     callback.Run(NULL);
     return;
   }
