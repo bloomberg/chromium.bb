@@ -468,9 +468,6 @@ deps_os = {
     'src/third_party/android_tools':
      Var('chromium_git') + '/android_tools.git' + '@' + '7fc902d157a9aed7a2b68adc9c69181b3a43cd58',
 
-    'src/third_party/aosp':
-     Var('chromium_git') + '/chromium/deps/aosp.git' + '@' + 'bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
-
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
 

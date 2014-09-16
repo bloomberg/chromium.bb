@@ -221,7 +221,6 @@ v8.log
 /third_party/android_webview_glue/src
 /third_party/angle
 /third_party/angle_dx11
-/third_party/aosp
 /third_party/apache-mime4j
 /third_party/apache-win32/bin/*.exe
 /third_party/apache-win32/bin/*.dll
