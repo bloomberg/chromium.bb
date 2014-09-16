@@ -177,6 +177,13 @@ void Scheduler::postCompositorTask(const TraceLocation& location, const Task& ta
     postHighPriorityTaskInternal(location, task, "Scheduler::CompositorTask");
 }
 
+void Scheduler::postIpcTask(const TraceLocation& location, const Task& task)
+{
+    // FIXME: we want IPCs to be high priority, but we can't currently do that because some of them can take a very long
+    // time to process. These need refactoring but we need to add some infrastructure to identify them.
+    m_mainThread->postTask(new MainThreadPendingTaskRunner(task, location, "Scheduler::IpcTask"));
+}
+
 void Scheduler::maybePostMainThreadPendingHighPriorityTaskRunner()
 {
     ASSERT(m_pendingTasksMutex.locked());

@@ -49,6 +49,12 @@ void WebSchedulerProxy::postCompositorTask(const WebTraceLocation& webLocation, 
     m_scheduler->postCompositorTask(location, bind(&runTask, adoptPtr(task)));
 }
 
+void WebSchedulerProxy::postIpcTask(const WebTraceLocation& webLocation, WebThread::Task* task)
+{
+    TraceLocation location(webLocation.functionName(), webLocation.fileName());
+    m_scheduler->postIpcTask(location, bind(&runTask, adoptPtr(task)));
+}
+
 void WebSchedulerProxy::didReceiveInputEvent()
 {
     m_scheduler->didReceiveInputEvent();

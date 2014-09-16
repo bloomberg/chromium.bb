@@ -40,6 +40,7 @@ public:
     // to be run on the main thread. They can be called from any thread.
     void postInputTask(const TraceLocation&, const Task&);
     void postCompositorTask(const TraceLocation&, const Task&);
+    void postIpcTask(const TraceLocation&, const Task&);
     void postTask(const TraceLocation&, const Task&); // For generic (low priority) tasks.
     void postIdleTask(const TraceLocation&, const IdleTask&); // For non-critical tasks which may be reordered relative to other task types.
 

@@ -262,8 +262,9 @@ TEST_F(SchedulerTest, TestPostMixedTaskTypes)
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&unorderedTestTask, 2, &result));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&unorderedTestTask, 4, &result));
     m_scheduler->postTask(FROM_HERE, WTF::bind(&unorderedTestTask, 8, &result));
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&unorderedTestTask, 16, &result));
     runPendingTasks();
-    EXPECT_EQ(15, result);
+    EXPECT_EQ(31, result);
 }
 
 int s_sharedTimerTickCount;
@@ -310,10 +311,12 @@ TEST_F(SchedulerTest, TestTaskPrioritization_normalPolicy)
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C1")));
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I2")));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C2")));
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("IPC")));
 
     runPendingTasks();
     EXPECT_THAT(m_order, testing::ElementsAre(
-        std::string("L1"), std::string("L2"), std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2")));
+        std::string("L1"), std::string("L2"), std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2"),
+        std::string("IPC")));
 }
 
 TEST_F(SchedulerTest, TestTaskPrioritization_compositorPriorityPolicy)
@@ -325,10 +328,12 @@ TEST_F(SchedulerTest, TestTaskPrioritization_compositorPriorityPolicy)
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C1")));
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I2")));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C2")));
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("IPC")));
 
     runPendingTasks();
     EXPECT_THAT(m_order, testing::ElementsAre(
-        std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2"), std::string("L1"), std::string("L2")));
+        std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2"), std::string("L1"), std::string("L2"),
+        std::string("IPC")));
 }
 
 TEST_F(SchedulerTest, TestRentrantTask)
@@ -481,14 +486,21 @@ TEST_F(SchedulerTest, TestDidReceiveInputEventDoesNotTriggerShouldYield)
     EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestCompositorEventDoesNotTriggerShouldYield_InNormalMode)
+TEST_F(SchedulerTest, TestCompositorTaskDoesNotTriggerShouldYield_InNormalMode)
 {
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
 
     EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYieldAfterDidReceiveInputEvent)
+TEST_F(SchedulerTest, TestIpcTaskDoesNotTriggerShouldYield_InNormalMode)
+{
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&dummyTask));
+
+    EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
+}
+
+TEST_F(SchedulerTest, TestCompositorTaskDoesTriggerShouldYieldAfterDidReceiveInputEvent)
 {
     m_scheduler->didReceiveInputEvent();
 
@@ -498,7 +510,7 @@ TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYieldAfterDidReceiveIn
     EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InCompositorPriorityMode)
+TEST_F(SchedulerTest, TestInputTaskDoesTriggerShouldYield_InCompositorPriorityMode)
 {
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
@@ -506,7 +518,8 @@ TEST_F(SchedulerTest, TestInputEventDoesTriggerShouldYield_InCompositorPriorityM
     EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYield_InCompositorPriorityMode)
+
+TEST_F(SchedulerTest, TestCompositorTaskDoesTriggerShouldYield_InCompositorPriorityMode)
 {
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
@@ -514,17 +527,10 @@ TEST_F(SchedulerTest, TestCompositorEventDoesTriggerShouldYield_InCompositorPrio
     EXPECT_TRUE(m_scheduler->shouldYieldForHighPriorityWork());
 }
 
-TEST_F(SchedulerTest, TestCompositorEvent_LowSchedulerPolicyDoesntLastLong)
+TEST_F(SchedulerTest, TestIpcTaskDoesNotTriggerShouldYield_InCompositorPriorityMode)
 {
-    m_platformSupport.setMonotonicTimeForTest(1000.0);
-
     m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
-    m_platformSupport.setMonotonicTimeForTest(1000.5);
-    runPendingTasks();
-
-    ASSERT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&dummyTask));
 
     EXPECT_FALSE(m_scheduler->shouldYieldForHighPriorityWork());
 }

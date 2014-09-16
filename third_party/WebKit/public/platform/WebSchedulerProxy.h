@@ -27,6 +27,10 @@ public:
     // ownership of |Task|. Can be called from any thread.
     BLINK_PLATFORM_EXPORT void postCompositorTask(const WebTraceLocation&, WebThread::Task*);
 
+    // Schedule an IPC task to be run on the Blink main thread.
+    // Takes ownership of |Task|. Can be called from any thread.
+    BLINK_PLATFORM_EXPORT void postIpcTask(const WebTraceLocation&, WebThread::Task*);
+
     // Tells the scheduler that the system received an input event and it should go into low latency mode for a while.
     BLINK_PLATFORM_EXPORT void didReceiveInputEvent();
 
