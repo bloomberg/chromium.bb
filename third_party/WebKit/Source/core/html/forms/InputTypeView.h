@@ -93,6 +93,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusType);
+    virtual void handleFocusInEvent(Element* oldFocusedElement, FocusType);
     virtual void handleBlurEvent();
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;

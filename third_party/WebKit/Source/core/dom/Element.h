@@ -377,7 +377,7 @@ public:
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType);
     virtual void dispatchBlurEvent(Element* newFocusedElement);
-    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement);
+    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType);
     void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement);
 
     String innerText();

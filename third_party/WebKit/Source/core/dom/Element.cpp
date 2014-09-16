@@ -2147,7 +2147,7 @@ void Element::dispatchBlurEvent(Element* newFocusedElement)
     EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
 }
 
-void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement)
+void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusin || eventType == EventTypeNames::DOMFocusIn);

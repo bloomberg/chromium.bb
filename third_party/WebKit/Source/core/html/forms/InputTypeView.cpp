@@ -125,6 +125,10 @@ void InputTypeView::handleBlurEvent()
 {
 }
 
+void InputTypeView::handleFocusInEvent(Element*, FocusType)
+{
+}
+
 void InputTypeView::startResourceLoading()
 {
 }

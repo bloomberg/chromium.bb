@@ -162,9 +162,9 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
         focusedElement->setFocus(true);
         focusedElement->dispatchFocusEvent(0, FocusTypePage);
         if (focusedElement == document->focusedElement()) {
-            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0);
+            document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0, FocusTypePage);
             if (focusedElement == document->focusedElement())
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0);
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0, FocusTypePage);
         }
     }
 }
@@ -290,9 +290,9 @@ void FocusController::focusDocumentView(PassRefPtr<Frame> frame)
         if (focusedElement) {
             focusedElement->dispatchFocusEvent(0, FocusTypePage);
             if (focusedElement == document->focusedElement()) {
-                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0);
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0, FocusTypePage);
                 if (focusedElement == document->focusedElement())
-                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0);
+                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0, FocusTypePage);
             }
         }
     }

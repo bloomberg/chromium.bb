@@ -323,6 +323,7 @@ private:
     virtual bool isEmptySuggestedValue() const OVERRIDE FINAL { return suggestedValue().isEmpty(); }
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
     virtual void handleBlurEvent() OVERRIDE FINAL;
+    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
 
     virtual bool isOptionalFormControl() const OVERRIDE FINAL { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const OVERRIDE FINAL;
