@@ -741,16 +741,17 @@ void InputMethodManagerImpl::ReconfigureIMFramework(
 
 void InputMethodManagerImpl::SetState(
     scoped_refptr<InputMethodManager::State> state) {
-  DCHECK(state);
+  DCHECK(state.get());
   InputMethodManagerImpl::StateImpl* new_impl_state =
       static_cast<InputMethodManagerImpl::StateImpl*>(state.get());
   const bool need_update_current_input_method =
-      (state_ ? state_->current_input_method.id() !=
-                    new_impl_state->current_input_method.id()
-              : true);
+      (state_.get()
+           ? state_->current_input_method.id() !=
+                 new_impl_state->current_input_method.id()
+           : true);
   state_ = new_impl_state;
 
-  if (state_ && state_->active_input_method_ids.size()) {
+  if (state_.get() && state_->active_input_method_ids.size()) {
     // Initialize candidate window controller and widgets such as
     // candidate window, infolist and mode indicator.  Note, mode
     // indicator is used by only keyboard layout input methods.
