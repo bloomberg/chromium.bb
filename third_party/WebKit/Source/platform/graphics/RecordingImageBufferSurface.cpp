@@ -134,28 +134,57 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
         return false;
     }
 
-    SkCanvas* oldCanvas = m_currentFrame->getRecordingCanvas(); // Could be raster or picture
+    StateStack stateStack;
 
-    // FIXME(crbug.com/392614): handle transferring complex state from the current picture to the new one.
-    if (oldCanvas->getSaveCount() > m_initialSaveCount)
+    if (!saveState(m_currentFrame->getRecordingCanvas(), &stateStack)) {
         return false;
-
-    if (!oldCanvas->isClipRect())
-        return false;
-
-    SkMatrix ctm = oldCanvas->getTotalMatrix();
-    SkRect clip;
-    oldCanvas->getClipBounds(&clip);
+    }
 
     m_previousFrame = adoptRef(m_currentFrame->endRecording());
     initializeCurrentFrame();
 
-    SkCanvas* newCanvas = m_currentFrame->getRecordingCanvas();
-    newCanvas->concat(ctm);
-    newCanvas->clipRect(clip);
+    setCurrentState(m_currentFrame->getRecordingCanvas(), &stateStack);
 
     m_frameWasCleared = false;
     return true;
+}
+
+bool RecordingImageBufferSurface::saveState(SkCanvas* srcCanvas, StateStack* stateStack)
+{
+    StateRec state;
+
+    // we will remove all the saved state stack in endRecording anyway, so it makes no difference
+    while (srcCanvas->getSaveCount() > m_initialSaveCount) {
+        state.m_ctm = srcCanvas->getTotalMatrix();
+        // FIXME: don't mess up the state in case we will have to fallback, crbug.com/408392
+        if (!srcCanvas->getClipDeviceBounds(&state.m_clip))
+            return false;
+        stateStack->push(state);
+        srcCanvas->restore();
+    }
+
+    state.m_ctm = srcCanvas->getTotalMatrix();
+    // FIXME: don't mess up the state in case we will have to fallback, crbug.com/408392
+    if (!srcCanvas->getClipDeviceBounds(&state.m_clip))
+        return false;
+    stateStack->push(state);
+
+    return true;
+}
+
+void RecordingImageBufferSurface::setCurrentState(SkCanvas* dstCanvas, StateStack* stateStack)
+{
+    while (stateStack->size() > 1) {
+        dstCanvas->resetMatrix();
+        dstCanvas->clipRect(SkRect::MakeFromIRect(stateStack->peek().m_clip));
+        dstCanvas->setMatrix(stateStack->peek().m_ctm);
+        dstCanvas->save();
+        stateStack->pop();
+    }
+
+    dstCanvas->resetMatrix();
+    dstCanvas->clipRect(SkRect::MakeFromIRect(stateStack->peek().m_clip));
+    dstCanvas->setMatrix(stateStack->peek().m_ctm);
 }
 
 } // namespace blink
