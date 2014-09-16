@@ -320,7 +320,8 @@ TestNetworkDelegate::TestNetworkDelegate()
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
-      can_throttle_requests_(true) {
+      can_throttle_requests_(true),
+      cancel_request_with_policy_violating_referrer_(false) {
 }
 
 TestNetworkDelegate::~TestNetworkDelegate() {
@@ -602,6 +603,13 @@ int TestNetworkDelegate::OnBeforeSocketStreamConnect(
     SocketStream* socket,
     const CompletionCallback& callback) {
   return OK;
+}
+
+bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+    const URLRequest& request,
+    const GURL& target_url,
+    const GURL& referrer_url) const {
+  return cancel_request_with_policy_violating_referrer_;
 }
 
 // static

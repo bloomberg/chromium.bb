@@ -166,6 +166,15 @@ bool NetworkDelegate::CanEnablePrivacyMode(
   return OnCanEnablePrivacyMode(url, first_party_for_cookies);
 }
 
+bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(
+    const URLRequest& request,
+    const GURL& target_url,
+    const GURL& referrer_url) const {
+  DCHECK(CalledOnValidThread());
+  return OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+      request, target_url, referrer_url);
+}
+
 int NetworkDelegate::OnBeforeURLRequest(URLRequest* request,
                                         const CompletionCallback& callback,
                                         GURL* new_url) {
@@ -267,6 +276,13 @@ int NetworkDelegate::OnBeforeSocketStreamConnect(
     SocketStream* socket,
     const CompletionCallback& callback) {
   return OK;
+}
+
+bool NetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+    const URLRequest& request,
+    const GURL& target_url,
+    const GURL& referrer_url) const {
+  return false;
 }
 
 }  // namespace net

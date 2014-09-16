@@ -12,6 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
@@ -232,6 +233,12 @@ void RecordIOThreadToRequestStartOnUIThread(
   UMA_HISTOGRAM_TIMES("Net.IOThreadCreationToHTTPRequestStart", request_lag);
 }
 #endif  // defined(OS_ANDROID)
+
+void ReportInvalidReferrerSend(const GURL& target_url,
+                               const GURL& referrer_url) {
+  base::RecordAction(
+      base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
+}
 
 }  // namespace
 
@@ -809,6 +816,15 @@ int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
   }
 #endif
   return net::OK;
+}
+
+bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+    const net::URLRequest& request,
+    const GURL& target_url,
+    const GURL& referrer_url) const {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ReportInvalidReferrerSend, target_url, referrer_url));
+  return true;
 }
 
 void ChromeNetworkDelegate::AccumulateContentLength(

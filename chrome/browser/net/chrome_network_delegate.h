@@ -261,6 +261,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) OVERRIDE;
+  virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+      const net::URLRequest& request,
+      const GURL& target_url,
+      const GURL& referrer_url) const OVERRIDE;
 
   void AccumulateContentLength(
       int64 received_payload_byte_count,

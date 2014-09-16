@@ -13,7 +13,6 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/stats_counters.h"
-#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -691,12 +690,21 @@ void URLRequest::StartJob(URLRequestJob* job) {
   if (referrer_policy_ ==
           CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
       GURL(referrer_).SchemeIsSecure() && !url().SchemeIsSecure()) {
-#if !defined(OFFICIAL_BUILD)
-    LOG(FATAL) << "Trying to send secure referrer for insecure load";
-#endif
-    referrer_.clear();
-    base::RecordAction(
-        base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
+    if (!network_delegate_ ||
+        !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
+            *this, url(), GURL(referrer_))) {
+      referrer_.clear();
+    } else {
+      // We need to clear the referrer anyway to avoid an infinite recursion
+      // when starting the error job.
+      referrer_.clear();
+      std::string source("delegate");
+      net_log_.AddEvent(NetLog::TYPE_CANCELLED,
+                        NetLog::StringCallback("source", &source));
+      RestartWithJob(new URLRequestErrorJob(
+          this, network_delegate_, ERR_BLOCKED_BY_CLIENT));
+      return;
+    }
   }
 
   // Don't allow errors to be sent from within Start().

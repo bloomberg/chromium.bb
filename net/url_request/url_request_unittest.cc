@@ -1021,6 +1021,21 @@ TEST_F(URLRequestTest, InvalidUrlTest) {
   }
 }
 
+TEST_F(URLRequestTest, InvalidReferrerTest) {
+  TestURLRequestContext context;
+  TestNetworkDelegate network_delegate;
+  network_delegate.set_cancel_request_with_policy_violating_referrer(true);
+  context.set_network_delegate(&network_delegate);
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL("http://localhost/"), DEFAULT_PRIORITY, &d, NULL));
+  req->SetReferrer("https://somewhere.com/");
+
+  req->Start();
+  base::RunLoop().Run();
+  EXPECT_TRUE(d.request_failed());
+}
+
 #if defined(OS_WIN)
 TEST_F(URLRequestTest, ResolveShortcutTest) {
   base::FilePath app_path;

@@ -108,6 +108,11 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeSocketStreamConnect(SocketStream* socket,
                                       const CompletionCallback& callback);
 
+  bool CancelURLRequestWithPolicyViolatingReferrerHeader(
+      const URLRequest& request,
+      const GURL& target_url,
+      const GURL& referrer_url) const;
+
  private:
   // This is the interface for subclasses of NetworkDelegate to implement. These
   // member functions will be called by the respective public notification
@@ -270,6 +275,16 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // See OnBeforeURLRequest for return value description. Returns OK by default.
   virtual int OnBeforeSocketStreamConnect(
       SocketStream* socket, const CompletionCallback& callback);
+
+  // Called when the |referrer_url| for requesting |target_url| during handling
+  // of the |request| is does not comply with the referrer policy (e.g. a
+  // secure referrer for an insecure initial target).
+  // Returns true if the request should be cancelled. Otherwise, the referrer
+  // header is stripped from the request.
+  virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+      const URLRequest& request,
+      const GURL& target_url,
+      const GURL& referrer_url) const;
 };
 
 }  // namespace net
