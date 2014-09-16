@@ -2820,8 +2820,8 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
         if (destroyRootParent->isRenderFlowThread() || destroyRootParent->isAnonymousColumnSpanBlock())
             break;
 
-        if (destroyRootParent->slowFirstChild() != this || destroyRootParent->slowLastChild() != this)
-            break;
+        if (destroyRootParent->slowFirstChild() != destroyRoot || destroyRootParent->slowLastChild() != destroyRoot)
+            break; // Need to keep the anonymous parent, since it won't become empty by the removal of this renderer.
     }
 
     destroyRoot->destroy();
