@@ -159,21 +159,6 @@ cr.define('cr.onc', function() {
     },
 
     /**
-     * Updates the properties of |data_| from the properties in |update|.
-     * Note: this only looks at top level entries, so if a dictionary is
-     * updated the entire dictionary is written over. TODO(stevenjb):
-     * eliminate this function when |data_| contains only ONC entries and
-     * any updates consist of complete ONC dictionaries.
-     * @param {Object} update Dictionary containing the updated properties.
-     */
-    updateData: function(update) {
-      for (var prop in update) {
-        if (prop in this.data_)
-          this.data_[prop] = update[prop];
-      }
-    },
-
-    /**
      * Get the effective value from a Managed property ONC dictionary.
      * @param {Object} property The managed property ONC dictionary.
      * @return {*} The effective value or undefined.

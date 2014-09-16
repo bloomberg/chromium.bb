@@ -63,6 +63,20 @@ cr.define('options.network', function() {
   var cellularSupportsScan_ = false;
 
   /**
+   * Indicates the current SIM lock type of the cellular device.
+   * @type {boolean}
+   * @private
+   */
+  var cellularSimLockType_ = '';
+
+  /**
+   * Indicates whether the SIM card is absent on the cellular device.
+   * @type {boolean}
+   * @private
+   */
+  var cellularSimAbsent_ = false;
+
+  /**
    * Indicates if WiMAX networks are available.
    * @type {boolean}
    * @private
@@ -368,9 +382,11 @@ cr.define('options.network', function() {
         this.menu_.style.setProperty('top', top + 'px');
         this.menu_.hidden = false;
       }
-      if (rescan)
-        chrome.send('refreshNetworks');
-    },
+      if (rescan) {
+        // TODO(stevenjb): chrome.networkingPrivate.requestNetworkScan
+        chrome.send('requestNetworkScan');
+      }
+    }
   };
 
   /**
@@ -511,8 +527,8 @@ cr.define('options.network', function() {
             if (data.Type == 'VPN') {
               var disconnectCallback = function() {
                 sendChromeMetricsAction('Options_NetworkDisconnectVPN');
-                chrome.send('networkCommand',
-                            ['VPN', data.servicePath, 'disconnect']);
+                // TODO(stevenjb): chrome.networkingPrivate.startDisconnect
+                chrome.send('startDisconnect', [data.servicePath]);
               };
               // Add separator
               addendum.push({});
@@ -527,24 +543,30 @@ cr.define('options.network', function() {
           this.data_.key == 'Cellular') {
         addendum.push({});
         if (this.data_.key == 'WiFi') {
-          addendum.push({label: loadTimeData.getString('turnOffWifi'),
-                       command: function() {
-                         sendChromeMetricsAction('Options_NetworkWifiToggle');
-                         chrome.send('disableWifi');
-                       },
-                       data: {}});
+          addendum.push({
+            label: loadTimeData.getString('turnOffWifi'),
+            command: function() {
+              sendChromeMetricsAction('Options_NetworkWifiToggle');
+              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
+              chrome.send('disableNetworkType', ['WiFi']);
+            },
+            data: {}});
         } else if (this.data_.key == 'Wimax') {
-          addendum.push({label: loadTimeData.getString('turnOffWimax'),
-                       command: function() {
-                         chrome.send('disableWimax');
-                       },
-                       data: {}});
+          addendum.push({
+            label: loadTimeData.getString('turnOffWimax'),
+            command: function() {
+              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
+              chrome.send('disableNetworkType', ['Wimax']);
+            },
+            data: {}});
         } else if (this.data_.key == 'Cellular') {
-          addendum.push({label: loadTimeData.getString('turnOffCellular'),
-                       command: function() {
-                         chrome.send('disableCellular');
-                       },
-                       data: {}});
+          addendum.push({
+            label: loadTimeData.getString('turnOffCellular'),
+            command: function() {
+              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
+              chrome.send('disableNetworkType', ['Cellular']);
+            },
+            data: {}});
         }
       }
       if (!empty)
@@ -659,7 +681,7 @@ cr.define('options.network', function() {
       var menuItem = createCallback_(parent,
                                      data,
                                      getNetworkName(data),
-                                     'options',
+                                     'showDetails',
                                      data.iconURL);
       if (data.policyManaged)
         menuItem.appendChild(new ManagedNetworkIndicator());
@@ -962,6 +984,8 @@ cr.define('options.network', function() {
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
     cellularSupportsScan_ = data.cellularSupportsScan;
+    cellularSimAbsent_ = data.cellularSimAbsent;
+    cellularSimLockType_ = data.cellularSimLockType;
     wimaxAvailable_ = data.wimaxAvailable;
     wimaxEnabled_ = data.wimaxEnabled;
 
@@ -971,8 +995,7 @@ cr.define('options.network', function() {
       var type = String('Ethernet');
       var path = ethernetConnection.servicePath;
       var ethernetOptions = function() {
-        chrome.send('networkCommand',
-                    [type, path, 'options']);
+        chrome.send('networkCommand', [type, path, 'showDetails']);
       };
       networkList.update(
           { key: 'Ethernet',
@@ -988,14 +1011,14 @@ cr.define('options.network', function() {
     if (data.wifiEnabled)
       loadData_('WiFi', data.wirelessList, data.rememberedList);
     else
-      addEnableNetworkButton_('WiFi', 'enableWifi', 'WiFi');
+      addEnableNetworkButton_('WiFi');
 
     // Only show cellular control if available.
     if (data.cellularAvailable) {
       if (data.cellularEnabled)
         loadData_('Cellular', data.wirelessList, data.rememberedList);
       else
-        addEnableNetworkButton_('Cellular', 'enableCellular', 'Cellular');
+        addEnableNetworkButton_('Cellular');
     } else {
       networkList.deleteItem('Cellular');
     }
@@ -1005,7 +1028,7 @@ cr.define('options.network', function() {
       if (data.wimaxEnabled)
         loadData_('Wimax', data.wirelessList, data.rememberedList);
       else
-        addEnableNetworkButton_('Wimax', 'enableWimax', 'Cellular');
+        addEnableNetworkButton_('Wimax');
     } else {
       networkList.deleteItem('Wimax');
     }
@@ -1019,24 +1042,32 @@ cr.define('options.network', function() {
   };
 
   /**
-   * Replaces a network menu with a button for reenabling the type of network.
-   * @param {string} name The type of network (WiFi, Cellular or Wimax).
-   * @param {string} command The command for reenabling the network.
-   * @param {string} icon Type of icon (WiFi or Cellular).
+   * Replaces a network menu with a button for enabling the network type.
+   * @param {string} type The type of network (WiFi, Cellular or Wimax).
    * @private
    */
-  function addEnableNetworkButton_(type, command, icon) {
+  function addEnableNetworkButton_(type) {
     var subtitle = loadTimeData.getString('networkDisabled');
+    var icon = (type == 'Wimax') ? 'Cellular' : type;
     var enableNetwork = function() {
       if (type == 'WiFi')
         sendChromeMetricsAction('Options_NetworkWifiToggle');
-      chrome.send(command);
+      if (type == 'Cellular') {
+        if (cellularSimLockType_) {
+          chrome.send('simOperation', ['unlock']);
+          return;
+        } else if (cellularEnabled_ && cellularSimAbsent_) {
+          chrome.send('simOperation', ['configure']);
+          return;
+        }
+      }
+      // TODO(stevenjb): chrome.networkingPrivate.enableNetworkType
+      chrome.send('enableNetworkType', [type]);
     };
-    var networkList = $('network-list');
-    networkList.update({key: type,
-                        subtitle: subtitle,
-                        iconType: icon,
-                        command: enableNetwork});
+    $('network-list').update({key: type,
+                              subtitle: subtitle,
+                              iconType: icon,
+                              command: enableNetwork});
   }
 
   /**

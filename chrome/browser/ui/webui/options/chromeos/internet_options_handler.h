@@ -51,12 +51,6 @@ class InternetOptionsHandler
   virtual void RegisterMessages() OVERRIDE;
 
   // Callbacks to set network state properties.
-  void EnableWifiCallback(const base::ListValue* args);
-  void DisableWifiCallback(const base::ListValue* args);
-  void EnableCellularCallback(const base::ListValue* args);
-  void DisableCellularCallback(const base::ListValue* args);
-  void EnableWimaxCallback(const base::ListValue* args);
-  void DisableWimaxCallback(const base::ListValue* args);
   void ShowMorePlanInfoCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
   void SetApnProperties(const base::ListValue* args,
@@ -64,9 +58,15 @@ class InternetOptionsHandler
                         const base::DictionaryValue& shill_properties);
   void CarrierStatusCallback();
   void SetCarrierCallback(const base::ListValue* args);
-  void SetSimCardLockCallback(const base::ListValue* args);
-  void ChangePinCallback(const base::ListValue* args);
-  void RefreshNetworksCallback(const base::ListValue* args);
+  void SimOperationCallback(const base::ListValue* args);
+
+  // networkingPrvate callbacks
+  void DisableNetworkTypeCallback(const base::ListValue* args);
+  void EnableNetworkTypeCallback(const base::ListValue* args);
+  void GetManagedPropertiesCallback(const base::ListValue* args);
+  void RequestNetworkScanCallback(const base::ListValue* args);
+  void StartConnectCallback(const base::ListValue* args);
+  void StartDisconnectCallback(const base::ListValue* args);
 
   // Retrieves a data url for a resource.
   std::string GetIconDataUrl(int resource_id) const;
@@ -105,7 +105,7 @@ class InternetOptionsHandler
                              const std::string& service_path,
                              const base::DictionaryValue& shill_properties);
 
-  // Retrieves the properties for |service_path| and calls showDetailedInfo
+  // Retrieves the properties for |service_path| and calls sendNetworkDetails
   // with the results.
   void PopulateDictionaryDetailsCallback(
       const std::string& service_path,
@@ -128,6 +128,7 @@ class InternetOptionsHandler
 
   // Helper functions called by NetworkCommandCallback(...)
   void AddConnection(const std::string& type);
+  void SendShowDetailedInfo(const std::string& service_path);
 
   // Creates the map of wired networks.
   base::ListValue* GetWiredList();

@@ -66,7 +66,6 @@ namespace {
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
 const char kNetworkInfoKeyIconURL[] = "iconURL";
-const char kNetworkInfoKeyServicePath[] = "servicePath";
 const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
 // These are types of name server selections from the web ui.
@@ -81,6 +80,8 @@ const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
 const char kSetDefaultNetworkIconsFunction[] =
     "options.network.NetworkList.setDefaultNetworkIcons";
+const char kSendNetworkDetailsFunction[] =
+    "options.internet.DetailsInternetPage.sendNetworkDetails";
 const char kShowDetailedInfoFunction[] =
     "options.internet.DetailsInternetPage.showDetailedInfo";
 const char kUpdateConnectionDataFunction[] =
@@ -89,23 +90,24 @@ const char kUpdateCarrierFunction[] =
     "options.internet.DetailsInternetPage.updateCarrier";
 
 // These are used to register message handlers with JavaScript.
-const char kChangePinMessage[] = "changePin";
-const char kDisableCellularMessage[] = "disableCellular";
-const char kDisableWifiMessage[] = "disableWifi";
-const char kDisableWimaxMessage[] = "disableWimax";
-const char kEnableCellularMessage[] = "enableCellular";
-const char kEnableWifiMessage[] = "enableWifi";
-const char kEnableWimaxMessage[] = "enableWimax";
 const char kNetworkCommandMessage[] = "networkCommand";
-const char kRefreshNetworksMessage[] = "refreshNetworks";
 const char kSetApnMessage[] = "setApn";
 const char kSetAutoConnectMessage[] = "setAutoConnect";
 const char kSetCarrierMessage[] = "setCarrier";
 const char kSetIPConfigMessage[] = "setIPConfig";
 const char kSetPreferNetworkMessage[] = "setPreferNetwork";
 const char kSetServerHostname[] = "setServerHostname";
-const char kSetSimCardLockMessage[] = "setSimCardLock";
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
+const char kSimOperationMessage[] = "simOperation";
+
+// TODO(stevenjb): Replace these with the matching networkingPrivate methods.
+// crbug.com/279351.
+const char kDisableNetworkTypeMessage[] = "disableNetworkType";
+const char kEnableNetworkTypeMessage[] = "enableNetworkType";
+const char kGetManagedPropertiesMessage[] = "getManagedProperties";
+const char kRequestNetworkScanMessage[] = "requestNetworkScan";
+const char kStartConnectMessage[] = "startConnect";
+const char kStartDisconnectMessage[] = "startDisconnect";
 
 // These are strings used to communicate with JavaScript.
 const char kTagActivate[] = "activate";
@@ -113,16 +115,19 @@ const char kTagAddConnection[] = "add";
 const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularEnabled[] = "cellularEnabled";
+const char kTagCellularSimAbsent[] = "cellularSimAbsent";
+const char kTagCellularSimLockType[] = "cellularSimLockType";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
 const char kTagConfigure[] = "configure";
-const char kTagConnect[] = "connect";
-const char kTagDeviceConnected[] = "deviceConnected";
-const char kTagDisconnect[] = "disconnect";
-const char kTagErrorMessage[] = "errorMessage";
 const char kTagForget[] = "forget";
-const char kTagOptions[] = "options";
 const char kTagRememberedList[] = "rememberedList";
+const char kTagShowDetails[] = "showDetails";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
+const char kTagSimOpChangePin[] = "changePin";
+const char kTagSimOpConfigure[] = "configure";
+const char kTagSimOpSetLocked[] = "setLocked";
+const char kTagSimOpSetUnlocked[] = "setUnlocked";
+const char kTagSimOpUnlock[] = "unlock";
 const char kTagTrue[] = "true";
 const char kTagVpnList[] = "vpnList";
 const char kTagWifiAvailable[] = "wifiAvailable";
@@ -131,6 +136,11 @@ const char kTagWimaxAvailable[] = "wimaxAvailable";
 const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
+
+// Pseudo-ONC chrome specific properties appended to the ONC dictionary.
+const char kTagErrorMessage[] = "errorMessage";
+const char kNetworkInfoKeyServicePath[] = "servicePath";
+const char kNetworkInfoKeyGUID[] = "GUID";
 
 const int kPreferredPriority = 1;
 
@@ -233,26 +243,13 @@ scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
     const base::DictionaryValue& onc_properties) {
   scoped_ptr<base::DictionaryValue> dictionary(onc_properties.DeepCopy());
 
+  // Append Service Path for now.
   dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
+  // Append a Chrome specific translated error message.
   dictionary->SetString(
       kTagErrorMessage,
       ash::network_connect::ErrorString(network->error(), network->path()));
 
-  const std::string& type = network->type();
-
-  const NetworkState* connected_network =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::Primitive(type));
-  dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
-
-  if (type == shill::kTypeCellular) {
-    dictionary->SetBoolean(
-        kTagCarrierSelectFlag,
-        CommandLine::ForCurrentProcess()
-        ->HasSwitch(chromeos::switches::kEnableCarrierSwitching));
-    dictionary->SetBoolean(kTagShowViewAccountButton,
-                           ShowViewAccountButton(network));
-  }
   return dictionary.Pass();
 }
 
@@ -354,9 +351,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kNetworkCommandMessage,
       base::Bind(&InternetOptionsHandler::NetworkCommandCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kRefreshNetworksMessage,
-      base::Bind(&InternetOptionsHandler::RefreshNetworksCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetPreferNetworkMessage,
       base::Bind(&InternetOptionsHandler::SetPreferNetworkCallback,
                  base::Unretained(this)));
@@ -365,24 +359,6 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetIPConfigMessage,
       base::Bind(&InternetOptionsHandler::SetIPConfigCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kEnableWifiMessage,
-      base::Bind(&InternetOptionsHandler::EnableWifiCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kDisableWifiMessage,
-      base::Bind(&InternetOptionsHandler::DisableWifiCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kEnableCellularMessage,
-      base::Bind(&InternetOptionsHandler::EnableCellularCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kDisableCellularMessage,
-      base::Bind(&InternetOptionsHandler::DisableCellularCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kEnableWimaxMessage,
-      base::Bind(&InternetOptionsHandler::EnableWimaxCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kDisableWimaxMessage,
-      base::Bind(&InternetOptionsHandler::DisableWimaxCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kShowMorePlanInfoMessage,
       base::Bind(&InternetOptionsHandler::ShowMorePlanInfoCallback,
@@ -393,73 +369,32 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kSetCarrierMessage,
       base::Bind(&InternetOptionsHandler::SetCarrierCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetSimCardLockMessage,
-      base::Bind(&InternetOptionsHandler::SetSimCardLockCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kChangePinMessage,
-      base::Bind(&InternetOptionsHandler::ChangePinCallback,
+  web_ui()->RegisterMessageCallback(kSimOperationMessage,
+      base::Bind(&InternetOptionsHandler::SimOperationCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetServerHostname,
       base::Bind(&InternetOptionsHandler::SetServerHostnameCallback,
                  base::Unretained(this)));
-}
 
-void InternetOptionsHandler::EnableWifiCallback(const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::WiFi(), true,
-      base::Bind(&ShillError, "EnableWifiCallback"));
-}
-
-void InternetOptionsHandler::DisableWifiCallback(const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::WiFi(), false,
-      base::Bind(&ShillError, "DisableWifiCallback"));
-}
-
-void InternetOptionsHandler::EnableCellularCallback(
-    const base::ListValue* args) {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const DeviceState* device =
-      handler->GetDeviceStateByType(NetworkTypePattern::Cellular());
-  if (!device) {
-    LOG(ERROR) << "Mobile device not found.";
-    return;
-  }
-  if (!device->sim_lock_type().empty()) {
-    SimDialogDelegate::ShowDialog(GetNativeWindow(),
-                                  SimDialogDelegate::SIM_DIALOG_UNLOCK);
-    return;
-  }
-  if (!handler->IsTechnologyEnabled(NetworkTypePattern::Cellular())) {
-    handler->SetTechnologyEnabled(
-        NetworkTypePattern::Cellular(), true,
-        base::Bind(&ShillError, "EnableCellularCallback"));
-    return;
-  }
-  if (device->IsSimAbsent()) {
-    mobile_config_ui::DisplayConfigDialog();
-    return;
-  }
-  LOG(ERROR) << "EnableCellularCallback called for enabled mobile device";
-}
-
-void InternetOptionsHandler::DisableCellularCallback(
-    const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::Mobile(), false,
-      base::Bind(&ShillError, "DisableCellularCallback"));
-}
-
-void InternetOptionsHandler::EnableWimaxCallback(const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::Wimax(), true,
-      base::Bind(&ShillError, "EnableWimaxCallback"));
-}
-
-void InternetOptionsHandler::DisableWimaxCallback(const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::Wimax(), false,
-      base::Bind(&ShillError, "DisableWimaxCallback"));
+  // networkingPrivate methods
+  web_ui()->RegisterMessageCallback(kDisableNetworkTypeMessage,
+      base::Bind(&InternetOptionsHandler::DisableNetworkTypeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kEnableNetworkTypeMessage,
+      base::Bind(&InternetOptionsHandler::EnableNetworkTypeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kGetManagedPropertiesMessage,
+      base::Bind(&InternetOptionsHandler::GetManagedPropertiesCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kRequestNetworkScanMessage,
+      base::Bind(&InternetOptionsHandler::RequestNetworkScanCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kStartConnectMessage,
+      base::Bind(&InternetOptionsHandler::StartConnectCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kStartDisconnectMessage,
+      base::Bind(&InternetOptionsHandler::StartDisconnectCallback,
+                 base::Unretained(this)));
 }
 
 void InternetOptionsHandler::ShowMorePlanInfoCallback(
@@ -540,7 +475,7 @@ void InternetOptionsHandler::CarrierStatusCallback() {
   if (device && (device->carrier() == shill::kCarrierSprint)) {
     const NetworkState* network =
         handler->FirstNetworkByType(NetworkTypePattern::Cellular());
-    if (network) {
+    if (network && network->path() == details_path_) {
       ash::network_connect::ActivateCellular(network->path());
       UpdateConnectionData(network->path());
     }
@@ -571,11 +506,14 @@ void InternetOptionsHandler::SetCarrierCallback(const base::ListValue* args) {
       base::Bind(&ShillError, "SetCarrierCallback"));
 }
 
-void InternetOptionsHandler::SetSimCardLockCallback(
-    const base::ListValue* args) {
-  bool require_pin_new_value;
-  if (!args->GetBoolean(0, &require_pin_new_value)) {
+void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {
+  std::string operation;
+  if (args->GetSize() != 1 || !args->GetString(0, &operation)) {
     NOTREACHED();
+    return;
+  }
+  if (operation == kTagSimOpConfigure) {
+    mobile_config_ui::DisplayConfigDialog();
     return;
   }
   // 1. Bring up SIM unlock dialog, pass new RequirePin setting in URL.
@@ -585,22 +523,95 @@ void InternetOptionsHandler::SetSimCardLockCallback(
   // 5. The dialog may change device properties, in which case
   //    DevicePropertiesUpdated() will get called which will update the UI.
   SimDialogDelegate::SimDialogMode mode;
-  if (require_pin_new_value)
+  if (operation == kTagSimOpSetLocked) {
     mode = SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON;
-  else
+  } else if (operation == kTagSimOpSetUnlocked) {
     mode = SimDialogDelegate::SIM_DIALOG_SET_LOCK_OFF;
+  } else if (operation == kTagSimOpUnlock) {
+    mode = SimDialogDelegate::SIM_DIALOG_UNLOCK;
+  } else if (operation == kTagSimOpChangePin) {
+    mode = SimDialogDelegate::SIM_DIALOG_CHANGE_PIN;
+  } else {
+    NOTREACHED();
+    return;
+  }
   SimDialogDelegate::ShowDialog(GetNativeWindow(), mode);
 }
 
-void InternetOptionsHandler::ChangePinCallback(const base::ListValue* args) {
-  SimDialogDelegate::ShowDialog(GetNativeWindow(),
-                                SimDialogDelegate::SIM_DIALOG_CHANGE_PIN);
+////////////////////////////////////////////////////////////////////////////////
+// networkingPrivate implementation methods. TODO(stevenjb): Use the
+// networkingPrivate API directly in the settings JS and deprecate these
+// methods. crbug.com/279351.
+
+void InternetOptionsHandler::DisableNetworkTypeCallback(
+    const base::ListValue* args) {
+  std::string type;
+  if (!args->GetString(0, &type)) {
+    NOTREACHED();
+    return;
+  }
+  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+      chromeos::onc::NetworkTypePatternFromOncType(type), false,
+      base::Bind(&ShillError, "DisableNetworkType"));
 }
 
-void InternetOptionsHandler::RefreshNetworksCallback(
+void InternetOptionsHandler::EnableNetworkTypeCallback(
+    const base::ListValue* args) {
+  std::string type;
+  if (!args->GetString(0, &type)) {
+    NOTREACHED();
+    return;
+  }
+  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+      chromeos::onc::NetworkTypePatternFromOncType(type), true,
+      base::Bind(&ShillError, "EnableNetworkType"));
+}
+
+void InternetOptionsHandler::GetManagedPropertiesCallback(
+    const base::ListValue* args) {
+  std::string service_path;
+  if (!args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  NetworkHandler::Get()->managed_network_configuration_handler()
+      ->GetManagedProperties(
+          LoginState::Get()->primary_user_hash(),
+          service_path,
+          base::Bind(
+              &InternetOptionsHandler::PopulateDictionaryDetailsCallback,
+              weak_factory_.GetWeakPtr()),
+          base::Bind(&ShillError, "GetManagedProperties"));
+}
+
+void InternetOptionsHandler::RequestNetworkScanCallback(
     const base::ListValue* args) {
   NetworkHandler::Get()->network_state_handler()->RequestScan();
 }
+
+void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
+  std::string service_path;
+  if (!args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  ash::network_connect::ConnectToNetwork(service_path, GetNativeWindow());
+}
+
+void InternetOptionsHandler::StartDisconnectCallback(
+    const base::ListValue* args) {
+  std::string service_path;
+  if (!args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
+      service_path,
+      base::Bind(&base::DoNothing),
+      base::Bind(&ShillError, "StartDisconnectCallback"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
   gfx::ImageSkia* icon =
@@ -659,10 +670,8 @@ void InternetOptionsHandler::NetworkConnectionStateChanged(
     const NetworkState* network) {
   if (!web_ui())
     return;
-  // Update the connection data for the detailed view when the connection state
-  // of any network changes.
-  if (!details_path_.empty())
-    UpdateConnectionData(details_path_);
+  if (network->path() == details_path_)
+    UpdateConnectionData(network->path());
 }
 
 void InternetOptionsHandler::NetworkPropertiesUpdated(
@@ -670,7 +679,8 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
   if (!web_ui())
     return;
   RefreshNetworkData();
-  UpdateConnectionData(network->path());
+  if (network->path() == details_path_)
+    UpdateConnectionData(network->path());
 }
 
 void InternetOptionsHandler::DevicePropertiesUpdated(
@@ -682,8 +692,8 @@ void InternetOptionsHandler::DevicePropertiesUpdated(
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
           NetworkTypePattern::Cellular());
-  if (network)
-    UpdateConnectionData(network->path());  // Update sim lock status.
+  if (network && network->path() == details_path_)
+    UpdateConnectionData(network->path());
 }
 
 void InternetOptionsHandler::SetServerHostnameCallback(
@@ -839,14 +849,11 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     LOG(ERROR) << "Network properties not found: " << service_path;
     return;
   }
-
-  details_path_ = service_path;
-
   scoped_ptr<base::DictionaryValue> dictionary =
       PopulateConnectionDetails(network, onc_properties);
 
   // Show details dialog
-  web_ui()->CallJavascriptFunction(kShowDetailedInfoFunction, *dictionary);
+  web_ui()->CallJavascriptFunction(kSendNetworkDetailsFunction, *dictionary);
 }
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
@@ -888,23 +895,8 @@ void InternetOptionsHandler::NetworkCommandCallback(
             service_path,
             base::Bind(&base::DoNothing),
             base::Bind(&ShillError, "NetworkCommand: " + command));
-  } else if (command == kTagOptions) {
-    NetworkHandler::Get()
-        ->managed_network_configuration_handler()
-        ->GetManagedProperties(
-            LoginState::Get()->primary_user_hash(),
-            service_path,
-            base::Bind(
-                &InternetOptionsHandler::PopulateDictionaryDetailsCallback,
-                weak_factory_.GetWeakPtr()),
-            base::Bind(&ShillError, "NetworkCommand: " + command));
-  } else if (command == kTagConnect) {
-    ash::network_connect::ConnectToNetwork(service_path, GetNativeWindow());
-  } else if (command == kTagDisconnect) {
-    NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-        service_path,
-        base::Bind(&base::DoNothing),
-        base::Bind(&ShillError, "NetworkCommand: " + command));
+  } else if (command == kTagShowDetails) {
+    SendShowDetailedInfo(service_path);
   } else if (command == kTagConfigure) {
     NetworkConfigView::Show(service_path, GetNativeWindow());
   } else if (command == kTagActivate && type == shill::kTypeCellular) {
@@ -913,7 +905,7 @@ void InternetOptionsHandler::NetworkCommandCallback(
     // request them here in case they change.
     UpdateConnectionData(service_path);
   } else {
-    VLOG(1) << "Unknown command: " << command;
+    LOG(ERROR) << "Unknown internet options command: " << command;
     NOTREACHED();
   }
 }
@@ -928,6 +920,27 @@ void InternetOptionsHandler::AddConnection(const std::string& type) {
   } else {
     LOG(ERROR) << "Unsupported type for AddConnection";
   }
+}
+
+void InternetOptionsHandler::SendShowDetailedInfo(
+    const std::string& service_path) {
+  details_path_ = service_path;
+
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+  const NetworkState* network = GetNetworkState(service_path);
+  if (network) {
+    dictionary->SetString(kNetworkInfoKeyServicePath, service_path);
+    dictionary->SetString(kNetworkInfoKeyGUID, network->guid());
+    if (network->type() == shill::kTypeCellular) {
+      dictionary->SetBoolean(
+          kTagCarrierSelectFlag,
+          CommandLine::ForCurrentProcess()
+          ->HasSwitch(chromeos::switches::kEnableCarrierSwitching));
+      dictionary->SetBoolean(kTagShowViewAccountButton,
+                             ShowViewAccountButton(network));
+    }
+  }
+  web_ui()->CallJavascriptFunction(kShowDetailedInfoFunction, *dictionary);
 }
 
 base::ListValue* InternetOptionsHandler::GetWiredList() {
@@ -1008,17 +1021,20 @@ void InternetOptionsHandler::FillNetworkInfo(
       kTagWifiEnabled,
       handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
+  const DeviceState* cellular =
+      handler->GetDeviceStateByType(NetworkTypePattern::Mobile());
   dictionary->SetBoolean(
       kTagCellularAvailable,
       handler->IsTechnologyAvailable(NetworkTypePattern::Mobile()));
   dictionary->SetBoolean(
       kTagCellularEnabled,
       handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()));
-  const DeviceState* cellular =
-      handler->GetDeviceStateByType(NetworkTypePattern::Mobile());
-  dictionary->SetBoolean(
-      kTagCellularSupportsScan,
-      cellular && cellular->support_network_scan());
+  dictionary->SetBoolean(kTagCellularSupportsScan,
+                         cellular && cellular->support_network_scan());
+  dictionary->SetBoolean(kTagCellularSimAbsent,
+                         cellular && cellular->IsSimAbsent());
+  dictionary->SetString(kTagCellularSimLockType,
+                        cellular ? cellular->sim_lock_type() : "");
 
   dictionary->SetBoolean(
       kTagWimaxAvailable,
