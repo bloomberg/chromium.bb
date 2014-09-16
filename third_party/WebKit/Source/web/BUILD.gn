@@ -69,6 +69,12 @@ component("web") {
 
     sources += [ "WebTestingSupport.cpp" ]
   }
+
+  if (is_android) {
+    set_sources_assignment_filter([])
+    sources += [ "linux/WebFontRendering.cpp" ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
 }
 
 # GYP version: WebKit/Source/web/web.gyp:blink_web_test_support

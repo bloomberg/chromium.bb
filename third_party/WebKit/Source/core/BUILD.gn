@@ -113,6 +113,12 @@ source_set("prerequisites") {
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
   ]
+
+  if (use_openmax_dl_fft) {
+    deps += [
+      "//third_party/openmax_dl/dl"
+    ]
+  }
 }
 
 # Note that this is a source set rather than a group, even though it has no

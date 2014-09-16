@@ -39,7 +39,7 @@ use_default_render_theme = use_aura
 use_openmax_dl_fft = is_android && !is_android_webview_build &&
   (cpu_arch == "x86" ||
    cpu_arch == "x64" ||
-   (cpu_arch == "arm" && arm_version > 7))
+   (cpu_arch == "arm" && arm_version >= 7))
 
 use_webaudio_ffmpeg = !is_mac && !is_android
 
