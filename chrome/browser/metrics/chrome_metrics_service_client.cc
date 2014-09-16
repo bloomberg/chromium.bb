@@ -22,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
-#include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -307,7 +307,7 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new GPUMetricsProvider()));
+      scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider()));
   profiler_metrics_provider_ = new ProfilerMetricsProvider;
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));

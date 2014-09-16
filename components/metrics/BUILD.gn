@@ -52,6 +52,21 @@ source_set("metrics") {
   forward_dependent_configs_from = [ "//components/metrics/proto" ]
 }
 
+# GYP version: components/metrics.gypi:metrics_gpu
+source_set("gpu") {
+  sources = [
+    "gpu/gpu_metrics_provider.cc",
+    "gpu/gpu_metrics_provider.h",
+  ]
+
+  deps = [
+    ":metrics",
+    "//gpu/config",
+  ]
+
+  forward_dependent_configs_from = [ ":metrics" ]
+}
+
 # GYP version: components/metrics.gypi:metrics_net
 static_library("net") {
   sources = [

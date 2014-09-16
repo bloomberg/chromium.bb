@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_GPU_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_GPU_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_METRICS_GPU_GPU_METRICS_PROVIDER_H_
+#define COMPONENTS_METRICS_GPU_GPU_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "components/metrics/metrics_provider.h"
 #include "ui/gfx/size.h"
 
+namespace metrics {
+
 // GPUMetricsProvider provides GPU-related metrics.
-class GPUMetricsProvider : public metrics::MetricsProvider {
+class GPUMetricsProvider : public MetricsProvider {
  public:
   GPUMetricsProvider();
   virtual ~GPUMetricsProvider();
 
-  // metrics::MetricsProvider:
+  // MetricsProvider:
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      SystemProfileProto* system_profile_proto) OVERRIDE;
 
  protected:
   // Exposed for the sake of mocking in test code.
@@ -35,4 +37,6 @@ class GPUMetricsProvider : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(GPUMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_GPU_METRICS_PROVIDER_H_
+}  // namespace metrics
+
+#endif  // COMPONENTS_METRICS_GPU_GPU_METRICS_PROVIDER_H_

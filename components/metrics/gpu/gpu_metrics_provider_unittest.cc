@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/gpu_metrics_provider.h"
+#include "components/metrics/gpu/gpu_metrics_provider.h"
 
 #include "base/basictypes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
+
+namespace metrics {
 
 namespace {
 
@@ -62,3 +64,5 @@ TEST_F(GPUMetricsProviderTest, ProvideSystemProfileMetrics) {
   EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
   EXPECT_EQ(kScreenCount, hardware.screen_count());
 }
+
+}  // namespace metrics

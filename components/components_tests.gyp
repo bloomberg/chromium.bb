@@ -366,6 +366,7 @@
 
             # Dependencies of metrics
             'components.gyp:metrics',
+            'components.gyp:metrics_gpu',
             'components.gyp:metrics_net',
             'components.gyp:metrics_test_support',
 
@@ -449,6 +450,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'metrics/gpu/gpu_metrics_provider_unittest.cc',
                 'power/origin_power_map_unittest.cc',
               ],
               'dependencies': [

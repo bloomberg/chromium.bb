@@ -68,6 +68,22 @@
       ],
     },
     {
+      # GN version: //components/metrics:gpu
+      'target_name': 'metrics_gpu',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'component_metrics_proto',
+        'metrics',
+      ],
+      'sources': [
+        'metrics/gpu/gpu_metrics_provider.cc',
+        'metrics/gpu/gpu_metrics_provider.h',
+      ],
+    },
+    {
       # GN version: //components/metrics:net
       'target_name': 'metrics_net',
       'type': 'static_library',

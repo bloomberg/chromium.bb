@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/gpu_metrics_provider.h"
+#include "components/metrics/gpu/gpu_metrics_provider.h"
 
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gfx/screen.h"
+
+namespace metrics {
 
 #if defined(OS_WIN)
 
@@ -37,8 +39,7 @@ BOOL CALLBACK GetMonitorDPICallback(HMONITOR, HDC hdc, LPRECT, LPARAM dwData) {
   return TRUE;
 }
 
-void WriteScreenDPIInformationProto(
-    metrics::SystemProfileProto::Hardware* hardware) {
+void WriteScreenDPIInformationProto(SystemProfileProto::Hardware* hardware) {
   HDC desktop_dc = GetDC(NULL);
   if (desktop_dc) {
     ScreenDPIInformation si = {0, 0};
@@ -62,19 +63,19 @@ GPUMetricsProvider::~GPUMetricsProvider() {
 }
 
 void GPUMetricsProvider::ProvideSystemProfileMetrics(
-    metrics::SystemProfileProto* system_profile_proto) {
-  metrics::SystemProfileProto::Hardware* hardware =
+    SystemProfileProto* system_profile_proto) {
+  SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
 
   const gpu::GPUInfo& gpu_info =
       content::GpuDataManager::GetInstance()->GetGPUInfo();
-  metrics::SystemProfileProto::Hardware::Graphics* gpu =
+  SystemProfileProto::Hardware::Graphics* gpu =
       hardware->mutable_gpu();
   gpu->set_vendor_id(gpu_info.gpu.vendor_id);
   gpu->set_device_id(gpu_info.gpu.device_id);
   gpu->set_driver_version(gpu_info.driver_version);
   gpu->set_driver_date(gpu_info.driver_date);
-  metrics::SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
+  SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
       gpu_performance = gpu->mutable_performance_statistics();
   gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
   gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
@@ -106,3 +107,5 @@ int GPUMetricsProvider::GetScreenCount() const {
   // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
   return gfx::Screen::GetNativeScreen()->GetNumDisplays();
 }
+
+}  // namespace metrics

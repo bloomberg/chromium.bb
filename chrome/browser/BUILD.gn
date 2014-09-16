@@ -59,6 +59,7 @@ static_library("browser") {
     "//components/history/core/common",
     "//components/infobars/core",
     "//components/invalidation",
+    "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics/proto:proto",
     "//components/navigation_metrics",
