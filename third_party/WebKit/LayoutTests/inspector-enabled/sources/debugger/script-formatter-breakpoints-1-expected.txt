@@ -5,14 +5,14 @@ Running: testBreakpointsInOriginalAndFormattedSource
 Script execution paused.
 Breakpoint sidebar pane while paused in raw
 
-    script-formatter-breakpoints-1.html:12    var f=0;
+script-formatter-breakpoints-1.html:12    var f=0;
 Script execution resumed.
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 
-    script-formatter-breakpoints-1.html:formatted:20    var f = 0;
+script-formatter-breakpoints-1.html:formatted:20    var f = 0;
 Breakpoint sidebar pane while paused in raw
 
-    script-formatter-breakpoints-1.html:12    var f=0;
+script-formatter-breakpoints-1.html:12    var f=0;
 Script execution resumed.
 

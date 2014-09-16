@@ -4,6 +4,9 @@ CONSOLE MESSAGE: line 11: [object XPathResult]
 CONSOLE MESSAGE: line 21: [object Object]
 CONSOLE MESSAGE: line 24: function () {}
 CONSOLE MESSAGE: line 28: [object Object]
+CONSOLE MESSAGE: line 31: [object Object]
+CONSOLE MESSAGE: line 32: [object Object]
+CONSOLE MESSAGE: line 34: function __proto__() { [native code] }
 Tests that console logging dumps proper messages.
 
 console-dir.html:9 Array[2]
@@ -41,6 +44,21 @@ console-dir.html:24 function () {}
     prototype: Object
     __proto__: function Empty() {}
     <function scope>
+        Global: Window
 console-dir.html:28 outer.inner
     __proto__: outer.inner
+console-dir.html:31 Object
+    No Properties
+console-dir.html:32 Object
+    foo: Object
+        No Properties
+    __proto__: Object
+console-dir.html:34 function __proto__() { [native code] }
+    arguments: null
+    caller: null
+    length: 0
+    name: "__proto__"
+    __proto__: function Empty() {}
+    <function scope>
+        No Scopes
 

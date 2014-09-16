@@ -9,7 +9,7 @@ Call stack:
     0) testFunction (set-breakpoint.html:17)
 Breakpoint sidebar pane 
 
-    set-breakpoint.html:17    var x = Math.sqrt(10);
+set-breakpoint.html:17    var x = Math.sqrt(10);
 Breakpoint sidebar pane 
 
 Script execution resumed.

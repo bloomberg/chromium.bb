@@ -434,13 +434,24 @@ InspectorTest.override = function(receiver, methodName, override, opt_sticky)
 
 InspectorTest.textContentWithLineBreaks = function(node)
 {
+    function padding(currentNode)
+    {
+        var result = 0;
+        while (currentNode && currentNode !== node) {
+            if (currentNode.nodeName === "OL")
+                ++result;
+            currentNode = currentNode.parentNode;
+        }
+        return Array(result * 4 + 1).join(" ");
+    }
+
     var buffer = "";
     var currentNode = node;
     while (currentNode = currentNode.traverseNextNode(node)) {
         if (currentNode.nodeType === Node.TEXT_NODE)
             buffer += currentNode.nodeValue;
         else if (currentNode.nodeName === "LI")
-            buffer += "\n    ";
+            buffer += "\n" + padding(currentNode);
         else if (currentNode.classList.contains("console-message"))
             buffer += "\n\n";
     }

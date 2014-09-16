@@ -11,7 +11,7 @@ Call stack:
     0) testFunction (set-conditional-breakpoint.html:17)
 Breakpoint sidebar pane 
 
-    set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
+set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
 Breakpoint sidebar pane 
 
 Script execution resumed.
@@ -22,7 +22,7 @@ Set timer for test function.
 Test function finished.
 Breakpoint sidebar pane 
 
-    set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
+set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
 Breakpoints removed.
 Breakpoint sidebar pane 
 

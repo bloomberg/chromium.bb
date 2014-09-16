@@ -130,7 +130,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
         InspectorTest.addResult(result[i]);
 }
 
-InspectorTest.expandConsoleMessages = function(callback, deep)
+InspectorTest.expandConsoleMessages = function(callback, deepFilter)
 {
     WebInspector.inspectorView.panel("console");
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
@@ -152,12 +152,14 @@ InspectorTest.expandConsoleMessages = function(callback, deep)
                     continue;
                 node._section.expanded = true;
 
-                if (!deep)
+                if (!deepFilter)
                     continue;
                 var treeElements = node._section.propertiesTreeOutline.children;
                 for (var j = 0; j < treeElements.length; ++j) {
-                    for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false))
-                        treeElement.expand();
+                    for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false)) {
+                        if (deepFilter(treeElement))
+                            treeElement.expand();
+                    }
                 }
             }
         }

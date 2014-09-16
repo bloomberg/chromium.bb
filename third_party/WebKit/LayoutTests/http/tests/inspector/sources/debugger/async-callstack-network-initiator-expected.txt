@@ -4,10 +4,10 @@ Set timer for test function.
 async-callstack-network-initiator.html:11 Console was cleared
 
     async-callstack-network-initiator.html:29 POST http://127.0.0.1:8000/failure/foo 404 (Not Found)
-    async-callstack-network-initiator.html:29 sendXHR
-    async-callstack-network-initiator.html:22 timeout2
-    setTimeout (async)
-    async-callstack-network-initiator.html:17 timeout1
-    setTimeout (async)
-    async-callstack-network-initiator.html:12 testFunction
+        async-callstack-network-initiator.html:29 sendXHR
+        async-callstack-network-initiator.html:22 timeout2
+        setTimeout (async)
+        async-callstack-network-initiator.html:17 timeout1
+        setTimeout (async)
+        async-callstack-network-initiator.html:12 testFunction
 
