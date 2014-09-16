@@ -74,13 +74,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
 
   // EasyUnlockClient override.
   virtual void CreateSecureMessage(const std::string& payload,
-                                   const std::string& secret_key,
-                                   const std::string& associated_data,
-                                   const std::string& public_metadata,
-                                   const std::string& verification_key_id,
-                                   const std::string& decryption_key_id,
-                                   const std::string& encryption_type,
-                                   const std::string& signature_type,
+                                   const CreateSecureMessageOptions& options,
                                    const DataCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
@@ -89,13 +83,13 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     // NOTE: DBus expects that data sent as string is UTF-8 encoded. This is
     //     not guaranteed here, so the method uses byte arrays.
     AppendStringAsByteArray(payload, &writer);
-    AppendStringAsByteArray(secret_key, &writer);
-    AppendStringAsByteArray(associated_data, &writer);
-    AppendStringAsByteArray(public_metadata, &writer);
-    AppendStringAsByteArray(verification_key_id, &writer);
-    AppendStringAsByteArray(decryption_key_id, &writer);
-    writer.AppendString(encryption_type);
-    writer.AppendString(signature_type);
+    AppendStringAsByteArray(options.key, &writer);
+    AppendStringAsByteArray(options.associated_data, &writer);
+    AppendStringAsByteArray(options.public_metadata, &writer);
+    AppendStringAsByteArray(options.verification_key_id, &writer);
+    AppendStringAsByteArray(options.decryption_key_id, &writer);
+    writer.AppendString(options.encryption_type);
+    writer.AppendString(options.signature_type);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&EasyUnlockClientImpl::OnData,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -104,10 +98,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
 
   // EasyUnlockClient override.
   virtual void UnwrapSecureMessage(const std::string& message,
-                                   const std::string& secret_key,
-                                   const std::string& associated_data,
-                                   const std::string& encryption_type,
-                                   const std::string& signature_type,
+                                   const UnwrapSecureMessageOptions& options,
                                    const DataCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
@@ -116,10 +107,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     // NOTE: DBus expects that data sent as string is UTF-8 encoded. This is
     //     not guaranteed here, so the method uses byte arrays.
     AppendStringAsByteArray(message, &writer);
-    AppendStringAsByteArray(secret_key, &writer);
-    AppendStringAsByteArray(associated_data, &writer);
-    writer.AppendString(encryption_type);
-    writer.AppendString(signature_type);
+    AppendStringAsByteArray(options.key, &writer);
+    AppendStringAsByteArray(options.associated_data, &writer);
+    writer.AppendString(options.encryption_type);
+    writer.AppendString(options.signature_type);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&EasyUnlockClientImpl::OnData,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -173,6 +164,14 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
 };
 
 }  // namespace
+
+EasyUnlockClient::CreateSecureMessageOptions::CreateSecureMessageOptions() {}
+
+EasyUnlockClient::CreateSecureMessageOptions::~CreateSecureMessageOptions() {}
+
+EasyUnlockClient::UnwrapSecureMessageOptions::UnwrapSecureMessageOptions() {}
+
+EasyUnlockClient::UnwrapSecureMessageOptions::~UnwrapSecureMessageOptions() {}
 
 EasyUnlockClient::EasyUnlockClient() {
 }

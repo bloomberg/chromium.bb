@@ -29,19 +29,10 @@ class CHROMEOS_EXPORT FakeEasyUnlockClient : public EasyUnlockClient {
                                        const std::string& public_key,
                                        const DataCallback& callback) OVERRIDE;
   virtual void CreateSecureMessage(const std::string& payload,
-                                   const std::string& key,
-                                   const std::string& associated_data,
-                                   const std::string& public_metadata,
-                                   const std::string& verification_key_id,
-                                   const std::string& decryption_key_id,
-                                   const std::string& encryption_type,
-                                   const std::string& signature_type,
+                                   const CreateSecureMessageOptions& options,
                                    const DataCallback& callback) OVERRIDE;
   virtual void UnwrapSecureMessage(const std::string& message,
-                                   const std::string& key,
-                                   const std::string& associated_data,
-                                   const std::string& encryption_type,
-                                   const std::string& signature_type,
+                                   const UnwrapSecureMessageOptions& options,
                                    const DataCallback& callback) OVERRIDE;
 
  private:
