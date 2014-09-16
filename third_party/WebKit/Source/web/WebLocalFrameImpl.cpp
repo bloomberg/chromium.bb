@@ -582,7 +582,9 @@ void WebLocalFrameImpl::setScrollOffset(const WebSize& offset)
 
 WebSize WebLocalFrameImpl::contentsSize() const
 {
-    return frame()->view()->contentsSize();
+    if (FrameView* view = frameView())
+        return view->contentsSize();
+    return WebSize();
 }
 
 bool WebLocalFrameImpl::hasVisibleContent() const
@@ -591,12 +593,17 @@ bool WebLocalFrameImpl::hasVisibleContent() const
         if (renderer->style()->visibility() != VISIBLE)
             return false;
     }
-    return frame()->view()->visibleWidth() > 0 && frame()->view()->visibleHeight() > 0;
+
+    if (FrameView* view = frameView())
+        return view->visibleWidth() > 0 && view->visibleHeight() > 0;
+    return false;
 }
 
 WebRect WebLocalFrameImpl::visibleContentRect() const
 {
-    return frame()->view()->visibleContentRect();
+    if (FrameView* view = frameView())
+        return view->visibleContentRect();
+    return WebRect();
 }
 
 bool WebLocalFrameImpl::hasHorizontalScrollbar() const
