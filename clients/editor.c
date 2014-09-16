@@ -1359,6 +1359,11 @@ main(int argc, char *argv[])
 	display_set_user_data(editor.display, &editor);
 	display_set_global_handler(editor.display, global_handler);
 
+	if (editor.text_input_manager == NULL) {
+		fprintf(stderr, "No text input manager global\n");
+		return -1;
+	}
+
 	editor.window = window_create(editor.display);
 	editor.widget = window_frame_create(editor.window, &editor);
 
