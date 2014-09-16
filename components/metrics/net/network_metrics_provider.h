@@ -66,10 +66,10 @@ class NetworkMetricsProvider
   // net::GetWifiPHYLayerProtocol.
   net::WifiPHYLayerProtocol wifi_phy_layer_protocol_;
 
-  base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
-
   // Helper object for retrieving connected wifi access point information.
   scoped_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
+
+  base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };

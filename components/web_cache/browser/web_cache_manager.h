@@ -229,9 +229,9 @@ class WebCacheManager : public content::NotificationObserver {
   // recently than they have been active.
   std::set<int> inactive_renderers_;
 
-  base::WeakPtrFactory<WebCacheManager> weak_factory_;
-
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<WebCacheManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebCacheManager);
 };
