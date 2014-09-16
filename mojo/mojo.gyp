@@ -556,6 +556,7 @@
     ['component!="shared_library" and OS=="linux"', {
       'targets': [
         {
+          # GN version: //mojo/public/python:system
           'target_name': 'mojo_python_system',
           'variables': {
             'python_base_module': 'mojo',
@@ -571,6 +572,7 @@
           'includes': [ '../third_party/cython/cython_compiler.gypi' ],
         },
         {
+          # GN version: //mojo/python:embedder
           'target_name': 'mojo_python_embedder',
           'type': 'loadable_module',
           'variables': {
@@ -586,6 +588,7 @@
           'includes': [ '../third_party/cython/cython_compiler.gypi' ],
         },
         {
+          # GN version: //mojo/public/python:bindings
           'target_name': 'mojo_python_bindings',
           'type': 'none',
           'variables': {
@@ -602,6 +605,7 @@
           'includes': [ '../third_party/cython/python_module.gypi' ],
         },
         {
+          # GN version: //mojo/python
           'target_name': 'mojo_python',
           'type': 'none',
           'variables': {

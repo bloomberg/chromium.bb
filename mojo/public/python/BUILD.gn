@@ -12,6 +12,7 @@ group("python") {
   ]
 }
 
+# GYP version: mojo.gyp:mojo_python_system
 python_binary_module("system") {
   python_base_module = "mojo"
   sources = [
@@ -33,6 +34,7 @@ copy("base") {
   ]
 }
 
+# GYP version: mojo.gyp:mojo_python_bindings
 copy("bindings") {
   sources = [
     "mojo/bindings/__init__.py",

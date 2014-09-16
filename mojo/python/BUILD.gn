@@ -4,12 +4,15 @@
 
 import("//third_party/cython/rules.gni")
 
+# GYP version: mojo/mojo.gyp:mojo_python
 group("python") {
   deps = [
     ":embedder",
+    "//mojo/public/python",
   ]
 }
 
+# GYP version: mojo/mojo.gyp:mojo_python_embedder
 python_binary_module("embedder") {
   python_base_module = "mojo"
   sources = [
