@@ -232,16 +232,11 @@ cr.define('options', function() {
   };
 
   // Forward public APIs to private implementations on the singleton instance.
-  [
+  cr.makePublic(PasswordManager, [
     'setSavedPasswordsList',
     'setPasswordExceptionsList',
     'showPassword'
-   ].forEach(function(name) {
-     PasswordManager[name] = function() {
-      var instance = PasswordManager.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {

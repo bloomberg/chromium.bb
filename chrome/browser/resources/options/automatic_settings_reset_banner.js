@@ -12,6 +12,7 @@ cr.define('options', function() {
    * AutomaticSettingsResetBanner class
    * Provides encapsulated handling of the Reset Profile Settings banner.
    * @constructor
+   * @extends {options.SettingsBannerBase}
    */
   function AutomaticSettingsResetBanner() {}
 
@@ -47,18 +48,36 @@ cr.define('options', function() {
         PageManager.showPageByName('resetProfileSettings');
       };
     },
+
+    /**
+     * Called by the native code to show the banner if needed.
+     * @private
+     */
+    show_: function() {
+      if (!this.hadBeenDismissed_) {
+        chrome.send('metricsHandler:recordAction', [this.showMetricName_]);
+        this.setVisibility(true);
+      }
+    },
+
+    /**
+     * Called when the banner should be closed as a result of something taking
+     * place on the WebUI page, i.e. when its close button is pressed, or when
+     * the confirmation dialog for the profile settings reset feature is opened.
+     * @private
+     */
+    dismiss_: function() {
+      chrome.send(this.dismissNativeCallbackName_);
+      this.hadBeenDismissed_ = true;
+      this.setVisibility(false);
+    },
   };
 
   // Forward public APIs to private implementations.
-  [
+  cr.makePublic(AutomaticSettingsResetBanner, [
     'show',
     'dismiss',
-  ].forEach(function(name) {
-    AutomaticSettingsResetBanner[name] = function() {
-      var instance = AutomaticSettingsResetBanner.getInstance();
-      return instance[name + '_'].apply(instance, arguments);
-    };
-  });
+  ]);
 
   // Export
   return {
