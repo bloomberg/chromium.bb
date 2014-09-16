@@ -5761,7 +5761,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN7content23CreateFileSystemContextEPNS_14BrowserContextERKN4base8FilePathEbPN5quota17QuotaManagerProxyE
    fun:_ZN7content20StoragePartitionImpl6CreateEPNS_14BrowserContextEbRKN4base8FilePathE
    fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
    fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContext*
