@@ -4,87 +4,67 @@
 
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 
-#include <cstring>  // needed for strlen()
-
 #include "base/bind.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
-namespace {
-const char kFreezerStatePath[] =
-    "/sys/fs/cgroup/freezer/chrome_renderers/freezer.state";
-const char kFreezeCommand[] = "FROZEN";
-const char kThawCommand[] = "THAWED";
+RendererFreezer::RendererFreezer(scoped_ptr<RendererFreezer::Delegate> delegate)
+    : frozen_(false),
+      delegate_(delegate.Pass()),
+      weak_factory_(this) {
+  if (delegate_->CanFreezeRenderers())
+    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+}
 
-}  // namespace
+RendererFreezer::~RendererFreezer() {
+  if (delegate_->CanFreezeRenderers())
+    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+}
 
 void RendererFreezer::SuspendImminent() {
-  // SuspendImminent() might end up being called multiple times before we run
-  // OnReadyToSuspend() (crbug.com/414396).  In case a callback is already
-  // pending, we only store the new callback and do nothing else.
-  if (suspend_readiness_callback_.is_null()) {
-    // There is no callback pending so post the task.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RendererFreezer::OnReadyToSuspend,
-                   weak_factory_.GetWeakPtr()));
-  }
+  // If there was already a callback pending, this will cancel it and create a
+  // new one.
+  suspend_readiness_callback_.Reset(
+      base::Bind(&RendererFreezer::OnReadyToSuspend,
+                 weak_factory_.GetWeakPtr(),
+                 DBusThreadManager::Get()
+                     ->GetPowerManagerClient()
+                     ->GetSuspendReadinessCallback()));
 
-  // Always update the callback because only the most recent one matters.
-  suspend_readiness_callback_ = DBusThreadManager::Get()
-                                    ->GetPowerManagerClient()
-                                    ->GetSuspendReadinessCallback();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, suspend_readiness_callback_.callback());
 }
 
 void RendererFreezer::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // If we get a SuspendDone before we've had a chance to run OnReadyForSuspend,
+  // we should cancel it because we no longer want to freeze the renderers.  If
+  // we've already run it then cancelling the callback shouldn't really make a
+  // difference.
+  suspend_readiness_callback_.Cancel();
+
   if (!frozen_)
     return;
 
-  if (base::WriteFile(state_path_, kThawCommand, strlen(kThawCommand)) !=
-      static_cast<int>(strlen(kThawCommand))) {
+  if (!delegate_->ThawRenderers()) {
     // We failed to write the thaw command and the renderers are still frozen.
     // We are in big trouble because none of the tabs will be responsive so
     // let's crash the browser instead.
-    PLOG(FATAL) << "Unable to thaw processes in the cgroup freezer.";
+    LOG(FATAL) << "Unable to thaw renderers.";
   }
 
   frozen_ = false;
 }
 
-void RendererFreezer::OnReadyToSuspend() {
-  if (base::WriteFile(state_path_, kFreezeCommand, strlen(kFreezeCommand)) !=
-      static_cast<int>(strlen(kFreezeCommand))) {
-    PLOG(WARNING) << "Unable to freeze processes in the cgroup freezer.";
-  } else {
+void RendererFreezer::OnReadyToSuspend(
+    const base::Closure& power_manager_callback) {
+  if (delegate_->FreezeRenderers())
     frozen_ = true;
-  }
 
-  CHECK(!suspend_readiness_callback_.is_null());  // crbug.com/414396
-  suspend_readiness_callback_.Run();
-  suspend_readiness_callback_.Reset();
-}
-
-RendererFreezer::RendererFreezer()
-    : state_path_(base::FilePath(kFreezerStatePath)),
-      enabled_(base::PathExists(state_path_) &&
-               base::PathIsWritable(state_path_)),
-      frozen_(false),
-      weak_factory_(this) {
-  if (enabled_) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  } else {
-    LOG(WARNING) << "Cgroup freezer does not exist or is not writable. "
-                 << "Processes will not be frozen during suspend.";
-  }
-}
-
-RendererFreezer::~RendererFreezer() {
-  if (enabled_)
-    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  DCHECK(!power_manager_callback.is_null());
+  power_manager_callback.Run();
 }
 
 }  // namespace chromeos

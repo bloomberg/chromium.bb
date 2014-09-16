@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -67,6 +68,10 @@ class FakePowerManagerClient : public PowerManagerClient {
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
  private:
+  // Callback that will be run by asynchronous suspend delays to report
+  // readiness.
+  void HandleSuspendReadiness();
+
   ObserverList<Observer> observers_;
 
   // Last policy passed to SetPolicy().
@@ -77,6 +82,9 @@ class FakePowerManagerClient : public PowerManagerClient {
   int num_request_shutdown_calls_;
   int num_set_policy_calls_;
   int num_set_is_projecting_calls_;
+
+  // Number of pending suspend readiness callbacks.
+  int num_pending_suspend_readiness_callbacks_;
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_;

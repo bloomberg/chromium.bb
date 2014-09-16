@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/light_bar.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
@@ -562,7 +563,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
-  renderer_freezer_.reset(new RendererFreezer());
+  renderer_freezer_.reset(
+      new RendererFreezer(scoped_ptr<RendererFreezer::Delegate>(
+          new FreezerCgroupProcessManager())));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWakeOnPackets))
     light_bar_.reset(new LightBar());
 

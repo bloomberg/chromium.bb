@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_POWER_RENDERER_FREEZER_H_
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
+#include "base/cancelable_callback.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
@@ -20,7 +22,23 @@ namespace chromeos {
 // destruction.
 class CHROMEOS_EXPORT RendererFreezer : public PowerManagerClient::Observer {
  public:
-  RendererFreezer();
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Freezes the chrome renderers.  Returns true if the operation was
+    // successful.
+    virtual bool FreezeRenderers() = 0;
+
+    // Thaws the chrome renderers.  Returns true if the operation was
+    // successful.
+    virtual bool ThawRenderers() = 0;
+
+    // Returns true iff the delegate is capable of freezing renderers.
+    virtual bool CanFreezeRenderers() = 0;
+  };
+
+  explicit RendererFreezer(scoped_ptr<Delegate> delegate);
   virtual ~RendererFreezer();
 
   // PowerManagerClient::Observer implementation
@@ -28,14 +46,15 @@ class CHROMEOS_EXPORT RendererFreezer : public PowerManagerClient::Observer {
   virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
  private:
-  void OnReadyToSuspend();
+  // Called when all asynchronous work is complete and renderers can be frozen.
+  void OnReadyToSuspend(const base::Closure& power_manager_callback);
 
-  base::FilePath state_path_;
-  bool enabled_;
+  // Used to ensure that renderers do not get frozen if the suspend is canceled.
+  base::CancelableClosure suspend_readiness_callback_;
+
   bool frozen_;
 
-  // Callback used to asynchronously report suspend readiness.
-  base::Closure suspend_readiness_callback_;
+  scoped_ptr<Delegate> delegate_;
 
   base::WeakPtrFactory<RendererFreezer> weak_factory_;
 

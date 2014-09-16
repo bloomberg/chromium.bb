@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_power_manager_client.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 
@@ -14,6 +16,7 @@ FakePowerManagerClient::FakePowerManagerClient()
       num_request_shutdown_calls_(0),
       num_set_policy_calls_(0),
       num_set_is_projecting_calls_(0),
+      num_pending_suspend_readiness_callbacks_(0),
       is_projecting_(false) {
 }
 
@@ -85,11 +88,14 @@ void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
 }
 
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
-  return base::Closure();
+  ++num_pending_suspend_readiness_callbacks_;
+
+  return base::Bind(&FakePowerManagerClient::HandleSuspendReadiness,
+                    base::Unretained(this));
 }
 
 int FakePowerManagerClient::GetNumPendingSuspendReadinessCallbacks() {
-  return 0;
+  return num_pending_suspend_readiness_callbacks_;
 }
 
 void FakePowerManagerClient::SendSuspendImminent() {
@@ -109,6 +115,12 @@ void FakePowerManagerClient::SendPowerButtonEvent(
     const base::TimeTicks& timestamp) {
   FOR_EACH_OBSERVER(Observer, observers_,
                     PowerButtonEventReceived(down, timestamp));
+}
+
+void FakePowerManagerClient::HandleSuspendReadiness() {
+  CHECK(num_pending_suspend_readiness_callbacks_ > 0);
+
+  --num_pending_suspend_readiness_callbacks_;
 }
 
 } // namespace chromeos

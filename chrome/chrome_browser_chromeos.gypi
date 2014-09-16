@@ -901,6 +901,8 @@
         'browser/chromeos/policy/wildcard_login_checker.h',
         'browser/chromeos/power/cpu_data_collector.cc',
         'browser/chromeos/power/cpu_data_collector.h',
+        'browser/chromeos/power/freezer_cgroup_process_manager.cc',
+        'browser/chromeos/power/freezer_cgroup_process_manager.h',
         'browser/chromeos/power/idle_action_warning_dialog_view.cc',
         'browser/chromeos/power/idle_action_warning_dialog_view.h',
         'browser/chromeos/power/idle_action_warning_observer.cc',
