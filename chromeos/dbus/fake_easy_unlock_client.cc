@@ -95,7 +95,13 @@ void FakeEasyUnlockClient::PerformECDHKeyAgreement(
 
 void FakeEasyUnlockClient::CreateSecureMessage(
     const std::string& payload,
-    const CreateSecureMessageOptions& options,
+    const std::string& key,
+    const std::string& associated_data,
+    const std::string& public_metadata,
+    const std::string& verification_key_id,
+    const std::string& decryption_key_id,
+    const std::string& encryption_type,
+    const std::string& signature_type,
     const DataCallback& callback) {
   callback.Run(base::StringPrintf(
       "{\"securemessage\": {"
@@ -109,18 +115,21 @@ void FakeEasyUnlockClient::CreateSecureMessage(
           "\"signature_type\": \"%s\""
       "}}",
       payload.c_str(),
-      options.key.c_str(),
-      options.associated_data.c_str(),
-      options.public_metadata.c_str(),
-      options.verification_key_id.c_str(),
-      options.decryption_key_id.c_str(),
-      options.encryption_type.c_str(),
-      options.signature_type.c_str()));
+      key.c_str(),
+      associated_data.c_str(),
+      public_metadata.c_str(),
+      verification_key_id.c_str(),
+      decryption_key_id.c_str(),
+      encryption_type.c_str(),
+      signature_type.c_str()));
 }
 
 void FakeEasyUnlockClient::UnwrapSecureMessage(
     const std::string& message,
-    const UnwrapSecureMessageOptions& options,
+    const std::string& key,
+    const std::string& associated_data,
+    const std::string& encryption_type,
+    const std::string& signature_type,
     const DataCallback& callback) {
   // TODO(tbarzic): Verify that |message| is in the format returned by
   // |CreateSecureMessage| and extract payload, metadata and
@@ -134,10 +143,10 @@ void FakeEasyUnlockClient::UnwrapSecureMessage(
           "\"signature_type\": \"%s\""
       "}}",
       message.c_str(),
-      options.key.c_str(),
-      options.associated_data.c_str(),
-      options.encryption_type.c_str(),
-      options.signature_type.c_str()));
+      key.c_str(),
+      associated_data.c_str(),
+      encryption_type.c_str(),
+      signature_type.c_str()));
 }
 
 }  // namespace chromeos

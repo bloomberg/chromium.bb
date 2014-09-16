@@ -203,19 +203,15 @@ TEST(FakeEasyUnlockClientTest, CreateSecureMessage) {
   chromeos::FakeEasyUnlockClient client;
 
   std::string message;
-
-  chromeos::EasyUnlockClient::CreateSecureMessageOptions options;
-  options.key = "KEY";
-  options.associated_data = "ASSOCIATED_DATA";
-  options.public_metadata = "PUBLIC_METADATA";
-  options.verification_key_id = "VERIFICATION_KEY_ID";
-  options.decryption_key_id = "DECRYPTION_KEY_ID";
-  options.encryption_type = "ENCRYPTION_TYPE";
-  options.signature_type = "SIGNATURE_TYPE";
-
   client.CreateSecureMessage(
       "PAYLOAD",
-      options,
+      "KEY",
+      "ASSOCIATED_DATA",
+      "PUBLIC_METADATA",
+      "VERIFICATION_KEY_ID",
+      "DECRYPTION_KEY_ID",
+      "ENCRYPTION_TYPE",
+      "SIGNATURE_TYPE",
       base::Bind(&RecordData, &message));
 
   const std::string expected_message(
@@ -236,16 +232,12 @@ TEST(FakeEasyUnlockClientTest, UnwrapSecureMessage) {
   chromeos::FakeEasyUnlockClient client;
 
   std::string message;
-
-  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions options;
-  options.key = "KEY";
-  options.associated_data = "ASSOCIATED_DATA";
-  options.encryption_type = "ENCRYPTION_TYPE";
-  options.signature_type = "SIGNATURE_TYPE";
-
   client.UnwrapSecureMessage(
       "MESSAGE",
-      options,
+      "KEY",
+      "ASSOCIATED_DATA",
+      "ENCRYPTION_TYPE",
+      "SIGNATURE_TYPE",
       base::Bind(&RecordData, &message));
 
   const std::string expected_message(

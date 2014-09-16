@@ -52,49 +52,46 @@ class EasyUnlockPrivateCryptoDelegateChromeOS
     dbus_client_->GenerateEcP256KeyPair(callback);
   }
 
-  virtual void PerformECDHKeyAgreement(
-      const easy_unlock_private::PerformECDHKeyAgreement::Params& params,
-      const DataCallback& callback) OVERRIDE {
-    dbus_client_->PerformECDHKeyAgreement(
-        params.private_key,
-        params.public_key,
-        callback);
+  virtual void PerformECDHKeyAgreement(const std::string& private_key,
+                                       const std::string& public_key,
+                                       const DataCallback& callback) OVERRIDE {
+    dbus_client_->PerformECDHKeyAgreement(private_key, public_key, callback);
   }
 
   virtual void CreateSecureMessage(
-      const easy_unlock_private::CreateSecureMessage::Params& params,
+      const std::string& payload,
+      const std::string& key,
+      const std::string& associated_data,
+      const std::string& public_metadata,
+      const std::string& verification_key_id,
+      const std::string& decryption_key_id,
+      easy_unlock_private::EncryptionType encryption_type,
+      easy_unlock_private::SignatureType signature_type,
       const DataCallback& callback) OVERRIDE {
-    chromeos::EasyUnlockClient::CreateSecureMessageOptions options;
-    options.key = params.key;
-    if (params.options.associated_data)
-      options.associated_data = *params.options.associated_data;
-    if (params.options.public_metadata)
-      options.public_metadata = *params.options.public_metadata;
-    if (params.options.verification_key_id)
-      options.verification_key_id = *params.options.verification_key_id;
-    if (params.options.decryption_key_id)
-      options.decryption_key_id = *params.options.decryption_key_id;
-    options.encryption_type =
-        EncryptionTypeToString(params.options.encrypt_type);
-    options.signature_type =
-        SignatureTypeToString(params.options.sign_type);
-
-    dbus_client_->CreateSecureMessage(params.payload, options, callback);
+    dbus_client_->CreateSecureMessage(payload,
+                                      key,
+                                      associated_data,
+                                      public_metadata,
+                                      verification_key_id,
+                                      decryption_key_id,
+                                      EncryptionTypeToString(encryption_type),
+                                      SignatureTypeToString(signature_type),
+                                      callback);
   }
 
   virtual void UnwrapSecureMessage(
-      const easy_unlock_private::UnwrapSecureMessage::Params& params,
+      const std::string& message,
+      const std::string& key,
+      const std::string& associated_data,
+      easy_unlock_private::EncryptionType encryption_type,
+      easy_unlock_private::SignatureType signature_type,
       const DataCallback& callback) OVERRIDE {
-    chromeos::EasyUnlockClient::UnwrapSecureMessageOptions options;
-    options.key = params.key;
-    if (params.options.associated_data)
-      options.associated_data = *params.options.associated_data;
-    options.encryption_type =
-        EncryptionTypeToString(params.options.encrypt_type);
-    options.signature_type =
-        SignatureTypeToString(params.options.sign_type);
-
-    dbus_client_->UnwrapSecureMessage(params.secure_message, options, callback);
+    dbus_client_->UnwrapSecureMessage(message,
+                                      key,
+                                      associated_data,
+                                      EncryptionTypeToString(encryption_type),
+                                      SignatureTypeToString(signature_type),
+                                      callback);
   }
 
  private:

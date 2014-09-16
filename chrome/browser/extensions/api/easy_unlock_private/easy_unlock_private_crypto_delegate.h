@@ -14,9 +14,8 @@
 namespace extensions {
 namespace api {
 
-// Wrapper around EasyUnlock dbus client on Chrome OS. The methods read
-// extension function pearameters and invoke the associated EasyUnlock dbus
-// client methods. On non-Chrome OS platforms, the methods are stubbed out.
+// Wrapper around EasyUnlock dbus client on ChromeOS. On other platforms, the
+// methods are stubbed out.
 class EasyUnlockPrivateCryptoDelegate {
  public:
   typedef base::Callback<void(const std::string& data)> DataCallback;
@@ -33,14 +32,25 @@ class EasyUnlockPrivateCryptoDelegate {
 
   // See chromeos/dbus/easy_unlock_client.h for info on these methods.
   virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;
-  virtual void PerformECDHKeyAgreement(
-      const easy_unlock_private::PerformECDHKeyAgreement::Params& params,
-      const DataCallback& callback) = 0;
+  virtual void PerformECDHKeyAgreement(const std::string& private_key,
+                                       const std::string& public_key,
+                                       const DataCallback& callback) = 0;
   virtual void CreateSecureMessage(
-      const easy_unlock_private::CreateSecureMessage::Params& params,
+      const std::string& payload,
+      const std::string& secret_key,
+      const std::string& associated_data,
+      const std::string& public_metadata,
+      const std::string& verification_key_id,
+      const std::string& decryption_key_id,
+      easy_unlock_private::EncryptionType encryption_type,
+      easy_unlock_private::SignatureType signature_type,
       const DataCallback& callback) = 0;
   virtual void UnwrapSecureMessage(
-      const easy_unlock_private::UnwrapSecureMessage::Params& params,
+      const std::string& message,
+      const std::string& secret_key,
+      const std::string& associated_data,
+      easy_unlock_private::EncryptionType encryption_type,
+      easy_unlock_private::SignatureType signature_type,
       const DataCallback& callback) = 0;
 };
 

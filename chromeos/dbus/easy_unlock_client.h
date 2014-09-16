@@ -30,73 +30,14 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
 
   typedef base::Callback<void(const std::string& data)> DataCallback;
 
-  // Callback for |GenerateEcP256KeyPair|. Carries the generated keys.
-  typedef base::Callback<void(const std::string& private_key,
-                              const std::string& public_key)>
+  // Callback for |GenerateEcP256KeyAgreement|. Carries the generated keys.
+  typedef base::Callback<void(const std::string& public_key,
+                              const std::string& private_key)>
       KeyPairCallback;
 
   // Generates ECDSA key pair using P256 curve.
   // The created keys should only be used with this client.
   virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;
-
-  // Parameters used to create a secure message.
-  struct CreateSecureMessageOptions {
-    CreateSecureMessageOptions();
-    ~CreateSecureMessageOptions();
-
-    // The key used to sign, and if needed, encrypt the message. If encryption
-    // is required, the key must be symetric.
-    std::string key;
-
-    // Data associated with the message. The data will not actually be added to
-    // the message, but it will be used while signing the message (the receiver
-    // will use the same data to authenticate the signature).
-    std::string associated_data;
-
-    // Metadata added to the message header.
-    std::string public_metadata;
-
-    // The key id added to the message header. Has to be set if the message is
-    // signed with private asymetric key. This value is used by the receiver to
-    // identify the key that should be used to verify the signature.
-    std::string verification_key_id;
-
-    // Key id added to the message header. Used by the message receiver to
-    // identify the key that should be used to decrypt the message.
-    std::string decryption_key_id;
-
-    // The encryption algorithm to use for encrypting the message.
-    std::string encryption_type;
-
-    // The algorithm to use to sign the message.
-    std::string signature_type;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(CreateSecureMessageOptions);
-  };
-
-  // Parameters used to unwrap a securemessage.
-  struct UnwrapSecureMessageOptions {
-    UnwrapSecureMessageOptions();
-    ~UnwrapSecureMessageOptions();
-
-    // The key used to authenticate message signature and, if needed, decrypt
-    // the message. If the message is encrypted, only symetric key can be used.
-    std::string key;
-
-    // Data associated with the message. Message authentication will succeed
-    // only if the message was created with the same associated data.
-    std::string associated_data;
-
-    // The encryption algorithm to use for decrypting the message.
-    std::string encryption_type;
-
-    // The algorithm that should be used to verify the message signature.
-    std::string signature_type;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(UnwrapSecureMessageOptions);
-  };
 
   // Given a private and a public key, creates a symetric secret key using
   // EC Diffe-Hellman key exchange. The provided keys come from different
@@ -110,22 +51,55 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   // Creates signed and, if specified, encrypted message in format used by Easy
   // Unlock.
   // |payload|: The cleartext message body.
-  // |options|: The message parameters used for creating the secure message.
+  // |key|: The key used to sign, and if needed, encrypt the message. If
+  //     encryption is required, the key must be symetric.
+  // |associated_data|: Data associated with the message. The data will not
+  //     actually be added to the message, but it will be used while
+  //     signing the message (the receiver will use the same data to
+  //     authenticate the signature).
+  // |public_metadata|: Metadata added to the message header.
+  // |verification_key_id|: The key id added to the message header. Has to be
+  //     set if the message is signed with private asymetric key. This value
+  //     is used by the receiver to identify the public key that should be used
+  //     to verify the signature.
+  // |decryption_key_id|: Key id added to the message header. Used by the
+  //     message receiver to identify the key that should be used to decrypt
+  //     the message.
+  // |encryption_type|: The encryption algorithm to use for encrypting the
+  //     message. (May be set to none).
+  // |signature_type|: The algorithm to use to sign the message.
   // |callback|: Called with the created message. On failure, the message will
   //     be empty.
   virtual void CreateSecureMessage(const std::string& payload,
-                                   const CreateSecureMessageOptions& options,
+                                   const std::string& secret_key,
+                                   const std::string& associated_data,
+                                   const std::string& public_metadata,
+                                   const std::string& verification_key_id,
+                                   const std::string& decryption_key_id,
+                                   const std::string& encryption_type,
+                                   const std::string& signature_type,
                                    const DataCallback& callback) = 0;
 
   // Authenticates and, if specified, decrypts a secure message.
   // |message|: The message to unwrap. It is in the same format as the message
   //     returned by |CreateSecureMessage|.
-  // |options|: The parameters that should be used to unwrap the message.
+  // |key|: The key used to authenticate message signature and, if needed,
+  //     decrypt the message. If the message is encrypted, only symetric key
+  //     can be used.
+  // |associated_data|: Data associated with the message. Message
+  //     authentication will succeed only if the message was created with the
+  //     associated data.
+  // |encryption_type|: The encryption algorithm to use for decrypting the
+  //     message. (May be set to none).
+  // |signature_type|: The algorithm to use to verify the message signature.
   // |callback|: Called with the cleartext message header and body in a signle
   //     protobuf. If the message could not be authenticated or decrypted, it
   //     will be called with an empty string.
   virtual void UnwrapSecureMessage(const std::string& message,
-                                   const UnwrapSecureMessageOptions& options,
+                                   const std::string& secret_key,
+                                   const std::string& associated_data,
+                                   const std::string& encryption_type,
+                                   const std::string& signature_type,
                                    const DataCallback& callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.

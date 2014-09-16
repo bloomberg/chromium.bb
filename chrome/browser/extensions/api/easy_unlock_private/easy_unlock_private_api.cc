@@ -263,7 +263,8 @@ bool EasyUnlockPrivatePerformECDHKeyAgreementFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   GetCryptoDelegate(browser_context())->PerformECDHKeyAgreement(
-      *params,
+      params->private_key,
+      params->public_key,
       base::Bind(&EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData,
                  this));
   return true;
@@ -315,7 +316,18 @@ bool EasyUnlockPrivateCreateSecureMessageFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   GetCryptoDelegate(browser_context())->CreateSecureMessage(
-      *params,
+      params->payload,
+      params->key,
+      params->options.associated_data ?
+          *params->options.associated_data : std::string(),
+      params->options.public_metadata ?
+          *params->options.public_metadata : std::string(),
+      params->options.verification_key_id ?
+          *params->options.verification_key_id : std::string(),
+      params->options.decryption_key_id ?
+          *params->options.decryption_key_id : std::string(),
+      params->options.encrypt_type,
+      params->options.sign_type,
       base::Bind(&EasyUnlockPrivateCreateSecureMessageFunction::OnData,
                  this));
   return true;
@@ -343,7 +355,12 @@ bool EasyUnlockPrivateUnwrapSecureMessageFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   GetCryptoDelegate(browser_context())->UnwrapSecureMessage(
-      *params,
+      params->secure_message,
+      params->key,
+      params->options.associated_data ?
+          *params->options.associated_data : std::string(),
+      params->options.encrypt_type,
+      params->options.sign_type,
       base::Bind(&EasyUnlockPrivateUnwrapSecureMessageFunction::OnData,
                  this));
   return true;
