@@ -1277,6 +1277,8 @@ void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest&
 
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
 {
+    MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
+
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
     if (response.wasFetchedViaServiceWorker()) {
         if (!canRequest(resource->type(), resource->resourceRequest(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {

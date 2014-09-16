@@ -48,6 +48,8 @@ public:
     static bool checkFormAction(LocalFrame*, const KURL&);
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
+    static void checkMixedPrivatePublic(LocalFrame*, const AtomicString& resourceIPAddress);
+
 private:
     enum ContextType {
         ContextTypeBlockable,

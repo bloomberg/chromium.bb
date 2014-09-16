@@ -34,6 +34,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -342,6 +343,21 @@ bool MixedContentChecker::checkFormAction(LocalFrame* frame, const KURL& url)
         effectiveFrame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data());
     effectiveFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, WarningMessageLevel, message));
     return true;
+}
+
+void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const AtomicString& resourceIPAddress)
+{
+    if (!frame || !frame->document() || !frame->document()->loader())
+        return;
+
+    KURL documentIP(ParsedURLString, "http://" + frame->document()->loader()->response().remoteIPAddress());
+    KURL resourceIP(ParsedURLString, "http://" + resourceIPAddress);
+
+    // Just count these for the moment, don't block them.
+    //
+    // FIXME: Once we know how we want to check this, adjust the platform APIs to avoid the KURL construction.
+    if (Platform::current()->isReservedIPAddress(resourceIP) && !Platform::current()->isReservedIPAddress(documentIP))
+        UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
 }
 
 } // namespace blink
