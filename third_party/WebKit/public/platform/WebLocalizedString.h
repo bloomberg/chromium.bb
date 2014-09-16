@@ -85,6 +85,7 @@ struct WebLocalizedString {
         AXMonthFieldText,
         AXRadioButtonActionVerb,
         AXSecondFieldText,
+        AXShowPickerButton,
         AXTextFieldActionVerb,
         AXUncheckedCheckBoxActionVerb,
         AXWebAreaText, // Deprecated.

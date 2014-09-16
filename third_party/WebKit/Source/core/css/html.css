@@ -723,7 +723,8 @@ input::-webkit-calendar-picker-indicator:hover {
     background-color: #eee;
 }
 
-input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-calendar-picker-indicator {
+input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-calendar-picker-indicator,
+input::-webkit-calendar-picker-indicator:focus {
     opacity: 1;
     pointer-events: auto;
 }
