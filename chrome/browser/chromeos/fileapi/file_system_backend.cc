@@ -295,7 +295,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
         url,
         context,
         make_scoped_ptr(new storage::FileSystemOperationContext(
-            context, MediaFileSystemBackend::MediaTaskRunner())));
+            context, MediaFileSystemBackend::MediaTaskRunner().get())));
   }
 
   DCHECK(url.type() == storage::kFileSystemTypeNativeLocal ||

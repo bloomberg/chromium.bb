@@ -218,7 +218,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::ReadFile(
     const bool has_more =
         (current_offset + 1 < entry->metadata->size) && (current_length - 1);
     const int task_id = tracker_.PostTask(
-        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current().get(),
         FROM_HERE,
         base::Bind(
             callback, 1 /* chunk_length */, has_more, base::File::FILE_OK));
@@ -344,8 +344,8 @@ FakeProvidedFileSystem::GetWeakPtr() {
 
 ProvidedFileSystemInterface::AbortCallback
 FakeProvidedFileSystem::PostAbortableTask(const base::Closure& callback) {
-  const int task_id =
-      tracker_.PostTask(base::MessageLoopProxy::current(), FROM_HERE, callback);
+  const int task_id = tracker_.PostTask(
+      base::MessageLoopProxy::current().get(), FROM_HERE, callback);
   return base::Bind(
       &FakeProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), task_id);
 }

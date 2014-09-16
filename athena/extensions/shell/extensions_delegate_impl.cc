@@ -26,7 +26,7 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
   }
   virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
     shell_extensions_.Clear();
-    if (extension_system_->extension())
+    if (extension_system_->extension().get())
       shell_extensions_.Insert(extension_system_->extension());
     return shell_extensions_;
   }

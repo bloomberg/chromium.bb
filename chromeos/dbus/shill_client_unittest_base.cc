@@ -156,7 +156,7 @@ void ShillClientUnittestBase::SetUp() {
   // Set an expectation so mock_bus's GetDBusTaskRunner will return the current
   // task runner.
   EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
-      .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
+      .WillRepeatedly(Return(message_loop_.message_loop_proxy().get()));
 
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());

@@ -72,7 +72,7 @@ class BlockingMethodCallerTest : public testing::Test {
     // Set an expectation so mock_bus's GetDBusTaskRunner will return the fake
     // task runner.
     EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
-        .WillRepeatedly(Return(task_runner_));
+        .WillRepeatedly(Return(task_runner_.get()));
 
     // ShutdownAndBlock() will be called in TearDown().
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());

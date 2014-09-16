@@ -39,7 +39,7 @@ void ScreenlockIconSource::StartDataRequest(
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   if (!icon_provider_) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes());
+    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
@@ -50,7 +50,7 @@ void ScreenlockIconSource::StartDataRequest(
 
   gfx::Image image = icon_provider_->GetIcon(username);
   if (image.IsEmpty()) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes());
+    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
