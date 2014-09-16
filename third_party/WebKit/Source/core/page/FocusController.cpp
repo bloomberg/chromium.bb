@@ -579,12 +579,11 @@ Node* FocusController::nextFocusableNode(FocusNavigationScope scope, Node* start
                 if (shouldVisit(node) && adjustedTabIndex(node) >= 0)
                     return node;
             }
+        } else {
+            // First try to find a node with the same tabindex as start that comes after start in the scope.
+            if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(*start), tabIndex, FocusTypeForward))
+                return winner;
         }
-
-        // First try to find a node with the same tabindex as start that comes after start in the scope.
-        if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(*start), tabIndex, FocusTypeForward))
-            return winner;
-
         if (!tabIndex)
             // We've reached the last node in the document with a tabindex of 0. This is the end of the tabbing order.
             return 0;
@@ -626,10 +625,10 @@ Node* FocusController::previousFocusableNode(FocusNavigationScope scope, Node* s
             if (shouldVisit(node) && adjustedTabIndex(node) >= 0)
                 return node;
         }
+    } else {
+        if (Node* winner = findNodeWithExactTabIndex(startingNode, startingTabIndex, FocusTypeBackward))
+            return winner;
     }
-
-    if (Node* winner = findNodeWithExactTabIndex(startingNode, startingTabIndex, FocusTypeBackward))
-        return winner;
 
     // There are no nodes before start with the same tabindex as start, so look for a node that:
     // 1) has the highest non-zero tabindex (that is less than start's tabindex), and
