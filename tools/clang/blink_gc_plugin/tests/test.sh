@@ -15,7 +15,8 @@ failed_any_test=
 # Prints usage information.
 usage() {
   echo "Usage: $(basename "${0}")" \
-    "<Path to the llvm build dir, usually Release+Asserts>"
+    "<path to clang>" \
+    "<path to plugin>"
   echo ""
   echo "  Runs all the libBlinkGCPlugin unit tests"
   echo ""
@@ -27,8 +28,8 @@ do_testcase() {
   if [ -e "${3}" ]; then
     flags="$(cat "${3}")"
   fi
-  local output="$("${CLANG_DIR}"/bin/clang -c -Wno-c++11-extensions \
-      -Xclang -load -Xclang "${CLANG_DIR}"/lib/lib${LIBNAME}.${LIB} \
+  local output="$("${CLANG_PATH}" -c -Wno-c++11-extensions \
+      -Xclang -load -Xclang "${PLUGIN_PATH}" \
       -Xclang -add-plugin -Xclang blink-gc-plugin ${flags} ${1} 2>&1)"
   local json="${input%cpp}graph.json"
   if [ -f "$json" ]; then
@@ -52,24 +53,26 @@ do_testcase() {
 if [[ -z "${1}" ]]; then
   usage
   exit ${E_BADARGS}
-elif [[ ! -d "${1}" ]]; then
-  echo "${1} is not a directory."
+elif [[ -z "${2}" ]]; then
+  usage
+  exit ${E_BADARGS}
+elif [[ ! -x "${1}" ]]; then
+  echo "${1} is not an executable"
+  usage
+  exit ${E_BADARGS}
+elif [[ ! -f "${2}" ]]; then
+  echo "${2} could not be found"
   usage
   exit ${E_BADARGS}
 else
-  export CLANG_DIR="${PWD}/${1}"
-  echo "Using clang directory ${CLANG_DIR}..."
+  export CLANG_PATH="${1}"
+  export PLUGIN_PATH="${2}"
+  echo "Using clang ${CLANG_PATH}..."
+  echo "Using plugin ${PLUGIN_PATH}..."
 
   # The golden files assume that the cwd is this directory. To make the script
   # work no matter what the cwd is, explicitly cd to there.
   cd "$(dirname "${0}")"
-
-  export LIBNAME=$(grep LIBRARYNAME ../Makefile | cut -d ' ' -f 3)
-  if [ "$(uname -s)" = "Linux" ]; then
-    export LIB=so
-  elif [ "$(uname -s)" = "Darwin" ]; then
-    export LIB=dylib
-  fi
 fi
 
 for input in *.cpp; do

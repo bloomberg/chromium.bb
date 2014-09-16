@@ -59,9 +59,16 @@ svn diff "${LLVM_DIR}" 2>&1 | tee -a buildlog.txt
 echo "Diff in llvm/tools/clang:" | tee -a buildlog.txt
 svn stat "${LLVM_DIR}/tools/clang" 2>&1 | tee -a buildlog.txt
 svn diff "${LLVM_DIR}/tools/clang" 2>&1 | tee -a buildlog.txt
-echo "Diff in llvm/projects/compiler-rt:" | tee -a buildlog.txt
-svn stat "${LLVM_DIR}/projects/compiler-rt" 2>&1 | tee -a buildlog.txt
-svn diff "${LLVM_DIR}/projects/compiler-rt" 2>&1 | tee -a buildlog.txt
+echo "Diff in llvm/compiler-rt:" | tee -a buildlog.txt
+svn stat "${LLVM_DIR}/compiler-rt" 2>&1 | tee -a buildlog.txt
+svn diff "${LLVM_DIR}/compiler-rt" 2>&1 | tee -a buildlog.txt
+echo "Diff in llvm/projects/libcxx:" | tee -a buildlog.txt
+svn stat "${LLVM_DIR}/projects/libcxx" 2>&1 | tee -a buildlog.txt
+svn diff "${LLVM_DIR}/projects/libcxx" 2>&1 | tee -a buildlog.txt
+echo "Diff in llvm/projects/libcxxabi:" | tee -a buildlog.txt
+svn stat "${LLVM_DIR}/projects/libcxxabi" 2>&1 | tee -a buildlog.txt
+svn diff "${LLVM_DIR}/projects/libcxxabi" 2>&1 | tee -a buildlog.txt
+
 
 echo "Starting build" | tee -a buildlog.txt
 
@@ -79,7 +86,7 @@ fi
     ${extra_flags} 2>&1 | tee -a buildlog.txt
 
 R=$("${LLVM_BIN_DIR}/clang" --version | \
-     sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
+     sed -ne 's/clang version .*(\([0-9]*\))/\1/p')
 
 PDIR=clang-$R
 rm -rf $PDIR
@@ -116,8 +123,8 @@ fi
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
 
 BLINKGCPLUGIN_LIBNAME=\
-$(grep LIBRARYNAME "$THIS_DIR"/../blink_gc_plugin/Makefile \
-    | cut -d ' ' -f 3)
+$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
+    | cut -d ' ' -f 2 | tr -d ')')
 cp "${LLVM_LIB_DIR}/lib${BLINKGCPLUGIN_LIBNAME}.${SO_EXT}" $PDIR/lib
 
 if [[ -n "${gcc_toolchain}" ]]; then
@@ -126,7 +133,7 @@ if [[ -n "${gcc_toolchain}" ]]; then
 fi
 
 # Copy built-in headers (lib/clang/3.x.y/include).
-# libcompiler-rt puts all kinds of libraries there too, but we want only some.
+# compiler-rt builds all kinds of libraries, but we want only some.
 if [ "$(uname -s)" = "Darwin" ]; then
   # Keep only the OSX (ASan and profile) and iossim (ASan) runtime libraries:
   # Release+Asserts/lib/clang/*/lib/darwin/libclang_rt.{asan,profile}_*
@@ -144,6 +151,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
     ASAN_DYLIB=$(find "${LLVM_LIB_DIR}/clang" \
                       -type f -path "*${ASAN_DYLIB_NAME}")
     install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
+    strip -x "${ASAN_DYLIB}"
   done
 else
   # Keep only
@@ -151,12 +159,12 @@ else
   # , but not dfsan.
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' \
        ! -name '*[atm]san*' ! -name '*ubsan*' ! -name '*libclang_rt.san*' \
-       ! -name '*profile*' | xargs rm
+       ! -name '*profile*' | xargs rm -v
   # Strip the debug info from the runtime libraries.
-  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' | xargs strip -g
+  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' ! -name '*.syms' | xargs strip -g
 fi
 
-cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
+cp -vR "${LLVM_LIB_DIR}/clang" $PDIR/lib
 
 if [ "$(uname -s)" = "Darwin" ]; then
   tar zcf $PDIR.tgz -C $PDIR bin include lib buildlog.txt
