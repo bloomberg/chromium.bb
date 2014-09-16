@@ -1137,7 +1137,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         scoped_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this));
-        if (extension_toolbar->GetPreferredSize().height() > 0)
+        if (extension_toolbar->ShouldShow())
           item->AddChildView(extension_toolbar.release());
         else
           item->SetVisible(false);

@@ -349,9 +349,6 @@ class BrowserActionsContainer
   // for incognito.
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension) const;
 
-  // Return the index of the first visible icon.
-  size_t GetFirstVisibleIconIndex() const;
-
   // Returns the number of icons that this container should draw. This differs
   // from the model's GetVisibleIconCount if this container is for the overflow.
   size_t GetIconCount() const;

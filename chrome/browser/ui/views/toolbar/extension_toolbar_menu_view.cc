@@ -44,6 +44,9 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
       main);
   container_->Init();
   AddChildView(container_);
+  // We Layout() the container here so that we know the number of actions
+  // that will be visible in ShouldShow().
+  container_->Layout();
 
   // If we were opened for a drop command, we have to wait for the drop to
   // finish so we can close the wrench menu.
@@ -54,6 +57,11 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
 }
 
 ExtensionToolbarMenuView::~ExtensionToolbarMenuView() {
+}
+
+bool ExtensionToolbarMenuView::ShouldShow() {
+  return wrench_menu_->for_drop() ||
+      container_->VisibleBrowserActionsAfterAnimation();
 }
 
 gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {

@@ -268,8 +268,15 @@ void BrowserActionsContainer::ExecuteExtensionCommand(
 void BrowserActionsContainer::NotifyActionMovedToOverflow() {
   // When an action is moved to overflow, we shrink the size of the container
   // by 1.
-  if (!profile_->IsOffTheRecord())
-    model_->SetVisibleIconCount(model_->GetVisibleIconCount() - 1);
+  if (!profile_->IsOffTheRecord()) {
+    int icon_count = model_->GetVisibleIconCount();
+    // Since this happens when an icon moves from the main bar to overflow, we
+    // can't possibly have had no visible icons on the main bar.
+    DCHECK_NE(0, icon_count);
+    if (icon_count == -1)
+      icon_count = browser_action_views_.size();
+    model_->SetVisibleIconCount(icon_count - 1);
+  }
   Animate(gfx::Tween::EASE_OUT,
           VisibleBrowserActionsAfterAnimation() - 1);
 }
@@ -322,23 +329,22 @@ void BrowserActionsContainer::RemoveObserver(
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
-  // Note: We can't use GetIconCount() for the main bar, since we may also
-  // have to include items that are in the chevron's overflow.
-  size_t icon_count =
-      in_overflow_mode() ? GetIconCount() : browser_action_views_.size();
-
-  // If there are no actions to show, or we are in overflow mode and the main
-  // container is already showing them all, then no further work is required.
-  if (icon_count == 0)
-    return gfx::Size();
-
   if (in_overflow_mode()) {
-    // When in overflow, y is multiline, so the pixel count is IconHeight()
-    // times the number of rows needed.
+    int icon_count = GetIconCount();
+    // In overflow, we always have a preferred size of a full row (even if we
+    // don't use it), and always of at least one row. The parent may decide to
+    // show us even when empty, e.g. as a drag target for dragging in icons from
+    // the main container.
+    int row_count =
+        ((std::max(0, icon_count - 1)) / icons_per_overflow_menu_row_) + 1;
     return gfx::Size(
         IconCountToWidth(icons_per_overflow_menu_row_, false),
-        (((icon_count - 1) / icons_per_overflow_menu_row_) + 1) * IconHeight());
+        row_count * IconHeight());
   }
+
+  // If there are no actions to show, then don't show the container at all.
+  if (browser_action_views_.empty())
+    return gfx::Size();
 
   // We calculate the size of the view by taking the current width and
   // subtracting resize_amount_ (the latter represents how far the user is
@@ -448,70 +454,73 @@ int BrowserActionsContainer::OnDragUpdated(
   }
   StopShowFolderDropMenuTimer();
 
-  // Figure out where to display the indicator.  This is a complex calculation:
+  size_t row_index = 0;
+  size_t before_icon_in_row = 0;
+  // If there are no visible browser actions (such as when dragging an icon to
+  // an empty overflow/main container), then 0, 0 for row, column is correct.
+  if (VisibleBrowserActions() != 0) {
+    // Figure out where to display the indicator. This is a complex calculation:
 
-  // First, we figure out how much space is to the left of the icon area, so we
-  // can calculate the true offset into the icon area. The easiest way to do
-  // this is to just find where the first icon starts.
-  int width_before_icons =
-      browser_action_views_[GetFirstVisibleIconIndex()]->x();
+    // First, we subtract out the padding to the left of the icon area, which is
+    // ToolbarView::kStandardSpacing. If we're right-to-left, we also mirror the
+    // event.x() so that our calculations are consistent with left-to-right.
+    int offset_into_icon_area =
+        GetMirroredXInView(event.x()) - ToolbarView::kStandardSpacing;
 
-  // If we're right-to-left, we flip the mirror the event.x() so that our
-  // calculations are consistent with left-to-right.
-  int offset_into_icon_area =
-      GetMirroredXInView(event.x()) - width_before_icons;
+    // Next, figure out what row we're on. This only matters for overflow mode,
+    // but the calculation is the same for both.
+    row_index = event.y() / IconHeight();
 
-  // Next, figure out what row we're on. This only matters for overflow mode,
-  // but the calculation is the same for both.
-  size_t row_index = event.y() / IconHeight();
+    // Sanity check - we should never be on a different row in the main
+    // container.
+    DCHECK(in_overflow_mode() || row_index == 0);
 
-  // Sanity check - we should never be on a different row in the main container.
-  DCHECK(in_overflow_mode() || row_index == 0);
+    // Next, we determine which icon to place the indicator in front of. We want
+    // to place the indicator in front of icon n when the cursor is between the
+    // midpoints of icons (n - 1) and n.  To do this we take the offset into the
+    // icon area and transform it as follows:
+    //
+    // Real icon area:
+    //   0   a     *  b        c
+    //   |   |        |        |
+    //   |[IC|ON]  [IC|ON]  [IC|ON]
+    // We want to be before icon 0 for 0 < x <= a, icon 1 for a < x <= b, etc.
+    // Here the "*" represents the offset into the icon area, and since it's
+    // between a and b, we want to return "1".
+    //
+    // Transformed "icon area":
+    //   0        a     *  b        c
+    //   |        |        |        |
+    //   |[ICON]  |[ICON]  |[ICON]  |
+    // If we shift both our offset and our divider points later by half an icon
+    // plus one spacing unit, then it becomes very easy to calculate how many
+    // divider points we've passed, because they're the multiples of "one icon
+    // plus padding".
+    int before_icon_unclamped =
+        (offset_into_icon_area + (IconWidth(false) / 2) +
+        kItemSpacing) / IconWidth(true);
 
-  // Next, we determine which icon to place the indicator in front of.  We want
-  // to place the indicator in front of icon n when the cursor is between the
-  // midpoints of icons (n - 1) and n.  To do this we take the offset into the
-  // icon area and transform it as follows:
-  //
-  // Real icon area:
-  //   0   a     *  b        c
-  //   |   |        |        |
-  //   |[IC|ON]  [IC|ON]  [IC|ON]
-  // We want to be before icon 0 for 0 < x <= a, icon 1 for a < x <= b, etc.
-  // Here the "*" represents the offset into the icon area, and since it's
-  // between a and b, we want to return "1".
-  //
-  // Transformed "icon area":
-  //   0        a     *  b        c
-  //   |        |        |        |
-  //   |[ICON]  |[ICON]  |[ICON]  |
-  // If we shift both our offset and our divider points later by half an icon
-  // plus one spacing unit, then it becomes very easy to calculate how many
-  // divider points we've passed, because they're the multiples of "one icon
-  // plus padding".
-  int before_icon_unclamped = (offset_into_icon_area + (IconWidth(false) / 2) +
-      kItemSpacing) / IconWidth(true);
+    // We need to figure out how many icons are visible on the relevant row.
+    // In the main container, this will just be the visible actions.
+    int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
+    if (in_overflow_mode()) {
+      // If this is the final row of the overflow, then this is the remainder of
+      // visible icons. Otherwise, it's a full row (kIconsPerRow).
+      visible_icons_on_row =
+          row_index ==
+              static_cast<size_t>(visible_icons_on_row /
+                                  icons_per_overflow_menu_row_) ?
+                  visible_icons_on_row % icons_per_overflow_menu_row_ :
+                  icons_per_overflow_menu_row_;
+    }
 
-  // We need to figure out how many icons are visible on the relevant row.
-  // In the main container, this will just be the visible actions.
-  int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
-  if (in_overflow_mode()) {
-    // If this is the final row of the overflow, then this is the remainder of
-    // visible icons. Otherwise, it's a full row (kIconsPerRow).
-    visible_icons_on_row =
-        row_index ==
-            static_cast<size_t>(visible_icons_on_row /
-                                icons_per_overflow_menu_row_) ?
-                visible_icons_on_row % icons_per_overflow_menu_row_ :
-                icons_per_overflow_menu_row_;
+    // Because the user can drag outside the container bounds, we need to clamp
+    // to the valid range. Note that the maximum allowable value is (num icons),
+    // not (num icons - 1), because we represent the indicator being past the
+    // last icon as being "before the (last + 1) icon".
+    before_icon_in_row =
+        std::min(std::max(before_icon_unclamped, 0), visible_icons_on_row);
   }
-
-  // Because the user can drag outside the container bounds, we need to clamp to
-  // the valid range.  Note that the maximum allowable value is (num icons), not
-  // (num icons - 1), because we represent the indicator being past the last
-  // icon as being "before the (last + 1) icon".
-  size_t before_icon_in_row =
-      std::min(std::max(before_icon_unclamped, 0), visible_icons_on_row);
 
   if (!drop_position_.get() ||
       !(drop_position_->row == row_index &&
@@ -543,7 +552,7 @@ int BrowserActionsContainer::OnPerformDrop(
   size_t i = drop_position_->row * icons_per_overflow_menu_row_ +
              drop_position_->icon_in_row;
   if (in_overflow_mode())
-    i += GetFirstVisibleIconIndex();
+    i += main_container_->VisibleBrowserActionsAfterAnimation();
   // |i| now points to the item to the right of the drop indicator*, which is
   // correct when dragging an icon to the left. When dragging to the right,
   // however, we want the icon being dragged to get the index of the item to
@@ -702,11 +711,6 @@ extensions::ActiveTabPermissionGranter*
       active_tab_permission_granter();
 }
 
-size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
-  return in_overflow_mode() ?
-      main_container_->VisibleBrowserActionsAfterAnimation() : 0;
-}
-
 ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
   return popup_owner_ ? popup_owner_->view_controller()->popup() : NULL;
 }
@@ -731,7 +735,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 
     // Convert back to a pixel offset into the container.  First find the X
     // coordinate of the drop icon.
-    int drop_icon_x = browser_action_views_[GetFirstVisibleIconIndex()]->x() +
+    int drop_icon_x = ToolbarView::kStandardSpacing +
         (drop_position_->icon_in_row * IconWidth(true));
     // Next, find the space before the drop icon. This will either be
     // kItemSpacing or ToolbarView::kStandardSpacing, depending on whether this
