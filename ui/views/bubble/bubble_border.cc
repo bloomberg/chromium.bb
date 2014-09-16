@@ -351,9 +351,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gfx::Rect bounds(view->GetLocalBounds());
   bounds.Inset(border_->GetInsets());
 
-  SkScalar radius = SkIntToScalar(border_->GetBorderCornerRadius());
-  path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-  canvas->DrawPath(path, paint);
+  canvas->DrawRoundRect(bounds, border_->GetBorderCornerRadius(), paint);
 }
 
 }  // namespace views

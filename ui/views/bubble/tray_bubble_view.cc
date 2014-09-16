@@ -190,7 +190,7 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
 
  private:
   ui::Layer layer_;
-  SkScalar corner_radius_;
+  int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleContentMask);
 };
@@ -206,13 +206,11 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
 }
 
 void TrayBubbleContentMask::OnPaintLayer(gfx::Canvas* canvas) {
-  SkPath path;
-  path.addRoundRect(gfx::RectToSkRect(gfx::Rect(layer()->bounds().size())),
-                    corner_radius_, corner_radius_);
   SkPaint paint;
   paint.setAlpha(255);
   paint.setStyle(SkPaint::kFill_Style);
-  canvas->DrawPath(path, paint);
+  gfx::Rect rect(layer()->bounds().size());
+  canvas->DrawRoundRect(rect, corner_radius_, paint);
 }
 
 void TrayBubbleContentMask::OnDeviceScaleFactorChanged(

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/elide_url.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/window.h"
 #include "ui/base/theme_provider.h"
@@ -359,82 +358,57 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
 
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
 
-  // Figure out how to round the bubble's four corners.
-  SkScalar rad[8];
+  SkScalar rad[8] = {};
 
   // Top Edges - if the bubble is in its bottom position (sticking downwards),
   // then we square the top edges. Otherwise, we square the edges based on the
   // position of the bubble within the window (the bubble is positioned in the
   // southeast corner in RTL and in the southwest corner in LTR).
-  if (style_ == STYLE_BOTTOM) {
-    // Top Left corner.
-    rad[0] = 0;
-    rad[1] = 0;
-
-    // Top Right corner.
-    rad[2] = 0;
-    rad[3] = 0;
-  } else {
+  if (style_ != STYLE_BOTTOM) {
     if (base::i18n::IsRTL() != (style_ == STYLE_STANDARD_RIGHT)) {
       // The text is RtL or the bubble is on the right side (but not both).
 
       // Top Left corner.
-      rad[0] = SkIntToScalar(kBubbleCornerRadius);
-      rad[1] = SkIntToScalar(kBubbleCornerRadius);
-
-      // Top Right corner.
-      rad[2] = 0;
-      rad[3] = 0;
+      rad[0] = kBubbleCornerRadius;
+      rad[1] = kBubbleCornerRadius;
     } else {
-      // Top Left corner.
-      rad[0] = 0;
-      rad[1] = 0;
-
       // Top Right corner.
-      rad[2] = SkIntToScalar(kBubbleCornerRadius);
-      rad[3] = SkIntToScalar(kBubbleCornerRadius);
+      rad[2] = kBubbleCornerRadius;
+      rad[3] = kBubbleCornerRadius;
     }
   }
 
-  // Bottom edges - square these off if the bubble is in its standard position
-  // (sticking upward).
-  if (style_ == STYLE_STANDARD || style_ == STYLE_STANDARD_RIGHT) {
+  // Bottom edges - Keep these squared off if the bubble is in its standard
+  // position (sticking upward).
+  if (style_ != STYLE_STANDARD && style_ != STYLE_STANDARD_RIGHT) {
     // Bottom Right Corner.
-    rad[4] = 0;
-    rad[5] = 0;
+    rad[4] = kBubbleCornerRadius;
+    rad[5] = kBubbleCornerRadius;
 
     // Bottom Left Corner.
-    rad[6] = 0;
-    rad[7] = 0;
-  } else {
-    // Bottom Right Corner.
-    rad[4] = SkIntToScalar(kBubbleCornerRadius);
-    rad[5] = SkIntToScalar(kBubbleCornerRadius);
-
-    // Bottom Left Corner.
-    rad[6] = SkIntToScalar(kBubbleCornerRadius);
-    rad[7] = SkIntToScalar(kBubbleCornerRadius);
+    rad[6] = kBubbleCornerRadius;
+    rad[7] = kBubbleCornerRadius;
   }
 
   // Draw the bubble's shadow.
   int width = popup_bounds.width();
   int height = popup_bounds.height();
-  SkRect rect(gfx::RectToSkRect(gfx::Rect(popup_bounds.size())));
-  SkPath shadow_path;
-  shadow_path.addRoundRect(rect, rad, SkPath::kCW_Direction);
+  gfx::Rect rect(gfx::Rect(popup_bounds.size()));
   SkPaint shadow_paint;
   shadow_paint.setAntiAlias(true);
   shadow_paint.setColor(kShadowColor);
-  canvas->DrawPath(shadow_path, shadow_paint);
+
+  SkRRect rrect;
+  rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
+  canvas->sk_canvas()->drawRRect(rrect, paint);
 
   // Draw the bubble.
-  rect.set(SkIntToScalar(kShadowThickness),
-           SkIntToScalar(kShadowThickness),
-           SkIntToScalar(width - kShadowThickness),
-           SkIntToScalar(height - kShadowThickness));
-  SkPath path;
-  path.addRoundRect(rect, rad, SkPath::kCW_Direction);
-  canvas->DrawPath(path, paint);
+  rect.SetRect(SkIntToScalar(kShadowThickness),
+               SkIntToScalar(kShadowThickness),
+               SkIntToScalar(width),
+               SkIntToScalar(height));
+  rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
+  canvas->sk_canvas()->drawRRect(rrect, paint);
 
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
