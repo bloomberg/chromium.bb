@@ -2180,7 +2180,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_EQ(2, model_->item_count());
 
   // Add a v2 app.
-  V2App v2_app(profile(), extension1_);
+  V2App v2_app(profile(), extension1_.get());
   EXPECT_EQ(3, model_->item_count());
 
   // After switching users the item should go away.
@@ -2210,7 +2210,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Add the v2 app to the inactive user and check that no item was added to
   // the launcher.
   {
-    V2App v2_app(profile(), extension1_);
+    V2App v2_app(profile(), extension1_.get());
     EXPECT_EQ(2, model_->item_count());
 
     // Switch to the primary user and check that the item is shown.
@@ -2248,13 +2248,13 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // A v2 app for user #1 should be shown first and get hidden when switching to
   // desktop #2.
-  V2App v2_app_1(profile1, extension1_);
+  V2App v2_app_1(profile1, extension1_.get());
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(profile2->GetProfileName());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
 
   // Add a v2 app for user #1 while on desktop #2 should not be shown.
-  V2App v2_app_2(profile1, extension1_);
+  V2App v2_app_2(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
 
@@ -2266,7 +2266,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Creating a new application for user #1 on desktop #2 should teleport it
   // there automatically.
-  V2App v2_app_3(profile1, extension1_);
+  V2App v2_app_3(profile1, extension1_.get());
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_3.window()->GetNativeWindow()->IsVisible());
@@ -2274,7 +2274,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching back to desktop#1 and creating an app for user #1 should move
   // the app on desktop #1.
   SwitchActiveUser(profile1->GetProfileName());
-  V2App v2_app_4(profile1, extension1_);
+  V2App v2_app_4(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_3.window()->GetNativeWindow()->IsVisible());
@@ -2283,7 +2283,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching to desktop #3 and create an app for user #1 there should land on
   // his own desktop (#1).
   SwitchActiveUser(profile3->GetProfileName());
-  V2App v2_app_5(profile1, extension1_);
+  V2App v2_app_5(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(profile1->GetProfileName());
   EXPECT_TRUE(v2_app_5.window()->GetNativeWindow()->IsVisible());
@@ -2292,7 +2292,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // teleport there automatically.
   SwitchActiveUser(profile2->GetProfileName());
   v2_app_1.window()->Hide();
-  V2App v2_app_6(profile1, extension1_);
+  V2App v2_app_6(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_6.window()->GetNativeWindow()->IsVisible());
@@ -2308,7 +2308,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   SwitchActiveUser(profile()->GetProfileName());
   EXPECT_EQ(2, model_->item_count());
 
-  V2App v2_app_1(profile(), extension1_);
+  V2App v2_app_1(profile(), extension1_.get());
   EXPECT_EQ(3, model_->item_count());
   {
     // Hide and show the app.
@@ -2348,7 +2348,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   }
   {
     // Create a second app, hide and show it and then hide both apps.
-    V2App v2_app_2(profile(), extension1_);
+    V2App v2_app_2(profile(), extension1_.get());
     EXPECT_EQ(3, model_->item_count());
 
     v2_app_2.window()->Hide();

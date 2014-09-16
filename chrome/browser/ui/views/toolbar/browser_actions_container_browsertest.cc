@@ -180,9 +180,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DragBrowserActions) {
   // This order should be reflected in the underlying model.
   extensions::ExtensionToolbarModel* model =
       extensions::ExtensionToolbarModel::Get(profile());
-  EXPECT_EQ(extension_b, model->toolbar_items()[0]);
-  EXPECT_EQ(extension_a, model->toolbar_items()[1]);
-  EXPECT_EQ(extension_c, model->toolbar_items()[2]);
+  EXPECT_EQ(extension_b, model->toolbar_items()[0].get());
+  EXPECT_EQ(extension_a, model->toolbar_items()[1].get());
+  EXPECT_EQ(extension_c, model->toolbar_items()[2].get());
 
   // Simulate a drag and drop to the left.
   ui::OSExchangeData drop_data2;
