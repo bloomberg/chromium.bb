@@ -635,8 +635,6 @@ class GestureRecognizerTest : public AuraTestBase,
 
   virtual void SetUp() OVERRIDE {
     AuraTestBase::SetUp();
-    ui::GestureConfiguration::set_min_touch_down_duration_in_seconds_for_click(
-        0.001);
     ui::GestureConfiguration::set_show_press_delay_in_ms(2);
     ui::GestureConfiguration::set_long_press_time_in_seconds(0.003);
   }
@@ -1008,9 +1006,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
 
 // Check that predicted scroll update positions are correct.
 TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
-  const double prediction_interval = 0.03;
-  ui::GestureConfiguration::set_scroll_prediction_seconds(prediction_interval);
-   // We'll start by moving the touch point by (5, 5). We want all of that
+  // We'll start by moving the touch point by (5, 5). We want all of that
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
@@ -1166,10 +1162,16 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   EXPECT_FLOAT_EQ(20, delegate->scroll_x());
 
   // Get a high x velocity, while still staying on the rail
-  tes.SendScrollEvents(event_processor(), 1, 1,
-                   100, 10, kTouchId, 1,
-                   ui::GestureConfiguration::points_buffered_for_velocity(),
-                   delegate.get());
+  const int kScrollAmount = 8;
+  tes.SendScrollEvents(event_processor(),
+                       1,
+                       1,
+                       100,
+                       10,
+                       kTouchId,
+                       1,
+                       kScrollAmount,
+                       delegate.get());
 
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
@@ -1211,9 +1213,15 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_EQ(0, delegate->scroll_velocity_x());
 
   // Get a high y velocity, while still staying on the rail
-  tes.SendScrollEvents(event_processor(), 1, 6,
-                       10, 100, kTouchId, 1,
-                       ui::GestureConfiguration::points_buffered_for_velocity(),
+  const int kScrollAmount = 8;
+  tes.SendScrollEvents(event_processor(),
+                       1,
+                       6,
+                       10,
+                       100,
+                       kTouchId,
+                       1,
+                       kScrollAmount,
                        delegate.get());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
 
@@ -1250,9 +1258,15 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   EXPECT_EQ(50, delegate->scroll_y());
   EXPECT_EQ(50, delegate->scroll_x());
 
-  tes.SendScrollEvents(event_processor(), 1, 1,
-                       10, 100, kTouchId, 1,
-                       ui::GestureConfiguration::points_buffered_for_velocity(),
+  const int kScrollAmount = 8;
+  tes.SendScrollEvents(event_processor(),
+                       1,
+                       1,
+                       10,
+                       100,
+                       kTouchId,
+                       1,
+                       kScrollAmount,
                        delegate.get());
 
   delegate->Reset();
@@ -1479,9 +1493,15 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
 
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
-  tes.SendScrollEvents(event_processor(), 1, 1,
-                       6, 100, kTouchId, 1,
-                       ui::GestureConfiguration::points_buffered_for_velocity(),
+  const int kScrollAmount = 8;
+  tes.SendScrollEvents(event_processor(),
+                       1,
+                       1,
+                       6,
+                       100,
+                       kTouchId,
+                       1,
+                       kScrollAmount,
                        delegate.get());
 
   tes.SendScrollEvent(event_processor(), 5, 0, kTouchId, delegate.get());
@@ -1529,9 +1549,15 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
 
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
-  tes.SendScrollEvents(event_processor(), 1, 6,
-                       100, 1, kTouchId, 1,
-                       ui::GestureConfiguration::points_buffered_for_velocity(),
+  const int kScrollAmount = 8;
+  tes.SendScrollEvents(event_processor(),
+                       1,
+                       6,
+                       100,
+                       1,
+                       kTouchId,
+                       1,
+                       kScrollAmount,
                        delegate.get());
 
   tes.SendScrollEvent(event_processor(), 0, 5, kTouchId, delegate.get());
@@ -3435,7 +3461,6 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
 // In particular, fix for http;//crbug.com/150573.
 TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
-  ui::GestureConfiguration::set_min_scroll_delta_squared(9);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 234;

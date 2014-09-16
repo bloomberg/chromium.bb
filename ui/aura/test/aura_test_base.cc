@@ -49,16 +49,7 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(5);
   ui::GestureConfiguration::set_max_distance_between_taps_for_double_tap(20);
   ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
-  ui::GestureConfiguration::set_min_flick_speed_squared(550.f * 550.f);
   ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);
-  ui::GestureConfiguration::set_min_rail_break_velocity(200);
-  ui::GestureConfiguration::set_min_scroll_delta_squared(5 * 5);
-  ui::GestureConfiguration::
-      set_min_touch_down_duration_in_seconds_for_click(0.0005);
-  ui::GestureConfiguration::set_points_buffered_for_velocity(10);
-  ui::GestureConfiguration::set_rail_break_proportion(15);
-  ui::GestureConfiguration::set_rail_start_proportion(2);
-  ui::GestureConfiguration::set_scroll_prediction_seconds(0);
   ui::GestureConfiguration::set_default_radius(0);
   ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
       0, 0.0166667f);

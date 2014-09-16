@@ -50,9 +50,6 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static void set_max_distance_for_two_finger_tap_in_pixels(double val) {
     max_distance_for_two_finger_tap_in_pixels_ = val;
   }
-  static int max_radius() {
-    return max_radius_;
-  }
   static void set_long_press_time_in_seconds(double val) {
     long_press_time_in_seconds_ = val;
   }
@@ -101,29 +98,11 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static void set_min_distance_for_pinch_scroll_in_pixels(double val) {
     min_distance_for_pinch_scroll_in_pixels_ = val;
   }
-  static double min_flick_speed_squared() {
-    return min_flick_speed_squared_;
-  }
-  static void set_min_flick_speed_squared(double val) {
-    min_flick_speed_squared_ = val;
-  }
   static double min_pinch_update_distance_in_pixels() {
     return min_pinch_update_distance_in_pixels_;
   }
   static void set_min_pinch_update_distance_in_pixels(double val) {
     min_pinch_update_distance_in_pixels_ = val;
-  }
-  static double min_rail_break_velocity() {
-    return min_rail_break_velocity_;
-  }
-  static void set_min_rail_break_velocity(double val) {
-    min_rail_break_velocity_ = val;
-  }
-  static double min_scroll_delta_squared() {
-    return min_scroll_delta_squared_;
-  }
-  static void set_min_scroll_delta_squared(double val) {
-    min_scroll_delta_squared_ = val;
   }
   static float min_scroll_velocity() {
     return min_scroll_velocity_;
@@ -137,44 +116,11 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static void set_min_swipe_speed(double val) {
     min_swipe_speed_ = val;
   }
-  static double min_touch_down_duration_in_seconds_for_click() {
-    return min_touch_down_duration_in_seconds_for_click_;
-  }
-  static void set_min_touch_down_duration_in_seconds_for_click(double val) {
-    min_touch_down_duration_in_seconds_for_click_ = val;
-  }
-
   static int min_scaling_span_in_pixels() {
     return min_scaling_span_in_pixels_;
   };
-
   static void set_min_scaling_span_in_pixels(int val) {
     min_scaling_span_in_pixels_ = val;
-  }
-
-  static int points_buffered_for_velocity() {
-    return points_buffered_for_velocity_;
-  }
-  static void set_points_buffered_for_velocity(int val) {
-    points_buffered_for_velocity_ = val;
-  }
-  static double rail_break_proportion() {
-    return rail_break_proportion_;
-  }
-  static void set_rail_break_proportion(double val) {
-    rail_break_proportion_ = val;
-  }
-  static double rail_start_proportion() {
-    return rail_start_proportion_;
-  }
-  static void set_rail_start_proportion(double val) {
-    rail_start_proportion_ = val;
-  }
-  static double scroll_prediction_seconds() {
-    return scroll_prediction_seconds_;
-  }
-  static void set_scroll_prediction_seconds(double val) {
-    scroll_prediction_seconds_ = val;
   }
   static int show_press_delay_in_ms() {
     return show_press_delay_in_ms_;
@@ -222,10 +168,6 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   // recognize a two finger tap.
   static double max_distance_for_two_finger_tap_in_pixels_;
 
-  // The maximum allowed size for the radius of a touch region used in
-  // forming an ET_GESTURE_TAP event.
-  static int max_radius_;
-
   // Maximum time between a GestureFlingCancel and a mousedown such that the
   // mousedown is considered associated with the cancel event.
   static int fling_max_cancel_to_down_time_in_ms_;
@@ -243,22 +185,13 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static double max_touch_move_in_pixels_for_click_;
   static double max_distance_between_taps_for_double_tap_;
   static double min_distance_for_pinch_scroll_in_pixels_;
-  static double min_flick_speed_squared_;
   // Only used with --compensate-for-unstable-pinch-zoom.
   static double min_pinch_update_distance_in_pixels_;
-  static double min_rail_break_velocity_;
-  static double min_scroll_delta_squared_;
   static float min_scroll_velocity_;
   static double min_swipe_speed_;
-  static double min_touch_down_duration_in_seconds_for_click_;
   static int min_scaling_span_in_pixels_;
-  static int points_buffered_for_velocity_;
-  static double rail_break_proportion_;
-  static double rail_start_proportion_;
-  static double scroll_prediction_seconds_;
   static int show_press_delay_in_ms_;
   static int scroll_debounce_interval_in_ms_;
-
   static float fling_acceleration_curve_coefficients_[NumAccelParams];
   static float fling_velocity_cap_;
   // TODO(davemoore): Move into chrome/browser/ui.
