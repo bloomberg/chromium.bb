@@ -10,6 +10,9 @@
 cr.define('cr.onc', function() {
   'use strict';
 
+  /**
+   * @constructor
+   */
   function OncData(data) {
     this.data_ = data;
   }
@@ -172,7 +175,7 @@ cr.define('cr.onc', function() {
 
     /**
      * Get the effective value from a Managed property ONC dictionary.
-     * @param {object} property The managed property ONC dictionary.
+     * @param {Object} property The managed property ONC dictionary.
      * @return {*} The effective value or undefined.
      * @private
      */

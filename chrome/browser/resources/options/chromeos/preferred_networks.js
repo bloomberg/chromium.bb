@@ -16,6 +16,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of ChromeOS network preferences page.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function PreferredNetworks(model) {
     Page.call(this, 'preferredNetworksPage', null, 'preferredNetworksPage');

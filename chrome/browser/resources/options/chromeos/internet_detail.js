@@ -11,6 +11,15 @@
 //   networkingPrivate API. See network_config.js.
 // See crbug.com/279351 for more info.
 
+/** @typedef {{address: (string|undefined),
+ *             gateway: (string|undefined),
+ *             nameServers: (string|undefined),
+ *             netmask: (string|undefined),
+ *             prefixLength: (number|undefined)}}
+ * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
+ */
+var IPInfo;
+
 /**
  * InternetDetailedInfo argument passed to showDetailedInfo.
  * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc

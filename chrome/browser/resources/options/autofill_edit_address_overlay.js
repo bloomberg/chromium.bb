@@ -234,17 +234,17 @@ cr.define('options', function() {
       var inputFields = this.getInputFields_();
       var address = [
         this.guid_,
-        inputFields.fullName || [],
-        inputFields.companyName || '',
-        inputFields.addrLines || '',
-        inputFields.dependentLocality || '',
-        inputFields.city || '',
-        inputFields.state || '',
-        inputFields.postalCode || '',
-        inputFields.sortingCode || '',
-        inputFields.country || '',
-        inputFields.phone || [],
-        inputFields.email || [],
+        inputFields['fullName'] || [],
+        inputFields['companyName'] || '',
+        inputFields['addrLines'] || '',
+        inputFields['dependentLocality'] || '',
+        inputFields['city'] || '',
+        inputFields['state'] || '',
+        inputFields['postalCode'] || '',
+        inputFields['sortingCode'] || '',
+        inputFields['country'] || '',
+        inputFields['phone'] || [],
+        inputFields['email'] || [],
         this.languageCode_,
       ];
       chrome.send('setAddress', address);
@@ -436,7 +436,8 @@ cr.define('options', function() {
   AutofillEditAddressOverlay.setValidatedPhoneNumbers = function(numbers) {
     var instance = AutofillEditAddressOverlay.getInstance();
     var phoneList = instance.pageDiv.querySelector('[field=phone]');
-    instance.setMultiValueList_(phoneList, numbers);
+    instance.setMultiValueList_(assertInstanceof(phoneList, cr.ui.List),
+                                numbers);
     phoneList.didReceiveValidationResult();
   };
 

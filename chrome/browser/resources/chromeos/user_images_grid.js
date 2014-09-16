@@ -466,7 +466,9 @@ cr.define('options', function() {
       canvas.width = CAPTURE_SIZE.width;
       canvas.height = CAPTURE_SIZE.height;
       this.captureFrame_(
-          this.cameraVideo_, canvas.getContext('2d'), CAPTURE_SIZE);
+          this.cameraVideo_,
+          /** @type {CanvasRenderingContext2D} */(canvas.getContext('2d')),
+          CAPTURE_SIZE);
       // Preload image before displaying it.
       var previewImg = new Image();
       previewImg.addEventListener('load', function(e) {

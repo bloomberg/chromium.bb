@@ -4,6 +4,47 @@
 
 cr.exportPath('options');
 
+/** @typedef {{appsEnforced: boolean,
+ *             appsRegistered: boolean,
+ *             appsSynced: boolean,
+ *             autofillEnforced: boolean,
+ *             autofillRegistered: boolean,
+ *             autofillSynced: boolean,
+ *             bookmarksEnforced: boolean,
+ *             bookmarksRegistered: boolean,
+ *             bookmarksSynced: boolean,
+ *             encryptAllData: boolean,
+ *             enterGooglePassphraseBody: (string|undefined),
+ *             enterPassphraseBody: (string|undefined),
+ *             extensionsEnforced: boolean,
+ *             extensionsRegistered: boolean,
+ *             extensionsSynced: boolean,
+ *             fullEncryptionBody: string,
+ *             isSupervised: boolean,
+ *             passphraseFailed: boolean,
+ *             passwordsEnforced: boolean,
+ *             passwordsRegistered: boolean,
+ *             passwordsSynced: boolean,
+ *             preferencesEnforced: boolean,
+ *             preferencesRegistered: boolean,
+ *             preferencesSynced: boolean,
+ *             showPassphrase: boolean,
+ *             showSyncEverythingPage: boolean,
+ *             syncAllDataTypes: boolean,
+ *             syncNothing: boolean,
+ *             tabsEnforced: boolean,
+ *             tabsRegistered: boolean,
+ *             tabsSynced: boolean,
+ *             themesEnforced: boolean,
+ *             themesRegistered: boolean,
+ *             themesSynced: boolean,
+ *             typedUrlsEnforced: boolean,
+ *             typedUrlsRegistered: boolean,
+ *             typedUrlsSynced: boolean,
+ *             usePassphrase: boolean}}
+ */
+var SyncConfig;
+
 /**
  * The user's selection in the synced data type drop-down menu, as an index.
  * @enum {number}
@@ -176,7 +217,7 @@ cr.define('options', function() {
      * @private
      */
     setDataTypeCheckboxesEnabled_: function(enabled) {
-      for (dataType in dataTypeBoxesDisabled_) {
+      for (var dataType in dataTypeBoxesDisabled_) {
         $(dataType).disabled = !enabled || dataTypeBoxesDisabled_[dataType];
       }
     },
@@ -320,7 +361,7 @@ cr.define('options', function() {
      * settings dialog. Also initializes |dataTypeBoxesChecked_| and
      * |dataTypeBoxedDisabled_| with their values, and makes their onclick
      * handlers update |dataTypeBoxesChecked_|.
-     * @param {Object} args The configuration data used to show/hide UI.
+     * @param {SyncConfig} args The configuration data used to show/hide UI.
      * @private
      */
     setChooseDataTypesCheckboxes_: function(args) {
@@ -414,6 +455,9 @@ cr.define('options', function() {
                   ['Options_SyncToggleDataType']);
     },
 
+    /**
+     * @param {SyncConfig} args
+     */
     setEncryptionRadios_: function(args) {
       if (!args.encryptAllData && !args.usePassphrase) {
         $('basic-encryption-option').checked = true;
@@ -424,11 +468,17 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * @param {SyncConfig} args
+     */
     setCheckboxesAndErrors_: function(args) {
       this.setChooseDataTypesCheckboxes_(args);
       this.setEncryptionRadios_(args);
     },
 
+    /**
+     * @param {SyncConfig} args
+     */
     showConfigure_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
       var self = this;
@@ -564,7 +614,7 @@ cr.define('options', function() {
      * Reveals the UI for entering a custom passphrase during initial setup.
      * This happens if the user has previously enabled a custom passphrase on a
      * different machine.
-     * @param {Array} args The args that contain the passphrase UI
+     * @param {SyncConfig} args The args that contain the passphrase UI
      *     configuration.
      * @private
      */
@@ -603,6 +653,7 @@ cr.define('options', function() {
     /**
      * Displays the advanced sync setting dialog, and pre-selects either the
      * "Sync everything" or the "Choose what to sync" drop-down menu item.
+     * @param {SyncConfig} args
      * @param {options.DataTypeSelection} index Index of item to pre-select.
      * @private
      */
@@ -650,7 +701,7 @@ cr.define('options', function() {
     /**
      * Shows the appropriate sync setup page.
      * @param {string} page A page of the sync setup to show.
-     * @param {Object} args Data from the C++ to forward on to the right
+     * @param {SyncConfig} args Data from the C++ to forward on to the right
      *     section.
      */
     showSyncSetupPage_: function(page, args) {

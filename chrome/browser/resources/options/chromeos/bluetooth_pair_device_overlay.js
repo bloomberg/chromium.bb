@@ -152,7 +152,7 @@ cr.define('options', function() {
      * @return {boolean} True if the overlay can be displayed.
      */
     canShowPage: function() {
-      return this.device_ && this.device_.address && this.device_.pairing;
+      return !!(this.device_ && this.device_.address && this.device_.pairing);
     },
 
     /**

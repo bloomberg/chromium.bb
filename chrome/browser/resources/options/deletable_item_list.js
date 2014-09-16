@@ -44,10 +44,12 @@ cr.define('options', function() {
 
       this.classList.add('deletable-item');
 
-      this.contentElement_ = this.ownerDocument.createElement('div');
+      this.contentElement_ = /** @type {HTMLElement} */(
+          this.ownerDocument.createElement('div'));
       this.appendChild(this.contentElement_);
 
-      this.closeButtonElement_ = this.ownerDocument.createElement('button');
+      this.closeButtonElement_ = /** @type {HTMLElement} */(
+          this.ownerDocument.createElement('button'));
       this.closeButtonElement_.className =
           'raw-button row-delete-button custom-appearance';
       this.closeButtonElement_.addEventListener('mousedown',
@@ -123,6 +125,10 @@ cr.define('options', function() {
     },
   };
 
+  /**
+   * @constructor
+   * @extends {cr.ui.List}
+   */
   var DeletableItemList = cr.ui.define('list');
 
   DeletableItemList.prototype = {
@@ -131,16 +137,16 @@ cr.define('options', function() {
     /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
-      this.addEventListener('click', this.handleClick_);
+      this.addEventListener('click', this.handleClick);
       this.addEventListener('keydown', this.handleKeyDown_);
     },
 
     /**
      * Callback for onclick events.
      * @param {Event} e The click event object.
-     * @private
+     * @override
      */
-    handleClick_: function(e) {
+    handleClick: function(e) {
       if (this.disabled)
         return;
 

@@ -91,8 +91,8 @@ function load() {
           'doNotTrackConfirm',
           loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
           'do-not-track-confirm-overlay',
-          $('do-not-track-confirm-ok'),
-          $('do-not-track-confirm-cancel'),
+          /** @type {HTMLInputElement} */($('do-not-track-confirm-ok')),
+          /** @type {HTMLInputElement} */($('do-not-track-confirm-cancel')),
           $('do-not-track-enabled').pref,
           $('do-not-track-enabled').metric),
       BrowserOptions.getInstance());
@@ -104,8 +104,8 @@ function load() {
             'spellingConfirm',
             loadTimeData.getString('spellingConfirmOverlayTabTitle'),
             'spelling-confirm-overlay',
-            $('spelling-confirm-ok'),
-            $('spelling-confirm-cancel'),
+            /** @type {HTMLInputElement} */($('spelling-confirm-ok')),
+            /** @type {HTMLInputElement} */($('spelling-confirm-cancel')),
             $('spelling-enabled-control').pref,
             $('spelling-enabled-control').metric),
         BrowserOptions.getInstance());
@@ -260,7 +260,7 @@ function load() {
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');
     chrome.send('onFinishedLoadingOptions');
-  });
+  }, 0);
 }
 
 document.documentElement.classList.add('loading');

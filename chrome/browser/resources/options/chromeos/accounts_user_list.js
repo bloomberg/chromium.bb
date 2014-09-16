@@ -77,7 +77,7 @@ cr.define('options.accounts', function() {
 
     /**
      * Loads given user list.
-     * @param {Array.<Object>} users An array of user info objects.
+     * @param {!Array.<Object>} users An array of user info objects.
      * @private
      */
     load_: function(users) {

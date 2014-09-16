@@ -95,12 +95,14 @@ cr.define('options.ContentSettings', function() {
      * @private
      */
     createOriginsList_: function() {
-      this.allowedList_ = $('allowed-origin-list');
-      options.OriginList.decorate(this.allowedList_);
+      var allowedList = $('allowed-origin-list');
+      options.OriginList.decorate(allowedList);
+      this.allowedList_ = assertInstanceof(allowedList, options.OriginList);
       this.allowedList_.autoExpands = true;
 
-      this.blockedList_ = $('blocked-origin-list');
-      options.OriginList.decorate(this.blockedList_);
+      var blockedList = $('blocked-origin-list');
+      options.OriginList.decorate(blockedList);
+      this.blockedList_ = assertInstanceof(blockedList, options.OriginList);
       this.blockedList_.autoExpands = true;
     },
 

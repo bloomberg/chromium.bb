@@ -236,8 +236,9 @@ cr.define('options', function() {
      * @private
      */
     createEditableTextCell: function(text) {
-      var container = this.ownerDocument.createElement('div');
-      var textEl;
+      var container = /** @type {HTMLElement} */(
+          this.ownerDocument.createElement('div'));
+      var textEl = null;
       if (!this.isPlaceholder) {
         textEl = this.ownerDocument.createElement('div');
         textEl.className = 'static-text';
@@ -406,6 +407,10 @@ cr.define('options', function() {
   }
   handleWindowBlurs();
 
+  /**
+   * @constructor
+   * @extends {options.DeletableItemList}
+   */
   var InlineEditableItemList = cr.ui.define('list');
 
   InlineEditableItemList.prototype = {

@@ -2,6 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('options');
+
+/**
+ * @typedef {{
+ *   availableColorProfiles: Array.<{profileId: number, name: string}>,
+ *   colorProfile: number,
+ *   height: number,
+ *   id: string,
+ *   isInternal: boolean,
+ *   isPrimary: boolean,
+ *   resolutions: Array.<{width: number, height: number, originalWidth: number,
+ *       originalHeight: number, deviceScaleFactor: number, scale: number,
+ *       refreshRate: number, isBest: boolean, selected: boolean}>,
+ *   name: string,
+ *   orientation: number,
+ *   width: number,
+ *   x: number,
+ *   y: number
+ * }}
+ */
+options.DisplayInfo;
+
+/**
+ * Enumeration of secondary display layout.  The value has to be same as the
+ * values in ash/display/display_controller.cc.
+ * @enum {number}
+ */
+options.SecondaryDisplayLayout = {
+  TOP: 0,
+  RIGHT: 1,
+  BOTTOM: 2,
+  LEFT: 3
+};
+
 cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
   var PageManager = cr.ui.pageManager.PageManager;
@@ -11,18 +45,6 @@ cr.define('options', function() {
 
   // The number of pixels to share the edges between displays.
   /** @const */ var MIN_OFFSET_OVERLAP = 5;
-
-  /**
-   * Enumeration of secondary display layout.  The value has to be same as the
-   * values in ash/display/display_controller.cc.
-   * @enum {number}
-   */
-  var SecondaryDisplayLayout = {
-    TOP: 0,
-    RIGHT: 1,
-    BOTTOM: 2,
-    LEFT: 3
-  };
 
   /**
    * Calculates the bounds of |element| relative to the page.
@@ -49,7 +71,8 @@ cr.define('options', function() {
    * Gets the position of |point| to |rect|, left, right, top, or bottom.
    * @param {Object} rect The base rectangle with x, y, width, and height.
    * @param {Object} point The point to check the position.
-   * @return {SecondaryDisplayLayout} The position of the calculated point.
+   * @return {options.SecondaryDisplayLayout} The position of the calculated
+   *     point.
    */
   function getPositionToRectangle(rect, point) {
     // Separates the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
@@ -60,14 +83,14 @@ cr.define('options', function() {
 
     if (point.y > topDownIntercept + point.x * diagonalSlope) {
       if (point.y > bottomUpIntercept - point.x * diagonalSlope)
-        return SecondaryDisplayLayout.BOTTOM;
+        return options.SecondaryDisplayLayout.BOTTOM;
       else
-        return SecondaryDisplayLayout.LEFT;
+        return options.SecondaryDisplayLayout.LEFT;
     } else {
       if (point.y > bottomUpIntercept - point.x * diagonalSlope)
-        return SecondaryDisplayLayout.RIGHT;
+        return options.SecondaryDisplayLayout.RIGHT;
       else
-        return SecondaryDisplayLayout.TOP;
+        return options.SecondaryDisplayLayout.TOP;
     }
   }
 
@@ -97,11 +120,12 @@ cr.define('options', function() {
      * The current secondary display layout.
      * @private
      */
-    layout_: SecondaryDisplayLayout.RIGHT,
+    layout_: options.SecondaryDisplayLayout.RIGHT,
 
     /**
      * The array of current output displays.  It also contains the display
      * rectangles currently rendered on screen.
+     * @type {Array.<options.DisplayInfo>}
      * @private
      */
     displays_: [],
@@ -280,8 +304,8 @@ cr.define('options', function() {
       var primary = this.primaryDisplay_;
       var secondary = this.secondaryDisplay_;
       var offset;
-      if (this.layout_ == SecondaryDisplayLayout.LEFT ||
-          this.layout_ == SecondaryDisplayLayout.RIGHT) {
+      if (this.layout_ == options.SecondaryDisplayLayout.LEFT ||
+          this.layout_ == options.SecondaryDisplayLayout.RIGHT) {
         offset = secondary.div.offsetTop - primary.div.offsetTop;
       } else {
         offset = secondary.div.offsetLeft - primary.div.offsetLeft;
@@ -370,41 +394,49 @@ cr.define('options', function() {
         height: baseDiv.offsetHeight
       };
       switch (getPositionToRectangle(baseBounds, newCenter)) {
-        case SecondaryDisplayLayout.RIGHT:
+        case options.SecondaryDisplayLayout.RIGHT:
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
+              options.SecondaryDisplayLayout.LEFT :
+              options.SecondaryDisplayLayout.RIGHT;
           break;
-        case SecondaryDisplayLayout.LEFT:
+        case options.SecondaryDisplayLayout.LEFT:
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
+              options.SecondaryDisplayLayout.RIGHT :
+              options.SecondaryDisplayLayout.LEFT;
           break;
-        case SecondaryDisplayLayout.TOP:
+        case options.SecondaryDisplayLayout.TOP:
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
+              options.SecondaryDisplayLayout.BOTTOM :
+              options.SecondaryDisplayLayout.TOP;
           break;
-        case SecondaryDisplayLayout.BOTTOM:
+        case options.SecondaryDisplayLayout.BOTTOM:
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
+              options.SecondaryDisplayLayout.TOP :
+              options.SecondaryDisplayLayout.BOTTOM;
           break;
       }
 
-      if (this.layout_ == SecondaryDisplayLayout.LEFT ||
-          this.layout_ == SecondaryDisplayLayout.RIGHT) {
+      if (this.layout_ == options.SecondaryDisplayLayout.LEFT ||
+          this.layout_ == options.SecondaryDisplayLayout.RIGHT) {
         if (newPosition.y > baseDiv.offsetTop + baseDiv.offsetHeight)
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
+              options.SecondaryDisplayLayout.TOP :
+              options.SecondaryDisplayLayout.BOTTOM;
         else if (newPosition.y + draggingDiv.offsetHeight <
                  baseDiv.offsetTop)
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
+              options.SecondaryDisplayLayout.BOTTOM :
+              options.SecondaryDisplayLayout.TOP;
       } else {
         if (newPosition.x > baseDiv.offsetLeft + baseDiv.offsetWidth)
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
+              options.SecondaryDisplayLayout.LEFT :
+              options.SecondaryDisplayLayout.RIGHT;
         else if (newPosition.x + draggingDiv.offsetWidth <
                    baseDiv.offsetLeft)
           this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
+              options.SecondaryDisplayLayout.RIGHT :
+              options.SecondaryDisplayLayout.LEFT;
       }
 
       var layoutToBase;
@@ -412,38 +444,38 @@ cr.define('options', function() {
         layoutToBase = this.layout_;
       } else {
         switch (this.layout_) {
-          case SecondaryDisplayLayout.RIGHT:
-            layoutToBase = SecondaryDisplayLayout.LEFT;
+          case options.SecondaryDisplayLayout.RIGHT:
+            layoutToBase = options.SecondaryDisplayLayout.LEFT;
             break;
-          case SecondaryDisplayLayout.LEFT:
-            layoutToBase = SecondaryDisplayLayout.RIGHT;
+          case options.SecondaryDisplayLayout.LEFT:
+            layoutToBase = options.SecondaryDisplayLayout.RIGHT;
             break;
-          case SecondaryDisplayLayout.TOP:
-            layoutToBase = SecondaryDisplayLayout.BOTTOM;
+          case options.SecondaryDisplayLayout.TOP:
+            layoutToBase = options.SecondaryDisplayLayout.BOTTOM;
             break;
-          case SecondaryDisplayLayout.BOTTOM:
-            layoutToBase = SecondaryDisplayLayout.TOP;
+          case options.SecondaryDisplayLayout.BOTTOM:
+            layoutToBase = options.SecondaryDisplayLayout.TOP;
             break;
         }
       }
 
       switch (layoutToBase) {
-        case SecondaryDisplayLayout.RIGHT:
+        case options.SecondaryDisplayLayout.RIGHT:
           draggingDiv.style.left =
               baseDiv.offsetLeft + baseDiv.offsetWidth + 'px';
           draggingDiv.style.top = newPosition.y + 'px';
           break;
-        case SecondaryDisplayLayout.LEFT:
+        case options.SecondaryDisplayLayout.LEFT:
           draggingDiv.style.left =
               baseDiv.offsetLeft - draggingDiv.offsetWidth + 'px';
           draggingDiv.style.top = newPosition.y + 'px';
           break;
-        case SecondaryDisplayLayout.TOP:
+        case options.SecondaryDisplayLayout.TOP:
           draggingDiv.style.top =
               baseDiv.offsetTop - draggingDiv.offsetHeight + 'px';
           draggingDiv.style.left = newPosition.x + 'px';
           break;
-        case SecondaryDisplayLayout.BOTTOM:
+        case options.SecondaryDisplayLayout.BOTTOM:
           draggingDiv.style.top =
               baseDiv.offsetTop + baseDiv.offsetHeight + 'px';
           draggingDiv.style.left = newPosition.x + 'px';
@@ -505,8 +537,8 @@ cr.define('options', function() {
         var baseDiv = this.dragging_.display.isPrimary ?
             this.secondaryDisplay_.div : this.primaryDisplay_.div;
         var draggingDiv = this.dragging_.display.div;
-        if (this.layout_ == SecondaryDisplayLayout.LEFT ||
-            this.layout_ == SecondaryDisplayLayout.RIGHT) {
+        if (this.layout_ == options.SecondaryDisplayLayout.LEFT ||
+            this.layout_ == options.SecondaryDisplayLayout.RIGHT) {
           var top = Math.max(draggingDiv.offsetTop,
                              baseDiv.offsetTop - draggingDiv.offsetHeight +
                              MIN_OFFSET_OVERLAP);
@@ -827,8 +859,9 @@ cr.define('options', function() {
     /**
      * Called when the display arrangement has changed.
      * @param {boolean} mirroring Whether current mode is mirroring or not.
-     * @param {Array} displays The list of the display information.
-     * @param {SecondaryDisplayLayout} layout The layout strategy.
+     * @param {Array.<options.DisplayInfo>} displays The list of the display
+     *     information.
+     * @param {options.SecondaryDisplayLayout} layout The layout strategy.
      * @param {number} offset The offset of the secondary display.
      * @private
      */

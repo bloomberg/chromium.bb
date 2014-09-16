@@ -83,7 +83,7 @@ cr.define('options.proxyexceptions', function() {
 
     /**
      * Loads given exception list.
-     * @param {Array} exceptions An array of exception object.
+     * @param {!Array} exceptions An array of exception object.
      */
     load_: function(exceptions) {
       this.dataModel = new ArrayDataModel(exceptions);

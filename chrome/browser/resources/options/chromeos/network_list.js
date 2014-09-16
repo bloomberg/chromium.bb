@@ -620,7 +620,8 @@ cr.define('options.network', function() {
     /**
      * Extracts a mapping of network names to menu element and position.
      * @param {!Element} menu The menu to process.
-     * @return {Object.<string, Element>} Network mapping.
+     * @return {Object.<string, {index: number, button: Element}>}
+     *     Network mapping.
      * @private
      */
     extractNetworkConnectButtons_: function(menu) {
@@ -696,7 +697,7 @@ cr.define('options.network', function() {
   /**
    * Adds a command to a menu for modifying network settings.
    * @param {!Element} menu Parent menu.
-   * @param {!Object} data Description of the network.
+   * @param {Object} data Description of the network.
    * @param {!string} label Display name for the menu item.
    * @param {?(string|!Function)} command Callback function or name
    *     of the command for |networkCommand|.
@@ -937,8 +938,12 @@ cr.define('options.network', function() {
 
   /**
    * Chrome callback for updating network controls.
-   * @param {Object} data Description of available network devices and their
-   *     corresponding state.
+   * @param {{wiredList: Array, wirelessList: Array, vpnList: Array,
+   *     rememberedList: Array, wifiAvailable: boolean, wifiEnabled: boolean,
+   *     wimaxAvailable: boolean, wimaxEnabled: boolean,
+   *     cellularAvailable: boolean, cellularEnabled: boolean,
+   *     cellularSupportsScan: boolean}} data Description of available network
+   *     devices and their corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
     var networkList = $('network-list');
@@ -1120,7 +1125,7 @@ cr.define('options.network', function() {
   /**
    * Fetches the active connection.
    * @param {Array.<Object>} networkList List of networks.
-   * @return {boolean} True if connected or connecting to a network.
+   * @return {Object}
    * @private
    */
   function getConnection_(networkList) {
@@ -1149,7 +1154,6 @@ cr.define('options.network', function() {
 
   /**
    * Whether the Network list is disabled. Only used for display purpose.
-   * @type {boolean}
    */
   cr.defineProperty(NetworkList, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
