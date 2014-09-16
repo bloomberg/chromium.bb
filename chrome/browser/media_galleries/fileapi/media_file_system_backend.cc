@@ -332,6 +332,7 @@ scoped_ptr<storage::FileStreamReader>
 MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    int64 max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (url.type() == storage::kFileSystemTypeDeviceMedia) {

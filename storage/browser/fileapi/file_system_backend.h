@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_BACKEND_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_SYSTEM_BACKEND_H_
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,11 @@ class WatcherManager;
 
 // Callback to take GURL.
 typedef base::Callback<void(const GURL& url)> URLCallback;
+
+// Maximum numer of bytes to be read by FileStreamReader classes. Used in
+// FileSystemBackend::CreateFileStreamReader(), when it's not known how many
+// bytes will be fetched in total.
+const int64 kMaximumLength = std::numeric_limits<int64>::max();
 
 // An interface for defining a file system backend.
 //
@@ -109,12 +115,12 @@ class STORAGE_EXPORT FileSystemBackend {
   // if it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
   // This method itself does *not* check if the given path exists and is a
-  // regular file.
-  // The |length| argument says how many bytes are going to be read using the
-  // instance of the file stream reader. If unknown, then equal to -1.
+  // regular file. At most |max_bytes_to_read| can be fetched from the file
+  // stream reader.
   virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
+      int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
       FileSystemContext* context) const = 0;
 

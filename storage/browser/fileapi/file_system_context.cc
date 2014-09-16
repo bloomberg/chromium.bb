@@ -431,6 +431,7 @@ void FileSystemContext::DeleteFileSystem(
 scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    int64 max_bytes_to_read,
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
     return scoped_ptr<storage::FileStreamReader>();
@@ -438,7 +439,7 @@ scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
   if (!backend)
     return scoped_ptr<storage::FileStreamReader>();
   return backend->CreateFileStreamReader(
-      url, offset, expected_modification_time, this);
+      url, offset, max_bytes_to_read, expected_modification_time, this);
 }
 
 scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(

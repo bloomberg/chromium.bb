@@ -81,8 +81,9 @@ void FileSystemURLRequestJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
-                                          int *bytes_read) {
+bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest,
+                                          int dest_size,
+                                          int* bytes_read) {
   DCHECK_NE(dest_size, 0);
   DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0);
@@ -217,7 +218,7 @@ void FileSystemURLRequestJob::DidGetMetadata(
 
   DCHECK(!reader_.get());
   reader_ = file_system_context_->CreateFileStreamReader(
-      url_, byte_range_.first_byte_position(), base::Time());
+      url_, byte_range_.first_byte_position(), remaining_bytes_, base::Time());
 
   set_expected_content_size(remaining_bytes_);
   response_info_.reset(new net::HttpResponseInfo());

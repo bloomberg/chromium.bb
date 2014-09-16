@@ -4,7 +4,10 @@
 
 #include "storage/browser/blob/blob_url_request_job.h"
 
+#include <algorithm>
 #include <limits>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -13,6 +16,7 @@
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -223,8 +227,8 @@ void BlobURLRequestJob::DidCountSize(int error) {
     return;
   }
 
-  remaining_bytes_ = byte_range_.last_byte_position() -
-                     byte_range_.first_byte_position() + 1;
+  remaining_bytes_ = base::checked_cast<int64>(
+      byte_range_.last_byte_position() - byte_range_.first_byte_position() + 1);
   DCHECK_GE(remaining_bytes_, 0);
 
   // Do the seek at the beginning of the request.
@@ -262,9 +266,9 @@ void BlobURLRequestJob::DidGetFileItemLength(size_t index, int64 result) {
 
   uint64 max_length = file_length - item_offset;
 
-  // If item length is -1, we need to use the file size being resolved
-  // in the real time.
-  if (item_length == static_cast<uint64>(-1)) {
+  // If item length is undefined, then we need to use the file size being
+  // resolved in the real time.
+  if (item_length == std::numeric_limits<uint64>::max()) {
     item_length = max_length;
   } else if (item_length > max_length) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
@@ -572,12 +576,15 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
           item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
-      reader = file_system_context_->CreateFileStreamReader(
-                                         storage::FileSystemURL(
-                                             file_system_context_->CrackURL(
-                                                 item.filesystem_url())),
-                                         item.offset() + additional_offset,
-                                         item.expected_modification_time())
+      reader = file_system_context_
+                   ->CreateFileStreamReader(
+                         storage::FileSystemURL(file_system_context_->CrackURL(
+                             item.filesystem_url())),
+                         item.offset() + additional_offset,
+                         item.length() == std::numeric_limits<uint64>::max()
+                             ? storage::kMaximumLength
+                             : item.length() - additional_offset,
+                         item.expected_modification_time())
                    .release();
       break;
     default:

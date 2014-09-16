@@ -135,6 +135,7 @@ scoped_ptr<storage::FileStreamReader>
 SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    int64 max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));

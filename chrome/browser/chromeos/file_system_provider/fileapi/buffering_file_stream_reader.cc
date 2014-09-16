@@ -8,18 +8,22 @@
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/fileapi/file_system_backend.h"
 
 namespace chromeos {
 namespace file_system_provider {
 
 BufferingFileStreamReader::BufferingFileStreamReader(
     scoped_ptr<storage::FileStreamReader> file_stream_reader,
-    int buffer_size)
+    int preloading_buffer_length,
+    int64 max_bytes_to_read)
     : file_stream_reader_(file_stream_reader.Pass()),
-      buffer_size_(buffer_size),
-      preloading_buffer_(new net::IOBuffer(buffer_size_)),
+      preloading_buffer_length_(preloading_buffer_length),
+      max_bytes_to_read_(max_bytes_to_read),
+      bytes_read_(0),
+      preloading_buffer_(new net::IOBuffer(preloading_buffer_length)),
       preloading_buffer_offset_(0),
-      buffered_bytes_(0),
+      preloaded_bytes_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -38,19 +42,25 @@ int BufferingFileStreamReader::Read(net::IOBuffer* buffer,
 
   // If the internal buffer is empty, and more bytes than the internal buffer
   // size is requested, then call the internal file stream reader directly.
-  if (buffer_length >= buffer_size_) {
-    const int result =
-        file_stream_reader_->Read(buffer, buffer_length, callback);
+  if (buffer_length >= preloading_buffer_length_) {
+    const int result = file_stream_reader_->Read(
+        buffer,
+        buffer_length,
+        base::Bind(&BufferingFileStreamReader::OnReadCompleted,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
     DCHECK_EQ(result, net::ERR_IO_PENDING);
     return result;
   }
 
   // Nothing copied, so contents have to be preloaded.
-  Preload(base::Bind(&BufferingFileStreamReader::OnPreloadCompleted,
+  Preload(base::Bind(&BufferingFileStreamReader::OnReadCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
-                     make_scoped_refptr(buffer),
-                     buffer_length,
-                     callback));
+                     base::Bind(&BufferingFileStreamReader::OnPreloadCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                make_scoped_refptr(buffer),
+                                buffer_length,
+                                callback)));
 
   return net::ERR_IO_PENDING;
 }
@@ -66,23 +76,22 @@ int64 BufferingFileStreamReader::GetLength(
 int BufferingFileStreamReader::CopyFromPreloadingBuffer(
     scoped_refptr<net::IOBuffer> buffer,
     int buffer_length) {
-  const int read_bytes = std::min(buffer_length, buffered_bytes_);
+  const int read_bytes = std::min(buffer_length, preloaded_bytes_);
 
   memcpy(buffer->data(),
          preloading_buffer_->data() + preloading_buffer_offset_,
          read_bytes);
   preloading_buffer_offset_ += read_bytes;
-  buffered_bytes_ -= read_bytes;
+  preloaded_bytes_ -= read_bytes;
 
   return read_bytes;
 }
 
 void BufferingFileStreamReader::Preload(
     const net::CompletionCallback& callback) {
-  // TODO(mtomasz): Dynamically calculate the chunk size. Start from a small
-  // one, then increase for consecutive requests. That would improve performance
-  // when reading just small chunks, instead of the entire file.
-  const int preload_bytes = buffer_size_;
+  const int preload_bytes =
+      std::min(static_cast<int64>(preloading_buffer_length_),
+               max_bytes_to_read_ - bytes_read_);
 
   const int result = file_stream_reader_->Read(
       preloading_buffer_.get(), preload_bytes, callback);
@@ -100,9 +109,31 @@ void BufferingFileStreamReader::OnPreloadCompleted(
   }
 
   preloading_buffer_offset_ = 0;
-  buffered_bytes_ = result;
+  preloaded_bytes_ = result;
 
   callback.Run(CopyFromPreloadingBuffer(buffer, buffer_length));
+}
+
+void BufferingFileStreamReader::OnReadCompleted(
+    const net::CompletionCallback& callback,
+    int result) {
+  if (result < 0) {
+    callback.Run(result);
+    return;
+  }
+
+  // If more bytes than declared in |max_bytes_to_read_| was read in total, then
+  // emit an
+  // error.
+  if (result > max_bytes_to_read_ - bytes_read_) {
+    callback.Run(net::ERR_FAILED);
+    return;
+  }
+
+  bytes_read_ += result;
+  DCHECK_LE(bytes_read_, max_bytes_to_read_);
+
+  callback.Run(result);
 }
 
 }  // namespace file_system_provider

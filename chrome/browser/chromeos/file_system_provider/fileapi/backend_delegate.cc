@@ -41,6 +41,7 @@ storage::AsyncFileUtil* BackendDelegate::GetAsyncFileUtil(
 scoped_ptr<storage::FileStreamReader> BackendDelegate::CreateFileStreamReader(
     const storage::FileSystemURL& url,
     int64 offset,
+    int64 max_bytes_to_read,
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -49,7 +50,8 @@ scoped_ptr<storage::FileStreamReader> BackendDelegate::CreateFileStreamReader(
   return scoped_ptr<storage::FileStreamReader>(new BufferingFileStreamReader(
       scoped_ptr<storage::FileStreamReader>(new FileStreamReader(
           context, url, offset, expected_modification_time)),
-      kReaderBufferSize));
+      kReaderBufferSize,
+      max_bytes_to_read));
 }
 
 scoped_ptr<storage::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(

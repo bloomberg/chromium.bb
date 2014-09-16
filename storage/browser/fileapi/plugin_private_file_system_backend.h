@@ -81,6 +81,7 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
   virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
+      int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
       FileSystemContext* context) const OVERRIDE;
   virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(

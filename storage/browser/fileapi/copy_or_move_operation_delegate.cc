@@ -818,7 +818,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
     if (!validator_factory) {
       scoped_ptr<storage::FileStreamReader> reader =
           file_system_context()->CreateFileStreamReader(
-              src_url, 0, base::Time());
+              src_url, 0 /* offset */, storage::kMaximumLength, base::Time());
       scoped_ptr<FileStreamWriter> writer =
           file_system_context()->CreateFileStreamWriter(dest_url, 0);
       if (reader && writer) {

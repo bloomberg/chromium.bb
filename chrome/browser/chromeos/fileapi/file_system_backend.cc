@@ -334,6 +334,7 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
 scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
     const storage::FileSystemURL& url,
     int64 offset,
+    int64 max_bytes_to_read,
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) const {
   DCHECK(url.is_valid());
@@ -344,10 +345,10 @@ scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
   switch (url.type()) {
     case storage::kFileSystemTypeDrive:
       return drive_delegate_->CreateFileStreamReader(
-          url, offset, expected_modification_time, context);
+          url, offset, max_bytes_to_read, expected_modification_time, context);
     case storage::kFileSystemTypeProvided:
       return file_system_provider_delegate_->CreateFileStreamReader(
-          url, offset, expected_modification_time, context);
+          url, offset, max_bytes_to_read, expected_modification_time, context);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
       return scoped_ptr<storage::FileStreamReader>(
@@ -355,7 +356,7 @@ scoped_ptr<storage::FileStreamReader> FileSystemBackend::CreateFileStreamReader(
               context, url, offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamReader(
-          url, offset, expected_modification_time, context);
+          url, offset, max_bytes_to_read, expected_modification_time, context);
     default:
       NOTREACHED();
   }

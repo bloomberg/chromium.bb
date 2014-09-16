@@ -252,9 +252,11 @@ class STORAGE_EXPORT FileSystemContext
   // FileSystemBackend for the URL and call the backend's CreateFileReader.
   // The resolved FileSystemBackend could perform further specialization
   // depending on the filesystem type pointed by the |url|.
+  // At most |max_bytes_to_read| can be fetched from the file stream reader.
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
+      int64 max_bytes_to_read,
       const base::Time& expected_modification_time);
 
   // Creates new FileStreamWriter instance to write into a file pointed by

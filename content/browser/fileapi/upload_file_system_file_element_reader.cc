@@ -5,8 +5,10 @@
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -41,11 +43,13 @@ int UploadFileSystemFileElementReader::Init(
   position_ = 0;
 
   // Initialize the stream reader and the length.
-  stream_reader_ =
-      file_system_context_->CreateFileStreamReader(
-          file_system_context_->CrackURL(url_),
-          range_offset_,
-          expected_modification_time_);
+  stream_reader_ = file_system_context_->CreateFileStreamReader(
+      file_system_context_->CrackURL(url_),
+      range_offset_,
+      range_length_ == std::numeric_limits<uint64>::max()
+          ? storage::kMaximumLength
+          : base::checked_cast<int64>(range_length_),
+      expected_modification_time_);
   DCHECK(stream_reader_);
 
   const int64 result = stream_reader_->GetLength(
