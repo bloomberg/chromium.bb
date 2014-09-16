@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -374,6 +375,15 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Disable external install UI.
   extensions::FeatureSwitch::ScopedOverride
       override_prompt_for_external_extensions_;
+
+#if defined(OS_WIN)
+  // Use mock shortcut directories to ensure app shortcuts are cleaned up.
+  base::ScopedPathOverride user_desktop_override_;
+  base::ScopedPathOverride common_desktop_override_;
+  base::ScopedPathOverride user_quick_launch_override_;
+  base::ScopedPathOverride start_menu_override_;
+  base::ScopedPathOverride common_start_menu_override_;
+#endif
 
   // The default profile to be used.
   Profile* profile_;
