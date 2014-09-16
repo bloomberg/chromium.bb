@@ -315,10 +315,14 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
       video_frame, start_time, capture_frame_cb, result.Pass());
 
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
-  UMA_HISTOGRAM_TIMES(
-      window_id_.type == DesktopMediaID::TYPE_SCREEN ? kUmaScreenCaptureTime
-                                                     : kUmaWindowCaptureTime,
-      capture_time);
+
+  // The two UMA_ blocks must be put in its own scope since it creates a static
+  // variable which expected constant histogram name.
+  if (window_id_.type == DesktopMediaID::TYPE_SCREEN) {
+    UMA_HISTOGRAM_TIMES(kUmaScreenCaptureTime, capture_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(kUmaWindowCaptureTime, capture_time);
+  }
 
   if (first_call) {
     first_call = false;
