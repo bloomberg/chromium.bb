@@ -168,6 +168,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
+  virtual base::TimeDelta GetStartTime() const OVERRIDE;
   virtual Liveness GetLiveness() const OVERRIDE;
 
   // Calls |need_key_cb_| with the initialization data encountered in the file.
@@ -179,8 +180,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void NotifyCapacityAvailable();
   void NotifyBufferingChanged();
 
-  // The lowest demuxed timestamp.  DemuxerStream's must use this to adjust
-  // packet timestamps such that external clients see a zero-based timeline.
+  // The lowest demuxed timestamp.  If negative, DemuxerStreams must use this to
+  // adjust packet timestamps such that external clients see a zero-based
+  // timeline.
   base::TimeDelta start_time() const { return start_time_; }
 
  private:

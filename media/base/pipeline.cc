@@ -343,10 +343,12 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       if (!is_initialized_) {
         is_initialized_ = true;
         ReportMetadata();
+        start_timestamp_ = demuxer_->GetStartTime();
       }
 
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 
+      DCHECK(start_timestamp_ >= base::TimeDelta());
       renderer_->StartPlayingFrom(start_timestamp_);
 
       if (text_renderer_)
@@ -584,13 +586,16 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   DCHECK(seek_cb_.is_null());
 
+  const base::TimeDelta seek_timestamp =
+      std::max(time, demuxer_->GetStartTime());
+
   SetState(kSeeking);
   seek_cb_ = seek_cb;
   renderer_ended_ = false;
   text_renderer_ended_ = false;
-  start_timestamp_ = time;
+  start_timestamp_ = seek_timestamp;
 
-  DoSeek(time,
+  DoSeek(seek_timestamp,
          base::Bind(&Pipeline::OnStateTransition, weak_factory_.GetWeakPtr()));
 }
 

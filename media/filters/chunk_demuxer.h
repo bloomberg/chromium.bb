@@ -164,6 +164,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
+  virtual base::TimeDelta GetStartTime() const OVERRIDE;
   virtual Liveness GetLiveness() const OVERRIDE;
 
   // Methods used by an external object to control this demuxer.

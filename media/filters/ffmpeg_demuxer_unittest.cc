@@ -447,9 +447,8 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
     // audio).
     EXPECT_EQ(audio_start_time, demuxer_->start_time());
 
-    // Verify that the timeline offset has been adjusted by the start time.
-    EXPECT_EQ(kTimelineOffsetMs + audio_start_time.InMilliseconds(),
-              demuxer_->GetTimelineOffset().ToJavaTime());
+    // Verify that the timeline offset has not been adjusted by the start time.
+    EXPECT_EQ(kTimelineOffsetMs, demuxer_->GetTimelineOffset().ToJavaTime());
 
     // Seek back to the beginning and repeat the test.
     WaitableMessageLoopEvent event;
@@ -548,6 +547,10 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
     message_loop_.Run();
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(-2902),
               demuxer_->start_time());
+
+    // Though the internal start time may be below zero, the exposed media time
+    // must always be greater than zero.
+    EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 
     video->Read(NewReadCB(FROM_HERE, 9997, 0));
     message_loop_.Run();

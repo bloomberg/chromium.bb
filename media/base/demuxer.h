@@ -73,6 +73,9 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // method (including Stop()) after a demuxer has stopped.
   virtual void Stop() = 0;
 
+  // Returns the starting time for the media file; it's always positive.
+  virtual base::TimeDelta GetStartTime() const = 0;
+
   // Returns Time represented by presentation timestamp 0.
   // If the timstamps are not associated with a Time, then
   // a null Time is returned.

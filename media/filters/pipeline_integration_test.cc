@@ -1563,6 +1563,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
   ASSERT_TRUE(Start(GetTestDataFilePath("double-sfx.ogg"), PIPELINE_OK));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
+  ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 }
 
 // Ensures audio-video playback with missing or negative timestamps fails softly
@@ -1571,6 +1572,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
   ASSERT_TRUE(Start(GetTestDataFilePath("double-bear.ogv"), PIPELINE_OK));
   Play();
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 }
 
 // Tests that we signal ended even when audio runs longer than video track.
@@ -1593,6 +1595,15 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackAudioShorterThanVideo) {
   EXPECT_EQ(1001, pipeline_->GetMediaDuration().InMilliseconds());
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackPositiveStartTime) {
+  ASSERT_TRUE(
+      Start(GetTestDataFilePath("nonzero-start-time.webm"), PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  ASSERT_EQ(base::TimeDelta::FromMicroseconds(396000),
+            demuxer_->GetStartTime());
 }
 
 }  // namespace media
