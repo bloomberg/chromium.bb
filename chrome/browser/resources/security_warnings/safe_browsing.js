@@ -8,7 +8,6 @@ var SB_CMD_DONT_REPORT = 'dontReport';
 var SB_CMD_EXPANDED_SEE_MORE = 'expandedSeeMore';
 var SB_CMD_LEARN_MORE_2 = 'learnMore2';
 var SB_CMD_PROCEED = 'proceed';
-var SB_CMD_REPORT_ERROR = 'reportError';
 var SB_CMD_SHOW_DIAGNOSTIC = 'showDiagnostic';
 var SB_CMD_SHOW_PRIVACY = 'showPrivacy';
 var SB_CMD_TAKE_ME_BACK = 'takeMeBack';

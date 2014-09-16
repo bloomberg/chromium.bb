@@ -73,9 +73,6 @@ const char* const kSbDiagnosticUrl =
     "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
-const char kSbReportPhishingErrorUrl[] =
-    "http://www.google.com/safebrowsing/report_error/";
-
 // URL for malware and phishing, V2.
 const char kLearnMoreMalwareUrlV2[] =
     "https://www.google.com/transparencyreport/safebrowsing/";
@@ -98,7 +95,6 @@ const char kDontReportCommand[] = "dontReport";
 const char kExpandedSeeMoreCommand[] = "expandedSeeMore";
 const char kLearnMoreCommand[] = "learnMore2";
 const char kProceedCommand[] = "proceed";
-const char kReportErrorCommand[] = "reportError";
 const char kShowDiagnosticCommand[] = "showDiagnostic";
 const char kShowPrivacyCommand[] = "showPrivacy";
 const char kTakeMeBackCommand[] = "takeMeBack";
@@ -389,25 +385,6 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   std::string bad_url_spec = unsafe_resources_[element_index].url.spec();
-  if (command == kReportErrorCommand) {
-    // User pressed "Report error" for a phishing site.
-    // Note that we cannot just put a link in the interstitial at this point.
-    // It is not OK to navigate in the context of an interstitial page.
-    SBThreatType threat_type = unsafe_resources_[element_index].threat_type;
-    DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-           threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
-    GURL report_url =
-        safe_browsing_util::GeneratePhishingReportUrl(
-            kSbReportPhishingErrorUrl,
-            bad_url_spec,
-            threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
-    OpenURLParams params(
-        report_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK,
-        false);
-    web_contents_->OpenURL(params);
-    return;
-  }
-
   if (command == kShowDiagnosticCommand) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
     std::string diagnostic =
