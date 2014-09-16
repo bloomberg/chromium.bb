@@ -86,6 +86,10 @@ void ServiceWorker::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptVa
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
     if (exceptionState.hadException())
         return;
+    if (m_outerWorker->state() == WebServiceWorkerStateRedundant) {
+        exceptionState.throwDOMException(InvalidStateError, "ServiceWorker is in redundant state.");
+        return;
+    }
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());

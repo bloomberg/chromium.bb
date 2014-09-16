@@ -6,12 +6,14 @@
 <script>
 async_test(function(t) {
     var scope = 'resources/blank.html';
+    var worker;
     service_worker_unregister_and_register(
         t, 'resources/postmessage-worker.js', scope)
       .then(function(registration) {
           return wait_for_update(t, registration);
         })
       .then(function(sw) {
+          worker = sw;
           var messageChannel = new MessageChannel();
           messageChannel.port1.onmessage = t.step_func(onMessage);
           sw.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
@@ -32,7 +34,19 @@ async_test(function(t) {
       if (message === 'quit') {
         assert_array_equals(result, expected,
                             'Worker should post back expected values.');
-        service_worker_unregister_and_done(t, scope);
+        var sawRedundant = new Promise(t.step_func(function(resolve) {
+            worker.onstatechange = t.step_func(function() {
+                assert_equals(worker.state, 'redundant');
+                assert_throws(
+                  {name:'InvalidStateError'},
+                  function() { worker.postMessage(""); },
+                  'Calling postMessage on a redundant ServiceWorker should ' +
+                  'throw InvalidStateError.');
+                resolve();
+              });
+          }));
+        navigator.serviceWorker.unregister(scope);
+        sawRedundant.then(t.step_func(function() { t.done(); }));
       } else {
         result.push(message);
       }
