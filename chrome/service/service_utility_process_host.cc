@@ -80,6 +80,7 @@ enum ServiceUtilityProcessHostEvent {
   SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST,
   SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED,
   SERVICE_UTILITY_SEMANTIC_CAPS_FAILED,
+  SERVICE_UTILITY_FAILED_TO_START,
   SERVICE_UTILITY_EVENT_MAX,
 };
 }  // namespace
@@ -187,6 +188,9 @@ bool ServiceUtilityProcessHost::StartProcess(
                               SERVICE_UTILITY_EVENT_MAX);
     return true;
   }
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_FAILED_TO_START,
+                            SERVICE_UTILITY_EVENT_MAX);
   return false;
 }
 
