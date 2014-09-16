@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: media/media.gyp:mojo_media_lib
 source_set("lib") {
   deps = [
@@ -12,9 +10,8 @@ source_set("lib") {
     "//media/mojo/interfaces"
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
   ]
-
-  deps += mojo_system_for_component
 
   sources = [
     "media_type_converters.cc",

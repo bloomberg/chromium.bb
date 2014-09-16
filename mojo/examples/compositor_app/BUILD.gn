@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version mojo/mojo_examples.gypi:mojo_compositor_app
 shared_library("compositor_app") {
   output_name = "mojo_compositor_app"
@@ -20,9 +18,11 @@ shared_library("compositor_app") {
     "//mojo/application",
     "//mojo/cc",
     "//mojo/common",
+    "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/native_viewport",
-  ] + mojo_system_for_shared_library + mojo_gles2_for_shared_library
+  ]
 }

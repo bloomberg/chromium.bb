@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo.gyp:mojo_aura_support
 source_set("aura") {
   sources = [
@@ -28,9 +26,10 @@ source_set("aura") {
     "//ui/gl",
     "//webkit/common/gpu",
     "//mojo/cc",
-    "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
-  ] + mojo_gles2_for_shared_library
+    "//mojo/services/public/interfaces/native_viewport",
+  ]
 
   forward_dependent_configs_from = [
     "//mojo/services/public/cpp/view_manager",

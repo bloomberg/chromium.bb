@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_examples.gypi:mojo_nesting_app
 shared_library("nesting_app") {
   output_name = "mojo_nesting_app"
@@ -19,10 +17,11 @@ shared_library("nesting_app") {
     "//url",
     "//mojo/application",
     "//mojo/examples/window_manager:bindings",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/navigation",
-  ] + mojo_system_for_shared_library + mojo_gles2_for_shared_library
+  ]
 }

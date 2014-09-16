@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_services.gypi:mojo_surfaces_service
 shared_library("surfaces") {
   output_name = "mojo_surfaces_service"
@@ -16,11 +14,13 @@ shared_library("surfaces") {
     "//mojo/application",
     "//mojo/cc",
     "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/surfaces",
-  ] + mojo_gles2_for_shared_library + mojo_system_for_shared_library
+  ]
 
   sources = [
     "surfaces_impl.cc",

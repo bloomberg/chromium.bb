@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_examples.gypi:mojo_pepper_container_app
 shared_library("pepper_container_app") {
   output_name = "mojo_pepper_container_app"
@@ -95,9 +93,11 @@ shared_library("pepper_container_app") {
     # "//ppapi:ppapi_example_gles2_spinning_cube",
     "//mojo/application",
     "//mojo/common",
+    "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/native_viewport",
     "//ui/events:events_base",
-  ] + mojo_system_for_shared_library + mojo_gles2_for_shared_library
+  ]
 }

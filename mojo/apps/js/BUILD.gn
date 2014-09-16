@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 shared_library("mojo_js") {
   sources = [
     "application_delegate_impl.cc",
@@ -16,10 +14,11 @@ shared_library("mojo_js") {
     ":js",
     "//base:i18n",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/services/public/interfaces/content_handler",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: part of mojo/mojo_apps.gypi:mojo_js_lib

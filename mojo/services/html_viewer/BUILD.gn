@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_services.gypi:mojo_html_viewer
 shared_library("html_viewer") {
   output_name = "mojo_html_viewer"
@@ -51,6 +49,7 @@ shared_library("html_viewer") {
     "//mojo/cc",
     "//mojo/common",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/services/public/cpp/view_manager",
@@ -64,5 +63,5 @@ shared_library("html_viewer") {
     "//third_party/WebKit/public:blink",
     "//ui/native_theme",
     "//url",
-  ] + mojo_system_for_shared_library
+  ]
 }

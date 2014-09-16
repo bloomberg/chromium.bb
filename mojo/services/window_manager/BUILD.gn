@@ -6,8 +6,6 @@ import("//build/config/ui.gni")
 
 if (use_aura) {
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_services.gypi:mojo_core_window_manager
 shared_library("window_manager") {
   output_name = "mojo_core_window_manager"
@@ -17,7 +15,8 @@ shared_library("window_manager") {
   deps = [
     ":lib",
     "//mojo/application",
-  ] + mojo_system_for_shared_library
+    "//mojo/public/c/system:for_shared_library",
+  ]
 }
 
 # GYP version: mojo/mojo_services.gypi:mojo_core_window_manager_lib

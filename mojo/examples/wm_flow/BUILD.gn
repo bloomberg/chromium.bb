@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//mojo/system.gni")
 
 assert(use_aura)
 
@@ -28,9 +27,10 @@ shared_library("wm_flow_wm") {
   deps = [
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/window_manager:lib",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_init
@@ -44,8 +44,9 @@ shared_library("init") {
   deps = [
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/interfaces/view_manager",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_app
@@ -61,9 +62,10 @@ shared_library("app") {
     ":embeddee_bindings",
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/window_manager:lib",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_embedded
@@ -79,9 +81,10 @@ shared_library("embedded") {
     ":embeddee_bindings",
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/window_manager:lib",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_embedder_bindings

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 group("dbus_echo") {
   deps = [
     ":dbus_echo_app",
@@ -22,10 +20,11 @@ shared_library("dbus_echo_app") {
   deps = [
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/examples/echo:bindings",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_dbus_echo_service

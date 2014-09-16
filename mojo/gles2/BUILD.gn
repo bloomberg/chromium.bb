@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//mojo/system.gni")
 
 config("mojo_use_gles2") {
   defines = [ "MOJO_USE_GLES2_IMPL" ]
@@ -24,11 +23,11 @@ component("gles2") {
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
+    "//mojo/public/c/system:for_component",
     "//mojo/services/gles2:bindings",
     "//mojo/services/gles2:interfaces",
     "//mojo/environment:chromium",
   ]
-  deps += mojo_system_for_component
 
   defines = [
     "GL_GLEXT_PROTOTYPES",

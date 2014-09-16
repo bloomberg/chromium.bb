@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_services.gypi:mojo_geometry_lib
 component("geometry") {
   output_name = "mojo_geometry_lib"
@@ -13,8 +11,9 @@ component("geometry") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
     "//mojo/services/public/interfaces/geometry",
-  ] + mojo_system_for_component
+  ]
 
   forward_dependent_configs_from = [ "//ui/gfx" ]
 

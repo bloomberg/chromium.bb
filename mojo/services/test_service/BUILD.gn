@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//mojo/system.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_test_service_bindings
 mojom("bindings") {
@@ -18,10 +17,10 @@ shared_library("mojo_test_app") {
   deps = [
     ":bindings",
     "//base",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/utility",
   ]
-  deps += mojo_system_for_shared_library
 
   sources = [
     "test_request_tracker_client_impl.cc",
@@ -40,10 +39,10 @@ shared_library("mojo_test_request_tracker_app") {
   deps = [
     ":bindings",
     "//base",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/utility",
   ]
-  deps += mojo_system_for_shared_library
 
   sources = [
     "test_request_tracker_client_impl.cc",

@@ -2,19 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 component("input_events") {
   deps = [
     "//base",
     "//ui/events",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/cpp/geometry",
   ]
-  deps += mojo_system_for_component
 
   defines = [
     "MOJO_INPUT_EVENTS_IMPLEMENTATION",

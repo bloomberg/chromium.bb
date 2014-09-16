@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//mojo/system.gni")
 
 group("apptest") {
   testonly = true
@@ -27,9 +26,10 @@ shared_library("service") {
 
   deps = [
     ":bindings",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/utility"
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_example_apptests
@@ -49,9 +49,10 @@ shared_library("apptests") {
    deps = [
     ":bindings",
     "//testing/gtest",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/utility",
-   ] + mojo_system_for_shared_library
+   ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_example_service_bindings

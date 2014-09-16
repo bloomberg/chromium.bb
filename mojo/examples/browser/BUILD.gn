@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/system.gni")
 
 assert(use_aura)
 
@@ -22,6 +21,7 @@ shared_library("browser") {
     "//mojo/aura",
     "//mojo/common",
     "//mojo/examples/window_manager:bindings",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager",
@@ -39,5 +39,5 @@ shared_library("browser") {
     "//ui/resources",
     "//ui/views",
     "//url",
-  ] + mojo_system_for_shared_library
+  ]
 }

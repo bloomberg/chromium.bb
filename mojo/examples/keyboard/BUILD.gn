@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/system.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(use_aura)
@@ -28,6 +27,7 @@ shared_library("keyboard") {
     "//mojo/application",
     "//mojo/aura",
     "//mojo/common",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager",
@@ -45,7 +45,7 @@ shared_library("keyboard") {
     "//ui/resources:ui_test_pak",
     "//ui/views",
     "//url",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 # GYP version: mojo/mojo_examples.gypi:mojo_keyboard_bindings

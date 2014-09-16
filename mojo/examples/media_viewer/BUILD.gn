@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//mojo/system.gni")
 
 if (use_aura) {
 
@@ -20,6 +19,7 @@ shared_library("media_viewer") {
     ":bindings",
     "//base",
     "//mojo/application",
+    "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/navigation",
@@ -28,7 +28,7 @@ shared_library("media_viewer") {
     "//skia",
     "//ui/gfx/geometry",
     "//ui/views",
-  ] + mojo_system_for_shared_library
+  ]
 }
 
 }  # use_aura

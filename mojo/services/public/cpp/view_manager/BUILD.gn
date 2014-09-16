@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo_services.gypi:mojo_view_manager_lib
 source_set("view_manager") {
   sources = [
@@ -30,6 +28,7 @@ source_set("view_manager") {
     "//cc/surfaces",
     "//gpu",
     "//mojo/application",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/surfaces",
@@ -41,7 +40,7 @@ source_set("view_manager") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-  ] + mojo_gles2_for_shared_library
+  ]
 
   forward_dependent_configs_from = [ "//skia" ]
 }

@@ -26,3 +26,29 @@ source_set("system") {
   # that all dependent targets remove that link flag. Since GN uses a
   # source_set here, this flag change is not needed.
 }
+
+# In an is_component_build build, everything can link against //mojo/system
+# because it is built as a shared library. However, in a static build,
+# //mojo/system is linked into an executable (e.g., mojo_shell), and must be
+# injected into other shared libraries (i.e., Mojo Apps) that need the mojo
+# system API.
+#
+# For component targets, add //mojo/public/c/system:for_component to your deps
+# section.
+#
+# For shared_library targets (e.g., a Mojo App), add
+# //mojo/public/c/system:for_shared_library to your deps
+
+group("for_shared_library") {
+  if (is_component_build) {
+    deps = [ "//mojo/system" ]
+  } else {
+    deps = [ ":system" ]
+  }
+}
+
+group("for_component") {
+  if (is_component_build) {
+    deps = [ "//mojo/system" ]
+  }
+}

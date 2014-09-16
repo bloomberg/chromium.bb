@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/system.gni")
-
 # GYP version: mojo/mojo.gyp:mojo_cc_support
 source_set("cc") {
   deps = [
@@ -12,9 +10,10 @@ source_set("cc") {
     "//cc/surfaces",
     "//skia",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//mojo/public/gles2:for_shared_library",
     "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/surfaces",
-  ] + mojo_gles2_for_shared_library
+  ]
 
   sources = [
     "context_provider_mojo.cc",
