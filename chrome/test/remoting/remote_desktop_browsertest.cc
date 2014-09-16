@@ -467,8 +467,8 @@ void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
   VerifyInternetAccess();
   Install();
   LaunchChromotingApp();
-  LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
   Auth();
+  LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
   ExpandMe2Me();
   EnsureRemoteConnectionEnabled();
 }
