@@ -37,6 +37,7 @@ dumps. Example:
   explain_binary_size_delta.py --nm1 /tmp/nm1.dump --nm2 /tmp/nm2.dump
 """
 
+import collections
 import operator
 import optparse
 import os
@@ -69,7 +70,8 @@ def Compare(symbols1, symbols2):
         file_path = '(No Path)'
       key = (file_path, symbol_type)
       bucket = cache.setdefault(key, {})
-      bucket[symbol_name] = symbol_size
+      size_list = bucket.setdefault(symbol_name, [])
+      size_list.append(symbol_size)
 
   # Now diff them. We iterate over the elements in cache1. For each symbol
   # that we find in cache2, we record whether it was deleted, changed, or
@@ -79,32 +81,61 @@ def Compare(symbols1, symbols2):
     bucket2 = cache2.get(key)
     if not bucket2:
       # A file was removed. Everything in bucket1 is dead.
-      for symbol_name, symbol_size in bucket1.items():
-        removed.append((key[0], key[1], symbol_name, symbol_size, None))
+      for symbol_name, symbol_size_list in bucket1.items():
+        for symbol_size in symbol_size_list:
+          removed.append((key[0], key[1], symbol_name, symbol_size, None))
     else:
       # File still exists, look for changes within.
-      for symbol_name, symbol_size in bucket1.items():
-        size2 = bucket2.get(symbol_name)
-        if size2 is None:
+      for symbol_name, symbol_size_list in bucket1.items():
+        size_list2 = bucket2.get(symbol_name)
+        if size_list2 is None:
           # Symbol no longer exists in bucket2.
-          removed.append((key[0], key[1], symbol_name, symbol_size, None))
+          for symbol_size in symbol_size_list:
+            removed.append((key[0], key[1], symbol_name, symbol_size, None))
         else:
           del bucket2[symbol_name] # Symbol is not new, delete from cache2.
+          if len(symbol_size_list) == 1 and len(size_list2) == 1:
+            symbol_size = symbol_size_list[0]
+            size2 = size_list2[0]
+            if symbol_size != size2:
+              # Symbol has change size in bucket.
+              changed.append((key[0], key[1], symbol_name, symbol_size, size2))
+            else:
+              # Symbol is unchanged.
+              unchanged.append((key[0], key[1], symbol_name, symbol_size,
+                                size2))
+          else:
+            # Complex comparison for when a symbol exists multiple times
+            # in the same file (where file can be "unknown file").
+            symbol_size_counter = collections.Counter(symbol_size_list)
+            delta_counter = collections.Counter(symbol_size_list)
+            delta_counter.subtract(size_list2)
+            for symbol_size in sorted(delta_counter.keys()):
+              delta = delta_counter[symbol_size]
+              unchanged_count = symbol_size_counter[symbol_size]
+              if delta > 0:
+                unchanged_count -= delta
+              for _ in range(unchanged_count):
+                unchanged.append((key[0], key[1], symbol_name, symbol_size,
+                                  symbol_size))
+              if delta > 0: # Used to be more of these than there is now.
+                for _ in range(delta):
+                  removed.append((key[0], key[1], symbol_name, symbol_size,
+                                  None))
+              elif delta < 0: # More of this (symbol,size) now.
+                for _ in range(-delta):
+                  added.append((key[0], key[1], symbol_name, None, symbol_size))
+
           if len(bucket2) == 0:
             del cache1[key] # Entire bucket is empty, delete from cache2
-          if symbol_size != size2:
-            # Symbol has change size in bucket.
-            changed.append((key[0], key[1], symbol_name, symbol_size, size2))
-          else:
-            # Symbol is unchanged.
-            unchanged.append((key[0], key[1], symbol_name, symbol_size, size2))
 
   # We have now analyzed all symbols that are in cache1 and removed all of
   # the encountered symbols from cache2. What's left in cache2 is the new
   # symbols.
   for key, bucket2 in cache2.iteritems():
-    for symbol_name, symbol_size in bucket2.items():
-      added.append((key[0], key[1], symbol_name, None, symbol_size))
+    for symbol_name, symbol_size_list in bucket2.items():
+      for symbol_size in symbol_size_list:
+        added.append((key[0], key[1], symbol_name, None, symbol_size))
   return (added, removed, changed, unchanged)
 
 def DeltaStr(number):

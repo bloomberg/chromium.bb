@@ -221,5 +221,134 @@ Per-source Analysis:
     print "explain_binary_size_delta_unittest: All tests passed"
 
 
+  def testCompareStringEntries(self):
+    # List entries have form: symbol_name, symbol_type, symbol_size, file_path
+    symbol_list1 = (
+      # File with one string.
+      ( '.L.str107', 'r', 8, '/file_with_strs' ),
+    )
+
+    symbol_list2 = (
+      # Two files with one string each, same name.
+      ( '.L.str107', 'r', 8, '/file_with_strs' ),
+      ( '.L.str107', 'r', 7, '/other_file_with_strs' ),
+    )
+
+    # Here we go
+    (added, removed, changed, unchanged) = \
+        explain_binary_size_delta.Compare(symbol_list1, symbol_list2)
+
+
+    # Now check final stats.
+    orig_stdout = sys.stdout
+    output_collector = cStringIO.StringIO()
+    sys.stdout = output_collector
+    try:
+      explain_binary_size_delta.CrunchStats(added, removed, changed,
+                                            unchanged, True, True)
+    finally:
+      sys.stdout = orig_stdout
+    result = output_collector.getvalue()
+
+    expected_output = """\
+Total change: +7 bytes
+======================
+  1 added, totalling +7 bytes across 1 sources
+  1 unchanged, totalling 8 bytes
+Source stats:
+  2 sources encountered.
+  1 completely new.
+  0 removed completely.
+  0 partially changed.
+  1 completely unchanged.
+Per-source Analysis:
+
+--------------------------------------------------------
+ +7 - Source: /other_file_with_strs - (gained 7, lost 0)
+--------------------------------------------------------
+  New symbols:
+         +7: .L.str107 type=r, size=7 bytes
+"""
+
+    self.maxDiff = None
+    self.assertMultiLineEqual(expected_output, result)
+    print "explain_binary_size_delta_unittest: All tests passed"
+
+  def testCompareStringEntriesWithNoFile(self):
+    # List entries have form: symbol_name, symbol_type, symbol_size, file_path
+    symbol_list1 = (
+      ( '.L.str104', 'r', 21, '??' ), # Will change size.
+      ( '.L.str105', 'r', 17, '??' ), # Same.
+      ( '.L.str106', 'r', 13, '??' ), # Will be removed.
+      ( '.L.str106', 'r', 3, '??' ), # Same.
+      ( '.L.str106', 'r', 3, '??' ), # Will be removed.
+      ( '.L.str107', 'r', 8, '??' ), # Will be removed (other sizes).
+    )
+
+    symbol_list2 = (
+      # Two files with one string each, same name.
+      ( '.L.str104', 'r', 19, '??' ), # Changed.
+      ( '.L.str105', 'r', 11, '??' ), # New size for multi-symbol.
+      ( '.L.str105', 'r', 17, '??' ), # New of same size for multi-symbol.
+      ( '.L.str105', 'r', 17, '??' ), # Same.
+      ( '.L.str106', 'r', 3, '??' ), # Same.
+      ( '.L.str107', 'r', 5, '??' ), # New size for symbol.
+      ( '.L.str107', 'r', 7, '??' ), # New size for symbol.
+      ( '.L.str108', 'r', 8, '??' ), # New symbol.
+    )
+
+    # Here we go
+    (added, removed, changed, unchanged) = \
+        explain_binary_size_delta.Compare(symbol_list1, symbol_list2)
+
+
+    # Now check final stats.
+    orig_stdout = sys.stdout
+    output_collector = cStringIO.StringIO()
+    sys.stdout = output_collector
+    try:
+      explain_binary_size_delta.CrunchStats(added, removed, changed,
+                                            unchanged, True, True)
+    finally:
+      sys.stdout = orig_stdout
+    result = output_collector.getvalue()
+
+    expected_output = """\
+Total change: +22 bytes
+=======================
+  5 added, totalling +48 bytes across 1 sources
+  3 removed, totalling -24 bytes across 1 sources
+  1 shrunk, for a net change of -2 bytes (21 bytes before, 19 bytes after) \
+across 1 sources
+  2 unchanged, totalling 20 bytes
+Source stats:
+  1 sources encountered.
+  0 completely new.
+  0 removed completely.
+  1 partially changed.
+  0 completely unchanged.
+Per-source Analysis:
+
+----------------------------------------
+ +22 - Source: ?? - (gained 48, lost 26)
+----------------------------------------
+  New symbols:
+        +17: .L.str105 type=r, size=17 bytes
+        +11: .L.str105 type=r, size=11 bytes
+         +8: .L.str108 type=r, size=8 bytes
+         +7: .L.str107 type=r, size=7 bytes
+         +5: .L.str107 type=r, size=5 bytes
+  Removed symbols:
+         -3: .L.str106 type=r, size=3 bytes
+         -8: .L.str107 type=r, size=8 bytes
+        -13: .L.str106 type=r, size=13 bytes
+  Shrunk symbols:
+         -2: .L.str104 type=r, (was 21 bytes, now 19 bytes)
+"""
+
+    self.maxDiff = None
+    self.assertMultiLineEqual(expected_output, result)
+    print "explain_binary_size_delta_unittest: All tests passed"
+
 if __name__ == '__main__':
   unittest.main()
