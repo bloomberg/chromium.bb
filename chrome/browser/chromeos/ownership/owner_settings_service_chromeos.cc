@@ -122,7 +122,7 @@ bool DoesPrivateKeyExistAsyncHelper(
 void DoesPrivateKeyExistAsync(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const OwnerSettingsServiceChromeOS::IsOwnerCallback& callback) {
-  if (!owner_key_util) {
+  if (!owner_key_util.get()) {
     callback.Run(false);
     return;
   }
@@ -304,8 +304,8 @@ void OwnerSettingsServiceChromeOS::HandleCompletedOperation(
     service->set_device_settings(operation->device_settings().Pass());
   }
 
-  if ((operation->public_key() && !public_key_) ||
-      (operation->public_key() && public_key_ &&
+  if ((operation->public_key().get() && !public_key_.get()) ||
+      (operation->public_key().get() && public_key_.get() &&
        operation->public_key()->data() != public_key_->data())) {
     // Public part changed so we need to reload private part too.
     ReloadKeypair();
