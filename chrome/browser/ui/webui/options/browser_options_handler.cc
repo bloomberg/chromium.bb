@@ -30,6 +30,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -543,9 +545,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
 #if !defined(OS_CHROMEOS)
-  PrefService* pref_service = g_browser_process->local_state();
-  values->SetBoolean("metricsReportingEnabledAtStart", pref_service->GetBoolean(
-      prefs::kMetricsReportingEnabled));
+  values->SetBoolean("metricsReportingEnabledAtStart",
+       ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -756,6 +757,9 @@ void BrowserOptionsHandler::RegisterMessages() {
           &BrowserOptionsHandler::HandleRefreshExtensionControlIndicators,
           base::Unretained(this)));
 #endif  // defined(OS_WIN)
+  web_ui()->RegisterMessageCallback("metricsReportingCheckboxChanged",
+      base::Bind(&BrowserOptionsHandler::HandleMetricsReportingChange,
+                 base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Uninitialize() {
@@ -924,6 +928,7 @@ void BrowserOptionsHandler::InitializePage() {
   UpdateDefaultBrowserState();
 
   SetupMetricsReportingSettingVisibility();
+  SetupMetricsReportingCheckbox();
   SetupNetworkPredictionControl();
   SetupFontSizeSelector();
   SetupPageZoomSelector();
@@ -1885,6 +1890,40 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
   web_ui()->CallJavascriptFunction("BrowserOptions.toggleExtensionIndicators",
                                    extension_controlled);
 #endif  // defined(OS_WIN)
+}
+
+void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {
+  // This function does not work for ChromeOS and non-official builds.
+#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+  bool checked = ChromeMetricsServiceAccessor::IsMetricsReportingEnabled();
+  bool disabled = !IsMetricsReportingUserChangable();
+
+  SetMetricsReportingCheckbox(checked, disabled);
+#endif
+}
+
+void BrowserOptionsHandler::HandleMetricsReportingChange(
+    const base::ListValue* args) {
+  bool enable;
+  if (!args->GetBoolean(0, &enable))
+    return;
+
+  InitiateMetricsReportingChange(
+      enable,
+      base::Bind(&BrowserOptionsHandler::MetricsReportingChangeCallback,
+                 base::Unretained(this)));
+}
+
+void BrowserOptionsHandler::MetricsReportingChangeCallback(bool enabled) {
+  SetMetricsReportingCheckbox(enabled, !IsMetricsReportingUserChangable());
+}
+
+void BrowserOptionsHandler::SetMetricsReportingCheckbox(bool checked,
+                                                        bool disabled) {
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setMetricsReportingCheckboxState",
+      base::FundamentalValue(checked),
+      base::FundamentalValue(disabled));
 }
 
 }  // namespace options

@@ -367,12 +367,11 @@
 </if>
 <if expr="not chromeos">
         <label>
-          <input id="metricsReportingEnabled"
-              pref="user_experience_metrics.reporting_enabled" type="checkbox">
+          <input id="metricsReportingEnabled" type="checkbox">
           <span i18n-content="enableLogging">
         </label>
-        <span class="controlled-setting-indicator"
-            pref="user_experience_metrics.reporting_enabled">
+        <span id="metrics-reporting-disabled-icon"
+            class="controlled-setting-indicator">
         </span>
         <span id="metrics-reporting-reset-restart">
           <!-- Text filled by JavaScript -->

@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
 class PrefService;
@@ -40,6 +41,10 @@ namespace system_logs {
 class ChromeInternalLogSource;
 }
 
+namespace options {
+class BrowserOptionsHandler;
+}
+
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
@@ -58,6 +63,9 @@ class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
   friend class ::FlashDOMHandler;
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
+  friend class options::BrowserOptionsHandler;
+  friend void InitiateMetricsReportingChange(
+      bool, const OnMetricsReportingCallbackType&);
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

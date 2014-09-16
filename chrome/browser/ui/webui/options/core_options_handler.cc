@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -42,18 +41,6 @@ using base::UserMetricsAction;
 namespace options {
 
 namespace {
-
-// Only allow changes to the metrics reporting checkbox if we were succesfully
-// able to change the service.
-bool AllowMetricsReportingChange(const base::Value* to_value) {
-  bool enable;
-  if (!to_value->GetAsBoolean(&enable)) {
-    NOTREACHED();
-    return false;
-  }
-
-  return enable == ResolveMetricsReportingEnabled(enable);
-}
 
 // Whether "controlledBy" property of pref value sent to options web UI needs to
 // be set to "extension" when the preference is controlled by an extension.
@@ -90,8 +77,6 @@ void CoreOptionsHandler::InitializeHandler() {
                  base::Unretained(this),
                  profile->GetPrefs()));
 
-  pref_change_filters_[prefs::kMetricsReportingEnabled] =
-      base::Bind(&AllowMetricsReportingChange);
   pref_change_filters_[prefs::kBrowserGuestModeEnabled] =
       base::Bind(&CoreOptionsHandler::IsUserUnsupervised,
                  base::Unretained(this));

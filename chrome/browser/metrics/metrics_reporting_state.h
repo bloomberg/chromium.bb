@@ -5,12 +5,22 @@
 #ifndef CHROME_BROWSER_METRICS_METRICS_REPORTING_STATE_H_
 #define CHROME_BROWSER_METRICS_METRICS_REPORTING_STATE_H_
 
-// Tries to set crash stats upload consent to |enabled|. Regardless of success,
-// if crash stats uploading is enabled, starts the MetricsService; otherwise
-// stops it.
-// Returns whether crash stats uploading is enabled.
-// TODO(tfarina): This method is pretty confusing. Clean this up and rename it
-// to something that makes more sense.
-bool ResolveMetricsReportingEnabled(bool enabled);
+#include "base/callback.h"
+
+typedef base::Callback<void(bool)> OnMetricsReportingCallbackType;
+
+// Initiates a change to metrics reporting state to the new value of |enabled|.
+// Starts or stops the metrics service based on the new state and then runs
+// |callback_fn| (which can be null) with the updated state (as the operation
+// may fail). On platforms other than CrOS and Android, also updates the
+// underlying pref.
+// TODO(gayane): Support setting the pref on all platforms.
+void InitiateMetricsReportingChange(
+    bool enabled,
+    const OnMetricsReportingCallbackType& callback_fn);
+
+// Returns whether MetricsReporting can be modified by the user (except CrOS and
+// Android).
+bool IsMetricsReportingUserChangable();
 
 #endif  // CHROME_BROWSER_METRICS_METRICS_REPORTING_STATE_H_

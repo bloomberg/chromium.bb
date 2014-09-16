@@ -591,17 +591,10 @@ void WizardController::OnUpdateCompleted() {
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   StartupUtils::MarkEulaAccepted();
-  bool uma_enabled =
-      ResolveMetricsReportingEnabled(usage_statistics_reporting_);
-
-  CrosSettings::Get()->SetBoolean(kStatsReportingPref, uma_enabled);
-  if (uma_enabled) {
-#if defined(GOOGLE_CHROME_BUILD)
-    // The crash reporter initialization needs IO to complete.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    breakpad::InitCrashReporter(std::string());
-#endif
-  }
+  InitiateMetricsReportingChange(
+      usage_statistics_reporting_,
+      base::Bind(&WizardController::InitiateMetricsReportingChangeCallback,
+                 weak_factory_.GetWeakPtr()));
 
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
@@ -609,6 +602,18 @@ void WizardController::OnEulaAccepted() {
   } else {
     InitiateOOBEUpdate();
   }
+}
+
+void WizardController::InitiateMetricsReportingChangeCallback(bool enabled) {
+  CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
+  if (!enabled)
+    return;
+#if defined(GOOGLE_CHROME_BUILD)
+  // The crash reporter initialization needs IO to complete.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  breakpad::InitCrashReporter(std::string());
+#endif
+
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {

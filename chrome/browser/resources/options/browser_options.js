@@ -375,14 +375,19 @@ cr.define('options', function() {
         restartElements[1].onclick = function(event) {
           chrome.send('restartBrowser');
         };
+        // Attach the listener for updating the checkbox and restart button.
         var updateMetricsRestartButton = function() {
           $('metrics-reporting-reset-restart').hidden =
               loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
                   $('metricsReportingEnabled').checked;
         };
-        Preferences.getInstance().addEventListener(
-            $('metricsReportingEnabled').getAttribute('pref'),
-            updateMetricsRestartButton);
+        $('metricsReportingEnabled').onclick = function(event) {
+          chrome.send('metricsReportingCheckboxChanged',
+              [Boolean(event.currentTarget.checked)]);
+          updateMetricsRestartButton();
+        };
+        $('metricsReportingEnabled').checked =
+            loadTimeData.getBoolean('metricsReportingEnabledAtStart');
         updateMetricsRestartButton();
       }
       $('networkPredictionOptions').onchange = function(event) {
@@ -1498,6 +1503,13 @@ cr.define('options', function() {
     setMetricsReportingCheckboxState_: function(checked, disabled) {
       $('metricsReportingEnabled').checked = checked;
       $('metricsReportingEnabled').disabled = disabled;
+
+      // If checkbox gets disabled then add an attribute for displaying the
+      // special icon. The opposite shouldn't be possible to do.
+      if (disabled) {
+        $('metrics-reporting-disabled-icon').setAttribute('controlled-by',
+                                                          'policy');
+      }
     },
 
     /**

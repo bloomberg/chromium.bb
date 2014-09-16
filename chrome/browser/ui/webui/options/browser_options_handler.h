@@ -332,6 +332,20 @@ class BrowserOptionsHandler
   // Setup the UI for showing which settings are extension controlled.
   void SetupExtensionControlledIndicators();
 
+  // Setup the value and the disabled property for metrics reporting for (except
+  // CrOS and Android).
+  void SetupMetricsReportingCheckbox();
+
+  // Called when the MetricsReportingEnabled checkbox values are changed.
+  // |args| will contain the checkbox checked state as a boolean.
+  void HandleMetricsReportingChange(const base::ListValue* args);
+
+  // Notifies the result of MetricsReportingEnabled change to Javascript layer.
+  void MetricsReportingChangeCallback(bool enabled);
+
+  // Calls a Javascript function to set the state of MetricsReporting checkbox.
+  void SetMetricsReportingCheckbox(bool checked, bool disabled);
+
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.
   void SetupAccessibilityFeatures();

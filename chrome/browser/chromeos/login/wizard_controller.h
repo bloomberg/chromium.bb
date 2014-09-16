@@ -215,6 +215,9 @@ class WizardController : public ScreenObserver, public ScreenManager {
   void OnControllerPairingFinished();
   void OnHostPairingFinished();
 
+  // Callback function after setting MetricsReporting.
+  void InitiateMetricsReportingChangeCallback(bool enabled);
+
   // Loads brand code on I/O enabled thread and stores to Local State.
   void LoadBrandCodeFromFile();
 

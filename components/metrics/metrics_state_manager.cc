@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/machine_id_provider.h"
@@ -218,6 +219,9 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void MetricsStateManager::BackUpCurrentClientInfo() {
+  // TODO(gayane): Eliminate use of ScopedAllowIO. crbug.com/413783
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   ClientInfo client_info;
   client_info.client_id = client_id_;
   client_info.installation_date = local_state_->GetInt64(prefs::kInstallDate);

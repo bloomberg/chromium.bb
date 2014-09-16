@@ -35110,6 +35110,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.MetricsReporting.Toggle" enum="MetricsReportingChange">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Logged when user successfully enables/disables MetricsReporting or when an
+    error occurs.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -45726,6 +45734,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="HandheldFriendly meta"/>
   <int value="5" label="MobileOptimized meta"/>
   <int value="6" label="XHTML-MP document type"/>
+</enum>
+
+<enum name="MetricsReportingChange" type="int">
+  <int value="0" label="Error">
+    Error occurred while updating MetricsReporting
+  </int>
+  <int value="1" label="Disabled successfully"/>
+  <int value="2" label="Enabled successfully"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">

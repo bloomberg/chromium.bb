@@ -848,7 +848,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
           << "(use file : " << use_file << ")";
   // TODO(pastarmovj): Remove this once we don't need to regenerate the
   // consent file for the GUID anymore.
-  ResolveMetricsReportingEnabled(new_value);
+  InitiateMetricsReportingChange(new_value, OnMetricsReportingCallbackType());
 }
 
 void DeviceSettingsProvider::ApplySideEffects(
