@@ -11,8 +11,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 def RegisterAllBackends():
   """Registers all the known backends."""
+  from memory_inspector.backends import android_backend
   from memory_inspector.core import backends
-  from memory_inspector.backends.android import android_backend
   backends.Register(android_backend.AndroidBackend())
 
 

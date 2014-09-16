@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for the backends.android modules."""
+"""Unittests for the android backends modules."""
 
 import os
 import unittest
 
+from memory_inspector.backends import android_backend
 from memory_inspector.backends import prebuilts_fetcher
-from memory_inspector.backends.android import android_backend
 from memory_inspector.unittest.mock_adb import mock_adb
 
 

@@ -15,9 +15,9 @@ import os
 import posixpath
 
 from memory_inspector import constants
+from memory_inspector.backends import memdump_parser
+from memory_inspector.backends import native_heap_dump_parser
 from memory_inspector.backends import prebuilts_fetcher
-from memory_inspector.backends.android import native_heap_dump_parser
-from memory_inspector.backends.android import memdump_parser
 from memory_inspector.core import backends
 from memory_inspector.core import exceptions
 from memory_inspector.core import native_heap
