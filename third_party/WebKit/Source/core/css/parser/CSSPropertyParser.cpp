@@ -3426,7 +3426,7 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
 bool CSSPropertyParser::parseGridShorthand(bool important)
 {
     ShorthandScope scope(this, CSSPropertyGrid);
-    ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 4);
+    ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 6);
 
     // 1- <grid-template>
     if (parseGridTemplateShorthand(important)) {

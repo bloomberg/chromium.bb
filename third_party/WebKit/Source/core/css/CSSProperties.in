@@ -472,7 +472,7 @@ border-top longhands=border-top-width;border-top-style;border-top-color
 border-width longhands=border-top-width;border-right-width;border-bottom-width;border-left-width
 flex longhands=flex-grow;flex-shrink;flex-basis
 flex-flow longhands=flex-direction;flex-wrap
-grid runtime_flag=CSSGridLayout, longhands=grid-template;grid-auto-flow;grid-auto-columns;grid-auto-rows
+grid runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas;grid-auto-flow;grid-auto-columns;grid-auto-rows
 grid-area runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-column-start;grid-row-end;grid-column-end
 grid-column runtime_flag=CSSGridLayout, longhands=grid-column-start;grid-column-end
 grid-row runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-row-end
