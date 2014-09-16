@@ -117,6 +117,13 @@ cr.define('options.network', function() {
   }
 
   /**
+   * @param {string} action An action to send to coreOptionsUserMetricsAction.
+   */
+  function sendChromeMetricsAction(action) {
+    chrome.send('coreOptionsUserMetricsAction', [action]);
+  }
+
+  /**
    * Decorate an element as a NetworkListItem.
    * @param {!Element} el The element to decorate.
    */
@@ -442,18 +449,19 @@ cr.define('options.network', function() {
       Menu.decorate(menu);
       var addendum = [];
       if (this.data_.key == 'WiFi') {
-        addendum.push({label: loadTimeData.getString('joinOtherNetwork'),
-                       command: 'add',
-                       data: {Type: 'WiFi', servicePath: ''}});
+        addendum.push({
+          label: loadTimeData.getString('joinOtherNetwork'),
+          command: createAddConnectionCallback_('WiFi'),
+          data: {}
+        });
       } else if (this.data_.key == 'Cellular') {
         if (cellularEnabled_ && cellularSupportsScan_) {
-          entry = {
+          addendum.push({
             label: loadTimeData.getString('otherCellularNetworks'),
             command: createAddConnectionCallback_('Cellular'),
             addClass: ['other-cellulars'],
             data: {}
-          };
-          addendum.push(entry);
+          });
         }
 
         var label = enableDataRoaming_ ? 'disableDataRoaming' :
@@ -484,8 +492,7 @@ cr.define('options.network', function() {
           var dialog = options.PreferredNetworks.getInstance();
           PageManager.showPageByName('preferredNetworksPage', false);
           dialog.update(list);
-          chrome.send('coreOptionsUserMetricsAction',
-                      ['Options_NetworkShowPreferred']);
+          sendChromeMetricsAction('Options_NetworkShowPreferred');
         };
         addendum.push({label: loadTimeData.getString('preferredNetworks'),
                        command: callback,
@@ -502,11 +509,15 @@ cr.define('options.network', function() {
           this.createNetworkOptionsCallback_(networkGroup, data);
           if (data.ConnectionState == 'Connected') {
             if (data.Type == 'VPN') {
+              var disconnectCallback = function() {
+                sendChromeMetricsAction('Options_NetworkDisconnectVPN');
+                chrome.send('networkCommand',
+                            ['VPN', data.servicePath, 'disconnect']);
+              };
               // Add separator
               addendum.push({});
-              var i18nKey = 'disconnectNetwork';
-              addendum.push({label: loadTimeData.getString(i18nKey),
-                             command: 'disconnect',
+              addendum.push({label: loadTimeData.getString('disconnectNetwork'),
+                             command: disconnectCallback,
                              data: data});
             }
           }
@@ -518,6 +529,7 @@ cr.define('options.network', function() {
         if (this.data_.key == 'WiFi') {
           addendum.push({label: loadTimeData.getString('turnOffWifi'),
                        command: function() {
+                         sendChromeMetricsAction('Options_NetworkWifiToggle');
                          chrome.send('disableWifi');
                        },
                        data: {}});
@@ -724,8 +736,7 @@ cr.define('options.network', function() {
       var type = data.Type;
       var path = data.servicePath;
       callback = function() {
-        chrome.send('networkCommand',
-                    [type, path, command]);
+        chrome.send('networkCommand', [type, path, command]);
         closeMenu_();
       };
     } else if (command != null) {
@@ -1014,13 +1025,15 @@ cr.define('options.network', function() {
    * @param {string} icon Type of icon (WiFi or Cellular).
    * @private
    */
-  function addEnableNetworkButton_(name, command, icon) {
+  function addEnableNetworkButton_(type, command, icon) {
     var subtitle = loadTimeData.getString('networkDisabled');
     var enableNetwork = function() {
+      if (type == 'WiFi')
+        sendChromeMetricsAction('Options_NetworkWifiToggle');
       chrome.send(command);
     };
     var networkList = $('network-list');
-    networkList.update({key: name,
+    networkList.update({key: type,
                         subtitle: subtitle,
                         iconType: icon,
                         command: enableNetwork});
@@ -1148,6 +1161,10 @@ cr.define('options.network', function() {
    */
   function createAddConnectionCallback_(type) {
     return function() {
+      if (type == 'WiFi')
+        sendChromeMetricsAction('Options_NetworkJoinOtherWifi');
+      else if (type == 'VPN')
+        sendChromeMetricsAction('Options_NetworkJoinOtherVPN');
       chrome.send('networkCommand', [type, '', 'add']);
     };
   }
