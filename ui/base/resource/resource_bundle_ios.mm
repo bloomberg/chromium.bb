@@ -56,6 +56,13 @@ void ResourceBundle::LoadCommonResources() {
     AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
                         SCALE_FACTOR_200P);
   }
+
+  // TODO(rohitrao): Add a chrome_300_percent file and load it here.  For now,
+  // we are simply falling back to the 200P resources. http://crbug.com/413300.
+  if (IsScaleFactorSupported(SCALE_FACTOR_300P)) {
+    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
+                        SCALE_FACTOR_200P);
+  }
 }
 
 base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
@@ -127,6 +134,14 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     // Create the image from the data.
     CGFloat target_scale = ui::GetScaleForScaleFactor(scale_factor);
     CGFloat source_scale = is_fallback ? 1.0 : target_scale;
+    // Hack: The 200P pak file is the only pak file loaded on iOS devices with
+    // an @3x scale factor.  Force |source_scale| to be 2.0 to handle this case,
+    // since it cannot be anything else.
+    // TODO(rohitrao): Support proper fallback by using the actual scale factor
+    // of the source image, rather than assuming it is 1.0 or 2.0.
+    if (scale_factor == SCALE_FACTOR_300P) {
+      source_scale = 2.0;
+    }
     base::scoped_nsobject<UIImage> ui_image(
         [[UIImage alloc] initWithData:ns_data scale:source_scale]);
 

@@ -610,9 +610,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
     gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   if (display.device_scale_factor() > 2.0) {
     DCHECK_EQ(3.0, display.device_scale_factor());
-    // TODO(lliabraa): Add 3x images instead of using 2x on 3x screens.
-    // crbug.com/413300
-    supported_scale_factors.push_back(SCALE_FACTOR_200P);
+    supported_scale_factors.push_back(SCALE_FACTOR_300P);
   } else if (display.device_scale_factor() > 1.0) {
     DCHECK_EQ(2.0, display.device_scale_factor());
     supported_scale_factors.push_back(SCALE_FACTOR_200P);

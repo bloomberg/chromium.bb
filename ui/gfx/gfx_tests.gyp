@@ -15,6 +15,7 @@
       'common_sources' : [
         'font_unittest.cc',
         'image/image_family_unittest.cc',
+        'image/image_ios_unittest.mm',
         'image/image_skia_unittest.cc',
         'image/image_unittest.cc',
         'image/image_unittest_util.cc',
