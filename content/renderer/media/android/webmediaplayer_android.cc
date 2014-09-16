@@ -735,6 +735,10 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     }
   }
 
+  // UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata) will trigger a
+  // call to duration(), which checks |has_valid_metadata_|. so
+  // |has_valid_metadata_| has to be updated before calling UpdateReadyState().
+  has_valid_metadata_ = success;
   if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
@@ -744,8 +748,6 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
   // error if success == false? See http://crbug.com/248399
   if (success)
     OnVideoSizeChanged(width, height);
-
-  has_valid_metadata_ = success;
 
   if (need_to_signal_duration_changed)
     client_->durationChanged();
