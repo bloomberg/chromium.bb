@@ -26,12 +26,17 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
       show_state_(SHOW_NONE),
       top_icon_animation_pending_count_(0) {
   apps_grid_view_ = new AppsGridView(app_list_main_view);
-  int cols = kPreferredCols;
-  int rows = kPreferredRows;
-  // ShouldCenterWindow also implies that it is wide instead of tall.
-  if (app_list_main_view->ShouldCenterWindow()) {
+  int cols;
+  int rows;
+  if (switches::IsExperimentalAppListEnabled()) {
     cols = kExperimentalPreferredCols;
     rows = kExperimentalPreferredRows;
+  } else if (app_list_main_view->ShouldCenterWindow()) {
+    cols = kCenteredPreferredCols;
+    rows = kCenteredPreferredRows;
+  } else {
+    cols = kPreferredCols;
+    rows = kPreferredRows;
   }
   apps_grid_view_->SetLayout(cols, rows);
   AddChildView(apps_grid_view_);

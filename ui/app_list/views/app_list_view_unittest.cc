@@ -238,6 +238,13 @@ void AppListViewTestContext::RunDisplayTest() {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
+
+  // The landscape app launcher needs to be short enough to accomodate the
+  // virtual keyboard because it is enabled by default when the virtual keyboard
+  // is enabled.
+  if (test_type_ == LANDSCAPE)
+    EXPECT_GE(403, view_->bounds().height());
+
   if (is_landscape())
     EXPECT_EQ(2, GetPaginationModel()->total_pages());
   else

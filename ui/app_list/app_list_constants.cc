@@ -67,9 +67,13 @@ const int kGridIconDimension = 48;
 const int kListIconSize = 32;
 const int kTileIconSize = 48;
 
+// Preferred number of columns and rows in the centered app list apps grid.
+const int kCenteredPreferredCols = 6;
+const int kCenteredPreferredRows = 3;
+
 // Preferred number of columns and rows in the experimental app list apps grid.
 const int kExperimentalPreferredCols = 6;
-const int kExperimentalPreferredRows = 3;
+const int kExperimentalPreferredRows = 4;
 
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;

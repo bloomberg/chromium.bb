@@ -51,6 +51,9 @@ APP_LIST_EXPORT extern const int kGridIconDimension;
 APP_LIST_EXPORT extern const int kListIconSize;
 APP_LIST_EXPORT extern const int kTileIconSize;
 
+APP_LIST_EXPORT extern const int kCenteredPreferredCols;
+APP_LIST_EXPORT extern const int kCenteredPreferredRows;
+
 APP_LIST_EXPORT extern const int kExperimentalPreferredCols;
 APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
 
