@@ -4,6 +4,8 @@
 
 """Helper functions for accessing the issue tracker in a pythonic way."""
 
+from __future__ import print_function
+
 import pprint
 import sys
 
@@ -87,8 +89,8 @@ class TrackerAccess(object):
       feed = self._tracker_client.get_issues(project_name, query=query)
     except gdata.client.RequestError as e:
       if VERBOSE:
-        print >> sys.stderr, "ERROR: Unable to access bug %s:%s: %s" % (
-            project_name, issue_id, str(e))
+        print("ERROR: Unable to access bug %s:%s: %s" %
+              (project_name, issue_id, str(e)), file=sys.stderr)
       return {}
 
     # There should be exactly one result...
@@ -126,10 +128,10 @@ def _TestGetKeyedLabels(project_name, email, passwordFile, *args):
   ta = TrackerAccess(email, password)
 
   if not bug_ids:
-    print "No bugs were specified"
+    print("No bugs were specified")
   else:
     for bug_id in bug_ids:
-      print bug_id, ta.GetKeyedLabels(project_name, int(bug_id))
+      print(bug_id, ta.GetKeyedLabels(project_name, int(bug_id)))
 
 
 def _DoHelp(commands, *args):
@@ -138,15 +140,15 @@ def _DoHelp(commands, *args):
   if len(args) >= 2 and args[0] == "help" and args[1] in commands:
     # If called with arguments 'help' and 'command', show that commands's doc.
     command_name = args[1]
-    print commands[command_name].__doc__
+    print(commands[command_name].__doc__)
   else:
     # Something else: show generic help...
-    print (
+    print(
         "Usage %s <command> <command args>\n"
         "\n"
         "Known commands: \n"
         "  %s\n"
-    ) % (sys.argv[0], pprint.pformat(["help"] + sorted(commands)))
+        % (sys.argv[0], pprint.pformat(["help"] + sorted(commands))))
 
 
 def main():

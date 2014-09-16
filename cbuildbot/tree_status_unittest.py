@@ -5,6 +5,8 @@
 
 """Test suite for tree_status.py"""
 
+from __future__ import print_function
+
 import os
 import sys
 import urllib

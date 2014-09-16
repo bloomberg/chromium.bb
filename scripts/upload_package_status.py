@@ -4,6 +4,8 @@
 
 """Support uploading a csv file to a Google Docs spreadsheet."""
 
+from __future__ import print_function
+
 import optparse
 import os
 

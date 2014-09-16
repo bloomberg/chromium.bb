@@ -4,6 +4,8 @@
 
 """Generates pretty dependency graphs for Chrome OS packages."""
 
+from __future__ import print_function
+
 import json
 import optparse
 import os

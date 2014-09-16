@@ -4,8 +4,10 @@
 
 """Print the environment whitelist."""
 
+from __future__ import print_function
+
 from chromite.cbuildbot import constants
 
 
 def main(_argv):
-  print ' '.join(constants.CHROOT_ENVIRONMENT_WHITELIST)
+  print(' '.join(constants.CHROOT_ENVIRONMENT_WHITELIST))

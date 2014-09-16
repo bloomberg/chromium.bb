@@ -4,6 +4,8 @@
 
 """Common python commands used by various internal build scripts."""
 
+from __future__ import print_function
+
 import Queue
 import datetime
 import itertools

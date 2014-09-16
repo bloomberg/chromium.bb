@@ -16,6 +16,8 @@ files are then stored in /build/$BOARD/usr/lib/debug/breakpad/.
 If you want to actually upload things, see upload_symbols.py.
 """
 
+from __future__ import print_function
+
 import collections
 import ctypes
 import logging

@@ -5,6 +5,8 @@
 
 """Test cros_generate_breakpad_symbols."""
 
+from __future__ import print_function
+
 import ctypes
 import logging
 import os

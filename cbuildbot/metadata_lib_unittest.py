@@ -5,6 +5,8 @@
 
 """Test the archive_lib module."""
 
+from __future__ import print_function
+
 import logging
 import multiprocessing
 import os

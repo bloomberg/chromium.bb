@@ -13,6 +13,8 @@ This is needed for two reasons:
      file is deleted between each retry helps handle that eventuality.
 """
 
+from __future__ import print_function
+
 import shutil
 
 from chromite.lib import commandline

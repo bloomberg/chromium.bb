@@ -4,6 +4,8 @@
 
 """Common local file interface library."""
 
+from __future__ import print_function
+
 import base64
 import filecmp
 import fnmatch

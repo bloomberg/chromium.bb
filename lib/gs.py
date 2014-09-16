@@ -4,6 +4,8 @@
 
 """Library to make common google storage operations more reliable."""
 
+from __future__ import print_function
+
 import contextlib
 import datetime
 import getpass
@@ -348,7 +350,7 @@ class GSContext(object):
 
   def _ConfigureBotoConfig(self):
     """Make sure we can access protected bits in GS."""
-    print 'Configuring gsutil. **Please use your @google.com account.**'
+    print('Configuring gsutil. **Please use your @google.com account.**')
     try:
       self.DoCommand(['config'], retries=0, debug_level=logging.CRITICAL,
                      print_cmd=False)

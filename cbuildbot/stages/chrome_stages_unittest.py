@@ -5,6 +5,8 @@
 
 """Unittests for chrome stages."""
 
+from __future__ import print_function
+
 import mox
 import os
 import sys

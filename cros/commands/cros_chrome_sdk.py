@@ -4,6 +4,8 @@
 
 """The cros chrome-sdk command for the simple chrome workflow."""
 
+from __future__ import print_function
+
 import argparse
 import collections
 import contextlib

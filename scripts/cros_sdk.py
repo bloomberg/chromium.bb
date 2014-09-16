@@ -4,6 +4,8 @@
 
 """This script fetches and prepares an SDK chroot."""
 
+from __future__ import print_function
+
 import errno
 import glob
 import os
@@ -93,7 +95,7 @@ def FetchRemoteTarballs(storage_dir, urls):
         return parsed.path
       continue
     content_length = 0
-    print 'Attempting download: %s' % url
+    print('Attempting download: %s' % url)
     result = retry_util.RunCurl(
           ['-I', url], redirect_stdout=True, redirect_stderr=True,
           print_cmd=False)
@@ -133,7 +135,7 @@ def FetchRemoteTarballs(storage_dir, urls):
     if filename == tarball_name or filename.startswith(ignored_prefix):
       continue
 
-    print 'Cleaning up old tarball: %s' % (filename,)
+    print('Cleaning up old tarball: %s' % (filename,))
     osutils.SafeUnlink(os.path.join(storage_dir, filename))
 
   return tarball_dest

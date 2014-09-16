@@ -4,6 +4,8 @@
 
 """Upload a single build command stats file to appengine."""
 
+from __future__ import print_function
+
 import logging
 import re
 import sys

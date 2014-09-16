@@ -8,6 +8,8 @@ This ranges from optparse, to a basic script wrapper setup (much like
 what is used for chromite.bin.*).
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import datetime
@@ -622,8 +624,8 @@ def ScriptWrapperMain(find_target_func, argv=None,
     target = os.path.splitext(target)[0]
   target = find_target_func(target)
   if target is None:
-    print >> sys.stderr, ("Internal error detected- no main "
-                          "functor found in module %r." % (name,))
+    print('Internal error detected- no main functor found in module %r.' %
+          (name,), file=sys.stderr)
     sys.exit(100)
 
   # Set up basic logging information for all modules that use logging.
@@ -643,8 +645,8 @@ def ScriptWrapperMain(find_target_func, argv=None,
     ret = target(argv[1:])
   except _ShutDownException as e:
     sys.stdout.flush()
-    print >> sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
-                          (name, e.signal,))
+    print('%s: Signaled to shutdown: caught %i signal.' % (name, e.signal,),
+          file=sys.stderr)
     sys.stderr.flush()
   except SystemExit as e:
     # Right now, let this crash through- longer term, we'll update the scripts
@@ -654,7 +656,7 @@ def ScriptWrapperMain(find_target_func, argv=None,
     ret = _RestartInChroot(e.new_argv)
   except Exception as e:
     sys.stdout.flush()
-    print >> sys.stderr, ("%s: Unhandled exception:" % (name,))
+    print('%s: Unhandled exception:' % (name,), file=sys.stderr)
     sys.stderr.flush()
     raise
   finally:

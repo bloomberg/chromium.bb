@@ -5,6 +5,8 @@
 
 """Test paygen_payload_lib library."""
 
+from __future__ import print_function
+
 import mox
 import os
 import shutil

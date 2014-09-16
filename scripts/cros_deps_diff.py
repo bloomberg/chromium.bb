@@ -10,6 +10,8 @@ some of these dependency graphs) and outputs graphs that trace the divergence
 in the dependency trees until common packages are found.
 """
 
+from __future__ import print_function
+
 import json
 import optparse
 import os

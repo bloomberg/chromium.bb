@@ -4,6 +4,8 @@
 
 """Module that handles the processing of patches to the source tree."""
 
+from __future__ import print_function
+
 import calendar
 import os
 import random

@@ -4,6 +4,8 @@
 
 """Module containing the various stages that a builder runs."""
 
+from __future__ import print_function
+
 import json
 import logging
 import os

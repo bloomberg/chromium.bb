@@ -4,6 +4,8 @@
 
 """Wrapper module for dealing with setting the process title (seen in `ps`)."""
 
+from __future__ import print_function
+
 import __main__ as main
 import os
 

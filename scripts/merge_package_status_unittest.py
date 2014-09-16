@@ -5,6 +5,8 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
+from __future__ import print_function
+
 import exceptions
 import mox
 import os

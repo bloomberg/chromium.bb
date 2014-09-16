@@ -4,6 +4,8 @@
 
 """Script for dumping and/or comparing build config contents."""
 
+from __future__ import print_function
+
 import json
 import pprint
 
@@ -46,7 +48,7 @@ def _DumpConfigJson(cfg):
   Args:
     cfg: A single build config.
   """
-  print json.dumps(cfg, cls=_JSONEncoder)
+  print(json.dumps(cfg, cls=_JSONEncoder))
 
 
 def _DumpConfigPrettyJson(cfg):
@@ -55,8 +57,8 @@ def _DumpConfigPrettyJson(cfg):
   Args:
     cfg: A single build config.
   """
-  print json.dumps(cfg, cls=_JSONEncoder,
-                   sort_keys=True, indent=4, separators=(',', ': '))
+  print(json.dumps(cfg, cls=_JSONEncoder,
+                   sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 def _DumpConfigPrettyPrint(cfg):
@@ -82,20 +84,20 @@ def _CompareConfig(old_cfg, new_cfg):
     if obj1 == obj2:
       continue
     elif obj1 is None:
-      print '%s: added to config\n' % (key,)
+      print('%s: added to config\n' % (key,))
       continue
     elif obj2 is None:
-      print '%s: removed from config\n' % (key,)
+      print('%s: removed from config\n' % (key,))
       continue
 
-    print '%s:' % (key,)
+    print('%s:' % (key,))
 
     for subkey in sorted(set(obj1.keys() + obj2.keys())):
       sobj1, sobj2 = obj1.get(subkey), obj2.get(subkey)
       if sobj1 != sobj2:
-        print ' %s: %r, %r' % (subkey, sobj1, sobj2)
+        print(' %s: %r, %r' % (subkey, sobj1, sobj2))
 
-    print
+    print()
 
 
 def GetParser():

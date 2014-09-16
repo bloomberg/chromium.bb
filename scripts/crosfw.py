@@ -100,6 +100,8 @@ Note the standard bmpblk is at:
       chromeos-bootimage/files/bmpblk.bin"
 """
 
+from __future__ import print_function
+
 import glob
 import logging
 import multiprocessing

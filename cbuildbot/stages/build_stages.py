@@ -4,6 +4,8 @@
 
 """Module containing the build stages."""
 
+from __future__ import print_function
+
 import functools
 import glob
 import os

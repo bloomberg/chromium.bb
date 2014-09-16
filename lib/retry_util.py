@@ -4,6 +4,8 @@
 
 """Basic infrastructure for implementing retries."""
 
+from __future__ import print_function
+
 import logging
 import sys
 import time

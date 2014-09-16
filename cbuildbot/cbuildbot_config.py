@@ -5,6 +5,8 @@
 
 """Configuration options for various cbuildbot builders."""
 
+from __future__ import print_function
+
 # Disable relative import warning from pylint.
 # pylint: disable=W0403
 import constants

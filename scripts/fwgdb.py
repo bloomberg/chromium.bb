@@ -4,6 +4,8 @@
 
 """Connect to a DUT in firmware via remote GDB, install custom GDB commands."""
 
+from __future__ import print_function
+
 import errno
 import logging
 import os

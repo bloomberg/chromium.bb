@@ -4,6 +4,8 @@
 
 """Module for running cbuildbot stages in the background."""
 
+from __future__ import print_function
+
 import collections
 import contextlib
 import errno

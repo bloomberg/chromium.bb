@@ -8,6 +8,8 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
+from __future__ import print_function
+
 import collections
 import distutils.version
 import glob
@@ -84,18 +86,18 @@ def _PrintValidConfigs(display_all=False):
             config_name)
 
   COLUMN_WIDTH = 45
-  print
-  print 'config'.ljust(COLUMN_WIDTH), 'description'
-  print '------'.ljust(COLUMN_WIDTH), '-----------'
+  print()
+  print('config'.ljust(COLUMN_WIDTH), 'description')
+  print('------'.ljust(COLUMN_WIDTH), '-----------')
   config_names = cbuildbot_config.config.keys()
   config_names.sort(key=_GetSortKey)
   for name in config_names:
     if display_all or cbuildbot_config.config[name]['trybot_list']:
       desc = cbuildbot_config.config[name].get('description')
       desc = desc if desc else ''
-      print name.ljust(COLUMN_WIDTH), desc
+      print(name.ljust(COLUMN_WIDTH), desc)
 
-  print
+  print()
 
 
 def _GetConfig(config_name):
@@ -396,7 +398,7 @@ class Builder(object):
         # If the build is marked as successful, but threw exceptions, that's a
         # problem. Print the traceback for debugging.
         if isinstance(ex, failures_lib.CompoundFailure):
-          print str(ex)
+          print(str(ex))
 
         traceback.print_exc(file=sys.stdout)
         raise
@@ -416,9 +418,9 @@ class Builder(object):
         if exception_thrown and success:
           success = False
           cros_build_lib.PrintBuildbotStepWarnings()
-          print """\
+          print("""\
 Exception thrown, but all stages marked successful. This is an internal error,
-because the stage that threw the exception should be marked as failing."""
+because the stage that threw the exception should be marked as failing.""")
 
     return success
 
@@ -1645,7 +1647,7 @@ def _ParseCommandLine(parser, argv):
 
   # A couple options, like --list, trigger a quick exit.
   if options.output_api_version:
-    print constants.REEXEC_API_VERSION
+    print(constants.REEXEC_API_VERSION)
     sys.exit(0)
 
   if options.list:
@@ -1737,19 +1739,19 @@ def main(argv):
             'team for help if this is unexpected.' % build_config['boards'])
 
     # Verify gerrit patches are valid.
-    print 'Verifying patches...'
+    print('Verifying patches...')
     patch_pool = AcquirePoolFromOptions(options)
 
     # --debug need to be explicitly passed through for remote invocations.
     if options.buildbot and '--debug' not in options.pass_through_args:
       _ConfirmRemoteBuildbotRun()
 
-    print 'Submitting tryjob...'
+    print('Submitting tryjob...')
     tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
     tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
-    print 'Tryjob submitted!'
-    print ('Go to %s to view the status of your job.'
-           % tryjob.GetTrybotWaterfallLink())
+    print('Tryjob submitted!')
+    print(('Go to %s to view the status of your job.'
+           % tryjob.GetTrybotWaterfallLink()))
     sys.exit(0)
 
   elif (not options.buildbot and not options.remote_trybot

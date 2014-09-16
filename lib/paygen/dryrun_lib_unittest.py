@@ -5,6 +5,8 @@
 
 """Unittests for dry_run library."""
 
+from __future__ import print_function
+
 import fixup_path
 fixup_path.FixupPath()
 

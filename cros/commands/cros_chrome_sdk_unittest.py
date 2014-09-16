@@ -5,6 +5,8 @@
 
 """This module tests the cros image command."""
 
+from __future__ import print_function
+
 import copy
 import mock
 import os

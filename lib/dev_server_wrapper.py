@@ -5,6 +5,8 @@
 """Module containing methods and classes to interact with a devserver instance.
 """
 
+from __future__ import print_function
+
 import logging
 import multiprocessing
 import os
@@ -306,7 +308,7 @@ class DevServerWrapper(multiprocessing.Process):
 
   def PrintLog(self):
     """Print devserver output to stdout."""
-    print self.TailLog(num_lines='+1')
+    print(self.TailLog(num_lines='+1'))
 
   def TailLog(self, num_lines=50):
     """Returns the most recent |num_lines| lines of the devserver log file."""

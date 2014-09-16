@@ -4,6 +4,8 @@
 
 """This module contains constants used by cbuildbot and related code."""
 
+from __future__ import print_function
+
 import os
 
 def _FindSourceRoot():

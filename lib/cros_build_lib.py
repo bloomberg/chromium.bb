@@ -4,6 +4,8 @@
 
 """Common python commands used by various build scripts."""
 
+from __future__ import print_function
+
 import collections
 import contextlib
 from datetime import datetime
@@ -967,11 +969,11 @@ def GetChoice(prompt, options):
     try:
       choice = int(GetInput(prompt))
     except ValueError:
-      print 'Input value is not an integer'
+      print('Input value is not an integer')
       continue
 
     if choice < 0 or choice >= len(options):
-      print 'Input value is out of range'
+      print('Input value is out of range')
     else:
       break
 
@@ -1013,11 +1015,11 @@ def BooleanPrompt(prompt='Do you want to continue?', default=True,
       response = GetInput(prompt).lower()
     except EOFError:
       # If the user hits CTRL+D, or stdin is disabled, use the default.
-      print
+      print()
       response = None
     except KeyboardInterrupt:
       # If the user hits CTRL+C, just exit the process.
-      print
+      print()
       Die('CTRL+C detected; exiting')
 
     if not response:

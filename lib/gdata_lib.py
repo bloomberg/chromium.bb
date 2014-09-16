@@ -4,6 +4,8 @@
 
 """Library for interacting with gdata (i.e. Google Docs, Tracker, etc)."""
 
+from __future__ import print_function
+
 import functools
 import getpass
 import os

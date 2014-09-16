@@ -5,6 +5,8 @@
 
 """Tests for paygen_build_lib."""
 
+from __future__ import print_function
+
 import itertools
 import mox
 import os

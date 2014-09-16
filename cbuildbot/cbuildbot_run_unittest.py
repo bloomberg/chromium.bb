@@ -5,6 +5,8 @@
 
 """Test the cbuildbot_run module."""
 
+from __future__ import print_function
+
 import logging
 import os
 import cPickle

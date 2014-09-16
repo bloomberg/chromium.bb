@@ -4,6 +4,8 @@
 
 """Module containing the AFDO stages."""
 
+from __future__ import print_function
+
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import constants
 from chromite.lib import alerts

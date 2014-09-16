@@ -5,6 +5,8 @@
 
 """Unittests for lab status."""
 
+from __future__ import print_function
+
 import constants
 from mock import Mock
 import sys

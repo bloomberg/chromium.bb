@@ -4,6 +4,8 @@
 
 """Script to remove unused gconv charset modules from a build."""
 
+from __future__ import print_function
+
 import ahocorasick
 import glob
 import lddtree

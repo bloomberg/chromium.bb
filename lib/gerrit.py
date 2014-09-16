@@ -4,6 +4,8 @@
 
 """Module containing helper class and methods for interacting with Gerrit."""
 
+from __future__ import print_function
+
 import operator
 
 from chromite.cbuildbot import constants

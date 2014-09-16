@@ -5,6 +5,8 @@
 
 """Test the remote_access module."""
 
+from __future__ import print_function
+
 import os
 import re
 import sys

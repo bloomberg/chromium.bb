@@ -5,6 +5,8 @@
 
 """Test gspaths library."""
 
+from __future__ import print_function
+
 import mox
 
 import fixup_path

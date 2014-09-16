@@ -20,6 +20,8 @@ that run attributes (e.g. self.attrs.release_tag) are shared between them
 all, as intended.
 """
 
+from __future__ import print_function
+
 import cPickle
 import functools
 import os

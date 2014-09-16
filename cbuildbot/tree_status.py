@@ -4,6 +4,8 @@
 
 """Manage tree status."""
 
+from __future__ import print_function
+
 import httplib
 import json
 import logging

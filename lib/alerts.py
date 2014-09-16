@@ -4,6 +4,8 @@
 
 """Chromite email utility functions."""
 
+from __future__ import print_function
+
 import cStringIO
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart

@@ -4,6 +4,8 @@
 
 """Classes for collecting results of our BuildStages as they run."""
 
+from __future__ import print_function
+
 import collections
 import datetime
 import math

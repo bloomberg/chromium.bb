@@ -5,6 +5,8 @@
 
 """Test the urilib module."""
 
+from __future__ import print_function
+
 import os
 
 import fixup_path

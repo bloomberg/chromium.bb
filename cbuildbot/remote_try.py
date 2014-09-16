@@ -4,6 +4,8 @@
 
 """Code related to Remote tryjobs."""
 
+from __future__ import print_function
+
 import constants
 import getpass
 import json
@@ -166,7 +168,7 @@ class RemoteTryJob(object):
 
       checkout = patch.GetCheckout(self.manifest)
       checkout.AssertPushable()
-      print 'Uploading patch %s' % patch
+      print('Uploading patch %s' % patch)
       patch.Upload(checkout['push_url'], ref_final, dryrun=dryrun)
 
       # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.

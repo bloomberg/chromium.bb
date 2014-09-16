@@ -8,6 +8,8 @@ Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
+from __future__ import print_function
+
 import argparse
 import glob
 import logging
@@ -367,7 +369,7 @@ def main(argv):
     return 0
 
   if not args.board:
-    print 'No board specified. Aborting.'
+    print('No board specified. Aborting.')
     return 1
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)

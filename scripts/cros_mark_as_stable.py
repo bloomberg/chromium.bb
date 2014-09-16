@@ -4,6 +4,8 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
+from __future__ import print_function
+
 import optparse
 import os
 import sys

@@ -14,6 +14,8 @@ to the above test instance.
 
 # pylint: disable-msg= W0212
 
+from __future__ import print_function
+
 import glob
 import logging
 import os

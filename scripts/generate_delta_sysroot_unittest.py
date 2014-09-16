@@ -5,6 +5,8 @@
 
 """Unittests for generate_delta_sysroot."""
 
+from __future__ import print_function
+
 import os
 import sys
 

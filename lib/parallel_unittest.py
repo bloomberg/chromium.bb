@@ -5,6 +5,8 @@
 
 """Unittests for parallel library."""
 
+from __future__ import print_function
+
 import contextlib
 import cPickle
 import logging

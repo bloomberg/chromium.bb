@@ -4,6 +4,8 @@
 
 """Module containing the sync stages."""
 
+from __future__ import print_function
+
 import contextlib
 import datetime
 import logging
@@ -310,8 +312,8 @@ class SyncStage(generic_stages.BuilderStage):
     if not self.skip_sync:
       self.repo.Sync(next_manifest)
 
-    print >> sys.stderr, self.repo.ExportManifest(
-        mark_revision=self.output_manifest_sha1)
+    print(self.repo.ExportManifest(mark_revision=self.output_manifest_sha1),
+          file=sys.stderr)
 
   def RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.

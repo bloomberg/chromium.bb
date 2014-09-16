@@ -5,6 +5,8 @@
 
 """Unit tests for cros_mark_chrome_as_stable.py."""
 
+from __future__ import print_function
+
 import base64
 import cStringIO
 import mox

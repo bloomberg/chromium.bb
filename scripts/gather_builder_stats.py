@@ -5,6 +5,8 @@
 """Script for gathering stats from builder runs."""
 
 from __future__ import division
+from __future__ import print_function
+
 import collections
 import datetime
 import logging

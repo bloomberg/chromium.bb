@@ -4,6 +4,8 @@
 
 """Module containing the generic stages."""
 
+from __future__ import print_function
+
 import contextlib
 import fnmatch
 import json
@@ -173,7 +175,7 @@ class BuilderStage(object):
   def _Print(self, msg):
     """Prints a msg to stderr."""
     sys.stdout.flush()
-    print >> sys.stderr, msg
+    print(msg, file=sys.stderr)
     sys.stderr.flush()
 
   def _PrintLoudly(self, msg):
@@ -183,7 +185,7 @@ class BuilderStage(object):
     edge = '*' * 2
 
     sys.stdout.flush()
-    print >> sys.stderr, border_line
+    print(border_line, file=sys.stderr)
 
     msg_lines = msg.split('\n')
 
@@ -192,9 +194,9 @@ class BuilderStage(object):
       del msg_lines[-1]
 
     for msg_line in msg_lines:
-      print >> sys.stderr, '%s %s' % (edge, msg_line)
+      print('%s %s' % (edge, msg_line), file=sys.stderr)
 
-    print >> sys.stderr, border_line
+    print(border_line, file=sys.stderr)
     sys.stderr.flush()
 
   def _GetPortageEnvVar(self, envvar, board):

@@ -9,6 +9,8 @@ Test script runs a long time stressing the ability to start and stop the
 dev_server_wrapper. Even very rare hangs will cause significant build flake.
 """
 
+from __future__ import print_function
+
 import logging
 
 from chromite.lib import dev_server_wrapper
@@ -19,9 +21,9 @@ _ITERATIONS = 10000
 def main(_argv):
   logging.getLogger().setLevel(logging.DEBUG)
   for i in range(_ITERATIONS):
-    print 'Iteration {}'.format(i)
+    print('Iteration {}'.format(i))
     wrapper = dev_server_wrapper.DevServerWrapper()
-    print 'Starting'
+    print('Starting')
     wrapper.Start()
-    print 'Stopping'
+    print('Stopping')
     wrapper.Stop()

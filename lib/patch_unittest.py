@@ -5,6 +5,8 @@
 
 """Unittests for chromite.lib.patch."""
 
+from __future__ import print_function
+
 import copy
 import itertools
 import os

@@ -20,6 +20,8 @@ Run inside the chroot:
 $ ebuild chromeos-default-apps-1.0.0.ebuild manifest --force
 """
 
+from __future__ import print_function
+
 import json
 import os
 import urllib

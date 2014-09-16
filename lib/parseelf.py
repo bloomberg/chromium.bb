@@ -4,6 +4,8 @@
 
 """ELF parsing related helper functions/classes."""
 
+from __future__ import print_function
+
 import cStringIO
 import os
 

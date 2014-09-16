@@ -4,6 +4,8 @@
 
 """This module allows adding and deleting of projects to the local manifest."""
 
+from __future__ import print_function
+
 import logging
 import platform
 import optparse
@@ -179,7 +181,8 @@ def main(argv):
     if args:
       parser.error("--upgrade-minilayout takes no arguments.")
     if not upgrade_required:
-      print "This repository checkout isn't using minilayout.xml; nothing to do"
+      print("This repository checkout isn't using minilayout.xml; "
+            "nothing to do")
     else:
       _UpgradeMinilayout(options)
     return 0
@@ -229,7 +232,7 @@ def main(argv):
   elif main_element is not None:
     if options.remote is not None:
       # Likely this project wasn't meant to be remote, so workon main element
-      print "Project already exists in manifest. Using that as workon project."
+      print("Project already exists in manifest. Using that as workon project.")
       _AddProjectsToManifestGroups(options, main_element.attrib['name'])
     else:
       # Conflict will occur; complain.

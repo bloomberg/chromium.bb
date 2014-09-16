@@ -5,6 +5,8 @@
 
 """Unittests for the filetype.py module."""
 
+from __future__ import print_function
+
 import os
 import sys
 

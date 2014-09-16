@@ -4,6 +4,8 @@
 
 """Common Google Storage interface library."""
 
+from __future__ import print_function
+
 import base64
 import datetime
 import errno

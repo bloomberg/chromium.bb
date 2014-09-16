@@ -4,6 +4,8 @@
 
 """cros deploy: Deploy the packages onto the target device."""
 
+from __future__ import print_function
+
 import os
 import logging
 import urlparse

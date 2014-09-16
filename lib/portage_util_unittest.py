@@ -5,6 +5,8 @@
 
 """Unit tests for portage_util.py."""
 
+from __future__ import print_function
+
 import fileinput
 import mox
 import os

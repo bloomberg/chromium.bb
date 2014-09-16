@@ -4,6 +4,8 @@
 
 """Synchronize issues in Package Status spreadsheet with Issue Tracker."""
 
+from __future__ import print_function
+
 import optparse
 import os
 import sys

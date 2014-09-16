@@ -6,6 +6,8 @@
 checks in a LKGM version for Chrome OS for other consumers.
 """
 
+from __future__ import print_function
+
 import distutils.version
 import logging
 import os

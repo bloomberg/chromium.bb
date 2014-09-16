@@ -5,6 +5,8 @@
 
 """This module tests the command module."""
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -21,7 +23,7 @@ _COMMAND_NAME = 'superAwesomeCommandOfFunness'
 class TestCommand(cros.CrosCommand):
   """A fake command."""
   def Run(self):
-    print 'Just testing'
+    print('Just testing')
 
 
 # pylint: disable=W0212

@@ -4,6 +4,8 @@
 
 """Signal related functionality."""
 
+from __future__ import print_function
+
 import signal
 import contextlib
 

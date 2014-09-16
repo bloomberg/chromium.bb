@@ -5,6 +5,8 @@
 
 """Unittests for sync stages."""
 
+from __future__ import print_function
+
 import cPickle
 import itertools
 import os

@@ -5,6 +5,8 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot."""
 
+from __future__ import print_function
+
 import mox
 import os
 import sys

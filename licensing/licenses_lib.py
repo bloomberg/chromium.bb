@@ -8,6 +8,8 @@ Documentation on this script is also available here:
   http://www.chromium.org/chromium-os/licensing
 """
 
+from __future__ import print_function
+
 import cgi
 import codecs
 import logging

@@ -6,6 +6,8 @@
 one csv file, in preparation for uploading to a Google Docs spreadsheet.
 """
 
+from __future__ import print_function
+
 import optparse
 import os
 import re

@@ -5,6 +5,8 @@
 
 """Unittests for upload_prebuilts.py."""
 
+from __future__ import print_function
+
 import copy
 import mox
 import os
@@ -80,10 +82,10 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
     key = 'PORTAGE_BINHOST'
     value = '1234567'
     prebuilt.UpdateLocalFile(self.version_file, value)
-    print self.version_file
+    print(self.version_file)
     self._read_version_file()
     self._verify_key_pair(key, value)
-    print self.version_file
+    print(self.version_file)
 
   def testUpdateVariable(self):
     """Test updating a variable that already exists."""

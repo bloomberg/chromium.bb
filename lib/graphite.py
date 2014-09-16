@@ -4,6 +4,8 @@
 
 """Interface for sending data to Graphite."""
 
+from __future__ import print_function
+
 import socket
 
 from chromite.lib import cros_build_lib

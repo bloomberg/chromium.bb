@@ -20,6 +20,8 @@ of a Chromium OS build in small buckets, partitioning cases where other standard
 classifications keep in the same set.
 """
 
+from __future__ import print_function
+
 import itertools
 import magic
 import mmap

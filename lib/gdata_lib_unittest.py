@@ -5,6 +5,8 @@
 
 """Unit tests for the gdata_lib module."""
 
+from __future__ import print_function
+
 import getpass
 import mox
 import os

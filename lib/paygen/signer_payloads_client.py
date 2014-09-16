@@ -4,6 +4,8 @@
 
 """This library manages the interfaces to the signer for update payloads."""
 
+from __future__ import print_function
+
 import logging
 import os
 import re

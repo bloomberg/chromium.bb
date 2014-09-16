@@ -8,6 +8,8 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
+from __future__ import print_function
+
 import contextlib
 import os
 import re
@@ -104,7 +106,7 @@ class Operation(object):
     """
     self._FinishLine(self.verbose, final=True)
     if self._column and self.verbose:
-      print self._color.Stop()
+      print(self._color.Stop())
       self._column = 0
 
   def WereErrorsDetected(self):
@@ -140,7 +142,7 @@ class Operation(object):
       if re.search(bad_thing, line, flags=re.IGNORECASE):
         self._error_count += 1
         if print_error:
-          print self._color.Color(self._color.RED, line)
+          print(self._color.Color(self._color.RED, line))
           break
 
   def _FilterOutputForProgress(self, line):
@@ -199,18 +201,18 @@ class Operation(object):
         # If out last output line was shorter than the progress info
         # add spaces.
         if self._pending_nl < self._update_len:
-          print ' ' * (self._update_len - self._pending_nl),
+          print(' ' * (self._update_len - self._pending_nl), end='')
 
         # Output the newline, and reset our counter.
         sys.stdout.write(self._color.Stop())
-        print
+        print()
 
     # If this is the last thing that this operation will print, we need to
     # close things off. So if there is some text on the current line but not
     # enough to overwrite all the progress information we have sent, add some
     # more spaces.
     if final and self._update_len:
-      print ' ' * self._update_len, '\r',
+      print(' ' * self._update_len, '\r', end='')
 
     self._pending_nl = -1
 
@@ -229,7 +231,7 @@ class Operation(object):
     if self._column > 0 and stream != self._cur_stream:
       self._FinishLine(display)
       if display:
-        print self._color.Stop()
+        print(self._color.Stop())
 
       self._column = 0
       self._line = ''

@@ -5,6 +5,8 @@
 
 """Test the commandline module."""
 
+from __future__ import print_function
+
 import cPickle
 import signal
 import os

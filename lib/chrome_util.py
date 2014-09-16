@@ -4,6 +4,7 @@
 
 """Library containing utility functions used for Chrome-specific build tasks."""
 
+from __future__ import print_function
 
 import functools
 import glob

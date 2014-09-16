@@ -8,6 +8,8 @@
 
 """Helpers dealing with binpkg Packages index files"""
 
+from __future__ import print_function
+
 import collections
 import cStringIO
 import operator
@@ -283,13 +285,13 @@ def _RetryUrlOpen(url, tries=3):
         e.msg += ('\nwhile processing %s' % url)
         raise
       else:
-        print 'Cannot GET %s: %s' % (url, str(e))
+        print('Cannot GET %s: %s' % (url, str(e)))
     except urllib2.URLError as e:
       if i + 1 >= tries:
         raise
       else:
-        print 'Cannot GET %s: %s' % (url, str(e))
-    print 'Sleeping for 10 seconds before retrying...'
+        print('Cannot GET %s: %s' % (url, str(e)))
+    print('Sleeping for 10 seconds before retrying...')
     time.sleep(10)
 
 

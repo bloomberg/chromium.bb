@@ -4,6 +4,8 @@
 
 """Module containing the test stages."""
 
+from __future__ import print_function
+
 import collections
 import logging
 import os

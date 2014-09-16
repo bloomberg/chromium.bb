@@ -4,6 +4,7 @@
 
 """Functions for implementing timeouts."""
 
+from __future__ import print_function
 
 import contextlib
 import functools

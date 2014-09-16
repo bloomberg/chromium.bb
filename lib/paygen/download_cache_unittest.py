@@ -5,6 +5,8 @@
 
 """Test download_cache library."""
 
+from __future__ import print_function
+
 import mox
 import multiprocessing
 import os

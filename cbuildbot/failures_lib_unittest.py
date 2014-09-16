@@ -5,6 +5,8 @@
 
 """Test the failures_lib module."""
 
+from __future__ import print_function
+
 import os
 import sys
 

@@ -5,6 +5,8 @@
 
 """Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
 
+from __future__ import print_function
+
 import mox
 import os
 import random
@@ -453,7 +455,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       # Create fake but empty manifest file.
       new_doc = minidom.getDOMImplementation().createDocument(
           None, 'manifest', None)
-      print new_doc.toxml()
+      print(new_doc.toxml())
       new_doc.writexml(f)
       f.flush()
 
@@ -480,7 +482,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       # Create fake but empty manifest file.
       new_doc = minidom.getDOMImplementation().createDocument(
           None, 'manifest', None)
-      print new_doc.toxml()
+      print(new_doc.toxml())
       new_doc.writexml(f)
       f.flush()
 

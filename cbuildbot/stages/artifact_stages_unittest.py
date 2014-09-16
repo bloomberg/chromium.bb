@@ -5,6 +5,8 @@
 
 """Unittests for the artifact stages."""
 
+from __future__ import print_function
+
 import argparse
 import mox
 import os

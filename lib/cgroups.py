@@ -4,6 +4,8 @@
 
 """A class for managing the Linux cgroup subsystem."""
 
+from __future__ import print_function
+
 import contextlib
 import errno
 import os

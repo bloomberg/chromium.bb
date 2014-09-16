@@ -5,6 +5,8 @@
 
 """Unittests for SDK stages."""
 
+from __future__ import print_function
+
 import mox
 import json
 import os

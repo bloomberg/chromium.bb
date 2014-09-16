@@ -9,6 +9,8 @@ This modules contains a dictionary called commands mapping
 command names -> command classes e.g. image->cros_image.ImageCommand.
 """
 
+from __future__ import print_function
+
 import glob
 import imp
 import os

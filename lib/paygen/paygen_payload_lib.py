@@ -4,6 +4,8 @@
 
 """Hold the functions that do the real work generating payloads."""
 
+from __future__ import print_function
+
 import base64
 import datetime
 import filecmp

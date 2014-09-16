@@ -4,6 +4,8 @@
 
 """A library for managing file locks."""
 
+from __future__ import print_function
+
 import errno
 import fcntl
 import os

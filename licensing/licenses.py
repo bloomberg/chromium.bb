@@ -118,6 +118,7 @@ the file in /opt/google/chrome/resources/about_os_credits.html or as defined
 in http://crbug.com/271832 .
 """
 
+from __future__ import print_function
 
 import logging
 import os

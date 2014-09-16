@@ -7,6 +7,8 @@
 Meant for use after setup_board and build_packages have been run.
 """
 
+from __future__ import print_function
+
 import os
 
 from chromite.cbuildbot import constants

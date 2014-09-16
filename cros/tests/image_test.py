@@ -4,6 +4,8 @@
 
 """Collection of tests to run on the rootfs of a built image."""
 
+from __future__ import print_function
+
 import cStringIO
 import collections
 import itertools

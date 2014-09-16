@@ -5,6 +5,8 @@
 
 """Module that contains unittests for validation_pool module."""
 
+from __future__ import print_function
+
 import ConfigParser
 import contextlib
 import copy

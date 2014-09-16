@@ -4,6 +4,8 @@
 
 """Helper methods and classes related to managing sudo."""
 
+from __future__ import print_function
+
 import os
 import sys
 import errno

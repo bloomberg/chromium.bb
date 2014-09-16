@@ -4,6 +4,8 @@
 
 """Context Manager to ensure cleanup code is run."""
 
+from __future__ import print_function
+
 import contextlib
 import os
 import multiprocessing
@@ -78,8 +80,9 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     try:
       self._lock.write_lock()
     except BaseException as e:
-      print >> sys.stderr, ("EnforcedCleanupSection %s excepted(%r) attempting "
-                            "to take the write lock; hard exiting." % (self, e))
+      print("EnforcedCleanupSection %s excepted(%r) attempting "
+            "to take the write lock; hard exiting." % (self, e),
+            file=sys.stderr)
       sys.stderr.flush()
       # We have no way of knowing the state of the parent if this locking
       # fails- failure means a code bug.  Specifically, we don't know if

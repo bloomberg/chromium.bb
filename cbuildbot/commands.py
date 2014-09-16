@@ -4,6 +4,8 @@
 
 """Module containing the various individual commands a builder can run."""
 
+from __future__ import print_function
+
 import base64
 import collections
 import fnmatch

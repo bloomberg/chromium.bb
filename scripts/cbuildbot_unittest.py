@@ -5,6 +5,8 @@
 
 """Unit tests for the cbuildbot program"""
 
+from __future__ import print_function
+
 import os
 import sys
 

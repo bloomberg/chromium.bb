@@ -5,6 +5,8 @@
 
 """Unittests for the partial_mock test helper code."""
 
+from __future__ import print_function
+
 import os
 import sys
 

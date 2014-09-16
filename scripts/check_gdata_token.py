@@ -4,6 +4,8 @@
 
 """Validate or replace the standard gdata authorization token."""
 
+from __future__ import print_function
+
 import filecmp
 import optparse
 import os

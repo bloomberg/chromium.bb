@@ -4,6 +4,8 @@
 
 """Support generic spreadsheet-like table information."""
 
+from __future__ import print_function
+
 import inspect
 import re
 import sys
@@ -393,7 +395,7 @@ class Table(object):
                                       merge_rule=merge_rule)
           except ValueError:
             msg = "Failed to merge '%s' value in row %r" % (col, id_values)
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
             raise
 
           if val != row[col]:

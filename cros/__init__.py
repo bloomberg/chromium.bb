@@ -11,6 +11,8 @@ This module contains two important definitions used by all commands.
     up in _commands and is discoverable by cros.
 """
 
+from __future__ import print_function
+
 
 _commands = dict()
 

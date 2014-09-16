@@ -4,6 +4,8 @@
 
 """Install/copy the image to the device."""
 
+from __future__ import print_function
+
 import cStringIO
 import logging
 import os

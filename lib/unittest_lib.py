@@ -4,6 +4,8 @@
 
 """Unittest-only utility functions library."""
 
+from __future__ import print_function
+
 import os
 
 from chromite.lib import cros_build_lib

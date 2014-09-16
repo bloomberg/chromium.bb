@@ -5,6 +5,8 @@
 
 """Unittests for GerritHelper."""
 
+from __future__ import print_function
+
 import getpass
 import httplib
 import os

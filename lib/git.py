@@ -4,6 +4,8 @@
 
 """Common functions for interacting with git and repo."""
 
+from __future__ import print_function
+
 import errno
 import hashlib
 import logging

@@ -4,6 +4,8 @@
 
 """Helper functions for building graphs with dot."""
 
+from __future__ import print_function
+
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 

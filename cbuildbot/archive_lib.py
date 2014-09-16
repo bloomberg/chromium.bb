@@ -4,6 +4,8 @@
 
 """Module with utilities for archiving functionality."""
 
+from __future__ import print_function
+
 import os
 
 from chromite.cbuildbot import cbuildbot_config

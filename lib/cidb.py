@@ -4,6 +4,8 @@
 
 """Continuous Integration Database Library."""
 
+from __future__ import print_function
+
 import glob
 import logging
 import os

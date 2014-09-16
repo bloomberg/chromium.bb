@@ -4,6 +4,8 @@
 
 """Script to mount a built image and run tests on it."""
 
+from __future__ import print_function
+
 import logging
 import os
 import unittest

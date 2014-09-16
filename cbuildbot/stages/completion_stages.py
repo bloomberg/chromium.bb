@@ -4,6 +4,8 @@
 
 """Module containing the completion stages."""
 
+from __future__ import print_function
+
 import logging
 
 from chromite.cbuildbot import commands

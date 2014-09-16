@@ -4,6 +4,8 @@
 
 """Sync the Chrome source code used by Chrome OS to the specified directory."""
 
+from __future__ import print_function
+
 import functools
 
 from chromite.lib import commandline

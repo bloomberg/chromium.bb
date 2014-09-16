@@ -4,6 +4,8 @@
 
 """Module containing the Chrome stages."""
 
+from __future__ import print_function
+
 import multiprocessing
 import platform
 import os
@@ -206,8 +208,8 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     if platform.dist()[-1] == 'lucid':
       # Chrome no longer builds on Lucid. See crbug.com/276311
-      print 'Ubuntu lucid is no longer supported.'
-      print 'Please upgrade to Ubuntu Precise.'
+      print('Ubuntu lucid is no longer supported.')
+      print('Please upgrade to Ubuntu Precise.')
       cros_build_lib.PrintBuildbotStepWarnings()
       return
 

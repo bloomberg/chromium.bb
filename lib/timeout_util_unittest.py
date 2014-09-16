@@ -5,6 +5,8 @@
 
 """Test suite for timeout_util.py"""
 
+from __future__ import print_function
+
 import datetime
 import os
 import sys

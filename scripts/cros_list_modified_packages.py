@@ -20,6 +20,8 @@ Some caveats:
     aren't able to detect when users modify source code during builds.
 """
 
+from __future__ import print_function
+
 import errno
 import logging
 import multiprocessing
@@ -236,4 +238,4 @@ def main(argv):
   logging.getLogger().setLevel(logging.INFO)
   flags = _ParseArguments(argv)
   modified = ListModifiedWorkonPackages(flags.board, flags.host)
-  print ' '.join(sorted(modified))
+  print(' '.join(sorted(modified)))

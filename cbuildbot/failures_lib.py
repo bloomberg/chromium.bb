@@ -4,6 +4,8 @@
 
 """Classes of failure types."""
 
+from __future__ import print_function
+
 import collections
 import sys
 import traceback

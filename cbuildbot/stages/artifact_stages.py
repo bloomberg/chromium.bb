@@ -4,6 +4,8 @@
 
 """Module containing stages that generate and/or archive artifacts."""
 
+from __future__ import print_function
+
 import glob
 import itertools
 import json

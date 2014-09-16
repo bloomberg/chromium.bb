@@ -4,6 +4,8 @@
 
 """Script for administering the Continuous Integration Database."""
 
+from __future__ import print_function
+
 import os
 import logging
 
@@ -57,23 +59,23 @@ def main(argv):
                 os.path.join(options.cred_dir, 'host.txt'),
                 positive_confirmation)
   else:
-    print 'No command or unsupported command. Exiting.'
+    print('No command or unsupported command. Exiting.')
     exit()
 
-  print warn
+  print(warn)
   conf_string = cros_build_lib.GetInput('(%s)?: ' % positive_confirmation)
   if conf_string != positive_confirmation:
-    print 'You changed your mind. Aborting.'
+    print('You changed your mind. Aborting.')
     exit()
 
   if options.command == MIGRATE:
-    print 'OK, applying migrations...'
+    print('OK, applying migrations...')
     db = cidb.CIDBConnection(options.cred_dir)
     db.ApplySchemaMigrations(maxVersion = options.migrate_version)
   elif options.command == WIPE:
-    print 'OK, wiping database...'
+    print('OK, wiping database...')
     db = cidb.CIDBConnection(options.cred_dir)
     db.DropDatabase()
-    print 'Done.'
+    print('Done.')
 
 

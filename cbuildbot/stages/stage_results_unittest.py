@@ -5,6 +5,8 @@
 
 """Unittests for the stage results."""
 
+from __future__ import print_function
+
 import os
 import signal
 import StringIO

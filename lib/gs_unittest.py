@@ -5,6 +5,8 @@
 
 """Unittests for the gs.py module."""
 
+from __future__ import print_function
+
 import functools
 import datetime
 import os

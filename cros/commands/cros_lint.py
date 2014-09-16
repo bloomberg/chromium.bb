@@ -4,6 +4,8 @@
 
 """Run lint checks on the specified files."""
 
+from __future__ import print_function
+
 import os
 import sys
 

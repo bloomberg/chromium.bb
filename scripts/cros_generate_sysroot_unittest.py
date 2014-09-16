@@ -5,6 +5,8 @@
 
 """Unittests for cros_generate_sysroot."""
 
+from __future__ import print_function
+
 import os
 import sys
 

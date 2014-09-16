@@ -10,6 +10,8 @@ a VM. It starts a VM and runs `cros flash` to update the VM, and then
 `cros deploy` to install packages to the VM.
 """
 
+from __future__ import print_function
+
 import logging
 
 from chromite.lib import commandline

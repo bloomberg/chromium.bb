@@ -4,6 +4,8 @@
 
 """Support for Linux namespaces"""
 
+from __future__ import print_function
+
 import ctypes
 import ctypes.util
 import os

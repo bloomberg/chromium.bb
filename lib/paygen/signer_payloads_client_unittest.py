@@ -5,6 +5,8 @@
 
 """Test signer_payloads_client library."""
 
+from __future__ import print_function
+
 import mox
 import os
 import shutil

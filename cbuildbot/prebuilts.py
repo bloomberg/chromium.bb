@@ -4,6 +4,8 @@
 
 """cbuildbot logic for uploading prebuilts and managing binhosts."""
 
+from __future__ import print_function
+
 from datetime import datetime
 import glob
 import os

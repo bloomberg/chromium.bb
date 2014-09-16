@@ -5,6 +5,8 @@
 
 """Unit tests for gather_builder_stats."""
 
+from __future__ import print_function
+
 import datetime
 import itertools
 import os

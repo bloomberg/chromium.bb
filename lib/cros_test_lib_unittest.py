@@ -5,6 +5,8 @@
 
 """Unittest for cros_test_lib (tests for tests? Who'd a thunk it)."""
 
+from __future__ import print_function
+
 import os
 import sys
 import time

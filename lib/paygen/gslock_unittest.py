@@ -5,6 +5,8 @@
 
 """Test gslock library."""
 
+from __future__ import print_function
+
 import datetime
 import mox
 import multiprocessing

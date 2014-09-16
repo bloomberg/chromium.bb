@@ -10,6 +10,9 @@ need to be generated. It then calls paygen_payload to generate each payload.
 This library is reponsible for locking builds during processing, and checking
 and setting flags to show that a build has been processed.
 """
+
+from __future__ import print_function
+
 import ConfigParser
 import itertools
 import logging

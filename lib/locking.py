@@ -4,6 +4,8 @@
 
 """Basic locking functionality."""
 
+from __future__ import print_function
+
 import os
 import errno
 import fcntl

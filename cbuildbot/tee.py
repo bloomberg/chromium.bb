@@ -4,6 +4,8 @@
 
 """Module that handles tee-ing output to a file."""
 
+from __future__ import print_function
+
 import errno
 import fcntl
 import os

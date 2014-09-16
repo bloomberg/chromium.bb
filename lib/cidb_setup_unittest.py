@@ -5,6 +5,8 @@
 
 """Unit tests for cidb.py Setup methods."""
 
+from __future__ import print_function
+
 import os
 import sys
 

@@ -5,6 +5,8 @@
 
 """Unit tests for the cros_best_revision program."""
 
+from __future__ import print_function
+
 import os
 import sys
 

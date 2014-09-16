@@ -4,6 +4,8 @@
 
 """This script manages the installed toolchains in the chroot."""
 
+from __future__ import print_function
+
 import copy
 import glob
 import json
@@ -348,9 +350,9 @@ def RebuildLibtool():
         line = line.rstrip()
         for path in line.split('=', 1)[1].strip('"').split():
           if not os.path.exists(path):
-            print 'Rebuilding libtool after gcc upgrade'
-            print ' %s' % line
-            print ' missing path: %s' % path
+            print('Rebuilding libtool after gcc upgrade')
+            print(' %s' % line)
+            print(' missing path: %s' % path)
             needs_update = True
             break
 
@@ -375,7 +377,7 @@ def UpdateTargets(targets, usepkg):
   # For each target, we do two things. Figure out the list of updates,
   # and figure out the appropriate keywords/masks. Crossdev will initialize
   # these, but they need to be regenerated on every update.
-  print 'Determining required toolchain updates...'
+  print('Determining required toolchain updates...')
   mergemap = {}
   for target in targets:
     # Record the highest needed version for each target, for masking purposes.
@@ -397,11 +399,11 @@ def UpdateTargets(targets, usepkg):
         packages.append(pkg)
 
   if not packages:
-    print 'Nothing to update!'
+    print('Nothing to update!')
     return False
 
-  print 'Updating packages:'
-  print packages
+  print('Updating packages:')
+  print(packages)
 
   cmd = [EMERGE_CMD, '--oneshot', '--update']
   if usepkg:
@@ -424,7 +426,7 @@ def CleanTargets(targets):
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, True)
       if not set(desired_num).issubset(current):
-        print 'Some packages have been held back, skipping clean!'
+        print('Some packages have been held back, skipping clean!')
         return
       unmergemap[pkg] = set(current).difference(desired_num)
 
@@ -434,13 +436,13 @@ def CleanTargets(targets):
     packages.extend('=%s-%s' % (pkg, ver) for ver in vers if ver != '9999')
 
   if packages:
-    print 'Cleaning packages:'
-    print packages
+    print('Cleaning packages:')
+    print(packages)
     cmd = [EMERGE_CMD, '--unmerge']
     cmd.extend(packages)
     cros_build_lib.RunCommand(cmd)
   else:
-    print 'Nothing to clean!'
+    print('Nothing to clean!')
 
 
 def SelectActiveToolchains(targets, suffixes):
@@ -533,8 +535,8 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
       else:
         crossdev_targets[target] = targets[target]
     if crossdev_targets:
-      print 'The following targets need to be re-initialized:'
-      print crossdev_targets
+      print('The following targets need to be re-initialized:')
+      print(crossdev_targets)
       Crossdev.UpdateTargets(crossdev_targets, usepkg)
     # Those that were not initialized may need a config update.
     Crossdev.UpdateTargets(reconfig_targets, usepkg, config_only=True)
@@ -562,9 +564,9 @@ def ShowBoardConfig(board):
   """
   toolchains = toolchain.GetToolchainsForBoard(board)
   # Make sure we display the default toolchain first.
-  print ','.join(
+  print(','.join(
       toolchain.FilterToolchains(toolchains, 'default', True).keys() +
-      toolchain.FilterToolchains(toolchains, 'default', False).keys())
+      toolchain.FilterToolchains(toolchains, 'default', False).keys()))
 
 
 def GeneratePathWrapper(root, wrappath, path):

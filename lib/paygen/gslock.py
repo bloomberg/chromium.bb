@@ -7,6 +7,8 @@
    This is mostly convenient because it works inter-server.
 """
 
+from __future__ import print_function
+
 import fixup_path
 fixup_path.FixupPath()
 

@@ -5,6 +5,8 @@
 
 """Unit tests for the cros_list_modified_packages program"""
 
+from __future__ import print_function
+
 import functools
 import os
 import sys

@@ -7,6 +7,8 @@
 For a description of AFDO see gcc.gnu.org/wiki/AutoFDO.
 """
 
+from __future__ import print_function
+
 import datetime
 import os
 import re

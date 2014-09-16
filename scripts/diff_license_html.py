@@ -4,6 +4,8 @@
 
 """Compares the packages between 2 images by parsing the license file output."""
 
+from __future__ import print_function
+
 import re
 
 from chromite.lib import commandline
@@ -78,20 +80,20 @@ def ComparePkgLists(pkg_list1, pkg_list2):
   """
 
   for removed_package in sorted(set(pkg_list1) - set(pkg_list2)):
-    print 'Package removed: %s-%s' % (
-        removed_package, pkg_list1[removed_package])
+    print('Package removed: %s-%s' % (
+        removed_package, pkg_list1[removed_package]))
 
-  print
+  print()
   for added_package in sorted(set(pkg_list2) - set(pkg_list1)):
-    print 'Package added: %s-%s' % (
-        added_package, pkg_list2[added_package])
+    print('Package added: %s-%s' % (
+        added_package, pkg_list2[added_package]))
 
-  print
+  print()
   for changed_package in sorted(set(pkg_list1) & set(pkg_list2)):
     ver1 = pkg_list1[changed_package]
     ver2 = pkg_list2[changed_package]
     if ver1 != ver2:
-      print 'Package updated: %s from %s to %s' % (changed_package, ver1, ver2)
+      print('Package updated: %s from %s to %s' % (changed_package, ver1, ver2))
 
 
 def CompareLicenseSets(set1, set2):
@@ -106,11 +108,11 @@ def CompareLicenseSets(set1, set2):
   """
 
   for removed_license in sorted(set1 - set2):
-    print 'License removed: %s' % (removed_license)
+    print('License removed: %s' % (removed_license))
 
-  print
+  print()
   for added_license in sorted(set2 - set1):
-    print 'License added: %s' % (added_license)
+    print('License added: %s' % (added_license))
 
 
 def main(args):
@@ -124,5 +126,5 @@ def main(args):
   pkg_list1 = GetPackagesLicensesFromHtml(opts.html1)
   pkg_list2 = GetPackagesLicensesFromHtml(opts.html2)
   ComparePkgLists(pkg_list1[0], pkg_list2[0])
-  print
+  print()
   CompareLicenseSets(pkg_list1[1], pkg_list2[1])

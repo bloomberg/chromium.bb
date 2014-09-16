@@ -5,6 +5,8 @@
 
 """Unittests for remote_try.py."""
 
+from __future__ import print_function
+
 import json
 import mox
 import os

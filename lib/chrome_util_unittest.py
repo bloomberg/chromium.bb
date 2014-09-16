@@ -5,6 +5,8 @@
 
 """Unittests for chrome_util."""
 
+from __future__ import print_function
+
 import os
 import sys
 

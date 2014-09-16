@@ -10,6 +10,8 @@ This takes care of creating a consistent environment for chromite scripts
 lots of places.
 """
 
+from __future__ import print_function
+
 import os
 import sys
 

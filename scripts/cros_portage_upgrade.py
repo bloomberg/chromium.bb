@@ -4,6 +4,8 @@
 
 """Perform various tasks related to updating Portage packages."""
 
+from __future__ import print_function
+
 import filecmp
 import fnmatch
 import os
@@ -1176,7 +1178,7 @@ class Upgrader(object):
       else:
         oper.Error('\nEmerge output for "%s" on %s follows:' %
                    (cmd, self._curr_arch))
-        print output
+        print(output)
         for masked_cpv in masked_cpvs:
           self._GiveMaskedError(masked_cpv, output)
         raise RuntimeError('\nOne or more upgraded packages are masked '
@@ -1188,7 +1190,7 @@ class Upgrader(object):
     else:
       oper.Error('Packages cannot be emerged after upgrade.  The output '
                  'of "%s" follows:' % cmd)
-      print output
+      print(output)
       raise RuntimeError('Failed to complete upgrades on %s (see above). '
                          'Address the emerge errors before continuing.' %
                          self._curr_board)

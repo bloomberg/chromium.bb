@@ -19,6 +19,8 @@ This includes definitions for various build flags:
     gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/LOCK_flag
 """
 
+from __future__ import print_function
+
 import hashlib
 import os
 import random

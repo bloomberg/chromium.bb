@@ -4,6 +4,8 @@
 
 """Module containing class for recording metadata about a run."""
 
+from __future__ import print_function
+
 import collections
 import datetime
 import json

@@ -4,6 +4,8 @@
 
 """This module is currently an example Cros command."""
 
+from __future__ import print_function
+
 from chromite.lib import cros_build_lib
 
 from chromite import cros

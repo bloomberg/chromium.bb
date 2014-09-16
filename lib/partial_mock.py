@@ -4,6 +4,8 @@
 
 """Contains functionality used to implement a partial mock."""
 
+from __future__ import print_function
+
 import collections
 import logging
 import mock

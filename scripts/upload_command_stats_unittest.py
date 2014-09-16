@@ -5,6 +5,8 @@
 
 """Unit tests for upload_command_stats_unittest.py."""
 
+from __future__ import print_function
+
 import os
 import sys
 

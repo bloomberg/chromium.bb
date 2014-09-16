@@ -8,6 +8,8 @@
 
 """Dynamic wrapper to invoke cbuildbot with standardized import paths."""
 
+from __future__ import print_function
+
 import os
 import sys
 

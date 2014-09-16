@@ -4,6 +4,8 @@
 
 """Common functions used for syncing Chrome."""
 
+from __future__ import print_function
+
 import os
 import pprint
 

@@ -4,6 +4,8 @@
 
 """Module that contains trybot patch pool code."""
 
+from __future__ import print_function
+
 import constants
 import functools
 

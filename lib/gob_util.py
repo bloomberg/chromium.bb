@@ -7,6 +7,8 @@
 https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
 
+from __future__ import print_function
+
 import base64
 import httplib
 import json

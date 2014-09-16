@@ -5,6 +5,8 @@
 
 """Unittests for generic stages."""
 
+from __future__ import print_function
+
 import contextlib
 import copy
 import mox

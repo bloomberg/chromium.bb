@@ -5,6 +5,8 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
+from __future__ import print_function
+
 import mock
 import os
 import cPickle

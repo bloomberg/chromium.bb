@@ -5,6 +5,8 @@
 
 """This module tests the init module."""
 
+from __future__ import print_function
+
 import glob
 import imp
 import mox

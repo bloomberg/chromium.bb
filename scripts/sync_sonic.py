@@ -4,6 +4,8 @@
 
 """Sync the Chrome source code used by Sonic to the specified directory."""
 
+from __future__ import print_function
+
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib, git
 from chromite.cbuildbot import repository

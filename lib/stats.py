@@ -4,6 +4,8 @@
 
 """Library for uploading command stats to AppEngine."""
 
+from __future__ import print_function
+
 import contextlib
 import logging
 import os

@@ -5,6 +5,8 @@
 
 """Unittests for build stages."""
 
+from __future__ import print_function
+
 import copy
 import glob
 import mox

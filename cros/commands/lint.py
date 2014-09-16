@@ -18,6 +18,8 @@ Then pylint will import the register function and call it.  So we can have
 as many/few checkers as we want in this one module.
 """
 
+from __future__ import print_function
+
 import os
 
 from pylint.checkers import BaseChecker

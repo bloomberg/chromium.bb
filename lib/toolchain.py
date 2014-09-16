@@ -4,6 +4,8 @@
 
 """Utilities for managing the toolchains in the chroot."""
 
+from __future__ import print_function
+
 import copy
 import json
 import os

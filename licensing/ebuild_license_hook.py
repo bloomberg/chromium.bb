@@ -8,6 +8,8 @@ Called from src/scripts/hooks/install/gen-package-licenses.sh as part of a
 package emerge.
 """
 
+from __future__ import print_function
+
 from chromite.lib import commandline
 
 from chromite.licensing import licenses_lib

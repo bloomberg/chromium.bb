@@ -4,6 +4,8 @@
 
 """Command to list patches applies to a repository."""
 
+from __future__ import print_function
+
 import functools
 import json
 import os
@@ -140,21 +142,20 @@ class PatchReporter(object):
     unexpected_patches = sorted(list(observed_patches - expected_patches))
 
     if missing_patches:
-      print "Missing Patches:"
+      print('Missing Patches:')
       for p in missing_patches:
-        print "%s (%s)" % (p, self.patches[p])
+        print('%s (%s)' % (p, self.patches[p]))
 
     if unexpected_patches:
-      print "Unexpected Patches:"
-      for p in unexpected_patches:
-        print p
+      print('Unexpected Patches:')
+      print('\n'.join(unexpected_patches))
 
     return len(missing_patches) + len(unexpected_patches)
 
 
 def Usage():
   """Print usage."""
-  print """Usage:
+  print("""Usage:
 cros_check_patches [--board=BOARD] [emerge args] package overlay-dir config.json
 
 Given a package name (e.g. 'virtual/target-os') and an overlay directory
@@ -171,7 +172,7 @@ First run? Try this for a starter config:
   "not_for_upstream": [],
   "uncategorized": []
 }
-"""
+""")
 
 
 def main(argv):
@@ -219,7 +220,7 @@ def main(argv):
   observed = reporter.ObservePatches(deps_map)
   diff_count = reporter.ReportDiffs(observed)
 
-  print "Packages analyzed: %d" % reporter.package_count
-  print "Patches observed: %d" % len(observed)
-  print "Patches expected: %d" % len(reporter.patches.keys())
+  print('Packages analyzed: %d' % reporter.package_count)
+  print('Patches observed: %d' % len(observed))
+  print('Patches expected: %d' % len(reporter.patches.keys()))
   sys.exit(diff_count)

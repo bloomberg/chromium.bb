@@ -14,6 +14,8 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
+from __future__ import print_function
+
 import base64
 import distutils.version
 import filecmp
@@ -296,8 +298,8 @@ def _AnnotateAndPrint(text, url):
     text: Anchor text for the link
     url: the URL to which to link
   """
-  print >> sys.stderr, '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
-                                                              'url': url }
+  print('\n@@@STEP_LINK@%(text)s@%(url)s@@@' % {'text': text, 'url': url},
+        file=sys.stderr)
 
 
 def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
@@ -548,4 +550,4 @@ def main(_argv):
 
   # Explicit print to communicate to caller.
   if chrome_version_atom:
-    print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
+    print('CHROME_VERSION_ATOM=%s' % chrome_version_atom)

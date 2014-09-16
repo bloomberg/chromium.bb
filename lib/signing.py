@@ -4,6 +4,8 @@
 
 """All things Chrome OS signing related"""
 
+from __future__ import print_function
+
 import os
 
 from chromite.cbuildbot import constants
