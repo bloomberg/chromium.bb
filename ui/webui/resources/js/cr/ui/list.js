@@ -467,8 +467,16 @@ cr.define('cr.ui', function() {
       var target = /** @type {HTMLElement} */(e.target);
 
       var ancestor = this.getListItemAncestor(target);
-      if (ancestor)
-        this.activateItemAtIndex(this.getIndexOfListItem(ancestor));
+      var index = -1;
+      if (ancestor) {
+        index = this.getIndexOfListItem(ancestor);
+        this.activateItemAtIndex(index);
+      }
+
+      var sm = this.selectionModel;
+      var indexSelected = sm.getIndexSelected(index);
+      if (!indexSelected)
+        this.handlePointerDownUp_(e);
     },
 
     /**
