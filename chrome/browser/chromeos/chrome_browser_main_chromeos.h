@@ -26,6 +26,7 @@ class EventRewriter;
 class EventRewriterController;
 class ExtensionSystemEventObserver;
 class IdleActionWarningObserver;
+class LightBar;
 class MagnificationManager;
 class PeripheralBatteryObserver;
 class PowerButtonObserver;
@@ -73,6 +74,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   scoped_ptr<DataPromoNotification> data_promo_notification_;
   scoped_ptr<RendererFreezer> renderer_freezer_;
+  scoped_ptr<LightBar> light_bar_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

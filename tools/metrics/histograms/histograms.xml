@@ -44466,6 +44466,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
+  <int value="-1662447331" label="wake-on-packets"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>

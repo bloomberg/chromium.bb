@@ -1905,6 +1905,15 @@ const Experiment kExperiments[] = {
         switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "wake-on-packets",
+    IDS_FLAGS_WAKE_ON_PACKETS_NAME,
+    IDS_FLAGS_WAKE_ON_PACKETS_DESCRIPTION,
+    kOsCrOSOwnerOnly,
+    SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnPackets)
+  },
+#endif  // OS_CHROMEOS
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -59,6 +59,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
+#include "chrome/browser/chromeos/power/light_bar.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
@@ -562,6 +563,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
   renderer_freezer_.reset(new RendererFreezer());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWakeOnPackets))
+    light_bar_.reset(new LightBar());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
 
@@ -679,6 +682,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
   renderer_freezer_.reset();
+  light_bar_.reset();
 
   // Let the ScreenLocker unregister itself from SessionManagerClient before
   // DBusThreadManager is shut down.
