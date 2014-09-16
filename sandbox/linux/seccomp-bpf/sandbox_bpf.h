@@ -21,23 +21,10 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-
-// This must match the kernel's seccomp_data structure.
-struct arch_seccomp_data {
-  int nr;
-  uint32_t arch;
-  uint64_t instruction_pointer;
-  uint64_t args[6];
-};
-
-struct arch_sigsys {
-  void* ip;
-  int nr;
-  unsigned int arch;
-};
 
 class CodeGen;
 class SandboxBPFPolicy;
@@ -116,7 +103,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // The "aux" field can carry a pointer to arbitrary data. See EvaluateSyscall
   // for a description of how to pass data from SetSandboxPolicy() to a Trap()
   // handler.
-  ErrorCode Trap(Trap::TrapFnc fnc, const void* aux);
+  static ErrorCode Trap(Trap::TrapFnc fnc, const void* aux);
 
   // Calls a user-space trap handler and disables all sandboxing for system
   // calls made from this trap handler.
@@ -128,7 +115,7 @@ class SANDBOX_EXPORT SandboxBPF {
   //   very useful to diagnose code that is incompatible with the sandbox.
   //   If even a single system call returns "UnsafeTrap", the security of
   //   entire sandbox should be considered compromised.
-  ErrorCode UnsafeTrap(Trap::TrapFnc fnc, const void* aux);
+  static ErrorCode UnsafeTrap(Trap::TrapFnc fnc, const void* aux);
 
   // UnsafeTraps require some syscalls to always be allowed.
   // This helper function returns true for these calls.
@@ -170,7 +157,7 @@ class SANDBOX_EXPORT SandboxBPF {
                  const ErrorCode& failed);
 
   // Kill the program and print an error message.
-  ErrorCode Kill(const char* msg);
+  static ErrorCode Kill(const char* msg);
 
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
@@ -200,7 +187,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // Returns the fatal ErrorCode that is used to indicate that somebody
   // attempted to pass a 64bit value in a 32bit system call argument.
   // This method is primarily needed for testing purposes.
-  ErrorCode Unexpected64bitArgument();
+  static ErrorCode Unexpected64bitArgument();
 
  private:
   friend class CodeGen;

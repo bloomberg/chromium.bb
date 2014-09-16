@@ -9,14 +9,19 @@
 #include <stdint.h>
 
 #include <map>
-#include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 
-class ErrorCode;
+// This must match the kernel's seccomp_data structure.
+struct arch_seccomp_data {
+  int nr;
+  uint32_t arch;
+  uint64_t instruction_pointer;
+  uint64_t args[6];
+};
 
 // The Trap class allows a BPF filter program to branch out to user space by
 // raising a SIGSYS signal.
@@ -47,7 +52,7 @@ class SANDBOX_EXPORT Trap {
   // as needed.
   // N.B.: This makes a permanent state change. Traps cannot be unregistered,
   //   as that would break existing BPF filters that are still active.
-  static ErrorCode MakeTrap(TrapFnc fnc, const void* aux, bool safe);
+  static uint16_t MakeTrap(TrapFnc fnc, const void* aux, bool safe);
 
   // Enables support for unsafe traps in the SIGSYS signal handler. This is a
   // one-way fuse. It works in conjunction with the BPF compiler emitting code
@@ -59,11 +64,13 @@ class SANDBOX_EXPORT Trap {
   // Returns "true", if unsafe traps were turned on.
   static bool EnableUnsafeTrapsInSigSysHandler();
 
-  // Returns the ErrorCode associate with a particular trap id.
-  static ErrorCode ErrorCodeFromTrapId(uint16_t id);
+  // Returns true if a safe trap handler is associated with a
+  // particular trap ID.
+  static bool IsSafeTrapId(uint16_t id);
 
  private:
   struct TrapKey {
+    TrapKey() : fnc(NULL), aux(NULL), safe(false) {}
     TrapKey(TrapFnc f, const void* a, bool s) : fnc(f), aux(a), safe(s) {}
     TrapFnc fnc;
     const void* aux;
@@ -94,7 +101,7 @@ class SANDBOX_EXPORT Trap {
   // dumps.
   void SigSys(int nr, siginfo_t* info, void* void_context)
       __attribute__((noinline));
-  ErrorCode MakeTrapImpl(TrapFnc fnc, const void* aux, bool safe);
+  uint16_t MakeTrapImpl(TrapFnc fnc, const void* aux, bool safe);
   bool SandboxDebuggingAllowedByUser() const;
 
   // We have a global singleton that handles all of our SIGSYS traps. This
@@ -104,7 +111,7 @@ class SANDBOX_EXPORT Trap {
   static Trap* global_trap_;
 
   TrapIds trap_ids_;            // Maps from TrapKeys to numeric ids
-  ErrorCode* trap_array_;       // Array of ErrorCodes indexed by ids
+  TrapKey* trap_array_;         // Array of TrapKeys indexed by ids
   size_t trap_array_size_;      // Currently used size of array
   size_t trap_array_capacity_;  // Currently allocated capacity of array
   bool has_unsafe_traps_;       // Whether unsafe traps have been enabled

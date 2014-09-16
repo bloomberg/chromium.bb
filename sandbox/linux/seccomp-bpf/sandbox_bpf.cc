@@ -170,9 +170,7 @@ void CheckForUnsafeErrorCodes(Instruction* insn, void* aux) {
   if (!*is_unsafe) {
     if (BPF_CLASS(insn->code) == BPF_RET && insn->k > SECCOMP_RET_TRAP &&
         insn->k - SECCOMP_RET_TRAP <= SECCOMP_RET_DATA) {
-      const ErrorCode& err =
-          Trap::ErrorCodeFromTrapId(insn->k & SECCOMP_RET_DATA);
-      if (err.error_type() != ErrorCode::ET_INVALID && !err.safe()) {
+      if (!Trap::IsSafeTrapId(insn->k & SECCOMP_RET_DATA)) {
         *is_unsafe = true;
       }
     }
@@ -1049,11 +1047,11 @@ ErrorCode SandboxBPF::Unexpected64bitArgument() {
 }
 
 ErrorCode SandboxBPF::Trap(Trap::TrapFnc fnc, const void* aux) {
-  return Trap::MakeTrap(fnc, aux, true /* Safe Trap */);
+  return ErrorCode(fnc, aux, true /* Safe Trap */);
 }
 
 ErrorCode SandboxBPF::UnsafeTrap(Trap::TrapFnc fnc, const void* aux) {
-  return Trap::MakeTrap(fnc, aux, false /* Unsafe Trap */);
+  return ErrorCode(fnc, aux, false /* Unsafe Trap */);
 }
 
 bool SandboxBPF::IsRequiredForUnsafeTrap(int sysno) {
