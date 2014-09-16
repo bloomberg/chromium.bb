@@ -28,7 +28,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/extensions/extension_localization_peer.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/renderer/render_thread.h"
@@ -46,6 +45,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/iat_patch_function.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/renderer/extensions/extension_localization_peer.h"
 #endif
 
 using blink::WebCache;
@@ -91,8 +94,12 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
       content::RequestPeer* current_peer,
       const std::string& mime_type,
       const GURL& url) OVERRIDE {
+#if defined(ENABLE_EXTENSIONS)
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
         current_peer, RenderThread::Get(), mime_type, url);
+#else
+    return NULL;
+#endif
   }
 
  private:

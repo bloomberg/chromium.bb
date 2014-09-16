@@ -51,7 +51,6 @@ static_library("renderer") {
     "//content/app/strings",
     "//content/public/renderer",
     "//extensions:extensions_resources",
-    "//extensions/renderer",
     "//media/cast:net",
     "//media/cast:sender",
     "//media/cast/logging/proto",
@@ -108,6 +107,7 @@ static_library("renderer") {
   if (enable_extensions) {
     sources += rebase_path(gypi_values.chrome_renderer_extensions_sources,
                            ".", "..")
+    deps += [ "//extensions/renderer" ]
   }
   if (enable_webrtc) {
     sources += rebase_path(gypi_values.chrome_renderer_webrtc_sources,
