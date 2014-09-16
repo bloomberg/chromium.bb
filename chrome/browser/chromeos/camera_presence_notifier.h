@@ -37,14 +37,14 @@ class CameraPresenceNotifier {
   // Sends out a camera presence status notification.
   void OnCameraPresenceCheckDone();
 
-  base::WeakPtrFactory<CameraPresenceNotifier> weak_factory_;
-
   bool camera_present_on_last_check_;
 
   // Timer for camera check cycle.
   base::RepeatingTimer<CameraPresenceNotifier> camera_check_timer_;
 
   ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<CameraPresenceNotifier> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraPresenceNotifier);
 };

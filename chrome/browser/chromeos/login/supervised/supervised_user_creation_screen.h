@@ -128,7 +128,6 @@ class SupervisedUserCreationScreen
   void ApplyPicture();
   void OnGetSupervisedUsers(const base::DictionaryValue* users);
 
-  base::WeakPtrFactory<SupervisedUserCreationScreen> weak_factory_;
   SupervisedUserCreationScreenHandler* actor_;
 
   scoped_ptr<SupervisedUserCreationController> controller_;
@@ -143,6 +142,8 @@ class SupervisedUserCreationScreen
   scoped_refptr<ImageDecoder> image_decoder_;
   bool apply_photo_after_decoding_;
   int selected_image_;
+
+  base::WeakPtrFactory<SupervisedUserCreationScreen> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationScreen);
 };

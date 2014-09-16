@@ -83,9 +83,9 @@ class AutoEnrollmentController {
   policy::AutoEnrollmentState state_;
   ProgressCallbackList progress_callbacks_;
 
-  base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_;
-
   scoped_ptr<policy::AutoEnrollmentClient> client_;
+
+  base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentController);
 };

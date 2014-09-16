@@ -97,14 +97,14 @@ SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     ScreenObserver* observer,
     SupervisedUserCreationScreenHandler* actor)
     : WizardScreen(observer),
-      weak_factory_(this),
       actor_(actor),
       on_error_screen_(false),
       last_page_(kNameOfIntroScreen),
       sync_service_(NULL),
       image_decoder_(NULL),
       apply_photo_after_decoding_(false),
-      selected_image_(0) {
+      selected_image_(0),
+      weak_factory_(this) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);

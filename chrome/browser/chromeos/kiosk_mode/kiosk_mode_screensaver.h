@@ -40,9 +40,9 @@ class KioskModeScreensaver : public wm::UserActivityObserver {
   void SetupScreensaver(scoped_refptr<extensions::Extension> extension,
                         const base::FilePath& extension_base_path);
 
-  base::WeakPtrFactory<KioskModeScreensaver> weak_ptr_factory_;
-
   base::FilePath extension_base_path_;
+
+  base::WeakPtrFactory<KioskModeScreensaver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskModeScreensaver);
 };

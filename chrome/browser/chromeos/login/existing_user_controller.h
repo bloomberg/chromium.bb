@@ -277,9 +277,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Used for notifications during the login process.
   content::NotificationRegistrar registrar_;
 
-  // Factory of callbacks.
-  base::WeakPtrFactory<ExistingUserController> weak_factory_;
-
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;
 
@@ -334,6 +331,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
       local_account_auto_login_delay_subscription_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
+
+  // Factory of callbacks.
+  base::WeakPtrFactory<ExistingUserController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
