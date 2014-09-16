@@ -57,6 +57,8 @@ public:
 
     virtual void transformText() OVERRIDE;
 
+    virtual const char* renderName() const OVERRIDE FINAL { return "RenderTextFragment"; }
+
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
