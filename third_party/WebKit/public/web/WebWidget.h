@@ -33,6 +33,7 @@
 
 #include "../platform/WebCanvas.h"
 #include "../platform/WebCommon.h"
+#include "../platform/WebPoint.h"
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
 #include "WebBeginFrameArgs.h"
@@ -46,7 +47,9 @@ class WebCompositeAndReadbackAsyncCallback;
 class WebInputEvent;
 class WebLayerTreeView;
 class WebMouseEvent;
+class WebPagePopup;
 class WebString;
+class WebWidgetClient;
 struct WebPoint;
 struct WebRenderingStats;
 template <typename T> class WebVector;
@@ -254,6 +257,10 @@ public:
     // The page background color. Can be used for filling in areas without
     // content.
     virtual WebColor backgroundColor() const { return 0xFFFFFFFF; /* SK_ColorWHITE */ }
+
+    // The currently open page popup, which are calendar and datalist pickers
+    // but not the select popup.
+    virtual WebPagePopup* pagePopup() const { return 0; }
 
 protected:
     ~WebWidget() { }

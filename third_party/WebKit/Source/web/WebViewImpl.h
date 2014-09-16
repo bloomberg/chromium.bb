@@ -127,6 +127,7 @@ public:
     virtual bool compositionRange(size_t* location, size_t* length) OVERRIDE;
     virtual WebTextInputInfo textInputInfo() OVERRIDE;
     virtual WebColor backgroundColor() const OVERRIDE;
+    virtual WebPagePopup* pagePopup() const OVERRIDE;
     virtual bool selectionBounds(WebRect& anchor, WebRect& focus) const OVERRIDE;
     virtual void didShowCandidateWindow() OVERRIDE;
     virtual void didUpdateCandidateWindow() OVERRIDE;

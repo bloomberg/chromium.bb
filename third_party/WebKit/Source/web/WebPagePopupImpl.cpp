@@ -44,6 +44,7 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebFrameClient.h"
@@ -422,6 +423,18 @@ void WebPagePopupImpl::closePopup()
     }
 
     m_popupClient->didClosePopup();
+}
+
+void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
+{
+    ASSERT(isAcceleratedCompositingActive());
+    m_layerTreeView->compositeAndReadbackAsync(callback);
+}
+
+WebPoint WebPagePopupImpl::positionRelativeToOwner()
+{
+    WebRect windowRect = m_webView->client()->rootWindowRect();
+    return WebPoint(m_windowRectInScreen.x - windowRect.x, m_windowRectInScreen.y - windowRect.y);
 }
 
 // WebPagePopup ----------------------------------------------------------------

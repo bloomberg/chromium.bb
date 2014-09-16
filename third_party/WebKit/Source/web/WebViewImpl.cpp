@@ -116,6 +116,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebGestureCurve.h"
@@ -2492,6 +2493,11 @@ WebColor WebViewImpl::backgroundColor() const
         return m_baseBackgroundColor;
     FrameView* view = m_page->deprecatedLocalMainFrame()->view();
     return view->documentBackgroundColor().rgb();
+}
+
+WebPagePopup* WebViewImpl::pagePopup() const
+{
+    return m_pagePopup.get();
 }
 
 bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)

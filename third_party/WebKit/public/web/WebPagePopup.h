@@ -41,6 +41,7 @@ class WebWidgetClient;
 class WebPagePopup : public WebWidget {
 public:
     BLINK_EXPORT static WebPagePopup* create(WebWidgetClient*);
+    virtual WebPoint positionRelativeToOwner() = 0;
 };
 
 } // namespace blink
