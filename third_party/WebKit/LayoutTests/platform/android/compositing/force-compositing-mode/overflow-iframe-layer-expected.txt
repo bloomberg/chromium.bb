@@ -1,0 +1,73 @@
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [154, 154],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "children": [
+                {
+                  "bounds": [135, 135],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [508, 516],
+                          "children": [
+                            {
+                              "bounds": [508, 516],
+                              "drawsContent": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "position": [0, 135],
+                  "bounds": [135, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [135, 0],
+                  "bounds": [15, 135],
+                  "drawsContent": true
+                },
+                {
+                  "position": [135, 135],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+{
+  "bounds": [508, 516],
+  "children": [
+    {
+      "bounds": [508, 516],
+      "drawsContent": true
+    }
+  ]
+}
+

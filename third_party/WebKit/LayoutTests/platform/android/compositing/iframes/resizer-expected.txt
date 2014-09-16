@@ -1,0 +1,86 @@
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [304, 154],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "children": [
+                {
+                  "bounds": [285, 150],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [285, 230],
+                          "children": [
+                            {
+                              "bounds": [285, 230],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 150],
+                  "drawsContent": true
+                }
+              ]
+            },
+            {
+              "position": [287, 137],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [285, 230],
+  "children": [
+    {
+      "bounds": [285, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

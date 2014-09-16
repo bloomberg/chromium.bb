@@ -2,7 +2,7 @@
 Initial layer tree
 #document (5)
     iframe#frame (6)
-        iframe#frame 0x0 (7)
+        iframe#frame 200x200 (7)
             iframe#frame 200x200 (8)
                 iframe#frame 200x200 (9)
                     iframe#frame 200x200 (10)
@@ -16,7 +16,7 @@ Initial layer tree
 Updated layer tree
 #document (5)
     iframe#frame (6)
-        iframe#frame 0x0 (7)
+        iframe#frame 200x200 (7)
             iframe#frame 200x200 (8)
                 iframe#frame 200x200 (9)
                     iframe#frame 200x200 (10)
@@ -30,7 +30,7 @@ Updated layer tree
 Updated layer geometry
 #document (5)
     iframe#frame (6)
-        iframe#frame 0x0 (7)
+        iframe#frame 200x200 (7)
             iframe#frame 200x200 (8)
                 iframe#frame 200x200 (9)
                     iframe#frame 200x200 (10)

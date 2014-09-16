@@ -14,6 +14,7 @@
           "children": [
             {
               "position": [2, 2],
+              "bounds": [150, 150],
               "children": [
                 {
                   "bounds": [135, 135],

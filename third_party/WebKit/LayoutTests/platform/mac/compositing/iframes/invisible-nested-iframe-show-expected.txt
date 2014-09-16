@@ -14,6 +14,7 @@
           "children": [
             {
               "position": [35, 35],
+              "bounds": [300, 150],
               "children": [
                 {
                   "bounds": [285, 150],
@@ -34,6 +35,7 @@
                                   "children": [
                                     {
                                       "position": [1, 1],
+                                      "bounds": [250, 170],
                                       "children": [
                                         {
                                           "bounds": [250, 170],
@@ -118,6 +120,7 @@ Frame: '-->'
           "children": [
             {
               "position": [1, 1],
+              "bounds": [250, 170],
               "children": [
                 {
                   "bounds": [250, 170],

@@ -1,0 +1,90 @@
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [58, 58],
+              "bounds": [350, 200],
+              "drawsContent": true,
+              "children": [
+                {
+                  "position": [15, 15],
+                  "children": [
+                    {
+                      "bounds": [305, 170],
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "bounds": [305, 230],
+                              "children": [
+                                {
+                                  "bounds": [305, 230],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [18, 10],
+                                      "bounds": [210, 210],
+                                      "contentsOpaque": true,
+                                      "drawsContent": true,
+                                      "backgroundColor": "#0000FF"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "position": [305, 0],
+                      "bounds": [15, 170],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [5, 5],
+              "bounds": [150, 150],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [305, 230],
+  "children": [
+    {
+      "bounds": [305, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

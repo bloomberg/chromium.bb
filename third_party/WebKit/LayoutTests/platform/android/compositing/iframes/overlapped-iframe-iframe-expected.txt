@@ -1,0 +1,79 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "bounds": [304, 304],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "children": [
+                {
+                  "bounds": [300, 300],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [300, 300],
+                          "children": [
+                            {
+                              "bounds": [300, 300],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [250, 0],
+          "bounds": [304, 304],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [300, 300],
+  "children": [
+    {
+      "bounds": [300, 300],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

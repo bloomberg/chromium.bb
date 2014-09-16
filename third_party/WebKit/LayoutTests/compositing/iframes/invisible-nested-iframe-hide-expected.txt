@@ -36,6 +36,7 @@ Frame: '-->'
           "children": [
             {
               "position": [1, 1],
+              "bounds": [250, 170],
               "children": [
                 {
                   "bounds": [250, 170],

@@ -12,6 +12,7 @@
           "children": [
             {
               "position": [2, 2],
+              "bounds": [300, 300],
               "children": [
                 {
                   "bounds": [300, 300],

@@ -11,6 +11,7 @@
           "drawsContent": true,
           "children": [
             {
+              "bounds": [400, 400],
               "children": [
                 {
                   "bounds": [400, 400],

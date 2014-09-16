@@ -1,0 +1,90 @@
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [370, 220],
+              "drawsContent": true,
+              "children": [
+                {
+                  "position": [35, 35],
+                  "children": [
+                    {
+                      "bounds": [285, 150],
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "bounds": [285, 230],
+                              "children": [
+                                {
+                                  "bounds": [285, 230],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [18, 10],
+                                      "bounds": [210, 210],
+                                      "contentsOpaque": true,
+                                      "drawsContent": true,
+                                      "backgroundColor": "#0000FF"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "position": [285, 0],
+                      "bounds": [15, 150],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [5, 5],
+              "bounds": [50, 50],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [285, 230],
+  "children": [
+    {
+      "bounds": [285, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+
