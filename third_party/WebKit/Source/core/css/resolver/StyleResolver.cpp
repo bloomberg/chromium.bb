@@ -653,15 +653,15 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
     ASSERT(!hasPendingAuthorStyleSheets());
 
-    if (element == document().documentElement())
+    if (&element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
-    StyleResolverState state(document(), element, parentStyle);
+    StyleResolverState state(document(), &element, parentStyle);
 
     MatchResult result;
     result.addMatchedProperties(&keyframe->properties());
@@ -970,9 +970,9 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 // -------------------------------------------------------------------------------------
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
-bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
+bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* animatingElement)
 {
-    const Element* element = state.element();
+    Element* element = state.element();
     ASSERT(element);
 
     // The animating element may be this element, or its pseudo element. It is
