@@ -5,10 +5,22 @@
 package dummy;
 
 import android.app.Activity;
-import android.os.Bundle;
 
 /**
  * Dummy activity to build apk.
+ *
+ * This class is created to ensure that proguard will produce two separate warnings.
  */
 public class DummyActivity extends Activity {
+    private static void doBadThings1() {
+        try {
+            sun.misc.Unsafe.getUnsafe();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    private static void doBadThings2() {
+        sun.reflect.Reflection.getCallerClass(2);
+  }
 }
