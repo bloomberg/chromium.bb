@@ -3,11 +3,17 @@
 # found in the LICENSE file.
 
 import base64
+import logging
 import posixpath
+import time
 
 from appengine_wrappers import urlfetch
 from environment import GetAppVersion
 from future import Future
+
+
+_MAX_RETRIES = 5
+_RETRY_DELAY_SECONDS = 30
 
 
 def _MakeHeaders(username, password, access_token):
@@ -30,6 +36,7 @@ class AppEngineUrlFetcher(object):
   def __init__(self, base_path=None):
     assert base_path is None or not base_path.endswith('/'), base_path
     self._base_path = base_path
+    self._retries_left = _MAX_RETRIES
 
   def Fetch(self, url, username=None, password=None, access_token=None):
     """Fetches a file synchronously.
@@ -43,13 +50,25 @@ class AppEngineUrlFetcher(object):
   def FetchAsync(self, url, username=None, password=None, access_token=None):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
+    def process_result(result):
+      if result.status_code == 429:
+        if self._retries_left == 0:
+          logging.error('Still throttled. Giving up.')
+          return result
+        self._retries_left -= 1
+        logging.info('Throttled. Trying again in %s seconds.' %
+                     _RETRY_DELAY_SECONDS)
+        time.sleep(_RETRY_DELAY_SECONDS)
+        return self.FetchAsync(url, username, password, access_token).Get()
+      return result
+
     rpc = urlfetch.create_rpc(deadline=20)
     urlfetch.make_fetch_call(rpc,
                              self._FromBasePath(url),
                              headers=_MakeHeaders(username,
                                                   password,
                                                   access_token))
-    return Future(callback=lambda: rpc.get_result())
+    return Future(callback=lambda: process_result(rpc.get_result()))
 
   def _FromBasePath(self, url):
     assert not url.startswith('/'), url

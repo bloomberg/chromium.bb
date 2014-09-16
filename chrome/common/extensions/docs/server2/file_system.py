@@ -11,6 +11,10 @@ from path_util import (
     ToDirectory)
 
 
+def IsFileSystemThrottledError(error):
+  return type(error).__name__ == 'FileSystemThrottledError'
+
+
 class _BaseFileSystemException(Exception):
   def __init__(self, message):
     Exception.__init__(self, message)

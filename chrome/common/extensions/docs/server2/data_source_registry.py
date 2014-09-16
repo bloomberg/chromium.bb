@@ -31,13 +31,25 @@ _all_data_sources = {
   'whatsNew' : WhatsNewDataSource
 }
 
+
 assert all(issubclass(cls, DataSource)
            for cls in _all_data_sources.itervalues())
+
+
+def GetDataSourceNames():
+  return _all_data_sources.keys()
+
+
+def CreateDataSource(name, server_instance, request=None):
+  '''Create a single DataSource by name.'''
+  assert name in _all_data_sources
+  return _all_data_sources[name](server_instance, request)
+
 
 def CreateDataSources(server_instance, request=None):
   '''Create a dictionary of initialized DataSources. DataSources are
   initialized with |server_instance| and |request|. If the DataSources are
-  going to be used for Cron, |request| should be omitted.
+  going to be used for Refresh, |request| should be omitted.
 
   The key of each DataSource is the name the template system will use to access
   the DataSource.

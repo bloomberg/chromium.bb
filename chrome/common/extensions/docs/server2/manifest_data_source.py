@@ -135,8 +135,8 @@ class ManifestDataSource(DataSource):
       self._object_store.Set('manifest_data', data)
     return data
 
-  def Cron(self):
-    return self._CreateManifestData()
-
   def get(self, key):
     return self._GetCachedManifestData().get(key)
+
+  def Refresh(self, path):
+    return self._CreateManifestData()

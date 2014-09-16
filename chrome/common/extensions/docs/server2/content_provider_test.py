@@ -203,9 +203,9 @@ class ContentProviderUnittest(unittest.TestCase):
         FileNotFoundError,
         self._content_provider.GetContentAndType('dir6').Get)
 
-  def testCron(self):
+  def testRefresh(self):
     # Not entirely sure what to test here, but get some code coverage.
-    self._content_provider.Cron().Get()
+    self._content_provider.Refresh().Get()
 
 
 if __name__ == '__main__':

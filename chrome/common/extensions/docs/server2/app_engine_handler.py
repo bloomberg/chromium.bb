@@ -14,7 +14,13 @@ class AppEngineHandler(webapp2.RequestHandler):
   internal Servlet architecture.
   '''
 
+  def post(self):
+    self._HandleRequest()
+
   def get(self):
+    self._HandleRequest()
+
+  def _HandleRequest(self):
     profile_mode = self.request.get('profile')
     if profile_mode:
       import cProfile, pstats, StringIO
@@ -23,9 +29,13 @@ class AppEngineHandler(webapp2.RequestHandler):
 
     try:
       response = None
+      arguments = {}
+      for argument in self.request.arguments():
+        arguments[argument] = self.request.get(argument)
       request = Request(self.request.path,
                         self.request.url[:-len(self.request.path)],
-                        self.request.headers)
+                        self.request.headers,
+                        arguments)
       response = Handler(request).Get()
     except Exception as e:
       logging.exception(e)

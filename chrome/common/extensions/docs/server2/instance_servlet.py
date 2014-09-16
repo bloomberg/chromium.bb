@@ -14,19 +14,19 @@ from server_instance import ServerInstance
 from gcs_file_system_provider import CloudStorageFileSystemProvider
 
 class InstanceServletRenderServletDelegate(RenderServlet.Delegate):
-  '''AppEngine instances should never need to call out to SVN. That should only
-  ever be done by the cronjobs, which then write the result into DataStore,
-  which is as far as instances look. To enable this, crons can pass a custom
-  (presumably online) ServerInstance into Get().
+  '''AppEngine instances should never need to call out to Gitiles. That should
+  only ever be done by the cronjobs, which then write the result into
+  DataStore, which is as far as instances look. To enable this, crons can pass
+  a custom (presumably online) ServerInstance into Get().
 
-  Why? SVN is slow and a bit flaky. Cronjobs failing is annoying but temporary.
-  Instances failing affects users, and is really bad.
+  Why? Gitiles is slow and a bit flaky. Refresh jobs failing is annoying but
+  temporary. Instances failing affects users, and is really bad.
 
-  Anyway - to enforce this, we actually don't give instances access to SVN.  If
-  anything is missing from datastore, it'll be a 404. If the cronjobs don't
-  manage to catch everything - uhoh. On the other hand, we'll figure it out
-  pretty soon, and it also means that legitimate 404s are caught before a round
-  trip to SVN.
+  Anyway - to enforce this, we actually don't give instances access to
+  Gitiles.  If anything is missing from datastore, it'll be a 404. If the
+  cronjobs don't manage to catch everything - uhoh. On the other hand, we'll
+  figure it out pretty soon, and it also means that legitimate 404s are caught
+  before a round trip to Gitiles.
   '''
   def __init__(self, delegate):
     self._delegate = delegate

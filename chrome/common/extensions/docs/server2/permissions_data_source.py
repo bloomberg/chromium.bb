@@ -90,8 +90,8 @@ class PermissionsDataSource(DataSource):
       self._object_store.Set('permissions_data', data)
     return data
 
-  def Cron(self):
-    return self._CreatePermissionsData()
-
   def get(self, key):
     return self._GetCachedPermissionsData().get(key)
+
+  def Refresh(self, path):
+    return self._CreatePermissionsData()

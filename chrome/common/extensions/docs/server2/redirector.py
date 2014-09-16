@@ -102,7 +102,7 @@ class Redirector(object):
 
     return 'https://developer.chrome.com/' + posixpath.join(*path)
 
-  def Cron(self):
+  def Refresh(self):
     ''' Load files during a cron run.
     '''
     futures = []

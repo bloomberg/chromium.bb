@@ -119,5 +119,5 @@ class APIListDataSource(DataSource):
   def get(self, key):
     return self._GetCachedAPIData().Get().get(key)
 
-  def Cron(self):
+  def Refresh(self, path):
     return self._GetCachedAPIData()

@@ -169,6 +169,12 @@ class CachingFileSystem(FileSystem):
       return dirs, files
     return self._file_system.Walk(root, depth=depth, file_lister=file_lister)
 
+  def GetCommitID(self):
+    return self._file_system.GetCommitID()
+
+  def GetPreviousCommitID(self):
+    return self._file_system.GetPreviousCommitID()
+
   def GetIdentity(self):
     return self._file_system.GetIdentity()
 

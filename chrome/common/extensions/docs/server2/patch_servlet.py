@@ -29,8 +29,8 @@ class _PatchServletDelegate(RenderServlet.Delegate):
 
   def CreateServerInstance(self):
     # start_empty=False because a patch can rely on files that are already in
-    # SVN repository but not yet pulled into data store by cron jobs (a typical
-    # example is to add documentation for an existing API).
+    # the Git repository but not yet pulled into data store by cron jobs (a
+    # typical example is to add documentation for an existing API).
     object_store_creator = ObjectStoreCreator(start_empty=False)
 
     unpatched_file_system = self._delegate.CreateHostFileSystemProvider(
@@ -71,7 +71,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     # to be re-run to pull in the new configuration.
     _, _, modified = rietveld_patcher.GetPatchedFiles()
     if CONTENT_PROVIDERS in modified:
-      server_instance.content_providers.Cron().Get()
+      server_instance.content_providers.Refresh().Get()
 
     return server_instance
 

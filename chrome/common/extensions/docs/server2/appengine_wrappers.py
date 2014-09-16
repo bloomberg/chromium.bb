@@ -22,6 +22,7 @@ try:
   import google.appengine.api.files as files
   import google.appengine.api.logservice as logservice
   import google.appengine.api.memcache as memcache
+  import google.appengine.api.taskqueue as taskqueue
   import google.appengine.api.urlfetch as urlfetch
   import google.appengine.ext.blobstore as blobstore
   from google.appengine.ext.blobstore.blobstore import BlobReferenceProperty
@@ -275,3 +276,20 @@ except ImportError:
 
   class BlobReferenceProperty(object):
     pass
+
+  class FakeTaskQueue(object):
+    class Task(object):
+      def __init__(self, url=None, params={}):
+        pass
+
+    class Queue(object):
+      def __init__(self, name='default'):
+        pass
+
+      def add(self, task):
+        return _RPC()
+
+      def purge(self):
+        return _RPC()
+
+  taskqueue = FakeTaskQueue()

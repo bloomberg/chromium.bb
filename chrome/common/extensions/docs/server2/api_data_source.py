@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from data_source import DataSource
 from docs_server_utils import StringIdentity
 from environment import IsPreviewServer
@@ -89,9 +91,16 @@ class APIDataSource(DataSource):
     getter.get = lambda api_name: self._GetImpl(platform, api_name).Get()
     return getter
 
-  def Cron(self):
-    futures = []
+  def GetRefreshPaths(self):
+    tasks = []
     for platform in GetPlatforms():
-      futures += [self._GetImpl(platform, name)
-          for name in self._platform_bundle.GetAPIModels(platform).GetNames()]
-    return All(futures, except_pass=FileNotFoundError)
+      tasks += ['%s/%s' % (platform, api)
+                for api in
+                    self._platform_bundle.GetAPIModels(platform).GetNames()]
+    return tasks
+
+  def Refresh(self, path):
+    platform, api = path.split('/')
+    logging.info('Refreshing %s/%s' % (platform, api))
+    future = self._GetImpl(platform, api)
+    return All([future], except_pass=FileNotFoundError)

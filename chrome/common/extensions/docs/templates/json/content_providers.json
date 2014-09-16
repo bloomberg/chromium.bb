@@ -9,8 +9,8 @@
 //  * An arbitrary identifier key e.g. "cr-extensions-examples".
 //  * What URL the rule should be invoked with, given by "serveFrom", e.g.
 //    "extensions/examples".
-//  * An object describing where the content originates, either "chromium"
-//    or "github".
+//  * An object describing where the content originates, either "chromium",
+//    "github", or "gcs".
 //  * "chromium" must provide a "dir" value specifying which chromium directory
 //     to look in, e.g. "extensions/samples".
 //  * "github" must provide "owner" and "repo" values specifying the owner of
@@ -41,14 +41,6 @@
 //    this to true. Otherwise, it's safer and more efficient to omit it.
 
 {
-  "cr-chrome-docs-home-gitiles": {
-    "gitiles": {
-      "dir": "chrome/docs"
-    },
-    "defaultExtensions": [".html", ".md"],
-    "serveFrom": "home-gitiles",
-    "supportsTemplates": true
-  },
   "cr-chrome-docs-home": {
     "chromium": {
       "dir": "chrome/docs"

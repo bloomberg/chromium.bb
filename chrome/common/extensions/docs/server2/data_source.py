@@ -7,10 +7,10 @@ class DataSource(object):
   '''
   Defines an abstraction for all DataSources.
 
-  DataSources must have two public methods, get and Cron. A DataSource is
+  DataSources must have two public methods, get and Refresh. A DataSource is
   initialized with a ServerInstance and a Request (defined in servlet.py).
   Anything in the ServerInstance can be used by the DataSource. Request is None
-  when DataSources are created for Cron.
+  when DataSources are created for Refresh.
 
   DataSources are used to provide templates with access to data. DataSources may
   not access other DataSources and any logic or data that is useful to other
@@ -19,10 +19,17 @@ class DataSource(object):
   def __init__(self, server_instance, request):
     pass
 
-  def Cron(self):
-    '''Must cache all files needed by |get| to persist them. Called on a live
-    file system and can access files not in cache. |request| will be None.
+  def GetRefreshPaths(self):
+    '''Returns a list of paths to query
+    (relative to _refresh/<data_source_name>/) with the task queue in order
+    to refresh this DataSource's data set. Any paths listed here will be
+    routed to the DataSource Refresh method in a taskqueue task request.
     '''
+    return ['']
+
+  def Refresh(self, path=None):
+    '''Handles _refresh requests to this DataSource. Should return a Future
+    indicating the success or failure of the refresh.'''
     raise NotImplementedError(self.__class__)
 
   def get(self, key):

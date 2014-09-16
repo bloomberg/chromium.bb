@@ -171,7 +171,7 @@ class APIModels(object):
       return content_script_apis
     return Future(callback=resolve)
 
-  def Cron(self):
+  def Refresh(self):
     futures = [self.GetModel(name) for name in self.GetNames()]
     return All(futures, except_pass=(FileNotFoundError, ValueError))
 

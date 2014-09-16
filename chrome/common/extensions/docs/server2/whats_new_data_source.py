@@ -96,5 +96,5 @@ class WhatsNewDataSource(DataSource):
   def get(self, key):
     return self._GetCachedWhatsNewData().get(key)
 
-  def Cron(self):
+  def Refresh(self, path):
     return self._GenerateWhatsNewDict()

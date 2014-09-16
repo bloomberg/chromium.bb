@@ -102,5 +102,5 @@ class OwnersDataSource(DataSource):
       'apis': self._CollectOwnersData()
     }.get(key).Get()
 
-  def Cron(self):
+  def Refresh(self, path):
     return self._CollectOwnersData()

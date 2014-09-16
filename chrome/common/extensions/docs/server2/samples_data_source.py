@@ -74,5 +74,8 @@ class SamplesDataSource(DataSource):
   def get(self, platform):
     return self._GetImpl(platform).Get()
 
-  def Cron(self):
-    return All([self._GetImpl(platform) for platform in GetPlatforms()])
+  def GetRefreshPaths(self):
+    return [platform for platform in GetPlatforms()]
+
+  def Refresh(self, path):
+    return self._GetImpl(path)

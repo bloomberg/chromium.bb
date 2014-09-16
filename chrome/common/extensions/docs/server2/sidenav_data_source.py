@@ -24,13 +24,13 @@ def _AddLevels(items, level):
 
 
 def _AddAnnotations(items, path, parent=None):
-  '''Add 'selected', 'child_selected' and 'related' properties to 
-  |items| so that the sidenav can be expanded to show which menu item has 
+  '''Add 'selected', 'child_selected' and 'related' properties to
+  |items| so that the sidenav can be expanded to show which menu item has
   been selected and the related pages section can be drawn. 'related'
   is added to all items with the same parent as the selected item.
-  If more than one item exactly matches the path, the deepest one is considered 
+  If more than one item exactly matches the path, the deepest one is considered
   'selected'. A 'parent' property is added to the selected path.
-  
+
   Returns True if an item was marked 'selected'.
   '''
   for item in items:
@@ -42,12 +42,12 @@ def _AddAnnotations(items, path, parent=None):
     if item.get('href', '') == path:
       item['selected'] = True
       if parent:
-        item['parent'] = { 'title': parent.get('title', None), 
+        item['parent'] = { 'title': parent.get('title', None),
                           'href': parent.get('href', None) }
-      
+
       for sibling in items:
         sibling['related'] = True
-        
+
       return True
 
   return False
@@ -92,13 +92,13 @@ class SidenavDataSource(DataSource):
           href = href.lstrip('/')
         item['href'] = self._server_instance.base_path + href
 
-  def Cron(self):
+  def Refresh(self, path=None):
     return self._cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'chrome_sidenav.json'))
 
   def get(self, key):
     # TODO(mangini/kalman): Use |key| to decide which sidenav to use,
-    # which will require a more complex Cron method.
+    # which will require a more complex Refresh method.
     sidenav = self._cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'chrome_sidenav.json')).Get()
     sidenav = copy.deepcopy(sidenav)

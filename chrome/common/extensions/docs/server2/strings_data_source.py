@@ -19,7 +19,7 @@ class StringsDataSource(DataSource):
   def _GetStringsData(self):
     return self._cache.GetFromFile('%sstrings.json' % JSON_TEMPLATES)
 
-  def Cron(self):
+  def Refresh(self, path):
     return self._GetStringsData()
 
   def get(self, key):

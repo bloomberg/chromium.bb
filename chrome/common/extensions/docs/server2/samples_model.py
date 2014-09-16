@@ -60,8 +60,17 @@ class SamplesModel(object):
     '''Fetches and filters the list of samples for this platform, returning
     only the samples that use the API |api_name|.
     '''
-    samples_list = self._samples_cache.GetFromFileListing(
-        '' if self._platform == 'apps' else EXAMPLES).Get()
+    try:
+      # TODO(rockot): This cache is probably not working as intended, since
+      # it can still lead to underlying filesystem (e.g. gitiles) access
+      # while processing live requests. Because this can fail, we at least
+      # trap and log exceptions to prevent 500s from being thrown.
+      samples_list = self._samples_cache.GetFromFileListing(
+          '' if self._platform == 'apps' else EXAMPLES).Get()
+    except Exception as e:
+      logging.warning('Unable to get samples listing. Skipping.')
+      samples_list = []
+
     return [sample for sample in samples_list if any(
         call['name'].startswith(api_name + '.')
         for call in sample['api_calls'])]

@@ -44,7 +44,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     item2_1 = { 'href': '/H2_1.html' }
     item2_2 = { 'href': '/H2_2.html' }
     item2 = { 'href': '/H2.html', 'items': [item2_1, item2_2] }
-    
+
     expected = [ item1, item2 ]
 
     sidenav_json = copy.deepcopy(expected)
@@ -52,11 +52,11 @@ class SamplesDataSourceTest(unittest.TestCase):
     item2['child_selected'] = True
     item2_1['selected'] = True
     item2_1['related'] = True
-    item2_1['parent'] = { 'title': item2.get('title', None), 
+    item2_1['parent'] = { 'title': item2.get('title', None),
                           'href': item2.get('href', None) }
-    
+
     item2_2['related'] = True
- 
+
     self.assertTrue(_AddAnnotations(sidenav_json, item2_1['href']))
     self.assertEqual(expected, sidenav_json)
 
@@ -139,18 +139,18 @@ class SamplesDataSourceTest(unittest.TestCase):
     self.assertTrue(*file_system.CheckAndReset(
         read_count=1, stat_count=1, read_resolve_count=1))
 
-  def testCron(self):
+  def testRefresh(self):
     file_system = TestFileSystem({
       'chrome_sidenav.json': '[{ "title": "H1" }]'
     }, relative_to=JSON_TEMPLATES)
 
-    # Ensure Cron doesn't rely on request.
+    # Ensure Refresh doesn't rely on request.
     sidenav_data_source = SidenavDataSource(
         ServerInstance.ForTest(file_system), request=None)
-    sidenav_data_source.Cron().Get()
+    sidenav_data_source.Refresh().Get()
 
-    # If Cron fails, chrome_sidenav.json will not be cached, and the cache_data
-    # access will fail.
+    # If Refresh fails, chrome_sidenav.json will not be cached, and the
+    # cache_data access will fail.
     # TODO(jshumway): Make a non hack version of this check.
     sidenav_data_source._cache._file_object_store.Get(
         '%schrome_sidenav.json' % JSON_TEMPLATES).Get().cache_data

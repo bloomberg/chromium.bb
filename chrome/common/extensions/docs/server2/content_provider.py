@@ -195,8 +195,8 @@ class ContentProvider(object):
             .Then(lambda found: found or find_index_file())
             .Then(lambda found: found or path))
 
-  def Cron(self):
-    futures = [self._path_canonicalizer.Cron()]
+  def Refresh(self):
+    futures = [self._path_canonicalizer.Refresh()]
     for root, _, files in self.file_system.Walk(''):
       for f in files:
         futures.append(self.GetContentAndType(Join(root, f)))

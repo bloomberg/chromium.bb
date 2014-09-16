@@ -114,5 +114,5 @@ class PathCanonicalizer(object):
 
     return max_prefix
 
-  def Cron(self):
+  def Refresh(self):
     return self._LoadCache()
