@@ -571,7 +571,7 @@ MediaControlCastButtonElement::MediaControlCastButtonElement(MediaControls& medi
 
 PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> MediaControlCastButtonElement::create(MediaControls& mediaControls, bool isOverlayButton)
 {
-    RefPtrWillBeRawPtr<MediaControlCastButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlCastButtonElement(mediaControls, isOverlayButton));
+    RefPtrWillBeRawPtr<MediaControlCastButtonElement> button = adoptRefWillBeNoop(new MediaControlCastButtonElement(mediaControls, isOverlayButton));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
