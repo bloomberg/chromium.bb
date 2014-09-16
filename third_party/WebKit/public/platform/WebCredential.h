@@ -26,8 +26,13 @@ public:
     BLINK_PLATFORM_EXPORT WebString name() const;
     BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
 
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebCredential(PlatformCredential*);
+    BLINK_PLATFORM_EXPORT WebCredential& operator=(PlatformCredential*);
+    BLINK_PLATFORM_EXPORT PlatformCredential* platformCredential() const { return m_platformCredential.get(); }
+#endif
+
 protected:
-    BLINK_PLATFORM_EXPORT explicit WebCredential(PlatformCredential*);
     WebPrivatePtr<PlatformCredential> m_platformCredential;
 };
 

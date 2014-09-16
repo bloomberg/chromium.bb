@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class KURL;
 class Page;
 class WebCredential;
@@ -26,6 +27,7 @@ public:
 
     static const char* supplementName();
     static CredentialManagerClient* from(Page*);
+    static CredentialManagerClient* from(ExecutionContext*);
 
     // Ownership of the callback is transferred to the callee for each of
     // the following methods.

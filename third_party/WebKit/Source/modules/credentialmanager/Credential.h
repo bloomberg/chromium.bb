@@ -29,8 +29,10 @@ public:
 
     virtual void trace(Visitor*);
 
+    PlatformCredential* platformCredential() const { return m_platformCredential; }
+
 protected:
-    explicit Credential(PlatformCredential*);
+    Credential(PlatformCredential*);
     Credential(const String& id, const String& name, const KURL& avatar);
 
     // Parses a string as a KURL. Throws an exception via |exceptionState| if an invalid URL is produced.

@@ -24,6 +24,12 @@ WebCredential::WebCredential(PlatformCredential* credential)
 {
 }
 
+WebCredential& WebCredential::operator=(PlatformCredential* credential)
+{
+    m_platformCredential = credential;
+    return *this;
+}
+
 void WebCredential::reset()
 {
     m_platformCredential.reset();

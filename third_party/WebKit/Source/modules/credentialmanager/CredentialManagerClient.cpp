@@ -5,6 +5,9 @@
 #include "config.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/page/Page.h"
 
 namespace blink {
@@ -22,6 +25,14 @@ CredentialManagerClient::~CredentialManagerClient()
 const char* CredentialManagerClient::supplementName()
 {
     return "CredentialManagerClient";
+}
+
+// static
+CredentialManagerClient* CredentialManagerClient::from(ExecutionContext* executionContext)
+{
+    if (!executionContext->isDocument() || !toDocument(executionContext)->page())
+        return 0;
+    return from(toDocument(executionContext)->page());
 }
 
 // static
