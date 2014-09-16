@@ -782,6 +782,14 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     devtools_web_view_->SetWebContents(NULL);
   }
 
+  // Do this before updating InfoBarContainer as the InfoBarContainer may
+  // callback to us and trigger layout.
+  if (bookmark_bar_view_.get()) {
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(),
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  }
+
   infobar_container_->ChangeInfoBarManager(
       InfoBarService::FromWebContents(new_contents));
 
@@ -793,11 +801,6 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
         permission_bubble_view_.get());
   }
 
-  if (bookmark_bar_view_.get()) {
-    bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-  }
   UpdateUIForContents(new_contents);
 
   // Layout for DevTools _before_ setting the both main and devtools WebContents
@@ -2047,8 +2050,9 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
     GetBrowserViewLayout()->set_bookmark_bar(bookmark_bar_view_.get());
   }
-  bookmark_bar_view_->SetVisible(show_bookmark_bar);
-  bookmark_bar_view_->SetPageNavigator(contents);
+  // Don't change the visibility of the BookmarkBarView. BrowserViewLayout
+  // handles it.
+  bookmark_bar_view_->SetPageNavigator(GetActiveWebContents());
 
   // Update parenting for the bookmark bar. This may detach it from all views.
   bool needs_layout = false;

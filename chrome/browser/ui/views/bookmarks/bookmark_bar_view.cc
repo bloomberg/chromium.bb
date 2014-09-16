@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
@@ -473,7 +474,6 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       other_bookmarked_button_(NULL),
       managed_bookmarks_button_(NULL),
       apps_page_shortcut_(NULL),
-      show_folder_method_factory_(this),
       overflow_button_(NULL),
       instructions_(NULL),
       bookmarks_separator_view_(NULL),
@@ -482,7 +482,8 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       infobar_visible_(false),
       throbbing_view_(NULL),
       bookmark_bar_state_(BookmarkBar::SHOW),
-      animating_detached_(false) {
+      animating_detached_(false),
+      show_folder_method_factory_(this) {
   set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
 
@@ -509,6 +510,14 @@ BookmarkBarView::~BookmarkBarView() {
 // static
 void BookmarkBarView::DisableAnimationsForTesting(bool disabled) {
   animations_enabled = !disabled;
+}
+
+void BookmarkBarView::AddObserver(BookmarkBarViewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BookmarkBarView::RemoveObserver(BookmarkBarViewObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
@@ -975,6 +984,15 @@ void BookmarkBarView::OnThemeChanged() {
 
 const char* BookmarkBarView::GetClassName() const {
   return kViewClassName;
+}
+
+void BookmarkBarView::SetVisible(bool v) {
+  if (v == visible())
+    return;
+
+  View::SetVisible(v);
+  FOR_EACH_OBSERVER(BookmarkBarViewObserver, observers_,
+                    OnBookmarkBarVisibilityChanged());
 }
 
 void BookmarkBarView::GetAccessibleState(ui::AXViewState* state) {

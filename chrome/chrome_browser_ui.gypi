@@ -1907,6 +1907,7 @@
       'browser/ui/views/bookmarks/bookmark_bar_instructions_view.h',
       'browser/ui/views/bookmarks/bookmark_bar_view.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view.h',
+      'browser/ui/views/bookmarks/bookmark_bar_view_observer.h',
       'browser/ui/views/bookmarks/bookmark_bubble_view.cc',
       'browser/ui/views/bookmarks/bookmark_bubble_view.h',
       'browser/ui/views/bookmarks/bookmark_bubble_view_observer.h',

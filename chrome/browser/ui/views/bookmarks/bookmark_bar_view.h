@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -27,6 +28,7 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/drag_controller.h"
 
+class BookmarkBarViewObserver;
 class BookmarkContextMenu;
 class BookmarkModel;
 class Browser;
@@ -88,6 +90,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Returns the current browser.
   Browser* browser() const { return browser_; }
+
+  void AddObserver(BookmarkBarViewObserver* observer);
+  void RemoveObserver(BookmarkBarViewObserver* observer);
 
   // Sets the PageNavigator that is used when the user selects an entry on
   // the bookmark bar.
@@ -184,6 +189,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual void SetVisible(bool visible) OVERRIDE;
 
   // AccessiblePaneView:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
@@ -414,9 +420,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // Shows the Apps page shortcut.
   views::LabelButton* apps_page_shortcut_;
 
-  // Task used to delay showing of the drop menu.
-  base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;
-
   // Used to track drops on the bookmark bar view.
   scoped_ptr<DropInfo> drop_info_;
 
@@ -447,6 +450,11 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Are we animating to or from the detached state?
   bool animating_detached_;
+
+  ObserverList<BookmarkBarViewObserver> observers_;
+
+  // Factory used to delay showing of the drop menu.
+  base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };
