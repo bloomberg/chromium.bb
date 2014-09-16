@@ -307,7 +307,6 @@ GetTrackingConfiguration() {
   return result;
 }
 
-
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
   // Sample the histogram also for the successful case in order to get a
@@ -337,6 +336,13 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 #else
     // On ChromeOS error screen with message about broken local state
     // will be displayed.
+
+    // A supplementary error message about broken local state - is included
+    // in logs and user feedbacks.
+    if (error != PersistentPrefStore::PREF_READ_ERROR_NONE &&
+        error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
+      LOG(ERROR) << "An error happened during prefs loading: " << error;
+    }
 #endif
   }
 }
