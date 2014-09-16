@@ -246,6 +246,37 @@ class SANDBOX_EXPORT SandboxBPF {
   // been configured with SetSandboxPolicy().
   void InstallFilter(bool must_sync_threads);
 
+  // Compile the configured policy into a complete instruction sequence.
+  // (See MaybeAddEscapeHatch for |has_unsafe_traps|.)
+  Instruction* CompilePolicy(CodeGen* gen, bool* has_unsafe_traps);
+
+  // Return an instruction sequence that checks the
+  // arch_seccomp_data's "arch" field is valid, and then passes
+  // control to |passed| if so.
+  Instruction* CheckArch(CodeGen* gen, Instruction* passed);
+
+  // If the |rest| instruction sequence contains any unsafe traps,
+  // then sets |*has_unsafe_traps| to true and returns an instruction
+  // sequence that allows all system calls from Syscall::Call(), and
+  // otherwise passes control to |rest|.
+  //
+  // If |rest| contains no unsafe traps, then |rest| is returned
+  // directly and |*has_unsafe_traps| is set to false.
+  Instruction* MaybeAddEscapeHatch(CodeGen* gen,
+                                   bool* has_unsafe_traps,
+                                   Instruction* rest);
+
+  // Return an instruction sequence that loads and checks the system
+  // call number, performs a binary search, and then dispatches to an
+  // appropriate instruction sequence compiled from the current
+  // policy.
+  Instruction* DispatchSyscall(CodeGen* gen);
+
+  // Return an instruction sequence that checks the system call number
+  // (expected to be loaded in register A) and if valid, passes
+  // control to |passed| (with register A still valid).
+  Instruction* CheckSyscallNumber(CodeGen* gen, Instruction* passed);
+
   // Verify the correctness of a compiled program by comparing it against the
   // current policy. This function should only ever be called by unit tests and
   // by the sandbox internals. It should not be used by production code.

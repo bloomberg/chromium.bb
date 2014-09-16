@@ -12,11 +12,13 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -28,9 +30,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
+#include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
@@ -39,6 +43,28 @@ namespace sandbox {
 namespace {
 
 const int kExpectedExitCode = 100;
+
+#if defined(__i386__) || defined(__x86_64__)
+const bool kIsIntel = true;
+#else
+const bool kIsIntel = false;
+#endif
+#if defined(__x86_64__) && defined(__ILP32__)
+const bool kIsX32 = true;
+#else
+const bool kIsX32 = false;
+#endif
+
+const int kSyscallsRequiredForUnsafeTraps[] = {
+  __NR_rt_sigprocmask,
+  __NR_rt_sigreturn,
+#if defined(__NR_sigprocmask)
+  __NR_sigprocmask,
+#endif
+#if defined(__NR_sigreturn)
+  __NR_sigreturn,
+#endif
+};
 
 bool HasExactlyOneBit(uint64_t x) {
   // Common trick; e.g., see http://stackoverflow.com/a/108329.
@@ -627,145 +653,8 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
     SANDBOX_DIE("Out of memory");
   }
 
-  // If the architecture doesn't match SECCOMP_ARCH, disallow the
-  // system call.
-  Instruction* tail;
-  Instruction* head = gen->MakeInstruction(
-      BPF_LD + BPF_W + BPF_ABS,
-      SECCOMP_ARCH_IDX,
-      tail = gen->MakeInstruction(
-          BPF_JMP + BPF_JEQ + BPF_K,
-          SECCOMP_ARCH,
-          NULL,
-          gen->MakeInstruction(
-              BPF_RET + BPF_K,
-              Kill("Invalid audit architecture in BPF filter"))));
-
-  bool has_unsafe_traps = false;
-  {
-    // Evaluate all possible system calls and group their ErrorCodes into
-    // ranges of identical codes.
-    Ranges ranges;
-    FindRanges(&ranges);
-
-    // Compile the system call ranges to an optimized BPF jumptable
-    Instruction* jumptable =
-        AssembleJumpTable(gen, ranges.begin(), ranges.end());
-
-    // If there is at least one UnsafeTrap() in our program, the entire sandbox
-    // is unsafe. We need to modify the program so that all non-
-    // SECCOMP_RET_ALLOW ErrorCodes are handled in user-space. This will then
-    // allow us to temporarily disable sandboxing rules inside of callbacks to
-    // UnsafeTrap().
-    gen->Traverse(jumptable, CheckForUnsafeErrorCodes, &has_unsafe_traps);
-
-    // Grab the system call number, so that we can implement jump tables.
-    Instruction* load_nr =
-        gen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, SECCOMP_NR_IDX);
-
-    // If our BPF program has unsafe jumps, enable support for them. This
-    // test happens very early in the BPF filter program. Even before we
-    // consider looking at system call numbers.
-    // As support for unsafe jumps essentially defeats all the security
-    // measures that the sandbox provides, we print a big warning message --
-    // and of course, we make sure to only ever enable this feature if it
-    // is actually requested by the sandbox policy.
-    if (has_unsafe_traps) {
-      if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
-        SANDBOX_DIE(
-            "Support for UnsafeTrap() has not yet been ported to this "
-            "architecture");
-      }
-
-      if (!policy_->EvaluateSyscall(this, __NR_rt_sigprocmask)
-               .Equals(ErrorCode(ErrorCode::ERR_ALLOWED)) ||
-          !policy_->EvaluateSyscall(this, __NR_rt_sigreturn)
-               .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#if defined(__NR_sigprocmask)
-          ||
-          !policy_->EvaluateSyscall(this, __NR_sigprocmask)
-               .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#endif
-#if defined(__NR_sigreturn)
-          ||
-          !policy_->EvaluateSyscall(this, __NR_sigreturn)
-               .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#endif
-          ) {
-        SANDBOX_DIE(
-            "Invalid seccomp policy; if using UnsafeTrap(), you must "
-            "unconditionally allow sigreturn() and sigprocmask()");
-      }
-
-      if (!Trap::EnableUnsafeTrapsInSigSysHandler()) {
-        // We should never be able to get here, as UnsafeTrap() should never
-        // actually return a valid ErrorCode object unless the user set the
-        // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
-        // "has_unsafe_traps" would always be false. But better double-check
-        // than enabling dangerous code.
-        SANDBOX_DIE("We'd rather die than enable unsafe traps");
-      }
-      gen->Traverse(jumptable, RedirectToUserspace, this);
-
-      // Allow system calls, if they originate from our magic return address
-      // (which we can query by calling Syscall::Call(-1)).
-      uintptr_t syscall_entry_point = static_cast<uintptr_t>(Syscall::Call(-1));
-      uint32_t low = static_cast<uint32_t>(syscall_entry_point);
-#if __SIZEOF_POINTER__ > 4
-      uint32_t hi = static_cast<uint32_t>(syscall_entry_point >> 32);
-#endif
-
-      // BPF cannot do native 64bit comparisons. On 64bit architectures, we
-      // have to compare both 32bit halves of the instruction pointer. If they
-      // match what we expect, we return ERR_ALLOWED. If either or both don't
-      // match, we continue evalutating the rest of the sandbox policy.
-      Instruction* escape_hatch = gen->MakeInstruction(
-          BPF_LD + BPF_W + BPF_ABS,
-          SECCOMP_IP_LSB_IDX,
-          gen->MakeInstruction(
-              BPF_JMP + BPF_JEQ + BPF_K,
-              low,
-#if __SIZEOF_POINTER__ > 4
-              gen->MakeInstruction(
-                  BPF_LD + BPF_W + BPF_ABS,
-                  SECCOMP_IP_MSB_IDX,
-                  gen->MakeInstruction(
-                      BPF_JMP + BPF_JEQ + BPF_K,
-                      hi,
-#endif
-                      gen->MakeInstruction(BPF_RET + BPF_K,
-                                           ErrorCode(ErrorCode::ERR_ALLOWED)),
-#if __SIZEOF_POINTER__ > 4
-                      load_nr)),
-#endif
-              load_nr));
-      gen->JoinInstructions(tail, escape_hatch);
-    } else {
-      gen->JoinInstructions(tail, load_nr);
-    }
-    tail = load_nr;
-
-// On Intel architectures, verify that system call numbers are in the
-// expected number range. The older i386 and x86-64 APIs clear bit 30
-// on all system calls. The newer x32 API always sets bit 30.
-#if defined(__i386__) || defined(__x86_64__)
-    Instruction* invalidX32 = gen->MakeInstruction(
-        BPF_RET + BPF_K, Kill("Illegal mixing of system call ABIs").err_);
-    Instruction* checkX32 =
-#if defined(__x86_64__) && defined(__ILP32__)
-        gen->MakeInstruction(
-            BPF_JMP + BPF_JSET + BPF_K, 0x40000000, 0, invalidX32);
-#else
-        gen->MakeInstruction(
-            BPF_JMP + BPF_JSET + BPF_K, 0x40000000, invalidX32, 0);
-#endif
-    gen->JoinInstructions(tail, checkX32);
-    tail = checkX32;
-#endif
-
-    // Append jump table to our pre-amble
-    gen->JoinInstructions(tail, jumptable);
-  }
+  bool has_unsafe_traps;
+  Instruction* head = CompilePolicy(gen, &has_unsafe_traps);
 
   // Turn the DAG into a vector of instructions.
   Program* program = new Program();
@@ -783,6 +672,146 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
   }
 
   return program;
+}
+
+Instruction* SandboxBPF::CompilePolicy(CodeGen* gen, bool* has_unsafe_traps) {
+  // A compiled policy consists of three logical parts:
+  //   1. Check that the "arch" field matches the expected architecture.
+  //   2. If the policy involves unsafe traps, check if the syscall was
+  //      invoked by Syscall::Call, and then allow it unconditionally.
+  //   3. Check the system call number and jump to the appropriate compiled
+  //      system call policy number.
+  return CheckArch(
+      gen, MaybeAddEscapeHatch(gen, has_unsafe_traps, DispatchSyscall(gen)));
+}
+
+Instruction* SandboxBPF::CheckArch(CodeGen* gen, Instruction* passed) {
+  // If the architecture doesn't match SECCOMP_ARCH, disallow the
+  // system call.
+  return gen->MakeInstruction(
+      BPF_LD + BPF_W + BPF_ABS,
+      SECCOMP_ARCH_IDX,
+      gen->MakeInstruction(
+          BPF_JMP + BPF_JEQ + BPF_K,
+          SECCOMP_ARCH,
+          passed,
+          RetExpression(gen,
+                        Kill("Invalid audit architecture in BPF filter"))));
+}
+
+Instruction* SandboxBPF::MaybeAddEscapeHatch(CodeGen* gen,
+                                             bool* has_unsafe_traps,
+                                             Instruction* rest) {
+  // If there is at least one UnsafeTrap() in our program, the entire sandbox
+  // is unsafe. We need to modify the program so that all non-
+  // SECCOMP_RET_ALLOW ErrorCodes are handled in user-space. This will then
+  // allow us to temporarily disable sandboxing rules inside of callbacks to
+  // UnsafeTrap().
+  *has_unsafe_traps = false;
+  gen->Traverse(rest, CheckForUnsafeErrorCodes, has_unsafe_traps);
+  if (!*has_unsafe_traps) {
+    // If no unsafe traps, then simply return |rest|.
+    return rest;
+  }
+
+  // If our BPF program has unsafe jumps, enable support for them. This
+  // test happens very early in the BPF filter program. Even before we
+  // consider looking at system call numbers.
+  // As support for unsafe jumps essentially defeats all the security
+  // measures that the sandbox provides, we print a big warning message --
+  // and of course, we make sure to only ever enable this feature if it
+  // is actually requested by the sandbox policy.
+  if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
+    SANDBOX_DIE(
+        "Support for UnsafeTrap() has not yet been ported to this "
+        "architecture");
+  }
+
+  for (size_t i = 0; i < arraysize(kSyscallsRequiredForUnsafeTraps); ++i) {
+    if (!policy_->EvaluateSyscall(this, kSyscallsRequiredForUnsafeTraps[i])
+             .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))) {
+      SANDBOX_DIE(
+          "Policies that use UnsafeTrap() must unconditionally allow all "
+          "required system calls");
+    }
+  }
+
+  if (!Trap::EnableUnsafeTrapsInSigSysHandler()) {
+    // We should never be able to get here, as UnsafeTrap() should never
+    // actually return a valid ErrorCode object unless the user set the
+    // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
+    // "has_unsafe_traps" would always be false. But better double-check
+    // than enabling dangerous code.
+    SANDBOX_DIE("We'd rather die than enable unsafe traps");
+  }
+  gen->Traverse(rest, RedirectToUserspace, this);
+
+  // Allow system calls, if they originate from our magic return address
+  // (which we can query by calling Syscall::Call(-1)).
+  uint64_t syscall_entry_point =
+      static_cast<uint64_t>(static_cast<uintptr_t>(Syscall::Call(-1)));
+  uint32_t low = static_cast<uint32_t>(syscall_entry_point);
+  uint32_t hi = static_cast<uint32_t>(syscall_entry_point >> 32);
+
+  // BPF cannot do native 64-bit comparisons, so we have to compare
+  // both 32-bit halves of the instruction pointer. If they match what
+  // we expect, we return ERR_ALLOWED. If either or both don't match,
+  // we continue evalutating the rest of the sandbox policy.
+  //
+  // For simplicity, we check the full 64-bit instruction pointer even
+  // on 32-bit architectures.
+  return gen->MakeInstruction(
+      BPF_LD + BPF_W + BPF_ABS,
+      SECCOMP_IP_LSB_IDX,
+      gen->MakeInstruction(
+          BPF_JMP + BPF_JEQ + BPF_K,
+          low,
+          gen->MakeInstruction(
+              BPF_LD + BPF_W + BPF_ABS,
+              SECCOMP_IP_MSB_IDX,
+              gen->MakeInstruction(
+                  BPF_JMP + BPF_JEQ + BPF_K,
+                  hi,
+                  RetExpression(gen, ErrorCode(ErrorCode::ERR_ALLOWED)),
+                  rest)),
+          rest));
+}
+
+Instruction* SandboxBPF::DispatchSyscall(CodeGen* gen) {
+  // Evaluate all possible system calls and group their ErrorCodes into
+  // ranges of identical codes.
+  Ranges ranges;
+  FindRanges(&ranges);
+
+  // Compile the system call ranges to an optimized BPF jumptable
+  Instruction* jumptable = AssembleJumpTable(gen, ranges.begin(), ranges.end());
+
+  // Grab the system call number, so that we can check it and then
+  // execute the jump table.
+  return gen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS,
+                              SECCOMP_NR_IDX,
+                              CheckSyscallNumber(gen, jumptable));
+}
+
+Instruction* SandboxBPF::CheckSyscallNumber(CodeGen* gen, Instruction* passed) {
+  if (kIsIntel) {
+    // On Intel architectures, verify that system call numbers are in the
+    // expected number range.
+    Instruction* invalidX32 =
+        RetExpression(gen, Kill("Illegal mixing of system call ABIs"));
+    if (kIsX32) {
+      // The newer x32 API always sets bit 30.
+      return gen->MakeInstruction(
+          BPF_JMP + BPF_JSET + BPF_K, 0x40000000, passed, invalidX32);
+    } else {
+      // The older i386 and x86-64 APIs clear bit 30 on all system calls.
+      return gen->MakeInstruction(
+          BPF_JMP + BPF_JSET + BPF_K, 0x40000000, invalidX32, passed);
+    }
+  }
+
+  // TODO(mdempsky): Similar validation for other architectures?
+  return passed;
 }
 
 void SandboxBPF::VerifyProgram(const Program& program, bool has_unsafe_traps) {
@@ -1028,16 +1057,12 @@ ErrorCode SandboxBPF::UnsafeTrap(Trap::TrapFnc fnc, const void* aux) {
 }
 
 bool SandboxBPF::IsRequiredForUnsafeTrap(int sysno) {
-  return (sysno == __NR_rt_sigprocmask || sysno == __NR_rt_sigreturn
-#if defined(__NR_sigprocmask)
-          ||
-          sysno == __NR_sigprocmask
-#endif
-#if defined(__NR_sigreturn)
-          ||
-          sysno == __NR_sigreturn
-#endif
-          );
+  for (size_t i = 0; i < arraysize(kSyscallsRequiredForUnsafeTraps); ++i) {
+    if (sysno == kSyscallsRequiredForUnsafeTraps[i]) {
+      return true;
+    }
+  }
+  return false;
 }
 
 intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
