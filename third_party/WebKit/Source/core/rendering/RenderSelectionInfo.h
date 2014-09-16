@@ -42,7 +42,7 @@ public:
 
     RenderSelectionInfoBase(RenderObject* o)
         : m_object(o)
-        , m_paintInvalidationContainer(o->containerForPaintInvalidation())
+        , m_paintInvalidationContainer(o->isRooted() ? o->containerForPaintInvalidation() : nullptr)
         , m_state(o->selectionState())
     {
     }
@@ -69,10 +69,10 @@ public:
     RenderSelectionInfo(RenderObject* o, bool clipToVisibleContent)
         : RenderSelectionInfoBase(o)
     {
-        if (o->canUpdateSelectionOnRootLineBoxes()) {
+        if (m_paintInvalidationContainer && o->canUpdateSelectionOnRootLineBoxes()) {
             m_rect = o->selectionRectForPaintInvalidation(m_paintInvalidationContainer, clipToVisibleContent);
             // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
-            if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
+            if (m_paintInvalidationContainer->layer()->groupedMapping())
                 RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, m_rect);
         } else {
             m_rect = LayoutRect();
@@ -96,7 +96,7 @@ public:
     RenderBlockSelectionInfo(RenderBlock* b)
         : RenderSelectionInfoBase(b)
     {
-        if (b->canUpdateSelectionOnRootLineBoxes())
+        if (m_paintInvalidationContainer && b->canUpdateSelectionOnRootLineBoxes())
             m_rects = block()->selectionGapRectsForPaintInvalidation(m_paintInvalidationContainer);
         else
             m_rects = GapRects();
