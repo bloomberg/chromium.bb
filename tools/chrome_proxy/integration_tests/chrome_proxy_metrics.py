@@ -157,6 +157,19 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'request_bypassed', 'count', bypass_count))
 
+  def AddResultsForClientVersion(self, tab, results):
+    for resp in self.IterResponses(tab):
+      r = resp.response
+      if resp.response.status != 200:
+        raise ChromeProxyMetricException, ('%s: Response is not 200: %d' %
+                                           (r.url, r.status))
+      if not resp.IsValidByViaHeader():
+        raise ChromeProxyMetricException, ('%s: Response missing via header' %
+                                           (r.url))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'version_test', 'count', 1))
+
+
   def IsProxyBypassed(self, tab):
     """ Returns True if all configured proxies are bypassed."""
     if not tab:

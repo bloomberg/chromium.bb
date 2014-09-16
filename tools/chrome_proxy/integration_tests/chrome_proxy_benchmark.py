@@ -70,6 +70,11 @@ class ChromeProxyHeaderValidation(benchmark.Benchmark):
   test = measurements.ChromeProxyHeaders
   page_set = pagesets.Top20PageSet
 
+@benchmark.Enabled('android')
+class ChromeProxyClientVersion(benchmark.Benchmark):
+  tag = 'client_version'
+  test = measurements.ChromeProxyClientVersion
+  page_set = pagesets.SyntheticPageSet
 
 @benchmark.Enabled('android')
 class ChromeProxyBypass(benchmark.Benchmark):
