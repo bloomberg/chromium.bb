@@ -134,54 +134,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
-#if defined(USE_OZONE)
-// Verifies if the mouse pointer correctly moves between displays with
-// different scale factors.
-TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("500x500,600x600*2");
-
-  ASSERT_EQ(
-      DisplayLayout::RIGHT,
-      Shell::GetInstance()->display_manager()->
-          GetCurrentDisplayLayout().position);
-
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
-
-  // This emulates the dragging to the 2nd display, which has
-  // higher scale factor, by having 2nd display's root as target
-  // but have the edge of 1st display.
-  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
-      root_windows[1], root_windows[1], gfx::Point(498, 123)));
-  EXPECT_EQ("502,123",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  // Touch the edge of 2nd display again and make sure it warps to
-  // 1st dislay.
-  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
-      root_windows[1], root_windows[1], gfx::Point(500, 123)));
-  EXPECT_EQ("496,123",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  // Draging back from 1x to 2x.
-  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
-      root_windows[1], root_windows[0], gfx::Point(500, 123)));
-  EXPECT_EQ("496,123",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  UpdateDisplay("500x500*2,600x600");
-  // Draging back from 1x to 2x.
-  EXPECT_TRUE(WarpMouseCursorIfNecessaryWithDragRoot(
-      root_windows[0], root_windows[1], gfx::Point(250, 123)));
-  EXPECT_EQ("246,123",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-}
-#endif
-
-#if !defined(USE_OZONE)
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors. In native coords mode, there is no
 // difference between drag and move.
@@ -214,37 +166,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
   EXPECT_EQ("498,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
-#endif
-
-#if defined(USE_OZONE)
-TEST_F(MouseCursorEventFilterTest, DoNotWarpTwice) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("500x500,600x600");
-
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(623, 123));
-
-  // Touch the right edge of the primary root window. Pointer should warp.
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
-      root_windows[0], gfx::Point(499, 11)));
-  EXPECT_EQ("501,11",  // by 2px.
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  // Touch the left edge of the secondary root window immediately. This should
-  // be ignored.
-  EXPECT_FALSE(event_filter()->WarpMouseCursorIfNecessaryForTest(
-      root_windows[1], gfx::Point(500, 11)));
-
-  // Touch the left edge of the secondary root window again, pointer should
-  // warp for this time.
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
-      root_windows[1], gfx::Point(500, 11)));
-  EXPECT_EQ("498,11",  // by 2px.
-            aura::Env::GetInstance()->last_mouse_location().ToString());
-}
-#endif
 
 // Verifies if MouseCursorEventFilter::set_mouse_warp_mode() works as expected.
 TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {

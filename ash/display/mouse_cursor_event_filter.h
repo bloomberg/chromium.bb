@@ -80,14 +80,8 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   // Returns true if/ the cursor was moved.
   bool WarpMouseCursorIfNecessary(ui::MouseEvent* event);
 
-#if defined(USE_OZONE)
-  bool WarpMouseCursorInScreenCoords(aura::Window* target_root,
-                                     const gfx::Point& point_in_screen);
-
-#else
   bool WarpMouseCursorInNativeCoords(const gfx::Point& point_in_native,
                                      const gfx::Point& point_in_screen);
-#endif
 
   // Update the edge/indicator bounds based on the current
   // display configuration.

@@ -68,7 +68,8 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
   DriWindow* window = window_manager_->GetWindow(cursor_window_);
   const gfx::Size& size = window->GetBounds().size();
   cursor_location_.SetToMax(gfx::PointF(0, 0));
-  cursor_location_.SetToMin(gfx::PointF(size.width(), size.height()));
+  // Right and bottom edges are exclusive.
+  cursor_location_.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
 
   if (cursor_.get())
     hardware_->MoveHardwareCursor(cursor_window_, bitmap_location());
