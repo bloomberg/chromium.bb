@@ -557,10 +557,9 @@ void RenderImage::layout()
 {
     LayoutRect oldContentRect = replacedContentRect();
     RenderReplaced::layout();
-    if (replacedContentRect() != oldContentRect) {
+    if (replacedContentRect() != oldContentRect)
         setShouldDoFullPaintInvalidation(true);
-        updateInnerContentRect();
-    }
+    updateInnerContentRect();
 }
 
 bool RenderImage::updateImageLoadingPriorities()
