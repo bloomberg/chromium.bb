@@ -667,6 +667,8 @@
         'browser/suggest_permission_util.h',
         'browser/uninstall_reason.h',
         'browser/update_observer.h',
+        'browser/url_request_util.cc',
+        'browser/url_request_util.h',
         'browser/value_store/leveldb_value_store.cc',
         'browser/value_store/leveldb_value_store.h',
         'browser/value_store/testing_value_store.cc',

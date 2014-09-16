@@ -93,7 +93,7 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
 
 // This test lives in src/chrome instead of src/extensions because it tests
 // functionality delegated back to Chrome via ChromeExtensionsBrowserClient.
-// See chrome/browser/extensions/url_request_util.cc.
+// See chrome/browser/extensions/chrome_url_request_util.cc.
 class ExtensionProtocolTest : public testing::Test {
  public:
   ExtensionProtocolTest()

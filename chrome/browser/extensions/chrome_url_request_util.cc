@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/url_request_util.h"
+#include "chrome/browser/extensions/chrome_url_request_util.h"
 
 #include <string>
 
@@ -20,12 +20,9 @@
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
-#include "extensions/common/manifest_handlers/webview_info.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -131,76 +128,27 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 }  // namespace
 
 namespace extensions {
-namespace url_request_util {
+namespace chrome_url_request_util {
 
 bool AllowCrossRendererResourceLoad(net::URLRequest* request,
-                                    bool is_incognito,
-                                    const Extension* extension,
-                                    InfoMap* extension_info_map) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-
-  bool is_guest = false;
-
-  // Extensions with webview: allow loading certain resources by guest renderers
-  // with privileged partition IDs as specified in the manifest file.
-  WebViewRendererState* web_view_renderer_state =
-      WebViewRendererState::GetInstance();
-  std::string partition_id;
-  is_guest = web_view_renderer_state->GetPartitionID(info->GetChildID(),
-                                                     &partition_id);
-  std::string resource_path = request->url().path();
-  if (is_guest && WebviewInfo::IsResourceWebviewAccessible(
-                      extension, partition_id, resource_path)) {
-    return true;
-  }
-
-  // If the request is for navigations outside of webviews, then it should be
-  // allowed. The navigation logic in CrossSiteResourceHandler will properly
-  // transfer the navigation to a privileged process before it commits.
-  if (content::IsResourceTypeFrame(info->GetResourceType()) && !is_guest)
-    return true;
-
-  if (!content::PageTransitionIsWebTriggerable(info->GetPageTransition()))
-    return false;
-
-  // The following checks require that we have an actual extension object. If we
-  // don't have it, allow the request handling to continue with the rest of the
-  // checks.
-  if (!extension)
-    return true;
-
-  // Disallow loading of packaged resources for hosted apps. We don't allow
-  // hybrid hosted/packaged apps. The one exception is access to icons, since
-  // some extensions want to be able to do things like create their own
-  // launchers.
-  std::string resource_root_relative_path =
-      request->url().path().empty() ? std::string()
-                                    : request->url().path().substr(1);
-  if (extension->is_hosted_app() &&
-      !IconsInfo::GetIcons(extension)
-           .ContainsPath(resource_root_relative_path)) {
-    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
-               << "hosted app.";
-    return false;
-  }
-
-  // Extensions with web_accessible_resources: allow loading by regular
-  // renderers. Since not all subresources are required to be listed in a v2
-  // manifest, we must allow all loads if there are any web accessible
-  // resources. See http://crbug.com/179127.
-  if (extension->manifest_version() < 2 ||
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
+                                          bool is_incognito,
+                                          const Extension* extension,
+                                          InfoMap* extension_info_map,
+                                          bool* allowed) {
+  if (url_request_util::AllowCrossRendererResourceLoad(
+          request, is_incognito, extension, extension_info_map, allowed)) {
     return true;
   }
 
   // If there aren't any explicitly marked web accessible resources, the
   // load should be allowed only if it is by DevTools. A close approximation is
   // checking if the extension contains a DevTools page.
-  if (!ManifestURL::GetDevToolsPage(extension).is_empty())
+  if (!ManifestURL::GetDevToolsPage(extension).is_empty()) {
+    *allowed = true;
     return true;
+  }
 
-  // No special exception. Block the load.
+  // Couldn't determine if the resource is allowed or not.
   return false;
 }
 
@@ -239,14 +187,5 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
   return NULL;
 }
 
-bool IsWebViewRequest(net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  // |info| can be NULL sometimes: http://crbug.com/370070.
-  if (!info)
-    return false;
-  return WebViewRendererState::GetInstance()->IsGuest(info->GetChildID());
-}
-
-}  // namespace url_request_util
+}  // namespace chrome_url_request_util
 }  // namespace extensions

@@ -20,10 +20,10 @@
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
+#include "chrome/browser/extensions/chrome_url_request_util.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/url_request_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/url_request_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -125,7 +126,7 @@ ChromeExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
     const base::FilePath& directory_path,
     const std::string& content_security_policy,
     bool send_cors_header) {
-  return url_request_util::MaybeCreateURLRequestResourceBundleJob(
+  return chrome_url_request_util::MaybeCreateURLRequestResourceBundleJob(
       request,
       network_delegate,
       directory_path,
@@ -138,8 +139,13 @@ bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     bool is_incognito,
     const Extension* extension,
     InfoMap* extension_info_map) {
-  return url_request_util::AllowCrossRendererResourceLoad(
-      request, is_incognito, extension, extension_info_map);
+  bool allowed = false;
+  if (chrome_url_request_util::AllowCrossRendererResourceLoad(
+          request, is_incognito, extension, extension_info_map, &allowed))
+    return allowed;
+
+  // Couldn't determine if resource is allowed. Block the load.
+  return false;
 }
 
 PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(

@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omaha_query_params/omaha_query_params.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
@@ -15,6 +16,7 @@
 #include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.cc"
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
@@ -95,6 +97,11 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 
 int ShellBrowserMainParts::PreCreateThreads() {
   // TODO(jamescook): Initialize chromeos::CrosSettings here?
+
+  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+      kExtensionScheme);
+  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+      kExtensionResourceScheme);
 
   // Return no error.
   return 0;
