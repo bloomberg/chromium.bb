@@ -18,7 +18,6 @@
 
 namespace mojo {
 class ApplicationImpl;
-class WebClipboardImpl;
 class WebCookieJarImpl;
 
 class BlinkPlatformImpl : public blink::Platform {
@@ -28,7 +27,6 @@ class BlinkPlatformImpl : public blink::Platform {
 
   // blink::Platform methods:
   virtual blink::WebCookieJar* cookieJar();
-  virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebString defaultLocale();
@@ -80,7 +78,6 @@ class BlinkPlatformImpl : public blink::Platform {
   cc_blink::WebCompositorSupportImpl compositor_support_;
   WebThemeEngineImpl theme_engine_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;
-  scoped_ptr<WebClipboardImpl> clipboard_;
   WebMimeRegistryImpl mime_registry_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
 

@@ -29,8 +29,6 @@
         'mojo_application_manager_unittests',
         'mojo_apps_js_unittests',
         'mojo_base.gyp:mojo_base',
-        'mojo_clipboard',
-        'mojo_clipboard_unittests',
         'mojo_compositor_app',
         'mojo_content_handler_demo',
         'mojo_echo_client',

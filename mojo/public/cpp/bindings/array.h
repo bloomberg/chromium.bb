@@ -68,9 +68,6 @@ class Array {
 
   bool is_null() const { return is_null_; }
 
-  ConstRefType front() const { return vec_.front(); }
-  RefType front() { return vec_.front(); }
-
   size_t size() const { return vec_.size(); }
 
   ConstRefType at(size_t offset) const { return Traits::at(&vec_, offset); }
