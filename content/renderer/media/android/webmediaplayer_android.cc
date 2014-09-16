@@ -766,7 +766,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // process are sequential, the OnSeekComplete() will only occur
   // once OnPlaybackComplete() is done. As the playback can only be executed
   // upon completion of OnSeekComplete(), the request needs to be saved.
-  is_playing_ = false;
+  UpdatePlayingState(false);
   if (seeking_ && seek_time_ == base::TimeDelta())
     pending_playback_ = true;
 }
@@ -1308,18 +1308,22 @@ void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
 }
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
-  const bool was_playing = is_playing_;
-  is_playing_ = is_playing;
-  if (!delegate_ || was_playing == is_playing_)
+  if (is_playing == is_playing_)
     return;
+
+  is_playing_ = is_playing;
+
   if (is_playing)
     interpolator_.StartInterpolating();
   else
     interpolator_.StopInterpolating();
-  if (is_playing)
-    delegate_->DidPlay(this);
-  else
-    delegate_->DidPause(this);
+
+  if (delegate_) {
+    if (is_playing)
+      delegate_->DidPlay(this);
+    else
+      delegate_->DidPause(this);
+  }
 }
 
 #if defined(VIDEO_HOLE)
