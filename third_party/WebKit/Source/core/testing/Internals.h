@@ -249,6 +249,8 @@ public:
     void mediaPlayerRequestFullscreen(HTMLMediaElement*);
     double effectiveMediaVolume(HTMLMediaElement*);
 
+    void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement *, bool);
+
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
 

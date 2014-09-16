@@ -94,6 +94,9 @@ public:
     virtual void mediaSourceOpened(WebMediaSource*) = 0;
     virtual void requestFullscreen() = 0;
     virtual void requestSeek(double) = 0;
+    virtual void remoteRouteAvailabilityChanged(bool) = 0;
+    virtual void connectedToRemoteDevice() = 0;
+    virtual void disconnectedFromRemoteDevice() = 0;
 
 protected:
     ~WebMediaPlayerClient() { }

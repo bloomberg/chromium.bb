@@ -51,6 +51,10 @@ struct WebLocalizedString {
         AXListMarkerText, // Deprecated.
         AXMediaAudioElement,
         AXMediaAudioElementHelp,
+        AxMediaCastOffButton,
+        AxMediaCastOffButtonHelp,
+        AxMediaCastOnButton,
+        AxMediaCastOnButtonHelp,
         AXMediaCurrentTimeDisplay,
         AXMediaCurrentTimeDisplayHelp,
         AXMediaDefault,

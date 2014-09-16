@@ -339,7 +339,22 @@ static bool paintMediaToggleClosedCaptionsButton(RenderObject* object, const Pai
 
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled);
 }
+static bool paintMediaCastButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+{
+    HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    if (!mediaElement)
+        return false;
 
+    static Image* mediaCastOnButton = platformResource("mediaplayerCastOn");
+    static Image* mediaCastOffButton = platformResource("mediaplayerCastOff");
+
+    if (mediaElement->isPlayingRemotely()) {
+        return paintMediaButton(paintInfo.context, rect, mediaCastOnButton);
+    }
+
+    return paintMediaButton(paintInfo.context, rect, mediaCastOffButton);
+
+}
 
 bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
@@ -365,6 +380,11 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
         return paintMediaFullscreenButton(object, paintInfo, rect);
     case MediaOverlayPlayButton:
         return paintMediaOverlayPlayButton(object, paintInfo, rect);
+    case MediaCastOffButton:
+    case MediaCastOnButton:
+    case MediaOverlayCastOffButton:
+    case MediaOverlayCastOnButton:
+        return paintMediaCastButton(object, paintInfo, rect);
     case MediaVolumeSliderContainer:
     case MediaTimelineContainer:
     case MediaCurrentTimeDisplay:

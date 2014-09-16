@@ -196,6 +196,7 @@
 
     void mediaPlayerRequestFullscreen(HTMLMediaElement mediaElement);
     double effectiveMediaVolume(HTMLMediaElement mediaElement);
+    void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(DOMString scheme);

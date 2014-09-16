@@ -151,6 +151,22 @@ video::-webkit-media-controls-overlay-play-button {
     padding: 0;
 }
 
+video::-internal-media-controls-overlay-cast-button {
+    -webkit-appearance: -internal-media-overlay-cast-off-button;
+    display: flex;
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    margin-left: 0px;
+    margin-top: 0px;
+    border: none;
+    box-sizing: border-box;
+    background-color: rgba(0,0,0,0.5);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+}
+
 audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-button {
     -webkit-appearance: media-play-button;
     display: flex;
@@ -265,6 +281,22 @@ input[type="range" i]::-webkit-media-slider-thumb {
 
 audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-fullscreen-button {
     -webkit-appearance: media-enter-fullscreen-button;
+    display: flex;
+    flex: none;
+    border: none;
+    box-sizing: border-box;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    margin-left: -5px;
+    margin-right: 9px;
+    padding: 0;
+    background-color: initial;
+    color: inherit;
+}
+
+audio::-internal-media-controls-cast-button, video::-internal-media-controls-cast-button {
+    -webkit-appearance: -internal-media-cast-off-button;
     display: flex;
     flex: none;
     border: none;

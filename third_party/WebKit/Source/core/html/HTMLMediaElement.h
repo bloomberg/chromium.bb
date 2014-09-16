@@ -106,6 +106,9 @@ public:
 
     bool isActive() const { return m_active; }
 
+    bool hasRemoteRoutes() const { return m_remoteRoutesAvailable; }
+    bool isPlayingRemotely() const { return m_playingRemotely; }
+
     // error state
     PassRefPtrWillBeRawPtr<MediaError> error() const;
 
@@ -146,6 +149,8 @@ public:
     void setLoop(bool b);
     void play();
     void pause();
+    void requestRemotePlayback();
+    void requestRemotePlaybackControl();
 
     // statistics
     unsigned webkitAudioDecodedByteCount() const;
@@ -257,6 +262,10 @@ public:
     bool hasClosedCaptions() const;
     bool closedCaptionsVisible() const;
     void setClosedCaptionsVisible(bool);
+
+    void remoteRouteAvailabilityChanged(bool);
+    void connectedToRemoteDevice();
+    void disconnectedFromRemoteDevice();
 
     MediaControls* mediaControls() const;
 
@@ -574,6 +583,8 @@ private:
     bool m_tracksAreReady : 1;
     bool m_haveVisibleTextTrack : 1;
     bool m_processingPreferenceChange : 1;
+    bool m_remoteRoutesAvailable : 1;
+    bool m_playingRemotely : 1;
 #if ENABLE(OILPAN)
     bool m_isFinalizing : 1;
     bool m_closeMediaSourceWhenFinalizing : 1;

@@ -449,6 +449,12 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case MediaToggleClosedCaptionsButtonPart:
         m_value.valueID = CSSValueMediaToggleClosedCaptionsButton;
         break;
+    case MediaCastOffButtonPart:
+        m_value.valueID = CSSValueInternalMediaCastOffButton;
+        break;
+    case MediaOverlayCastOffButtonPart:
+        m_value.valueID = CSSValueInternalMediaOverlayCastOffButton;
+        break;
     case MediaSliderPart:
         m_value.valueID = CSSValueMediaSlider;
         break;

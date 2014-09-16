@@ -651,6 +651,8 @@ media-controls-background
 media-controls-fullscreen-background
 media-current-time-display
 media-time-remaining-display
+-internal-media-cast-off-button
+-internal-media-overlay-cast-off-button
 menulist
 menulist-button
 menulist-text

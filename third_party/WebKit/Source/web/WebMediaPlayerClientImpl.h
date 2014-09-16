@@ -82,6 +82,9 @@ public:
     virtual void mediaSourceOpened(WebMediaSource*) OVERRIDE;
     virtual void requestFullscreen() OVERRIDE;
     virtual void requestSeek(double) OVERRIDE;
+    virtual void remoteRouteAvailabilityChanged(bool) OVERRIDE;
+    virtual void connectedToRemoteDevice() OVERRIDE;
+    virtual void disconnectedFromRemoteDevice() OVERRIDE;
 
     // MediaPlayer methods:
     virtual WebMediaPlayer* webMediaPlayer() const OVERRIDE;

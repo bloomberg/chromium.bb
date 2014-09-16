@@ -10,6 +10,10 @@
             {
                 window.internals.settings.setMediaControlsOverlayPlayButtonEnabled(true);
 
+                // Add element dynamically, since otherwise the controls are created, but
+                // hidden, before the setting is set, causing the setting to be ignored.
+                addVideoElement();
+
                 findMediaElement();
 
                 video.controls = true;
@@ -19,6 +23,11 @@
 
                 waitForEventOnce('loadeddata', loadeddata);
                 video.src = findMediaFile('video', 'content/test');
+            }
+
+            function addVideoElement() {
+                element = document.createElement('video');
+                document.body.appendChild(element);
             }
 
             function loadeddata()
@@ -67,6 +76,5 @@
     </head>
     <body onload="start()">
         <p>Test that the overlay play button respects the controls attribute</p>
-        <video></video>
     </body>
 </html>

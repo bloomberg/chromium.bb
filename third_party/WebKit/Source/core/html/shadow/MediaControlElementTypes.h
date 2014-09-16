@@ -63,6 +63,10 @@ enum MediaControlElementType {
     MediaTextTrackDisplay,
     MediaExitFullscreenButton,
     MediaOverlayPlayButton,
+    MediaCastOffButton,
+    MediaCastOnButton,
+    MediaOverlayCastOffButton,
+    MediaOverlayCastOnButton,
 };
 
 HTMLMediaElement* toParentMediaElement(Node*);

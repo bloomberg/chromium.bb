@@ -352,6 +352,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
+    , m_remoteRoutesAvailable(false)
+    , m_playingRemotely(false)
 #if ENABLE(OILPAN)
     , m_isFinalizing(false)
     , m_closeMediaSourceWhenFinalizing(false)
@@ -2276,6 +2278,18 @@ void HTMLMediaElement::pause()
     updatePlayState();
 }
 
+void HTMLMediaElement::requestRemotePlayback()
+{
+    ASSERT(m_remoteRoutesAvailable);
+    webMediaPlayer()->requestRemotePlayback();
+}
+
+void HTMLMediaElement::requestRemotePlaybackControl()
+{
+    ASSERT(m_remoteRoutesAvailable);
+    webMediaPlayer()->requestRemotePlaybackControl();
+}
+
 void HTMLMediaElement::closeMediaSource()
 {
     if (!m_mediaSource)
@@ -3180,6 +3194,27 @@ void HTMLMediaElement::mediaPlayerRequestSeek(double time)
     setCurrentTime(time, ASSERT_NO_EXCEPTION);
 }
 
+void HTMLMediaElement::remoteRouteAvailabilityChanged(bool routesAvailable)
+{
+    m_remoteRoutesAvailable = routesAvailable;
+    if (hasMediaControls())
+        mediaControls()->refreshCastButtonVisibility();
+}
+
+void HTMLMediaElement::connectedToRemoteDevice()
+{
+    m_playingRemotely = true;
+    if (hasMediaControls())
+        mediaControls()->startedCasting();
+}
+
+void HTMLMediaElement::disconnectedFromRemoteDevice()
+{
+    m_playingRemotely = false;
+    if (hasMediaControls())
+        mediaControls()->stoppedCasting();
+}
+
 // MediaPlayerPresentation methods
 void HTMLMediaElement::mediaPlayerRepaint()
 {
@@ -3435,6 +3470,13 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     m_pendingActionFlags &= ~flags;
     m_loadState = WaitingForSource;
 
+    // We can't cast if we don't have a media player.
+    m_remoteRoutesAvailable = false;
+    m_playingRemotely = false;
+    if (hasMediaControls()) {
+        mediaControls()->refreshCastButtonVisibility();
+    }
+
     if (m_textTracks)
         configureTextTrackDisplay(AssumeNoVisibleChange);
 }
@@ -3635,7 +3677,7 @@ bool HTMLMediaElement::createMediaControls()
 
 void HTMLMediaElement::configureMediaControls()
 {
-    if (!shouldShowControls() || !inDocument()) {
+    if (!inDocument()) {
         if (hasMediaControls())
             mediaControls()->hide();
         return;
@@ -3645,7 +3687,10 @@ void HTMLMediaElement::configureMediaControls()
         return;
 
     mediaControls()->reset();
-    mediaControls()->show();
+    if (shouldShowControls())
+        mediaControls()->show();
+    else
+        mediaControls()->hide();
 }
 
 void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assumption)
@@ -3718,6 +3763,10 @@ void HTMLMediaElement::createMediaPlayer()
 
     m_player = MediaPlayer::create(this);
 
+    // We haven't yet found out if any remote routes are available.
+    m_remoteRoutesAvailable = false;
+    m_playingRemotely = false;
+
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode && audioSourceProvider()) {
         // When creating the player, make sure its AudioSourceProvider knows about the client.
@@ -3754,7 +3803,7 @@ void HTMLMediaElement::setMediaGroup(const AtomicString& group)
 {
     // When a media element is created with a mediagroup attribute, and when a media element's mediagroup
     // attribute is set, changed, or removed, the user agent must run the following steps:
-    // 1. Let m [this] be the media element in question.
+    // 1. Let _R [this] be the media element in question.
     // 2. Let m have no current media controller, if it currently has one.
     setControllerInternal(nullptr);
 

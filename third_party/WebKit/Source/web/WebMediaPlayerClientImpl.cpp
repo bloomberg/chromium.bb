@@ -180,6 +180,21 @@ void WebMediaPlayerClientImpl::requestSeek(double time)
     m_client->mediaPlayerRequestSeek(time);
 }
 
+void WebMediaPlayerClientImpl::remoteRouteAvailabilityChanged(bool routesAvailable)
+{
+    mediaElement().remoteRouteAvailabilityChanged(routesAvailable);
+}
+
+void WebMediaPlayerClientImpl::connectedToRemoteDevice()
+{
+    mediaElement().connectedToRemoteDevice();
+}
+
+void WebMediaPlayerClientImpl::disconnectedFromRemoteDevice()
+{
+    mediaElement().disconnectedFromRemoteDevice();
+}
+
 // MediaPlayer -------------------------------------------------
 void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF::String& url, WebMediaPlayer::CORSMode corsMode)
 {

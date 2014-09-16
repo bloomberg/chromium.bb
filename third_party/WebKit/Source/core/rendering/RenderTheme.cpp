@@ -311,6 +311,10 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintMediaCurrentTime(o, paintInfo, r);
     case MediaControlsBackgroundPart:
         return paintMediaControlsBackground(o, paintInfo, r);
+    case MediaCastOffButtonPart:
+        return paintMediaCastButton(o, paintInfo, r);
+    case MediaOverlayCastOffButtonPart:
+        return paintMediaCastButton(o, paintInfo, r);
     case MenulistButtonPart:
     case TextFieldPart:
     case TextAreaPart:

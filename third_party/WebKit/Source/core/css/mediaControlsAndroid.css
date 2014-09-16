@@ -73,6 +73,12 @@ audio::-webkit-media-controls-fullscreen-button {
     display: none;
 }
 
+audio::-internal-media-controls-cast-button, video::-internal-media-controls-cast-button {
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+}
+
 video::-webkit-media-controls-toggle-closed-captions-button {
     width: 35px;
     height: 35px;

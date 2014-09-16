@@ -111,6 +111,10 @@ String AccessibilityMediaControl::accessibilityDescription() const
         return queryString(WebLocalizedString::AXMediaShowClosedCaptionsButton);
     case MediaHideClosedCaptionsButton:
         return queryString(WebLocalizedString::AXMediaHideClosedCaptionsButton);
+    case MediaCastOffButton:
+        return queryString(WebLocalizedString::AxMediaCastOffButton);
+    case MediaCastOnButton:
+        return queryString(WebLocalizedString::AxMediaCastOnButton);
     default:
         return queryString(WebLocalizedString::AXMediaDefault);
     }
@@ -141,6 +145,10 @@ String AccessibilityMediaControl::helpText() const
         return queryString(WebLocalizedString::AXMediaShowClosedCaptionsButtonHelp);
     case MediaHideClosedCaptionsButton:
         return queryString(WebLocalizedString::AXMediaHideClosedCaptionsButtonHelp);
+    case MediaCastOffButton:
+        return queryString(WebLocalizedString::AxMediaCastOffButtonHelp);
+    case MediaCastOnButton:
+        return queryString(WebLocalizedString::AxMediaCastOnButtonHelp);
     default:
         return queryString(WebLocalizedString::AXMediaDefault);
     }

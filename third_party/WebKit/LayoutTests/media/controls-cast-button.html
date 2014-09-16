@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+    <head>
+        <title>media controls cast button</title>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <video controls></video>
+        <script>
+        function castButton(element)
+        {
+            var controlID = "-internal-media-controls-cast-button";
+            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
+            if (!button)
+                throw "Failed to find cast button";
+            return button;
+        }
+        function overlayCastButton(element)
+        {
+            var controlID = "-internal-media-controls-overlay-cast-button";
+            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
+            if (!button)
+                throw "Failed to find cast button";
+            return button;
+        }
+        function castButtonDimensions(element)
+        {
+            var button = castButton(element);
+            var buttonBoundingRect = button.getBoundingClientRect();
+            return new Array(buttonBoundingRect.width, buttonBoundingRect.height);
+        }
+        function castButtonCoordinates(element, id)
+        {
+            var button = castButton(element);
+            var buttonBoundingRect = button.getBoundingClientRect();
+            var x = buttonBoundingRect.left + buttonBoundingRect.width / 2;
+            var y = buttonBoundingRect.top + buttonBoundingRect.height / 2;
+            return new Array(x, y);
+        }
+        async_test(function(t) 
+        {
+            findMediaElement();
+            video.src = findMediaFile("video", "content/test");
+            mediaElement.addEventListener("loadedmetadata", function()
+            {
+                // Should not have a cast button by default
+                button = castButton(video);
+                assert_equals(button.style.display, "none", "button should not be visible with no cast devices");
+
+                // Pretend we have a cast device
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
+
+                // Now should have cast button
+                assert_false(("display" in button.style) && (button.style.display == "none"), "button should exist");
+                dimensions = castButtonDimensions(video);
+                assert_not_equals(dimensions[0], 0, "button should exist");
+                assert_not_equals(dimensions[1], 0, "button should exist");
+
+                // Check its position is to the right of the timeline 
+                // (can't test against volume control or closed caption button, since these don't always exist) 
+                position = castButtonCoordinates(video);
+                timelinePosition = mediaControlsButtonCoordinates(video, "timeline");
+                assert_greater_than(position[0], timelinePosition[0], "button should be to right of timeline");
+
+                // Check that we don't have an overlay cast button
+                overlayButton = overlayCastButton(video);
+                assert_equals(overlayButton.style.display, "none", "Overlay button should not be visible with controls");
+
+                // And to the left of the fullscreen button
+                fullscreenPosition = mediaControlsButtonCoordinates(video, "fullscreen-button");
+                assert_less_than(position[0], fullscreenPosition[0], "button should be to left of fullscreen button");
+
+                // Remove cast device - cast button should go away
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(video, false);
+                assert_equals(button.style.display, "none", "button should not be visible after cast device goes away");
+                t.done();
+            });
+        });
+        </script>
+    </body>
+</html>
+        

@@ -109,6 +109,8 @@ public:
     virtual void seek(double seconds) = 0;
     virtual void setRate(double) = 0;
     virtual void setVolume(double) = 0;
+    virtual void requestRemotePlayback() { };
+    virtual void requestRemotePlaybackControl() { };
     virtual void setPreload(Preload) { };
     virtual WebTimeRanges buffered() const = 0;
     virtual double maxTimeSeekable() const = 0;

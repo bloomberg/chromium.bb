@@ -92,6 +92,7 @@ public:
     virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintMediaCastButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;

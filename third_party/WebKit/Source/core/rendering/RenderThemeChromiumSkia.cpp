@@ -316,6 +316,11 @@ bool RenderThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject*
     return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
 }
 
+bool RenderThemeChromiumSkia::paintMediaCastButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+{
+    return RenderMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
+}
+
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);

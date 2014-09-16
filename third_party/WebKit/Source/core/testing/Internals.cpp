@@ -1756,6 +1756,11 @@ double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement)
     return mediaElement->effectiveMediaVolume();
 }
 
+void Internals::mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement* mediaElement, bool available)
+{
+    mediaElement->remoteRouteAvailabilityChanged(available);
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);

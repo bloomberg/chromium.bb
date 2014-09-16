@@ -13,13 +13,11 @@
                 consoleWrite("<br>** Initial state: no text tracks, controls should not be visible **");
                 testExpected("video.textTracks.length", 0);
                 testExpected("video.controls", false, '==');
-                testExpected("internals.shadowRoot(video).firstChild", null);
 
                 consoleWrite("<br>** Add a text track, controls should not become visible **");
                 run("video.addTextTrack('captions')");
                 testExpected("video.textTracks.length", 1);
                 testExpected("video.controls", false);
-                testExpected("internals.shadowRoot(video).firstChild", null);
 
                 consoleWrite("<br>** Enable controls **");
                 run("video.setAttribute('controls','controls')");

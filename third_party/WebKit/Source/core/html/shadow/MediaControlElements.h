@@ -82,6 +82,7 @@ public:
 private:
     explicit MediaControlOverlayEnclosureElement(MediaControls&);
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual void* preDispatchEventHandler(Event*) OVERRIDE;
 };
 
 // ----------------------------
@@ -185,6 +186,26 @@ private:
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
+};
+
+// ----------------------------
+
+class MediaControlCastButtonElement FINAL : public MediaControlInputElement {
+public:
+    static PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> create(MediaControls&, bool isOverlayButton);
+
+    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
+
+    void setIsPlayingRemotely(bool);
+
+private:
+    explicit MediaControlCastButtonElement(MediaControls&, bool isOverlayButton);
+
+    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual bool keepEventInNode(Event*) OVERRIDE;
+
+    bool m_isOverlayButton;
 };
 
 // ----------------------------
