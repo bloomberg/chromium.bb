@@ -545,6 +545,8 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         context->deleteTexture(sourceTexture);
         context->flush();
         m_context->waitSyncPoint(context->insertSyncPoint());
+        imageBuffer->didModifyBackingTexture();
+
         return;
     }
 

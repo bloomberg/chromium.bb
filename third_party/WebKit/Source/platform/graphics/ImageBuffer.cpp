@@ -225,6 +225,11 @@ Platform3DObject ImageBuffer::getBackingTexture()
     return m_surface->getBackingTexture();
 }
 
+void ImageBuffer::didModifyBackingTexture()
+{
+    m_surface->didModifyBackingTexture();
+}
+
 bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer, bool fromFrontBuffer)
 {
     if (!drawingBuffer)
@@ -238,8 +243,14 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
         return false;
 
     m_surface->invalidateCachedBitmap();
-    return drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
+    bool result = drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, fromFrontBuffer);
+
+    if (result) {
+        m_surface->didModifyBackingTexture();
+    }
+
+    return result;
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op, WebBlendMode blendMode)

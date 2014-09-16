@@ -51,6 +51,7 @@ public:
     virtual bool isValid() const OVERRIDE { return m_bitmap.pixelRef(); }
     virtual bool isAccelerated() const OVERRIDE { return true; }
     virtual Platform3DObject getBackingTexture() const OVERRIDE;
+    virtual void didModifyBackingTexture() OVERRIDE;
     virtual bool cachedBitmapEnabled() const OVERRIDE { return true; }
     virtual const SkBitmap& cachedBitmap() const OVERRIDE { return m_cachedBitmap; }
     virtual void invalidateCachedBitmap() OVERRIDE;

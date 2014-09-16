@@ -64,6 +64,13 @@ Platform3DObject WebGLImageBufferSurface::getBackingTexture() const
     return texture->getTextureHandle();
 }
 
+void WebGLImageBufferSurface::didModifyBackingTexture()
+{
+    if (!m_bitmap.isNull()) {
+        m_bitmap.pixelRef()->notifyPixelsChanged();
+    }
+}
+
 void WebGLImageBufferSurface::invalidateCachedBitmap()
 {
     m_cachedBitmap.reset();
