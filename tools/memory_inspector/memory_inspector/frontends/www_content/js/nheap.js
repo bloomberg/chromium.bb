@@ -4,8 +4,10 @@
 
 nheap = new (function() {
 
-this.COL_STACKTRACE = 3;
 this.COL_TOTAL = 0;
+this.COL_RESIDENT = 1;
+this.COL_STACKTRACE = 3;
+
 
 this.nheapData_ = null;
 this.nheapTable_ = null;
@@ -44,17 +46,20 @@ this.applyTableFilters_ = function() {
 
   var rx = $('#nheap-filter').val();
   var rows = [];
-  var total = 0;
+  var total_allocated = 0;
+  var total_resident = 0;
 
   for (var row = 0; row < this.nheapData_.getNumberOfRows(); ++row) {
      stackTrace = this.nheapData_.getValue(row, this.COL_STACKTRACE);
      if (!stackTrace.match(rx))
       continue;
     rows.push(row);
-    total += this.nheapData_.getValue(row, this.COL_TOTAL);
+    total_allocated += this.nheapData_.getValue(row, this.COL_TOTAL);
+    total_resident += this.nheapData_.getValue(row, this.COL_RESIDENT);
   }
 
-  $('#nheap-totals').val(Math.floor(total / 1024) + ' KB');
+  $('#nheap-total-allocated').val(Math.floor(total_allocated / 1024) + ' KB');
+  $('#nheap-total-resident').val(Math.floor(total_resident / 1024) + ' KB');
   this.nheapFilter_.setRows(rows);
   this.redraw();
 };
@@ -63,14 +68,18 @@ this.onNheapTableRowSelect_ = function() {
   if (!this.nheapFilter_)
     return;
 
-  var total = 0;
+  var total_allocated = 0;
+  var total_resident = 0;
 
   this.nheapTable_.getSelection().forEach(function(sel) {
     var row = sel.row;
-    total += this.nheapFilter_.getValue(row, this.COL_TOTAL);
+    total_allocated += this.nheapFilter_.getValue(row, this.COL_TOTAL);
+    total_resident += this.nheapFilter_.getValue(row, this.COL_RESIDENT);
   }, this);
 
-  $('#nheap-selected').val(Math.floor(total / 1024) + ' KB');
+  $('#nheap-selected-allocated').val(Math.floor(total_allocated / 1024) +
+                                     ' KB');
+  $('#nheap-selected-resident').val(Math.floor(total_resident / 1024) + ' KB');
 };
 
 this.redraw = function() {

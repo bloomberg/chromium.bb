@@ -105,6 +105,8 @@ def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
       archive.StoreMemMaps(mmaps)
 
       if trace_native_heap:
+        nheap.RelativizeStackFrames(mmaps)
+        nheap.CalculateResidentSize(mmaps)
         archive.StoreNativeHeap(nheap)
         heaps_to_symbolize += [nheap]
     finally:

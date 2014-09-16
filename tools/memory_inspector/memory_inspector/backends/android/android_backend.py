@@ -124,6 +124,8 @@ class AndroidBackend(backends.Backend):
       exec_file_name = posixpath.basename(exec_file_rel_path)
       if exec_file_rel_path.startswith('/'):
         exec_file_rel_path = exec_file_rel_path[1:]
+      if not exec_file_rel_path:
+        continue
       exec_file_abs_path = ''
       for sym_path in sym_paths:
         # First try to locate the symbol file following the full relative path
@@ -145,7 +147,7 @@ class AndroidBackend(backends.Backend):
         if os.path.exists(exec_file_abs_path):
           break
 
-      if not os.path.exists(exec_file_abs_path):
+      if not os.path.isfile(exec_file_abs_path):
         continue
 
       symbolizer = elf_symbolizer.ELFSymbolizer(
@@ -177,8 +179,9 @@ class AndroidDevice(backends.Device):
         backend=backend,
         settings=backends.Settings(AndroidDevice._SETTINGS_KEYS))
     self.adb = adb
+    self._name = '%s %s' % (adb.GetProp('ro.product.model'),
+                            adb.GetProp('ro.build.id'))
     self._id = str(adb)
-    self._name = adb.GetProp('ro.product.model')
     self._sys_stats = None
     self._last_device_stats = None
     self._sys_stats_last_update = None

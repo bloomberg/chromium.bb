@@ -81,6 +81,7 @@ class AndroidBackendTest(unittest.TestCase):
       'devices': _MOCK_DEVICES_OUT,
       'shell getprop ro.product.model': 'Mock device',
       'shell getprop ro.build.type': 'userdebug',
+      'shell getprop ro.build.id': 'ZZ007',
       'shell getprop ro.product.cpu.abi': 'armeabi',
       'root': 'adbd is already running as root',
       'shell /data/local/tmp/ps_ext': _MOCK_PS_EXT_OUT,
@@ -103,9 +104,9 @@ class AndroidBackendTest(unittest.TestCase):
     # Test device enumeration.
     devices = list(ab.EnumerateDevices())
     self.assertEqual(len(devices), 2)
-    self.assertEqual(devices[0].name, 'Mock device')
+    self.assertEqual(devices[0].name, 'Mock device ZZ007')
     self.assertEqual(devices[0].id, '0000000000000001')
-    self.assertEqual(devices[1].name, 'Mock device')
+    self.assertEqual(devices[1].name, 'Mock device ZZ007')
     self.assertEqual(devices[1].id, '0000000000000002')
 
     # Initialize device (checks that sha1 are checked in).

@@ -34,7 +34,7 @@ from memory_inspector.core import exceptions
 from memory_inspector.core import native_heap
 
 
-_RESULT_KEYS = ['bytes_allocated']
+_RESULT_KEYS = ['bytes_allocated', 'bytes_resident']
 
 
 def LoadRules(content):
@@ -61,7 +61,8 @@ def Classify(nativeheap, rule_tree):
 
   res = results.AggreatedResults(rule_tree, _RESULT_KEYS)
   for allocation in nativeheap.allocations:
-    res.AddToMatchingNodes(allocation, [allocation.size])
+    res.AddToMatchingNodes(allocation,
+                           [allocation.size, allocation.resident_size])
   return res
 
 

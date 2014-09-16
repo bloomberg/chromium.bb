@@ -603,7 +603,7 @@ def _LoadNheapFromStorage(args, req_vars):
 
     resp['rows'] += [{'c': [
         {'v': alloc.size, 'f': _StrMem(alloc.size)},
-        {'v': 0, 'f': 0},  # TODO(primiano): support resident_size (next CLs).
+        {'v': alloc.resident_size, 'f': _StrMem(alloc.resident_size)},
         {'v': alloc.flags, 'f': None},
         {'v': strace, 'f': None},
     ]}]

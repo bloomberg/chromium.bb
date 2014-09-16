@@ -66,13 +66,13 @@ _TEST_STACK_TRACES = [
 ]
 
 _EXPECTED_RESULTS = {
-    'Total':                         [238],
-    'Total::content':                [95],
-    'Total::content::browser':       [12],  # 5 + 7.
-    'Total::content::renderer':      [49],  # 13 + 17 + 19.
-    'Total::content::content-other': [34],
-    'Total::ashmem_in_skia':         [68],  # 31 + 37.
-    'Total::Total-other':            [75],  # 3 + 29 + 43.
+    'Total':                         [238, 0],
+    'Total::content':                [95, 0],
+    'Total::content::browser':       [12, 0],  # 5 + 7.
+    'Total::content::renderer':      [49, 0],  # 13 + 17 + 19.
+    'Total::content::content-other': [34, 0],
+    'Total::ashmem_in_skia':         [68, 0],  # 31 + 37.
+    'Total::Total-other':            [75, 0],  # 3 + 29 + 43.
 }
 
 _HEURISTIC_TEST_STACK_TRACES = [
@@ -86,18 +86,18 @@ _HEURISTIC_TEST_STACK_TRACES = [
 ]
 
 _HEURISTIC_EXPECTED_RESULTS = {
-    'Total':                                        [76],
-    'Total::/root/':                                [76],
-    'Total::/root/::base1/foo/':                    [31],  # 10 + 20 +1
-    'Total::/root/::base1/foo/::bar/':              [10],
-    'Total::/root/::base1/foo/::baz/':              [20],
-    'Total::/root/::base1/foo/::base1/foo/-other':  [1],
-    'Total::/root/::base2/':                        [43],  # 3 + 22 + 18
-    'Total::/root/::base2/::subpath/':              [22],
-    'Total::/root/::base2/::subpath2/':             [18],
-    'Total::/root/::base2/::base2/-other':          [3],
-    'Total::/root/::/root/-other':                  [2],
-    'Total::Total-other':                           [0],
+    'Total':                                        [76, 0],
+    'Total::/root/':                                [76, 0],
+    'Total::/root/::base1/foo/':                    [31, 0],  # 10 + 20 +1
+    'Total::/root/::base1/foo/::bar/':              [10, 0],
+    'Total::/root/::base1/foo/::baz/':              [20, 0],
+    'Total::/root/::base1/foo/::base1/foo/-other':  [1, 0],
+    'Total::/root/::base2/':                        [43, 0],  # 3 + 22 + 18
+    'Total::/root/::base2/::subpath/':              [22, 0],
+    'Total::/root/::base2/::subpath2/':             [18, 0],
+    'Total::/root/::base2/::base2/-other':          [3, 0],
+    'Total::/root/::/root/-other':                  [2, 0],
+    'Total::Total-other':                           [0, 0],
 }
 
 
@@ -113,8 +113,8 @@ class NativeHeapClassifierTest(unittest.TestCase):
         mock_frame = stacktrace.Frame(mock_addr)
         mock_frame.SetSymbolInfo(symbol.Symbol(mock_btstr, mock_source_path))
         mock_strace.Add(mock_frame)
-      nheap.Add(native_heap.Allocation(size=test_entry[0],
-                                       stack_trace=mock_strace))
+      nheap.Add(native_heap.Allocation(
+          size=test_entry[0], stack_trace=mock_strace))
 
     res = native_heap_classifier.Classify(nheap, rule_tree)
     self._CheckResult(res.total, '', _EXPECTED_RESULTS)
@@ -129,8 +129,8 @@ class NativeHeapClassifierTest(unittest.TestCase):
       mock_frame.SetSymbolInfo(symbol.Symbol(str(mock_addr), mock_source_path))
       for _ in xrange(10):  # Just repeat the same stack frame 10 times
         mock_strace.Add(mock_frame)
-      nheap.Add(native_heap.Allocation(size=mock_alloc_size,
-                                       stack_trace=mock_strace))
+      nheap.Add(native_heap.Allocation(
+          size=mock_alloc_size, stack_trace=mock_strace))
 
     rule_tree = native_heap_classifier.InferHeuristicRulesFromHeap(
         nheap, threshold=0.05)

@@ -67,7 +67,7 @@ class Frame(object):
   @property
   def exec_file_name(self):
     """Returns the file name (stripped of the path) of the executable."""
-    if self.exec_file_rel_path is None:
+    if not self.exec_file_rel_path:
       return None
     return posixpath.basename(self.exec_file_rel_path.replace('\\', '/'))
 

@@ -108,5 +108,6 @@ class NativeHeapDecoder(json.JSONDecoder):
       nh.Add(native_heap.Allocation(start=alloc_dict['start'],
                                     size=alloc_dict['size'],
                                     stack_trace=stack_trace,
-                                    flags=alloc_dict['flags']))
+                                    flags=alloc_dict['flags'],
+                                    resident_size=alloc_dict['resident_size']))
     return nh
