@@ -826,8 +826,8 @@ void HTMLMediaElement::prepareForLoad()
     // algorithm, but do it now because we won't start that until after the timer fires and the
     // event may have already fired by then.
     setShouldDelayLoadEvent(true);
-
-    configureMediaControls();
+    if (hasMediaControls())
+        mediaControls()->reset();
 }
 
 void HTMLMediaElement::loadInternal()
