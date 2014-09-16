@@ -6,15 +6,15 @@
 #define SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
 
 #include <map>
-#include <set>
 #include <vector>
 
-#include "sandbox/linux/seccomp-bpf/basicblock.h"
-#include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
+struct BasicBlock;
+class ErrorCode;
+struct Instruction;
 
 typedef std::vector<Instruction*> Instructions;
 typedef std::vector<BasicBlock*> BasicBlocks;

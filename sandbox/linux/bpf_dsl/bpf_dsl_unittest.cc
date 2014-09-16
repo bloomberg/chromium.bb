@@ -7,14 +7,15 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/syscall.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
 #define CASES SANDBOX_BPF_DSL_CASES

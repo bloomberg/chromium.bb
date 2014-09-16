@@ -8,6 +8,9 @@
 
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 
+#include <sys/syscall.h>
+#include <unistd.h>
+
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 

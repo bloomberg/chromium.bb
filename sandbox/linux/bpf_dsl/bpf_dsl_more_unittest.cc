@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+
 #include <errno.h>
 #include <pthread.h>
 #include <sched.h>
@@ -21,8 +23,6 @@
 #endif
 #include <linux/futex.h>
 
-#include <ostream>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -31,11 +31,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/seccomp-bpf/die.h"
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
-#include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"

@@ -5,13 +5,17 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_VERIFIER_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_VERIFIER_H__
 
-#include <linux/filter.h>
+#include <stdint.h>
 
-#include <utility>
 #include <vector>
 
-namespace sandbox {
+#include "base/macros.h"
 
+struct sock_filter;
+
+namespace sandbox {
+struct arch_seccomp_data;
+class SandboxBPF;
 class SandboxBPFPolicy;
 
 class Verifier {

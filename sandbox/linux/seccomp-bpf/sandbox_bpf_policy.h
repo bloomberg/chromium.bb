@@ -5,7 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_POLICY_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_POLICY_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {

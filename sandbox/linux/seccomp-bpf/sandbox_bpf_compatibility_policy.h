@@ -5,7 +5,6 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_COMPATIBILITY_POLICY_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_COMPATIBILITY_POLICY_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"

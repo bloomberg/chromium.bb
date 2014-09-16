@@ -5,13 +5,10 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-
-struct arch_seccomp_data;
 
 // This class holds all the possible values that can be returned by a sandbox
 // policy.
@@ -113,7 +110,7 @@ class SANDBOX_EXPORT ErrorCode {
   // when compiling a BPF filter, we deliberately generate an invalid
   // program that will get flagged both by our Verifier class and by
   // the Linux kernel.
-  ErrorCode() : error_type_(ET_INVALID), err_(SECCOMP_RET_INVALID) {}
+  ErrorCode();
   explicit ErrorCode(int err);
 
   // For all practical purposes, ErrorCodes are treated as if they were

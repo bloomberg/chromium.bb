@@ -5,7 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_TEST_RUNNER_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_TEST_RUNNER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/tests/sandbox_test_runner.h"

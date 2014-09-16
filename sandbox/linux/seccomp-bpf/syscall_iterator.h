@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {

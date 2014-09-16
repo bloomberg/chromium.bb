@@ -5,27 +5,21 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__
 
-#include <stddef.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <stdint.h>
 
-#include <algorithm>
-#include <limits>
 #include <map>
 #include <set>
-#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/sandbox_export.h"
 
-namespace sandbox {
+struct sock_filter;
 
+namespace sandbox {
 class CodeGen;
 class SandboxBPFPolicy;
 class SandboxUnittestHelper;

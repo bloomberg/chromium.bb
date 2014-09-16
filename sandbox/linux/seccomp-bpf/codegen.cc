@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/seccomp-bpf/codegen.h"
+
 #include <stdio.h>
 
+#include <set>
+
 #include "base/logging.h"
-#include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/seccomp-bpf/basicblock.h"
+#include "sandbox/linux/seccomp-bpf/die.h"
+#include "sandbox/linux/seccomp-bpf/instruction.h"
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
 namespace {
 

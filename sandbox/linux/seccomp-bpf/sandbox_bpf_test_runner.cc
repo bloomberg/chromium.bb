@@ -5,12 +5,11 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_test_runner.h"
 
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <linux/filter.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
 

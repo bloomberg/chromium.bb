@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 
+#include "sandbox/linux/seccomp-bpf/die.h"
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+
 namespace sandbox {
+
+ErrorCode::ErrorCode() : error_type_(ET_INVALID), err_(SECCOMP_RET_INVALID) {
+}
 
 ErrorCode::ErrorCode(int err) {
   switch (err) {

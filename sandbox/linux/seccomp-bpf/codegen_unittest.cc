@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <errno.h>
+#include "sandbox/linux/seccomp-bpf/codegen.h"
 
-#include <algorithm>
+#include <errno.h>
+#include <linux/filter.h>
+
 #include <set>
+#include <string>
 #include <vector>
 
-#include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/seccomp-bpf/basicblock.h"
+#include "sandbox/linux/seccomp-bpf/errorcode.h"
+#include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
 

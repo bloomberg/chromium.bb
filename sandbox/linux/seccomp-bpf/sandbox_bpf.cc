@@ -12,6 +12,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/filter.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/prctl.h>
@@ -30,7 +31,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
+#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
+#include "sandbox/linux/seccomp-bpf/instruction.h"
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"

@@ -26,7 +26,7 @@
 #include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"  // for arch_seccomp_data
+#include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 

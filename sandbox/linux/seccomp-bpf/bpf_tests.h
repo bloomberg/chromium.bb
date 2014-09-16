@@ -5,7 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tester_compatibility_delegate.h"
 #include "sandbox/linux/tests/unit_tests.h"
