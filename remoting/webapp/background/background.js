@@ -60,14 +60,18 @@ function initializeBackgroundService(appLauncher) {
 }
 
 function main() {
-  /** @type {remoting.AppLauncher} */
-  var appLauncher = new remoting.V1AppLauncher();
   if (base.isAppsV2()) {
     appLauncher = new remoting.V2AppLauncher();
     initializeAppV2(appLauncher);
   }
-  initializeBackgroundService(appLauncher);
 }
+
+remoting.enableHangoutsRemoteAssistance = function() {
+  /** @type {remoting.AppLauncher} */
+  var appLauncher = base.isAppsV2() ? new remoting.V1AppLauncher():
+                                      new remoting.V2AppLauncher();
+  initializeBackgroundService(appLauncher);
+};
 
 window.addEventListener('load', main, false);
 
