@@ -54,6 +54,7 @@ class DownloadItem;
 class GeolocationDispatcherHost;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
+class ManifestManagerHost;
 class MidiDispatcherHost;
 class PowerSaveBlocker;
 class RenderViewHost;
@@ -331,6 +332,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
   virtual bool WasRecentlyAudible() OVERRIDE;
+  virtual void GetManifest(const GetManifestCallback&) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;
@@ -1229,6 +1231,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   scoped_ptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host_;
+
+  scoped_ptr<ManifestManagerHost> manifest_manager_host_;
 
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.

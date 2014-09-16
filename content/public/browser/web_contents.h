@@ -57,6 +57,7 @@ class SiteInstance;
 class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
+struct Manifest;
 struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
@@ -578,6 +579,11 @@ class WebContents : public PageNavigator,
 
   // Returns true if audio has recently been audible from the WebContents.
   virtual bool WasRecentlyAudible() = 0;
+
+  typedef base::Callback<void(const Manifest&)> GetManifestCallback;
+
+  // Requests the Manifest of the main frame's document.
+  virtual void GetManifest(const GetManifestCallback&) = 0;
 
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(

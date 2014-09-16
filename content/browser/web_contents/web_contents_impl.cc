@@ -38,6 +38,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/midi_dispatcher_host.h"
 #include "content/browser/message_port_message_filter.h"
@@ -1205,6 +1206,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   screen_orientation_dispatcher_host_.reset(
       new ScreenOrientationDispatcherHostImpl(this));
+
+  manifest_manager_host_.reset(new ManifestManagerHost(this));
 
 #if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());
@@ -2423,6 +2426,10 @@ void WebContentsImpl::InsertCSS(const std::string& css) {
 
 bool WebContentsImpl::WasRecentlyAudible() {
   return audio_stream_monitor_.WasRecentlyAudible();
+}
+
+void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {
+  manifest_manager_host_->GetManifest(GetMainFrame(), callback);
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {

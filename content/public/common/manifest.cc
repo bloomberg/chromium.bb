@@ -6,6 +6,8 @@
 
 namespace content {
 
+const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
+
 Manifest::Manifest() {
 }
 

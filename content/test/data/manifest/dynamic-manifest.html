@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+</body>
+<script>
+  function setManifestTo(url) {
+    // Clear everything.
+    document.head.innerHTML = '';
+
+    var link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = url;
+    document.head.appendChild(link);
+  }
+</script>
+</html>

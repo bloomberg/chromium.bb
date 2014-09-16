@@ -67,6 +67,7 @@
 #include "content/renderer/image_loading_helper.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
+#include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/encrypted_media_player_support_impl.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -455,6 +456,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
+      manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
       weak_factory_(this) {
@@ -473,6 +475,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #if defined(ENABLE_NOTIFICATIONS)
   notification_provider_ = new NotificationProvider(this);
 #endif
+
+  manifest_manager_ = new ManifestManager(this);
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -3212,6 +3216,13 @@ bool RenderFrameImpl::isControlledByServiceWorker() {
 void RenderFrameImpl::postAccessibilityEvent(const blink::WebAXObject& obj,
                                              blink::WebAXEvent event) {
   HandleWebAccessibilityEvent(obj, event);
+}
+
+void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame)
+{
+  DCHECK(!frame_ || frame_ == frame);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
 }
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {

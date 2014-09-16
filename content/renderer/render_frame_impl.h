@@ -61,6 +61,7 @@ namespace content {
 class ChildFrameCompositingHelper;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
+class ManifestManager;
 class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MidiDispatcher;
@@ -440,6 +441,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool isControlledByServiceWorker();
   virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
                                       blink::WebAXEvent event);
+  virtual void didChangeManifest(blink::WebLocalFrame*);
 
   // WebMediaPlayerDelegate implementation:
   virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
@@ -728,6 +730,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.
   ScreenOrientationDispatcher* screen_orientation_dispatcher_;
+
+  // The Manifest Manager handles the manifest requests from the browser
+  // process.
+  ManifestManager* manifest_manager_;
 
   // The current accessibility mode.
   AccessibilityMode accessibility_mode_;

@@ -869,6 +869,8 @@
       'browser/media/webrtc_identity_store.h',
       'browser/media/webrtc_identity_store_backend.cc',
       'browser/media/webrtc_identity_store_backend.h',
+      'browser/manifest/manifest_manager_host.cc',
+      'browser/manifest/manifest_manager_host.h',
       'browser/message_port_message_filter.cc',
       'browser/message_port_message_filter.h',
       'browser/message_port_service.cc',
