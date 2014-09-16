@@ -45,6 +45,17 @@ std::string MakePasswordSyncTag(const autofill::PasswordForm& password);
 
 namespace {
 
+// PasswordForm values for tests.
+const autofill::PasswordForm::Type kArbitraryType =
+    autofill::PasswordForm::TYPE_GENERATED;
+const char kAvatarUrl[] = "https://fb.com/Avatar";
+const char kDisplayName[] = "Agent Smith";
+const char kFederationUrl[] = "https://fb.com/federation_url";
+const char kSignonRealm[] = "abc";
+const char kSignonRealm2[] = "def";
+const char kSignonRealm3[] = "xyz";
+const int kTimesUsed = 5;
+
 typedef std::vector<SyncChange> SyncChangeList;
 
 const sync_pb::PasswordSpecificsData& GetPasswordSpecifics(
@@ -218,10 +229,10 @@ class PasswordSyncableServiceTest : public testing::Test {
 // Both sync and password db have data that are not present in the other.
 TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   autofill::PasswordForm form;
-  form.signon_realm = "abc";
+  form.signon_realm = kSignonRealm;
 
   SyncDataList list;
-  list.push_back(CreateSyncData("def"));
+  list.push_back(CreateSyncData(kSignonRealm2));
   autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
       GetPasswordSpecifics(list.back()));
 
@@ -243,7 +254,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
 // Sync has data that is not present in the password db.
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   SyncDataList list;
-  list.push_back(CreateSyncData("def"));
+  list.push_back(CreateSyncData(kSignonRealm));
   autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
       GetPasswordSpecifics(list.back()));
 
@@ -264,12 +275,12 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
 // Passwords db has data that is not present in sync.
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   autofill::PasswordForm form;
-  form.signon_realm = "abc";
-  form.times_used = 2;
-  form.type = autofill::PasswordForm::TYPE_GENERATED;
-  form.display_name = base::ASCIIToUTF16("Agent Smith");
-  form.avatar_url = GURL("https://fb.com/Avatar");
-  form.federation_url = GURL("https://fb.com/federation_url");
+  form.signon_realm = kSignonRealm;
+  form.times_used = kTimesUsed;
+  form.type = kArbitraryType;
+  form.display_name = base::ASCIIToUTF16(kDisplayName);
+  form.avatar_url = GURL(kAvatarUrl);
+  form.federation_url = GURL(kFederationUrl);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
@@ -288,9 +299,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
 // Both passwords db and sync contain the same data.
 TEST_F(PasswordSyncableServiceTest, BothInSync) {
   autofill::PasswordForm form;
-  form.signon_realm = "abc";
-  form.times_used = 5;
-  form.type = autofill::PasswordForm::TYPE_GENERATED;
+  form.signon_realm = kSignonRealm;
+  form.times_used = kTimesUsed;
+  form.type = kArbitraryType;
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
@@ -309,7 +320,7 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
 // as some fields of the data differ.
 TEST_F(PasswordSyncableServiceTest, Merge) {
   autofill::PasswordForm form1;
-  form1.signon_realm = "abc";
+  form1.signon_realm = kSignonRealm;
   form1.action = GURL("http://pie.com");
   form1.date_created = base::Time::Now();
   form1.preferred = true;
@@ -347,11 +358,11 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
       scoped_ptr<syncer::SyncErrorFactory>());
 
   autofill::PasswordForm form1;
-  form1.signon_realm = "abc";
+  form1.signon_realm = kSignonRealm;
   autofill::PasswordForm form2;
-  form2.signon_realm = "def";
+  form2.signon_realm = kSignonRealm2;
   autofill::PasswordForm form3;
-  form3.signon_realm = "xyz";
+  form3.signon_realm = kSignonRealm3;
 
   SyncChangeList sync_list;
   sync_list.push_back(CreateSyncChange(form1, SyncChange::ACTION_ADD));
@@ -372,15 +383,15 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
 // Process all types of changes from sync.
 TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
   autofill::PasswordForm updated_form;
-  updated_form.signon_realm = "abc";
+  updated_form.signon_realm = kSignonRealm;
   updated_form.action = GURL("http://foo.com");
   updated_form.date_created = base::Time::Now();
   autofill::PasswordForm deleted_form;
-  deleted_form.signon_realm = "xyz";
+  deleted_form.signon_realm = kSignonRealm2;
   deleted_form.action = GURL("http://bar.com");
   deleted_form.blacklisted_by_user = true;
 
-  SyncData add_data = CreateSyncData("def");
+  SyncData add_data = CreateSyncData(kSignonRealm3);
   autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
       GetPasswordSpecifics(add_data));
 
@@ -401,15 +412,15 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
 // Retrives sync data from the model.
 TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   autofill::PasswordForm form1;
-  form1.signon_realm = "abc";
+  form1.signon_realm = kSignonRealm;
   form1.action = GURL("http://foo.com");
-  form1.times_used = 5;
-  form1.type = autofill::PasswordForm::TYPE_GENERATED;
-  form1.display_name = base::ASCIIToUTF16("Agent Smith");
-  form1.avatar_url = GURL("https://fb.com/Avatar");
-  form1.federation_url = GURL("https://fb.com/federation_url");
+  form1.times_used = kTimesUsed;
+  form1.type = kArbitraryType;
+  form1.display_name = base::ASCIIToUTF16(kDisplayName);
+  form1.avatar_url = GURL(kAvatarUrl);
+  form1.federation_url = GURL(kFederationUrl);
   autofill::PasswordForm form2;
-  form2.signon_realm = "xyz";
+  form2.signon_realm = kSignonRealm2;
   form2.action = GURL("http://bar.com");
   form2.blacklisted_by_user = true;
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
@@ -432,12 +443,12 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
 // one to the second one and back.
 TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   autofill::PasswordForm form1;
-  form1.signon_realm = "abc";
+  form1.signon_realm = kSignonRealm;
   form1.action = GURL("http://foo.com");
 
   PasswordSyncableServiceWrapper other_service_wrapper;
   autofill::PasswordForm form2;
-  form2.signon_realm = "xyz";
+  form2.signon_realm = kSignonRealm2;
   form2.action = GURL("http://bar.com");
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
@@ -465,7 +476,7 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
 // should be called.
 TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
   autofill::PasswordForm form;
-  form.signon_realm = "abc";
+  form.signon_realm = kSignonRealm;
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
 
@@ -499,7 +510,7 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
       error_factory.PassAs<syncer::SyncErrorFactory>());
 
   autofill::PasswordForm form;
-  form.signon_realm = "abc";
+  form.signon_realm = kSignonRealm;
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   service()->ActOnPasswordStoreChanges(list);
