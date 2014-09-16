@@ -109,17 +109,6 @@ config("compiler") {
       # and the fix is in chromium.
       "-fno-slp-vectorize",
     ]
-
-    if (is_debug) {
-      # Allow comparing the address of references and 'this' against 0
-      # in debug builds. Technically, these can never be null in
-      # well-defined C/C++ and Clang can optimize such checks away in
-      # release builds, but they may be used in asserts in debug builds.
-      cflags_cc += [
-        "-Wno-undefined-bool-conversion",
-        "-Wno-tautological-undefined-compare",
-      ]
-    }
   }
 
   if (is_clang && !is_win) {
