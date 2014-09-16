@@ -1,7 +1,7 @@
-{{+bindTo:partials.standard_nacl_api}}
+{{+bindTo:partials.standard_nacl_article}}
 
 <section id="progress-events">
-<h1 id="progress-events">Progress Events</h1>
+<span id="devcycle-progress-events"></span><h1 id="progress-events"><span id="devcycle-progress-events"></span>Progress Events</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
 <li><a class="reference internal" href="#module-loading-and-progress-events" id="id3">Module loading and progress events</a></li>
@@ -34,29 +34,26 @@ events types reported by the Native Client runtime:</p>
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Event</th>
-<th class="head">Description</th>
-<th class="head">Number of
-times
+<th class="head">Times
 triggered</th>
-<th class="head">When event is
+<th class="head">When
 triggered</th>
 <th class="head">How you might
-react to
-event</th>
+respond</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code>loadstart</code></td>
-<td>Native Client has
-started to load a
-Native Client
-module.</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>loadstart</code></dt>
+<dd>Native Client has started to
+load a Native Client module.</dd>
+</dl>
+</td>
 <td>once</td>
-<td>This is the
+<td>The
 first
 progress
 event
-triggered
 after the
 Native Client
 module is
@@ -69,9 +66,12 @@ message, such
 as
 &#8220;Loading...&#8221;</td>
 </tr>
-<tr class="row-odd"><td><code>progress</code></td>
-<td>Part of the module
-has been loaded.</td>
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt><code>progress</code></dt>
+<dd>Part of the module has been
+loaded.</dd>
+</dl>
+</td>
 <td>zero or
 more</td>
 <td>After
@@ -81,31 +81,24 @@ dispatched.</td>
 <td>Display a
 progress bar.</td>
 </tr>
-<tr class="row-even"><td><code>error</code></td>
-<td>The Native Client
-module failed to
-start execution
-(includes any
-error before or
-during
-initialization of
-the module). The
-<code>lastError</code>
-attribute
-(mentioned later)
-provides details
-on the error
-(initialization
-failed, sel_ldr
-did not start,
-and so on).</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>error</code></dt>
+<dd>The Native Client module failed
+to start execution (includes any
+error before or during
+initialization of the module).
+The <code>lastError</code> attribute
+(mentioned later) provides
+details on the error
+(initialization failed, sel_ldr
+did not start, and so on).</dd>
+</dl>
+</td>
 <td>zero or
 once</td>
-<td>After the
-last
+<td>After the last
 <code>progress</code>
-event has
-been
+event has been
 dispatched,
 or after
 <code>loadstart</code>
@@ -119,21 +112,19 @@ application
 failed to
 load.</td>
 </tr>
-<tr class="row-odd"><td><code>abort</code></td>
-<td>Loading of the
-Native Client
-module was
-aborted by the
-user.</td>
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt><code>abort</code></dt>
+<dd>Loading of the NativeClient
+module was aborted by the user.</dd>
+</dl>
+</td>
 <td>zero or
 once</td>
-<td>After the
-last
+<td>After the last
 <code>progress</code>
-event has
-been
-dispatched,
-or after
+event has been
+dispatched, or
+after
 <code>loadstart</code>
 if no
 <code>progress</code>
@@ -145,25 +136,23 @@ will want to
 respond to
 this event.</td>
 </tr>
-<tr class="row-even"><td><code>load</code></td>
-<td>The Native Client
-module was
-successfully
-loaded, and
-execution was
-started. (The
-module was
-initialized
-successfully.)</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>load</code></dt>
+<dd>The Native Client module was
+successfully loaded, and
+execution was started.
+(The module was initialized
+successfully.)</dd>
+</dl>
+</td>
 <td>zero or
 once</td>
 <td>After the
 last
 <code>progress</code>
-event has
-been
-dispatched,
-or after
+event has been
+dispatched, or
+after
 <code>loadstart</code>
 if no
 <code>progress</code>
@@ -172,17 +161,15 @@ dispatched.</td>
 <td>Remove the
 progress bar.</td>
 </tr>
-<tr class="row-odd"><td><code>loadend</code></td>
-<td>Loading of the
-Native Client
-module has
-stopped. Load
-succeeded
-(<code>load</code>),
-failed
-(<code>error</code>), or
-was aborted
-(<code>abort</code>).</td>
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt><code>loadend</code></dt>
+<dd>Loading of the Native Client
+module has stopped. Load
+succeeded (<code>load</code>), failed
+(<code>error</code>), or was aborted
+(<code>abort</code>).</dd>
+</dl>
+</td>
 <td>once</td>
 <td>After an
 <code>error</code>,
@@ -193,28 +180,24 @@ dispatched.</td>
 <td>Indicate
 loading is
 over
-(regardless
-of failure or
+(regardless of
+failure or
 not).</td>
 </tr>
-<tr class="row-even"><td><code>crash</code></td>
-<td>The Native Client
-module is not
-responding (died
-on an
-<code>assert()</code> or
-<code>exit()</code>) after
-a successful
-load. This event
-is unique to
-Native Client and
-is not part of
-the W3C Progress
-Events standard.
-The <code>exitStatus</code>
-attribute provides
-the numeric exit
-status value.</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>crash</code></dt>
+<dd>The Native Client module is not
+responding (died on an
+<code>assert()</code> or <code>exit()</code>)
+after a successful load. This
+event is unique to Native Client
+and is not part of the W3C
+Progress Events standard. The
+<code>exitStatus</code> attribute
+provides the numeric exit
+status.</dd>
+</dl>
+</td>
 <td>zero or
 once</td>
 <td>After a
@@ -425,4 +408,4 @@ may nevertheless be useful for temporary debugging.</li>
 </ul>
 </section>
 
-{{/partials.standard_nacl_api}}
+{{/partials.standard_nacl_article}}

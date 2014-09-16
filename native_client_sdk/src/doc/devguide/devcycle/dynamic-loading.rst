@@ -7,9 +7,6 @@ Dynamic Linking and Loading with glibc
   :backlinks: none
   :depth: 2
 
-Introduction
-============
-
 .. Note::
   :class: caution
 
@@ -31,31 +28,30 @@ C standard libraries: glibc and newlib
 The Native Client SDK comes with two C standard libraries --- glibc and
 newlib. These libraries are described in the table below.
 
-+--------+----------+-------------+--------------------------------------------+
-| Library| Linking  | License     | Description                                |
-+========+==========+=============+============================================+
-| glibc  | dynamic  | GNU Lesser  | glibc is the GNU implementation of the     |
-|        | or static| General     | POSIX_ standard runtime library for the C  |
-|        |          | Public      | programming language. Designed for         |
-|        |          | License     | portability and performance, glibc is one  |
-|        |          | (LGPL)      | of the most popular implementations of the |
-|        |          |             | C library. It is comprised of a set of     |
-|        |          |             | interdependent libraries including libc,   |
-|        |          |             | libpthreads, libdl, and others. For        |
-|        |          |             | documentation, FAQs, and additional        |
-|        |          |             | information about glibc, see GLIBC_        |
-+--------+----------+-------------+--------------------------------------------+
-| newlib | static   | Berkeley    | newlib is a C library intended for use in  |
-|        |          | Software    | embedded systems. Like glibc, newlib is a  |
-|        |          | Distribution| conglomeration of several library parts.   |
-|        |          | (BSD) type  | It is available for use under BSD-type free|
-|        |          | free        | software licenses, which generally makes it|
-|        |          | software    | more suitable to link statically in        |
-|        |          | licenses    | commercial, closed-source applications. For|
-|        |          |             | documentation, FAQs, and additional        |
-|        |          |             | information about newlib, see the newlib_  |
-|        |          |             | documentation.                             |
-+--------+----------+-------------+--------------------------------------------+
++-----------------------------------------------------+----------+-------------+
+| Library                                             | Linking  | License     |
++=====================================================+==========+=============+
+|glibc                                                | dynamic  | GNU Lesser  |
+|  The GNU implementation of the POSIX_ standard      | or static| General     |
+|  runtime library for the C programming language.    |          | Public      |
+|  Designed for portability and performance, glibc is |          | License     |
+|  one of the most popular implementations of the C   |          | (LGPL)      |
+|  library. It is comprised of a set of interdependent|          |             |
+|  libraries including libc, libpthreads, libdl, and  |          |             |
+|  others. For documentation, FAQs, and additional    |          |             |
+|  information about glibc, see GLIBC_.               |          |             |
++-----------------------------------------------------+----------+-------------+
+|newlib                                               | static   | Berkeley    |
+|  newlib is a C library intended for use in embedded |          | Software    |
+|  systems. Like glibc, newlib is a conglomeration of |          | Distribution|
+|  several libraries. It is available for use under   |          | (BSD) type  |
+|  BSD-type free software licenses, which generally   |          | free        |
+|  makes it more suitable to link statically in       |          | software    |
+|  commercial, closed-source applications. For        |          | licenses    |
+|  documentation, FAQs, and additional information    |          |             |
+|  about newlib, see newlib_.                         |          |             |
++-----------------------------------------------------+----------+-------------+
+
 
 For proprietary (closed-source) applications, your options are to either
 statically link to newlib, or dynamically link to glibc. We recommend

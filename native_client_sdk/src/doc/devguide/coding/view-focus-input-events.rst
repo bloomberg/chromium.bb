@@ -1,7 +1,5 @@
 .. _view_focus_input_events:
 
-:template: standard_nacl_api
-
 ####################################
 View Change, Focus, and Input Events
 ####################################
@@ -43,71 +41,55 @@ override certain functions in the `pp::Instance
 </native-client/pepper_stable/cpp/classpp_1_1_instance>`_ class to handle input
 and browser events. These functions are listed in the table below:
 
-
-======================  ===============================  ====================
-Function                  Event                            Use
-======================  ===============================  ====================
-``DidChangeView``       Called when the position,        An implementation
-                        size, or clip rectangle          of this function
-                        of the module's instance in      might check the size
-                        the browser has changed.         of the module
-                        This event also occurs           instance's rectangle
-                        when browser window is           has changed and
-                        resized or mouse wheel           reallocate the
-                        is scrolled.                     graphics context
-                                                         when a different
-                                                         size is received.
-
-``DidChangeFocus``      Called when the module's         An implementation
-                        instance in the browser          of this function
-                        has gone in or out of            might start or stop
-                        focus (usually by                an animation or a
-                        clicking inside or               blinking cursor.
-                        outside the module
-                        instance). Having focus
-                        means that keyboard
-                        events will be sent to
-                        the module instance.
-                        An instance's default
-                        condition is that it
-                        does not have focus.
-
-``HandleDocumentLoad``  Called after                     This API is only
-                        ``pp::Instance::Init()``         applicable when you
-                        for a full-frame module          are writing an
-                        instance that was                extension to enhance
-                        instantiated based on            the abilities of
-                        the MIME type of a               the Chrome web
-                        DOMWindow navigation.            browser. For
-                        This situation only              example, a PDF
-                        applies to modules that          viewer might
-                        are pre-registered to            implement this
-                        handle certain MIME              function to download
-                        types. If you haven't            and display a PDF
-                        specifically registered          file.
-                        to handle a MIME type or
-                        aren't positive this
-                        applies to you, your
-                        implementation of this
-                        function can just return
-                        false.
-
-``HandleInputEvent``    Called when a user               An implementation of
-                        interacts with the               this function
-                        module's instance in the         examines the input
-                        browser using an input           event type and
-                        device such as a mouse           branches accordingly.
-                        or keyboard. You must
-                        register your module to
-                        accept input events
-                        using
-                        ``RequestInputEvents()``
-                        for mouse events and
-                        ``RequestFilteringInputEvents``
-                        for keyboard events
-                        prior to overriding this
-                        function.
-======================  ===============================  ====================
++-------------------------------------+----------------------------------------+
+| Function                            | Use                                    |
++=====================================+========================================+
+|``DidChangeView``                    |An implementation of this function might|
+|  Called when the position, size, or |check the size of the module instance's |
+|  clip rectangle of the module's     |rectangle has changed and reallocate the|
+|  instance in the browser has        |graphcs context when a different size is|
+|  changed. This event also occurs    |received.                               |
+|  when the browser window is resized |                                        |
+|  or the mouse wheel is scrolled.    |                                        |
++-------------------------------------+----------------------------------------+
+|``DidChangeFocus``                   |An implementation of this function might|
+|  Called when the module's instance  |start or stop an animation or a blinking|
+|  in the browser has gone in or out  |cursor.                                 |
+|  of focus (usually by clicking      |                                        |
+|  inside or outside the module       |                                        |
+|  instance). Having focus means that |                                        |
+|  keyboard events will be sent to the|                                        |
+|  module instance. An instance's     |                                        |
+|  default condition is that it does  |                                        |
+|  not have focus.                    |                                        |
++-------------------------------------+----------------------------------------+
+|``HandleDocumentLoad``               |This API is only applicable when you are|
+|  ``pp::Instance::Init()`` for a     |writing an extension to enhance the     |
+|  full-frame module instance that was|abilities of the Chrome web browser. For|
+|  instantiated based on the MIME     |example, a PDF viewer might implement   |
+|  type of a DOMWindow navigation.    |this function to download and display a |
+|  This situation only applies to     |PDF file.                               |
+|  modules that are pre-registered to |                                        |
+|  handle certain MIME types. If you  |                                        |
+|  haven't specifically registered to |                                        |
+|  handle a MIME type or aren't       |                                        |
+|  positive this applies to you, your |                                        |
+|  implementation of this function can|                                        |
+|  just return false.                 |                                        |
++-------------------------------------+----------------------------------------+
+|``HandleInputEvent``                 |An implementation of this function      |
+|  Called when a user interacts with  |examines the input event type and       |
+|  the module's instance in the       |branches accordingly.                   |
+|  browser using an input device such |                                        |
+|  as a mouse or keyboard. You must   |                                        |
+|  register your module to accept     |                                        |
+|  input events using                 |                                        |
+|  ``RequestInputEvents()``           |                                        |
+|  for mouse events and               |                                        |
+|  ``RequestFilteringInputEvents()``  |                                        |
+|  for keyboard events prior to       |                                        |
+|  overriding this function.          |                                        |
++-------------------------------------+----------------------------------------+
 
 
 These interfaces are found in the `pp::Instance class

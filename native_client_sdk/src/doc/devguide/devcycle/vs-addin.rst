@@ -1,7 +1,7 @@
-:template: standard_nacl_api
+.. _devcycle-vs-addin:
 
 ############################
-Debugging With Visual Studio
+Debugging with Visual Studio
 ############################
 
 
@@ -181,10 +181,10 @@ example):
 +-------------------+----------------------------------------------------------+
 | Variable Name     | Description                                              |
 +===================+==========================================================+
-| NACL_SDK_ROOT     | The path to the pepper directory in the SDK.             |
+| ``NACL_SDK_ROOT`` | The path to the pepper directory in the SDK.             |
 |                   | For example: ``C:\nacl_sdk\pepper_23``                   |
 +-------------------+----------------------------------------------------------+
-| CHROME_PATH       | The path to the .exe file for the version of Chrome you  |
+| ``CHROME_PATH``   | The path to the .exe file for the version of Chrome you  |
 |                   | are testing with.  For example:                          |
 |                   | ``C:\Users\fred\AppData\Local\Google\Chrome              |
 |                   | SxS\Application\chrome.exe``                             |

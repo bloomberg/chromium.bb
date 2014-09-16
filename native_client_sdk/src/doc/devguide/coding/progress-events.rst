@@ -1,7 +1,5 @@
 .. _devcycle-progress-events:
 
-:template: standard_nacl_api
-
 ###############
 Progress Events
 ###############
@@ -35,101 +33,79 @@ port of the proposed W3C `Progress Events
 event which is an extension of the W3C standard). The following table lists the
 events types reported by the Native Client runtime:
 
-+-------------+--------------------+-----------+---------------+---------------+
-| Event       | Description        | Number of | When event is | How you might |
-|             |                    | times     | triggered     | react to      |
-|             |                    | triggered |               | event         |
-+=============+====================+===========+===============+===============+
-|``loadstart``| Native Client has  | once      | This is the   | Display a     |
-|             | started to load a  |           | first         | status        |
-|             | Native Client      |           | progress      | message, such |
-|             | module.            |           | event         | as            |
-|             |                    |           | triggered     | "Loading..."  |
-|             |                    |           | after the     |               |
-|             |                    |           | Native Client |               |
-|             |                    |           | module is     |               |
-|             |                    |           | instantiated  |               |
-|             |                    |           | and           |               |
-|             |                    |           | initialized.  |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``progress`` | Part of the module | zero or   | After         | Display a     |
-|             | has been loaded.   | more      | ``loadstart`` | progress bar. |
-|             |                    |           | has been      |               |
-|             |                    |           | dispatched.   |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``error``    | The Native Client  | zero or   | After the     | Inform user   |
-|             | module failed to   | once      | last          | that the      |
-|             | start execution    |           | ``progress``  | application   |
-|             | (includes any      |           | event has     | failed to     |
-|             | error before or    |           | been          | load.         |
-|             | during             |           | dispatched,   |               |
-|             | initialization of  |           | or after      |               |
-|             | the module). The   |           | ``loadstart`` |               |
-|             | ``lastError``      |           | if no         |               |
-|             | attribute          |           | ``progress``  |               |
-|             | (mentioned later)  |           | event was     |               |
-|             | provides details   |           | dispatched.   |               |
-|             | on the error       |           |               |               |
-|             | (initialization    |           |               |               |
-|             | failed, sel_ldr    |           |               |               |
-|             | did not start,     |           |               |               |
-|             | and so on).        |           |               |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``abort``    | Loading of the     | zero or   | After the     | It's not      |
-|             | Native Client      | once      | last          | likely you    |
-|             | module was         |           | ``progress``  | will want to  |
-|             | aborted by the     |           | event has     | respond to    |
-|             | user.              |           | been          | this event.   |
-|             |                    |           | dispatched,   |               |
-|             |                    |           | or after      |               |
-|             |                    |           | ``loadstart`` |               |
-|             |                    |           | if no         |               |
-|             |                    |           | ``progress``  |               |
-|             |                    |           | event was     |               |
-|             |                    |           | dispatched.   |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``load``     | The Native Client  | zero or   | After the     | Remove the    |
-|             | module was         | once      | last          | progress bar. |
-|             | successfully       |           | ``progress``  |               |
-|             | loaded, and        |           | event has     |               |
-|             | execution was      |           | been          |               |
-|             | started. (The      |           | dispatched,   |               |
-|             | module was         |           | or after      |               |
-|             | initialized        |           | ``loadstart`` |               |
-|             | successfully.)     |           | if no         |               |
-|             |                    |           | ``progress``  |               |
-|             |                    |           | event was     |               |
-|             |                    |           | dispatched.   |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``loadend``  | Loading of the     | once      | After an      | Indicate      |
-|             | Native Client      |           | ``error``,    | loading is    |
-|             | module has         |           | ``abort``, or | over          |
-|             | stopped. Load      |           | ``load``      | (regardless   |
-|             | succeeded          |           | event was     | of failure or |
-|             | (``load``),        |           | dispatched.   | not).         |
-|             | failed             |           |               |               |
-|             | (``error``), or    |           |               |               |
-|             | was aborted        |           |               |               |
-|             | (``abort``).       |           |               |               |
-+-------------+--------------------+-----------+---------------+---------------+
-|``crash``    | The Native Client  | zero or   | After a       | Notify user   |
-|             | module is not      | once      | ``loadend``.  | that the      |
-|             | responding (died   |           |               | module did    |
-|             | on an              |           |               | something     |
-|             | ``assert()`` or    |           |               | illegal.      |
-|             | ``exit()``) after  |           |               |               |
-|             | a successful       |           |               |               |
-|             | load. This event   |           |               |               |
-|             | is unique to       |           |               |               |
-|             | Native Client and  |           |               |               |
-|             | is not part of     |           |               |               |
-|             | the W3C Progress   |           |               |               |
-|             | Events standard.   |           |               |               |
-|             | The ``exitStatus`` |           |               |               |
-|             | attribute provides |           |               |               |
-|             | the numeric exit   |           |               |               |
-|             | status value.      |           |               |               |
-+-------------+--------------------+-----------+---------------+---------------+
++----------------------------------+-----------+---------------+---------------+
+| Event                            | Times     | When          | How you might |
+|                                  | triggered | triggered     | respond       |
++==================================+===========+===============+===============+
+|``loadstart``                     | once      | The           | Display a     |
+|  Native Client has started to    |           | first         | status        |
+|  load a Native Client module.    |           | progress      | message, such |
+|                                  |           | event         | as            |
+|                                  |           | after the     | "Loading..."  |
+|                                  |           | Native Client |               |
+|                                  |           | module is     |               |
+|                                  |           | instantiated  |               |
+|                                  |           | and           |               |
+|                                  |           | initialized.  |               |
++----------------------------------+-----------+---------------+---------------+
+|``progress``                      | zero or   | After         | Display a     |
+|  Part of the module has been     | more      | ``loadstart`` | progress bar. |
+|  loaded.                         |           | has been      |               |
+|                                  |           | dispatched.   |               |
++----------------------------------+-----------+---------------+---------------+
+|``error``                         | zero or   | After the last| Inform user   |
+|  The Native Client module failed | once      | ``progress``  | that the      |
+|  to start execution (includes any|           | event has been| application   |
+|  error before or during          |           | dispatched,   | failed to     |
+|  initialization of the module).  |           | or after      | load.         |
+|  The ``lastError`` attribute     |           | ``loadstart`` |               |
+|  (mentioned later) provides      |           | if no         |               |
+|  details on the error            |           | ``progress``  |               |
+|  (initialization failed, sel_ldr |           | event was     |               |
+|  did not start, and so on).      |           | dispatched.   |               |
++----------------------------------+-----------+---------------+---------------+
+|``abort``                         | zero or   | After the last| It's not      |
+|  Loading of the NativeClient     | once      | ``progress``  | likely you    |
+|  module was aborted by the user. |           | event has been| will want to  |
+|                                  |           | dispatched, or| respond to    |
+|                                  |           | after         | this event.   |
+|                                  |           | ``loadstart`` |               |
+|                                  |           | if no         |               |
+|                                  |           | ``progress``  |               |
+|                                  |           | event was     |               |
+|                                  |           | dispatched.   |               |
++----------------------------------+-----------+---------------+---------------+
+|``load``                          | zero or   | After the     | Remove the    |
+|  The Native Client module was    | once      | last          | progress bar. |
+|  successfully loaded, and        |           | ``progress``  |               |
+|  execution was started.          |           | event has been|               |
+|  (The module was initialized     |           | dispatched, or|               |
+|  successfully.)                  |           | after         |               |
+|                                  |           | ``loadstart`` |               |
+|                                  |           | if no         |               |
+|                                  |           | ``progress``  |               |
+|                                  |           | event was     |               |
+|                                  |           | dispatched.   |               |
++----------------------------------+-----------+---------------+---------------+
+|``loadend``                       | once      | After an      | Indicate      |
+|  Loading of the Native Client    |           | ``error``,    | loading is    |
+|  module has stopped. Load        |           | ``abort``, or | over          |
+|  succeeded (``load``), failed    |           | ``load``      | (regardless of|
+|  (``error``), or was aborted     |           | event was     | failure or    |
+|  (``abort``).                    |           | dispatched.   | not).         | 
++----------------------------------+-----------+---------------+---------------+
+|``crash``                         | zero or   | After a       | Notify user   |
+|  The Native Client module is not | once      | ``loadend``.  | that the      |
+|  responding (died on an          |           |               | module did    |
+|  ``assert()`` or ``exit()``)     |           |               | something     |
+|  after a successful load. This   |           |               | illegal.      |
+|  event is unique to Native Client|           |               |               |
+|  and is not part of the W3C      |           |               |               |
+|  Progress Events standard. The   |           |               |               |
+|  ``exitStatus`` attribute        |           |               |               |
+|  provides the numeric exit       |           |               |               |
+|  status.                         |           |               |               |
++----------------------------------+-----------+---------------+---------------+
 
 The sequence of events for a successful module load is as follows:
 

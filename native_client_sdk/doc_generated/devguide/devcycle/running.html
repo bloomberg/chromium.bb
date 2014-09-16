@@ -1,7 +1,7 @@
-{{+bindTo:partials.standard_nacl_api}}
+{{+bindTo:partials.standard_nacl_article}}
 
 <section id="running">
-<h1 id="running">Running</h1>
+<span id="devcycle-running"></span><h1 id="running"><span id="devcycle-running"></span>Running</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
 <li><a class="reference internal" href="#introduction" id="id5">Introduction</a></li>
@@ -71,52 +71,70 @@ section below.</p>
 <colgroup>
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">#</th>
-<th class="head">Technique</th>
-<th class="head">Requires NaCl flag</th>
-<th class="head">Requires Web Server</th>
-<th class="head">Requires CWS Metadata</th>
-<th class="head">Description</th>
+<tr class="row-odd"><th class="head" colspan="2">Technique</th>
+<th class="head">Requires
+Web
+Server</th>
+<th class="head">Requires
+CWS
+Metadata</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>1</td>
-<td>Local server</td>
-<td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
+<tr class="row-even"><td colspan="2"><p class="first"><strong>1. Local server</strong></p>
+<blockquote class="last">
+<div><blockquote>
+<div><p>Run a local server and simply point your browser to
+your application on the server.</p>
+<aside class="note">
+This technique requires the NaCl flag.
+</aside>
+</div></blockquote>
+</div></blockquote>
+</td>
 <td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
 <td>&nbsp;</td>
-<td>Run a local server and simply point your browser to your application on
-the server.</td>
 </tr>
-<tr class="row-odd"><td>2</td>
-<td>Packaged application loaded as an unpacked extension</td>
-<td>&nbsp;</td>
+<tr class="row-odd"><td colspan="2"><p class="first"><strong>2. Packaged application loaded as an unpacked
+extension</strong></p>
+<blockquote class="last">
+<div><blockquote>
+<div>Load your packaged application into Chrome as an
+unpacked extension and run it without a server. An
+unpacked extension is an application whose source and
+metadata files are located in an unzipped folder on
+your development machine. The CWS manifest file
+(explained below) must specify a local_path field.</div></blockquote>
+</div></blockquote>
+</td>
 <td>&nbsp;</td>
 <td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
-<td>Load your packaged application into Chrome as an unpacked extension and
-run it without a server. An unpacked extension is simply an application
-whose source and metadata files are located in a plain (unzipped) folder
-on your development machine. The CWS manifest file (explained below) must
-specify a <code>local_path</code> field.</td>
 </tr>
-<tr class="row-even"><td>3</td>
-<td>Hosted application loaded as an unpacked extension</td>
-<td>&nbsp;</td>
+<tr class="row-even"><td colspan="2"><p class="first"><strong>3. Hosted application loaded as an unpacked
+extension</strong></p>
+<blockquote class="last">
+<div><blockquote>
+<div>Load your hosted application into Chrome as an
+unpacked extension and run it from a server (which can
+be a local server). The CWS manifest file must specify
+a web_url field.</div></blockquote>
+</div></blockquote>
+</td>
 <td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
 <td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
-<td>Load your hosted application into Chrome as an unpacked extension and run
-it from a server (which can be a local server). The CWS manifest file
-must specify a <code>web_url</code> field.</td>
 </tr>
-<tr class="row-odd"><td>4</td>
-<td>CWS application with untrusted testers</td>
-<td>&nbsp;</td>
+<tr class="row-odd"><td colspan="2"><p class="first"><strong>4. CWS application with untrusted testers</strong></p>
+<blockquote class="last">
+<div><blockquote>
+<div>The standard technique for distributing a packaged or
+hosted application in the CWS. You can limit the
+application to trusted testers. This technique
+requires a server if your application is a hosted
+application.</div></blockquote>
+</div></blockquote>
+</td>
 <td>&nbsp;</td>
 <td><img alt="CHK" src="/native-client/images/check-red.png" /></td>
-<td>This is the standard technique for distributing a packaged or hosted
-application in the CWS, but you can limit the application to a few
-trusted testers. This technique requires a server if your application is
-a hosted application.</td>
 </tr>
 </tbody>
 </table>
@@ -424,4 +442,4 @@ you must first unpublish the application. For additional information see
 to test accounts</a>.</p>
 </section>
 
-{{/partials.standard_nacl_api}}
+{{/partials.standard_nacl_article}}

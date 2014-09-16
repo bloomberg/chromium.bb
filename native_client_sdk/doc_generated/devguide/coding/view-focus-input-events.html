@@ -1,7 +1,7 @@
-{{+bindTo:partials.standard_nacl_api}}
+{{+bindTo:partials.standard_nacl_article}}
 
 <section id="view-change-focus-and-input-events">
-<h1 id="view-change-focus-and-input-events">View Change, Focus, and Input Events</h1>
+<span id="view-focus-input-events"></span><h1 id="view-change-focus-and-input-events"><span id="view-focus-input-events"></span>View Change, Focus, and Input Events</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
 <li><a class="reference internal" href="#overview" id="id2">Overview</a></li>
@@ -50,105 +50,83 @@ and browser events. These functions are listed in the table below:</p>
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Function</th>
-<th class="head">Event</th>
 <th class="head">Use</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code>DidChangeView</code></td>
-<td>Called when the position,
-size, or clip rectangle
-of the module&#8217;s instance in
-the browser has changed.
-This event also occurs
-when browser window is
-resized or mouse wheel
-is scrolled.</td>
-<td>An implementation
-of this function
-might check the size
-of the module
-instance&#8217;s rectangle
-has changed and
-reallocate the
-graphics context
-when a different
-size is received.</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>DidChangeView</code></dt>
+<dd>Called when the position, size, or
+clip rectangle of the module&#8217;s
+instance in the browser has
+changed. This event also occurs
+when the browser window is resized
+or the mouse wheel is scrolled.</dd>
+</dl>
+</td>
+<td>An implementation of this function might
+check the size of the module instance&#8217;s
+rectangle has changed and reallocate the
+graphcs context when a different size is
+received.</td>
 </tr>
-<tr class="row-odd"><td><code>DidChangeFocus</code></td>
-<td>Called when the module&#8217;s
-instance in the browser
-has gone in or out of
-focus (usually by
-clicking inside or
-outside the module
-instance). Having focus
-means that keyboard
-events will be sent to
-the module instance.
-An instance&#8217;s default
-condition is that it
-does not have focus.</td>
-<td>An implementation
-of this function
-might start or stop
-an animation or a
-blinking cursor.</td>
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt><code>DidChangeFocus</code></dt>
+<dd>Called when the module&#8217;s instance
+in the browser has gone in or out
+of focus (usually by clicking
+inside or outside the module
+instance). Having focus means that
+keyboard events will be sent to the
+module instance. An instance&#8217;s
+default condition is that it does
+not have focus.</dd>
+</dl>
+</td>
+<td>An implementation of this function might
+start or stop an animation or a blinking
+cursor.</td>
 </tr>
-<tr class="row-even"><td><code>HandleDocumentLoad</code></td>
-<td>Called after
-<code>pp::Instance::Init()</code>
-for a full-frame module
-instance that was
-instantiated based on
-the MIME type of a
-DOMWindow navigation.
-This situation only
-applies to modules that
-are pre-registered to
-handle certain MIME
-types. If you haven&#8217;t
-specifically registered
-to handle a MIME type or
-aren&#8217;t positive this
-applies to you, your
-implementation of this
-function can just return
-false.</td>
-<td>This API is only
-applicable when you
-are writing an
-extension to enhance
-the abilities of
-the Chrome web
-browser. For
-example, a PDF
-viewer might
-implement this
-function to download
-and display a PDF
-file.</td>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt><code>HandleDocumentLoad</code></dt>
+<dd><code>pp::Instance::Init()</code> for a
+full-frame module instance that was
+instantiated based on the MIME
+type of a DOMWindow navigation.
+This situation only applies to
+modules that are pre-registered to
+handle certain MIME types. If you
+haven&#8217;t specifically registered to
+handle a MIME type or aren&#8217;t
+positive this applies to you, your
+implementation of this function can
+just return false.</dd>
+</dl>
+</td>
+<td>This API is only applicable when you are
+writing an extension to enhance the
+abilities of the Chrome web browser. For
+example, a PDF viewer might implement
+this function to download and display a
+PDF file.</td>
 </tr>
-<tr class="row-odd"><td><code>HandleInputEvent</code></td>
-<td>Called when a user
-interacts with the
-module&#8217;s instance in the
-browser using an input
-device such as a mouse
-or keyboard. You must
-register your module to
-accept input events
-using
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt><code>HandleInputEvent</code></dt>
+<dd>Called when a user interacts with
+the module&#8217;s instance in the
+browser using an input device such
+as a mouse or keyboard. You must
+register your module to accept
+input events using
 <code>RequestInputEvents()</code>
 for mouse events and
-<code>RequestFilteringInputEvents</code>
-for keyboard events
-prior to overriding this
-function.</td>
-<td>An implementation of
-this function
-examines the input
-event type and
+<code>RequestFilteringInputEvents()</code>
+for keyboard events prior to
+overriding this function.</dd>
+</dl>
+</td>
+<td>An implementation of this function
+examines the input event type and
 branches accordingly.</td>
 </tr>
 </tbody>
@@ -332,4 +310,4 @@ the <code>event_queue_</code> and the worker thread takes events from the
 thread, so as not to slow down the browser.</p>
 </section>
 
-{{/partials.standard_nacl_api}}
+{{/partials.standard_nacl_article}}
