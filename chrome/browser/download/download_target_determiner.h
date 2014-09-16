@@ -304,6 +304,7 @@ class DownloadTargetDeterminer
   bool create_target_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
   content::DownloadDangerType danger_type_;
+  bool is_dangerous_file_;  // See DownloadTargetInfo::is_dangerous_file
   base::FilePath virtual_path_;
   base::FilePath local_path_;
   base::FilePath intermediate_path_;

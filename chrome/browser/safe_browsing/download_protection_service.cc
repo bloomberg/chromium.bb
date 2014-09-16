@@ -311,12 +311,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
       switch (reason) {
         case REASON_EMPTY_URL_CHAIN:
         case REASON_INVALID_URL:
-          PostFinishTask(SAFE, reason);
+          PostFinishTask(UNKNOWN, reason);
           return;
 
         case REASON_NOT_BINARY_FILE:
           RecordFileExtensionType(item_->GetTargetFilePath());
-          PostFinishTask(SAFE, reason);
+          PostFinishTask(UNKNOWN, reason);
           return;
 
         default:
@@ -357,7 +357,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
             service_->download_request_timeout_ms()));
   }
 
-  // Canceling a request will cause us to always report the result as SAFE
+  // Canceling a request will cause us to always report the result as UNKNOWN
   // unless a pending request is about to call FinishRequest.
   void Cancel() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -371,7 +371,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // reference to this object.  We'll eventually wind up in some method on
     // the UI thread that will call FinishRequest() again.  If FinishRequest()
     // is called a second time, it will be a no-op.
-    FinishRequest(SAFE, REASON_REQUEST_CANCELED);
+    FinishRequest(UNKNOWN, REASON_REQUEST_CANCELED);
     // Calling FinishRequest might delete this object, we may be deleted by
     // this point.
   }
@@ -399,7 +399,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         "SBClientDownload.DownloadRequestNetError",
         -source->GetStatus().error());
     DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
-    DownloadCheckResult result = SAFE;
+    DownloadCheckResult result = UNKNOWN;
     if (source->GetStatus().is_success() &&
         net::HTTP_OK == source->GetResponseCode()) {
       ClientDownloadResponse response;
@@ -408,16 +408,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
       DCHECK(got_data);
       if (!response.ParseFromString(data)) {
         reason = REASON_INVALID_RESPONSE_PROTO;
+        result = UNKNOWN;
       } else if (response.verdict() == ClientDownloadResponse::SAFE) {
         reason = REASON_DOWNLOAD_SAFE;
+        result = SAFE;
       } else if (service_ && !service_->IsSupportedDownload(
           *item_, item_->GetTargetFilePath())) {
         // The client of the download protection service assumes that we don't
         // support this download so we cannot return any other verdict than
-        // SAFE even if the server says it's dangerous to download this file.
+        // UNKNOWN even if the server says it's dangerous to download this file.
         // Note: if service_ is NULL we already cancelled the request and
-        // returned SAFE.
+        // returned UNKNOWN.
         reason = REASON_DOWNLOAD_NOT_SUPPORTED;
+        result = UNKNOWN;
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
         reason = REASON_DOWNLOAD_DANGEROUS;
         result = DANGEROUS;
@@ -435,6 +438,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         LOG(DFATAL) << "Unknown download response verdict: "
                     << response.verdict();
         reason = REASON_INVALID_RESPONSE_VERDICT;
+        result = UNKNOWN;
       }
       DownloadFeedbackService::MaybeStorePingsForDownload(
           result, item_, client_download_request_data_, data);
@@ -566,55 +570,61 @@ class DownloadProtectionService::CheckClientDownloadRequest
                         base::TimeTicks::Now() - zip_analysis_start_time_);
 
     if (!zipped_executable_) {
-      PostFinishTask(SAFE, REASON_ARCHIVE_WITHOUT_BINARIES);
+      PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
       return;
     }
     OnFileFeatureExtractionDone();
   }
 
+  static void RecordCountOfSignedOrWhitelistedDownload() {
+    UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
+  }
+
   void CheckWhitelists() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    DownloadCheckResultReason reason = REASON_MAX;
+
     if (!database_manager_.get()) {
-      reason = REASON_SB_DISABLED;
-    } else {
-      const GURL& url = url_chain_.back();
-      if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
-        VLOG(2) << url << " is on the download whitelist.";
-        reason = REASON_WHITELISTED_URL;
-      }
-      if (reason != REASON_MAX || signature_info_.trusted()) {
-        UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
-      }
+      PostFinishTask(UNKNOWN, REASON_SB_DISABLED);
+      return;
     }
-    if (reason == REASON_MAX && signature_info_.trusted()) {
+
+    const GURL& url = url_chain_.back();
+    if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
+      VLOG(2) << url << " is on the download whitelist.";
+      RecordCountOfSignedOrWhitelistedDownload();
+      PostFinishTask(SAFE, REASON_WHITELISTED_URL);
+      return;
+    }
+
+    if (signature_info_.trusted()) {
+      RecordCountOfSignedOrWhitelistedDownload();
       for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
         if (CertificateChainIsWhitelisted(
                 signature_info_.certificate_chain(i))) {
-          reason = REASON_TRUSTED_EXECUTABLE;
-          break;
+          PostFinishTask(SAFE, REASON_TRUSTED_EXECUTABLE);
+          return;
         }
       }
     }
-    if (reason != REASON_MAX) {
-      PostFinishTask(SAFE, reason);
-    } else if (!pingback_enabled_) {
-      PostFinishTask(SAFE, REASON_PING_DISABLED);
-    } else {
-      // Currently, the UI only works on Windows so we don't even bother
-      // with pinging the server if we're not on Windows.  TODO(noelutz):
-      // change this code once the UI is done for Linux and Mac.
-#if defined(OS_WIN)
-      // The URLFetcher is owned by the UI thread, so post a message to
-      // start the pingback.
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
-#else
-      PostFinishTask(SAFE, REASON_OS_NOT_SUPPORTED);
-#endif
+
+    if (!pingback_enabled_) {
+      PostFinishTask(UNKNOWN, REASON_PING_DISABLED);
+      return;
     }
+
+    // Currently, the UI only works on Windows so we don't even bother with
+    // pinging the server if we're not on Windows.
+    // TODO(noelutz): change this code once the UI is done for Linux and Mac.
+#if defined(OS_WIN)
+    // The URLFetcher is owned by the UI thread, so post a message to
+    // start the pingback.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
+#else
+    PostFinishTask(UNKNOWN, REASON_OS_NOT_SUPPORTED);
+#endif
   }
 
   void GetTabRedirects() {
@@ -709,7 +719,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.mutable_signature()->CopyFrom(signature_info_);
     request.mutable_image_headers()->CopyFrom(image_headers_);
     if (!request.SerializeToString(&client_download_request_data_)) {
-      FinishRequest(SAFE, REASON_INVALID_REQUEST_PROTO);
+      FinishRequest(UNKNOWN, REASON_INVALID_REQUEST_PROTO);
       return;
     }
 
@@ -765,7 +775,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
     if (service_) {
       VLOG(2) << "SafeBrowsing download verdict for: "
-              << item_->DebugString(true) << " verdict:" << reason;
+              << item_->DebugString(true) << " verdict:" << reason
+              << " result:" << result;
       UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                                 reason,
                                 REASON_MAX);
@@ -778,7 +789,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       // DownloadProtectionService::RequestFinished will decrement our refcount,
       // so we may be deleted now.
     } else {
-      callback_.Run(SAFE);
+      callback_.Run(UNKNOWN);
     }
   }
 

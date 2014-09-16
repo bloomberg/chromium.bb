@@ -48,29 +48,6 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // object if not found. Always returns a non-NULL pointer, unless OOM.
   static DownloadItemModelData* GetOrCreate(DownloadItem* download);
 
-  bool should_show_in_shelf() const { return should_show_in_shelf_; }
-  void set_should_show_in_shelf(bool should_show_in_shelf) {
-    should_show_in_shelf_ = should_show_in_shelf;
-  }
-
-  bool was_ui_notified() const { return was_ui_notified_; }
-  void set_was_ui_notified(bool was_ui_notified) {
-    was_ui_notified_ = was_ui_notified;
-  }
-
-  bool should_prefer_opening_in_browser() const {
-    return should_prefer_opening_in_browser_;
-  }
-  void set_should_prefer_opening_in_browser(bool preference) {
-    should_prefer_opening_in_browser_ = preference;
-  }
-
- private:
-  DownloadItemModelData();
-  virtual ~DownloadItemModelData() {}
-
-  static const char kKey[];
-
   // Whether the download should be displayed in the download shelf. True by
   // default.
   bool should_show_in_shelf_;
@@ -81,6 +58,16 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // Whether the download should be opened in the browser vs. the system handler
   // for the file type.
   bool should_prefer_opening_in_browser_;
+
+  // Whether the download should be considered dangerous if SafeBrowsing doesn't
+  // come up with a verdict.
+  bool is_dangerous_file_based_on_type_;
+
+ private:
+  DownloadItemModelData();
+  virtual ~DownloadItemModelData() {}
+
+  static const char kKey[];
 };
 
 // static
@@ -107,7 +94,8 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
 DownloadItemModelData::DownloadItemModelData()
     : should_show_in_shelf_(true),
       was_ui_notified_(false),
-      should_prefer_opening_in_browser_(false) {
+      should_prefer_opening_in_browser_(false),
+      is_dangerous_file_based_on_type_(false) {
 }
 
 base::string16 InterruptReasonStatusMessage(int reason) {
@@ -560,12 +548,12 @@ bool DownloadItemModel::ShouldShowDownloadStartedAnimation() const {
 
 bool DownloadItemModel::ShouldShowInShelf() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return !data || data->should_show_in_shelf();
+  return !data || data->should_show_in_shelf_;
 }
 
 void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->set_should_show_in_shelf(should_show);
+  data->should_show_in_shelf_ = should_show;
 }
 
 bool DownloadItemModel::ShouldNotifyUI() const {
@@ -594,22 +582,32 @@ bool DownloadItemModel::ShouldNotifyUI() const {
 
 bool DownloadItemModel::WasUINotified() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data && data->was_ui_notified();
+  return data && data->was_ui_notified_;
 }
 
 void DownloadItemModel::SetWasUINotified(bool was_ui_notified) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->set_was_ui_notified(was_ui_notified);
+  data->was_ui_notified_ = was_ui_notified;
 }
 
 bool DownloadItemModel::ShouldPreferOpeningInBrowser() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data && data->should_prefer_opening_in_browser();
+  return data && data->should_prefer_opening_in_browser_;
 }
 
 void DownloadItemModel::SetShouldPreferOpeningInBrowser(bool preference) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->set_should_prefer_opening_in_browser(preference);
+  data->should_prefer_opening_in_browser_ = preference;
+}
+
+bool DownloadItemModel::IsDangerousFileBasedOnType() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return data && data->is_dangerous_file_based_on_type_;
+}
+
+void DownloadItemModel::SetIsDangerousFileBasedOnType(bool dangerous) {
+  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
+  data->is_dangerous_file_based_on_type_ = dangerous;
 }
 
 base::string16 DownloadItemModel::GetProgressSizesString() const {

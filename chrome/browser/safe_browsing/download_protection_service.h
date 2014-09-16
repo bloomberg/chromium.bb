@@ -41,6 +41,7 @@ class BinaryFeatureExtractor;
 class DownloadProtectionService {
  public:
   enum DownloadCheckResult {
+    UNKNOWN,
     SAFE,
     DANGEROUS,
     UNCOMMON,
@@ -90,7 +91,7 @@ class DownloadProtectionService {
   // Enables or disables the service.  This is usually called by the
   // SafeBrowsingService, which tracks whether any profile uses these services
   // at all.  Disabling causes any pending and future requests to have their
-  // callbacks called with "SAFE" results.
+  // callbacks called with "UNKNOWN" results.
   void SetEnabled(bool enabled);
 
   bool enabled() const {

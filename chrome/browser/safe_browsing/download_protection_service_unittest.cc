@@ -379,7 +379,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   Mock::VerifyAndClearExpectations(&item);
 
   url_chain.push_back(GURL("file://www.google.com/"));
@@ -395,7 +395,30 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
+  base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
+  base::FilePath a_txt(FILE_PATH_LITERAL("a.txt"));
+  std::vector<GURL> url_chain;
+  GURL referrer("http://www.google.com/");
+
+  content::MockDownloadItem item;
+  url_chain.push_back(GURL("http://www.example.com/foo"));
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_txt));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
@@ -451,7 +474,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // Check that the referrer is not matched against the whitelist.
@@ -464,7 +487,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // Redirect from a site shouldn't be checked either.
@@ -477,7 +500,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // Only if the final url is whitelisted should it be SAFE.
@@ -528,7 +551,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
@@ -574,9 +597,15 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+#if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+#else
+  // On !OS_WIN, no file types are currently supported. Hence all erquests to
+  // CheckClientDownload() result in a verdict of UNKNOWN.
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#endif
 
-  // Invalid response should be safe too.
+  // Invalid response should result in UNKNOWN.
   response.Clear();
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
@@ -588,7 +617,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   std::string feedback_ping;
   std::string feedback_response;
   EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
@@ -611,7 +640,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // If the response is uncommon the result should also be marked as uncommon.
@@ -635,7 +664,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_EQ(url_chain.back().spec(), decoded_request.url());
   EXPECT_EQ(response.SerializeAsString(), feedback_response);
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // If the response is dangerous_host the result should also be marked as
@@ -657,7 +686,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       item, &feedback_ping, &feedback_response));
   EXPECT_EQ(response.SerializeAsString(), feedback_response);
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 
   // If the response is POTENTIALLY_UNWANTED the result should also be marked as
@@ -676,7 +705,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 }
 
@@ -725,7 +754,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
 }
 
@@ -777,7 +806,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 
@@ -796,7 +825,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+#if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+#else
+  // For !OS_WIN, no file types are currently supported. Hence the resulting
+  // verdict is UNKNOWN.
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#endif
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 
   // If the response is dangerous the result should also be marked as
@@ -815,7 +850,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 #endif
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
@@ -853,7 +888,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
@@ -905,7 +940,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
@@ -1354,7 +1389,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   // The request should time out because the HTTP request hasn't returned
   // anything yet.
   MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
@@ -1397,7 +1432,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
     // notification.
   }
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
 TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {

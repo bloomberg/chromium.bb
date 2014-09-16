@@ -26,6 +26,17 @@ struct DownloadTargetInfo {
   // Danger type of the download.
   content::DownloadDangerType danger_type;
 
+  // The danger type of the download could be set to MAYBE_DANGEROUS_CONTENT if
+  // the file type is handled by SafeBrowsing. However, if the SafeBrowsing
+  // service is unable to verify whether the file is safe or not, we are on our
+  // own. This flag indicates whether the download should be considered
+  // dangerous if SafeBrowsing returns an unknown verdict.
+  //
+  // Note that some downloads (e.g. "Save link as" on a link to a binary) would
+  // not be considered 'Dangerous' even if SafeBrowsing came back with an
+  // unknown verdict. So we can't always show a warning when SB fails.
+  bool is_dangerous_file;
+
   // Suggested intermediate path. The downloaded bytes should be written to this
   // path until all the bytes are available and the user has accepted a
   // dangerous download. At that point, the download can be renamed to

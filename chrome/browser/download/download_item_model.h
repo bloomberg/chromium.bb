@@ -137,6 +137,16 @@ class DownloadItemModel {
   // Change what's returned by ShouldPreferOpeningInBrowser to |preference|.
   void SetShouldPreferOpeningInBrowser(bool preference);
 
+  // Mark that the download should be considered dangerous based on the file
+  // type. This value may differ from the download's danger type in cases where
+  // the SafeBrowsing service hasn't returned a verdict about the download. If
+  // SafeBrowsing fails to return a decision, then the download should be
+  // considered dangerous based on this flag. Defaults to false.
+  bool IsDangerousFileBasedOnType() const;
+
+  // Change what's returned by IsDangerousFileBasedOnType().
+  void SetIsDangerousFileBasedOnType(bool dangerous);
+
   // Open the download using the platform handler for the download. The behavior
   // of this method will be different from DownloadItem::OpenDownload() if
   // ShouldPreferOpeningInBrowser().
