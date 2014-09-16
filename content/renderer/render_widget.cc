@@ -1659,6 +1659,12 @@ bool RenderWidget::SetDeviceColorProfile(
   return true;
 }
 
+void RenderWidget::ResetDeviceColorProfileForTesting() {
+  if (!device_color_profile_.empty())
+    device_color_profile_.clear();
+  device_color_profile_.push_back('0');
+}
+
 void RenderWidget::OnOrientationChange() {
 }
 

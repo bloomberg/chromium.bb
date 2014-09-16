@@ -145,6 +145,12 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
 }
 
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
+  if (name == "reset") {
+    static_cast<RenderViewImpl*>(render_view)->
+        ResetDeviceColorProfileForTesting();
+    return;
+  }
+
   std::vector<char> color_profile;
 
   struct TestColorProfile {

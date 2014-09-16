@@ -3681,6 +3681,12 @@ bool RenderViewImpl::SetDeviceColorProfile(
   return changed;
 }
 
+void RenderViewImpl::ResetDeviceColorProfileForTesting() {
+  RenderWidget::ResetDeviceColorProfileForTesting();
+  if (webview())
+    webview()->resetDeviceColorProfile();
+}
+
 ui::TextInputType RenderViewImpl::GetTextInputType() {
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)

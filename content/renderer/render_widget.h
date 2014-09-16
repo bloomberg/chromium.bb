@@ -418,6 +418,7 @@ class CONTENT_EXPORT RenderWidget
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
   virtual bool SetDeviceColorProfile(const std::vector<char>& color_profile);
+  virtual void ResetDeviceColorProfileForTesting();
 
   virtual void OnOrientationChange();
 
