@@ -176,8 +176,15 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
 
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
 
+  ScopedPtrVector<CopyOutputRequest> copy_requests;
+  surface->TakeCopyOutputRequests(&copy_requests);
+
+  bool merge_pass = copy_requests.empty();
+
   const RenderPassList& referenced_passes = render_pass_list;
-  for (size_t j = 0; j + 1 < referenced_passes.size(); ++j) {
+  size_t passes_to_copy =
+      merge_pass ? referenced_passes.size() - 1 : referenced_passes.size();
+  for (size_t j = 0; j < passes_to_copy; ++j) {
     const RenderPass& source = *referenced_passes[j];
 
     scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
@@ -207,16 +214,37 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
     dest_pass_list_->push_back(copy_pass.Pass());
   }
 
-  // TODO(jamesr): Clean up last pass special casing.
   const RenderPass& last_pass = *render_pass_list.back();
-  const QuadList& quads = last_pass.quad_list;
+  if (merge_pass) {
+    // TODO(jamesr): Clean up last pass special casing.
+    const QuadList& quads = last_pass.quad_list;
 
-  // TODO(jamesr): Make sure clipping is enforced.
-  CopyQuadsToPass(quads,
-                  last_pass.shared_quad_state_list,
-                  surface_quad->quadTransform(),
-                  dest_pass,
-                  surface_id);
+    // TODO(jamesr): Make sure clipping is enforced.
+    CopyQuadsToPass(quads,
+                    last_pass.shared_quad_state_list,
+                    surface_quad->quadTransform(),
+                    dest_pass,
+                    surface_id);
+  } else {
+    RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
+
+    dest_pass_list_->back()->copy_requests.swap(copy_requests);
+
+    SharedQuadState* shared_quad_state =
+        dest_pass->CreateAndAppendSharedQuadState();
+    shared_quad_state->CopyFrom(surface_quad->shared_quad_state);
+    scoped_ptr<RenderPassDrawQuad> quad(new RenderPassDrawQuad);
+    quad->SetNew(shared_quad_state,
+                 surface_quad->rect,
+                 surface_quad->visible_rect,
+                 remapped_pass_id,
+                 0,
+                 gfx::RectF(),
+                 FilterOperations(),
+                 gfx::Vector2dF(),
+                 FilterOperations());
+    dest_pass->quad_list.push_back(quad.PassAs<DrawQuad>());
+  }
   dest_pass->damage_rect =
       gfx::UnionRects(dest_pass->damage_rect,
                       MathUtil::MapEnclosingClippedRect(

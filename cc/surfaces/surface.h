@@ -11,6 +11,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/base/scoped_ptr_vector.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/size.h"
@@ -37,6 +39,8 @@ class CC_SURFACES_EXPORT Surface {
   void QueueFrame(scoped_ptr<CompositorFrame> frame,
                   const base::Closure& draw_callback);
   void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request);
+  void TakeCopyOutputRequests(
+      ScopedPtrVector<CopyOutputRequest>* copy_requests);
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
 
@@ -55,6 +59,7 @@ class CC_SURFACES_EXPORT Surface {
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
   int frame_index_;
+  ScopedPtrVector<CopyOutputRequest> copy_requests_;
 
   base::Closure draw_callback_;
 

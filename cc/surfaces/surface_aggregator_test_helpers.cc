@@ -117,6 +117,15 @@ void TestQuadMatchesExpectations(Quad expected_quad, DrawQuad* quad) {
       EXPECT_EQ(expected_quad.color, solid_color_quad->color);
       break;
     }
+    case DrawQuad::RENDER_PASS: {
+      ASSERT_EQ(DrawQuad::RENDER_PASS, quad->material);
+
+      const RenderPassDrawQuad* render_pass_quad =
+          RenderPassDrawQuad::MaterialCast(quad);
+
+      EXPECT_EQ(expected_quad.render_pass_id, render_pass_quad->render_pass_id);
+      break;
+    }
     default:
       NOTREACHED();
       break;
