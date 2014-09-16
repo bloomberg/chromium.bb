@@ -134,6 +134,7 @@ class SupervisedUserCreationScreen
   scoped_ptr<base::DictionaryValue> existing_users_;
 
   bool on_error_screen_;
+  bool manager_signin_in_progress_;
   std::string last_page_;
 
   SupervisedUserSyncService* sync_service_;

@@ -386,10 +386,6 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
     const std::string& manager_password) {
   const std::string manager_username =
       gaia::SanitizeEmail(raw_manager_username);
-
-  UserFlow* flow = new SupervisedUserCreationFlow(manager_username);
-  ChromeUserManager::Get()->SetUserFlow(manager_username, flow);
-
   delegate_->AuthenticateManager(manager_username, manager_password);
 }
 

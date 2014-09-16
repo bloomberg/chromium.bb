@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller_new.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -99,6 +100,7 @@ SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     : WizardScreen(observer),
       actor_(actor),
       on_error_screen_(false),
+      manager_signin_in_progress_(false),
       last_page_(kNameOfIntroScreen),
       sync_service_(NULL),
       image_decoder_(NULL),
@@ -162,6 +164,7 @@ void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
 }
 
 void SupervisedUserCreationScreen::ShowManagerInconsistentStateErrorScreen() {
+  manager_signin_in_progress_ = false;
   if (!actor_)
     return;
   actor_->ShowErrorPage(
@@ -201,6 +204,13 @@ void SupervisedUserCreationScreen::FinishFlow() {
 void SupervisedUserCreationScreen::AuthenticateManager(
     const std::string& manager_id,
     const std::string& manager_password) {
+  if (manager_signin_in_progress_)
+    return;
+  manager_signin_in_progress_ = true;
+
+  UserFlow* flow = new SupervisedUserCreationFlow(manager_id);
+  ChromeUserManager::Get()->SetUserFlow(manager_id, flow);
+
   // Make sure no two controllers exist at the same time.
   controller_.reset();
 
@@ -333,12 +343,14 @@ void SupervisedUserCreationScreen::ImportSupervisedUserWithPassword(
 }
 
 void SupervisedUserCreationScreen::OnManagerLoginFailure() {
+  manager_signin_in_progress_ = false;
   if (actor_)
     actor_->ShowManagerPasswordError();
 }
 
 void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
+  manager_signin_in_progress_ = false;
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
   // during the user image picker step are below it.
