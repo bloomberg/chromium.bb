@@ -32,6 +32,7 @@ source_set("renderer") {
     "//content/public/common:common_sources",
     "//gin",
     "//gpu",
+    "//gpu/command_buffer/client:gles2_interface",
     "//jingle:jingle_glue",
     "//media",
     "//media/blink",

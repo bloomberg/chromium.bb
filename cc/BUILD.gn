@@ -478,6 +478,7 @@ component("cc") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu",
+    "//gpu/command_buffer/client:gles2_interface",
     "//media",
     "//skia",
     "//ui/events:events_base",
@@ -642,6 +643,10 @@ source_set("test_support") {
   if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
     deps += [ "//third_party/mesa:osmesa" ]
   }
+
+  forward_dependent_configs_from = [
+    "//gpu:test_support",
+  ]
 }
 
 test("cc_unittests") {
@@ -775,6 +780,7 @@ test("cc_unittests") {
     "//cc/surfaces",
     "//gpu",
     "//gpu:test_support",
+    "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common:gles2_utils",
     "//media",
     "//testing/gmock",

@@ -253,6 +253,7 @@ executable("bench") {
     "//base",
     "//base:i18n",
     "//cc",
+    "//gpu/command_buffer/client:gles2_interface",
     "//skia",
     "//third_party/icu",
     "//ui/base",

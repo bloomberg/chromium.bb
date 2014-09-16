@@ -77,7 +77,6 @@ gles2_implementation_source_files = [
   "gles2_implementation.cc",
   "gles2_implementation.h",
   "gles2_implementation_impl_autogen.h",
-  "gles2_interface.h",
   "gles2_trace_implementation_autogen.h",
   "gles2_trace_implementation.cc",
   "gles2_trace_implementation.h",
@@ -95,6 +94,17 @@ gles2_implementation_source_files = [
   "vertex_array_object_manager.h",
 ]
 
+# Provides GLES2 interface, but does not cause any implementation to be linked
+# in. Useful when a target uses the interface, but permits its users to choose
+# an implementation.
+source_set("gles2_interface") {
+  sources = [ "gles2_interface.h" ]
+  direct_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
+  deps = [
+    "//base",
+  ]
+}
+
 # Library emulates GLES2 using command_buffers.
 component("gles2_implementation") {
   sources = gles2_implementation_source_files
@@ -109,6 +119,7 @@ component("gles2_implementation") {
 
   deps = [
     ":gles2_cmd_helper",
+    ":gles2_interface",
     "//base",
     "//gpu/command_buffer/common",
     "//ui/gfx/geometry",
@@ -133,6 +144,7 @@ component("gles2_implementation_client_side_arrays") {
 
   deps = [
     ":gles2_cmd_helper",
+    ":gles2_interface",
     "//base",
     "//gpu/command_buffer/common",
     "//ui/gfx/geometry",
@@ -171,6 +183,7 @@ component("gles2_c_lib") {
 
   deps = [
     ":client",
+    ":gles2_interface",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/common",

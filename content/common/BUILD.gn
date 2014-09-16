@@ -28,6 +28,7 @@ source_set("common") {
     "//base",
     "//build/util:webkit_version",
     "//components/tracing",
+    "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//net",
     "//skia",

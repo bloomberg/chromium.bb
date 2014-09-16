@@ -56,13 +56,15 @@ source_set("test_support") {
     "command_buffer/client/gles2_interface_stub.h",
   ]
 
-  configs += [ "//third_party/khronos:khronos_headers" ]
-
   deps = [
     ":gpu",
+    "//gpu/command_buffer/client:gles2_interface",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
+  ]
+  forward_dependent_configs_from = [
+    "//gpu/command_buffer/client:gles2_interface",
   ]
 }
 
