@@ -12,6 +12,10 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 
+namespace net {
+class IPEndPoint;
+}
+
 namespace chromeos {
 
 // A fake implementation of ShillManagerClient. This works in close coordination
@@ -77,6 +81,18 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void ConnectToBestServices(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void AddWakeOnPacketConnection(
+      const net::IPEndPoint& ip_connection,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void RemoveWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void RemoveAllWakeOnPacketConnections(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+
   virtual ShillManagerClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillManagerClient::TestInterface overrides.
