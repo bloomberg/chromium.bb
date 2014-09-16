@@ -51,7 +51,7 @@ class MojoPythonTestRunner(object):
     loader = unittest.loader.TestLoader()
     print "Running Python unit tests under %s..." % self._test_dir
 
-    pylib_dir = os.path.join(chromium_src_dir, self._test_dir)
+    pylib_dir = os.path.abspath(os.path.join(chromium_src_dir, self._test_dir))
     if args.tests:
       if pylib_dir not in sys.path:
         sys.path.append(pylib_dir)

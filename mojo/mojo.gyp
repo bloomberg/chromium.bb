@@ -624,5 +624,24 @@
         },
       ],
     }],
+    ['component!="shared_library" and OS=="linux" and test_isolation_mode!="noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_python_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_python',
+            'mojo_base.gyp:mojo_public_test_interfaces',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'mojo_python_unittests.isolate',
+          ],
+          'sources': [
+            'mojo_python_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
