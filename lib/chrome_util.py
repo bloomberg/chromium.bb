@@ -339,8 +339,8 @@ _COPY_PATHS_APP_SHELL = (
 ) + _COPY_PATHS_COMMON
 
 _COPY_PATHS_CHROME = (
-  Path('ash_shell', cond=C.GypSet(_USE_DRM)),
-  Path('aura_demo', cond=C.GypSet(_USE_DRM)),
+  Path('ash_shell', exe=True, cond=C.GypSet(_USE_DRM)),
+  Path('aura_demo', exe=True, cond=C.GypSet(_USE_DRM)),
   Path('chrome', exe=True),
   Path('chrome-wrapper'),
   Path('chrome_100_percent.pak'),
