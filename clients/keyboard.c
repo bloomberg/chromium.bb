@@ -995,6 +995,11 @@ main(int argc, char *argv[])
 	display_set_user_data(virtual_keyboard.display, &virtual_keyboard);
 	display_set_global_handler(virtual_keyboard.display, global_handler);
 
+	if (virtual_keyboard.input_panel == NULL) {
+		fprintf(stderr, "No input panel global\n");
+		return -1;
+	}
+
 	output = display_get_output(virtual_keyboard.display);
 	keyboard_create(output, &virtual_keyboard);
 
