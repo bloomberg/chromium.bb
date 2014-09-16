@@ -54,6 +54,7 @@
             '../mojo/mojo_base.gyp:mojo_system',
             '../mojo/mojo_base.gyp:mojo_system_impl',
             '../mojo/mojo_base.gyp:mojo_system_unittests',
+            '../google_apis/google_apis.gyp:google_apis_unittests',
             '../ui/base/ui_base_tests.gyp:ui_unittests',
             '../ui/ios/ui_ios_tests.gyp:ui_ios_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
