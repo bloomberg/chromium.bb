@@ -35,6 +35,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -134,6 +135,18 @@ base::Value* NetLogSpdySessionCallback(const HostPortProxyPair* host_pair,
   return dict;
 }
 
+base::Value* NetLogSpdyInitializedCallback(NetLog::Source source,
+                                           const NextProto protocol_version,
+                                           NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  if (source.IsValid()) {
+    source.AddToEventParameters(dict);
+  }
+  dict->SetString("protocol",
+                  SSLClientSocket::NextProtoToString(protocol_version));
+  return dict;
+}
+
 base::Value* NetLogSpdySettingsCallback(const HostPortPair& host_port_pair,
                                         bool clear_persisted,
                                         NetLog::LogLevel /* log_level */) {
@@ -144,18 +157,22 @@ base::Value* NetLogSpdySettingsCallback(const HostPortPair& host_port_pair,
 }
 
 base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
+                                       const SpdyMajorVersion protocol_version,
                                        SpdySettingsFlags flags,
                                        uint32 value,
                                        NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("id", id);
+  dict->SetInteger("id",
+                   SpdyConstants::SerializeSettingId(protocol_version, id));
   dict->SetInteger("flags", flags);
   dict->SetInteger("value", value);
   return dict;
 }
 
-base::Value* NetLogSpdySendSettingsCallback(const SettingsMap* settings,
-                                            NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSpdySendSettingsCallback(
+    const SettingsMap* settings,
+    const SpdyMajorVersion protocol_version,
+    NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* settings_list = new base::ListValue();
   for (SettingsMap::const_iterator it = settings->begin();
@@ -163,8 +180,11 @@ base::Value* NetLogSpdySendSettingsCallback(const SettingsMap* settings,
     const SpdySettingsIds id = it->first;
     const SpdySettingsFlags flags = it->second.first;
     const uint32 value = it->second.second;
-    settings_list->Append(new base::StringValue(
-        base::StringPrintf("[id:%u flags:%u value:%u]", id, flags, value)));
+    settings_list->Append(new base::StringValue(base::StringPrintf(
+        "[id:%u flags:%u value:%u]",
+        SpdyConstants::SerializeSettingId(protocol_version, id),
+        flags,
+        value)));
   }
   dict->Set("settings", settings_list);
   return dict;
@@ -729,9 +749,10 @@ void SpdySession::InitializeWithSocket(
                             GURL(SPDY_PROXY_AUTH_ORIGIN))));
 #endif
 
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_SESSION_INITIALIZED,
-      connection_->socket()->NetLog().source().ToEventParametersCallback());
+  net_log_.AddEvent(NetLog::TYPE_SPDY_SESSION_INITIALIZED,
+                    base::Bind(&NetLogSpdyInitializedCallback,
+                               connection_->socket()->NetLog().source(),
+                               protocol_));
 
   DCHECK_EQ(availability_state_, STATE_AVAILABLE);
   connection_->AddHigherLayeredPool(this);
@@ -2105,10 +2126,13 @@ void SpdySession::OnSetting(SpdySettingsIds id,
   received_settings_ = true;
 
   // Log the setting.
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_SESSION_RECV_SETTING,
-      base::Bind(&NetLogSpdySettingCallback,
-                 id, static_cast<SpdySettingsFlags>(flags), value));
+  const SpdyMajorVersion protocol_version = GetProtocolVersion();
+  net_log_.AddEvent(NetLog::TYPE_SPDY_SESSION_RECV_SETTING,
+                    base::Bind(&NetLogSpdySettingCallback,
+                               id,
+                               protocol_version,
+                               static_cast<SpdySettingsFlags>(flags),
+                               value));
 }
 
 void SpdySession::OnSendCompressedFrame(
@@ -2787,10 +2811,10 @@ void SpdySession::SendInitialData() {
 
 
 void SpdySession::SendSettings(const SettingsMap& settings) {
+  const SpdyMajorVersion protocol_version = GetProtocolVersion();
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_SEND_SETTINGS,
-      base::Bind(&NetLogSpdySendSettingsCallback, &settings));
-
+      base::Bind(&NetLogSpdySendSettingsCallback, &settings, protocol_version));
   // Create the SETTINGS frame and send it.
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> settings_frame(
