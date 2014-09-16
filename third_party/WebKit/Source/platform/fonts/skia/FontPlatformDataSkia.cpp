@@ -41,7 +41,7 @@ namespace blink {
 unsigned FontPlatformData::hash() const
 {
     unsigned h = SkTypeface::UniqueID(m_typeface.get());
-    h ^= 0x01010101 * ((static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_syntheticBold) << 1) | static_cast<int>(m_syntheticItalic));
+    h ^= 0x01010101 * ((static_cast<int>(m_isHashTableDeletedValue) << 3) | (static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_syntheticBold) << 1) | static_cast<int>(m_syntheticItalic));
 
     // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
     // rules. Memcpy is generally optimized enough so that performance doesn't
