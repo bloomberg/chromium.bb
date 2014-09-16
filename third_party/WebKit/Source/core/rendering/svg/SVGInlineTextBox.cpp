@@ -363,34 +363,28 @@ private:
 };
 
 bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, float scalingFactor,
-    RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
+    RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
 {
     // Callers must save the context state before calling when scalingFactor is not 1.
     ASSERT(scalingFactor);
     ASSERT(style);
-    ASSERT(resourceMode != ApplyToDefaultMode);
+    ASSERT(resourceModeFlags != ApplyToDefaultMode);
+    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
     bool hasFallback = false;
-    if (resourceMode & ApplyToFillMode)
-        m_paintingResource = RenderSVGResource::fillPaintingResource(&m_renderer, style, hasFallback);
-    else if (resourceMode & ApplyToStrokeMode)
-        m_paintingResource = RenderSVGResource::strokePaintingResource(&m_renderer, style, hasFallback);
-    else {
-        // We're either called for stroking or filling.
-        ASSERT_NOT_REACHED();
-    }
-
+    m_paintingResource = RenderSVGResource::requestPaintingResource(resourceMode, &m_renderer, style, hasFallback);
     if (!m_paintingResource)
         return false;
 
-    if (!m_paintingResource->applyResource(&m_renderer, style, context, resourceMode)) {
+    if (!m_paintingResource->applyResource(&m_renderer, style, context, resourceModeFlags)) {
         if (hasFallback) {
             m_paintingResource = RenderSVGResource::sharedSolidPaintingResource();
-            m_paintingResource->applyResource(&m_renderer, style, context, resourceMode);
+            m_paintingResource->applyResource(&m_renderer, style, context, resourceModeFlags);
         }
     }
 
-    if (scalingFactor != 1 && resourceMode & ApplyToStrokeMode)
+    if (scalingFactor != 1 && resourceModeFlags & ApplyToStrokeMode)
         context->setStrokeThickness(context->strokeThickness() * scalingFactor);
 
 #if ENABLE(SVG_FONTS)

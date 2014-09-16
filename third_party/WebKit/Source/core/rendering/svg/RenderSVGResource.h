@@ -75,20 +75,10 @@ public:
 
     // Helper utilities used in the render tree to access resources used for painting shapes/text (gradients & patterns & solid colors only)
     // If hasFallback gets set to true, the sharedSolidPaintingResource is set to a fallback color.
-    static RenderSVGResource* fillPaintingResource(RenderObject* object, const RenderStyle* style, bool& hasFallback)
-    {
-        return requestPaintingResource(ApplyToFillMode, object, style, hasFallback);
-    }
-    static RenderSVGResource* strokePaintingResource(RenderObject* object, const RenderStyle* style, bool& hasFallback)
-    {
-        return requestPaintingResource(ApplyToStrokeMode, object, style, hasFallback);
-    }
+    static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, RenderObject*, const RenderStyle*, bool& hasFallback);
     static RenderSVGResourceSolidColor* sharedSolidPaintingResource();
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
-
-private:
-    static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, RenderObject*, const RenderStyle*, bool& hasFallback);
 };
 
 #define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \

@@ -113,7 +113,7 @@ bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, co
         return false;
 
     bool hasFallback;
-    if (requiresFill && !RenderSVGResource::fillPaintingResource(this, style(), hasFallback))
+    if (requiresFill && !RenderSVGResource::requestPaintingResource(ApplyToFillMode, this, style(), hasFallback))
         return false;
 
     return shapeDependentFillContains(point, fillRule);
@@ -125,7 +125,7 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
         return false;
 
     bool hasFallback;
-    if (requiresStroke && !RenderSVGResource::strokePaintingResource(this, style(), hasFallback))
+    if (requiresStroke && !RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, this, style(), hasFallback))
         return false;
 
     return shapeDependentStrokeContains(point);
@@ -203,7 +203,7 @@ bool RenderSVGShape::shouldGenerateMarkerPositions() const
 void RenderSVGShape::fillShape(RenderStyle* style, GraphicsContext* context)
 {
     bool hasFallback;
-    if (RenderSVGResource* fillPaintingResource = RenderSVGResource::fillPaintingResource(this, style, hasFallback)) {
+    if (RenderSVGResource* fillPaintingResource = RenderSVGResource::requestPaintingResource(ApplyToFillMode, this, style, hasFallback)) {
         if (fillPaintingResource->applyResource(this, style, context, ApplyToFillMode)) {
             fillShape(context);
             fillPaintingResource->postApplyResource(this, context);
@@ -220,7 +220,7 @@ void RenderSVGShape::fillShape(RenderStyle* style, GraphicsContext* context)
 void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
 {
     bool hasFallback;
-    if (RenderSVGResource* strokePaintingResource = RenderSVGResource::strokePaintingResource(this, style, hasFallback)) {
+    if (RenderSVGResource* strokePaintingResource = RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, this, style, hasFallback)) {
         if (strokePaintingResource->applyResource(this, style, context, ApplyToStrokeMode)) {
             strokeShape(context);
             strokePaintingResource->postApplyResource(this, context);
