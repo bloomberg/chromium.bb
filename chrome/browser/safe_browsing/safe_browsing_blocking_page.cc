@@ -111,8 +111,6 @@ const char kDisplayCheckBox[] = "displaycheckbox";
 #if defined(ENABLE_EXTENSIONS)
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
 const char kEventNamePhishing[] = "phishing_interstitial_";
-const char kEventNameMalwareAndPhishing[] =
-    "malware_and_phishing_interstitial_";
 const char kEventNameOther[] = "safebrowsing_other_interstitial_";
 #endif
 
@@ -203,9 +201,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     }
   }
   DCHECK(phishing || malware);
-  if (malware && phishing)
-    interstitial_type_ = TYPE_MALWARE_AND_PHISHING;
-  else if (malware)
+  if (malware)
     interstitial_type_ = TYPE_MALWARE;
   else
     interstitial_type_ = TYPE_PHISHING;
@@ -246,9 +242,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // This needs to handle all types of warnings this interstitial can show.
   std::string event_name;
   switch (interstitial_type_) {
-    case TYPE_MALWARE_AND_PHISHING:
-      event_name = kEventNameMalwareAndPhishing;
-      break;
     case TYPE_MALWARE:
       event_name = kEventNameMalware;
       break;
@@ -559,9 +552,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   switch (event) {
     case SHOW:
       switch (interstitial_type_) {
-        case TYPE_MALWARE_AND_PHISHING:
-          histogram_action = MULTIPLE_SHOW;
-          break;
         case TYPE_MALWARE:
           histogram_action = MALWARE_SHOW;
           break;
@@ -572,9 +562,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
       break;
     case PROCEED:
       switch (interstitial_type_) {
-        case TYPE_MALWARE_AND_PHISHING:
-          histogram_action = MULTIPLE_PROCEED;
-          break;
         case TYPE_MALWARE:
           histogram_action = MALWARE_PROCEED;
           break;
@@ -586,9 +573,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
     case DONT_PROCEED:
       if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
         switch (interstitial_type_) {
-          case TYPE_MALWARE_AND_PHISHING:
-            histogram_action = MULTIPLE_FORCED_DONT_PROCEED;
-            break;
           case TYPE_MALWARE:
             histogram_action = MALWARE_FORCED_DONT_PROCEED;
             break;
@@ -598,9 +582,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
         }
       } else {
         switch (interstitial_type_) {
-          case TYPE_MALWARE_AND_PHISHING:
-            histogram_action = MULTIPLE_DONT_PROCEED;
-            break;
           case TYPE_MALWARE:
             histogram_action = MALWARE_DONT_PROCEED;
             break;
@@ -612,9 +593,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
       break;
     case SHOW_ADVANCED:
       switch (interstitial_type_) {
-        case TYPE_MALWARE_AND_PHISHING:
-          histogram_action = MULTIPLE_SHOW_ADVANCED;
-          break;
         case TYPE_MALWARE:
           histogram_action = MALWARE_SHOW_ADVANCED;
           break;
@@ -634,7 +612,7 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   }
 
   if (event == PROCEED || event == DONT_PROCEED) {
-    if (num_visits_ == 0 && interstitial_type_ != TYPE_MALWARE_AND_PHISHING) {
+    if (num_visits_ == 0) {
       RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
                                MALWARE_SHOW_NEW_SITE : PHISHING_SHOW_NEW_SITE);
       if (event == PROCEED) {
@@ -642,8 +620,7 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
             MALWARE_PROCEED_NEW_SITE : PHISHING_PROCEED_NEW_SITE);
       }
     }
-    if (unsafe_resources_[0].is_subresource &&
-        interstitial_type_ != TYPE_MALWARE_AND_PHISHING) {
+    if (unsafe_resources_[0].is_subresource) {
       RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
           MALWARE_SHOW_CROSS_SITE : PHISHING_SHOW_CROSS_SITE);
       if (event == PROCEED) {
@@ -663,8 +640,7 @@ void SafeBrowsingBlockingPage::RecordUserReactionTime(
            << " on interstitial_type_:" << interstitial_type_
            << " warning took " << dt.InMilliseconds() << "ms";
   bool recorded = true;
-  if (interstitial_type_ == TYPE_MALWARE ||
-      interstitial_type_ == TYPE_MALWARE_AND_PHISHING) {
+  if (interstitial_type_ == TYPE_MALWARE) {
     // There are six ways in which the malware interstitial can go
     // away.  We handle all of them here but we group two together: closing the
     // tag / browser window and clicking on the back button in the browser (not

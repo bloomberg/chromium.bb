@@ -221,7 +221,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   enum {
     TYPE_MALWARE,
     TYPE_PHISHING,
-    TYPE_MALWARE_AND_PHISHING,
   } interstitial_type_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
