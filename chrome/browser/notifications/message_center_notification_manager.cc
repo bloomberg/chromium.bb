@@ -482,29 +482,6 @@ MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
   notification_.DoneRendering();
 }
 
-std::string
-    MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
-  extensions::InfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile())->info_map();
-  extensions::ExtensionSet extensions;
-  extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-      notification().origin_url(),
-      notification().process_id(),
-      extensions::APIPermission::kNotifications,
-      &extensions);
-
-  DesktopNotificationService* desktop_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile());
-  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end(); ++iter) {
-    if (desktop_service->IsNotifierEnabled(message_center::NotifierId(
-            message_center::NotifierId::APPLICATION, (*iter)->id()))) {
-      return (*iter)->id();
-    }
-  }
-  return std::string();
-}
-
 void
 MessageCenterNotificationManager::ProfileNotification::AddToAlternateProvider(
     const std::string extension_id) {

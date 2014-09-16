@@ -84,7 +84,6 @@ class Notification : public message_center::Notification {
 
   // Id of the delegate embedded inside this instance.
   std::string delegate_id() const { return delegate()->id(); }
-  int process_id() const { return delegate()->process_id(); }
 
   content::WebContents* GetWebContents() const {
     return delegate()->GetWebContents();

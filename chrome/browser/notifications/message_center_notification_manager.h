@@ -177,10 +177,6 @@ class MessageCenterNotificationManager
     Profile* profile() const { return profile_; }
     const Notification& notification() const { return notification_; }
 
-    // Returns extension_id if the notification originates from an extension,
-    // empty string otherwise.
-    std::string GetExtensionId();
-
     // Route a new notification to an app/extension.
     void AddToAlternateProvider(const std::string extension_id);
 

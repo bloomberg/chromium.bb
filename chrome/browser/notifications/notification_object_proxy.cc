@@ -49,10 +49,6 @@ std::string NotificationObjectProxy::id() const {
   return id_;
 }
 
-int NotificationObjectProxy::process_id() const {
-  return render_process_id_;
-}
-
 content::WebContents* NotificationObjectProxy::GetWebContents() const {
   return content::WebContents::FromRenderFrameHost(
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_));

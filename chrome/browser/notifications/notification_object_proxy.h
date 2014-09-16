@@ -34,7 +34,6 @@ class NotificationObjectProxy
   virtual void Close(bool by_user) OVERRIDE;
   virtual void Click() OVERRIDE;
   virtual std::string id() const OVERRIDE;
-  virtual int process_id() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  protected:

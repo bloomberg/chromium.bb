@@ -4,6 +4,4 @@
 
 #include "chrome/browser/notifications/notification_delegate.h"
 
-int NotificationDelegate::process_id() const { return -1; }
-
 void NotificationDelegate::ReleaseRenderViewHost() {}

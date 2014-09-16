@@ -81,11 +81,8 @@ class NotificationsApiDelegate : public NotificationDelegate {
         profile_(profile),
         extension_id_(extension_id),
         id_(id),
-        scoped_id_(CreateScopedIdentifier(extension_id, id)),
-        process_id_(-1) {
+        scoped_id_(CreateScopedIdentifier(extension_id, id)) {
     DCHECK(api_function_.get());
-    if (api_function_->render_view_host())
-      process_id_ = api_function->render_view_host()->GetProcess()->GetID();
   }
 
   virtual void Display() OVERRIDE { }
@@ -123,10 +120,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   virtual std::string id() const OVERRIDE {
     return scoped_id_;
-  }
-
-  virtual int process_id() const OVERRIDE {
-    return process_id_;
   }
 
   virtual content::WebContents* GetWebContents() const OVERRIDE {
@@ -169,7 +162,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
   const std::string extension_id_;
   const std::string id_;
   const std::string scoped_id_;
-  int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
 };
