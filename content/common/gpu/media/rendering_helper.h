@@ -134,6 +134,9 @@ class RenderingHelper {
     // True if there won't be any new video frames comming.
     bool is_flushing;
 
+    // The number of frames need to be dropped to catch up the rendering.
+    int frames_to_drop;
+
     // The video frames pending for rendering.
     std::queue<scoped_refptr<VideoFrameTexture> > pending_frames;
 

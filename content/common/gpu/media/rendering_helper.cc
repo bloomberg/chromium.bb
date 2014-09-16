@@ -75,7 +75,7 @@ VideoFrameTexture::~VideoFrameTexture() {
 }
 
 RenderingHelper::RenderedVideo::RenderedVideo()
-    : last_frame_rendered(false), is_flushing(false) {
+    : last_frame_rendered(false), is_flushing(false), frames_to_drop(0) {
 }
 
 RenderingHelper::RenderedVideo::~RenderedVideo() {
@@ -398,6 +398,11 @@ void RenderingHelper::QueueVideoFrame(
   RenderedVideo* video = &videos_[window_id];
   DCHECK(!video->is_flushing);
 
+  if (video->frames_to_drop > 0) {
+    --video->frames_to_drop;
+    return;
+  }
+
   // Pop the last frame if it has been rendered.
   if (video->last_frame_rendered) {
     // When last_frame_rendered is true, we should have only one pending frame.
@@ -524,6 +529,9 @@ void RenderingHelper::RenderContent() {
       scoped_refptr<VideoFrameTexture> frame = video->pending_frames.front();
       GLSetViewPort(video->render_area);
       RenderTexture(frame->texture_target(), frame->texture_id());
+
+      if (video->last_frame_rendered)
+        ++video->frames_to_drop;
 
       if (video->pending_frames.size() > 1 || video->is_flushing) {
         frames_to_be_returned.push_back(video->pending_frames.front());
