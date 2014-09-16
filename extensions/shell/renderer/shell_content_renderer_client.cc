@@ -12,6 +12,7 @@
 #include "extensions/renderer/default_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/guest_view/guest_view_container.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -171,6 +172,13 @@ bool ShellContentRendererClient::IsExternalPepperPlugin(
 bool ShellContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   // Extension renderers don't need site isolation.
   return false;
+}
+
+content::BrowserPluginDelegate*
+ShellContentRendererClient::CreateBrowserPluginDelegate(
+    content::RenderFrame* render_frame,
+    const std::string& mime_type) {
+  return new extensions::GuestViewContainer(render_frame, mime_type);
 }
 
 }  // namespace extensions

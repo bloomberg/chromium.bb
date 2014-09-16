@@ -48,6 +48,9 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       const std::string& interface_name) OVERRIDE;
   virtual bool IsExternalPepperPlugin(const std::string& module_name) OVERRIDE;
   virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
+  virtual content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+      content::RenderFrame* render_frame,
+      const std::string& mime_type) OVERRIDE;
 
  private:
   scoped_ptr<ShellExtensionsClient> extensions_client_;

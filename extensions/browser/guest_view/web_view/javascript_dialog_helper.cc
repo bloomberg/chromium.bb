@@ -6,11 +6,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 
 namespace extensions {
 

@@ -14,8 +14,8 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 

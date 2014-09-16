@@ -84,6 +84,8 @@ source_set("common") {
     "features/simple_feature_filter.h",
     "file_util.cc",
     "file_util.h",
+    "guest_view/guest_view_constants.cc",
+    "guest_view/guest_view_constants.h",
     "install_warning.cc",
     "install_warning.h",
     "manifest.cc",

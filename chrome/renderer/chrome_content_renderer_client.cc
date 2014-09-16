@@ -30,7 +30,6 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
-#include "chrome/renderer/browser_plugin/chrome_browser_plugin_delegate.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
@@ -122,6 +121,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
+#include "extensions/renderer/guest_view/guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #endif
 
@@ -1573,5 +1573,9 @@ content::BrowserPluginDelegate*
 ChromeContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
     const std::string& mime_type) {
-  return new ChromeBrowserPluginDelegate(render_frame, mime_type);
+#if defined(ENABLE_EXTENSIONS)
+  return new extensions::GuestViewContainer(render_frame, mime_type);
+#else
+  return NULL;
+#endif
 }

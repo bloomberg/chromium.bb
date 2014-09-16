@@ -330,8 +330,6 @@ source_set("browser") {
       "guest_view/extension_options/extension_options_guest_delegate.h",
       "guest_view/guest_view_base.cc",
       "guest_view/guest_view_base.h",
-      "guest_view/guest_view_constants.cc",
-      "guest_view/guest_view_constants.h",
       "guest_view/guest_view_manager_factory.h",
       "guest_view/guest_view_manager.cc",
       "guest_view/guest_view_manager.h",
