@@ -1598,7 +1598,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
 }
 
 std::string BrowserView::GetWindowName() const {
-  return chrome::GetWindowPlacementKey(browser_.get());
+  return chrome::GetWindowName(browser_.get());
 }
 
 void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,

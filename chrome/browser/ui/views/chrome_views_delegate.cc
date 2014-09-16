@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chrome_unscaled_resources.h"
@@ -143,9 +144,9 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   if (!prefs)
     return;
 
-  DCHECK(prefs->FindPreference(window_name.c_str()));
-  DictionaryPrefUpdate update(prefs, window_name.c_str());
-  base::DictionaryValue* window_preferences = update.Get();
+  scoped_ptr<DictionaryPrefUpdate> pref_update =
+      chrome::GetWindowPlacementDictionaryReadWrite(window_name, prefs);
+  base::DictionaryValue* window_preferences = pref_update->Get();
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());

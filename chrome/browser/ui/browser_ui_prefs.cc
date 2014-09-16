@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -125,6 +126,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       prefs::kBrowserWindowPlacementPopup,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kAppWindowPlacement,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kImportAutofillFormData,
       true,
@@ -187,25 +191,5 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
-
-void RegisterAppPrefs(const std::string& app_name, Profile* profile) {
-  // We need to register the window position pref.
-  //
-  // TODO(mnissler): Use a separate pref name pointing to a single
-  // dictionary instead. Also tracked as http://crbug.com/167256
-  std::string window_pref(prefs::kBrowserWindowPlacement);
-  window_pref.append("_");
-  window_pref.append(app_name);
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->FindPreference(window_pref.c_str())) {
-    // TODO(joi): Do all registration up front.
-    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-        static_cast<user_prefs::PrefRegistrySyncable*>(
-            prefs->DeprecatedGetPrefRegistry()));
-    registry->RegisterDictionaryPref(
-        window_pref.c_str(), user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-}
-
 
 }  // namespace chrome

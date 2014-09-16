@@ -593,6 +593,7 @@
       'browser/power/process_power_collector_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_unittest.cc',
+      'browser/prefs/browser_ui_prefs_migrator_unittest.cc',
       'browser/prefs/chrome_pref_service_unittest.cc',
       'browser/prefs/command_line_pref_store_unittest.cc',
       'browser/prefs/incognito_mode_prefs_unittest.cc',
@@ -2632,6 +2633,9 @@
             'browser/safe_browsing/download_feedback_service_unittest.cc',
             'browser/safe_browsing/download_protection_service_unittest.cc',
             'browser/safe_browsing/two_phase_uploader_unittest.cc',
+
+            # Android has no windows that have placement info.
+            'browser/prefs/browser_ui_prefs_migrator_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

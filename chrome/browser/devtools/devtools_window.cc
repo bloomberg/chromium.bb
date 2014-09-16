@@ -318,12 +318,6 @@ DevToolsWindow::~DevToolsWindow() {
 }
 
 // static
-std::string DevToolsWindow::GetDevToolsWindowPlacementPrefKey() {
-  return std::string(prefs::kBrowserWindowPlacement) + "_" +
-      std::string(kDevToolsApp);
-}
-
-// static
 void DevToolsWindow::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -334,10 +328,6 @@ void DevToolsWindow::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kDevToolsAdbKey, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  registry->RegisterDictionaryPref(
-      GetDevToolsWindowPlacementPrefKey().c_str(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
@@ -1133,18 +1123,18 @@ void DevToolsWindow::OnLoadCompleted() {
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {
-  std::string wp_key = GetDevToolsWindowPlacementPrefKey();
   PrefService* prefs = profile_->GetPrefs();
-  const base::DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
-  if (!wp_pref || wp_pref->empty()) {
-    DictionaryPrefUpdate update(prefs, wp_key.c_str());
-    base::DictionaryValue* defaults = update.Get();
-    defaults->SetInteger("left", 100);
-    defaults->SetInteger("top", 100);
-    defaults->SetInteger("right", 740);
-    defaults->SetInteger("bottom", 740);
-    defaults->SetBoolean("maximized", false);
-    defaults->SetBoolean("always_on_top", false);
+  if (!prefs->GetDictionary(prefs::kAppWindowPlacement)->HasKey(kDevToolsApp)) {
+    DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
+    base::DictionaryValue* wp_prefs = update.Get();
+    base::DictionaryValue* dev_tools_defaults = new base::DictionaryValue;
+    wp_prefs->Set(kDevToolsApp, dev_tools_defaults);
+    dev_tools_defaults->SetInteger("left", 100);
+    dev_tools_defaults->SetInteger("top", 100);
+    dev_tools_defaults->SetInteger("right", 740);
+    dev_tools_defaults->SetInteger("bottom", 740);
+    dev_tools_defaults->SetBoolean("maximized", false);
+    dev_tools_defaults->SetBoolean("always_on_top", false);
   }
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(

@@ -367,8 +367,6 @@ Browser::Browser(const CreateParams& params)
   else
     unload_controller_.reset(new chrome::UnloadController(this));
 
-  if (!app_name_.empty())
-    chrome::RegisterAppPrefs(app_name_, profile_);
   tab_strip_model_->AddObserver(this);
 
   toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get()));

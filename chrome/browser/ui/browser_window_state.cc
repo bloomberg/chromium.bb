@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,15 +41,68 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
   return true;
 }
 
+class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
+ public:
+  WindowPlacementPrefUpdate(PrefService* service,
+                            const std::string& window_name)
+      : DictionaryPrefUpdate(service, prefs::kAppWindowPlacement),
+        window_name_(window_name) {}
+
+  virtual ~WindowPlacementPrefUpdate() {}
+
+  virtual base::DictionaryValue* Get() OVERRIDE {
+    base::DictionaryValue* all_apps_dict = DictionaryPrefUpdate::Get();
+    base::DictionaryValue* this_app_dict = NULL;
+    if (!all_apps_dict->GetDictionary(window_name_, &this_app_dict)) {
+      this_app_dict = new base::DictionaryValue;
+      all_apps_dict->Set(window_name_, this_app_dict);
+    }
+    return this_app_dict;
+  }
+
+ private:
+  const std::string window_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowPlacementPrefUpdate);
+};
+
 }  // namespace
 
-std::string GetWindowPlacementKey(const Browser* browser) {
+std::string GetWindowName(const Browser* browser) {
   if (browser->app_name().empty()) {
     return browser->is_type_popup() ?
         prefs::kBrowserWindowPlacementPopup : prefs::kBrowserWindowPlacement;
   }
-  return std::string(prefs::kBrowserWindowPlacement) + "_" +
-      browser->app_name();
+  return browser->app_name();
+}
+
+scoped_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(
+    const std::string& window_name,
+    PrefService* prefs) {
+  DCHECK(!window_name.empty());
+  // A normal DictionaryPrefUpdate will suffice for non-app windows.
+  if (prefs->FindPreference(window_name.c_str())) {
+    return make_scoped_ptr(
+        new DictionaryPrefUpdate(prefs, window_name.c_str()));
+  }
+  return scoped_ptr<DictionaryPrefUpdate>(
+      new WindowPlacementPrefUpdate(prefs, window_name));
+}
+
+const base::DictionaryValue* GetWindowPlacementDictionaryReadOnly(
+    const std::string& window_name,
+    PrefService* prefs) {
+  DCHECK(!window_name.empty());
+  if (prefs->FindPreference(window_name.c_str()))
+    return prefs->GetDictionary(window_name.c_str());
+
+  const base::DictionaryValue* app_windows =
+      prefs->GetDictionary(prefs::kAppWindowPlacement);
+  if (!app_windows)
+    return NULL;
+  const base::DictionaryValue* to_return = NULL;
+  app_windows->GetDictionary(window_name, &to_return);
+  return to_return;
 }
 
 bool ShouldSaveWindowPlacement(const Browser* browser) {

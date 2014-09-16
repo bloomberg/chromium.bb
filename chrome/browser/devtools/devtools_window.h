@@ -225,8 +225,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action,
       const std::string& settings);
 
-  static std::string GetDevToolsWindowPlacementPrefKey();
-
   // content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,

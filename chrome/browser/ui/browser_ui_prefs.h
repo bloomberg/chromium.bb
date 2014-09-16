@@ -19,11 +19,6 @@ namespace chrome {
 void RegisterBrowserPrefs(PrefRegistrySimple* registry);
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Create a preference dictionary for the provided application name, in the
-// given user profile. This is done only once per application name / per
-// session / per user profile.
-void RegisterAppPrefs(const std::string& app_name, Profile* profile);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_UI_PREFS_H_

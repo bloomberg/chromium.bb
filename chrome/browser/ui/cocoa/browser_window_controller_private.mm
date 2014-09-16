@@ -119,10 +119,11 @@ const CGFloat kLocBarBottomInset = 1;
   gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
-  DictionaryPrefUpdate update(
-      prefs,
-      chrome::GetWindowPlacementKey(browser_.get()).c_str());
-  base::DictionaryValue* windowPreferences = update.Get();
+  scoped_ptr<DictionaryPrefUpdate> update =
+      chrome::GetWindowPlacementDictionaryReadWrite(
+          chrome::GetWindowName(browser_.get()),
+          browser_->profile()->GetPrefs());
+  base::DictionaryValue* windowPreferences = update->Get();
   windowPreferences->SetInteger("left", bounds.x());
   windowPreferences->SetInteger("top", bounds.y());
   windowPreferences->SetInteger("right", bounds.right());

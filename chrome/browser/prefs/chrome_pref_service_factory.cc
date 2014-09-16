@@ -25,6 +25,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/browser_ui_prefs_migrator.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
@@ -469,14 +470,18 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
                  syncer::PREFERENCES);
 
   PrefServiceSyncableFactory factory;
+  scoped_refptr<PersistentPrefStore> user_pref_store(
+      CreateProfilePrefStoreManager(profile_path)
+          ->CreateProfilePrefStore(pref_io_task_runner,
+                                   start_sync_flare_for_prefs,
+                                   validation_delegate));
+  // BrowserUIPrefsMigrator unregisters and deletes itself after it is done.
+  user_pref_store->AddObserver(
+      new BrowserUIPrefsMigrator(user_pref_store.get()));
   PrepareFactory(&factory,
                  policy_service,
                  supervised_user_settings,
-                 scoped_refptr<PersistentPrefStore>(
-                     CreateProfilePrefStoreManager(profile_path)
-                         ->CreateProfilePrefStore(pref_io_task_runner,
-                                                  start_sync_flare_for_prefs,
-                                                  validation_delegate)),
+                 user_pref_store,
                  extension_prefs,
                  async);
   scoped_ptr<PrefServiceSyncable> pref_service =

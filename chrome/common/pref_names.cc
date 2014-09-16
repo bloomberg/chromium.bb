@@ -1417,6 +1417,14 @@ const char kBrowserWindowPlacementPopup[] = "browser.window_placement_popup";
 // manager window to restore on startup.
 const char kTaskManagerWindowPlacement[] = "task_manager.window_placement";
 
+// A collection of position, size, and other data relating to app windows to
+// restore on startup.
+const char kAppWindowPlacement[] = "browser.app_window_placement";
+
+// An integer specifying the total number of bytes to be used by the
+// renderer's in-memory cache of objects.
+const char kMemoryCacheSize[] = "renderer.memory_cache.size";
+
 // String which specifies where to download files to by default.
 const char kDownloadDefaultDirectory[] = "download.default_directory";
 
