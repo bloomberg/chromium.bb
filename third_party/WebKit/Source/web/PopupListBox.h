@@ -172,6 +172,7 @@ protected:
     // ScrollView
     virtual void paintContents(GraphicsContext*, const IntRect&) OVERRIDE { }
     virtual void scrollbarExistenceDidChange() OVERRIDE { }
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta) OVERRIDE { return false; }
 
 private:
     friend class PopupContainer;
