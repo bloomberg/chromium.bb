@@ -47,8 +47,7 @@ void RecordMainEntryTimeHistogram() {
   const int kLowWordMask = 0xFFFFFFFF;
   const int kLower31BitsMask = 0x7FFFFFFF;
   base::TimeDelta browser_main_entry_time_absolute =
-      base::TimeDelta::FromMilliseconds(
-          MainEntryPointTimeInternal()->ToInternalValue() / 1000.0);
+      *MainEntryPointTimeInternal() - base::Time::UnixEpoch();
 
   uint64 browser_main_entry_time_raw_ms =
       browser_main_entry_time_absolute.InMilliseconds();

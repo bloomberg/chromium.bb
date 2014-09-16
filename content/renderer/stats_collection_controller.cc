@@ -47,7 +47,7 @@ bool CurrentRenderViewImpl(RenderViewImpl** out) {
 // Example return value:
 // {'load_start_ms': 1, 'load_duration_ms': 2.5}
 // either value may be null if a web contents hasn't fully loaded.
-// load_start_ms is represented as milliseconds since system boot.
+// load_start_ms is represented as milliseconds since the unix epoch.
 void ConvertLoadTimeToJSON(
     const base::Time& load_start_time,
     const base::Time& load_stop_time,
@@ -57,7 +57,8 @@ void ConvertLoadTimeToJSON(
   if (load_start_time.is_null()) {
     item.Set("load_start_ms", base::Value::CreateNullValue());
   } else {
-    item.SetDouble("load_start_ms", load_start_time.ToInternalValue() / 1000);
+    item.SetDouble("load_start_ms", (load_start_time - base::Time::UnixEpoch())
+                   .InMillisecondsF());
   }
   if (load_start_time.is_null() || load_stop_time.is_null()) {
     item.Set("load_duration_ms", base::Value::CreateNullValue());
