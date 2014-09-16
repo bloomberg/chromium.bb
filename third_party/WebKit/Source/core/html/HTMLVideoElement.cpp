@@ -137,7 +137,7 @@ bool HTMLVideoElement::supportsFullscreen() const
     if (!document().page())
         return false;
 
-    if (!player())
+    if (!webMediaPlayer())
         return false;
 
     return true;

@@ -88,10 +88,6 @@ public:
 #if ENABLE(WEB_AUDIO)
     void clearWeakMembers(Visitor*);
 #endif
-
-    // Do not use player().
-    // FIXME: Replace all uses with webMediaPlayer() and remove this API.
-    MediaPlayer* player() const { return m_player.get(); }
     blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
     virtual bool hasVideo() const { return false; }

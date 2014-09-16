@@ -144,7 +144,7 @@ bool RenderVideo::shouldDisplayVideo() const
 
 void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    MediaPlayer* mediaPlayer = mediaElement()->player();
+    WebMediaPlayer* mediaPlayer = mediaElement()->webMediaPlayer();
     bool displayingPoster = videoElement()->shouldDisplayPosterImage();
     if (!displayingPoster && !mediaPlayer)
         return;
@@ -199,7 +199,7 @@ void RenderVideo::updatePlayer()
 {
     updateIntrinsicSize();
 
-    MediaPlayer* mediaPlayer = mediaElement()->player();
+    WebMediaPlayer* mediaPlayer = mediaElement()->webMediaPlayer();
     if (!mediaPlayer)
         return;
 
