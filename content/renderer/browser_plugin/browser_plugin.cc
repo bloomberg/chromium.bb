@@ -435,12 +435,13 @@ void BrowserPlugin::destroy() {
   // If the plugin was initialized then it has a valid |npp_| identifier, and
   // the |container_| must clear references to the plugin's script objects.
   DCHECK(!npp_ || container_);
-  if (container_)
+  if (container_) {
     container_->clearScriptObjects();
 
-  // The BrowserPlugin's WebPluginContainer is deleted immediately after this
-  // call returns, so let's not keep a reference to it around.
-  g_plugin_container_map.Get().erase(container_);
+    // The BrowserPlugin's WebPluginContainer is deleted immediately after this
+    // call returns, so let's not keep a reference to it around.
+    g_plugin_container_map.Get().erase(container_);
+  }
 
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();

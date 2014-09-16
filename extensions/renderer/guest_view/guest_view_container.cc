@@ -23,8 +23,7 @@ GuestViewContainer::GuestViewContainer(
 GuestViewContainer::~GuestViewContainer() {
 }
 
-void GuestViewContainer::SetElementInstanceID(
-    int element_instance_id) {
+void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
   element_instance_id_ = element_instance_id;
 }
 
@@ -40,6 +39,11 @@ void GuestViewContainer::DidFinishLoading() {
 void GuestViewContainer::DidReceiveData(const char* data, int data_length) {
   std::string value(data, data_length);
   html_string_ += value;
+}
+
+void GuestViewContainer::OnDestruct() {
+  // GuestViewContainer's lifetime is managed by BrowserPlugin so don't let
+  // RenderFrameObserver self-destruct here.
 }
 
 bool GuestViewContainer::OnMessageReceived(const IPC::Message& message) {

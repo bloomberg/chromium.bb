@@ -26,6 +26,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
   virtual void DidReceiveData(const char* data, int data_length) OVERRIDE;
 
   // RenderFrameObserver override.
+  virtual void OnDestruct() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
