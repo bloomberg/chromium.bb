@@ -26,6 +26,13 @@
                 video.defaultPlaybackRate = 0;
                 video.controller.playbackRate = 0;
                 video.controller.defaultPlaybackRate = 0;
+
+                // Wait for the seek initiated by the "bringing up to speed"
+                // step to complete.
+                waitForEventOnce('seeked', seeked);
+            };
+
+            var seeked = function() {
                 waitForEvent('play', play);
                 video.play();
             };

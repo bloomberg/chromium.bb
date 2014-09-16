@@ -1,6 +1,7 @@
 EVENT(canplay)
 EXPECTED (video.controller.playbackRate == '1') OK
 EXPECTED (video.playbackRate == '0') OK
+EVENT(seeked)
 RUN(video.play())
 EVENT(play)
 EVENT(timeupdate)

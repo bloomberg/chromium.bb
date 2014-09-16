@@ -32,14 +32,8 @@
 
         function timeupdateListener(event)
         {
-            ++timeupdateEventCount;
-
-            // wait 2 timeupdate events so we are sure the media engine is
-            // playing the media.
-            if (timeupdateEventCount >= 2) {
-                // make sure time is advancing
-                testElement = this;
-                testExpected(audioElementCount + ", testElement.currentTime", 0, '>');
+            // Make sure time is advancing.
+            if (this.currentTime > 0) {
                 this.removeEventListener('timeupdate', timeupdateListener);
                 if (++audioElementCount >= maxPlayers) {
                     // All audio elements have been started playing. Make sure

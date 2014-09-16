@@ -26,6 +26,13 @@
                 testExpected("video.controller.playbackRate", 1);
                 testExpected("video.playbackRate", 0);
 
+                // Wait for the seek initiated by the "bringing up to speed"
+                // step to complete.
+                waitForEventOnce('seeked', seeked);
+            };
+
+            var seeked = function()
+            {
                 // Initiate playback and verify that time moves forward.
                 run("video.play()");
                 waitForEventOnce("play", play);
