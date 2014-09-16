@@ -2,11 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#include_next <utime.h>
+
 #ifndef LIBRARIES_NACL_IO_INCLUDE_UTIME_H_
 #define LIBRARIES_NACL_IO_INCLUDE_UTIME_H_
 
 #include <sys/cdefs.h>
-#include_next <utime.h>
 
 __BEGIN_DECLS
 
