@@ -122,6 +122,8 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     return SurfacelessEGL::Resize(size);
   }
   virtual bool SwapBuffers() OVERRIDE {
+    // TODO: this should be replaced by a fence when supported by the driver.
+    glFinish();
     return ozone_surface_->OnSwapBuffers();
   }
   virtual bool ScheduleOverlayPlane(int z_order,

@@ -34,6 +34,12 @@ void TestGLES2Interface::GenFramebuffers(GLsizei n, GLuint* framebuffers) {
   }
 }
 
+void TestGLES2Interface::GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
+  for (GLsizei i = 0; i < n; ++i) {
+    renderbuffers[i] = test_context_->createRenderbuffer();
+  }
+}
+
 void TestGLES2Interface::GenQueriesEXT(GLsizei n, GLuint* queries) {
   for (GLsizei i = 0; i < n; ++i) {
     queries[i] = test_context_->createQueryEXT();
@@ -160,6 +166,10 @@ void TestGLES2Interface::Enable(GLenum cap) { test_context_->enable(cap); }
 
 void TestGLES2Interface::Disable(GLenum cap) { test_context_->disable(cap); }
 
+void TestGLES2Interface::BindRenderbuffer(GLenum target, GLuint buffer) {
+  test_context_->bindRenderbuffer(target, buffer);
+}
+
 void TestGLES2Interface::BindFramebuffer(GLenum target, GLuint buffer) {
   test_context_->bindFramebuffer(target, buffer);
 }
@@ -222,6 +232,29 @@ void TestGLES2Interface::TexParameteri(GLenum target,
                                        GLenum pname,
                                        GLint param) {
   test_context_->texParameteri(target, pname, param);
+}
+
+void TestGLES2Interface::FramebufferRenderbuffer(GLenum target,
+                                                 GLenum attachment,
+                                                 GLenum renderbuffertarget,
+                                                 GLuint renderbuffer) {
+  test_context_->framebufferRenderbuffer(
+      target, attachment, renderbuffertarget, renderbuffer);
+}
+void TestGLES2Interface::FramebufferTexture2D(GLenum target,
+                                              GLenum attachment,
+                                              GLenum textarget,
+                                              GLuint texture,
+                                              GLint level) {
+  test_context_->framebufferTexture2D(
+      target, attachment, textarget, texture, level);
+}
+
+void TestGLES2Interface::RenderbufferStorage(GLenum target,
+                                             GLenum internalformat,
+                                             GLsizei width,
+                                             GLsizei height) {
+  test_context_->renderbufferStorage(target, internalformat, width, height);
 }
 
 void TestGLES2Interface::AsyncTexImage2DCHROMIUM(GLenum target,

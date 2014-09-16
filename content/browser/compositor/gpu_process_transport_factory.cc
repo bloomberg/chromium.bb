@@ -18,6 +18,7 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
+#include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/onscreen_display_client.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
@@ -230,13 +231,26 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     return surface.PassAs<cc::OutputSurface>();
   }
 
-  scoped_ptr<BrowserCompositorOutputSurface> surface(
-      new GpuBrowserCompositorOutputSurface(
-          context_provider,
-          per_compositor_data_[compositor]->surface_id,
-          &output_surface_map_,
-          compositor->vsync_manager(),
-          CreateOverlayCandidateValidator(compositor->widget())));
+  scoped_ptr<BrowserCompositorOutputSurface> surface;
+#if defined(USE_OZONE)
+  if (ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
+    surface.reset(new GpuSurfacelessBrowserCompositorOutputSurface(
+        context_provider,
+        per_compositor_data_[compositor]->surface_id,
+        &output_surface_map_,
+        compositor->vsync_manager(),
+        CreateOverlayCandidateValidator(compositor->widget()),
+        GL_RGB8_OES));
+  }
+#endif
+  if (!surface)
+    surface.reset(new GpuBrowserCompositorOutputSurface(
+        context_provider,
+        per_compositor_data_[compositor]->surface_id,
+        &output_surface_map_,
+        compositor->vsync_manager(),
+        CreateOverlayCandidateValidator(compositor->widget())));
+
   if (data->reflector.get())
     data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
 

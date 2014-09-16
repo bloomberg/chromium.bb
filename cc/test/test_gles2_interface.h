@@ -18,6 +18,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   virtual void GenTextures(GLsizei n, GLuint* textures) OVERRIDE;
   virtual void GenBuffers(GLsizei n, GLuint* buffers) OVERRIDE;
   virtual void GenFramebuffers(GLsizei n, GLuint* framebuffers) OVERRIDE;
+  virtual void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) OVERRIDE;
   virtual void GenQueriesEXT(GLsizei n, GLuint* queries) OVERRIDE;
 
   virtual void DeleteTextures(GLsizei n, const GLuint* textures) OVERRIDE;
@@ -65,6 +66,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   virtual void Disable(GLenum cap) OVERRIDE;
 
   virtual void BindBuffer(GLenum target, GLuint buffer) OVERRIDE;
+  virtual void BindRenderbuffer(GLenum target, GLuint buffer) OVERRIDE;
   virtual void BindFramebuffer(GLenum target, GLuint buffer) OVERRIDE;
 
   virtual void TexImage2D(GLenum target,
@@ -137,6 +139,19 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   virtual void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) OVERRIDE;
   virtual void ReleaseTexImage2DCHROMIUM(GLenum target,
                                          GLint image_id) OVERRIDE;
+  virtual void FramebufferRenderbuffer(GLenum target,
+                                       GLenum attachment,
+                                       GLenum renderbuffertarget,
+                                       GLuint renderbuffer) OVERRIDE;
+  virtual void FramebufferTexture2D(GLenum target,
+                                    GLenum attachment,
+                                    GLenum textarget,
+                                    GLuint texture,
+                                    GLint level) OVERRIDE;
+  virtual void RenderbufferStorage(GLenum target,
+                                   GLenum internalformat,
+                                   GLsizei width,
+                                   GLsizei height) OVERRIDE;
 
   virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
   virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;

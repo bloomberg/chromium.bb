@@ -32,7 +32,7 @@ class GpuBrowserCompositorOutputSurface
 
   virtual ~GpuBrowserCompositorOutputSurface();
 
- private:
+ protected:
   // cc::OutputSurface implementation.
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 
