@@ -62,13 +62,19 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
         error_msg->append("Missing tap end event\n");
       waiting_for_tap_end_ = true;
       break;
-    case WebInputEvent::GestureTap:
+    case WebInputEvent::GestureTapUnconfirmed:
+      if (!waiting_for_tap_end_)
+        error_msg->append("Missing TapDown event before TapUnconfirmed\n");
+      break;
     case WebInputEvent::GestureTapCancel:
       if (!waiting_for_tap_end_)
-        error_msg->append("Missing GestureTapDown event\n");
+        error_msg->append("Missing TapDown event before TapCancel\n");
       waiting_for_tap_end_ = false;
       break;
+    case WebInputEvent::GestureTap:
     case WebInputEvent::GestureDoubleTap:
+      // Both Tap and DoubleTap gestures may be synthetically inserted, and do
+      // not require a preceding TapDown.
       waiting_for_tap_end_ = false;
       break;
     default:

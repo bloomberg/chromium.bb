@@ -165,7 +165,7 @@ TEST(GestureEventStreamValidator, ValidTap) {
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
 
-  event = Build(WebInputEvent::GestureTap);
+  event = Build(WebInputEvent::GestureTapCancel);
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
 
@@ -173,11 +173,20 @@ TEST(GestureEventStreamValidator, ValidTap) {
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
 
+  event = Build(WebInputEvent::GestureTapUnconfirmed);
+  EXPECT_TRUE(validator.Validate(event, &error_msg));
+  EXPECT_TRUE(error_msg.empty());
+
   event = Build(WebInputEvent::GestureTapCancel);
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
 
-  // DoubleTap doesn't require a TapDown (unlike Tap and TapCancel).
+  // Tap and DoubleTap do not require a TapDown (unlike TapUnconfirmed and
+  // TapCancel).
+  event = Build(WebInputEvent::GestureTap);
+  EXPECT_TRUE(validator.Validate(event, &error_msg));
+  EXPECT_TRUE(error_msg.empty());
+
   event = Build(WebInputEvent::GestureDoubleTap);
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
@@ -189,7 +198,7 @@ TEST(GestureEventStreamValidator, InvalidTap) {
   WebGestureEvent event;
 
   // No preceding TapDown.
-  event = Build(WebInputEvent::GestureTap);
+  event = Build(WebInputEvent::GestureTapUnconfirmed);
   EXPECT_FALSE(validator.Validate(event, &error_msg));
   EXPECT_FALSE(error_msg.empty());
 
@@ -203,6 +212,19 @@ TEST(GestureEventStreamValidator, InvalidTap) {
   EXPECT_TRUE(error_msg.empty());
 
   event = Build(WebInputEvent::GestureDoubleTap);
+  EXPECT_TRUE(validator.Validate(event, &error_msg));
+  EXPECT_TRUE(error_msg.empty());
+
+  event = Build(WebInputEvent::GestureTapCancel);
+  EXPECT_FALSE(validator.Validate(event, &error_msg));
+  EXPECT_FALSE(error_msg.empty());
+
+  // TapDown already terminated.
+  event = Build(WebInputEvent::GestureTapDown);
+  EXPECT_TRUE(validator.Validate(event, &error_msg));
+  EXPECT_TRUE(error_msg.empty());
+
+  event = Build(WebInputEvent::GestureTap);
   EXPECT_TRUE(validator.Validate(event, &error_msg));
   EXPECT_TRUE(error_msg.empty());
 
