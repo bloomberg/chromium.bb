@@ -41,6 +41,10 @@ ChangeVersionWrapper::ChangeVersionWrapper(const String& oldVersion, const Strin
 {
 }
 
+ChangeVersionWrapper::~ChangeVersionWrapper()
+{
+}
+
 bool ChangeVersionWrapper::performPreflight(SQLTransactionBackend* transaction)
 {
     ASSERT(transaction && transaction->database());
