@@ -106,6 +106,7 @@ void BitmapUploader::Upload() {
   pass->quads.resize(0u);
   pass->shared_quad_states.push_back(CreateDefaultSQS(size_));
 
+  MojoGLES2MakeCurrent(gles2_context_);
   if (!bitmap_.isNull()) {
     gfx::Size bitmap_size(bitmap_.width(), bitmap_.height());
     GLuint texture_id = BindTextureForSize(bitmap_size);
@@ -185,6 +186,9 @@ void BitmapUploader::Upload() {
 }
 
 void BitmapUploader::ReturnResources(Array<ReturnedResourcePtr> resources) {
+  if (!resources.size())
+    return;
+  MojoGLES2MakeCurrent(gles2_context_);
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {
     ReturnedResourcePtr resource = resources[i].Pass();

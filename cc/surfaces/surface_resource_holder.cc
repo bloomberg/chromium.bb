@@ -51,7 +51,8 @@ void SurfaceResourceHolder::UnrefResources(
        ++it) {
     ResourceProvider::ResourceId id = it->id;
     ResourceIdCountMap::iterator count_it = resource_id_use_count_map_.find(id);
-    DCHECK(count_it != resource_id_use_count_map_.end());
+    if (count_it == resource_id_use_count_map_.end())
+      continue;
     ResourceRefs& ref = count_it->second;
     ref.refs_holding_resource_alive -= it->count;
     if (ref.refs_holding_resource_alive == 0) {
