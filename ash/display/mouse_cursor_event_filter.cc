@@ -152,6 +152,7 @@ void MouseCursorEventFilter::OnDisplaysInitialized() {
   OnDisplayConfigurationChanged();
 }
 
+#if !defined(USE_OZONE)
 void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
   // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
   // that injects MockScreen.
@@ -173,6 +174,7 @@ void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
   else
     UpdateVerticalEdgeBounds();
 }
+#endif
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -222,6 +224,7 @@ void MouseCursorEventFilter::MoveCursorTo(aura::Window* root,
   root->GetHost()->MoveCursorToHostLocation(point_in_host);
 }
 
+#if !defined(USE_OZONE)
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(ui::MouseEvent* event) {
   if (!event->HasNativeEvent())
     return false;
@@ -260,6 +263,7 @@ bool MouseCursorEventFilter::WarpMouseCursorInNativeCoords(
 
   return true;
 }
+#endif
 
 void MouseCursorEventFilter::UpdateHorizontalEdgeBounds() {
   bool from_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
@@ -370,6 +374,7 @@ void MouseCursorEventFilter::GetSrcAndDstRootWindows(aura::Window** src_root,
   *dst_root = root_windows[0] == *src_root ? root_windows[1] : root_windows[0];
 }
 
+#if !defined(USE_OZONE)
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessaryForTest(
     aura::Window* target_root,
     const gfx::Point& point_in_screen) {
@@ -378,5 +383,6 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessaryForTest(
   target_root->GetHost()->ConvertPointToNativeScreen(&native);
   return WarpMouseCursorInNativeCoords(native, point_in_screen);
 }
+#endif
 
 }  // namespace ash
