@@ -18,13 +18,11 @@ class MockWebUserMediaClient : public blink::WebUserMediaClient {
   explicit MockWebUserMediaClient(WebTestDelegate* delegate);
   virtual ~MockWebUserMediaClient() {}
 
-  virtual void requestUserMedia(const blink::WebUserMediaRequest&) OVERRIDE;
-  virtual void cancelUserMediaRequest(
-      const blink::WebUserMediaRequest&) OVERRIDE;
-  virtual void requestMediaDevices(
-      const blink::WebMediaDevicesRequest&) OVERRIDE;
-  virtual void cancelMediaDevicesRequest(
-      const blink::WebMediaDevicesRequest&) OVERRIDE;
+  virtual void requestUserMedia(const blink::WebUserMediaRequest&);
+  virtual void cancelUserMediaRequest(const blink::WebUserMediaRequest&);
+  virtual void requestMediaDevices(const blink::WebMediaDevicesRequest&);
+  virtual void cancelMediaDevicesRequest(const blink::WebMediaDevicesRequest&);
+  virtual void requestSources(const blink::WebMediaStreamTrackSourcesRequest&);
 
   // Task related methods
   WebTaskList* mutable_task_list() { return &task_list_; }
