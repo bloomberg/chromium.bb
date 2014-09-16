@@ -770,7 +770,6 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
 }
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
-  VLOG(2) << "RenderWidgetCompositor::BeginMainFrame";
   begin_main_frame_time_ = args.frame_time;
   begin_main_frame_interval_ = args.interval;
   double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();

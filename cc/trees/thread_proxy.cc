@@ -257,8 +257,6 @@ void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(
 
 void ThreadProxy::SendCommitRequestToImplThreadIfNeeded() {
   DCHECK(IsMainThread());
-  VLOG(2) << "ThreadProxy::SendCommitRequestToImplThreadIfNeeded: "
-          << "already_sent = " << main().commit_request_sent_to_impl_thread;
   if (main().commit_request_sent_to_impl_thread)
     return;
   main().commit_request_sent_to_impl_thread = true;
@@ -276,8 +274,6 @@ const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
 
 void ThreadProxy::SetNeedsAnimate() {
   DCHECK(IsMainThread());
-  VLOG(2) << "ThreadProxy::SetNeedsAnimate: already_requested = "
-          << main().animate_requested;
   if (main().animate_requested)
     return;
 
@@ -384,7 +380,6 @@ void ThreadProxy::NotifyReadyToActivate() {
 
 void ThreadProxy::SetNeedsCommitOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommitOnImplThread");
-  VLOG(2) << "ThreadProxy::SetNeedsCommitOnImplThread";
   DCHECK(IsImplThread());
   impl().scheduler->SetNeedsCommit();
 }
@@ -683,7 +678,6 @@ void ThreadProxy::FinishAllRenderingOnImplThread(CompletionEvent* completion) {
 }
 
 void ThreadProxy::ScheduledActionSendBeginMainFrame() {
-  VLOG(2) << "ThreadProxy::ScheduledActionSendBeginMainFrame";
   unsigned int begin_frame_id = nextBeginFrameId++;
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kSendBeginFrame, begin_frame_id);
@@ -722,14 +716,11 @@ void ThreadProxy::BeginMainFrame(
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
 
-  VLOG(2) << "ThreadProxy::BeginMainFrame - BEGIN";
-
   if (main().defer_commits) {
     main().pending_deferred_commit = begin_main_frame_state.Pass();
     layer_tree_host()->DidDeferCommit();
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_DeferCommits", TRACE_EVENT_SCOPE_THREAD);
-    VLOG(2) << "ThreadProxy::BeginMainFrame: EarlyOut_DeferCommits";
     return;
   }
 
@@ -744,7 +735,6 @@ void ThreadProxy::BeginMainFrame(
 
   if (!layer_tree_host()->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
-    VLOG(2) << "ThreadProxy::BeginMainFrame: EarlyOut_NotVisible";
     bool did_handle = false;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -757,7 +747,6 @@ void ThreadProxy::BeginMainFrame(
   if (layer_tree_host()->output_surface_lost()) {
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
-    VLOG(2) << "ThreadProxy::BeginMainFrame: EarlyOut_OutputSurfaceLost";
     bool did_handle = false;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -777,7 +766,6 @@ void ThreadProxy::BeginMainFrame(
   // callbacks will trigger another frame.
   main().commit_requested = true;
   main().commit_request_sent_to_impl_thread = true;
-  VLOG(2) << "ThreadProxy::BeginMainFrame: Commit requests silenced.";
 
   layer_tree_host()->ApplyScrollAndScale(
       begin_main_frame_state->scroll_info.get());
@@ -832,16 +820,12 @@ void ThreadProxy::BeginMainFrame(
   // thread.
   if (main().animate_requested) {
     // Forces SetNeedsAnimate to consider posting a commit task.
-    VLOG(2) << "ThreadProxy::BeginMainFrame: RAF requested.";
     main().animate_requested = false;
     SetNeedsAnimate();
-  } else {
-    VLOG(2) << "ThreadProxy::BeginMainFrame: RAF NOT requested.";
   }
 
   if (!updated && can_cancel_this_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
-    VLOG(2) << "ThreadProxy::BeginMainFrame: EarlyOut_NoUpdates";
     bool did_handle = true;
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
