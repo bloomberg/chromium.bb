@@ -21,7 +21,7 @@ namespace {
 
 // The thumbnail size in DIP.
 const int kThumbnailWidth = 212;
-const int kThumbnailHeight = 132;
+const int kThumbnailHeight = 142;
 
 // True if thumbnail retargeting feature is enabled (Finch/flags).
 bool IsThumbnailRetargetingEnabled() {
