@@ -30,7 +30,7 @@ fi
 "$THIS_DIR"/package.sh $@
 
 R=$("${LLVM_BIN_DIR}/clang" --version | \
-     sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
+     sed -ne 's/clang version .*(\([0-9]*\))/\1/p')
 PDIR=clang-$R
 
 if [ ! -f "$PDIR.tgz" ]; then
@@ -43,9 +43,9 @@ fi
 rm -rf $LLVM_BUILD_DIR
 "$THIS_DIR"/update.sh
 
-LIBNAME=$(grep LIBRARYNAME "$THIS_DIR"/../blink_gc_plugin/Makefile \
-          | cut -d ' ' -f 3)
-
+LIBNAME=\
+$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
+    | cut -d ' ' -f 2 | tr -d ')')
 LIBFILE=lib$LIBNAME.$SO_EXT
 
 # Check that we are actually creating the plugin at a new revision.
