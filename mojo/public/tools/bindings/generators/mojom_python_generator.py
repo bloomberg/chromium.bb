@@ -12,60 +12,44 @@ import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
 
 _kind_to_type = {
-  mojom.BOOL:                  '_descriptor.TYPE_BOOL',
-  mojom.INT8:                  '_descriptor.TYPE_INT8',
-  mojom.UINT8:                 '_descriptor.TYPE_UINT8',
-  mojom.INT16:                 '_descriptor.TYPE_INT16',
-  mojom.UINT16:                '_descriptor.TYPE_UINT16',
-  mojom.INT32:                 '_descriptor.TYPE_INT32',
-  mojom.UINT32:                '_descriptor.TYPE_UINT32',
-  mojom.INT64:                 '_descriptor.TYPE_INT64',
-  mojom.UINT64:                '_descriptor.TYPE_UINT64',
-  mojom.FLOAT:                 '_descriptor.TYPE_FLOAT',
-  mojom.DOUBLE:                '_descriptor.TYPE_DOUBLE',
-  mojom.STRING:                '_descriptor.TYPE_STRING',
-  mojom.NULLABLE_STRING:       '_descriptor.TYPE_NULLABLE_STRING',
-  mojom.HANDLE:                '_descriptor.TYPE_HANDLE',
-  mojom.DCPIPE:                '_descriptor.TYPE_HANDLE',
-  mojom.DPPIPE:                '_descriptor.TYPE_HANDLE',
-  mojom.MSGPIPE:               '_descriptor.TYPE_HANDLE',
-  mojom.SHAREDBUFFER:          '_descriptor.TYPE_HANDLE',
-  mojom.NULLABLE_HANDLE:       '_descriptor.TYPE_NULLABLE_HANDLE',
-  mojom.NULLABLE_DCPIPE:       '_descriptor.TYPE_NULLABLE_HANDLE',
-  mojom.NULLABLE_DPPIPE:       '_descriptor.TYPE_NULLABLE_HANDLE',
-  mojom.NULLABLE_MSGPIPE:      '_descriptor.TYPE_NULLABLE_HANDLE',
-  mojom.NULLABLE_SHAREDBUFFER: '_descriptor.TYPE_NULLABLE_HANDLE',
+  mojom.BOOL:                  "_descriptor.TYPE_BOOL",
+  mojom.INT8:                  "_descriptor.TYPE_INT8",
+  mojom.UINT8:                 "_descriptor.TYPE_UINT8",
+  mojom.INT16:                 "_descriptor.TYPE_INT16",
+  mojom.UINT16:                "_descriptor.TYPE_UINT16",
+  mojom.INT32:                 "_descriptor.TYPE_INT32",
+  mojom.UINT32:                "_descriptor.TYPE_UINT32",
+  mojom.INT64:                 "_descriptor.TYPE_INT64",
+  mojom.UINT64:                "_descriptor.TYPE_UINT64",
+  mojom.FLOAT:                 "_descriptor.TYPE_FLOAT",
+  mojom.DOUBLE:                "_descriptor.TYPE_DOUBLE",
+  mojom.STRING:                "_descriptor.TYPE_STRING",
+  mojom.NULLABLE_STRING:       "_descriptor.TYPE_NULLABLE_STRING",
+  mojom.HANDLE:                "_descriptor.TYPE_HANDLE",
+  mojom.DCPIPE:                "_descriptor.TYPE_HANDLE",
+  mojom.DPPIPE:                "_descriptor.TYPE_HANDLE",
+  mojom.MSGPIPE:               "_descriptor.TYPE_HANDLE",
+  mojom.SHAREDBUFFER:          "_descriptor.TYPE_HANDLE",
+  mojom.NULLABLE_HANDLE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_DCPIPE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_DPPIPE:       "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_MSGPIPE:      "_descriptor.TYPE_NULLABLE_HANDLE",
+  mojom.NULLABLE_SHAREDBUFFER: "_descriptor.TYPE_NULLABLE_HANDLE",
 }
 
 # int64 integers are not handled by array.array. int64/uint64 array are
 # supported but storage is not optimized (ie. they are plain python list, not
 # array.array)
-_kind_to_typecode_for_native_array = {
-  mojom.INT8:   'b',
-  mojom.UINT8:  'B',
-  mojom.INT16:  'h',
-  mojom.UINT16: 'H',
-  mojom.INT32:  'i',
-  mojom.UINT32: 'I',
-  mojom.FLOAT:  'f',
-  mojom.DOUBLE: 'd',
+_kind_to_typecode = {
+  mojom.INT8:   "'b'",
+  mojom.UINT8:  "'B'",
+  mojom.INT16:  "'h'",
+  mojom.UINT16: "'H'",
+  mojom.INT32:  "'i'",
+  mojom.UINT32: "'I'",
+  mojom.FLOAT:  "'f'",
+  mojom.DOUBLE: "'d'",
 }
-
-_kind_to_typecode = dict(_kind_to_typecode_for_native_array)
-_kind_to_typecode.update({
-  mojom.INT64:                 'q',
-  mojom.UINT64:                'Q',
-  mojom.HANDLE:                'i',
-  mojom.DCPIPE:                'i',
-  mojom.DPPIPE:                'i',
-  mojom.MSGPIPE:               'i',
-  mojom.SHAREDBUFFER:          'i',
-  mojom.NULLABLE_HANDLE:       'i',
-  mojom.NULLABLE_DCPIPE:       'i',
-  mojom.NULLABLE_DPPIPE:       'i',
-  mojom.NULLABLE_MSGPIPE:      'i',
-  mojom.NULLABLE_SHAREDBUFFER: 'i',
-})
 
 
 def NameToComponent(name):
@@ -115,8 +99,8 @@ def ExpressionToText(token):
     if token.value == 'double.NAN' or token.value == 'float.NAN':
       return 'float(\'nan\')';
 
-  if token in ['true', 'false']:
-    return str(token == 'true')
+  if token in ["true", "false"]:
+    return str(token == "true")
 
   return token
 
@@ -129,54 +113,43 @@ def GetStructClass(kind):
 
 def GetFieldType(kind, field=None):
   if mojom.IsAnyArrayKind(kind):
-    arguments = []
-    if kind.kind in _kind_to_typecode_for_native_array:
-      arguments.append('%r' %_kind_to_typecode_for_native_array[kind.kind])
-    elif kind.kind != mojom.BOOL:
-      arguments.append(GetFieldType(kind.kind))
+    if kind.kind in _kind_to_typecode:
+      arguments = [ _kind_to_typecode[kind.kind] ]
+    else:
+      arguments = [ GetFieldType(kind.kind) ]
     if mojom.IsNullableKind(kind):
-      arguments.append('nullable=True')
+      arguments.append("nullable=True")
     if mojom.IsFixedArrayKind(kind):
-      arguments.append('length=%d' % kind.length)
-    array_type = 'GenericArrayType'
-    if kind.kind == mojom.BOOL:
-      array_type = 'BooleanArrayType'
-    elif kind.kind in _kind_to_typecode_for_native_array:
-      array_type = 'NativeArrayType'
-    return '_descriptor.%s(%s)' % (array_type, ', '.join(arguments))
+      arguments.append("length=%d" % kind.length)
+    if kind.kind in _kind_to_typecode:
+      return "_descriptor.NativeArrayType(%s)" % ", ".join(arguments)
+    else:
+      return "_descriptor.PointerArrayType(%s)" % ", ".join(arguments)
 
   if mojom.IsStructKind(kind):
     arguments = [ GetStructClass(kind) ]
     if mojom.IsNullableKind(kind):
-      arguments.append('nullable=True')
-    return '_descriptor.StructType(%s)' % ', '.join(arguments)
+      arguments.append("nullable=True")
+    return "_descriptor.StructType(%s)" % ", ".join(arguments)
 
   if mojom.IsEnumKind(kind):
     return GetFieldType(mojom.INT32)
 
-  return _kind_to_type.get(kind, '_descriptor.TYPE_NONE')
+  return _kind_to_type.get(kind, "_descriptor.TYPE_NONE")
 
 def GetFieldDescriptor(packed_field):
   field = packed_field.field
-  class_name = 'SingleFieldGroup'
-  if field.kind == mojom.BOOL:
-    class_name = 'FieldDescriptor'
-  arguments = [ '%r' % field.name ]
+  arguments = [ '\'%s\'' % field.name ]
   arguments.append(GetFieldType(field.kind, field))
-  arguments.append(str(packed_field.field.ordinal))
+  arguments.append(str(packed_field.offset))
+  if field.kind == mojom.BOOL:
+    arguments.append('bit_offset=%d' % packed_field.bit)
   if field.default:
     if mojom.IsStructKind(field.kind):
       arguments.append('default_value=True')
     else:
       arguments.append('default_value=%s' % ExpressionToText(field.default))
-  return '_descriptor.%s(%s)' % (class_name, ', '.join(arguments))
-
-def GetFieldGroup(byte):
-  if len(byte.packed_fields) > 1:
-    descriptors = map(GetFieldDescriptor, byte.packed_fields)
-    return '_descriptor.BooleanGroup([%s])' % ', '.join(descriptors)
-  assert len(byte.packed_fields) == 1
-  return GetFieldDescriptor(byte.packed_fields[0])
+  return '_descriptor.FieldDescriptor(%s)' % ', '.join(arguments)
 
 def ComputeStaticValues(module):
   in_progress = set()
@@ -256,12 +229,11 @@ def ComputeStaticValues(module):
 
   return module
 
-
 class Generator(generator.Generator):
 
   python_filters = {
     'expression_to_text': ExpressionToText,
-    'field_group': GetFieldGroup,
+    'field_descriptor': GetFieldDescriptor,
     'name': GetNameForElement,
   }
 

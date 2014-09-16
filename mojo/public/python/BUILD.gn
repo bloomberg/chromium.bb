@@ -38,7 +38,6 @@ copy("bindings") {
     "mojo/bindings/__init__.py",
     "mojo/bindings/descriptor.py",
     "mojo/bindings/reflection.py",
-    "mojo/bindings/serialization.py",
   ]
   outputs = [
     "$root_out_dir/python/mojo/bindings/{{source_file_part}}",
