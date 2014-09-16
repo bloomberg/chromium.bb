@@ -244,6 +244,9 @@
                   'content/common/input/|'\
                   'content/renderer/input/',
     },
+    'content_renderer': {
+      'filepath': 'content/renderer/',
+    },
     'content_shell': {
       'filepath': 'content/shell/',
     },
@@ -831,9 +834,9 @@
     'closure': ['dbeam+watch-closure@chromium.org',
                 'vitalyp+closure@chromium.org'],
     'content': ['jam@chromium.org',
-                'darin-cc@chromium.org',
-                'mkwst+moarreviews-content@chromium.org'],
+                'darin-cc@chromium.org' ],
     'content_input': ['jdduke+watch@chromium.org'],
+    'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org' ],
     'content_shell': ['jochen+watch@chromium.org',
                       'mkwst+moarreviews-shell@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
