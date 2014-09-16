@@ -20,6 +20,7 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
+#include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -110,6 +111,9 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
   test_runner->Reset();
   render_view->GetWebView()->setSpellCheckClient(
       test_runner->proxy()->GetSpellCheckClient());
+
+  render_view->GetWebView()->setCredentialManagerClient(
+      test_runner->proxy()->GetCredentialManagerClientMock());
   WebTestDelegate* delegate =
       ShellRenderProcessObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<WebTestDelegate*>(test_runner))

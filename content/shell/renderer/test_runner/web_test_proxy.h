@@ -77,6 +77,7 @@ typedef unsigned WebColor;
 
 namespace content {
 
+class MockCredentialManagerClient;
 class MockScreenOrientationClient;
 class MockWebPushClient;
 class MockWebSpeechRecognizer;
@@ -132,6 +133,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   MockScreenOrientationClient* GetScreenOrientationClientMock();
   blink::WebMIDIClientMock* GetMIDIClientMock();
   MockWebSpeechRecognizer* GetSpeechRecognizerMock();
+  MockCredentialManagerClient* GetCredentialManagerClientMock();
 
   WebTaskList* mutable_task_list() { return &task_list_; }
 
@@ -272,6 +274,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   bool log_console_output_;
   int chooser_count_;
 
+  scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
   scoped_ptr<blink::WebMIDIClientMock> midi_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   scoped_ptr<MockWebPushClient> push_client_;

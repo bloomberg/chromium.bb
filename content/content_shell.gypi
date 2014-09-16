@@ -194,6 +194,8 @@
         'shell/renderer/test_runner/gamepad_controller.h',
         'shell/renderer/test_runner/mock_color_chooser.cc',
         'shell/renderer/test_runner/mock_color_chooser.h',
+        'shell/renderer/test_runner/mock_credential_manager_client.cc',
+        'shell/renderer/test_runner/mock_credential_manager_client.h',
         'shell/renderer/test_runner/mock_constraints.cc',
         'shell/renderer/test_runner/mock_constraints.h',
         'shell/renderer/test_runner/mock_grammar_check.cc',

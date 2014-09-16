@@ -10,6 +10,7 @@
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/binding_helpers.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
+#include "third_party/WebKit/public/platform/WebLocalCredential.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
@@ -276,6 +278,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockSpeechRecognitionError(const std::string& error,
                                      const std::string& message);
   bool WasMockSpeechRecognitionAborted();
+  void AddMockCredentialManagerResponse(const std::string& id,
+                                        const std::string& name,
+                                        const std::string& avatar,
+                                        const std::string& password);
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
   void DisplayAsync();
@@ -513,6 +519,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockSpeechRecognitionError)
       .SetMethod("wasMockSpeechRecognitionAborted",
                  &TestRunnerBindings::WasMockSpeechRecognitionAborted)
+      .SetMethod("addMockCredentialManagerResponse",
+                 &TestRunnerBindings::AddMockCredentialManagerResponse)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
@@ -1319,6 +1327,15 @@ bool TestRunnerBindings::WasMockSpeechRecognitionAborted() {
   if (runner_)
     return runner_->WasMockSpeechRecognitionAborted();
   return false;
+}
+
+void TestRunnerBindings::AddMockCredentialManagerResponse(
+    const std::string& id,
+    const std::string& name,
+    const std::string& avatar,
+    const std::string& password) {
+  if (runner_)
+    runner_->AddMockCredentialManagerResponse(id, name, avatar, password);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
@@ -2747,6 +2764,17 @@ void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
 
 bool TestRunner::WasMockSpeechRecognitionAborted() {
   return proxy_->GetSpeechRecognizerMock()->WasAborted();
+}
+
+void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
+                                                  const std::string& name,
+                                                  const std::string& avatar,
+                                                  const std::string& password) {
+  proxy_->GetCredentialManagerClientMock()->SetResponse(
+      new WebLocalCredential(WebString::fromUTF8(id),
+                             WebString::fromUTF8(name),
+                             WebURL(GURL(avatar)),
+                             WebString::fromUTF8(password)));
 }
 
 void TestRunner::AddWebPageOverlay() {

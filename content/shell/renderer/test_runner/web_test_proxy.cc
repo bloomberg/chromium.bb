@@ -19,6 +19,7 @@
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/mock_color_chooser.h"
+#include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
@@ -599,6 +600,13 @@ MockWebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizerMock() {
     speech_recognizer_->SetDelegate(delegate_);
   }
   return speech_recognizer_.get();
+}
+
+MockCredentialManagerClient*
+WebTestProxyBase::GetCredentialManagerClientMock() {
+  if (!credential_manager_client_.get())
+    credential_manager_client_.reset(new MockCredentialManagerClient());
+  return credential_manager_client_.get();
 }
 
 void WebTestProxyBase::ScheduleAnimation() {

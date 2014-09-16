@@ -535,6 +535,13 @@ class TestRunner : public WebTestRunner,
                                      const std::string& message);
   bool WasMockSpeechRecognitionAborted();
 
+  // Credential Manager mock functions
+  // TODO(mkwst): Support FederatedCredential.
+  void AddMockCredentialManagerResponse(const std::string& id,
+                                        const std::string& name,
+                                        const std::string& avatar,
+                                        const std::string& password);
+
   // WebPageOverlay related functions. Permits the adding and removing of only
   // one opaque overlay.
   void AddWebPageOverlay();

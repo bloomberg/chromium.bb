@@ -143,6 +143,8 @@ static_library("content_shell_lib") {
     "renderer/test_runner/mock_color_chooser.h",
     "renderer/test_runner/mock_constraints.cc",
     "renderer/test_runner/mock_constraints.h",
+    "renderer/test_runner/mock_credential_manager_client.cc",
+    "renderer/test_runner/mock_credential_manager_client.h",
     "renderer/test_runner/mock_grammar_check.cc",
     "renderer/test_runner/mock_grammar_check.h",
     "renderer/test_runner/mock_screen_orientation_client.cc",
