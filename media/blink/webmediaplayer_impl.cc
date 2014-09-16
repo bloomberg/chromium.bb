@@ -528,7 +528,7 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
 
   gfx::Rect gfx_rect(rect);
 
-  skcanvas_video_renderer_.Paint(video_frame.get(),
+  skcanvas_video_renderer_.Paint(video_frame,
                                  canvas,
                                  gfx_rect,
                                  alpha,

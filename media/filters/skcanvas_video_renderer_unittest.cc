@@ -52,20 +52,22 @@ class SkCanvasVideoRendererTest : public testing::Test {
 
   // Paints the |video_frame| to the |canvas| using |renderer_|, setting the
   // color of |video_frame| to |color| first.
-  void Paint(VideoFrame* video_frame, SkCanvas* canvas, Color color);
-  void PaintRotated(VideoFrame* video_frame,
+  void Paint(const scoped_refptr<VideoFrame>& video_frame,
+             SkCanvas* canvas,
+             Color color);
+  void PaintRotated(const scoped_refptr<VideoFrame>& video_frame,
                     SkCanvas* canvas,
                     Color color,
                     SkXfermode::Mode mode,
                     VideoRotation video_rotation);
 
-  void Copy(VideoFrame* video_frame, SkCanvas* canvas);
+  void Copy(const scoped_refptr<VideoFrame>& video_frame, SkCanvas* canvas);
 
   // Getters for various frame sizes.
-  VideoFrame* natural_frame() { return natural_frame_.get(); }
-  VideoFrame* larger_frame() { return larger_frame_.get(); }
-  VideoFrame* smaller_frame() { return smaller_frame_.get(); }
-  VideoFrame* cropped_frame() { return cropped_frame_.get(); }
+  scoped_refptr<VideoFrame> natural_frame() { return natural_frame_; }
+  scoped_refptr<VideoFrame> larger_frame() { return larger_frame_; }
+  scoped_refptr<VideoFrame> smaller_frame() { return smaller_frame_; }
+  scoped_refptr<VideoFrame> cropped_frame() { return cropped_frame_; }
 
   // Standard canvas.
   SkCanvas* target_canvas() { return &target_canvas_; }
@@ -184,9 +186,9 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
      21,  21,  21,  21, 107, 107, 107, 107,
   };
 
-  media::CopyYPlane(cropped_y_plane, 16, 16, cropped_frame());
-  media::CopyUPlane(cropped_u_plane, 8, 8, cropped_frame());
-  media::CopyVPlane(cropped_v_plane, 8, 8, cropped_frame());
+  media::CopyYPlane(cropped_y_plane, 16, 16, cropped_frame().get());
+  media::CopyUPlane(cropped_u_plane, 8, 8, cropped_frame().get());
+  media::CopyVPlane(cropped_v_plane, 8, 8, cropped_frame().get());
 }
 
 SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
@@ -200,37 +202,40 @@ void SkCanvasVideoRendererTest::PaintWithoutFrame(SkCanvas* canvas) {
                   VIDEO_ROTATION_0);
 }
 
-void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
-                                      SkCanvas* canvas,
-                                      Color color) {
+void SkCanvasVideoRendererTest::Paint(
+    const scoped_refptr<VideoFrame>& video_frame,
+    SkCanvas* canvas,
+    Color color) {
   PaintRotated(
       video_frame, canvas, color, SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_0);
 }
 
-void SkCanvasVideoRendererTest::PaintRotated(VideoFrame* video_frame,
-                                             SkCanvas* canvas,
-                                             Color color,
-                                             SkXfermode::Mode mode,
-                                             VideoRotation video_rotation) {
+void SkCanvasVideoRendererTest::PaintRotated(
+    const scoped_refptr<VideoFrame>& video_frame,
+    SkCanvas* canvas,
+    Color color,
+    SkXfermode::Mode mode,
+    VideoRotation video_rotation) {
   switch (color) {
     case kNone:
       break;
     case kRed:
-      media::FillYUV(video_frame, 76, 84, 255);
+      media::FillYUV(video_frame.get(), 76, 84, 255);
       break;
     case kGreen:
-      media::FillYUV(video_frame, 149, 43, 21);
+      media::FillYUV(video_frame.get(), 149, 43, 21);
       break;
     case kBlue:
-      media::FillYUV(video_frame, 29, 255, 107);
+      media::FillYUV(video_frame.get(), 29, 255, 107);
       break;
   }
   renderer_.Paint(
       video_frame, canvas, kNaturalRect, 0xFF, mode, video_rotation);
 }
 
-void SkCanvasVideoRendererTest::Copy(VideoFrame* video_frame,
-                                     SkCanvas* canvas) {
+void SkCanvasVideoRendererTest::Copy(
+    const scoped_refptr<VideoFrame>& video_frame,
+    SkCanvas* canvas) {
   renderer_.Copy(video_frame, canvas);
 }
 
@@ -295,7 +300,7 @@ TEST_F(SkCanvasVideoRendererTest, Smaller) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, NoTimestamp) {
-  VideoFrame* video_frame = natural_frame();
+  VideoFrame* video_frame = natural_frame().get();
   video_frame->set_timestamp(media::kNoTimestamp());
   Paint(video_frame, target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));

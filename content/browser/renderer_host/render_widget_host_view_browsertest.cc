@@ -493,7 +493,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                           video_frame->visible_rect().height());
     // Don't clear the canvas because drawing a video frame by Src mode.
     SkCanvas canvas(bitmap);
-    video_renderer.Copy(video_frame.get(), &canvas);
+    video_renderer.Copy(video_frame, &canvas);
 
     CopyFromCompositingSurfaceCallback(quit_callback,
                                        result,
