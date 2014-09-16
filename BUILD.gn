@@ -66,7 +66,7 @@ action("ffmpeg_generate_stubs") {
 
   script = generate_stubs_script
   sources = sig_files
-  source_prereqs = [ extra_header ]
+  inputs = [ extra_header ]
 
   if (is_win) {
     if (build_cpu_arch == "x64") {
