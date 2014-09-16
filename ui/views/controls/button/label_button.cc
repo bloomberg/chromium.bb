@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -30,6 +31,23 @@ const SkColor kStyleButtonTextColor = SK_ColorBLACK;
 const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 #endif
 
+const gfx::FontList& GetDefaultNormalFontList() {
+  static base::LazyInstance<gfx::FontList>::Leaky font_list =
+      LAZY_INSTANCE_INITIALIZER;
+  return font_list.Get();
+}
+
+const gfx::FontList& GetDefaultBoldFontList() {
+  static base::LazyInstance<gfx::FontList>::Leaky font_list =
+      LAZY_INSTANCE_INITIALIZER;
+  if ((font_list.Get().GetFontStyle() & gfx::Font::BOLD) == 0) {
+    font_list.Get() = font_list.Get().
+        DeriveWithStyle(font_list.Get().GetFontStyle() | gfx::Font::BOLD);
+    DCHECK_NE(font_list.Get().GetFontStyle() & gfx::Font::BOLD, 0);
+  }
+  return font_list.Get();
+}
+
 }  // namespace
 
 namespace views {
@@ -44,6 +62,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
     : CustomButton(listener),
       image_(new ImageView()),
       label_(new Label()),
+      cached_normal_font_list_(GetDefaultNormalFontList()),
+      cached_bold_font_list_(GetDefaultBoldFontList()),
       button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
@@ -53,12 +73,12 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       image_label_spacing_(kSpacing) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetText(text);
-  SetFontList(gfx::FontList());
 
   AddChildView(image_);
   image_->set_interactive(false);
 
   AddChildView(label_);
+  label_->SetFontList(cached_normal_font_list_);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
