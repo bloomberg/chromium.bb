@@ -218,7 +218,6 @@
           'type': 'none',
           'dependencies': [
             '../../third_party/android_tools/android_tools.gyp:android_gcm',
-            '../../third_party/guava/guava.gyp:guava_javalib',
             'cacheinvalidation_proto_java',
           ],
           'variables': {
