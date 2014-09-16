@@ -1491,6 +1491,7 @@ def GetDefaultTryConfigs(bots=None):
       'win_chromium_x64_rel_swarming': ['defaulttests'],
       'win_gpu': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
+      'win8_chromium_rel': ['defaulttests'],
   }
 
   if bots:
@@ -1542,6 +1543,7 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs([
         'win_chromium_dbg',
         'win_chromium_rel_swarming',
+        'win8_chromium_rel',
     ])
   if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
@@ -1570,6 +1572,7 @@ def GetPreferredTryMasters(project, change):
       'win_chromium_rel_swarming',
       'win_chromium_x64_rel_swarming',
       'win_gpu',
+      'win8_chromium_rel',
   ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
