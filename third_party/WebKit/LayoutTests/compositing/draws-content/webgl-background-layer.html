@@ -14,6 +14,7 @@
       #canvas-padding { padding: 5px; }
       #canvas-border { border: 5px solid; }
       #canvas-image { background-image: url("../resources/simple_image.png"); }
+      #canvas-transparent-background { background-color: rgba(0, 255, 0, 0.5); }
     </style>
     <script>
         if (window.testRunner) {
@@ -45,6 +46,11 @@
             // The container GraphicsLayer needs to paint background image.
             drawCanvas('canvas-image');
 
+            // Simple background can be direct-composited with content-layer.
+            // The container GraphicsLayer does not paint anything.
+            // The container Graphics layer must not be treated as opaque
+            drawCanvas('canvas-transparent-background');
+
             if (window.testRunner && window.internals)
                 document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document);
         };
@@ -64,6 +70,9 @@
     </div>
     <div class="container">
       <canvas id="canvas-image" width="50" height="50"></canvas>
+    </div>
+    <div class="container">
+      <canvas id="canvas-transparent-background" width="50" height="50"></canvas>
     </div>
     <pre id="layer-tree"></pre>
   </body>

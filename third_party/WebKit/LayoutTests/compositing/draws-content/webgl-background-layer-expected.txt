@@ -16,23 +16,26 @@
         {
           "position": [13, 73],
           "bounds": [60, 60],
-          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000"
         },
         {
           "position": [13, 138],
           "bounds": [60, 60],
-          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000"
         },
         {
           "position": [13, 203],
           "bounds": [50, 50],
-          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000"
+        },
+        {
+          "position": [13, 268],
+          "bounds": [50, 50],
+          "drawsContent": true,
+          "backgroundColor": "#00FF007F"
         }
       ]
     }

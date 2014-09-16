@@ -292,12 +292,21 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
 
 void CompositedLayerMapping::updateContentsOpaque()
 {
-    // For non-root layers, background is always painted by the primary graphics layer.
     ASSERT(m_isMainFrameRenderViewLayer || !m_backgroundLayer);
-    if (m_backgroundLayer) {
+    if (isAcceleratedCanvas(renderer())) {
+        // Determine whether the rendering context's external texture layer is opaque.
+        CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
+        if (!context->hasAlpha())
+            m_graphicsLayer->setContentsOpaque(true);
+        else if (WebLayer* layer = context->platformLayer())
+            m_graphicsLayer->setContentsOpaque(!Color(layer->backgroundColor()).hasAlpha());
+        else
+            m_graphicsLayer->setContentsOpaque(false);
+    } else if (m_backgroundLayer) {
         m_graphicsLayer->setContentsOpaque(false);
         m_backgroundLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
     } else {
+        // For non-root layers, background is always painted by the primary graphics layer.
         m_graphicsLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
     }
 }

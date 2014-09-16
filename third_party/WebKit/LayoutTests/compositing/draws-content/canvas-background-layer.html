@@ -14,33 +14,48 @@
       #canvas-padding { padding: 5px; }
       #canvas-border { border: 5px solid; }
       #canvas-image { background-image: url("../resources/simple_image.png"); }
+      #canvas-transparent-background { background-color: rgba(0, 255, 0, 0.5); }
+      #canvas-opaque { border: 5px solid; }
     </style>
     <script>
         if (window.testRunner)
             testRunner.dumpAsText();
 
-        function drawCanvas(canvasID) {
+        function drawCanvas(canvasID, hasAlpha) {
             var canvas = document.getElementById(canvasID);
-            var context = canvas.getContext("2d");
+            var context = canvas.getContext("2d", {alpha: hasAlpha});
             context.clearRect(0, 0, canvas.width, canvas.height);
         };
 
         function doTest() {
             // Simple background can be direct-composited with content-layer.
             // The container GraphicsLayer does not paint anything.
-            drawCanvas('canvas-simple');
+            // The content layer should be treated as opaque because the
+            // background color is opaque.
+            drawCanvas('canvas-simple', true);
 
             // Padding makes the background-box bigger than content-box.
             // The container GraphicsLayer needs to paint background.
-            drawCanvas('canvas-padding');
+            drawCanvas('canvas-padding', true);
 
             // Content layer cannot direct-composite any kind of box decoration.
             // The container GraphicsLayer needs to paint box decorations.
-            drawCanvas('canvas-border');
+            drawCanvas('canvas-border', true);
 
             // Content layer cannot direct-composite background image.
             // The container GraphicsLayer needs to paint background image.
-            drawCanvas('canvas-image');
+            drawCanvas('canvas-image', true);
+
+            // Simple background can be direct-composited with content-layer.
+            // The container GraphicsLayer does not paint anything.
+            // The content layer should not be treated as opaque because the 
+            // background color is not opaque.
+            drawCanvas('canvas-transparent-background', true);
+
+            // Background cannot be direct-composited because of box decoration.
+            // However contents of the canvas are opaque so the background does
+            // not need to be painted.
+            drawCanvas('canvas-opaque', false);
 
             if (window.testRunner && window.internals)
                 document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document);
@@ -54,6 +69,9 @@
       <canvas id="canvas-simple" width="50" height="50"></canvas>
     </div>
     <div class="container">
+      <canvas id="canvas-transparent-background" width="50" height="50"></canvas>
+    </div>
+    <div class="container">
       <canvas id="canvas-padding" width="50" height="50"></canvas>
     </div>
     <div class="container">
@@ -62,6 +80,9 @@
     <div class="container">
       <canvas id="canvas-image" width="50" height="50"></canvas>
     </div>
+    <div class="container">
+      <canvas id="canvas-opaque" width="50" height="50"></canvas>
+    </div> 
     <pre id="layer-tree"></pre>
   </body>
 </html>
