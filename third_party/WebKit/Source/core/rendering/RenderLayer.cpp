@@ -1277,12 +1277,6 @@ void RenderLayer::removeOnlyThisLayer()
 
     m_clipper.clearClipRectsIncludingDescendants();
 
-    // For querying RenderLayer::compositingState()
-    // Eager invalidation here is correct, since we are invalidating with respect to the previous frame's
-    // compositing state when removing the layer.
-    DisableCompositingQueryAsserts disabler;
-    paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
-
     RenderLayer* nextSib = nextSibling();
 
     // Remove the child reflection layer before moving other child layers.
@@ -1297,7 +1291,6 @@ void RenderLayer::removeOnlyThisLayer()
         removeChild(current);
         m_parent->addChild(current, nextSib);
 
-        current->renderer()->setShouldDoFullPaintInvalidation(true);
         // FIXME: We should call a specialized version of this function.
         current->updateLayerPositionsAfterLayout();
         current = next;

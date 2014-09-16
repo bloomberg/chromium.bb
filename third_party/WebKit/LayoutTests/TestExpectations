@@ -268,6 +268,8 @@ crbug.com/331583 [ Mavericks ] fast/text/whitespace/018.html [ Pass ImageOnlyFai
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
 
+Bug(jchaffraix) fast/repaint/bugzilla-6473.html [ NeedsRebaseline ]
+
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Failure Pass ]
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
