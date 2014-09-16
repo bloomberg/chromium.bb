@@ -6,7 +6,6 @@
 #define WebCompositorAnimation_h
 
 #define WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS 1
-#define WEB_ANIMATION_SUPPORTS_FULL_DIRECTION 1
 
 namespace blink {
 
