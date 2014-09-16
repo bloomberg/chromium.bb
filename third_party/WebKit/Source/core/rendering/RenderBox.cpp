@@ -182,16 +182,8 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     RenderBoxModelObject::styleDidChange(diff, oldStyle);
 
     RenderStyle* newStyle = style();
-    if (needsLayout() && oldStyle) {
+    if (needsLayout() && oldStyle)
         RenderBlock::removePercentHeightDescendantIfNeeded(this);
-
-        // Normally we can do optimized positioning layout for absolute/fixed positioned objects. There is one special case, however, which is
-        // when the positioned object's margin-before is changed. In this case the parent has to get a layout in order to run margin collapsing
-        // to determine the new static position.
-        if (isOutOfFlowPositioned() && newStyle->hasStaticBlockPosition(isHorizontalWritingMode()) && oldStyle->marginBefore() != newStyle->marginBefore()
-            && parent() && !parent()->normalChildNeedsLayout())
-            parent()->setChildNeedsLayout();
-    }
 
     if (RenderBlock::hasPercentHeightContainerMap() && slowFirstChild()
         && oldHorizontalWritingMode != isHorizontalWritingMode())
