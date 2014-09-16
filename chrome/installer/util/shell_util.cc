@@ -297,8 +297,6 @@ class RegistryEntry {
     entries->push_back(new RegistryEntry(
         chrome_html_prog_id, dist->GetBrowserProgIdDesc()));
     entries->push_back(new RegistryEntry(
-        chrome_html_prog_id, ShellUtil::kRegUrlProtocol, base::string16()));
-    entries->push_back(new RegistryEntry(
         chrome_html_prog_id + ShellUtil::kRegDefaultIcon, icon_path));
     entries->push_back(new RegistryEntry(
         chrome_html_prog_id + ShellUtil::kRegShellOpen, open_cmd));
