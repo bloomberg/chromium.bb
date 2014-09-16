@@ -45,6 +45,10 @@
                     'src/shared/ppapi_proxy/ppruntime.h',
                   ],
                 },
+              ],
+            }],
+            ['target_arch=="ia32"', {
+              'copies': [
                 # Here we copy linker scripts out of the Native Client repo..
                 # These are source, not build artifacts.
                 {
@@ -54,16 +58,20 @@
                   ],
                 },
                 {
-                  'destination': '>(tc_lib_dir_newlib64)',
-                  'files': [
-                    'src/untrusted/irt_stub/libppapi.a',
-                  ],
-                },
-                {
                   'destination': '>(tc_lib_dir_glibc32)',
                   'files': [
                     'src/untrusted/irt_stub/libppapi.a',
                     'src/untrusted/irt_stub/libppapi.so',
+                  ],
+                },
+              ],
+            }],
+            ['target_arch=="x64" or (target_arch=="ia32" and OS=="win")', {
+              'copies': [
+                {
+                  'destination': '>(tc_lib_dir_newlib64)',
+                  'files': [
+                    'src/untrusted/irt_stub/libppapi.a',
                   ],
                 },
                 {

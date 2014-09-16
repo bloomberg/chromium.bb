@@ -8,7 +8,7 @@
 
 {
   'includes': [
-    '../native_client/build/untrusted.gypi',
+    '../build/common_untrusted.gypi',
     'ppapi_sources.gypi',
   ],
   'targets': [
@@ -100,22 +100,24 @@
           '-O0',
         ],
         'conditions': [
-          ['target_arch=="ia32" or target_arch=="x64"', {
-            'extra_deps_newlib64': [
-              '>(tc_lib_dir_newlib64)/libppapi_cpp.a',
-              '>(tc_lib_dir_newlib64)/libppapi.a',
-            ],
+          ['target_arch=="ia32"', {
             'extra_deps_newlib32': [
               '>(tc_lib_dir_newlib32)/libppapi_cpp.a',
               '>(tc_lib_dir_newlib32)/libppapi.a',
             ],
-            'extra_deps_glibc64': [
-              '>(tc_lib_dir_glibc64)/libppapi_cpp.so',
-              '>(tc_lib_dir_glibc64)/libppapi.so',
-            ],
             'extra_deps_glibc32': [
               '>(tc_lib_dir_glibc32)/libppapi_cpp.so',
               '>(tc_lib_dir_glibc32)/libppapi.so',
+            ],
+          }],
+          ['target_arch=="x64" or (target_arch=="ia32" and OS=="win")', {
+            'extra_deps_newlib64': [
+              '>(tc_lib_dir_newlib64)/libppapi_cpp.a',
+              '>(tc_lib_dir_newlib64)/libppapi.a',
+            ],
+            'extra_deps_glibc64': [
+              '>(tc_lib_dir_glibc64)/libppapi_cpp.so',
+              '>(tc_lib_dir_glibc64)/libppapi.so',
             ],
           }],
           ['target_arch=="arm"', {
@@ -140,7 +142,7 @@
         'create_nonsfi_test_nmf': 'tests/create_nonsfi_test_nmf.py',
       },
       'conditions': [
-        ['target_arch!="arm" and target_arch!="mipsel" and disable_glibc==0', {
+        ['(target_arch=="ia32" or target_arch=="x64") and disable_glibc==0', {
           'variables': {
             'build_glibc': 1,
             # NOTE: Use /lib, not /lib64 here; it is a symbolic link which
@@ -155,7 +157,7 @@
             'action_name': 'Generate GLIBC NMF and copy libs',
             # NOTE: create_nmf must be first, it is the script python executes
             # below.
-            'inputs': ['>(create_nmf)', '>(out_glibc64)', '>(out_glibc32)'],
+            'inputs': ['>(create_nmf)'],
             # NOTE: There is no explicit dependency for the lib32
             # and lib64 directories created in the PRODUCT_DIR.
             # They are created as a side-effect of NMF creation.
@@ -164,12 +166,24 @@
               'python',
               '>@(_inputs)',
               '--objdump=>(nacl_objdump)',
-              '--library-path=>(libdir_glibc64)',
-              '--library-path=>(libdir_glibc32)',
-              '--library-path=>(tc_lib_dir_glibc32)',
-              '--library-path=>(tc_lib_dir_glibc64)',
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
+            ],
+            'conditions': [
+              ['target_arch=="ia32"', {
+                'action': [
+                  '--library-path=>(libdir_glibc32)',
+                  '--library-path=>(tc_lib_dir_glibc32)',
+                ],
+                'inputs': ['>(out_glibc32)'],
+              }],
+              ['target_arch=="x64" or (target_arch=="ia32" and OS=="win")', {
+                'action': [
+                  '--library-path=>(libdir_glibc64)',
+                  '--library-path=>(tc_lib_dir_glibc64)',
+                ],
+                'inputs': ['>(out_glibc64)'],
+              }],
             ],
           },
         ],
@@ -199,14 +213,24 @@
               # below.
               'inputs': [
                 '>(create_nmf)',
-                '>(out_pnacl_newlib_x86_32_nexe)',
-                '>(out_pnacl_newlib_x86_64_nexe)'
               ],
               'outputs': ['>(nmf_pnacl)'],
               'action': [
                 'python',
                 '>@(_inputs)',
                 '--output=>(nmf_pnacl)',
+              ],
+              'conditions': [
+                ['target_arch=="ia32"', {
+                  'inputs': [
+                    '>(out_pnacl_newlib_x86_32_nexe)',
+                  ],
+                }],
+                ['target_arch=="x64" or (target_arch=="ia32" and OS=="win")', {
+                  'inputs': [
+                    '>(out_pnacl_newlib_x86_64_nexe)',
+                  ],
+                }],
               ],
             },
           ],

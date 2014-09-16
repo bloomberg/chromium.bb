@@ -10,6 +10,17 @@
   ],
   'target_defaults': {
     'conditions': [
+      # TODO(bradnelson): Drop this once the nacl side does the same.
+      ['target_arch=="x64"', {
+        'variables': {
+          'enable_x86_32': 0,
+        },
+      }],
+      ['target_arch=="ia32" and OS!="win"', {
+        'variables': {
+          'enable_x86_64': 0,
+        },
+      }],
       ['target_arch=="arm"', {
         'variables': {
           'clang': 1,

@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../native_client/build/untrusted.gypi',
+    '../build/common_untrusted.gypi',
   ],
   'target_defaults': {
     # We need to override the variables in untrusted.gypi outside of a
