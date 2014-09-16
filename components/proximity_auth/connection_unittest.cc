@@ -10,8 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::DoAll;
 using testing::NiceMock;
 using testing::Return;
+using testing::SetArgPointee;
 using testing::StrictMock;
 
 namespace proximity_auth {
@@ -27,8 +29,8 @@ class MockConnection : public Connection {
   MOCK_METHOD0(Disconnect, void());
   MOCK_METHOD0(CancelConnectionAttempt, void());
   MOCK_METHOD1(SendMessageImplProxy, void(WireMessage* message));
-  MOCK_METHOD0(HasReceivedCompleteMessage, bool());
-  MOCK_METHOD0(DeserializeWireMessageProxy, WireMessage*());
+  MOCK_METHOD1(DeserializeWireMessageProxy,
+               WireMessage*(bool* is_incomplete_message));
 
   // Gmock only supports copyable types, so create simple wrapper methods for
   // ease of mocking.
@@ -36,8 +38,9 @@ class MockConnection : public Connection {
     SendMessageImplProxy(message.get());
   }
 
-  virtual scoped_ptr<WireMessage> DeserializeWireMessage() OVERRIDE {
-    return make_scoped_ptr(DeserializeWireMessageProxy());
+  virtual scoped_ptr<WireMessage> DeserializeWireMessage(
+      bool* is_incomplete_message) OVERRIDE {
+    return make_scoped_ptr(DeserializeWireMessageProxy(is_incomplete_message));
   }
 
   using Connection::status;
@@ -72,7 +75,7 @@ class MockConnectionObserver : public ConnectionObserver {
 // Unlike WireMessage, offers a public constructor.
 class TestWireMessage : public WireMessage {
  public:
-  TestWireMessage() {}
+  TestWireMessage() : WireMessage(std::string(), std::string()) {}
   virtual ~TestWireMessage() {}
 
  private:
@@ -191,9 +194,9 @@ TEST(ProximityAuthConnectionTest,
   StrictMock<MockConnectionObserver> observer;
   connection.AddObserver(&observer);
 
-  ON_CALL(connection, HasReceivedCompleteMessage()).WillByDefault(Return(true));
-  ON_CALL(connection, DeserializeWireMessageProxy())
-      .WillByDefault(Return(new TestWireMessage));
+  ON_CALL(connection, DeserializeWireMessageProxy(_))
+      .WillByDefault(DoAll(SetArgPointee<0>(false),
+                           Return(new TestWireMessage)));
   EXPECT_CALL(observer, OnMessageReceived(Ref(connection), _));
   connection.OnBytesReceived(std::string());
 }
@@ -218,8 +221,9 @@ TEST(ProximityAuthConnectionTest,
   StrictMock<MockConnectionObserver> observer;
   connection.AddObserver(&observer);
 
-  ON_CALL(connection, HasReceivedCompleteMessage())
-      .WillByDefault(Return(false));
+  ON_CALL(connection, DeserializeWireMessageProxy(_))
+      .WillByDefault(DoAll(SetArgPointee<0>(true),
+                           Return(static_cast<WireMessage*>(NULL))));
   EXPECT_CALL(observer, OnMessageReceived(_, _)).Times(0);
   connection.OnBytesReceived(std::string());
 }
@@ -232,9 +236,9 @@ TEST(ProximityAuthConnectionTest,
   StrictMock<MockConnectionObserver> observer;
   connection.AddObserver(&observer);
 
-  ON_CALL(connection, HasReceivedCompleteMessage()).WillByDefault(Return(true));
-  ON_CALL(connection, DeserializeWireMessageProxy())
-      .WillByDefault(Return(static_cast<WireMessage*>(NULL)));
+  ON_CALL(connection, DeserializeWireMessageProxy(_))
+      .WillByDefault(DoAll(SetArgPointee<0>(false),
+                           Return(static_cast<WireMessage*>(NULL))));
   EXPECT_CALL(observer, OnMessageReceived(_, _)).Times(0);
   connection.OnBytesReceived(std::string());
 }

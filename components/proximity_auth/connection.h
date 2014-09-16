@@ -75,13 +75,13 @@ class Connection {
   // in progress.
   virtual void SendMessageImpl(scoped_ptr<WireMessage> message) = 0;
 
-  // Returns |true| iff the |received_bytes_| are long enough to contain a
-  // complete wire message. Exposed for testing.
-  virtual bool HasReceivedCompleteMessage();
-
   // Deserializes the |recieved_bytes_| and returns the resulting WireMessage,
-  // or NULL if the message is malformed. Exposed for testing.
-  virtual scoped_ptr<WireMessage> DeserializeWireMessage();
+  // or NULL if the message is malformed. Sets |is_incomplete_message| to true
+  // if the |serialized_message| does not have enough data to parse the header,
+  // or if the message length encoded in the message header exceeds the size of
+  // the |serialized_message|. Exposed for testing.
+  virtual scoped_ptr<WireMessage> DeserializeWireMessage(
+      bool* is_incomplete_message);
 
  private:
   // The remote device corresponding to this connection.

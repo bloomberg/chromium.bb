@@ -16,21 +16,29 @@ class WireMessage {
  public:
   virtual ~WireMessage();
 
-  // Returns |true| iff the size of |message_bytes| is at least equal to the
-  // message length encoded in the message header. Returns false if the message
-  // header is not available.
-  static bool IsCompleteMessage(const std::string& message_bytes);
-
   // Returns the deserialized message from |serialized_message|, or NULL if the
-  // message is malformed.
+  // message is malformed. Sets |is_incomplete_message| to true if the message
+  // does not have enough data to parse the header, or if the message length
+  // encoded in the message header exceeds the size of the |serialized_message|.
   static scoped_ptr<WireMessage> Deserialize(
-      const std::string& serialized_message);
+      const std::string& serialized_message,
+      bool* is_incomplete_message);
+
+  const std::string& permit_id() const { return permit_id_; }
+  const std::string& payload() const { return payload_; }
 
  protected:
   // Visible for tests.
-  WireMessage();
+  WireMessage(const std::string& permit_id, const std::string& payload);
 
  private:
+  // Identifier of the permit being used.
+  // TODO(isherman): Describe in a bit more detail.
+  const std::string permit_id_;
+
+  // The message payload.
+  const std::string payload_;
+
   DISALLOW_COPY_AND_ASSIGN(WireMessage);
 };
 

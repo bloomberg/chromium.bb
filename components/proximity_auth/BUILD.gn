@@ -24,6 +24,7 @@ source_set("unit_tests") {
   sources = [
     "connection_unittest.cc",
     "proximity_auth_system_unittest.cc",
+    "wire_message_unittest.cc",
   ]
 
   deps = [

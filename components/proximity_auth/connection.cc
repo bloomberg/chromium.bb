@@ -77,25 +77,26 @@ void Connection::OnBytesReceived(const std::string& bytes) {
   }
 
   received_bytes_ += bytes;
-  if (HasReceivedCompleteMessage()) {
-    scoped_ptr<WireMessage> message = DeserializeWireMessage();
-    if (message) {
-      FOR_EACH_OBSERVER(
-          ConnectionObserver, observers_, OnMessageReceived(*this, *message));
-    }
 
-    // Whether the message was parsed successfully or not, clear the
-    // |received_bytes_| buffer.
-    received_bytes_.clear();
+  bool is_incomplete_message;
+  scoped_ptr<WireMessage> message =
+      DeserializeWireMessage(&is_incomplete_message);
+  if (is_incomplete_message)
+    return;
+
+  if (message) {
+    FOR_EACH_OBSERVER(
+        ConnectionObserver, observers_, OnMessageReceived(*this, *message));
   }
+
+  // Whether the message was parsed successfully or not, clear the
+  // |received_bytes_| buffer.
+  received_bytes_.clear();
 }
 
-bool Connection::HasReceivedCompleteMessage() {
-  return WireMessage::IsCompleteMessage(received_bytes_);
-}
-
-scoped_ptr<WireMessage> Connection::DeserializeWireMessage() {
-  return WireMessage::Deserialize(received_bytes_);
+scoped_ptr<WireMessage> Connection::DeserializeWireMessage(
+    bool* is_incomplete_message) {
+  return WireMessage::Deserialize(received_bytes_, is_incomplete_message);
 }
 
 }  // namespace proximity_auth
