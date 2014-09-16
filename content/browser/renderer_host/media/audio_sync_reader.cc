@@ -144,10 +144,11 @@ bool AudioSyncReader::WaitUntilDataIsReady() {
   while (timeout.InMicroseconds() > 0) {
     bytes_received = socket_->ReceiveWithTimeout(
         &renderer_buffer_index, sizeof(renderer_buffer_index), timeout);
-    if (!bytes_received)
+    if (bytes_received != sizeof(renderer_buffer_index)) {
+      bytes_received = 0;
       break;
+    }
 
-    DCHECK_EQ(bytes_received, sizeof(renderer_buffer_index));
     if (renderer_buffer_index == buffer_index_)
       break;
 

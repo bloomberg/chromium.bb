@@ -154,21 +154,27 @@ size_t CancelableFileOperation(Function operation,
             timeout_in_ms == INFINITE
                 ? timeout_in_ms
                 : (finish_time - current_time).InMilliseconds());
-        if (wait_result == (WAIT_OBJECT_0 + 0)) {
-          GetOverlappedResult(file, &ol, &len, TRUE);
-        } else if (wait_result == (WAIT_OBJECT_0 + 1)) {
-          DVLOG(1) << "Shutdown was signaled. Closing socket.";
+        if (wait_result != WAIT_OBJECT_0 + 0) {
+          // CancelIo() doesn't synchronously cancel outstanding IO, only marks
+          // outstanding IO for cancellation. We must call GetOverlappedResult()
+          // below to ensure in flight writes complete before returning.
           CancelIo(file);
-          socket->Close();
-          count = 0;
-          break;
-        } else {
-          // Timeout happened.
-          DCHECK_EQ(WAIT_TIMEOUT, wait_result);
-          if (!CancelIo(file))
-            DLOG(WARNING) << "CancelIo() failed";
-          break;
         }
+
+        // We set the |bWait| parameter to TRUE for GetOverlappedResult() to
+        // ensure writes are complete before returning.
+        if (!GetOverlappedResult(file, &ol, &len, TRUE))
+          len = 0;
+
+        if (wait_result == WAIT_OBJECT_0 + 1) {
+          DVLOG(1) << "Shutdown was signaled. Closing socket.";
+          socket->Close();
+          return count;
+        }
+
+        // Timeouts will be handled by the while() condition below since
+        // GetOverlappedResult() may complete successfully after CancelIo().
+        DCHECK(wait_result == WAIT_OBJECT_0 + 0 || wait_result == WAIT_TIMEOUT);
       } else {
         break;
       }

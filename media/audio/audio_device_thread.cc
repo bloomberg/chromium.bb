@@ -166,10 +166,8 @@ void AudioDeviceThread::Thread::Run() {
   while (true) {
     int pending_data = 0;
     size_t bytes_read = socket_.Receive(&pending_data, sizeof(pending_data));
-    if (bytes_read != sizeof(pending_data)) {
-      DCHECK_EQ(bytes_read, 0U);
+    if (bytes_read != sizeof(pending_data))
       break;
-    }
 
     {
       base::AutoLock auto_lock(callback_lock_);
