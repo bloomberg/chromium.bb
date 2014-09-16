@@ -26,16 +26,31 @@
 #ifndef ScriptResource_h
 #define ScriptResource_h
 
+#include "core/fetch/ResourceClient.h"
 #include "core/fetch/TextResource.h"
 
 namespace blink {
 
+class ScriptResource;
+
+class ScriptResourceClient : public ResourceClient {
+public:
+    virtual ~ScriptResourceClient() { }
+    static ResourceClientType expectedType() { return ScriptType; }
+    virtual ResourceClientType resourceClientType() const OVERRIDE FINAL { return expectedType(); }
+
+    virtual void notifyAppendData(ScriptResource* resource) { }
+};
+
 class ScriptResource FINAL : public TextResource {
 public:
-    typedef ResourceClient ClientType;
+    typedef ScriptResourceClient ClientType;
 
     ScriptResource(const ResourceRequest&, const String& charset);
     virtual ~ScriptResource();
+
+    virtual void didAddClient(ResourceClient*) OVERRIDE;
+    virtual void appendData(const char*, int) OVERRIDE;
 
     const String& script();
 

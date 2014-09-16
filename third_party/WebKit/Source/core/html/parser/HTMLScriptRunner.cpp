@@ -109,6 +109,8 @@ bool HTMLScriptRunner::isPendingScriptReady(const PendingScript& script)
         return false;
     if (script.resource() && !script.resource()->isLoaded())
         return false;
+    if (script.isStreaming())
+        return false;
     return true;
 }
 
@@ -167,6 +169,10 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 
 void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
 {
+    // For a parser-blocking script, this function should be called only when
+    // the streaming is complete.
+    ASSERT(!(m_parserBlockingScript.resource() == cachedResource
+        && m_parserBlockingScript.isStreaming()));
     m_host->notifyScriptLoaded(cachedResource);
 }
 
@@ -260,8 +266,13 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
     // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
-    if (!m_parserBlockingScript.resource()->isLoaded())
+    if (!m_parserBlockingScript.resource()->isLoaded()) {
+        bool startedStreaming = false;
+        if (m_document->frame())
+            startedStreaming = ScriptStreamer::startStreaming(m_parserBlockingScript, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
+        blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.StartedStreaming", startedStreaming ? 1 : 0, 2);
         m_parserBlockingScript.watchForLoad(this);
+    }
 }
 
 void HTMLScriptRunner::requestDeferredScript(Element* element)
@@ -319,6 +330,8 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
             return;
 
         if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
+            // FIXME: in addition to parser blocking scripts, stream also
+            // scripts which are not parser blocking.
             requestDeferredScript(script);
         } else if (scriptLoader->readyToBeParserExecuted()) {
             if (m_scriptNestingLevel == 1) {

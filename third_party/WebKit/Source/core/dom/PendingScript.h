@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class ScriptResource;
+class ScriptStreamer;
 
 // A container for an external script which may be loaded and executed.
 //
@@ -80,16 +80,16 @@ public:
         m_watchingForLoad = other.m_watchingForLoad;
         m_element = other.m_element;
         m_startingPosition = other.m_startingPosition;
-        this->ResourceOwner<ScriptResource, ResourceClient>::operator=(other);
-
+        m_streamer = other.m_streamer;
+        this->ResourceOwner<ScriptResource, ScriptResourceClient>::operator=(other);
         return *this;
     }
 
     TextPosition startingPosition() const { return m_startingPosition; }
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
 
-    void watchForLoad(ResourceClient*);
-    void stopWatchingForLoad(ResourceClient*);
+    void watchForLoad(ScriptResourceClient*);
+    void stopWatchingForLoad(ScriptResourceClient*);
 
     Element* element() const { return m_element.get(); }
     void setElement(Element* element) { m_element = element; }
@@ -98,15 +98,27 @@ public:
     void setScriptResource(ScriptResource*);
 
     virtual void notifyFinished(Resource*);
+    virtual void notifyAppendData(ScriptResource*);
 
     void trace(Visitor*);
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
+    void setStreamer(PassRefPtr<ScriptStreamer> streamer)
+    {
+        ASSERT(!m_streamer);
+        ASSERT(!m_watchingForLoad);
+        m_streamer = streamer;
+    }
+
+    bool isStreaming() const;
+
 private:
     bool m_watchingForLoad;
     RefPtrWillBeMember<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
+
+    RefPtr<ScriptStreamer> m_streamer;
 };
 
 }

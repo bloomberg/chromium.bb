@@ -31,6 +31,7 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
+#include "bindings/core/v8/ScriptStreamer.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/weborigin/KURL.h"
@@ -54,9 +55,17 @@ public:
 
     // We lose the encoding information from ScriptResource.
     // Not sure if that matters.
-    ScriptSourceCode(ScriptResource* cs)
-        : m_source(cs->script())
-        , m_resource(cs)
+    ScriptSourceCode(ScriptResource* resource)
+        : m_source(resource->script())
+        , m_resource(resource)
+        , m_startPosition(TextPosition::minimumPosition())
+    {
+    }
+
+    ScriptSourceCode(PassRefPtr<ScriptStreamer> streamer, ScriptResource* resource)
+        : m_source(resource->script())
+        , m_resource(resource)
+        , m_streamer(streamer)
         , m_startPosition(TextPosition::minimumPosition())
     {
     }
@@ -77,9 +86,12 @@ public:
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
     const TextPosition& startPosition() const { return m_startPosition; }
 
+    ScriptStreamer* streamer() const { return m_streamer.get(); }
+
 private:
     String m_source;
     ResourcePtr<ScriptResource> m_resource;
+    RefPtr<ScriptStreamer> m_streamer;
     mutable KURL m_url;
     TextPosition m_startPosition;
 };

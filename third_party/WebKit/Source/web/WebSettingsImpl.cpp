@@ -727,4 +727,9 @@ void WebSettingsImpl::setV8CacheOptions(V8CacheOptions options)
     m_settings->setV8CacheOptions(static_cast<blink::V8CacheOptions>(options));
 }
 
+void WebSettingsImpl::setV8ScriptStreamingEnabled(bool enabled)
+{
+    m_settings->setV8ScriptStreamingEnabled(enabled);
+}
+
 } // namespace blink

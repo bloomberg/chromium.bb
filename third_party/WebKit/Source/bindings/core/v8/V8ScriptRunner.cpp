@@ -27,6 +27,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8RecursionScope.h"
@@ -90,24 +91,14 @@ v8::Local<v8::Script> compileAndConsumeCache(v8::Isolate* isolate, v8::Handle<v8
     return v8::ScriptCompiler::Compile(isolate, &source, options);
 }
 
-unsigned tagForParserCache()
-{
-    return StringHash::hash(v8::V8::GetVersion()) * 2;
-}
-
-unsigned tagForCodeCache()
-{
-    return StringHash::hash(v8::V8::GetVersion()) * 2 + 1;
-}
-
 } // namespace
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
-    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), isolate, corsStatus, cacheOptions);
+    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), source.streamer(), isolate, corsStatus, cacheOptions);
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, ScriptStreamer* streamer, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
@@ -122,7 +113,22 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
 
     v8::Local<v8::Script> script;
     unsigned cacheTag = 0;
-    if (!resource || !resource->url().protocolIsInHTTPFamily() || code->Length() < 1024) {
+    if (streamer) {
+        // We don't stream scripts which don't have a Resource.
+        ASSERT(resource);
+        // Failed resources should never get this far.
+        ASSERT(!resource->errorOccurred());
+        ASSERT(!streamer->streamingInProgress());
+        ASSERT(!streamer->streamingSuppressed());
+        script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
+        // Whether to produce the cached data or not is decided when the
+        // streamer is started. Here we only need to get the data out.
+        const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
+        if (newCachedData) {
+            resource->clearCachedMetadata();
+            resource->setCachedMetadata(streamer->cachedDataType(), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length);
+        }
+    } else if (!resource || !resource->url().protocolIsInHTTPFamily() || code->Length() < 1024) {
         v8::ScriptCompiler::Source source(code, origin);
         script = v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
     } else {
@@ -182,7 +188,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
 
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, isolate);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, 0, isolate);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
@@ -271,6 +277,16 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* i
     v8::Local<v8::Object> result = function->NewInstance(argc, argv);
     crashIfV8IsDead();
     return result;
+}
+
+unsigned V8ScriptRunner::tagForParserCache()
+{
+    return StringHash::hash(v8::V8::GetVersion()) * 2;
+}
+
+unsigned V8ScriptRunner::tagForCodeCache()
+{
+    return StringHash::hash(v8::V8::GetVersion()) * 2 + 1;
 }
 
 } // namespace blink

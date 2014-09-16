@@ -24,18 +24,18 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ScriptResource.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class ScriptResource;
 class Element;
 class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader FINAL : private ResourceClient {
+class ScriptLoader FINAL : private ScriptResourceClient {
 public:
     static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();

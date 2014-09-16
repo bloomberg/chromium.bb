@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/fetch/ScriptResource.h"
 
+#include "core/fetch/ResourceClientWalker.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
@@ -46,6 +47,20 @@ ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const Str
 
 ScriptResource::~ScriptResource()
 {
+}
+
+void ScriptResource::didAddClient(ResourceClient* client)
+{
+    ASSERT(client->resourceClientType() == ScriptResourceClient::expectedType());
+    Resource::didAddClient(client);
+}
+
+void ScriptResource::appendData(const char* data, int length)
+{
+    Resource::appendData(data, length);
+    ResourceClientWalker<ScriptResourceClient> walker(m_clients);
+    while (ScriptResourceClient* client = walker.next())
+        client->notifyAppendData(this);
 }
 
 AtomicString ScriptResource::mimeType() const

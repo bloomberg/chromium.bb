@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/PendingScript.h"
 
+#include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ScriptResource.h"
 
@@ -35,23 +36,34 @@ PendingScript::~PendingScript()
 {
 }
 
-void PendingScript::watchForLoad(ResourceClient* client)
+void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
     ASSERT(!m_watchingForLoad);
     ASSERT(!resource()->isLoaded());
-    // addClient() will call notifyFinished() if the load is complete. Callers
-    // do not expect to be re-entered from this call, so they should not become
-    // a client of an already-loaded Resource.
-    resource()->addClient(client);
+    if (m_streamer) {
+        m_streamer->addClient(client);
+    } else {
+        // addClient() will call notifyFinished() if the load is
+        // complete. Callers do not expect to be re-entered from this call, so
+        // they should not become a client of an already-loaded Resource.
+        resource()->addClient(client);
+    }
     m_watchingForLoad = true;
 }
 
-void PendingScript::stopWatchingForLoad(ResourceClient* client)
+void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
 {
-    if (resource() && m_watchingForLoad) {
+    if (!m_watchingForLoad)
+        return;
+    ASSERT(resource());
+    if (m_streamer) {
+        m_streamer->cancel();
+        m_streamer->removeClient(client);
+        m_streamer.clear();
+    } else {
         resource()->removeClient(client);
-        m_watchingForLoad = false;
     }
+    m_watchingForLoad = false;
 }
 
 PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
@@ -65,10 +77,23 @@ PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
 void PendingScript::setScriptResource(ScriptResource* resource)
 {
     setResource(resource);
+    // This function is only called 1) during construction (we're not yet
+    // streaming) 2) after loading has completed (and streaming too, if we were
+    // streaming).
+    ASSERT(!isStreaming());
+    m_streamer.release();
 }
 
-void PendingScript::notifyFinished(Resource*)
+void PendingScript::notifyFinished(Resource* resource)
 {
+    if (m_streamer)
+        m_streamer->notifyFinished(resource);
+}
+
+void PendingScript::notifyAppendData(ScriptResource* resource)
+{
+    if (m_streamer)
+        m_streamer->notifyAppendData(resource);
 }
 
 void PendingScript::trace(Visitor* visitor)
@@ -81,10 +106,17 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
     if (resource()) {
         errorOccurred = resource()->errorOccurred();
         ASSERT(resource()->isLoaded());
+        if (m_streamer && !m_streamer->streamingSuppressed())
+            return ScriptSourceCode(m_streamer, resource());
         return ScriptSourceCode(resource());
     }
     errorOccurred = false;
     return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
+}
+
+bool PendingScript::isStreaming() const
+{
+    return m_streamer && m_streamer->streamingInProgress();
 }
 
 }

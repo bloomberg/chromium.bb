@@ -39,7 +39,8 @@ public:
         FontType,
         StyleSheetType,
         DocumentType,
-        RawResourceType
+        RawResourceType,
+        ScriptType
     };
 
     virtual ~ResourceClient() { }

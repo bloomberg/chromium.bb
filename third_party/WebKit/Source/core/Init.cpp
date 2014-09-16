@@ -31,6 +31,7 @@
 #include "config.h"
 #include "Init.h"
 
+#include "bindings/core/v8/ScriptStreamerThread.h"
 #include "core/EventNames.h"
 #include "core/EventTargetNames.h"
 #include "core/EventTypeNames.h"
@@ -106,13 +107,17 @@ void CoreInitializer::init()
 
     StringImpl::freezeStaticStrings();
 
-    // Creates HTMLParserThread::shared, but does not start the thread.
+    // Creates HTMLParserThread::shared and ScriptStreamerThread::shared, but
+    // does not start the threads.
     HTMLParserThread::init();
+    ScriptStreamerThread::init();
 }
 
 void CoreInitializer::shutdown()
 {
-    // Make sure we stop the HTMLParserThread before Platform::current() is cleared.
+    // Make sure we stop the HTMLParserThread and ScriptStreamerThread before
+    // Platform::current() is cleared.
+    ScriptStreamerThread::shutdown();
     HTMLParserThread::shutdown();
 
     // Make sure we stop WorkerThreads before Partition::shutdown() which frees ExecutionContext.

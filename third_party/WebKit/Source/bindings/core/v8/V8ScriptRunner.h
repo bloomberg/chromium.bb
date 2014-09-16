@@ -38,13 +38,14 @@ namespace blink {
 class ScriptResource;
 class ScriptSourceCode;
 class ExecutionContext;
+class ScriptStreamer;
 
 class V8ScriptRunner {
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
     static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
-    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
+    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, ScriptStreamer*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ExecutionContext*, v8::Isolate*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::Local<v8::Value> runCompiledInternalScript(v8::Handle<v8::Script>, v8::Isolate*);
@@ -55,6 +56,8 @@ public:
     static v8::Local<v8::Object> instantiateObject(v8::Isolate*, v8::Handle<v8::Function>, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
     static v8::Local<v8::Object> instantiateObjectInDocument(v8::Isolate*, v8::Handle<v8::Function>, ExecutionContext*, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
 
+    static unsigned tagForParserCache();
+    static unsigned tagForCodeCache();
 };
 
 } // namespace blink

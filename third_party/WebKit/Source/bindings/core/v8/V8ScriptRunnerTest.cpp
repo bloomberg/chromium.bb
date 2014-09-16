@@ -65,7 +65,7 @@ public:
     {
         return !V8ScriptRunner::compileScript(
             v8String(isolate(), code()), filename(), WTF::TextPosition(),
-            m_resource.get(), isolate(), NotSharableCrossOrigin, cacheOptions)
+            m_resource.get(), 0, isolate(), NotSharableCrossOrigin, cacheOptions)
             .IsEmpty();
     }
 
