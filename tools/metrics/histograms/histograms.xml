@@ -15036,6 +15036,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadCancelTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures time from initiating a fetch of a PAC file from DHCP WPAD to
@@ -15045,6 +15048,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadCompletionTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures time from initiating a fetch of a PAC file from DHCP WPAD to
@@ -15054,6 +15060,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadFetchError" enum="NetErrorCodes">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Tracks the net error codes received when the DHCP WPAD fetch fails to
@@ -15064,6 +15073,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.DhcpWpadGetAdaptersAddressesError"
     enum="ErrorCodesGetAdaptersAddresses">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Tracks the frequency of each of the different known error codes of calling
@@ -15072,6 +15084,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadGetAdaptersAddressesTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures the time taken to call the GetAdaptersAddresses Win32 API, to
@@ -15081,6 +15096,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadNumAdaptersAtWaitTimer">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Total number of adapters enabled for DHCP as seen when the wait timer in the
@@ -15090,6 +15108,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadNumPendingAdaptersAtWaitTimer">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Number of adapters enabled for DHCP that we have not completed retrieving
@@ -15100,6 +15121,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.DhcpWpadUnhandledDhcpError">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Counts the number of errors from the DhcpRequestParams API that we do not
@@ -15415,6 +15439,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.GetProxyForUrl_FAIL" units="milliseconds">
+  <obsolete>
+    Removed at some time before 2014/09/15.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time spent waiting for WinHttpGetProxyForUrl to return with error.
@@ -15422,6 +15449,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.GetProxyForUrl_OK" units="milliseconds">
+  <obsolete>
+    Removed at some time before 2014/09/15.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time spent waiting for WinHttpGetProxyForUrl to return with success.
@@ -15816,6 +15846,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.MTPR_GetProxyForUrl_Thread_Wait_Time" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time that a (non-cancelled) proxy resolution request was stalled waiting
@@ -15824,6 +15857,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.MTPR_GetProxyForUrl_Time" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that it took for a (non-cancelled) proxy resolution request
@@ -16181,6 +16217,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyPollConfigurationTime">
+  <obsolete>
+    Removed at some time before 2014/09/15.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time in milliseconds spent fetch the system proxy configuration, when
@@ -16190,6 +16229,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.AbandonedExecutionTotalTime"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total amount of time that was spent executing the proxy script during
@@ -16200,6 +16242,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.AbandonedExecutionTotalTime"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total amount of time that was spent executing the proxy script during
@@ -16210,6 +16255,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.DnsWaitTotalTime"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total amount of time that was spent in the non-blocking DNS bindings
@@ -16220,6 +16268,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.ExecutionTime"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The amount of time inside of V8 that the proxy script spent executing for
@@ -16229,6 +16280,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.NumAlerts">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that alert() was called in the final execution of the
@@ -16237,6 +16291,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.NumErrors">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of errors that were seen in the final execution of the script.
@@ -16244,6 +16301,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.NumRestarts">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that the PAC script execution was restarted.
@@ -16252,6 +16312,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.TotalTime"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that the proxy resolution took. This includes all the time
@@ -16261,6 +16324,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.TotalTimeDNS"
     units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that proxy resolution spent waiting for DNS. This also
@@ -16270,6 +16336,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.BlockingDNSMode.UniqueDNS">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of unique DNS hostnames that the PAC script tried to resolve. The
@@ -16278,6 +16347,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.DnsWaitTotalTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total amount of time that was spent in the non-blocking DNS bindings
@@ -16287,6 +16359,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.ExecutionTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The amount of time inside of V8 that the proxy script spent executing for
@@ -16297,6 +16372,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.NumAlerts">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that alert() was called in the final execution of the
@@ -16305,6 +16383,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.NumErrors">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of errors that were seen in the final execution of the script.
@@ -16312,6 +16393,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.NumRestarts">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that the PAC script execution was restarted.
@@ -16319,6 +16403,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.OriginThreadLatency" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The amount of time it took upon completion to run the final task posted back
@@ -16327,6 +16414,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.TotalTime" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that the proxy resolution took. This includes all the time
@@ -16335,6 +16425,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.TotalTimeDNS" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that proxy resolution spent waiting for DNS. This also
@@ -16344,6 +16437,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.TotalTimeWorkerThread" units="milliseconds">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total time that the proxy resolution took, not including the post back
@@ -16353,6 +16449,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.UniqueDNS">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of unique DNS hostnames that the PAC script tried to resolve. The
@@ -16361,6 +16460,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ProxyResolver.URLSize">
+  <obsolete>
+    Removed in Chrome 39.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The length of the URL that was passed into the PAC script.</summary>
 </histogram>

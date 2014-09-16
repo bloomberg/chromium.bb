@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/timer/elapsed_timer.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
 
@@ -83,8 +81,6 @@ int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
     return ERR_UNEXPECTED;
   }
 
-  fetch_start_time_ = base::TimeTicks::Now();
-
   state_ = STATE_WAIT_ADAPTERS;
   callback_ = callback;
   destination_string_ = utf16_text;
@@ -105,13 +101,6 @@ int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
 
 void DhcpProxyScriptFetcherWin::Cancel() {
   DCHECK(CalledOnValidThread());
-
-  if (state_ != STATE_DONE) {
-    // We only count this stat if the cancel was explicitly initiated by
-    // our client, and if we weren't already in STATE_DONE.
-    UMA_HISTOGRAM_TIMES("Net.DhcpWpadCancelTime",
-                        base::TimeTicks::Now() - fetch_start_time_);
-  }
 
   CancelImpl();
 }
@@ -221,13 +210,6 @@ void DhcpProxyScriptFetcherWin::OnFetcherDone(int result) {
 void DhcpProxyScriptFetcherWin::OnWaitTimer() {
   DCHECK_EQ(state_, STATE_SOME_RESULTS);
 
-  // These are intended to help us understand whether our timeout may
-  // be too aggressive or not aggressive enough.
-  UMA_HISTOGRAM_COUNTS_100("Net.DhcpWpadNumAdaptersAtWaitTimer",
-                           fetchers_.size());
-  UMA_HISTOGRAM_COUNTS_100("Net.DhcpWpadNumPendingAdaptersAtWaitTimer",
-                           num_pending_fetchers_);
-
   TransitionToDone();
 }
 
@@ -271,14 +253,6 @@ void DhcpProxyScriptFetcherWin::TransitionToDone() {
   DCHECK_EQ(state_, STATE_DONE);
   DCHECK(fetchers_.empty());
   DCHECK(callback_.is_null());  // Invariant of data.
-
-  UMA_HISTOGRAM_TIMES("Net.DhcpWpadCompletionTime",
-                      base::TimeTicks::Now() - fetch_start_time_);
-
-  if (result != OK) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Net.DhcpWpadFetchError", std::abs(result), GetAllErrorCodesForUma());
-  }
 
   // We may be deleted re-entrantly within this outcall.
   callback.Run(result);
@@ -324,7 +298,6 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   ULONG error = ERROR_SUCCESS;
   int num_tries = 0;
 
-  base::ElapsedTimer time_api_access;
   do {
     adapters.reset(static_cast<IP_ADAPTER_ADDRESSES*>(malloc(adapters_size)));
     // Return only unicast addresses, and skip information we do not need.
@@ -338,20 +311,6 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
                                  &adapters_size);
     ++num_tries;
   } while (error == ERROR_BUFFER_OVERFLOW && num_tries <= 3);
-
-  // This is primarily to validate our belief that the GetAdaptersAddresses API
-  // function is fast enough to call synchronously from the network thread.
-  UMA_HISTOGRAM_TIMES("Net.DhcpWpadGetAdaptersAddressesTime",
-                      time_api_access.Elapsed());
-
-  if (error != ERROR_SUCCESS) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Net.DhcpWpadGetAdaptersAddressesError",
-        error,
-        base::CustomHistogram::ArrayToCustomRanges(
-            kGetAdaptersAddressesErrors,
-            arraysize(kGetAdaptersAddressesErrors)));
-  }
 
   if (error == ERROR_NO_DATA) {
     // There are no adapters that we care about.

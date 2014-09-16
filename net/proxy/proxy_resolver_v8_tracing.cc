@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -62,11 +61,6 @@ base::Value* NetLogErrorCallback(int line_number,
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
   return dict;
-}
-
-void IncrementWithoutOverflow(uint8* x) {
-  if (*x != 0xFF)
-    *x += 1;
 }
 
 }  // namespace
@@ -142,8 +136,6 @@ class ProxyResolverV8Tracing::Job
   // Invokes the user's callback.
   void NotifyCaller(int result);
   void NotifyCallerOnOriginLoop(int result);
-
-  void RecordMetrics() const;
 
   void Start(Operation op, bool blocking_dns,
              const CompletionCallback& callback);
@@ -298,56 +290,6 @@ class ProxyResolverV8Tracing::Job
   // This contains the resolved address list that DoDnsOperation() fills in.
   // Used exclusively on the origin thread.
   AddressList pending_dns_addresses_;
-
-  // ---------------------------------------------------------------------------
-  // Metrics for histograms
-  // ---------------------------------------------------------------------------
-  // These values are used solely for logging histograms. They do not affect
-  // the execution flow of requests.
-
-  // The time when the proxy resolve request started. Used exclusively on the
-  // origin thread.
-  base::TimeTicks metrics_start_time_;
-
-  // The time when the proxy resolve request completes on the worker thread.
-  // Written on the worker thread, read on the origin thread.
-  base::TimeTicks metrics_end_time_;
-
-  // The time when PostDnsOperationAndWait() was called. Written on the worker
-  // thread, read by the origin thread.
-  base::TimeTicks metrics_pending_dns_start_;
-
-  // The total amount of time that has been spent by the script waiting for
-  // DNS dependencies. This includes the time spent posting the task to
-  // the origin thread, up until the DNS result is found on the origin
-  // thread. It does not include any time spent waiting in the message loop
-  // for the worker thread, nor any time restarting or executing the
-  // script. Used exclusively on the origin thread.
-  base::TimeDelta metrics_dns_total_time_;
-
-  // The following variables are initialized on the origin thread,
-  // incremented on the worker thread, and then read upon completion on the
-  // origin thread. The values are not expected to exceed the range of a uint8.
-  // If they do, then they will be clamped to 0xFF.
-  uint8 metrics_num_executions_;
-  uint8 metrics_num_unique_dns_;
-  uint8 metrics_num_alerts_;
-  uint8 metrics_num_errors_;
-
-  // The time that the latest execution took (time spent inside of
-  // ExecuteProxyResolver(), which includes time spent in bindings too).
-  // Written on the worker thread, read on the origin thread.
-  base::TimeDelta metrics_execution_time_;
-
-  // The cumulative time spent in ExecuteProxyResolver() that was ultimately
-  // discarded work.
-  // Written on the worker thread, read on the origin thread.
-  base::TimeDelta metrics_abandoned_execution_total_time_;
-
-  // The duration that the worker thread was blocked waiting on DNS results from
-  // the origin thread, when operating in nonblocking mode.
-  // Written on the worker thread, read on the origin thread.
-  base::TimeDelta metrics_nonblocking_dns_wait_total_time_;
 };
 
 ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
@@ -355,11 +297,7 @@ ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
       parent_(parent),
       event_(true, false),
       last_num_dns_(0),
-      pending_dns_(NULL),
-      metrics_num_executions_(0),
-      metrics_num_unique_dns_(0),
-      metrics_num_alerts_(0),
-      metrics_num_errors_(0) {
+      pending_dns_(NULL) {
   CheckIsOnOriginThread();
 }
 
@@ -490,8 +428,6 @@ NetLog* ProxyResolverV8Tracing::Job::net_log() {
 void ProxyResolverV8Tracing::Job::NotifyCaller(int result) {
   CheckIsOnWorkerThread();
 
-  metrics_end_time_ = base::TimeTicks::Now();
-
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
@@ -507,7 +443,6 @@ void ProxyResolverV8Tracing::Job::NotifyCallerOnOriginLoop(int result) {
   DCHECK(!pending_dns_);
 
   if (operation_ == GET_PROXY_FOR_URL) {
-    RecordMetrics();
     *user_results_ = results_;
   }
 
@@ -525,89 +460,10 @@ void ProxyResolverV8Tracing::Job::NotifyCallerOnOriginLoop(int result) {
   owned_self_reference_ = NULL;
 }
 
-void ProxyResolverV8Tracing::Job::RecordMetrics() const {
-  CheckIsOnOriginThread();
-  DCHECK_EQ(GET_PROXY_FOR_URL, operation_);
-
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  // Metrics are output for each completed request to GetProxyForURL()).
-  //
-  // Note that a different set of histograms is used to record the metrics for
-  // requests that completed in non-blocking mode versus blocking mode. The
-  // expectation is for requests to complete in non-blocking mode each time.
-  // If they don't then something strange is happening, and the purpose of the
-  // seprate statistics is to better understand that trend.
-#define UPDATE_HISTOGRAMS(base_name) \
-  do {\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTime", now - metrics_start_time_);\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeWorkerThread",\
-                             metrics_end_time_ - metrics_start_time_);\
-  UMA_HISTOGRAM_TIMES(base_name "OriginThreadLatency",\
-                      now - metrics_end_time_);\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeDNS",\
-                             metrics_dns_total_time_);\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "ExecutionTime",\
-                             metrics_execution_time_);\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "AbandonedExecutionTotalTime",\
-                             metrics_abandoned_execution_total_time_);\
-  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "DnsWaitTotalTime",\
-                             metrics_nonblocking_dns_wait_total_time_);\
-  UMA_HISTOGRAM_CUSTOM_COUNTS(\
-      base_name "NumRestarts", metrics_num_executions_ - 1,\
-      1, kMaxUniqueResolveDnsPerExec, kMaxUniqueResolveDnsPerExec);\
-  UMA_HISTOGRAM_CUSTOM_COUNTS(\
-      base_name "UniqueDNS", metrics_num_unique_dns_,\
-      1, kMaxUniqueResolveDnsPerExec, kMaxUniqueResolveDnsPerExec);\
-  UMA_HISTOGRAM_COUNTS_100(base_name "NumAlerts", metrics_num_alerts_);\
-  UMA_HISTOGRAM_CUSTOM_COUNTS(\
-      base_name "NumErrors", metrics_num_errors_, 1, 10, 10);\
-  } while (false)
-
-  if (!blocking_dns_)
-    UPDATE_HISTOGRAMS("Net.ProxyResolver.");
-  else
-    UPDATE_HISTOGRAMS("Net.ProxyResolver.BlockingDNSMode.");
-
-#undef UPDATE_HISTOGRAMS
-
-  // Histograms to better understand http://crbug.com/240536 -- long
-  // URLs can cause a significant slowdown in PAC execution. Figure out how
-  // severe this is in the wild.
-  if (!blocking_dns_) {
-    size_t url_size = url_.spec().size();
-
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Net.ProxyResolver.URLSize", url_size, 1, 200000, 50);
-
-    if (url_size > 2048) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver2K",
-                                 metrics_execution_time_);
-    }
-
-    if (url_size > 4096) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver4K",
-                                 metrics_execution_time_);
-    }
-
-    if (url_size > 8192) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver8K",
-                                 metrics_execution_time_);
-    }
-
-    if (url_size > 131072) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver128K",
-                                 metrics_execution_time_);
-    }
-  }
-}
-
-
 void ProxyResolverV8Tracing::Job::Start(Operation op, bool blocking_dns,
                                         const CompletionCallback& callback) {
   CheckIsOnOriginThread();
 
-  metrics_start_time_ = base::TimeTicks::Now();
   operation_ = op;
   blocking_dns_ = blocking_dns;
   SetCallback(callback);
@@ -645,9 +501,6 @@ void ProxyResolverV8Tracing::Job::ExecuteNonBlocking() {
 
   int result = ExecuteProxyResolver();
 
-  if (abandoned_)
-    metrics_abandoned_execution_total_time_ += metrics_execution_time_;
-
   if (should_restart_with_blocking_dns_) {
     DCHECK(!blocking_dns_);
     DCHECK(abandoned_);
@@ -664,10 +517,6 @@ void ProxyResolverV8Tracing::Job::ExecuteNonBlocking() {
 }
 
 int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
-  IncrementWithoutOverflow(&metrics_num_executions_);
-
-  base::TimeTicks start = base::TimeTicks::Now();
-
   JSBindings* prev_bindings = v8_resolver()->js_bindings();
   v8_resolver()->set_js_bindings(this);
 
@@ -692,8 +541,6 @@ int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
   }
 
   v8_resolver()->set_js_bindings(prev_bindings);
-
-  metrics_execution_time_ = base::TimeTicks::Now() - start;
 
   return result;
 }
@@ -738,9 +585,6 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsBlocking(const std::string& host,
     return rv;
   }
 
-  // If the host was not in the local cache, this is a new hostname.
-  IncrementWithoutOverflow(&metrics_num_unique_dns_);
-
   if (dns_cache_.size() >= kMaxUniqueResolveDnsPerExec) {
     // Safety net for scripts with unexpectedly many DNS calls.
     // We will continue running to completion, but will fail every
@@ -775,9 +619,6 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
     // Yay, cache hit!
     return rv;
   }
-
-  // If the host was not in the local cache, then this is a new hostname.
-  IncrementWithoutOverflow(&metrics_num_unique_dns_);
 
   if (num_dns_ <= last_num_dns_) {
     // The sequence of DNS operations is different from last time!
@@ -815,11 +656,8 @@ bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
     const std::string& host, ResolveDnsOperation op,
     bool* completed_synchronously) {
 
-  base::TimeTicks start = base::TimeTicks::Now();
-
   // Post the DNS request to the origin thread.
   DCHECK(!pending_dns_);
-  metrics_pending_dns_start_ = base::TimeTicks::Now();
   pending_dns_host_ = host;
   pending_dns_op_ = op;
   origin_loop_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
@@ -832,9 +670,6 @@ bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
 
   if (completed_synchronously)
     *completed_synchronously = pending_dns_completed_synchronously_;
-
-  if (!blocking_dns_)
-    metrics_nonblocking_dns_wait_total_time_ += base::TimeTicks::Now() - start;
 
   return true;
 }
@@ -890,9 +725,6 @@ void ProxyResolverV8Tracing::Job::OnDnsOperationComplete(int result) {
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,
                       pending_dns_addresses_);
   pending_dns_ = NULL;
-
-  metrics_dns_total_time_ +=
-      base::TimeTicks::Now() - metrics_pending_dns_start_;
 
   if (blocking_dns_) {
     event_.Signal();
@@ -1056,7 +888,6 @@ void ProxyResolverV8Tracing::Job::DispatchAlertOrError(
     // -------------------
     // alert
     // -------------------
-    IncrementWithoutOverflow(&metrics_num_alerts_);
     VLOG(1) << "PAC-alert: " << message;
 
     // Send to the NetLog.
@@ -1067,7 +898,6 @@ void ProxyResolverV8Tracing::Job::DispatchAlertOrError(
     // -------------------
     // error
     // -------------------
-    IncrementWithoutOverflow(&metrics_num_errors_);
     if (line_number == -1)
       VLOG(1) << "PAC-error: " << message;
     else

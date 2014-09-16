@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner.h"
@@ -262,7 +261,6 @@ std::string DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(
 
   if (res != NO_ERROR) {
     VLOG(1) << "Error fetching PAC URL from DHCP: " << res;
-    UMA_HISTOGRAM_COUNTS("Net.DhcpWpadUnhandledDhcpError", 1);
   } else if (wpad_params.nBytesData) {
     return SanitizeDhcpApiString(
         reinterpret_cast<const char*>(wpad_params.Data),
