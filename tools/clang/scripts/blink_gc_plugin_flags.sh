@@ -13,9 +13,10 @@ if uname -s | grep -q Darwin; then
 else
   LIBSUFFIX=so
 fi
+
 LIBNAME=\
-$(grep 'set(LIBRARYNAME' "$THIS_ABS_DIR"/../blink_gc_plugin/CMakeLists.txt \
-    | cut -d ' ' -f 2 | tr -d ')')
+$(grep LIBRARYNAME "$THIS_ABS_DIR"/../blink_gc_plugin/Makefile \
+    | cut -d ' ' -f 3)
 
 FLAGS=""
 PREFIX="-Xclang -plugin-arg-blink-gc-plugin -Xclang"

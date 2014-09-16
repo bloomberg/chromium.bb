@@ -865,7 +865,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     visitor.TraverseDecl(context.getTranslationUnitDecl());
 
     if (options_.dump_graph) {
-      std::error_code err;
+      string err;
       // TODO: Make createDefaultOutputFile or a shorter createOutputFile work.
       json_ = JsonWriter::from(instance_.createOutputFile(
           "",                                      // OutputPath
@@ -878,7 +878,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
           false,                                   // CreateMissingDirectories
           0,                                       // ResultPathName
           0));                                     // TempPathName
-      if (!err && json_) {
+      if (err.empty() && json_) {
         json_->OpenList();
       } else {
         json_ = 0;
@@ -1844,10 +1844,9 @@ class BlinkGCPluginAction : public PluginASTAction {
 
  protected:
   // Overridden from PluginASTAction:
-  virtual std::unique_ptr<ASTConsumer> CreateASTConsumer(
-      CompilerInstance& instance,
-      llvm::StringRef ref) {
-    return llvm::make_unique<BlinkGCPluginConsumer>(instance, options_);
+  virtual ASTConsumer* CreateASTConsumer(CompilerInstance& instance,
+                                         llvm::StringRef ref) {
+    return new BlinkGCPluginConsumer(instance, options_);
   }
 
   virtual bool ParseArgs(const CompilerInstance& instance,

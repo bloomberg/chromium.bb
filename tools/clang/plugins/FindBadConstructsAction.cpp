@@ -15,10 +15,10 @@ namespace chrome_checker {
 FindBadConstructsAction::FindBadConstructsAction() {
 }
 
-std::unique_ptr<ASTConsumer> FindBadConstructsAction::CreateASTConsumer(
+ASTConsumer* FindBadConstructsAction::CreateASTConsumer(
     CompilerInstance& instance,
     llvm::StringRef ref) {
-  return llvm::make_unique<FindBadConstructsConsumer>(instance, options_);
+  return new FindBadConstructsConsumer(instance, options_);
 }
 
 bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
