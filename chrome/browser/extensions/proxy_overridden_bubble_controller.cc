@@ -212,7 +212,7 @@ bool ProxyOverriddenBubbleController::ShouldShow(
 }
 
 bool ProxyOverriddenBubbleController::CloseOnDeactivate() {
-  return true;
+  return false;
 }
 
 }  // namespace extensions
