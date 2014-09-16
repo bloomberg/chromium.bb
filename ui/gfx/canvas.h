@@ -421,8 +421,8 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
-  SkCanvas* sk_canvas() const { return canvas_; }
+  skia::PlatformCanvas* platform_canvas() { return owned_canvas_.get(); }
+  SkCanvas* sk_canvas() { return canvas_; }
   float image_scale() const { return image_scale_; }
 
  private:
