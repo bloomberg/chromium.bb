@@ -239,7 +239,7 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
 
   // If the extension was moved to the overflow menu from the main bar, notify
   // the owner.
-  if (drop_index >= owner_->VisibleBrowserActions())
+  if (drop_data.index() < owner_->VisibleBrowserActions())
     owner_->NotifyActionMovedToOverflow();
 
   if (for_drop_)
