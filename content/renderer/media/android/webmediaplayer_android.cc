@@ -195,7 +195,7 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     current_frame_ = NULL;
   }
 
-  if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE && delegate_)
+  if (delegate_)
     delegate_->PlayerGone(this);
 }
 
