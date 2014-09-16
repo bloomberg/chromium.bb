@@ -1937,11 +1937,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="BatteryStatus.NumberBatteriesLinux"
-    enum="BatteryStatusNumberBatteriesLinux">
+    enum="BatteryStatusNumberBatteries">
   <owner>timvolodine@chromium.org</owner>
   <summary>
     Number of batteries reported by the UPower service on Linux at the start of
     the Battery Status API.
+  </summary>
+</histogram>
+
+<histogram name="BatteryStatus.NumberBatteriesMac"
+    enum="BatteryStatusNumberBatteries">
+  <owner>timvolodine@chromium.org</owner>
+  <summary>
+    Number of internal batteries reported by MacOS at the start of the Battery
+    Status API.
   </summary>
 </histogram>
 
@@ -38331,7 +38340,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Bad"/>
 </enum>
 
-<enum name="BatteryStatusNumberBatteriesLinux" type="int">
+<enum name="BatteryStatusNumberBatteries" type="int">
   <int value="5" label="5+"/>
 </enum>
 

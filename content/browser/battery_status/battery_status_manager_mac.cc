@@ -7,10 +7,12 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
+#include <vector>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
@@ -50,6 +52,11 @@ bool CFStringsAreEqual(CFStringRef string1, CFStringRef string2) {
   if (!string1 || !string2)
     return false;
   return CFStringCompare(string1, string2, 0) == kCFCompareEqualTo;
+}
+
+void UpdateNumberBatteriesHistogram(int count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "BatteryStatus.NumberBatteriesMac", count, 1, 5, 6);
 }
 
 void FetchBatteryStatus(CFDictionaryRef description,
@@ -108,15 +115,13 @@ void FetchBatteryStatus(CFDictionaryRef description,
   }
 }
 
-void OnBatteryStatusChanged(const BatteryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blink::WebBatteryStatus status;
+std::vector<blink::WebBatteryStatus> GetInternalBatteriesStates() {
+  std::vector<blink::WebBatteryStatus> internal_sources;
+
   base::ScopedCFTypeRef<CFTypeRef> info(IOPSCopyPowerSourcesInfo());
   base::ScopedCFTypeRef<CFArrayRef> power_sources_list(
       IOPSCopyPowerSourcesList(info));
   CFIndex count = CFArrayGetCount(power_sources_list);
-
-  bool internal_source_found = false;
 
   for (CFIndex i = 0; i < count; ++i) {
     CFDictionaryRef description = IOPSGetPowerSourceDescription(info,
@@ -135,16 +140,30 @@ void OnBatteryStatusChanged(const BatteryCallback& callback) {
         GetValueAsBoolean(description, CFSTR(kIOPSIsPresentKey), false);
 
     if (internal_source && source_present) {
-      // TODO(timvolodine): implement the case when there are multiple internal
-      // sources, e.g. when multiple batteries are present. Currently this will
-      // fail a DCHECK.
-      DCHECK(!internal_source_found);
+      blink::WebBatteryStatus status;
       FetchBatteryStatus(description, status);
-      internal_source_found = true;
+      internal_sources.push_back(status);
     }
   }
 
-  callback.Run(status);
+  return internal_sources;
+}
+
+void OnBatteryStatusChanged(const BatteryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  std::vector<blink::WebBatteryStatus> batteries(GetInternalBatteriesStates());
+
+  if (batteries.empty()) {
+    callback.Run(blink::WebBatteryStatus());
+    return;
+  }
+
+  // TODO(timvolodine): implement the case when there are multiple internal
+  // sources, e.g. when multiple batteries are present. Currently this will
+  // fail a DCHECK.
+  DCHECK(batteries.size() == 1);
+  callback.Run(batteries.front());
 }
 
 class BatteryStatusObserver
@@ -200,6 +219,7 @@ class BatteryStatusObserver
     OnBatteryStatusChangedUI(static_cast<void*>(&callback_));
     CFRunLoopAddSource(CFRunLoopGetCurrent(), notifier_run_loop_source_,
                        kCFRunLoopDefaultMode);
+    UpdateNumberBatteriesHistogram(GetInternalBatteriesStates().size());
   }
 
   void StopOnUI() {
