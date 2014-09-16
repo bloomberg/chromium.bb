@@ -12,9 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -1156,20 +1154,21 @@ void ClearCacheOnNavigation() {
 }
 
 void NotifyWebRequestAPIUsed(
-    void* profile_id,
+    void* browser_context_id,
     scoped_refptr<const extensions::Extension> extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  content::BrowserContext* browser_context =
+      reinterpret_cast<content::BrowserContext*>(browser_context_id);
+  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
+      browser_context))
     return;
 
   extensions::RuntimeData* runtime_data =
-      extensions::ExtensionSystem::Get(profile)->runtime_data();
+      extensions::ExtensionSystem::Get(browser_context)->runtime_data();
   if (runtime_data->HasUsedWebRequest(extension.get()))
     return;
   runtime_data->SetHasUsedWebRequest(extension.get(), true);
 
-  content::BrowserContext* browser_context = profile;
   for (content::RenderProcessHost::iterator it =
            content::RenderProcessHost::AllHostsIterator();
        !it.IsAtEnd(); it.Advance()) {
