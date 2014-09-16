@@ -1,10 +1,8 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This script manages the installed toolchains in the chroot.
-"""
+"""This script manages the installed toolchains in the chroot."""
 
 import copy
 import glob

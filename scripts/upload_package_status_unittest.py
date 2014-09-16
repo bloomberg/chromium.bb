@@ -6,7 +6,6 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 import exceptions
-
 import mox
 
 from chromite.lib import cros_test_lib

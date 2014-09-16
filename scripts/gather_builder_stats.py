@@ -23,6 +23,7 @@ from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import table
 
+
 # Useful config targets.
 CQ_MASTER = constants.CQ_MASTER
 PFQ_MASTER = 'x86-generic-chromium-pfq'
@@ -1588,5 +1589,3 @@ def GraphiteTryJobInfoUpToNow(internal, start_date):
                         (marker, count, (end - EPOCH_START).total_seconds()))
 
   graphite.SendToCarbon(carbon_lines)
-
-

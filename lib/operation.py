@@ -12,6 +12,7 @@ import contextlib
 import os
 import re
 import sys
+
 from chromite.lib.terminal import Color
 
 

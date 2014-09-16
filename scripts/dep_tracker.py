@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""\
-Script to discover dependencies and other file information from a build.
+"""Script to discover dependencies and other file information from a build.
 
 Some files in the image are installed to provide some functionality, such as
 chrome, shill or bluetoothd provide different functionality that can be

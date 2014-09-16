@@ -8,6 +8,7 @@ import os
 import errno
 import fcntl
 import tempfile
+
 from chromite.lib import cros_build_lib
 
 

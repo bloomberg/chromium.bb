@@ -5,9 +5,6 @@
 
 """Unit tests for cros_mark_chrome_as_stable.py."""
 
-# run with:
-#    cros_sdk ../../chromite.cbuildbot/cros_mark_chrome_as_stable_unittest.py
-
 import base64
 import cStringIO
 import mox
@@ -25,11 +22,13 @@ from chromite.lib import gob_util
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
+
 # pylint: disable=W0212,R0904
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
 fake_svn_rev = '12345'
 new_fake_svn_rev = '23456'
+
 
 def _TouchAndWrite(path, data=None):
   """Writes data (if it exists) to the file specified by the path."""

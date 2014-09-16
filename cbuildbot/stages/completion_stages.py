@@ -22,7 +22,6 @@ from chromite.lib import git
 from chromite.lib import portage_util
 
 
-
 def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
   """Creates a message summarizing the failures.
 

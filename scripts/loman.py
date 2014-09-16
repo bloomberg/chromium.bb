@@ -10,6 +10,7 @@ import optparse
 import os
 import sys
 import xml.etree.ElementTree as ElementTree
+
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 

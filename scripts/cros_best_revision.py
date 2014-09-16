@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,6 +9,7 @@ checks in a LKGM version for Chrome OS for other consumers.
 import distutils.version
 import logging
 import os
+
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants

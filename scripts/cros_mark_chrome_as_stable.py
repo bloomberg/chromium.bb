@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -31,6 +30,7 @@ from chromite.lib import gob_util
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_as_stable
+
 
 # Helper regex's for finding ebuilds.
 _CHROME_VERSION_REGEX = r'\d+\.\d+\.\d+\.\d+'
@@ -299,6 +299,7 @@ def _AnnotateAndPrint(text, url):
   print >> sys.stderr, '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
                                                               'url': url }
 
+
 def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
   """Return appropriately formatted link to revision info, given versions
 
@@ -314,6 +315,7 @@ def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
   """
   return _CHROME_VERSION_URL % { 'old': old_chrome_version,
                                  'new': chrome_version }
+
 
 def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
   """Returns a link to the list of revisions between two Chromium versions

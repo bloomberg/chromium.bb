@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 """Configuration options for various cbuildbot builders."""
 
 # Disable relative import warning from pylint.

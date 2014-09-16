@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +6,7 @@
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+
 
 class Subgraph(object):
   """A subgraph in dot. Contains nodes, arcs, and other subgraphs."""
