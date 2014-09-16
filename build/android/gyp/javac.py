@@ -78,8 +78,8 @@ def DoJavac(
 
   javac_args = [
       '-g',
-      '-source', '1.7',
-      '-target', '1.7',
+      '-source', '1.5',
+      '-target', '1.5',
       '-classpath', ':'.join(classpath),
       '-d', classes_dir]
   if chromium_code:
