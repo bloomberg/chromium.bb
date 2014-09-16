@@ -35836,6 +35836,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Idle time passed to V8 via IdleNotifications.</summary>
 </histogram>
 
+<histogram name="V8.GCIdleTimeLimit.Overshot" units="milliseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>
+    Milliseconds the idle time limit was overshot by the IdleNotification.
+  </summary>
+</histogram>
+
+<histogram name="V8.GCIdleTimeLimit.Undershot" units="milliseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>
+    Milliseconds the idle time limit was undershot by the IdleNotification.
+  </summary>
+</histogram>
+
 <histogram name="V8.GCIncrementalMarking" units="milliseconds">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
