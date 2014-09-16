@@ -361,7 +361,6 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     """
     cmd = 'test cmd'
 
-
     with self._SetupPopen(['/bin/bash', '-c', cmd],
                           ignore_sigint=ignore_sigint) as proc:
       proc.communicate(None).AndReturn((self.output, self.error))
@@ -513,37 +512,27 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
 
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
-    # Make mox happy.
     log = os.path.join(self.tempdir, 'output')
     ret = cros_build_lib.RunCommand(
-        ['python', '-c', 'print "monkeys"'], log_stdout_to_file=log)
+        ['echo', 'monkeys'], log_stdout_to_file=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
-    self.assertTrue(ret.output is None)
-    self.assertTrue(ret.error is None)
-
-    # Validate dumb api usage.
-    ret = cros_build_lib.RunCommand(
-        ['python', '-c', 'import sys;print "monkeys2"'],
-        log_stdout_to_file=log, redirect_stdout=True)
-    self.assertTrue(ret.output is None)
-    self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
+    self.assertIs(ret.output, None)
+    self.assertIs(ret.error, None)
 
     os.unlink(log)
     ret = cros_build_lib.RunCommand(
-        ['python', '-c', 'import sys;print >> sys.stderr, "monkeys3"'],
+        ['sh', '-c', 'echo monkeys3 >&2'],
         log_stdout_to_file=log, redirect_stderr=True)
     self.assertEqual(ret.error, 'monkeys3\n')
-    self.assertTrue(os.path.exists(log))
-    self.assertEqual(os.stat(log).st_size, 0)
+    self.assertExists(log)
+    self.assertEqual(os.path.getsize(log), 0)
 
     os.unlink(log)
     ret = cros_build_lib.RunCommand(
-        ['python', '-u', '-c',
-         'import sys;print "monkeys4"\nprint >> sys.stderr, "monkeys5"\n'],
+        ['sh', '-c', 'echo monkeys4; echo monkeys5 >&2'],
         log_stdout_to_file=log, combine_stdout_stderr=True)
-    self.assertTrue(ret.output is None)
-    self.assertTrue(ret.error is None)
-
+    self.assertIs(ret.output, None)
+    self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
