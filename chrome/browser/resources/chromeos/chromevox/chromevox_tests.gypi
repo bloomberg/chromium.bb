@@ -147,6 +147,15 @@
         'host/chrome/expanding_braille_translator_test.unitjs',
         'host/chrome/tts_background_test.extjs',
         'liblouis_nacl/liblouis_test.extjs',
+        'walkers/character_walker_test.unitjs',
+        'walkers/group_walker_test.unitjs',
+        'walkers/object_walker_test.unitjs',
+        'walkers/layout_line_walker_test.unitjs',
+        'walkers/math_shifter_test.unitjs',
+        'walkers/sentence_walker_test.unitjs',
+        'walkers/structural_line_walker_test.unitjs',
+        'walkers/table_walker_test.unitjs',
+        'walkers/word_walker_test.unitjs',
       ],
       'conditions': [
         ['use_chromevox_next==1', {

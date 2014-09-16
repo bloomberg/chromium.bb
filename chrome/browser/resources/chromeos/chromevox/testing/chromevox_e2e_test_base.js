@@ -66,7 +66,7 @@ ChromeVoxE2ETest.prototype = {
  */
 function SYNC_TEST_F(testFixture, testName, testFunction) {
   var wrappedTestFunction = function() {
-    testFunction();
+    testFunction.call(this);
     testDone([true, '']);
   };
   TEST_F(testFixture, testName, wrappedTestFunction);
