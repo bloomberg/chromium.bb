@@ -4,8 +4,6 @@
 
 """Signal related functionality."""
 
-__all__ = ('RelaySignal', 'SignalModuleUsable', 'DeferSignals')
-
 import signal
 import contextlib
 
