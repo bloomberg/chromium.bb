@@ -81,6 +81,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
 
@@ -3565,7 +3566,6 @@ PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement*
         return nullptr;
     }
     IntRect destRect(0, 0, size.width(), size.height());
-    // FIXME: Turn this into a GPU-GPU texture copy instead of CPU readback.
     video->paintCurrentFrameInContext(buf->context(), destRect);
     return buf->copyImage(backingStoreCopy);
 }
@@ -3584,6 +3584,26 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         if (video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), level, internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
             return;
+        }
+    }
+
+    // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
+    OwnPtr<ImageBufferSurface> surface = adoptPtr(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
+    if (surface->isValid()) {
+        OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(surface.release()));
+        if (imageBuffer) {
+            // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
+            // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
+            // may still do a CPU conversion and upload the results).
+            video->paintCurrentFrameInContext(imageBuffer->context(), IntRect(0, 0, video->videoWidth(), video->videoHeight()));
+            imageBuffer->context()->canvas()->flush();
+
+            // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
+            if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
+                level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+                texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
+                return;
+            }
         }
     }
 

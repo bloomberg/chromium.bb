@@ -533,6 +533,8 @@
       'graphics/filters/SourceGraphic.h',
       'graphics/filters/SpotLightSource.cpp',
       'graphics/filters/SpotLightSource.h',
+      'graphics/gpu/AcceleratedImageBufferSurface.cpp',
+      'graphics/gpu/AcceleratedImageBufferSurface.h',
       'graphics/gpu/DrawingBuffer.cpp',
       'graphics/gpu/DrawingBuffer.h',
       'graphics/gpu/Extensions3DUtil.cpp',

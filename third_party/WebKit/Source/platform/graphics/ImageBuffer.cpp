@@ -168,7 +168,7 @@ WebLayer* ImageBuffer::platformLayer() const
 
 bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_surface->isAccelerated() || !platformLayer() || !isSurfaceValid())
+    if (!m_surface->isAccelerated() || !getBackingTexture() || !isSurfaceValid())
         return false;
 
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
