@@ -84,6 +84,27 @@ TEST(CommonTypeConvertersTest, URL) {
   ASSERT_EQ(0U, string_from_invalid.size());
 }
 
+TEST(CommonTypeConvertersTest, ArrayUint8ToStdString) {
+  Array<uint8_t> data(4);
+  data[0] = 'd';
+  data[1] = 'a';
+  data[2] = 't';
+  data[3] = 'a';
+
+  EXPECT_EQ("data", data.To<std::string>());
+}
+
+TEST(CommonTypeConvertersTest, StdStringToArrayUint8) {
+  std::string input("data");
+  Array<uint8_t> data = Array<uint8_t>::From(input);
+
+  ASSERT_EQ(4ul, data.size());
+  EXPECT_EQ('d', data[0]);
+  EXPECT_EQ('a', data[1]);
+  EXPECT_EQ('t', data[2]);
+  EXPECT_EQ('a', data[3]);
+}
+
 }  // namespace test
 }  // namespace common
 }  // namespace mojo

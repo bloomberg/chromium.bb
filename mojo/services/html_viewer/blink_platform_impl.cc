@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/services/html_viewer/webclipboard_impl.h"
 #include "mojo/services/html_viewer/webcookiejar_impl.h"
 #include "mojo/services/html_viewer/websockethandle_impl.h"
 #include "mojo/services/html_viewer/webthread_impl.h"
@@ -59,6 +60,10 @@ BlinkPlatformImpl::BlinkPlatformImpl(ApplicationImpl* app)
   CookieStorePtr cookie_store;
   network_service_->GetCookieStore(Get(&cookie_store));
   cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
+
+  ClipboardPtr clipboard;
+  app->ConnectToService("mojo:mojo_clipboard", &clipboard);
+  clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -66,6 +71,10 @@ BlinkPlatformImpl::~BlinkPlatformImpl() {
 
 blink::WebCookieJar* BlinkPlatformImpl::cookieJar() {
   return cookie_jar_.get();
+}
+
+blink::WebClipboard* BlinkPlatformImpl::clipboard() {
+  return clipboard_.get();
 }
 
 blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {
