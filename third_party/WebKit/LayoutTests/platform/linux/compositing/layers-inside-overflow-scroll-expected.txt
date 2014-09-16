@@ -13,3 +13,8 @@ layer at (19,53) size 300x200
 layer at (18,269) size 302x152 clip at (19,270) size 285x150 scrollY 100 scrollHeight 500
   RenderBlock {DIV} at (10,253) size 302x152 [border: (1px solid #000000)]
     RenderBlock {DIV} at (1,1) size 285x500
+layer at (19,53) size 300x200
+  RenderFlexibleBox {DIV} at (0,0) size 300x200
+    RenderBlock {DIV} at (0,165) size 300x35
+layer at (19,53) size 300x165
+  RenderFlexibleBox {DIV} at (0,0) size 300x165

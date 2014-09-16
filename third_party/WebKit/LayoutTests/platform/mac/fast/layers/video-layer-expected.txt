@@ -18,6 +18,8 @@ layer at (58,110) size 302x152 transparent
 layer at (59,111) size 300x150
   RenderFlexibleBox {DIV} at (1,1) size 300x150
     RenderBlock {DIV} at (0,115) size 300x35
+layer at (59,111) size 300x115
+  RenderFlexibleBox {DIV} at (0,0) size 300x115
 layer at (64,226) size 290x30
   RenderFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30

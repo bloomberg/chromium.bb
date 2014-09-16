@@ -13,6 +13,8 @@ layer at (8,44) size 352x288
 layer at (8,44) size 352x288
   RenderFlexibleBox {DIV} at (0,0) size 352x288
     RenderBlock {DIV} at (0,253) size 352x35
+layer at (8,44) size 352x253
+  RenderFlexibleBox {DIV} at (0,0) size 352x253
 layer at (13,297) size 342x30
   RenderFlexibleBox {DIV} at (5,0) size 342x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30

@@ -16,10 +16,10 @@ Case: No src, no poster
 
 Case: Displaying poster
 {
-  "bounds": [800, 600],
+  "bounds": [785, 605],
   "children": [
     {
-      "bounds": [800, 600],
+      "bounds": [785, 605],
       "contentsOpaque": true,
       "drawsContent": true
     }
@@ -29,10 +29,10 @@ Case: Displaying poster
 
 Case: Displaying movie
 {
-  "bounds": [785, 782],
+  "bounds": [785, 813],
   "children": [
     {
-      "bounds": [785, 782],
+      "bounds": [785, 813],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [

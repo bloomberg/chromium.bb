@@ -16,6 +16,8 @@ layer at (308,283) size 300x30
 layer at (8,8) size 300x150
   RenderFlexibleBox {DIV} at (0,0) size 300x150
     RenderBlock {DIV} at (0,115) size 300x35
+layer at (8,8) size 300x115
+  RenderFlexibleBox {DIV} at (0,0) size 300x115
 layer at (13,123) size 290x30
   RenderFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30
@@ -46,6 +48,8 @@ layer at (308,128) size 300x30
 layer at (8,163) size 300x150
   RenderFlexibleBox {DIV} at (0,0) size 300x150
     RenderBlock {DIV} at (0,115) size 300x35
+layer at (8,163) size 300x115
+  RenderFlexibleBox {DIV} at (0,0) size 300x115
 layer at (13,278) size 290x30
   RenderFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     RenderButton {INPUT} at (9,0) size 30x30

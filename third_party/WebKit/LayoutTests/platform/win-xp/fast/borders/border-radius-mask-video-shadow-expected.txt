@@ -23,3 +23,8 @@ layer at (0,0) size 800x394
         RenderText {#text} at (0,0) size 0x0
 layer at (18,146) size 500x225
   RenderVideo {VIDEO} at (10,10) size 500x225 [bgcolor=#808080]
+layer at (18,146) size 500x225
+  RenderFlexibleBox {DIV} at (0,0) size 500x225
+    RenderBlock {DIV} at (0,190) size 500x35
+layer at (18,146) size 500x190
+  RenderFlexibleBox {DIV} at (0,0) size 500x190

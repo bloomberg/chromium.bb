@@ -33,3 +33,8 @@ layer at (8,397) size 300x150
   RenderVideo {VIDEO} at (0,389) size 300x150
 layer at (8,552) size 556x406
   RenderEmbeddedObject {EMBED} at (0,544) size 556x406 [bgcolor=#00FF00] [border: (3px solid #000000)]
+layer at (8,397) size 300x150
+  RenderFlexibleBox {DIV} at (0,0) size 300x150
+    RenderBlock {DIV} at (0,115) size 300x35
+layer at (8,397) size 300x115
+  RenderFlexibleBox {DIV} at (0,0) size 300x115

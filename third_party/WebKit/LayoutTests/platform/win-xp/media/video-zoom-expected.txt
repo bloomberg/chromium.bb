@@ -21,3 +21,13 @@ layer at (12,44) size 488x368
   RenderVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
 layer at (12,469) size 488x368
   RenderVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
+layer at (16,48) size 480x360
+  RenderFlexibleBox {DIV} at (4,4) size 480x360
+    RenderBlock {DIV} at (0,307.50) size 480x52.50
+layer at (16,48) size 480x308 scrollHeight 307
+  RenderFlexibleBox {DIV} at (0,0) size 480x307.50
+layer at (16,473) size 480x360
+  RenderFlexibleBox {DIV} at (4,4) size 480x360
+    RenderBlock {DIV} at (0,307.50) size 480x52.50
+layer at (16,473) size 480x308 scrollHeight 307
+  RenderFlexibleBox {DIV} at (0,0) size 480x307.50
