@@ -49,6 +49,8 @@
         'component_updater/default_component_installer.h',
         'component_updater/pref_names.cc',
         'component_updater/pref_names.h',
+        'component_updater/request_sender.cc',
+        'component_updater/request_sender.h',
         'component_updater/update_checker.cc',
         'component_updater/update_checker.h',
         'component_updater/update_response.cc',

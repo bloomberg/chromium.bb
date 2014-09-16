@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/component_updater/update_response.h"
+#include "url/gurl.h"
 
 class GURL;
 
@@ -26,7 +27,8 @@ struct CrxUpdateItem;
 
 class UpdateChecker {
  public:
-  typedef base::Callback<void(int error,
+  typedef base::Callback<void(const GURL& original_url,
+                              int error,
                               const std::string& error_message,
                               const UpdateResponse::Results& results)>
       UpdateCheckCallback;
@@ -38,11 +40,10 @@ class UpdateChecker {
   // as-is, therefore it must be well-formed as an XML attribute string.
   virtual bool CheckForUpdates(
       const std::vector<CrxUpdateItem*>& items_to_check,
-      const std::string& additional_attributes) = 0;
+      const std::string& additional_attributes,
+      const UpdateCheckCallback& update_check_callback) = 0;
 
-  static scoped_ptr<UpdateChecker> Create(
-      const Configurator& config,
-      const UpdateCheckCallback& update_check_callback);
+  static scoped_ptr<UpdateChecker> Create(const Configurator& config);
 
  protected:
   UpdateChecker() {}

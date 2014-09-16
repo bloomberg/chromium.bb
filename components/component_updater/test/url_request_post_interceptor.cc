@@ -22,12 +22,14 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
  public:
   URLRequestMockJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
-                    const std::string& response)
+                    int response_code,
+                    const std::string& response_body)
       : net::URLRequestSimpleJob(request, network_delegate),
-        response_(response) {}
+        response_code_(response_code),
+        response_body_(response_body) {}
 
  protected:
-  virtual int GetResponseCode() const OVERRIDE { return 200; }
+  virtual int GetResponseCode() const OVERRIDE { return response_code_; }
 
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
@@ -35,14 +37,15 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
                       const net::CompletionCallback& callback) const OVERRIDE {
     mime_type->assign("text/plain");
     charset->assign("US-ASCII");
-    data->assign(response_);
+    data->assign(response_body_);
     return net::OK;
   }
 
  private:
   virtual ~URLRequestMockJob() {}
 
-  std::string response_;
+  int response_code_;
+  std::string response_body_;
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockJob);
 };
 
@@ -71,7 +74,16 @@ GURL URLRequestPostInterceptor::GetUrl() const {
 
 bool URLRequestPostInterceptor::ExpectRequest(
     class RequestMatcher* request_matcher) {
-  expectations_.push(std::make_pair(request_matcher, ""));
+  expectations_.push(std::make_pair(request_matcher,
+                                    ExpectationResponse(kResponseCode200, "")));
+  return true;
+}
+
+bool URLRequestPostInterceptor::ExpectRequest(
+    class RequestMatcher* request_matcher,
+    int response_code) {
+  expectations_.push(
+      std::make_pair(request_matcher, ExpectationResponse(response_code, "")));
   return true;
 }
 
@@ -81,7 +93,9 @@ bool URLRequestPostInterceptor::ExpectRequest(
   std::string response;
   if (filepath.empty() || !base::ReadFileToString(filepath, &response))
     return false;
-  expectations_.push(std::make_pair(request_matcher, response));
+
+  expectations_.push(std::make_pair(
+      request_matcher, ExpectationResponse(kResponseCode200, response)));
   return true;
 }
 
@@ -147,7 +161,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
   void OnCreateInterceptor(URLRequestPostInterceptor* interceptor) {
     DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-    CHECK(interceptors_.find(interceptor->GetUrl()) == interceptors_.end());
+    DCHECK(interceptors_.find(interceptor->GetUrl()) == interceptors_.end());
 
     interceptors_.insert(std::make_pair(interceptor->GetUrl(), interceptor));
   }
@@ -196,12 +210,14 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
       const URLRequestPostInterceptor::Expectation& expectation(
           interceptor->expectations_.front());
       if (expectation.first->Match(request_body)) {
-        const std::string response(expectation.second);
+        const int response_code(expectation.second.response_code);
+        const std::string response_body(expectation.second.response_body);
         delete expectation.first;
         interceptor->expectations_.pop();
         ++interceptor->hit_count_;
 
-        return new URLRequestMockJob(request, network_delegate, response);
+        return new URLRequestMockJob(
+            request, network_delegate, response_code, response_body);
       }
     }
 
@@ -276,8 +292,13 @@ InterceptorFactory::~InterceptorFactory() {
 }
 
 URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
+  return CreateInterceptorForPath(POST_INTERCEPT_PATH);
+}
+
+URLRequestPostInterceptor* InterceptorFactory::CreateInterceptorForPath(
+    const char* url_path) {
   return URLRequestPostInterceptorFactory::CreateInterceptor(
-      base::FilePath::FromUTF8Unsafe(POST_INTERCEPT_PATH));
+      base::FilePath::FromUTF8Unsafe(url_path));
 }
 
 }  // namespace component_updater

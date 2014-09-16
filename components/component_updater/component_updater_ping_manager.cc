@@ -5,22 +5,32 @@
 #include "components/component_updater/component_updater_ping_manager.h"
 
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/guid.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_checker.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_utils.h"
 #include "components/component_updater/crx_update_item.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "components/component_updater/request_sender.h"
 #include "url/gurl.h"
 
+namespace net {
+class URLFetcher;
+}  // namespace net
+
 namespace component_updater {
+
+namespace {
 
 // Returns a string literal corresponding to the value of the downloader |d|.
 const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
@@ -34,86 +44,9 @@ const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
   }
 }
 
-// Sends a fire and forget ping. The instances of this class have no
-// ownership and they self-delete upon completion.
-class PingSender : public net::URLFetcherDelegate {
- public:
-  PingSender();
-
-  void SendPing(const Configurator& config,
-                net::URLRequestContextGetter* url_request_context_getter,
-                const CrxUpdateItem* item);
-
- private:
-  virtual ~PingSender();
-
-  // Overrides for URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  static std::string BuildPing(const Configurator& config,
-                               const CrxUpdateItem* item);
-  static std::string BuildDownloadCompleteEventElements(
-      const CrxUpdateItem* item);
-  static std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item);
-
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(PingSender);
-};
-
-PingSender::PingSender() {
-}
-
-PingSender::~PingSender() {
-}
-
-void PingSender::OnURLFetchComplete(const net::URLFetcher* source) {
-  delete this;
-}
-
-void PingSender::SendPing(
-    const Configurator& config,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const CrxUpdateItem* item) {
-  DCHECK(item);
-
-  if (!config.PingUrl().is_valid())
-    return;
-
-  url_fetcher_.reset(SendProtocolRequest(config.PingUrl(),
-                                         BuildPing(config, item),
-                                         this,
-                                         url_request_context_getter));
-}
-
-// Builds a ping message for the specified update item.
-std::string PingSender::BuildPing(const Configurator& config,
-                                  const CrxUpdateItem* item) {
-  const char app_element_format[] =
-      "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
-      "%s"
-      "%s"
-      "</app>";
-  const std::string app_element(base::StringPrintf(
-      app_element_format,
-      item->id.c_str(),                                    // "appid"
-      item->previous_version.GetString().c_str(),          // "version"
-      item->next_version.GetString().c_str(),              // "nextversion"
-      BuildUpdateCompleteEventElement(item).c_str(),       // update event
-      BuildDownloadCompleteEventElements(item).c_str()));  // download events
-
-  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
-                              config.GetChannel(),
-                              config.GetLang(),
-                              config.GetOSLongName(),
-                              app_element,
-                              "");
-}
-
 // Returns a string representing a sequence of download complete events
 // corresponding to each download metrics in |item|.
-std::string PingSender::BuildDownloadCompleteEventElements(
-    const CrxUpdateItem* item) {
+std::string BuildDownloadCompleteEventElements(const CrxUpdateItem* item) {
   using base::StringAppendF;
   std::string download_events;
   for (size_t i = 0; i != item->download_metrics.size(); ++i) {
@@ -153,8 +86,7 @@ std::string PingSender::BuildDownloadCompleteEventElements(
 }
 
 // Returns a string representing one ping event xml element for an update item.
-std::string PingSender::BuildUpdateCompleteEventElement(
-    const CrxUpdateItem* item) {
+std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item) {
   DCHECK(item->status == CrxUpdateItem::kNoUpdate ||
          item->status == CrxUpdateItem::kUpdated);
 
@@ -189,6 +121,80 @@ std::string PingSender::BuildUpdateCompleteEventElement(
   return ping_event;
 }
 
+// Builds a ping message for the specified update item.
+std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
+  const char app_element_format[] =
+      "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
+      "%s"
+      "%s"
+      "</app>";
+  const std::string app_element(base::StringPrintf(
+      app_element_format,
+      item->id.c_str(),                                    // "appid"
+      item->previous_version.GetString().c_str(),          // "version"
+      item->next_version.GetString().c_str(),              // "nextversion"
+      BuildUpdateCompleteEventElement(item).c_str(),       // update event
+      BuildDownloadCompleteEventElements(item).c_str()));  // download events
+
+  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
+                              config.GetChannel(),
+                              config.GetLang(),
+                              config.GetOSLongName(),
+                              app_element,
+                              "");
+}
+
+// Sends a fire and forget ping. The instances of this class have no
+// ownership and they self-delete upon completion. One instance of this class
+// can send only one ping.
+class PingSender {
+ public:
+  explicit PingSender(const Configurator& config);
+  ~PingSender();
+
+  bool SendPing(const CrxUpdateItem* item);
+
+ private:
+  void OnRequestSenderComplete(const net::URLFetcher* source);
+
+  const Configurator& config_;
+  scoped_ptr<RequestSender> request_sender_;
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(PingSender);
+};
+
+PingSender::PingSender(const Configurator& config) : config_(config) {
+}
+
+PingSender::~PingSender() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void PingSender::OnRequestSenderComplete(const net::URLFetcher* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  delete this;
+}
+
+bool PingSender::SendPing(const CrxUpdateItem* item) {
+  DCHECK(item);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  std::vector<GURL> urls(config_.PingUrl());
+
+  if (urls.empty())
+    return false;
+
+  request_sender_.reset(new RequestSender(config_));
+  request_sender_->Send(
+      BuildPing(config_, item),
+      urls,
+      base::Bind(&PingSender::OnRequestSenderComplete, base::Unretained(this)));
+  return true;
+}
+
+}  // namespace
+
 PingManager::PingManager(const Configurator& config) : config_(config) {
 }
 
@@ -196,10 +202,11 @@ PingManager::~PingManager() {
 }
 
 // Sends a fire and forget ping when the updates are complete. The ping
-// sender object self-deletes after sending the ping.
+// sender object self-deletes after sending the ping has completed asynchrously.
 void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
-  PingSender* ping_sender(new PingSender);
-  ping_sender->SendPing(config_, config_.RequestContext(), item);
+  PingSender* ping_sender(new PingSender(config_));
+  if (!ping_sender->SendPing(item))
+    delete ping_sender;
 }
 
 }  // namespace component_updater

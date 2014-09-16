@@ -66,9 +66,12 @@ class URLRequestPostInterceptor {
   // Sets an expection for the body of the POST request and optionally,
   // provides a canned response identified by a |file_path| to be returned when
   // the expectation is met. If no |file_path| is provided, then an empty
-  // response body is served. This class takes ownership of the
-  // |request_matcher| object. Returns |true| if the expectation was set.
+  // response body is served. If |response_code| is provided, then an empty
+  // response body with that response code is returned.
+  // Returns |true| if the expectation was set. This class takes ownership of
+  // the |request_matcher| object.
   bool ExpectRequest(class RequestMatcher* request_matcher);
+  bool ExpectRequest(class RequestMatcher* request_matcher, int response_code);
   bool ExpectRequest(class RequestMatcher* request_matcher,
                      const base::FilePath& filepath);
 
@@ -92,7 +95,16 @@ class URLRequestPostInterceptor {
 
  private:
   friend class URLRequestPostInterceptorFactory;
-  typedef std::pair<const RequestMatcher*, std::string> Expectation;
+
+  static const int kResponseCode200 = 200;
+
+  struct ExpectationResponse {
+    ExpectationResponse(int code, const std::string& body)
+        : response_code(code), response_body(body) {}
+    const int response_code;
+    const std::string response_body;
+  };
+  typedef std::pair<const RequestMatcher*, ExpectationResponse> Expectation;
 
   URLRequestPostInterceptor(
       const GURL& url,
@@ -100,6 +112,7 @@ class URLRequestPostInterceptor {
   ~URLRequestPostInterceptor();
 
   void ClearExpectations();
+
   const GURL url_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
@@ -144,7 +157,11 @@ class InterceptorFactory : public URLRequestPostInterceptorFactory {
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~InterceptorFactory();
 
+  // Creates an interceptor for the url path defined by POST_INTERCEPT_PATH.
   URLRequestPostInterceptor* CreateInterceptor();
+
+  // Creates an interceptor for the given url path.
+  URLRequestPostInterceptor* CreateInterceptorForPath(const char* url_path);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InterceptorFactory);

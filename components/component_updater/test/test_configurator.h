@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -14,6 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "net/url_request/url_request_test_util.h"
+
+class GURL;
 
 namespace component_updater {
 
@@ -37,8 +40,8 @@ class TestConfigurator : public Configurator {
   virtual int StepDelayMedium() OVERRIDE;
   virtual int MinimumReCheckWait() const OVERRIDE;
   virtual int OnDemandDelay() const OVERRIDE;
-  virtual GURL UpdateUrl() const OVERRIDE;
-  virtual GURL PingUrl() const OVERRIDE;
+  virtual std::vector<GURL> UpdateUrl() const OVERRIDE;
+  virtual std::vector<GURL> PingUrl() const OVERRIDE;
   virtual base::Version GetBrowserVersion() const OVERRIDE;
   virtual std::string GetChannel() const OVERRIDE;
   virtual std::string GetLang() const OVERRIDE;
@@ -55,7 +58,6 @@ class TestConfigurator : public Configurator {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetSingleThreadTaskRunner() const OVERRIDE;
 
-  typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
   void SetLoopCount(int times);
   void SetRecheckTime(int seconds);
   void SetOnDemandTime(int seconds);

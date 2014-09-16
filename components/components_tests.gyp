@@ -79,6 +79,7 @@
             'component_updater/test/component_patcher_unittest.cc',
             'component_updater/test/component_updater_ping_manager_unittest.cc',
             'component_updater/test/crx_downloader_unittest.cc',
+            'component_updater/test/request_sender_unittest.cc',
             'component_updater/test/update_checker_unittest.cc',
             'component_updater/test/update_response_unittest.cc',
             'content_settings/core/common/content_settings_pattern_parser_unittest.cc',
@@ -296,7 +297,7 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
-            
+
             # Dependencies of component_updater
             'components.gyp:component_updater',
             'components.gyp:component_updater_test_support',

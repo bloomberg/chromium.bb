@@ -47,12 +47,10 @@ const char kSwitchUrlSource[] = "url-source";
 #define COMPONENT_UPDATER_SERVICE_ENDPOINT \
   "//clients2.google.com/service/update2"
 
-// The default url for the v3 protocol service endpoint. Can be
-// overridden with --component-updater=url-source=someurl.
+// The default url for the v3 protocol service endpoint.
+// The value of |kDefaultUrlSource| can be overridden with
+// --component-updater=url-source=someurl.
 const char kDefaultUrlSource[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
-
-// The url to send the pings to.
-const char kPingUrl[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
@@ -103,8 +101,8 @@ class ChromeConfigurator : public Configurator {
   virtual int StepDelayMedium() OVERRIDE;
   virtual int MinimumReCheckWait() const OVERRIDE;
   virtual int OnDemandDelay() const OVERRIDE;
-  virtual GURL UpdateUrl() const OVERRIDE;
-  virtual GURL PingUrl() const OVERRIDE;
+  virtual std::vector<GURL> UpdateUrl() const OVERRIDE;
+  virtual std::vector<GURL> PingUrl() const OVERRIDE;
   virtual base::Version GetBrowserVersion() const OVERRIDE;
   virtual std::string GetChannel() const OVERRIDE;
   virtual std::string GetLang() const OVERRIDE;
@@ -124,7 +122,7 @@ class ChromeConfigurator : public Configurator {
  private:
   net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;
-  std::string url_source_;
+  GURL url_source_override_;
   bool fast_update_;
   bool pings_enabled_;
   bool deltas_enabled_;
@@ -155,9 +153,11 @@ ChromeConfigurator::ChromeConfigurator(
   background_downloads_enabled_ = false;
 #endif
 
-  url_source_ = GetSwitchArgument(switch_values, kSwitchUrlSource);
-  if (url_source_.empty()) {
-    url_source_ = kDefaultUrlSource;
+  const std::string switch_url_source =
+      GetSwitchArgument(switch_values, kSwitchUrlSource);
+  if (!switch_url_source.empty()) {
+    url_source_override_ = GURL(switch_url_source);
+    DCHECK(url_source_override_.is_valid());
   }
 
   if (HasSwitchValue(switch_values, kSwitchRequestParam))
@@ -188,12 +188,18 @@ int ChromeConfigurator::OnDemandDelay() const {
   return fast_update_ ? 2 : (30 * kDelayOneMinute);
 }
 
-GURL ChromeConfigurator::UpdateUrl() const {
-  return GURL(url_source_);
+std::vector<GURL> ChromeConfigurator::UpdateUrl() const {
+  std::vector<GURL> urls;
+  if (url_source_override_.is_valid()) {
+    urls.push_back(GURL(url_source_override_));
+  } else {
+    urls.push_back(GURL(kDefaultUrlSource));
+  }
+  return urls;
 }
 
-GURL ChromeConfigurator::PingUrl() const {
-  return pings_enabled_ ? GURL(kPingUrl) : GURL();
+std::vector<GURL> ChromeConfigurator::PingUrl() const {
+  return pings_enabled_ ? UpdateUrl() : std::vector<GURL>();
 }
 
 base::Version ChromeConfigurator::GetBrowserVersion() const {

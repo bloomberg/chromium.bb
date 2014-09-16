@@ -6,6 +6,7 @@
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_CONFIGURATOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,12 +54,13 @@ class Configurator {
   // for the same component.
   virtual int OnDemandDelay() const = 0;
 
-  // The url that is going to be used update checks over Omaha protocol.
-  virtual GURL UpdateUrl() const = 0;
+  // The URLs for the update checks. The URLs are tried in order, the first one
+  // that succeeds wins.
+  virtual std::vector<GURL> UpdateUrl() const = 0;
 
-  // The url where the completion pings are sent. Invalid if and only if
-  // pings are disabled.
-  virtual GURL PingUrl() const = 0;
+  // The URLs for pings. Returns an empty vector if and only if pings are
+  // disabled. Similarly, these URLs have a fall back behavior too.
+  virtual std::vector<GURL> PingUrl() const = 0;
 
   // Version of the application. Used to compare the component manifests.
   virtual base::Version GetBrowserVersion() const = 0;

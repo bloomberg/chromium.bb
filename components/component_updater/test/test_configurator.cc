@@ -2,15 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include "components/component_updater/test/test_configurator.h"
 
 #include "base/run_loop.h"
 #include "base/version.h"
 #include "components/component_updater/component_patcher_operation.h"
-#include "components/component_updater/test/test_configurator.h"
 #include "url/gurl.h"
 
 namespace component_updater {
+
+namespace {
+
+std::vector<GURL> MakeDefaultUrls() {
+  std::vector<GURL> urls;
+  urls.push_back(GURL(POST_INTERCEPT_SCHEME
+                      "://" POST_INTERCEPT_HOSTNAME POST_INTERCEPT_PATH));
+  return urls;
+}
+
+}  // namespace
 
 TestConfigurator::TestConfigurator(
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
@@ -58,12 +68,11 @@ int TestConfigurator::OnDemandDelay() const {
   return ondemand_time_;
 }
 
-GURL TestConfigurator::UpdateUrl() const {
-  return GURL(POST_INTERCEPT_SCHEME
-              "://" POST_INTERCEPT_HOSTNAME POST_INTERCEPT_PATH);
+std::vector<GURL> TestConfigurator::UpdateUrl() const {
+  return MakeDefaultUrls();
 }
 
-GURL TestConfigurator::PingUrl() const {
+std::vector<GURL> TestConfigurator::PingUrl() const {
   return UpdateUrl();
 }
 

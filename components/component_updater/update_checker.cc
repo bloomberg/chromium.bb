@@ -4,18 +4,27 @@
 
 #include "components/component_updater/update_checker.h"
 
+#include <string>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_utils.h"
 #include "components/component_updater/crx_update_item.h"
+#include "components/component_updater/request_sender.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace component_updater {
+
+namespace {
 
 // Builds an update check request for |components|. |additional_attributes| is
 // serialized as part of the <request> element of the request to customize it
@@ -66,43 +75,31 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
                               additional_attributes);
 }
 
-class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
+class UpdateCheckerImpl : public UpdateChecker {
  public:
-  UpdateCheckerImpl(const Configurator& config,
-                    const UpdateCheckCallback& update_check_callback);
+  explicit UpdateCheckerImpl(const Configurator& config);
   virtual ~UpdateCheckerImpl();
 
   // Overrides for UpdateChecker.
   virtual bool CheckForUpdates(
       const std::vector<CrxUpdateItem*>& items_to_check,
-      const std::string& additional_attributes) OVERRIDE;
-
-  // Overrides for UrlFetcher.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+      const std::string& additional_attributes,
+      const UpdateCheckCallback& update_check_callback) OVERRIDE;
 
  private:
-  const Configurator& config_;
-  const UpdateCheckCallback update_check_callback_;
+  void OnRequestSenderComplete(const net::URLFetcher* source);
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  const Configurator& config_;
+  UpdateCheckCallback update_check_callback_;
+  scoped_ptr<RequestSender> request_sender_;
 
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
 
-scoped_ptr<UpdateChecker> UpdateChecker::Create(
-    const Configurator& config,
-    const UpdateCheckCallback& update_check_callback) {
-  scoped_ptr<UpdateCheckerImpl> update_checker(
-      new UpdateCheckerImpl(config, update_check_callback));
-  return update_checker.PassAs<UpdateChecker>();
-}
-
-UpdateCheckerImpl::UpdateCheckerImpl(
-    const Configurator& config,
-    const UpdateCheckCallback& update_check_callback)
-    : config_(config), update_check_callback_(update_check_callback) {
+UpdateCheckerImpl::UpdateCheckerImpl(const Configurator& config)
+    : config_(config) {
 }
 
 UpdateCheckerImpl::~UpdateCheckerImpl() {
@@ -111,24 +108,31 @@ UpdateCheckerImpl::~UpdateCheckerImpl() {
 
 bool UpdateCheckerImpl::CheckForUpdates(
     const std::vector<CrxUpdateItem*>& items_to_check,
-    const std::string& additional_attributes) {
+    const std::string& additional_attributes,
+    const UpdateCheckCallback& update_check_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (url_fetcher_)
-    return false;  // Another fetch is in progress.
+  if (request_sender_.get()) {
+    NOTREACHED();
+    return false;  // Another update check is in progress.
+  }
 
-  url_fetcher_.reset(SendProtocolRequest(
-      config_.UpdateUrl(),
+  update_check_callback_ = update_check_callback;
+
+  request_sender_.reset(new RequestSender(config_));
+  request_sender_->Send(
       BuildUpdateCheckRequest(config_, items_to_check, additional_attributes),
-      this,
-      config_.RequestContext()));
-
+      config_.UpdateUrl(),
+      base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
+                 base::Unretained(this)));
   return true;
 }
 
-void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
+void UpdateCheckerImpl::OnRequestSenderComplete(const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(url_fetcher_.get() == source);
+
+  const GURL original_url(source->GetOriginalURL());
+  VLOG(1) << "Update check request went to: " << original_url.spec();
 
   int error = 0;
   std::string error_message;
@@ -148,8 +152,15 @@ void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     VLOG(1) << "Update request failed: network error";
   }
 
-  url_fetcher_.reset();
-  update_check_callback_.Run(error, error_message, update_response.results());
+  request_sender_.reset();
+  update_check_callback_.Run(
+      original_url, error, error_message, update_response.results());
+}
+
+}  // namespace
+
+scoped_ptr<UpdateChecker> UpdateChecker::Create(const Configurator& config) {
+  return scoped_ptr<UpdateChecker>(new UpdateCheckerImpl(config));
 }
 
 }  // namespace component_updater

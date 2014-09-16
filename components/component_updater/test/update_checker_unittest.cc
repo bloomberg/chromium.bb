@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +20,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace component_updater {
 
@@ -41,7 +44,8 @@ class UpdateCheckerTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  void UpdateCheckComplete(int error,
+  void UpdateCheckComplete(const GURL& original_url,
+                           int error,
                            const std::string& error_message,
                            const UpdateResponse::Results& results);
 
@@ -59,6 +63,7 @@ class UpdateCheckerTest : public testing::Test {
   scoped_ptr<InterceptorFactory> interceptor_factory_;
   URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
 
+  GURL original_url_;
   int error_;
   std::string error_message_;
   UpdateResponse::Results results_;
@@ -102,7 +107,7 @@ void UpdateCheckerTest::TearDown() {
   config_.reset();
 
   // The PostInterceptor requires the message loop to run to destruct correctly.
-  // TODO: This is fragile and should be fixed.
+  // TODO(sorin): This is fragile and should be fixed.
   RunThreadsUntilIdle();
 }
 
@@ -128,9 +133,11 @@ void UpdateCheckerTest::Quit() {
 }
 
 void UpdateCheckerTest::UpdateCheckComplete(
+    const GURL& original_url,
     int error,
     const std::string& error_message,
     const UpdateResponse::Results& results) {
+  original_url_ = original_url;
   error_ = error;
   error_message_ = error_message;
   results_ = results;
@@ -157,16 +164,17 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  update_checker_ =
-      UpdateChecker::Create(*config_,
-                            base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                       base::Unretained(this))).Pass();
+  update_checker_ = UpdateChecker::Create(*config_).Pass();
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
 
-  update_checker_->CheckForUpdates(items_to_check, "extra=\"params\"");
+  update_checker_->CheckForUpdates(
+      items_to_check,
+      "extra=\"params\"",
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
 
   RunThreads();
 
@@ -190,6 +198,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
             post_interceptor_->GetRequests()[0].find("<hw physmemory="));
 
   // Sanity check the arguments of the callback after parsing.
+  EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
   EXPECT_EQ(0, error_);
   EXPECT_TRUE(error_message_.empty());
   EXPECT_EQ(1ul, results_.list.size());
@@ -198,33 +207,32 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_STREQ("1.0", results_.list[0].manifest.version.c_str());
 }
 
-TEST_F(UpdateCheckerTest, UpdateNetworkError) {
-  // Setting this expectation simulates a network error since the
-  // file is not found. Since setting the expectation fails, this function
-  // owns |request_matcher|.
-  scoped_ptr<PartialMatch> request_matcher(new PartialMatch("updatecheck"));
-  EXPECT_FALSE(post_interceptor_->ExpectRequest(request_matcher.get(),
-                                                test_file("no such file")));
+// Simulates a 403 server response error.
+TEST_F(UpdateCheckerTest, UpdateCheckError) {
+  EXPECT_TRUE(
+      post_interceptor_->ExpectRequest(new PartialMatch("updatecheck"), 403));
 
-  update_checker_ =
-      UpdateChecker::Create(*config_,
-                            base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
-                                       base::Unretained(this))).Pass();
+  update_checker_ = UpdateChecker::Create(*config_).Pass();
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
   items_to_check.push_back(&item);
 
-  update_checker_->CheckForUpdates(items_to_check, "");
+  update_checker_->CheckForUpdates(
+      items_to_check,
+      "",
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
 
   RunThreads();
 
-  EXPECT_EQ(0, post_interceptor_->GetHitCount())
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
   EXPECT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
-  EXPECT_NE(0, error_);
+  EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
+  EXPECT_EQ(403, error_);
   EXPECT_STREQ("network error", error_message_.c_str());
   EXPECT_EQ(0ul, results_.list.size());
 }
