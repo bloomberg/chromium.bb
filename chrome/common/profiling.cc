@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "gin/public/debug.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -146,14 +147,11 @@ void Profiling::ProcessStarted() {
     add_dynamic_symbol_func = base::debug::GetProfilerAddDynamicSymbolFunc();
     move_dynamic_symbol_func = base::debug::GetProfilerMoveDynamicSymbolFunc();
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (isolate != NULL &&
-        entry_hook_func != NULL &&
+    if (entry_hook_func != NULL &&
         add_dynamic_symbol_func != NULL &&
         move_dynamic_symbol_func != NULL) {
-      v8::V8::SetFunctionEntryHook(isolate, entry_hook_func);
-      v8::V8::SetJitCodeEventHandler(v8::kJitCodeEventDefault,
-                                     &JitCodeEventHandler);
+      gin::Debug::SetFunctionEntryHook(entry_hook_func);
+      gin::Debug::SetJitCodeEventHandler(&JitCodeEventHandler);
     }
   }
 

@@ -19,6 +19,7 @@ include_rules = [
   "+components/signin/core/common",
   "+components/translate/core/common",
   "+extensions/common",
+  "+gin/public",  # For profiling.cc
   "+google_apis/gaia",  # For gaia_switches.h
   "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media",

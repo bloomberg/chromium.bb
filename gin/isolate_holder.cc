@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "gin/array_buffer.h"
+#include "gin/debug_impl.h"
 #include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/v8_platform.h"
@@ -31,7 +32,10 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
 IsolateHolder::IsolateHolder() {
   CHECK(g_array_buffer_allocator)
       << "You need to invoke gin::IsolateHolder::Initialize first";
-  isolate_ = v8::Isolate::New();
+  v8::Isolate::CreateParams params;
+  params.entry_hook = DebugImpl::GetFunctionEntryHook();
+  params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
+  isolate_ = v8::Isolate::New(params);
   v8::ResourceConstraints constraints;
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                 base::SysInfo::AmountOfVirtualMemory(),
