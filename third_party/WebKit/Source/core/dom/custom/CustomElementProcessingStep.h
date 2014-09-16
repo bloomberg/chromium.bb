@@ -44,7 +44,7 @@ public:
 
     virtual ~CustomElementProcessingStep() { }
     virtual void dispatch(Element*) = 0;
-    virtual bool isCreated() const { return false; }
+    virtual bool isCreatedCallback() const { return false; }
 };
 
 }

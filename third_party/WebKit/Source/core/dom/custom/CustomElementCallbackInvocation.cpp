@@ -102,7 +102,7 @@ public:
 
 private:
     virtual void dispatch(Element*) OVERRIDE;
-    virtual bool isCreated() const OVERRIDE { return true; }
+    virtual bool isCreatedCallback() const OVERRIDE { return true; }
 };
 
 void CreatedInvocation::dispatch(Element* element)
