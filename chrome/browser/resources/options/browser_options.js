@@ -1030,6 +1030,13 @@ cr.define('options', function() {
      * @param {boolean} hasPairing True if the current profile has a pairing.
      */
     updateEasyUnlock_: function(hasPairing) {
+      // Hide "Set up" UI when the language is not en-US.
+      // TODO(xiyuan): Remove this after M38.
+      if (loadTimeData.getBoolean('easyUnlockAllowed')) {
+        $('easy-unlock-section').hidden =
+            !hasPairing && navigator.language != 'en-US';
+      }
+
       $('easy-unlock-setup').hidden = hasPairing;
       $('easy-unlock-enable').hidden = !hasPairing;
       if (!hasPairing && EasyUnlockTurnOffOverlay.getInstance().visible) {
