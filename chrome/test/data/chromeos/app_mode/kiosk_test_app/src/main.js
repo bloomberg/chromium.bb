@@ -13,7 +13,5 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
   chrome.app.window.create('app_main.html',
       { 'width': 1920,
         'height': 1080 },
-      function(window) {
-        window.close();
-  });
+      function(window) {});
 });

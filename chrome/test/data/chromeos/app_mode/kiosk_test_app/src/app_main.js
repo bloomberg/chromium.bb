@@ -3,6 +3,6 @@
 // found in the LICENSE file.
 
 window.addEventListener('load', function onload() {
-  window.close();
+  chrome.test.sendMessage('appWindowLoaded');
 });
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/ui/views/native_app_window_views.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
@@ -62,6 +63,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace em = enterprise_management;
 
@@ -421,7 +423,7 @@ class KioskTest : public OobeBaseTest {
     return *GetInstalledApp()->version();
   }
 
-  void WaitForAppLaunchSuccess() {
+  void WaitForAppLaunchAndOptionallyTerminateApp(bool terminate_app) {
     ExtensionTestMessageListener
         launch_data_check_listener("launchData.isKioskSession = true", false);
 
@@ -463,6 +465,10 @@ class KioskTest : public OobeBaseTest {
         login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() ==
             0.0f);
 
+    // Terminate the app.
+    if (terminate_app)
+      window->GetBaseWindow()->Close();
+
     // Wait until the app terminates if it is still running.
     if (!app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
       content::RunMessageLoop();
@@ -470,6 +476,10 @@ class KioskTest : public OobeBaseTest {
     // Check that the app had been informed that it is running in a kiosk
     // session.
     EXPECT_TRUE(launch_data_check_listener.was_satisfied());
+  }
+
+  void WaitForAppLaunchSuccess() {
+    WaitForAppLaunchAndOptionallyTerminateApp(true);
   }
 
   void WaitForAppLaunchNetworkTimeout() {
@@ -608,6 +618,72 @@ class KioskTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
   WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
+  ExtensionTestMessageListener
+      app_window_loaded_listener("appWindowLoaded", false);
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  app_window_loaded_listener.WaitUntilSatisfied();
+
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  ASSERT_TRUE(app_profile);
+
+  extensions::AppWindowRegistry* app_window_registry =
+      extensions::AppWindowRegistry::Get(app_profile);
+  extensions::AppWindow* window =
+      AppWindowWaiter(app_window_registry, test_app_id()).Wait();
+  ASSERT_TRUE(window);
+
+  // Gets the original width of the app window.
+  int original_width;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      window->web_contents(),
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(window.innerWidth);",
+      &original_width));
+
+  apps::NativeAppWindowViews* native_app_window_views =
+      static_cast<apps::NativeAppWindowViews*>(window->GetBaseWindow());
+  ui::AcceleratorTarget* accelerator_target =
+      static_cast<ui::AcceleratorTarget*>(native_app_window_views);
+
+  // Zoom in. Text is bigger and content window width becomes smaller.
+  accelerator_target->AcceleratorPressed(ui::Accelerator(
+      ui::VKEY_ADD, ui::EF_CONTROL_DOWN));
+  int width_zoomed_in;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      window->web_contents(),
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(window.innerWidth);",
+      &width_zoomed_in));
+  DCHECK_LT(width_zoomed_in, original_width);
+
+  // Go back to normal. Window width is restored.
+  accelerator_target->AcceleratorPressed(ui::Accelerator(
+      ui::VKEY_0, ui::EF_CONTROL_DOWN));
+  int width_zoom_normal;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      window->web_contents(),
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(window.innerWidth);",
+      &width_zoom_normal));
+  DCHECK_EQ(width_zoom_normal, original_width);
+
+  // Zoom out. Text is smaller and content window width becomes larger.
+  accelerator_target->AcceleratorPressed(ui::Accelerator(
+      ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN));
+  int width_zoomed_out;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      window->web_contents(),
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(window.innerWidth);",
+      &width_zoomed_out));
+  DCHECK_GT(width_zoomed_out, original_width);
+
+  // Terminate the app.
+  window->GetBaseWindow()->Close();
+  content::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
@@ -1459,7 +1535,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  WaitForAppLaunchSuccess();
+  WaitForAppLaunchAndOptionallyTerminateApp(false);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -1471,7 +1547,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   set_test_crx_file(test_app_id() + "_v2_read_and_verify_data.crx");
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  WaitForAppLaunchSuccess();
+  WaitForAppLaunchAndOptionallyTerminateApp(false);
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
