@@ -5,9 +5,8 @@
 # This module is not automatically loaded by the `cros` helper.  The filename
 # would need a "cros_" prefix to make that happen.  It lives here so that it
 # is alongside the cros_lint.py file.
-
-# TODO: See about merging with the pep257 project:
-# https://github.com/GreenSteam/pep257
+#
+# For msg namespaces, the 9xxx should generally be reserved for our own use.
 
 """Additional lint modules loaded by pylint.
 
@@ -21,6 +20,7 @@ as many/few checkers as we want in this one module.
 from __future__ import print_function
 
 import os
+import sys
 
 from pylint.checkers import BaseChecker
 from pylint.interfaces import IASTNGChecker
@@ -31,7 +31,10 @@ class DocStringChecker(BaseChecker):
 
   See our style guide for more info:
   http://dev.chromium.org/chromium-os/python-style-guidelines#TOC-Describing-arguments-in-docstrings
+
   """
+  # TODO: See about merging with the pep257 project:
+  # https://github.com/GreenSteam/pep257
 
   __implements__ = IASTNGChecker
 
@@ -39,7 +42,6 @@ class DocStringChecker(BaseChecker):
   priority = -1
   MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
   msgs = {
-      # The C9xxx namespace should be reserved for our own use.
       'C9001': ('Modules should have docstrings (even a one liner)',
                 ('Used when a module lacks a docstring entirely')),
       'C9002': ('Classes should have docstrings (even a one liner)',
@@ -274,6 +276,57 @@ class DocStringChecker(BaseChecker):
       self.add_message('C9011', node=node, line=node.fromlineno, args=margs)
 
 
+class Py3kCompatChecker(BaseChecker):
+  """Make sure we enforce py3k compatible features"""
+
+  __implements__ = IASTNGChecker
+
+  name = 'py3k_compat_checker'
+  priority = -1
+  MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
+  msgs = {
+      'W9100': ('Missing "from __future__ import print_function" line',
+                ('Used when a module misses print function import for py3k')),
+  }
+  options = ()
+
+  def __init__(self, *args, **kwargs):
+    super(Py3kCompatChecker, self).__init__(*args, **kwargs)
+    self.seen_print_func = False
+    self.saw_imports = False
+
+  def close(self):
+    """Called when done processing module"""
+    if not self.seen_print_func:
+      # Do not warn if moduler doesn't import anything at all (like
+      # empty __init__.py files).
+      if self.saw_imports:
+        self.add_message('W9100')
+
+  def _check_print_function(self, node):
+    """Verify print_function is imported"""
+    if node.modname == '__future__':
+      for name, _ in node.names:
+        if name == 'print_function':
+          self.seen_print_func = True
+
+  def visit_from(self, node):
+    """Process 'from' statements"""
+    self.saw_imports = True
+    self._check_print_function(node)
+
+  def visit_import(self, _node):
+    """Process 'import' statements"""
+    self.saw_imports = True
+
+
 def register(linter):
   """pylint will call this func to register all our checkers"""
-  linter.register_checker(DocStringChecker(linter))
+  # Walk all the classes in this module and register ours.
+  this_module = sys.modules[__name__]
+  for member in dir(this_module):
+    if (not member.endswith('Checker') or
+        member in ('BaseChecker', 'IASTNGChecker')):
+      continue
+    cls = getattr(this_module, member)
+    linter.register_checker(cls(linter))
