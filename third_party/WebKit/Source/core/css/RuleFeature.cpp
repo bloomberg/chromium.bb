@@ -195,7 +195,6 @@ void RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
 }
 
 RuleFeatureSet::RuleFeatureSet()
-    : m_targetedStyleRecalcEnabled(RuntimeEnabledFeatures::targetedStyleRecalcEnabled())
 {
 }
 
@@ -345,9 +344,7 @@ void RuleFeatureSet::addContentAttr(const AtomicString& attributeName)
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
     FeatureMetadata metadata;
-    InvalidationSetMode mode = UseSubtreeStyleChange;
-    if (m_targetedStyleRecalcEnabled)
-        mode = updateInvalidationSets(ruleData.selector());
+    InvalidationSetMode mode = updateInvalidationSets(ruleData.selector());
 
     collectFeaturesFromSelector(ruleData.selector(), metadata, mode);
     m_metadata.add(metadata);

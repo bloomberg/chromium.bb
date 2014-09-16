@@ -170,7 +170,6 @@ private:
     InvalidationSetMap m_attributeInvalidationSets;
     InvalidationSetMap m_idInvalidationSets;
     PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
-    bool m_targetedStyleRecalcEnabled;
     StyleInvalidator m_styleInvalidator;
 };
 
