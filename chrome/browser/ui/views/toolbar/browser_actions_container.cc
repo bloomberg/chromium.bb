@@ -50,22 +50,8 @@ using extensions::Extension;
 
 namespace {
 
-// Horizontal spacing between most items in the container, as well as after the
-// last item or chevron (if visible).
-const int kItemSpacing = ToolbarView::kStandardSpacing;
-
 // Horizontal spacing before the chevron (if visible).
-const int kChevronSpacing = kItemSpacing - 2;
-
-// The maximum number of icons to show per row when in overflow mode (showing
-// icons in the application menu).
-// TODO(devlin): Compute the right number of icons to show, depending on the
-//               menu width.
-#if defined(OS_LINUX)
-const int kIconsPerMenuRow = 8;  // The menu on Linux is wider.
-#else
-const int kIconsPerMenuRow = 7;
-#endif
+const int kChevronSpacing = ToolbarView::kStandardSpacing - 2;
 
 // A version of MenuButton with almost empty insets to fit properly on the
 // toolbar.
@@ -118,6 +104,12 @@ BrowserActionsContainer::DropPosition::DropPosition(
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
+
+// static
+int BrowserActionsContainer::icons_per_overflow_menu_row_ = 1;
+
+// static
+const int BrowserActionsContainer::kItemSpacing = ToolbarView::kStandardSpacing;
 
 // static
 bool BrowserActionsContainer::disable_animations_during_testing_ = false;
@@ -344,8 +336,8 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
     // When in overflow, y is multiline, so the pixel count is IconHeight()
     // times the number of rows needed.
     return gfx::Size(
-        IconCountToWidth(kIconsPerMenuRow, false),
-        (((icon_count - 1) / kIconsPerMenuRow) + 1) * IconHeight());
+        IconCountToWidth(icons_per_overflow_menu_row_, false),
+        (((icon_count - 1) / icons_per_overflow_menu_row_) + 1) * IconHeight());
   }
 
   // We calculate the size of the view by taking the current width and
@@ -358,6 +350,12 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
       std::max(MinimumNonemptyWidth(), container_width_ - resize_amount_),
       IconCountToWidth(-1, false));
   return gfx::Size(preferred_width, IconHeight());
+}
+
+int BrowserActionsContainer::GetHeightForWidth(int width) const {
+  if (in_overflow_mode())
+    icons_per_overflow_menu_row_ = (width - kItemSpacing) / IconWidth(true);
+  return GetPreferredSize().height();
 }
 
 gfx::Size BrowserActionsContainer::GetMinimumSize() const {
@@ -405,9 +403,9 @@ void BrowserActionsContainer::Layout() {
          i < browser_action_views_.size(); ++i) {
       BrowserActionView* view = browser_action_views_[i];
       size_t index = i - main_container_->VisibleBrowserActionsAfterAnimation();
-      int row_index = static_cast<int>(index) / kIconsPerMenuRow;
+      int row_index = static_cast<int>(index) / icons_per_overflow_menu_row_;
       int x = kItemSpacing + (index * IconWidth(true)) -
-          (row_index * IconWidth(true) * kIconsPerMenuRow);
+          (row_index * IconWidth(true) * icons_per_overflow_menu_row_);
       gfx::Rect rect_bounds(
           x, IconHeight() * row_index, icon_width, IconHeight());
       view->SetBoundsRect(rect_bounds);
@@ -502,9 +500,10 @@ int BrowserActionsContainer::OnDragUpdated(
     // visible icons. Otherwise, it's a full row (kIconsPerRow).
     visible_icons_on_row =
         row_index ==
-            static_cast<size_t>(visible_icons_on_row / kIconsPerMenuRow) ?
-                visible_icons_on_row % kIconsPerMenuRow :
-                kIconsPerMenuRow;
+            static_cast<size_t>(visible_icons_on_row /
+                                icons_per_overflow_menu_row_) ?
+                visible_icons_on_row % icons_per_overflow_menu_row_ :
+                icons_per_overflow_menu_row_;
   }
 
   // Because the user can drag outside the container bounds, we need to clamp to
@@ -541,8 +540,8 @@ int BrowserActionsContainer::OnPerformDrop(
             data.id());
   DCHECK(model_);
 
-  size_t i =
-      drop_position_->row * kIconsPerMenuRow + drop_position_->icon_in_row;
+  size_t i = drop_position_->row * icons_per_overflow_menu_row_ +
+             drop_position_->icon_in_row;
   if (in_overflow_mode())
     i += GetFirstVisibleIconIndex();
   // |i| now points to the item to the right of the drop indicator*, which is
@@ -1045,8 +1044,14 @@ int BrowserActionsContainer::IconCountToWidth(int icons,
       (icons == 0) ? 0 : ((icons * IconWidth(true)) - kItemSpacing);
   int chevron_size = chevron_ && display_chevron ?
       (kChevronSpacing + chevron_->GetPreferredSize().width()) : 0;
-  return ToolbarView::kStandardSpacing + icons_size + chevron_size +
-      ToolbarView::kStandardSpacing;
+  // In overflow mode, our padding is to use item spacing on either end (just so
+  // we can see the drop indicator). Otherwise we use the standard toolbar
+  // spacing.
+  // Note: These are actually the same thing, but, on the offchance one
+  // changes, let's get it right.
+  int padding =
+      2 * (in_overflow_mode() ? kItemSpacing : ToolbarView::kStandardSpacing);
+  return icons_size + chevron_size + padding;
 }
 
 size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {

@@ -12,6 +12,21 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
+
+namespace {
+
+// Returns the padding before the BrowserActionsContainer in the menu.
+int start_padding() {
+  // We pad enough on the left so that the first icon starts at the same point
+  // as the labels. We need to subtract 1 because we want the pixel *before*
+  // the label, and we subtract kItemSpacing because there needs to be padding
+  // so we can see the drop indicator.
+  return views::MenuItemView::label_start() - 1 -
+      BrowserActionsContainer::kItemSpacing;
+}
+
+}  // namespace
 
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
                                                    WrenchMenu* wrench_menu)
@@ -45,10 +60,20 @@ gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
   return container_->GetPreferredSize();
 }
 
+int ExtensionToolbarMenuView::GetHeightForWidth(int width) const {
+  const views::MenuConfig& menu_config =
+      static_cast<const views::MenuItemView*>(parent())->GetMenuConfig();
+  int end_padding = menu_config.arrow_to_edge_padding -
+                    BrowserActionsContainer::kItemSpacing;
+  width -= start_padding() + end_padding;
+
+  int height = container_->GetHeightForWidth(width);
+  return height;
+}
+
 void ExtensionToolbarMenuView::Layout() {
-  // All buttons are given the same width.
   gfx::Size sz = GetPreferredSize();
-  SetBounds(views::MenuItemView::label_start(), 0, sz.width(), sz.height());
+  SetBounds(start_padding() + 1, 0, sz.width(), sz.height());
   container_->SetBounds(0, 0, sz.width(), sz.height());
 }
 

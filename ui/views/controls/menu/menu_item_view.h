@@ -265,6 +265,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the preferred size of this item.
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
+  // Gets the preferred height for the given |width|. This is only different
+  // from GetPreferredSize().width() if the item has a child view with flexible
+  // dimensions.
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
+
   // Return the preferred dimensions of the item in pixel.
   const MenuItemDimensions& GetDimensions() const;
 

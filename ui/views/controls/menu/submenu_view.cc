@@ -114,9 +114,9 @@ void SubmenuView::Layout() {
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
     if (child->visible()) {
-      gfx::Size child_pref_size = child->GetPreferredSize();
-      child->SetBounds(x, y, menu_item_width, child_pref_size.height());
-      y += child_pref_size.height();
+      int child_height = child->GetHeightForWidth(menu_item_width);
+      child->SetBounds(x, y, menu_item_width, child_height);
+      y += child_height;
     }
   }
 }
@@ -130,7 +130,11 @@ gfx::Size SubmenuView::GetPreferredSize() const {
   int max_complex_width = 0;
   // The max. width of items which contain a label and maybe an accelerator.
   int max_simple_width = 0;
-  int height = 0;
+
+  // We perform the size calculation in two passes. In the first pass, we
+  // calculate the width of the menu. In the second, we calculate the height
+  // using that width. This allows views that have flexible widths to adjust
+  // accordingly.
   for (int i = 0; i < child_count(); ++i) {
     const View* child = child_at(i);
     if (!child->visible())
@@ -145,25 +149,31 @@ gfx::Size SubmenuView::GetPreferredSize() const {
           std::max(max_minor_text_width_, dimensions.minor_text_width);
       max_complex_width = std::max(max_complex_width,
           dimensions.standard_width + dimensions.children_width);
-      height += dimensions.height;
     } else {
-      gfx::Size child_pref_size =
-          child->visible() ? child->GetPreferredSize() : gfx::Size();
-      max_complex_width = std::max(max_complex_width, child_pref_size.width());
-      height += child_pref_size.height();
+      max_complex_width = std::max(max_complex_width,
+                                   child->GetPreferredSize().width());
     }
   }
   if (max_minor_text_width_ > 0) {
     max_minor_text_width_ +=
         GetMenuItem()->GetMenuConfig().label_to_minor_text_padding;
   }
+  // Finish calculating our optimum width.
   gfx::Insets insets = GetInsets();
-  return gfx::Size(
-      std::max(max_complex_width,
-               std::max(max_simple_width + max_minor_text_width_ +
-                        insets.width(),
-               minimum_preferred_width_ - 2 * insets.width())),
-      height + insets.height());
+  int width = std::max(max_complex_width,
+                       std::max(max_simple_width + max_minor_text_width_ +
+                                    insets.width(),
+                                minimum_preferred_width_ - 2 * insets.width()));
+
+  // Then, the height for that width.
+  int height = 0;
+  int menu_item_width = width - insets.width();
+  for (int i = 0; i < child_count(); ++i) {
+    const View* child = child_at(i);
+    height += child->visible() ? child->GetHeightForWidth(menu_item_width) : 0;
+  }
+
+  return gfx::Size(width, height + insets.height());
 }
 
 void SubmenuView::GetAccessibleState(ui::AXViewState* state) {

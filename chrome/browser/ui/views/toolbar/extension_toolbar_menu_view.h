@@ -27,6 +27,7 @@ class ExtensionToolbarMenuView : public views::View,
 
   // views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:

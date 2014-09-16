@@ -131,6 +131,10 @@ class BrowserActionsContainer
       public BrowserActionView::Delegate,
       public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
+  // Horizontal spacing between most items in the container, as well as after
+  // the last item or chevron (if visible).
+  static const int kItemSpacing;
+
   // Constructs a BrowserActionContainer for a particular |browser| object, and
   // specifies which view is the |owner_view|. For documentation of
   // |main_container|, see class comments.
@@ -197,6 +201,7 @@ class BrowserActionsContainer
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool GetDropFormats(int* formats,
@@ -254,6 +259,12 @@ class BrowserActionsContainer
   // unit tests.
   void TestSetIconVisibilityCount(size_t icons);
 
+  // Returns the width of an icon, optionally with its padding.
+  static int IconWidth(bool include_padding);
+
+  // Returns the height of an icon.
+  static int IconHeight();
+
   // During testing we can disable animations by setting this flag to true,
   // so that the bar resizes instantly, instead of having to poll it while it
   // animates to open/closed status.
@@ -267,18 +278,10 @@ class BrowserActionsContainer
   virtual void OnThemeChanged() OVERRIDE;
 
  private:
-  friend class BrowserActionView;  // So it can access IconWidth().
-
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
 
   typedef std::vector<BrowserActionView*> BrowserActionViews;
-
-  // Returns the width of an icon, optionally with its padding.
-  static int IconWidth(bool include_padding);
-
-  // Returns the height of an icon.
-  static int IconHeight();
 
   // extensions::ExtensionToolbarModel::Observer implementation.
   virtual void ToolbarExtensionAdded(const extensions::Extension* extension,
@@ -428,6 +431,10 @@ class BrowserActionsContainer
   base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
 
   ObserverList<BrowserActionsContainerObserver> observers_;
+
+  // The maximum number of icons to show per row when in overflow mode (showing
+  // icons in the application menu).
+  static int icons_per_overflow_menu_row_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

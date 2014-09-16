@@ -410,6 +410,19 @@ gfx::Size MenuItemView::GetPreferredSize() const {
                    dimensions.height);
 }
 
+int MenuItemView::GetHeightForWidth(int width) const {
+  // If this isn't a container, we can just use the preferred size's height.
+  if (!IsContainer())
+    return GetPreferredSize().height();
+
+  int height = child_at(0)->GetHeightForWidth(width);
+  if (!icon_view_ && GetRootMenuItem()->has_icons())
+    height = std::max(height, GetMenuConfig().check_height);
+  height += GetBottomMargin() + GetTopMargin();
+
+  return height;
+}
+
 const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() const {
   if (!is_dimensions_valid())
     dimensions_ = CalculateDimensions();
