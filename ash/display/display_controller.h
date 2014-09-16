@@ -46,7 +46,6 @@ class DisplayManager;
 class FocusActivationStore;
 class MirrorWindowController;
 class RootWindowController;
-class VirtualKeyboardWindowController;
 
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
@@ -88,10 +87,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   MirrorWindowController* mirror_window_controller() {
     return mirror_window_controller_.get();
-  }
-
-  VirtualKeyboardWindowController* virtual_keyboard_window_controller() {
-    return virtual_keyboard_window_controller_.get();
   }
 
   // Create a WindowTreeHost for the primary display. This replaces
@@ -216,8 +211,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   scoped_ptr<CursorWindowController> cursor_window_controller_;
   scoped_ptr<MirrorWindowController> mirror_window_controller_;
-  scoped_ptr<VirtualKeyboardWindowController>
-      virtual_keyboard_window_controller_;
 
   // Stores the curent cursor location (in native coordinates) used to
   // restore the cursor location when display configuration

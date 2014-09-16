@@ -435,12 +435,6 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
     display_info_list.push_back(info);
   }
   AddMirrorDisplayInfoIfAny(&display_info_list);
-  if (virtual_keyboard_root_window_enabled() &&
-      display_id == non_desktop_display_.id()) {
-    DisplayInfo info = GetDisplayInfo(display_id);
-    info.set_rotation(rotation);
-    display_info_list.push_back(info);
-  }
   UpdateDisplays(display_info_list);
 }
 
@@ -1078,10 +1072,6 @@ void DisplayManager::ToggleDisplayScaleFactor() {
 
 #if defined(OS_CHROMEOS)
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
-  // TODO(oshima|bshe): Support external display on the system
-  // that has virtual keyboard display.
-  if (second_display_mode_ == VIRTUAL_KEYBOARD)
-    return;
   SetSecondDisplayMode(enabled ? MIRRORING : EXTENDED);
 }
 

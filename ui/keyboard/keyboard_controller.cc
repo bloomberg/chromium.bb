@@ -26,7 +26,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/masked_window_targeter.h"
 
@@ -407,11 +406,6 @@ void KeyboardController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
   if (!container_.get())
     return;
-
-  if (IsKeyboardUsabilityExperimentEnabled()) {
-    ShowKeyboardInternal();
-    return;
-  }
 
   type_ = client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 

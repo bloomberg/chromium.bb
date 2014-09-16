@@ -36,10 +36,6 @@ KEYBOARD_EXPORT extern const char kDisableVirtualKeyboardOverscroll[];
 // to provide access to content that would otherwise be occluded.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboardOverscroll[];
 
-// Enables the keyboard usability experiment. This is an experimental mode for
-// testing the usability of various experimental keyboard layouts.
-KEYBOARD_EXPORT extern const char kKeyboardUsabilityExperiment[];
-
 }  // namespace switches
 }  // namespace keyboard
 

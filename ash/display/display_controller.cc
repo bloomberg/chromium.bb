@@ -14,7 +14,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
-#include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
@@ -251,8 +250,6 @@ DisplayController::~DisplayController() {
 void DisplayController::Start() {
   // Created here so that Shell has finished being created. Adds itself
   // as a ShellObserver.
-  virtual_keyboard_window_controller_.reset(
-      new VirtualKeyboardWindowController);
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
 }
@@ -264,7 +261,6 @@ void DisplayController::Shutdown() {
 
   cursor_window_controller_.reset();
   mirror_window_controller_.reset();
-  virtual_keyboard_window_controller_.reset();
 
   Shell::GetScreen()->RemoveObserver(this);
 
@@ -666,12 +662,6 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
     case DisplayManager::MIRRORING:
       mirror_window_controller_->UpdateWindow(info);
       cursor_window_controller_->UpdateContainer();
-      virtual_keyboard_window_controller_->Close();
-      break;
-    case DisplayManager::VIRTUAL_KEYBOARD:
-      mirror_window_controller_->Close();
-      cursor_window_controller_->UpdateContainer();
-      virtual_keyboard_window_controller_->UpdateWindow(info);
       break;
     case DisplayManager::EXTENDED:
       NOTREACHED();
@@ -681,7 +671,6 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
 void DisplayController::CloseNonDesktopDisplay() {
   mirror_window_controller_->Close();
   cursor_window_controller_->UpdateContainer();
-  virtual_keyboard_window_controller_->Close();
 }
 
 void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {

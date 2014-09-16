@@ -21,7 +21,5 @@ const char kDisableVirtualKeyboardOverscroll[] =
 const char kEnableVirtualKeyboardOverscroll[] =
     "enable-virtual-keyboard-overscroll";
 
-const char kKeyboardUsabilityExperiment[] = "keyboard-usability-experiment";
-
 }  // namespace switches
 }  // namespace keyboard

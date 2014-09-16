@@ -643,13 +643,11 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
-    keyboard_controller->AddObserver(panel_layout_manager_);
-    keyboard_controller->AddObserver(docked_layout_manager_);
-    keyboard_controller->AddObserver(workspace_controller_->layout_manager());
-    Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
-  }
+  keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
+  keyboard_controller->AddObserver(panel_layout_manager_);
+  keyboard_controller->AddObserver(docked_layout_manager_);
+  keyboard_controller->AddObserver(workspace_controller_->layout_manager());
+  Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(
       kShellWindowId_VirtualKeyboardParentContainer);
   DCHECK(parent);
@@ -675,17 +673,15 @@ void RootWindowController::DeactivateKeyboard(
         kShellWindowId_VirtualKeyboardParentContainer);
     DCHECK(parent);
     parent->RemoveChild(keyboard_container);
-    if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-      // Virtual keyboard may be deactivated while still showing, notify all
-      // observers that keyboard bounds changed to 0 before remove them.
-      keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
-      keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
-      keyboard_controller->RemoveObserver(panel_layout_manager_);
-      keyboard_controller->RemoveObserver(docked_layout_manager_);
-      keyboard_controller->RemoveObserver(
-          workspace_controller_->layout_manager());
-      Shell::GetInstance()->delegate()->VirtualKeyboardActivated(false);
-    }
+    // Virtual keyboard may be deactivated while still showing, notify all
+    // observers that keyboard bounds changed to 0 before remove them.
+    keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
+    keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
+    keyboard_controller->RemoveObserver(panel_layout_manager_);
+    keyboard_controller->RemoveObserver(docked_layout_manager_);
+    keyboard_controller->RemoveObserver(
+        workspace_controller_->layout_manager());
+    Shell::GetInstance()->delegate()->VirtualKeyboardActivated(false);
   }
 }
 
@@ -745,8 +741,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
   if (root_window_type == PRIMARY) {
     root_window_layout()->OnWindowResized();
-    if (!keyboard::IsKeyboardUsabilityExperimentEnabled())
-      shell->InitKeyboard();
+    shell->InitKeyboard();
   } else {
     root_window_layout()->OnWindowResized();
     ash_host_->AsWindowTreeHost()->Show();

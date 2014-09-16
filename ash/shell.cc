@@ -23,7 +23,6 @@
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
-#include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
@@ -452,13 +451,8 @@ void Shell::CreateKeyboard() {
   // TODO(bshe): Primary root window controller may not be the controller to
   // attach virtual keyboard. See http://crbug.com/303429
   InitKeyboard();
-  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    display_controller()->virtual_keyboard_window_controller()->
-        ActivateKeyboard(keyboard::KeyboardController::GetInstance());
-  } else {
-    GetPrimaryRootWindowController()->
-        ActivateKeyboard(keyboard::KeyboardController::GetInstance());
-  }
+  GetPrimaryRootWindowController()->
+      ActivateKeyboard(keyboard::KeyboardController::GetInstance());
 }
 
 void Shell::DeactivateKeyboard() {
@@ -829,9 +823,6 @@ Shell::~Shell() {
 
 void Shell::Init(const ShellInitParams& init_params) {
   delegate_->PreInit();
-  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    display_manager_->SetSecondDisplayMode(DisplayManager::VIRTUAL_KEYBOARD);
-  }
   bool display_initialized = display_manager_->InitFromCommandLine();
 #if defined(OS_CHROMEOS)
   display_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());

@@ -70,13 +70,9 @@ class ASH_EXPORT DisplayManager
   // 1) EXTENDED mode extends the desktop to the second dislpay.
   // 2) MIRRORING mode copies the content of the primary display to
   //    the 2nd display. (Software Mirroring).
-  // 3) In VIRTUAL_KEYBOARD mode, the 2nd display is used as a
-  //    dedicated display for virtual keyboard, and it is not
-  //    recognized as a part of desktop.
   enum SecondDisplayMode {
     EXTENDED,
-    MIRRORING,
-    VIRTUAL_KEYBOARD
+    MIRRORING
   };
 
   // Returns the list of possible UI scales for the display.
@@ -289,10 +285,6 @@ class ASH_EXPORT DisplayManager
 #endif
   bool software_mirroring_enabled() const {
     return second_display_mode_ == MIRRORING;
-  };
-
-  bool virtual_keyboard_root_window_enabled() const {
-    return second_display_mode_ == VIRTUAL_KEYBOARD;
   };
 
   // Sets/gets second display mode.

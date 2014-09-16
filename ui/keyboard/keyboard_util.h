@@ -79,9 +79,6 @@ KEYBOARD_EXPORT std::string GetKeyboardLayout();
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
-// Returns true if the keyboard usability test is enabled.
-KEYBOARD_EXPORT bool IsKeyboardUsabilityExperimentEnabled();
-
 // Returns true if keyboard overscroll mode is enabled.
 KEYBOARD_EXPORT bool IsKeyboardOverscrollEnabled();
 

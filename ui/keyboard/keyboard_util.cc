@@ -59,13 +59,8 @@ gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
   // Initialize default keyboard height to 0. The keyboard window height should
   // only be set by window.resizeTo in virtual keyboard web contents. Otherwise,
   // the default height may conflict with the new height and causing some
-  // strange animation issues. For keyboard usability experiments, a full screen
-  // virtual keyboard window is always preferred.
-  int keyboard_height =
-      keyboard::IsKeyboardUsabilityExperimentEnabled() ?
-          window_bounds.height() : 0;
-
-  return KeyboardBoundsFromWindowBounds(window_bounds, keyboard_height);
+  // strange animation issues.
+  return KeyboardBoundsFromWindowBounds(window_bounds, 0);
 }
 
 gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds,
@@ -109,14 +104,8 @@ bool IsKeyboardEnabled() {
   // Check if any of the flags are enabled.
   return CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableVirtualKeyboard) ||
-         IsKeyboardUsabilityExperimentEnabled() ||
          g_touch_keyboard_enabled ||
          (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
-}
-
-bool IsKeyboardUsabilityExperimentEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kKeyboardUsabilityExperiment);
 }
 
 bool IsKeyboardOverscrollEnabled() {

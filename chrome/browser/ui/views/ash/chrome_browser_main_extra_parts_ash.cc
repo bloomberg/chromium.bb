@@ -19,7 +19,6 @@
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/keyboard/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
@@ -107,12 +106,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
   // Activate virtual keyboard after profile is initialized. It depends on the
-  // default profile. If keyboard usability experiment flag is set, defer the
-  // activation to UpdateWindow() in virtual_keyboard_window_controller.cc.
-  if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
-  }
+  // default profile.
+  ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+      keyboard::KeyboardController::GetInstance());
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
