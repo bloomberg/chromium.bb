@@ -383,6 +383,7 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
     return;
 
   base::TrimWhitespace(new_profile_name, base::TRIM_ALL, &new_profile_name);
+  CHECK(!new_profile_name.empty());
   profiles::UpdateProfileName(profile, new_profile_name);
 }
 

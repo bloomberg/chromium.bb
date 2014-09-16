@@ -82,6 +82,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
   bool supervised_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
     base::TrimWhitespace(name, base::TRIM_ALL, &name);
+    CHECK(!name.empty());
     if (args->GetBoolean(2, &create_shortcut)) {
       bool success = args->GetBoolean(3, &supervised_user);
       DCHECK(success);
