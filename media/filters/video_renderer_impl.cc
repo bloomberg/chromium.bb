@@ -92,8 +92,8 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
                  weak_factory_.GetWeakPtr()));
 }
 
-void VideoRendererImpl::StartPlaying() {
-  DVLOG(1) << __FUNCTION__;
+void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
+  DVLOG(1) << __FUNCTION__ << "(" << timestamp.InMicroseconds() << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kFlushed);
@@ -102,7 +102,7 @@ void VideoRendererImpl::StartPlaying() {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kPlaying;
-  start_timestamp_ = get_time_cb_.Run();
+  start_timestamp_ = timestamp;
   AttemptRead_Locked();
 }
 

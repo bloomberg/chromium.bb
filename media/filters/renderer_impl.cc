@@ -104,7 +104,7 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
   if (audio_renderer_)
     audio_renderer_->StartPlaying();
   if (video_renderer_)
-    video_renderer_->StartPlaying();
+    video_renderer_->StartPlayingFrom(time);
 }
 
 void RendererImpl::SetPlaybackRate(float playback_rate) {

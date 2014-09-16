@@ -57,10 +57,11 @@ class MEDIA_EXPORT VideoRenderer {
   // BUFFERING_HAVE_NOTHING while flushing is in progress.
   virtual void Flush(const base::Closure& callback) = 0;
 
-  // Starts playback by reading from |stream| and decoding and rendering video.
+  // Starts playback at |timestamp| by reading from |stream| and decoding and
+  // rendering video.
   //
   // Only valid to call after a successful Initialize() or Flush().
-  virtual void StartPlaying() = 0;
+  virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);

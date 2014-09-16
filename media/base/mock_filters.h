@@ -127,7 +127,7 @@ class MockVideoRenderer : public VideoRenderer {
                                 const PipelineStatusCB& error_cb,
                                 const TimeDeltaCB& get_time_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
-  MOCK_METHOD0(StartPlaying, void());
+  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);

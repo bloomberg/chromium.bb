@@ -68,7 +68,7 @@ class MEDIA_EXPORT VideoRendererImpl
                           const PipelineStatusCB& error_cb,
                           const TimeDeltaCB& get_time_cb) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void StartPlaying() OVERRIDE;
+  virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
 
   // PlatformThread::Delegate implementation.
   virtual void ThreadMain() OVERRIDE;
@@ -140,7 +140,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Important detail: being in kPlaying doesn't imply that video is being
   // rendered. Rather, it means that the renderer is ready to go. The actual
-  // rendering of video is controlled by time advancing via |time_cb_|.
+  // rendering of video is controlled by time advancing via |get_time_cb_|.
   //
   //   kUninitialized
   //         | Initialize()
@@ -151,7 +151,7 @@ class MEDIA_EXPORT VideoRendererImpl
   //         |
   //         V            Decoders reset
   //      kFlushed <------------------ kFlushing
-  //         | StartPlaying()             ^
+  //         | StartPlayingFrom()         ^
   //         |                            |
   //         |                            | Flush()
   //         `---------> kPlaying --------'

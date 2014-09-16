@@ -110,9 +110,10 @@ class VideoRendererImplTest : public ::testing::Test {
         base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)));
   }
 
-  void StartPlaying() {
-    SCOPED_TRACE("StartPlaying()");
-    renderer_->StartPlaying();
+  void StartPlayingFrom(int milliseconds) {
+    SCOPED_TRACE(base::StringPrintf("StartPlayingFrom(%d)", milliseconds));
+    renderer_->StartPlayingFrom(
+        base::TimeDelta::FromMilliseconds(milliseconds));
     message_loop_.RunUntilIdle();
   }
 
@@ -330,12 +331,12 @@ TEST_F(VideoRendererImplTest, Initialize) {
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, InitializeAndStartPlaying) {
+TEST_F(VideoRendererImplTest, InitializeAndStartPlayingFrom) {
   Initialize();
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
   Destroy();
 }
 
@@ -349,7 +350,7 @@ TEST_F(VideoRendererImplTest, DestroyWhileFlushing) {
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING));
   renderer_->Flush(NewExpectedClosure());
   Destroy();
@@ -360,13 +361,13 @@ TEST_F(VideoRendererImplTest, Play) {
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
   Destroy();
 }
 
 TEST_F(VideoRendererImplTest, FlushWithNothingBuffered) {
   Initialize();
-  StartPlaying();
+  StartPlayingFrom(0);
 
   // We shouldn't expect a buffering state change since we never reached
   // BUFFERING_HAVE_ENOUGH.
@@ -379,7 +380,7 @@ TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
 
   QueueFrames("error");
   SatisfyPendingRead();
@@ -387,47 +388,44 @@ TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, DecodeError_DuringStartPlaying) {
+TEST_F(VideoRendererImplTest, DecodeError_DuringStartPlayingFrom) {
   Initialize();
   QueueFrames("error");
-  StartPlaying();
+  StartPlayingFrom(0);
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, StartPlaying_Exact) {
+TEST_F(VideoRendererImplTest, StartPlayingFrom_Exact) {
   Initialize();
   QueueFrames("50 60 70 80 90");
 
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(60)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  AdvanceTimeInMs(60);
-  StartPlaying();
+  StartPlayingFrom(60);
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, StartPlaying_RightBefore) {
+TEST_F(VideoRendererImplTest, StartPlayingFrom_RightBefore) {
   Initialize();
   QueueFrames("50 60 70 80 90");
 
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(50)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  AdvanceTimeInMs(59);
-  StartPlaying();
+  StartPlayingFrom(59);
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, StartPlaying_RightAfter) {
+TEST_F(VideoRendererImplTest, StartPlayingFrom_RightAfter) {
   Initialize();
   QueueFrames("50 60 70 80 90");
 
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(60)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  AdvanceTimeInMs(61);
-  StartPlaying();
+  StartPlayingFrom(61);
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, StartPlaying_LowDelay) {
+TEST_F(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
   // In low-delay mode only one frame is required to finish preroll.
   InitializeWithLowDelay(true);
   QueueFrames("0");
@@ -438,7 +436,7 @@ TEST_F(VideoRendererImplTest, StartPlaying_LowDelay) {
       .Times(AnyNumber());
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
-  StartPlaying();
+  StartPlayingFrom(0);
 
   QueueFrames("10");
   SatisfyPendingRead();
@@ -452,26 +450,13 @@ TEST_F(VideoRendererImplTest, StartPlaying_LowDelay) {
   Destroy();
 }
 
-TEST_F(VideoRendererImplTest, PlayAfterStartPlaying) {
-  Initialize();
-  QueueFrames("0 10 20 30");
-  EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
-  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
-
-  // Check that there is an outstanding Read() request.
-  EXPECT_TRUE(IsReadPending());
-
-  Destroy();
-}
-
 // Verify that a late decoder response doesn't break invariants in the renderer.
 TEST_F(VideoRendererImplTest, DestroyDuringOutstandingRead) {
   Initialize();
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
 
   // Check that there is an outstanding Read() request.
   EXPECT_TRUE(IsReadPending());
@@ -489,7 +474,7 @@ TEST_F(VideoRendererImplTest, Underflow) {
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  StartPlaying();
+  StartPlayingFrom(0);
 
   // Advance time slightly. Frames should be dropped and we should NOT signal
   // having nothing.

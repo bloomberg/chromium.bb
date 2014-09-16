@@ -172,10 +172,11 @@ class RendererImplTest : public ::testing::Test {
     DCHECK(audio_stream_ || video_stream_);
     EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
 
+    base::TimeDelta start_time(
+        base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs));
+
     if (audio_stream_) {
-      EXPECT_CALL(time_source_,
-                  SetMediaTime(base::TimeDelta::FromMilliseconds(
-                      kStartPlayingTimeInMs)));
+      EXPECT_CALL(time_source_, SetMediaTime(start_time));
       EXPECT_CALL(time_source_, StartTicking());
       EXPECT_CALL(*audio_renderer_, StartPlaying())
           .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
@@ -183,13 +184,12 @@ class RendererImplTest : public ::testing::Test {
     }
 
     if (video_stream_) {
-      EXPECT_CALL(*video_renderer_, StartPlaying())
+      EXPECT_CALL(*video_renderer_, StartPlayingFrom(start_time))
           .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                       BUFFERING_HAVE_ENOUGH));
     }
 
-    renderer_impl_->StartPlayingFrom(
-        base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs));
+    renderer_impl_->StartPlayingFrom(start_time);
     base::RunLoop().RunUntilIdle();
   }
 
