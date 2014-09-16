@@ -175,8 +175,13 @@ void ChannelMojo::OnConnected(mojo::ScopedMessagePipeHandle pipe) {
       make_scoped_ptr(new internal::MessageReader(pipe.Pass(), this));
 
   for (size_t i = 0; i < pending_messages_.size(); ++i) {
-    message_reader_->Send(make_scoped_ptr(pending_messages_[i]));
+    bool sent = message_reader_->Send(make_scoped_ptr(pending_messages_[i]));
     pending_messages_[i] = NULL;
+    if (!sent) {
+      pending_messages_.clear();
+      listener_->OnChannelError();
+      return;
+    }
   }
 
   pending_messages_.clear();
