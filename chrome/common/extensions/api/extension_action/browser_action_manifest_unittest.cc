@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_icon_set.h"
@@ -17,7 +17,7 @@ namespace errors = manifest_errors;
 
 namespace {
 
-class BrowserActionManifestTest : public ChromeManifestTest {
+class BrowserActionManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(BrowserActionManifestTest,
@@ -105,7 +105,7 @@ TEST_F(BrowserActionManifestTest,
 
   base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
-  LoadAndExpectError(ManifestData(manifest_value.get(), "Invalid default icon"),
+  LoadAndExpectError(Manifest(manifest_value.get(), "Invalid default icon"),
                      errors::kInvalidIconPath);
 }
 

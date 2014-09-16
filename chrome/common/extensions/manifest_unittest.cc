@@ -23,10 +23,9 @@ namespace extensions {
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-// Not named "ManifestTest" because a test utility class has that name.
-class ManifestUnitTest : public testing::Test {
+class ManifestTest : public testing::Test {
  public:
-  ManifestUnitTest() : default_value_("test") {}
+  ManifestTest() : default_value_("test") {}
 
  protected:
   void AssertType(Manifest* manifest, Manifest::Type type) {
@@ -60,7 +59,7 @@ class ManifestUnitTest : public testing::Test {
 };
 
 // Verifies that extensions can access the correct keys.
-TEST_F(ManifestUnitTest, Extension) {
+TEST_F(ManifestTest, Extension) {
   scoped_ptr<base::DictionaryValue> manifest_value(new base::DictionaryValue());
   manifest_value->SetString(keys::kName, "extension");
   manifest_value->SetString(keys::kVersion, "1");
@@ -118,7 +117,7 @@ TEST_F(ManifestUnitTest, Extension) {
 }
 
 // Verifies that key restriction based on type works.
-TEST_F(ManifestUnitTest, ExtensionTypes) {
+TEST_F(ManifestTest, ExtensionTypes) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");
@@ -174,7 +173,7 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
 };
 
 // Verifies that the getters filter restricted keys.
-TEST_F(ManifestUnitTest, RestrictedKeys) {
+TEST_F(ManifestTest, RestrictedKeys) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");

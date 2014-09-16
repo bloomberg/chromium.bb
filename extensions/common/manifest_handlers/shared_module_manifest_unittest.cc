@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/version.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "extensions/common/manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -23,11 +23,11 @@ const char* kNoImport = "cccccccccccccccccccccccccccccccc";
 
 namespace extensions {
 
-class SharedModuleManifestTest : public ManifestTest {
+class SharedModuleManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(SharedModuleManifestTest, ExportsAll) {
-  ManifestData manifest("shared_module_export.json");
+  Manifest manifest("shared_module_export.json");
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
@@ -49,7 +49,7 @@ TEST_F(SharedModuleManifestTest, ExportsAll) {
 }
 
 TEST_F(SharedModuleManifestTest, ExportWhitelistAll) {
-  ManifestData manifest("shared_module_export_no_whitelist.json");
+  Manifest manifest("shared_module_export_no_whitelist.json");
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
@@ -62,7 +62,7 @@ TEST_F(SharedModuleManifestTest, ExportWhitelistAll) {
 }
 
 TEST_F(SharedModuleManifestTest, ExportFoo) {
-  ManifestData manifest("shared_module_export_foo.json");
+  Manifest manifest("shared_module_export_foo.json");
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
@@ -108,7 +108,7 @@ TEST_F(SharedModuleManifestTest, SharedModuleStaticFunctions) {
 }
 
 TEST_F(SharedModuleManifestTest, Import) {
-  ManifestData manifest("shared_module_import.json");
+  Manifest manifest("shared_module_import.json");
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 

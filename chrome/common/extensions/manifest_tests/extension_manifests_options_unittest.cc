@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -14,7 +14,7 @@ using namespace extensions;
 
 namespace errors = extensions::manifest_errors;
 
-class OptionsPageManifestTest : public ChromeManifestTest {
+class OptionsPageManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(OptionsPageManifestTest, OptionsPageInApps) {

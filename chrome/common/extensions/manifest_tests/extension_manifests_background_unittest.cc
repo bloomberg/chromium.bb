@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,7 +20,7 @@ namespace extensions {
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-class ExtensionManifestBackgroundTest : public ChromeManifestTest {
+class ExtensionManifestBackgroundTest : public ExtensionManifestTest {
 };
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPermission) {
@@ -35,7 +35,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   ASSERT_TRUE(manifest.get());
 
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(manifest.get(), "")));
+      LoadAndExpectSuccess(Manifest(manifest.get(), "")));
   ASSERT_TRUE(extension.get());
   const std::vector<std::string>& background_scripts =
       BackgroundInfo::GetBackgroundScripts(extension.get());
@@ -49,7 +49,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
       BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest->SetString("background_page", "monkey.html");
-  LoadAndExpectError(ManifestData(manifest.get(), ""),
+  LoadAndExpectError(Manifest(manifest.get(), ""),
                      errors::kInvalidBackgroundCombination);
 }
 
@@ -65,14 +65,14 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPage) {
   scoped_ptr<base::DictionaryValue> manifest(
       LoadManifest("background_page_legacy.json", &error));
   ASSERT_TRUE(manifest.get());
-  extension = LoadAndExpectSuccess(ManifestData(manifest.get(), ""));
+  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
   ASSERT_TRUE(extension.get());
   EXPECT_EQ("/foo.html",
             BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
   LoadAndExpectWarning(
-      ManifestData(manifest.get(), ""),
+      Manifest(manifest.get(), ""),
       "'background_page' requires manifest version of 1 or lower.");
 }
 
@@ -97,14 +97,14 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   manifest->SetBoolean(keys::kBackgroundPersistent, false);
   manifest->SetInteger(keys::kManifestVersion, 2);
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(manifest.get(), "")));
+      LoadAndExpectSuccess(Manifest(manifest.get(), "")));
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
   base::ListValue* permissions = new base::ListValue();
   permissions->Append(new base::StringValue("webRequest"));
   manifest->Set(keys::kPermissions, permissions);
-  LoadAndExpectError(ManifestData(manifest.get(), ""),
+  LoadAndExpectError(Manifest(manifest.get(), ""),
                      errors::kWebRequestConflictsWithLazyBackground);
 }
 

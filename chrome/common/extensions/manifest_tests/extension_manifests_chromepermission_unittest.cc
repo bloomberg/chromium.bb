@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -17,16 +17,14 @@ namespace extensions {
 
 namespace errors = manifest_errors;
 
-typedef ChromeManifestTest ChromePermissionManifestTest;
-
-TEST_F(ChromePermissionManifestTest, ChromeURLPermissionInvalid) {
+TEST_F(ExtensionManifestTest, ChromeURLPermissionInvalid) {
   LoadAndExpectWarning("permission_chrome_url_invalid.json",
                        ErrorUtils::FormatErrorMessage(
                            errors::kInvalidPermissionScheme,
                            chrome::kChromeUINewTabURL));
 }
 
-TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
+TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   // Ignore the policy delegate for this test.
   PermissionsData::SetPolicyDelegate(NULL);
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -41,14 +39,13 @@ TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
       << error;
 }
 
-TEST_F(ChromePermissionManifestTest,
-       ChromeResourcesPermissionValidOnlyForComponents) {
+TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   LoadAndExpectWarning("permission_chrome_resources_url.json",
                        ErrorUtils::FormatErrorMessage(
                            errors::kInvalidPermissionScheme,
                            "chrome://resources/"));
   std::string error;
-  LoadExtension(ManifestData("permission_chrome_resources_url.json"),
+  LoadExtension(Manifest("permission_chrome_resources_url.json"),
                 &error,
                 extensions::Manifest::COMPONENT,
                 Extension::NO_FLAGS);

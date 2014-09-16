@@ -7,7 +7,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -28,7 +28,7 @@ const char kWhitelistID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-class InitValueManifestTest : public ChromeManifestTest {
+class InitValueManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {
