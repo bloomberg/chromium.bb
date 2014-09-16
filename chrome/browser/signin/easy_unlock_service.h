@@ -88,8 +88,8 @@ class EasyUnlockService : public KeyedService {
   // the app if it is installed but disabled.
   void LoadApp();
 
-  // Disables the Easy unlock component app.
-  void DisableApp();
+  // Disables the Easy unlock component app if it's loaded.
+  void DisableAppIfLoaded();
 
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();

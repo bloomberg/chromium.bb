@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/easy_unlock_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -126,7 +128,7 @@ class EasyUnlockService::PowerMonitor :
  private:
   // chromeos::PowerManagerClient::Observer:
   virtual void SuspendImminent() OVERRIDE {
-    service_->DisableApp();
+    service_->DisableAppIfLoaded();
     service_->screenlock_state_handler_.reset();
   }
 
@@ -358,35 +360,23 @@ void EasyUnlockService::LoadApp() {
     extensions::ComponentLoader* loader = GetComponentLoader(profile_);
     if (!loader->Exists(extension_misc::kEasyUnlockAppId)) {
       loader->Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
-    } else {
-      extensions::ExtensionRegistry* registry =
-          extensions::ExtensionRegistry::Get(profile_);
-
-      // If the app is installed but disabled, then enable it.
-      if (registry->GetExtensionById(extension_misc::kEasyUnlockAppId,
-                                     extensions::ExtensionRegistry::DISABLED)) {
-        ExtensionService* extension_service =
-            extensions::ExtensionSystem::Get(profile_)->extension_service();
-        extension_service->EnableExtension(extension_misc::kEasyUnlockAppId);
-      }
     }
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    extension_service->EnableExtension(extension_misc::kEasyUnlockAppId);
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
-void EasyUnlockService::DisableApp() {
+void EasyUnlockService::DisableAppIfLoaded() {
   extensions::ComponentLoader* loader = GetComponentLoader(profile_);
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+  if (!loader->Exists(extension_misc::kEasyUnlockAppId))
+    return;
 
-  if (loader->Exists(extension_misc::kEasyUnlockAppId) &&
-      registry->GetExtensionById(extension_misc::kEasyUnlockAppId,
-                                 extensions::ExtensionRegistry::ENABLED)) {
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    extension_service->DisableExtension(extension_misc::kEasyUnlockAppId,
-                                        extensions::Extension::DISABLE_RELOAD);
-  }
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extension_service->DisableExtension(extension_misc::kEasyUnlockAppId,
+                                      extensions::Extension::DISABLE_RELOAD);
 }
 
 void EasyUnlockService::UpdateAppState() {
@@ -398,7 +388,7 @@ void EasyUnlockService::UpdateAppState() {
     power_monitor_.reset(new PowerMonitor(this));
 #endif
   } else {
-    DisableApp();
+    DisableAppIfLoaded();
     // Reset the screenlock state handler to make sure Screenlock state set
     // by Easy Unlock app is reset.
     screenlock_state_handler_.reset();
