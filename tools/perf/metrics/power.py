@@ -172,6 +172,7 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
     over the period recorded by the input.
   """
   cpu_delta = {}
+  total = 0
   for process_type in cpu_stats:
     assert process_type in start_cpu_stats, 'Mismatching process types'
     # Skip any process_types that are empty.
@@ -187,4 +188,6 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
     idle_wakeup_delta = (cpu_stats[process_type]['IdleWakeupCount'] -
                         start_cpu_stats[process_type]['IdleWakeupCount'])
     cpu_delta[process_type] = idle_wakeup_delta.total_sum()
+    total = total + cpu_delta[process_type]
+  cpu_delta['Total'] = total
   return cpu_delta
