@@ -756,6 +756,12 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kCarrierProperty,
                                base::StringValue(shill::kCarrierSprint));
+    base::ListValue carrier_list;
+    carrier_list.AppendString(shill::kCarrierSprint);
+    carrier_list.AppendString(shill::kCarrierGenericUMTS);
+    devices->SetDeviceProperty("/device/cellular1",
+                               shill::kSupportedCarriersProperty,
+                               carrier_list);
 
     services->AddService(kCellularServicePath,
                          "cellular1_guid",

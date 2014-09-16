@@ -123,8 +123,6 @@ const char kTagErrorMessage[] = "errorMessage";
 const char kTagForget[] = "forget";
 const char kTagOptions[] = "options";
 const char kTagRememberedList[] = "rememberedList";
-const char kTagCarriers[] = "carriers";
-const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 const char kTagTrue[] = "true";
 const char kTagVpnList[] = "vpnList";
@@ -189,98 +187,46 @@ base::DictionaryValue* BuildNetworkDictionary(
   return network_info.release();
 }
 
-// Given a list of supported carrier's by the device, return the index of
-// the carrier the device is currently using.
-int FindCurrentCarrierIndex(const base::ListValue* carriers,
-                            const DeviceState* device) {
-  DCHECK(carriers);
-  DCHECK(device);
-  bool gsm = (device->technology_family() == shill::kTechnologyFamilyGsm);
-  int index = 0;
-  for (base::ListValue::const_iterator it = carriers->begin();
-       it != carriers->end(); ++it, ++index) {
-    std::string value;
-    if (!(*it)->GetAsString(&value))
-      continue;
-    // For GSM devices the device name will be empty, so simply select
-    // the Generic UMTS carrier option if present.
-    if (gsm && (value == shill::kCarrierGenericUMTS))
-      return index;
-    // For other carriers, the service name will match the carrier name.
-    if (value == device->carrier())
-      return index;
-  }
-  return -1;
-}
+bool ShowViewAccountButton(const NetworkState* cellular) {
+  if (cellular->activation_state() != shill::kActivationStateActivating &&
+      cellular->activation_state() != shill::kActivationStateActivated)
+    return false;
 
-void PopulateCellularDetails(const NetworkState* cellular,
-                             base::DictionaryValue* dictionary) {
-  dictionary->SetBoolean(kTagCarrierSelectFlag,
-                         CommandLine::ForCurrentProcess()->HasSwitch(
-                             chromeos::switches::kEnableCarrierSwitching));
-
-  // These default to empty and are only set if device != NULL.
-  std::string carrier_id;
-  std::string mdn;
-
-  // Device settings.
   const DeviceState* device =
       NetworkHandler::Get()->network_state_handler()->GetDeviceState(
           cellular->device_path());
-  if (device) {
-    const base::DictionaryValue& device_properties = device->properties();
 
-    carrier_id = device->home_provider_id();
-    device_properties.GetStringWithoutPathExpansion(shill::kMdnProperty, &mdn);
-
-    const base::ListValue* supported_carriers;
-    if (device_properties.GetListWithoutPathExpansion(
-            shill::kSupportedCarriersProperty, &supported_carriers)) {
-      dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
-      dictionary->SetInteger(
-          kTagCurrentCarrierIndex,
-          FindCurrentCarrierIndex(supported_carriers, device));
-    } else {
-      // In case of any error, set the current carrier tag to -1 indicating
-      // to the JS code to fallback to a single carrier.
-      dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
-    }
+  // If no online payment URL was provided by shill, Check to see if the
+  // MobileConfig carrier indicates that "View Account" should be shown.
+  if (cellular->payment_url().empty()) {
+    if (!device || !MobileConfig::GetInstance()->IsReady())
+      return false;
+    const MobileConfig::Carrier* carrier =
+        MobileConfig::GetInstance()->GetCarrier(device->home_provider_id());
+    if (!carrier || !carrier->show_portal_button())
+      return false;
   }
 
-  if (cellular->activation_state() == shill::kActivationStateActivating ||
-      cellular->activation_state() == shill::kActivationStateActivated) {
-    // TODO(stevenjb): Determine if we actually need this check. The payment url
-    // property is commented as 'Deprecated' in service_constants.h and appears
-    // to be unset in Shill, but we still reference it in mobile_setup.cc.
-    bool may_show_portal_button = !cellular->payment_url().empty();
-
-    // If no online payment URL was provided by shill, fall back to
-    // MobileConfig to determine if the "View Account" should be shown.
-    if (!may_show_portal_button && MobileConfig::GetInstance()->IsReady()) {
-      const MobileConfig::Carrier* carrier =
-          MobileConfig::GetInstance()->GetCarrier(carrier_id);
-      may_show_portal_button = carrier && carrier->show_portal_button();
+  if (!cellular->IsConnectedState()) {
+    // Disconnected LTE networks should show the button if we are online and
+    // the device's MDN is set. This is to enable users to update their plan
+    // if they are out of credits.
+    if (!NetworkHandler::Get()->network_state_handler()->DefaultNetwork())
+      return false;
+    const std::string& technology = cellular->network_technology();
+    if (technology != shill::kNetworkTechnologyLte &&
+        technology != shill::kNetworkTechnologyLteAdvanced)
+      return false;
+    std::string mdn;
+    if (device) {
+      device->properties().GetStringWithoutPathExpansion(shill::kMdnProperty,
+                                                         &mdn);
     }
-    if (may_show_portal_button) {
-      // The button should be shown for a LTE network even when the LTE network
-      // is not connected, but CrOS is online. This is done to enable users to
-      // update their plan even if they are out of credits.
-      // The button should not be shown when the device's mdn is not set,
-      // because the network's proper portal url cannot be generated without it
-      const NetworkState* default_network =
-          NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-      const std::string& technology = cellular->network_technology();
-      bool force_show_view_account_button =
-          (technology == shill::kNetworkTechnologyLte ||
-           technology == shill::kNetworkTechnologyLteAdvanced) &&
-          default_network && !mdn.empty();
-
-      // The button will trigger ShowMorePlanInfoCallback() which will open
-      // carrier specific portal.
-      if (cellular->IsConnectedState() || force_show_view_account_button)
-        dictionary->SetBoolean(kTagShowViewAccountButton, true);
-    }
+    if (mdn.empty())
+      return false;
   }
+
+  return true;
 }
 
 scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
@@ -300,9 +246,14 @@ scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
           NetworkTypePattern::Primitive(type));
   dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
 
-  if (type == shill::kTypeCellular)
-    PopulateCellularDetails(network, dictionary.get());
-
+  if (type == shill::kTypeCellular) {
+    dictionary->SetBoolean(
+        kTagCarrierSelectFlag,
+        CommandLine::ForCurrentProcess()
+        ->HasSwitch(chromeos::switches::kEnableCarrierSwitching));
+    dictionary->SetBoolean(kTagShowViewAccountButton,
+                           ShowViewAccountButton(network));
+  }
   return dictionary.Pass();
 }
 

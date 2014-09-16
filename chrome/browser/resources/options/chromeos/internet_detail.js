@@ -15,8 +15,6 @@
  * InternetDetailedInfo argument passed to showDetailedInfo.
  * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
  * @typedef {{
- *   carriers: (Array.<string>|undefined),
- *   currentCarrierIndex: (number|undefined),
  *   deviceConnected: (boolean|undefined),
  *   errorMessage: (string|undefined),
  *   servicePath: string,
@@ -33,6 +31,7 @@ cr.define('options.internet', function() {
   /** @const */ var IPAddressField = options.internet.IPAddressField;
 
   /** @const */ var GoogleNameServersString = '8.8.4.4,8.8.8.8';
+  /** @const */ var CarrierGenericUMTS = 'Generic UMTS';
 
   /**
    * Helper function to set hidden attribute for elements matching a selector.
@@ -1356,19 +1355,35 @@ cr.define('options.internet', function() {
       $('wimax-signal-strength').textContent = strengthString;
     } else if (type == 'Cellular') {
       OptionsPage.showTab($('cellular-conn-nav-tab'));
-      if (data.showCarrierSelect && data.currentCarrierIndex != -1) {
-        var carrierSelector = $('select-carrier');
-        carrierSelector.onchange = DetailsInternetPage.handleCarrierChanged;
-        carrierSelector.options.length = 0;
-        for (var i = 0; i < data.carriers.length; ++i) {
-          var option = document.createElement('option');
-          option.textContent = data.carriers[i];
-          carrierSelector.add(option);
+
+      var isGsm = onc.getActiveValue('Cellular.Family') == 'GSM';
+
+      var currentCarrierIndex = -1;
+      if (data.showCarrierSelect) {
+        var currentCarrier =
+            isGsm ? CarrierGenericUMTS : onc.getActiveValue('Cellular.Carrier');
+        var supportedCarriers =
+            onc.getActiveValue('Cellular.SupportedCarriers');
+        for (var c1 = 0; c1 < supportedCarriers.length; ++c1) {
+          if (supportedCarriers[c1] == currentCarrier) {
+            currentCarrierIndex = c1;
+            break;
+          }
         }
-        carrierSelector.selectedIndex = data.currentCarrierIndex;
-      } else {
-        $('service-name').textContent = networkName;
+        if (currentCarrierIndex != -1) {
+          var carrierSelector = $('select-carrier');
+          carrierSelector.onchange = DetailsInternetPage.handleCarrierChanged;
+          carrierSelector.options.length = 0;
+          for (var c2 = 0; c2 < supportedCarriers.length; ++c2) {
+            var option = document.createElement('option');
+            option.textContent = supportedCarriers[c2];
+            carrierSelector.add(option);
+          }
+          carrierSelector.selectedIndex = currentCarrierIndex;
+        }
       }
+      if (currentCarrierIndex == -1)
+        $('service-name').textContent = networkName;
 
       $('network-technology').textContent =
           onc.getActiveValue('Cellular.NetworkTechnology');
@@ -1411,7 +1426,7 @@ cr.define('options.internet', function() {
       setOrHideParent('min', onc.getActiveValue('Cellular.MIN'));
       setOrHideParent('prl-version', onc.getActiveValue('Cellular.PRLVersion'));
 
-      if (onc.getActiveValue('Cellular.Family') == 'GSM') {
+      if (isGsm) {
         $('iccid').textContent = onc.getActiveValue('Cellular.ICCID');
         $('imsi').textContent = onc.getActiveValue('Cellular.IMSI');
         detailsPage.initializeApnList_();
