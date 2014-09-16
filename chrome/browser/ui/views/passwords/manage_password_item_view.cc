@@ -21,23 +21,10 @@
 
 namespace {
 
-int FirstFieldWidth() {
-  return std::max(
-      ManagePasswordsBubbleModel::UsernameFieldWidth(),
-      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
-          .GetPreferredSize()
-          .width());
-}
-
-int SecondFieldWidth() {
-  return std::max(
-      ManagePasswordsBubbleModel::PasswordFieldWidth(),
-      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO))
-          .GetPreferredSize()
-          .width());
-}
-
-enum ColumnSets { TWO_COLUMN_SET = 0, THREE_COLUMN_SET };
+enum ColumnSets {
+  TWO_COLUMN_SET,
+  THREE_COLUMN_SET
+};
 
 void BuildColumnSet(views::GridLayout* layout, int column_set_id) {
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
@@ -46,10 +33,10 @@ void BuildColumnSet(views::GridLayout* layout, int column_set_id) {
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
+                        2,
+                        views::GridLayout::USE_PREF,
                         0,
-                        views::GridLayout::FIXED,
-                        FirstFieldWidth(),
-                        FirstFieldWidth());
+                        0);
 
   // The password/"Undo!" field.
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
@@ -57,8 +44,8 @@ void BuildColumnSet(views::GridLayout* layout, int column_set_id) {
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
-                        SecondFieldWidth(),
-                        SecondFieldWidth());
+                        0,
+                        0);
 
   // If we're in manage-mode, we need another column for the delete button.
   if (column_set_id == THREE_COLUMN_SET) {
@@ -222,7 +209,7 @@ void ManagePasswordItemView::UndoView::LinkClicked(views::Link* sender,
 // ManagePasswordItemView
 ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-    autofill::PasswordForm password_form,
+    const autofill::PasswordForm& password_form,
     password_manager::ui::PasswordItemPosition position)
     : model_(manage_passwords_bubble_model),
       password_form_(password_form),

@@ -24,7 +24,7 @@ class ManagePasswordItemView : public views::View {
  public:
   ManagePasswordItemView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-      autofill::PasswordForm password_form,
+      const autofill::PasswordForm& password_form,
       password_manager::ui::PasswordItemPosition position);
 
  private:
