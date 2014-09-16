@@ -41,8 +41,16 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
 
   std::string user =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-  if (!user.empty())
+  if (!user.empty()) {
+#if defined(OS_IOS)
+    // Prior to M38, Chrome on iOS did not normalize the email before setting
+    // it in SigninManager. |AccountReconcilor| expects the authenticated email
+    // to be normalized as it used as an account identifier and is compared
+    // to the accounts available in the cookies.
+    user = gaia::CanonicalizeEmail(gaia::SanitizeEmail(user));
+#endif
     SetAuthenticatedUsername(user);
+  }
 }
 
 bool SigninManagerBase::IsInitialized() const { return initialized_; }
