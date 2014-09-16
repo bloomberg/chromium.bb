@@ -61,6 +61,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
           new translate::TranslateManager(this, prefs::kAcceptLanguages)),
       cld_data_provider_(
           translate::CreateBrowserCldDataProviderFor(web_contents)) {
+  translate_driver_.AddObserver(this);
   translate_driver_.set_translate_manager(translate_manager_.get());
   // Customization: for the standalone data source, we configure the path to
   // CLD data immediately on startup.
@@ -81,6 +82,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
 }
 
 ChromeTranslateClient::~ChromeTranslateClient() {
+  translate_driver_.RemoveObserver(this);
 }
 
 translate::LanguageState& ChromeTranslateClient::GetLanguageState() {
@@ -263,20 +265,7 @@ void ChromeTranslateClient::ShowReportLanguageDetectionErrorUI(
 }
 
 bool ChromeTranslateClient::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeTranslateClient, message)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
-                      OnTranslateAssignedSequenceNumber)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
-                      OnLanguageDetermined)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  if (!handled) {
-    handled = cld_data_provider_->OnMessageReceived(message);
-  }
-  return handled;
+  return cld_data_provider_->OnMessageReceived(message);
 }
 
 void ChromeTranslateClient::WebContentsDestroyed() {
@@ -286,19 +275,12 @@ void ChromeTranslateClient::WebContentsDestroyed() {
   translate_manager_.reset();
 }
 
-void ChromeTranslateClient::OnTranslateAssignedSequenceNumber(int page_seq_no) {
-  translate_manager_->set_current_seq_no(page_seq_no);
-}
+// ContentTranslateDriver::Observer implementation.
 
 void ChromeTranslateClient::OnLanguageDetermined(
-    const translate::LanguageDetectionDetails& details,
-    bool page_needs_translation) {
-  GetLanguageState().LanguageDetermined(details.adopted_language,
-                                        page_needs_translation);
-
-  if (web_contents())
-    translate_manager_->InitiateTranslation(details.adopted_language);
-
+    const translate::LanguageDetectionDetails& details) {
+  // TODO: Remove translate notifications and have the clients be
+  // ContentTranslateDriver::Observer directly instead.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::Source<content::WebContents>(web_contents()),
@@ -309,10 +291,9 @@ void ChromeTranslateClient::OnPageTranslated(
     const std::string& original_lang,
     const std::string& translated_lang,
     translate::TranslateErrors::Type error_type) {
+  // TODO: Remove translate notifications and have the clients be
+  // ContentTranslateDriver::Observer directly instead.
   DCHECK(web_contents());
-  translate_manager_->PageTranslated(
-      original_lang, translated_lang, error_type);
-
   translate::PageTranslatedDetails details;
   details.source_language = original_lang;
   details.target_language = translated_lang;

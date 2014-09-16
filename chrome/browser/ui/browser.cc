@@ -2243,14 +2243,15 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  if (delegate)
+  translate::ContentTranslateDriver& content_translate_driver =
+      ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
+  if (delegate) {
     ZoomController::FromWebContents(web_contents)->AddObserver(this);
-  else
+    content_translate_driver.AddObserver(translate_driver_observer_.get());
+  } else {
     ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(web_contents);
-  chrome_translate_client->translate_driver().set_observer(
-      delegate ? delegate->translate_driver_observer_.get() : NULL);
+    content_translate_driver.RemoveObserver(translate_driver_observer_.get());
+  }
 }
 
 void Browser::CloseFrame() {

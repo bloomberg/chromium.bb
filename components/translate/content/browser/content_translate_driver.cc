@@ -35,13 +35,20 @@ ContentTranslateDriver::ContentTranslateDriver(
     : content::WebContentsObserver(nav_controller->GetWebContents()),
       navigation_controller_(nav_controller),
       translate_manager_(NULL),
-      observer_(NULL),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       weak_pointer_factory_(this) {
   DCHECK(navigation_controller_);
 }
 
 ContentTranslateDriver::~ContentTranslateDriver() {}
+
+void ContentTranslateDriver::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ContentTranslateDriver::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
 
 void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
                                                  int attempt) {
@@ -77,19 +84,16 @@ bool ContentTranslateDriver::IsLinkNavigation() {
 }
 
 void ContentTranslateDriver::OnTranslateEnabledChanged() {
-  if (observer_) {
-    content::WebContents* web_contents =
-        navigation_controller_->GetWebContents();
-    observer_->OnTranslateEnabledChanged(web_contents);
-  }
+  content::WebContents* web_contents = navigation_controller_->GetWebContents();
+  FOR_EACH_OBSERVER(
+      Observer, observer_list_, OnTranslateEnabledChanged(web_contents));
 }
 
 void ContentTranslateDriver::OnIsPageTranslatedChanged() {
-  if (observer_) {
     content::WebContents* web_contents =
         navigation_controller_->GetWebContents();
-    observer_->OnIsPageTranslatedChanged(web_contents);
-  }
+    FOR_EACH_OBSERVER(
+        Observer, observer_list_, OnIsPageTranslatedChanged(web_contents));
 }
 
 void ContentTranslateDriver::TranslatePage(int page_seq_no,
@@ -210,6 +214,48 @@ void ContentTranslateDriver::DidNavigateAnyFrame(
       details.type == content::NAVIGATION_TYPE_SAME_PAGE;
   translate_manager_->GetLanguageState().DidNavigate(
       details.is_in_page, details.is_main_frame, reload);
+}
+
+bool ContentTranslateDriver::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ContentTranslateDriver, message)
+  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
+                      OnTranslateAssignedSequenceNumber)
+  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
+                      OnLanguageDetermined)
+  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
+  IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void ContentTranslateDriver::OnTranslateAssignedSequenceNumber(
+    int page_seq_no) {
+  translate_manager_->set_current_seq_no(page_seq_no);
+}
+
+void ContentTranslateDriver::OnLanguageDetermined(
+    const LanguageDetectionDetails& details,
+    bool page_needs_translation) {
+  translate_manager_->GetLanguageState().LanguageDetermined(
+      details.adopted_language, page_needs_translation);
+
+  if (web_contents())
+    translate_manager_->InitiateTranslation(details.adopted_language);
+
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnLanguageDetermined(details));
+}
+
+void ContentTranslateDriver::OnPageTranslated(
+    const std::string& original_lang,
+    const std::string& translated_lang,
+    TranslateErrors::Type error_type) {
+  translate_manager_->PageTranslated(
+      original_lang, translated_lang, error_type);
+  FOR_EACH_OBSERVER(
+      Observer,
+      observer_list_,
+      OnPageTranslated(original_lang, translated_lang, error_type));
 }
 
 }  // namespace translate

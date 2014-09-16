@@ -17,10 +17,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace base {
-class File;
-}  // namespace base
-
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -33,7 +29,6 @@ class ScopedCLDDynamicDataHarness;
 class PrefService;
 
 namespace translate {
-struct LanguageDetectionDetails;
 class LanguageState;
 class TranslateAcceptLanguages;
 class TranslatePrefs;
@@ -42,6 +37,7 @@ class TranslateManager;
 
 class ChromeTranslateClient
     : public translate::TranslateClient,
+      public translate::ContentTranslateDriver::Observer,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromeTranslateClient> {
  public:
@@ -100,6 +96,14 @@ class ChromeTranslateClient
   virtual void ShowReportLanguageDetectionErrorUI(
       const GURL& report_url) OVERRIDE;
 
+  // ContentTranslateDriver::Observer implementation.
+  virtual void OnLanguageDetermined(
+      const translate::LanguageDetectionDetails& details) OVERRIDE;
+  virtual void OnPageTranslated(
+      const std::string& original_lang,
+      const std::string& translated_lang,
+      translate::TranslateErrors::Type error_type) OVERRIDE;
+
  private:
   explicit ChromeTranslateClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeTranslateClient>;
@@ -107,14 +111,6 @@ class ChromeTranslateClient
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
-
-  // IPC handlers.
-  void OnTranslateAssignedSequenceNumber(int page_seq_no);
-  void OnLanguageDetermined(const translate::LanguageDetectionDetails& details,
-                            bool page_needs_translation);
-  void OnPageTranslated(const std::string& original_lang,
-                        const std::string& translated_lang,
-                        translate::TranslateErrors::Type error_type);
 
   // Shows the translate bubble.
   void ShowBubble(translate::TranslateStep step,

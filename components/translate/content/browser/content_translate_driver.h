@@ -7,7 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/translate/core/browser/translate_driver.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -17,6 +19,7 @@ class WebContents;
 
 namespace translate {
 
+struct LanguageDetectionDetails;
 class TranslateManager;
 
 // Content implementation of TranslateDriver.
@@ -28,10 +31,20 @@ class ContentTranslateDriver : public TranslateDriver,
   class Observer {
    public:
     // Handles when the value of IsPageTranslated is changed.
-    virtual void OnIsPageTranslatedChanged(content::WebContents* source) = 0;
+    virtual void OnIsPageTranslatedChanged(content::WebContents* source) {};
 
     // Handles when the value of translate_enabled is changed.
-    virtual void OnTranslateEnabledChanged(content::WebContents* source) = 0;
+    virtual void OnTranslateEnabledChanged(content::WebContents* source) {};
+
+    // Called when the page language has been determined.
+    virtual void OnLanguageDetermined(
+        const translate::LanguageDetectionDetails& details) {};
+
+    // Called when the page has been translated.
+    virtual void OnPageTranslated(
+        const std::string& original_lang,
+        const std::string& translated_lang,
+        translate::TranslateErrors::Type error_type) {};
 
    protected:
     virtual ~Observer() {}
@@ -40,8 +53,9 @@ class ContentTranslateDriver : public TranslateDriver,
   ContentTranslateDriver(content::NavigationController* nav_controller);
   virtual ~ContentTranslateDriver();
 
-  // Sets the Observer. Calling this method is optional.
-  void set_observer(Observer* observer) { observer_ = observer; }
+  // Adds or Removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Number of attempts before waiting for a page to be fully reloaded.
   void set_translate_max_reload_attempts(int attempts) {
@@ -79,6 +93,15 @@ class ContentTranslateDriver : public TranslateDriver,
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // IPC handlers.
+  void OnTranslateAssignedSequenceNumber(int page_seq_no);
+  void OnLanguageDetermined(const LanguageDetectionDetails& details,
+                            bool page_needs_translation);
+  void OnPageTranslated(const std::string& original_lang,
+                        const std::string& translated_lang,
+                        TranslateErrors::Type error_type);
 
  private:
   // The navigation controller of the tab we are associated with.
@@ -86,7 +109,7 @@ class ContentTranslateDriver : public TranslateDriver,
 
   TranslateManager* translate_manager_;
 
-  Observer* observer_;
+  ObserverList<Observer, true> observer_list_;
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
