@@ -394,6 +394,8 @@ source_set("browser") {
       "suggest_permission_util.h",
       "uninstall_reason.h",
       "update_observer.h",
+      "updater/manifest_fetch_data.cc",
+      "updater/manifest_fetch_data.h",
       "url_request_util.cc",
       "url_request_util.h",
       "value_store/leveldb_value_store.cc",

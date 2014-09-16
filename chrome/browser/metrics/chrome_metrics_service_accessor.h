@@ -13,6 +13,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
+class ChromeExtensionDownloaderFactory;
 class PrefService;
 class Profile;
 
@@ -28,8 +29,6 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
 }
 
 namespace extensions {
-class ExtensionDownloader;
-class ManifestFetchData;
 class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
 
@@ -54,11 +53,10 @@ class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
       component_updater::ComponentUpdateService* cus,
       PrefService* prefs);
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
+  friend class ChromeExtensionDownloaderFactory;
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;
   friend class DataReductionProxyChromeSettings;
-  friend class extensions::ExtensionDownloader;
-  friend class extensions::ManifestFetchData;
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
   friend class ::FlashDOMHandler;
   friend class system_logs::ChromeInternalLogSource;

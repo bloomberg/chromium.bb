@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
+#include "extensions/browser/updater/manifest_fetch_data.h"
 
 class GURL;
 

@@ -187,6 +187,7 @@ ExtensionDownloader::ExtensionDownloader(
                         base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
                                    base::Unretained(this))),
       extension_cache_(NULL),
+      enable_extra_update_metrics_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(request_context_.get());
@@ -274,9 +275,8 @@ void ExtensionDownloader::StartBlacklistUpdate(
   // Note: it is very important that we use the https version of the update
   // url here to avoid DNS hijacking of the blacklist, which is not validated
   // by a public key signature like .crx files are.
-  scoped_ptr<ManifestFetchData> blacklist_fetch(
-      new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl(),
-                            request_id));
+  scoped_ptr<ManifestFetchData> blacklist_fetch(CreateManifestFetchData(
+      extension_urls::GetWebstoreUpdateUrl(), request_id));
   DCHECK(blacklist_fetch->base_url().SchemeIsSecure());
   blacklist_fetch->AddExtension(kBlacklistAppID,
                                 version,
@@ -353,10 +353,10 @@ bool ExtensionDownloader::AddExtensionData(
 
   std::vector<GURL> update_urls;
   update_urls.push_back(update_url);
-  // If UMA is enabled, also add to ManifestFetchData for the
+  // If metrics are enabled, also add to ManifestFetchData for the
   // webstore update URL.
   if (!extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled()) {
+      enable_extra_update_metrics_) {
     update_urls.push_back(extension_urls::GetWebstoreUpdateUrl());
   }
 
@@ -394,7 +394,7 @@ bool ExtensionDownloader::AddExtensionData(
       // Otherwise add a new element to the list, if the list doesn't exist or
       // if its last element is already full.
       linked_ptr<ManifestFetchData> fetch(
-          new ManifestFetchData(update_urls[i], request_id));
+          CreateManifestFetchData(update_urls[i], request_id));
       fetches_preparing_[std::make_pair(request_id, update_urls[i])].
           push_back(fetch);
       added = fetch->AddExtension(id, version.GetString(),
@@ -946,6 +946,21 @@ void ExtensionDownloader::OnGetTokenFailure(
   // If we fail to get an access token, kick the pending fetch and let it fall
   // back on cookies.
   extension_fetcher_->Start();
+}
+
+ManifestFetchData* ExtensionDownloader::CreateManifestFetchData(
+    const GURL& update_url,
+    int request_id) {
+  ManifestFetchData::PingMode ping_mode = ManifestFetchData::NO_PING;
+  if (update_url.DomainIs(ping_enabled_domain_.c_str())) {
+    if (enable_extra_update_metrics_) {
+      ping_mode = ManifestFetchData::PING_WITH_METRICS;
+    } else {
+      ping_mode = ManifestFetchData::PING;
+    }
+  }
+  return new ManifestFetchData(
+      update_url, request_id, brand_code_, manifest_query_params_, ping_mode);
 }
 
 }  // namespace extensions
