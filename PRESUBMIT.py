@@ -251,6 +251,10 @@ _BANNED_CPP_FUNCTIONS = (
     ),
 )
 
+_IPC_ENUM_TRAITS_DEPRECATED = (
+    'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
+    'See http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc')
+
 
 _VALID_OS_MACROS = (
     # Please keep sorted.
@@ -1276,6 +1280,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
+  results.extend(_CheckForIPCRules(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1372,6 +1377,30 @@ def _CheckForInvalidOSMacros(input_api, output_api):
   return [output_api.PresubmitError(
       'Possibly invalid OS macro[s] found. Please fix your code\n'
       'or add your macro to src/PRESUBMIT.py.', bad_macros)]
+
+def _CheckForIPCRules(input_api, output_api):
+  """Check for same IPC rules described in
+  http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc
+  """
+  base_pattern = r'IPC_ENUM_TRAITS\('
+  inclusion_pattern = input_api.re.compile(r'(%s)' % base_pattern)
+  comment_pattern = input_api.re.compile(r'//.*(%s)' % base_pattern)
+
+  problems = []
+  for f in input_api.AffectedSourceFiles(None):
+    local_path = f.LocalPath()
+    if not local_path.endswith('.h'):
+      continue
+    for line_number, line in f.ChangedContents():
+      if inclusion_pattern.search(line) and not comment_pattern.search(line):
+        problems.append(
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+
+  if problems:
+    return [output_api.PresubmitPromptWarning(
+        _IPC_ENUM_TRAITS_DEPRECATED, problems)]
+  else:
+    return []
 
 
 def CheckChangeOnUpload(input_api, output_api):
