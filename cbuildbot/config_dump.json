@@ -42870,7 +42870,8 @@
         "health_alert_recipients": [
             "chromeos-build-alerts@google.com",
             "tree",
-            "build"
+            "build",
+            "lab"
         ],
         "health_threshold": 3,
         "hw_tests": [],
@@ -42971,7 +42972,8 @@
         "health_alert_recipients": [
             "chromeos-build-alerts@google.com",
             "tree",
-            "build"
+            "build",
+            "lab"
         ],
         "health_threshold": 0,
         "hw_tests": [

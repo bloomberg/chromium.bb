@@ -1738,7 +1738,7 @@ internal_paladin.add_config('master-paladin',
   paladin_builder_name='CQ master',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build'],
+                           'tree', 'build', 'lab'],
   sanity_check_slaves=['link-tot-paladin'],
   trybot_list=False,
 )
@@ -2147,7 +2147,7 @@ _release.add_config('master-release',
   sync_chrome=False,
   chrome_sdk=False,
   health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build'],
+                           'tree', 'build', 'lab'],
   afdo_use=False,
 )
 
