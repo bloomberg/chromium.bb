@@ -103,7 +103,7 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtrWillBeRawP
 
 void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
     // Follow Firebug's behavior of counting with null and undefined title in
     // the same bucket as no argument
@@ -118,6 +118,7 @@ void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptA
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(CountMessageType);
     consoleMessage->setScriptState(scriptState);
+    consoleMessage->setCallStack(callStack.release());
     reportMessageToConsole(consoleMessage.release());
 }
 
@@ -170,6 +171,7 @@ void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(TimeEndMessageType);
     consoleMessage->setScriptState(scriptState);
+    consoleMessage->setCallStack(createScriptCallStackForConsole(1));
     reportMessageToConsole(consoleMessage.release());
 }
 
@@ -220,9 +222,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
     consoleMessage->setScriptArguments(arguments);
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
-    consoleMessage->setCallStack(callStack);
-
+    consoleMessage->setCallStack(createScriptCallStackForConsole(stackSize));
     reportMessageToConsole(consoleMessage.release());
 }
 
