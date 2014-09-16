@@ -406,15 +406,23 @@ TEST_F(FieldTrialTest, Restore) {
   EXPECT_EQ("xxx", trial->trial_name());
 }
 
+TEST_F(FieldTrialTest, RestoreNotEndingWithSlash) {
+  EXPECT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "tname/gname", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
+
+  FieldTrial* trial = FieldTrialList::Find("tname");
+  ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
+  EXPECT_EQ("gname", trial->group_name());
+  EXPECT_EQ("tname", trial->trial_name());
+}
+
 TEST_F(FieldTrialTest, BogusRestore) {
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
       "MissingSlash", FieldTrialList::DONT_ACTIVATE_TRIALS,
       std::set<std::string>()));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
       "MissingGroupName/", FieldTrialList::DONT_ACTIVATE_TRIALS,
-      std::set<std::string>()));
-  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "MissingFinalSlash/gname", FieldTrialList::DONT_ACTIVATE_TRIALS,
       std::set<std::string>()));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
       "noname, only group/", FieldTrialList::DONT_ACTIVATE_TRIALS,

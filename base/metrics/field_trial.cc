@@ -414,8 +414,10 @@ bool FieldTrialList::CreateTrialsFromString(
       return false;
     size_t group_name_end = trials_string.find(kPersistentStringSeparator,
                                                name_end + 1);
-    if (group_name_end == trials_string.npos || name_end + 1 == group_name_end)
+    if (name_end + 1 == group_name_end)
       return false;
+    if (group_name_end == trials_string.npos)
+      group_name_end = trials_string.length();
     std::string name(trials_string, next_item, name_end - next_item);
     std::string group_name(trials_string, name_end + 1,
                            group_name_end - name_end - 1);
