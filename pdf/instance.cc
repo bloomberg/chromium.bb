@@ -1768,7 +1768,7 @@ pp::Var Instance::CallScriptableMethod(const pp::Var& method,
     return pp::Var();
   }
   if (method_str == kJSSetZoomLevel) {
-    if (args.size() == 1 && args[0].is_double())
+    if (args.size() == 1 && args[0].is_number())
       SetZoom(ZOOM_SCALE, args[0].AsDouble());
     return pp::Var();
   }
