@@ -55,6 +55,7 @@ void ChannelDispatcherBase::OnChannelReady(
     return;
   }
 
+  channel_factory_ = NULL;
   channel_ = socket.Pass();
 
   OnInitialized();
