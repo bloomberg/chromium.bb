@@ -69,11 +69,13 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
 
   content::BrowserContext* const browser_context_;
   StreamMap streams_;
-  base::WeakPtrFactory<StreamsPrivateAPI> weak_ptr_factory_;
 
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<StreamsPrivateAPI> weak_ptr_factory_;
+
 };
 
 class StreamsPrivateAbortFunction : public UIThreadExtensionFunction {

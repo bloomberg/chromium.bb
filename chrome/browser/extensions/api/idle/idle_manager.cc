@@ -121,10 +121,10 @@ IdleMonitor::IdleMonitor(IdleState initial_state)
 IdleManager::IdleManager(Profile* profile)
     : profile_(profile),
       last_state_(IDLE_STATE_ACTIVE),
-      weak_factory_(this),
       idle_time_provider_(new DefaultIdleProvider()),
       event_delegate_(new DefaultEventDelegate(profile)),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      weak_factory_(this) {
 }
 
 IdleManager::~IdleManager() {

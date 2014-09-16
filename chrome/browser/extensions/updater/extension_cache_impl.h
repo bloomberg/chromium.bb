@@ -56,9 +56,6 @@ class ExtensionCacheImpl : public ExtensionCache,
   // Callback that is called when local cache is ready.
   void OnCacheInitialized();
 
-  // Weak factory for callbacks.
-  base::WeakPtrFactory<ExtensionCacheImpl> weak_ptr_factory_;
-
   // Cache implementation that uses local cache dir.
   scoped_ptr<LocalExtensionCache> cache_;
 
@@ -70,6 +67,9 @@ class ExtensionCacheImpl : public ExtensionCache,
 
   // Observes failures to install CRX files.
   content::NotificationRegistrar notification_registrar_;
+
+  // Weak factory for callbacks.
+  base::WeakPtrFactory<ExtensionCacheImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCacheImpl);
 };

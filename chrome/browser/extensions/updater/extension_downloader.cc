@@ -180,14 +180,14 @@ ExtensionDownloader::ExtensionDownloader(
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       delegate_(delegate),
       request_context_(request_context),
-      weak_ptr_factory_(this),
       manifests_queue_(&kDefaultBackoffPolicy,
                        base::Bind(&ExtensionDownloader::CreateManifestFetcher,
                                   base::Unretained(this))),
       extensions_queue_(&kDefaultBackoffPolicy,
                         base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
                                    base::Unretained(this))),
-      extension_cache_(NULL) {
+      extension_cache_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(request_context_.get());
 }

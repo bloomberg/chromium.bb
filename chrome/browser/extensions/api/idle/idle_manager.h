@@ -126,7 +126,6 @@ class IdleManager : public ExtensionRegistryObserver,
   MonitorMap monitors_;
 
   base::RepeatingTimer<IdleManager> poll_timer_;
-  base::WeakPtrFactory<IdleManager> weak_factory_;
 
   scoped_ptr<IdleTimeProvider> idle_time_provider_;
   scoped_ptr<EventDelegate> event_delegate_;
@@ -136,6 +135,8 @@ class IdleManager : public ExtensionRegistryObserver,
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<IdleManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleManager);
 };

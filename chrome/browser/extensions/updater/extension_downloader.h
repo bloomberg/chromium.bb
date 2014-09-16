@@ -253,9 +253,6 @@ class ExtensionDownloader
   // The request context to use for the URLFetchers.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  // Used to create WeakPtrs to |this|.
-  base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;
-
   // Collects UMA samples that are reported when ReportStats() is called.
   URLStats url_stats_;
 
@@ -292,6 +289,9 @@ class ExtensionDownloader
 
   // A pending token fetch request.
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+
+  // Used to create WeakPtrs to |this|.
+  base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloader);
 };

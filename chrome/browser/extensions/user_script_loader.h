@@ -168,10 +168,10 @@ class UserScriptLoader : public content::NotificationObserver,
   // non-empty value for declarative user script shared memory regions.
   ExtensionId owner_extension_id_;
 
-  base::WeakPtrFactory<UserScriptLoader> weak_factory_;
-
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<UserScriptLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptLoader);
 };

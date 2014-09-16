@@ -352,8 +352,8 @@ UserScriptLoader::UserScriptLoader(Profile* profile,
       pending_load_(false),
       profile_(profile),
       owner_extension_id_(owner_extension_id),
-      weak_factory_(this),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(profile_)->ready().Post(

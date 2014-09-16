@@ -49,8 +49,8 @@ StreamsPrivateAPI* StreamsPrivateAPI::Get(content::BrowserContext* context) {
 
 StreamsPrivateAPI::StreamsPrivateAPI(content::BrowserContext* context)
     : browser_context_(context),
-      weak_ptr_factory_(this),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      weak_ptr_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 

@@ -254,11 +254,11 @@ class TabHelper : public content::WebContentsObserver,
 
   Profile* profile_;
 
-  // Vend weak pointers that can be invalidated to stop in-progress loads.
-  base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
-
   // Creates WebstoreInlineInstaller instances for inline install triggers.
   scoped_ptr<WebstoreInlineInstallerFactory> webstore_inline_installer_factory_;
+
+  // Vend weak pointers that can be invalidated to stop in-progress loads.
+  base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };
