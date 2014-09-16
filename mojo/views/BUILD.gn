@@ -35,7 +35,7 @@ source_set("views") {
 component("views_internal") {
   output_name = "mojo_views_support_internal"
 
-  visibility = ":views"
+  visibility = [ ":views" ]
 
   sources = [
     "mojo_views_export.h",
