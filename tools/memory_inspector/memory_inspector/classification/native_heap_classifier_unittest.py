@@ -113,8 +113,8 @@ class NativeHeapClassifierTest(unittest.TestCase):
         mock_frame = stacktrace.Frame(mock_addr)
         mock_frame.SetSymbolInfo(symbol.Symbol(mock_btstr, mock_source_path))
         mock_strace.Add(mock_frame)
-      nheap.Add(native_heap.Allocation(
-          size=test_entry[0], count=1, stack_trace=mock_strace))
+      nheap.Add(native_heap.Allocation(size=test_entry[0],
+                                       stack_trace=mock_strace))
 
     res = native_heap_classifier.Classify(nheap, rule_tree)
     self._CheckResult(res.total, '', _EXPECTED_RESULTS)
@@ -129,8 +129,8 @@ class NativeHeapClassifierTest(unittest.TestCase):
       mock_frame.SetSymbolInfo(symbol.Symbol(str(mock_addr), mock_source_path))
       for _ in xrange(10):  # Just repeat the same stack frame 10 times
         mock_strace.Add(mock_frame)
-      nheap.Add(native_heap.Allocation(
-          size=mock_alloc_size, count=1, stack_trace=mock_strace))
+      nheap.Add(native_heap.Allocation(size=mock_alloc_size,
+                                       stack_trace=mock_strace))
 
     rule_tree = native_heap_classifier.InferHeuristicRulesFromHeap(
         nheap, threshold=0.05)

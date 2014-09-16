@@ -204,6 +204,27 @@
     <div id="progress_bar"><div id="progress_bar-label">Progress...</div></div>
   </div>
 
+  <div id="android_provision_dialog" title="Warning: this might brick your device">
+    <p>
+      <span class="ui-icon ui-icon-alert" style="float:left;"></span>
+      Full heap profiling requires some modifications to the Android system
+      (preload a library into the Android Zygote).
+      <br>
+      This feature has currently been tested on Nexus devices running Android K
+      and L. On some other untested devices / Android releases this might end up
+      bricking the device.
+      <br>
+      <b>Use this feature only on development rooted phones.</b>
+      <br><br>
+      If something goes wrong these are the steps to restore your device:
+      <code>
+        $ adb root && adb wait-for-device && adb remount
+        $ adb shell mv /system/bin/app_process.real /system/bin/app_process
+        $ adb reboot
+      </code>
+    </p>
+  </div>
+
   <div id="js_loading_banner">
   Loading JavaScript content. If you see this message something has probably gone wrong. Check JS console.
   </div>

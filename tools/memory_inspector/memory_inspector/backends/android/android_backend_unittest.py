@@ -40,22 +40,20 @@ ffff00ffff0000-ffff00ffff1000 r-xp 0 private_unevictable=0 private=0 """
     """shared_app=[] shared_other_unevictable=0 shared_other=0 "[vectors]" []"""
 )
 
-_MOCK_DUMPHEAP_OUT = """Android Native Heap Dump v1.0
-
-Total memory: 1608601
-Allocation records: 2
-
-z 1  sz    100    num    2  bt 9dcd1000 9dcd2000 b570e100 b570e000
-z 0  sz    1000   num    3  bt b570e100 00001234 b570e200
-MAPS
-9dcd0000-9dcd6000 r-xp 00000000 103:00 815       /system/lib/libnbaio.so
-9dcd6000-9dcd7000 r--p 00005000 103:00 815       /system/lib/libnbaio.so
-9dcd7000-9dcd8000 rw-p 00006000 103:00 815       /system/lib/libnbaio.so
-b570e000-b598c000 r-xp 00000000 103:00 680       /system/lib/libart.so
-b598c000-b598d000 ---p 00000000 00:00 0
-b598d000-b5993000 r--p 0027e000 103:00 680       /system/lib/libart.so
-b5993000-b5994000 rw-p 00284000 103:00 680       /system/lib/libart.so
-END"""
+_MOCK_HEAP_DUMP_OUT = """{
+  "total_allocated": 8192,
+  "num_allocs":      2,
+  "num_stacks":      2,
+  "allocs": {
+   "a1000": {"l": 100, "f": 0, "s": "a"},
+   "a2000": {"l": 100, "f": 0, "s": "a"},
+   "b1000": {"l": 1000, "f": 0, "s": "b"},
+   "b2000": {"l": 1000, "f": 0, "s": "b"},
+   "b3000": {"l": 1000, "f": 0, "s": "b"}},
+  "stacks": {
+    "a": {"l": 200,  "f": [10, 20, 30, 40]},
+    "b": {"l": 3000, "f": [50, 60, 70]}}
+  }"""
 
 _MOCK_PS_EXT_OUT = """
 {
@@ -83,10 +81,11 @@ class AndroidBackendTest(unittest.TestCase):
       'devices': _MOCK_DEVICES_OUT,
       'shell getprop ro.product.model': 'Mock device',
       'shell getprop ro.build.type': 'userdebug',
+      'shell getprop ro.product.cpu.abi': 'armeabi',
       'root': 'adbd is already running as root',
       'shell /data/local/tmp/ps_ext': _MOCK_PS_EXT_OUT,
       'shell /data/local/tmp/memdump': _MOCK_MEMDUMP_OUT,
-      'shell cat "/data/local/tmp/heap': _MOCK_DUMPHEAP_OUT,
+      'shell /data/local/tmp/heap_dump': _MOCK_HEAP_DUMP_OUT,
       'shell test -e "/data/local/tmp/heap': '0',
     }
     for (cmd, response) in planned_adb_responses.iteritems():
@@ -156,35 +155,22 @@ class AndroidBackendTest(unittest.TestCase):
     for i in xrange(16, 33):
       self.assertFalse(entry.IsPageResident(i))
 
-    # Test dumpheap parsing.
+    # Test heap_dump parsing.
     heap = processes[0].DumpNativeHeap()
-    self.assertEqual(len(heap.allocations), 2)
+    self.assertEqual(len(heap.allocations), 5)
 
-    alloc_1 = heap.allocations[0]
-    self.assertEqual(alloc_1.size, 100)
-    self.assertEqual(alloc_1.count, 2)
-    self.assertEqual(alloc_1.total_size, 200)
-    self.assertEqual(alloc_1.stack_trace.depth, 4)
-    self.assertEqual(alloc_1.stack_trace[0].exec_file_rel_path,
-                     '/system/lib/libnbaio.so')
-    self.assertEqual(alloc_1.stack_trace[0].address, 0x9dcd1000)
-    self.assertEqual(alloc_1.stack_trace[0].offset, 0x1000)
-    self.assertEqual(alloc_1.stack_trace[1].offset, 0x2000)
-    self.assertEqual(alloc_1.stack_trace[2].exec_file_rel_path,
-                     '/system/lib/libart.so')
-    self.assertEqual(alloc_1.stack_trace[2].offset, 0x100)
-    self.assertEqual(alloc_1.stack_trace[3].offset, 0)
-
-    alloc_2 = heap.allocations[1]
-    self.assertEqual(alloc_2.size, 1000)
-    self.assertEqual(alloc_2.count, 3)
-    self.assertEqual(alloc_2.total_size, 3000)
-    self.assertEqual(alloc_2.stack_trace.depth, 3)
-    # 0x00001234 is not present in the maps. It should be parsed anyways but
-    # no executable info is expected.
-    self.assertEqual(alloc_2.stack_trace[1].address, 0x00001234)
-    self.assertIsNone(alloc_2.stack_trace[1].exec_file_rel_path)
-    self.assertIsNone(alloc_2.stack_trace[1].offset)
+    for alloc in heap.allocations:
+      self.assertTrue(alloc.size == 100 or alloc.size == 1000)
+      if alloc.size == 100:
+        self.assertEqual(alloc.size, 100)
+        self.assertEqual(alloc.stack_trace.depth, 4)
+        self.assertEqual([x.address for x in alloc.stack_trace.frames],
+                         [10, 20, 30, 40])
+      elif alloc.size == 1000:
+        self.assertEqual(alloc.size, 1000)
+        self.assertEqual(alloc.stack_trace.depth, 3)
+        self.assertEqual([x.address for x in alloc.stack_trace.frames],
+                         [50, 60, 70])
 
   def tearDown(self):
     self._mock_adb.Stop()

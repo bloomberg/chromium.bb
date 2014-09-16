@@ -40,21 +40,27 @@ class NativeHeap(object):
 
 
 class Allocation(object):
-  """A Native allocation, modeled in a size*count fashion.
+  """Records profiling information aobut a native heap allocation.
 
-  |count| is the number of identical stack_traces which performed the allocation
-  of |size| bytes.
+  Args:
+      size: size of the allocation, in bytes.
+      stack_trace: the allocation call-site. See |stacktrace.Stacktrace|.
+      start: (Optional) Absolute start address in the process VMA. Optional.
+          It is required only for |CalculateResidentSize|.
+      flags: (Optional) More details about the call site (e.g., mmap vs malloc).
   """
 
-  def __init__(self, size, count, stack_trace):
+  def __init__(self, size, stack_trace, start=0, flags=0):
+    assert(size > 0)
     assert(isinstance(stack_trace, stacktrace.Stacktrace))
     self.size = size  # in bytes.
-    self.count = count
     self.stack_trace = stack_trace
+    self.start = start  # Optional, for using the resident size logic.
+    self.flags = flags
 
   @property
-  def total_size(self):
-    return self.size * self.count
+  def end(self):
+    return self.start + self.size - 1
 
   def __str__(self):
-    return '%d x %d : %s' % (self.count, self.size, self.stack_trace)
+    return '%d : %s' % (self.size, self.stack_trace)

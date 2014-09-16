@@ -105,8 +105,8 @@ class NativeHeapDecoder(json.JSONDecoder):
       stack_trace = stacktrace.Stacktrace()
       for absolute_addr in alloc_dict['stack_trace']:
         stack_trace.Add(nh.GetStackFrame(absolute_addr))
-      allocation = native_heap.Allocation(alloc_dict['size'],
-                                          alloc_dict['count'],
-                                          stack_trace)
-      nh.Add(allocation)
+      nh.Add(native_heap.Allocation(start=alloc_dict['start'],
+                                    size=alloc_dict['size'],
+                                    stack_trace=stack_trace,
+                                    flags=alloc_dict['flags']))
     return nh

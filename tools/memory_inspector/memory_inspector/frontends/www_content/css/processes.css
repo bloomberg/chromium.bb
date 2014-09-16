@@ -21,3 +21,12 @@
   float: right;
   width: 60%;
 }
+
+#android_provision_dialog {
+  display: none;
+}
+
+#android_provision_dialog code {
+  display: block;
+  white-space: pre-line;
+}

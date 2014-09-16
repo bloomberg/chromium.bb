@@ -16,7 +16,7 @@ import posixpath
 
 from memory_inspector import constants
 from memory_inspector.backends import prebuilts_fetcher
-from memory_inspector.backends.android import dumpheap_native_parser
+from memory_inspector.backends.android import native_heap_dump_parser
 from memory_inspector.backends.android import memdump_parser
 from memory_inspector.core import backends
 from memory_inspector.core import exceptions
@@ -31,14 +31,20 @@ from pylib.device import device_utils
 from pylib.symbols import elf_symbolizer
 
 
+_SUPPORTED_32BIT_ABIS = {'armeabi': 'arm', 'armeabi-v7a': 'arm'}
+_SUPPORTED_64BIT_ABIS = {'arm64-v8a': 'arm64'}
 _MEMDUMP_PREBUILT_PATH = os.path.join(constants.PREBUILTS_PATH,
-                                      'memdump-android-arm')
+                                      'memdump-android-%(arch)s')
 _MEMDUMP_PATH_ON_DEVICE = '/data/local/tmp/memdump'
 _PSEXT_PREBUILT_PATH = os.path.join(constants.PREBUILTS_PATH,
-                                    'ps_ext-android-arm')
+                                    'ps_ext-android-%(arch)s')
 _PSEXT_PATH_ON_DEVICE = '/data/local/tmp/ps_ext'
-_DLMALLOC_DEBUG_SYSPROP = 'libc.debug.malloc'
-_DUMPHEAP_OUT_FILE_PATH = '/data/local/tmp/heap-%d-native.dump'
+_HEAP_DUMP_PREBUILT_PATH = os.path.join(constants.PREBUILTS_PATH,
+                                        'heap_dump-android-%(arch)s')
+_HEAP_DUMP_PATH_ON_DEVICE = '/data/local/tmp/heap_dump'
+_LIBHEAPPROF_PREBUILT_PATH = os.path.join(constants.PREBUILTS_PATH,
+                                          'libheap_profiler-android-%(arch)s')
+_LIBHEAPPROF_FILE_NAME = 'libheap_profiler.so'
 
 
 class AndroidBackend(backends.Backend):
@@ -179,6 +185,22 @@ class AndroidDevice(backends.Device):
     self._processes = {}  # pid (int) -> |Process|
     self._initialized = False
 
+    # Determine the available ABIs, |_arch| will contain the primary ABI.
+    # TODO(primiano): For the moment we support only one ABI per device (i.e. we
+    # assume that all processes are 64 bit on 64 bit device, failing to profile
+    # 32 bit ones). Dealing properly with multi-ABIs requires work on ps_ext and
+    # at the moment is not an interesting use case.
+    self._arch = None
+    self._arch32 = None
+    self._arch64 = None
+    abi = adb.GetProp('ro.product.cpu.abi')
+    if abi in _SUPPORTED_64BIT_ABIS:
+      self._arch = self._arch64 = _SUPPORTED_64BIT_ABIS[abi]
+    elif abi in _SUPPORTED_32BIT_ABIS:
+      self._arch = self._arch32 = _SUPPORTED_32BIT_ABIS[abi]
+    else:
+      raise exceptions.MemoryInspectorException('ABI %s not supported' % abi)
+
   def Initialize(self):
     """Starts adb root and deploys the prebuilt binaries on initialization."""
     try:
@@ -190,25 +212,88 @@ class AndroidDevice(backends.Device):
           'The device must be adb root-able in order to use memory_inspector')
 
     # Download (from GCS) and deploy prebuilt helper binaries on the device.
-    self._DeployPrebuiltOnDeviceIfNeeded(_MEMDUMP_PREBUILT_PATH,
-                                         _MEMDUMP_PATH_ON_DEVICE)
-    self._DeployPrebuiltOnDeviceIfNeeded(_PSEXT_PREBUILT_PATH,
-                                         _PSEXT_PATH_ON_DEVICE)
+    self._DeployPrebuiltOnDeviceIfNeeded(
+        _MEMDUMP_PREBUILT_PATH % {'arch': self._arch}, _MEMDUMP_PATH_ON_DEVICE)
+    self._DeployPrebuiltOnDeviceIfNeeded(
+        _PSEXT_PREBUILT_PATH % {'arch': self._arch}, _PSEXT_PATH_ON_DEVICE)
+    self._DeployPrebuiltOnDeviceIfNeeded(
+        _HEAP_DUMP_PREBUILT_PATH % {'arch': self._arch},
+        _HEAP_DUMP_PATH_ON_DEVICE)
+
     self._initialized = True
 
   def IsNativeTracingEnabled(self):
-    """Checks for the libc.debug.malloc system property."""
-    return bool(self.adb.GetProp(_DLMALLOC_DEBUG_SYSPROP))
+    """Checks whether the libheap_profiler is preloaded in the zygote."""
+    zygote_name = 'zygote64' if self._arch64 else 'zygote'
+    zygote_process = [p for p in self.ListProcesses() if p.name == zygote_name]
+    if not zygote_process:
+      raise exceptions.MemoryInspectorException('Zygote process not found')
+    zygote_pid = zygote_process[0].pid
+    zygote_maps = self.adb.RunShellCommand('cat /proc/%d/maps' % zygote_pid)
+    return any(('libheap_profiler' in line for line in zygote_maps))
 
   def EnableNativeTracing(self, enabled):
-    """Enables libc.debug.malloc and restarts the shell."""
+    """Installs libheap_profiler in and injects it in the Zygote."""
+
+    def WrapZygote(app_process):
+      WRAPPER_SCRIPT = ('#!/system/bin/sh\n'
+                        'LD_PRELOAD="libheap_profiler.so:$LD_PRELOAD" '
+                        'exec %s.real "$@"\n' % app_process)
+      self.adb.RunShellCommand('mv %(0)s %(0)s.real' % {'0': app_process})
+      self.adb.WriteFile(app_process, WRAPPER_SCRIPT)
+      self.adb.RunShellCommand('chown root.shell ' + app_process)
+      self.adb.RunShellCommand('chmod 755 ' + app_process)
+
+    def UnwrapZygote():
+      for suffix in ('', '32', '64'):
+        # We don't really care if app_processX.real doesn't exists and mv fails.
+        # If app_processX.real doesn't exists, either app_processX is already
+        # unwrapped or it doesn't exists for the current arch.
+        app_process = '/system/bin/app_process' + suffix
+        self.adb.RunShellCommand('mv %(0)s.real %(0)s' % {'0': app_process})
+
     assert(self._initialized)
-    prop_value = '1' if enabled else ''
-    self.adb.SetProp(_DLMALLOC_DEBUG_SYSPROP, prop_value)
-    assert(self.IsNativeTracingEnabled())
-    # The libc.debug property takes effect only after restarting the Zygote.
+    self.adb.old_interface.MakeSystemFolderWritable()
+
+    # Start restoring the original state in any case.
+    UnwrapZygote()
+
+    if enabled:
+      # Temporarily disable SELinux (until next reboot).
+      self.adb.RunShellCommand('setenforce 0')
+
+      # Wrap the Zygote startup binary (app_process) with a script which
+      # LD_PRELOADs libheap_profiler and invokes the original Zygote process.
+      if self._arch64:
+        app_process = '/system/bin/app_process64'
+        assert(self.adb.FileExists(app_process))
+        self._DeployPrebuiltOnDeviceIfNeeded(
+            _LIBHEAPPROF_PREBUILT_PATH % {'arch': self._arch64},
+            '/system/lib64/' + _LIBHEAPPROF_FILE_NAME)
+        WrapZygote(app_process)
+
+      if self._arch32:
+        # Path is app_process32 for Android >= L, app_process when < L.
+        app_process = '/system/bin/app_process32'
+        if not self.adb.FileExists(app_process):
+          app_process = '/system/bin/app_process'
+          assert(self.adb.FileExists(app_process))
+        self._DeployPrebuiltOnDeviceIfNeeded(
+            _LIBHEAPPROF_PREBUILT_PATH % {'arch': self._arch32},
+            '/system/lib/' + _LIBHEAPPROF_FILE_NAME)
+        WrapZygote(app_process)
+
+    # Respawn the zygote (the device will kind of reboot at this point).
     self.adb.old_interface.RestartShell()
     self.adb.old_interface.Adb().WaitForDevicePm(wait_time=30)
+
+    # Remove the wrapper. This won't have effect until the next reboot, when
+    # the profiler will be automatically disarmed.
+    UnwrapZygote()
+
+    # We can also unlink the lib files at this point. Once the Zygote has
+    # started it will keep the inodes refcounted anyways through its lifetime.
+    self.adb.RunShellCommand('rm /system/lib*/' + _LIBHEAPPROF_FILE_NAME)
 
   def ListProcesses(self):
     """Returns a sequence of |AndroidProcess|."""
@@ -324,17 +409,16 @@ class AndroidProcess(backends.Process):
     return memdump_parser.Parse(dump_out)
 
   def DumpNativeHeap(self):
-    """Grabs and parses malloc traces through am dumpheap -n."""
-    # TODO(primiano): grab also mmap bt (depends on pending framework change).
-    dump_file_path = _DUMPHEAP_OUT_FILE_PATH % self.pid
-    cmd = 'am dumpheap -n %d %s' % (self.pid, dump_file_path)
-    self.device.adb.RunShellCommand(cmd)
-    # TODO(primiano): Some pre-KK versions of Android might need a sleep here
-    # as, IIRC, 'am dumpheap' did not wait for the dump to be completed before
-    # returning. Double check this and either add a sleep or remove this TODO.
-    dump_out = self.device.adb.ReadFile(dump_file_path)
-    self.device.adb.RunShellCommand('rm %s' % dump_file_path)
-    return dumpheap_native_parser.Parse(dump_out)
+    """Grabs and parses native heap traces using heap_dump."""
+    cmd = '%s -n -x %d' % (_HEAP_DUMP_PATH_ON_DEVICE, self.pid)
+    out_lines = self.device.adb.RunShellCommand(cmd)
+    return native_heap_dump_parser.Parse('\n'.join(out_lines))
+
+  def Freeze(self):
+    self.device.adb.RunShellCommand('kill -STOP %d' % self.pid)
+
+  def Unfreeze(self):
+    self.device.adb.RunShellCommand('kill -CONT %d' % self.pid)
 
   def GetStats(self):
     """Calculate process CPU/VM stats (CPU stats are relative to last call)."""

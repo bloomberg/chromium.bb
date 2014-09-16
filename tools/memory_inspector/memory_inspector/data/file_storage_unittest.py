@@ -87,7 +87,10 @@ class FileStorageTest(unittest.TestCase):
       frame = nh.GetStackFrame(i * 10 + 2)
       frame.SetExecFileInfo('bar.so', 2)
       stack_trace.Add(frame)
-      nh.Add(native_heap.Allocation(i * 2, i * 3, stack_trace))
+      nh.Add(native_heap.Allocation(size=i * 10,
+                                    stack_trace=stack_trace,
+                                    start=i * 20,
+                                    flags=i * 30))
     archive.StoreNativeHeap(nh)
     nh_deser = archive.LoadNativeHeap(timestamp)
     self._DeepCompare(nh, nh_deser)

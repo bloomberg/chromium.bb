@@ -134,6 +134,14 @@ class Process(object):
     """Returns an instance of |native_heap.NativeHeap|."""
     raise NotImplementedError()
 
+  def Freeze(self):
+    """Stops the process and all its threads."""
+    raise NotImplementedError()
+
+  def Unfreeze(self):
+    """Resumes the process."""
+    raise NotImplementedError()
+
   def GetStats(self):
     """Returns an instance of |ProcessStats|."""
     raise NotImplementedError()

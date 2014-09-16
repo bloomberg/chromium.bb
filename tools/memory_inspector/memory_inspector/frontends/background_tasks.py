@@ -90,14 +90,25 @@ def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
     completion = 80 * i / count
     log.put((completion, 'Dumping trace %d of %d' % (i, count)))
     archive.StartNewSnapshot()
-    mmaps = process.DumpMemoryMaps()
-    log.put((completion, 'Dumped %d memory maps' % len(mmaps)))
-    archive.StoreMemMaps(mmaps)
-    if trace_native_heap:
-      nheap = process.DumpNativeHeap()
-      log.put((completion, 'Dumped %d native allocs' % len(nheap.allocations)))
-      archive.StoreNativeHeap(nheap)
-      heaps_to_symbolize += [nheap]
+    # Freeze the process, so that the mmaps and the heap dump are consistent.
+    process.Freeze()
+    try:
+      if trace_native_heap:
+        nheap = process.DumpNativeHeap()
+        log.put((completion,
+                 'Dumped %d native allocations' % len(nheap.allocations)))
+
+      # TODO(primiano): memdump has the bad habit of sending SIGCONT to the
+      # process. Fix that, so we are the only one in charge of controlling it.
+      mmaps = process.DumpMemoryMaps()
+      log.put((completion, 'Dumped %d memory maps' % len(mmaps)))
+      archive.StoreMemMaps(mmaps)
+
+      if trace_native_heap:
+        archive.StoreNativeHeap(nheap)
+        heaps_to_symbolize += [nheap]
+    finally:
+      process.Unfreeze()
 
     if i < count:
       time.sleep(interval)

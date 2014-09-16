@@ -582,9 +582,9 @@ def _LoadNheapFromStorage(args, req_vars):
 
   resp = {
       'cols': [
-          {'label': 'Total size [KB]', 'type':'number'},
-          {'label': 'Alloc size [B]', 'type':'number'},
-          {'label': 'Count', 'type':'number'},
+          {'label': 'Allocated', 'type':'number'},
+          {'label': 'Resident', 'type':'number'},
+          {'label': 'Flags', 'type':'number'},
           {'label': 'Stack Trace', 'type':'string'},
         ],
       'rows': []}
@@ -602,9 +602,9 @@ def _LoadNheapFromStorage(args, req_vars):
     strace += '</dl>'
 
     resp['rows'] += [{'c': [
-        {'v': alloc.total_size, 'f': alloc.total_size / 1024},
-        {'v': alloc.size, 'f': None},
-        {'v': alloc.count, 'f': None},
+        {'v': alloc.size, 'f': _StrMem(alloc.size)},
+        {'v': 0, 'f': 0},  # TODO(primiano): support resident_size (next CLs).
+        {'v': alloc.flags, 'f': None},
         {'v': strace, 'f': None},
     ]}]
   return _HTTP_OK, [], resp
