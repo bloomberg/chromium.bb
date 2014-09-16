@@ -742,8 +742,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
 }
 
 // Flaky on Windows: http://crbug.com/146619
-// Fails on Linux: http://crbug.com/408637
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
 #define MAYBE_BasicTextOperations DISABLED_BasicTextOperations
 #else
 #define MAYBE_BasicTextOperations BasicTextOperations
@@ -762,6 +761,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
 
   size_t start, end;
   omnibox_view->GetSelectionBounds(&start, &end);
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Views textfields select-all in reverse to show the leading text.
+  std::swap(start, end);
+#endif
   EXPECT_EQ(0U, start);
   EXPECT_EQ(old_text.size(), end);
 
@@ -792,6 +795,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
   omnibox_view->SelectAll(true);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   omnibox_view->GetSelectionBounds(&start, &end);
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Views textfields select-all in reverse to show the leading text.
+  std::swap(start, end);
+#endif
   EXPECT_EQ(0U, start);
   EXPECT_EQ(old_text.size(), end);
 
