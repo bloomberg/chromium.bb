@@ -3335,18 +3335,18 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
 
 void WebViewImpl::saveImageAt(const WebPoint& point)
 {
-    if (!m_page)
+    if (!m_client)
         return;
 
-    KURL url = hitTestResultForWindowPos(point).absoluteImageURLIncludingCanvasDataURL();
-
-    if (url.isEmpty())
+    Node* node = hitTestResultForWindowPos(point).innerNonSharedNode();
+    if (!node || !(isHTMLCanvasElement(*node) || isHTMLImageElement(*node)))
         return;
 
-    ResourceRequest request(url);
-    request.setRequestContext(WebURLRequest::RequestContextDownload);
-    m_page->deprecatedLocalMainFrame()->loader().client()->loadURLExternally(
-        request, NavigationPolicyDownloadTo, WebString());
+    String url = toElement(*node).imageSourceURL();
+    if (!KURL(KURL(), url).protocolIsData())
+        return;
+
+    m_client->saveImageFromDataURL(url);
 }
 
 void WebViewImpl::dragSourceEndedAt(

@@ -130,6 +130,19 @@ private:
     TestData m_testData;
 };
 
+class SaveImageFromDataURLWebViewClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    // WebViewClient methods
+    virtual void saveImageFromDataURL(const WebString& dataURL) { m_dataURL = dataURL; }
+
+    // Local methods
+    const WebString& result() const { return m_dataURL; }
+    void reset() { m_dataURL = WebString(); }
+
+private:
+    WebString m_dataURL;
+};
+
 class TapHandlingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebViewClient methods
@@ -217,6 +230,27 @@ protected:
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
+};
+
+TEST_F(WebViewTest, SaveImageAt)
+{
+    SaveImageFromDataURLWebViewClient client;
+
+    std::string url = m_baseURL + "image-with-data-url.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-with-data-url.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    webView->resize(WebSize(400, 400));
+
+    client.reset();
+    webView->saveImageAt(WebPoint(1, 1));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    webView->saveImageAt(WebPoint(1, 2));
+    EXPECT_EQ(WebString(), client.result());
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 };
 
 TEST_F(WebViewTest, CopyImageAt)

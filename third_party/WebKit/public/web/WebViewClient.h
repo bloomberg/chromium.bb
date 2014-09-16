@@ -121,6 +121,10 @@ public:
     // will never be called.
     virtual bool enumerateChosenDirectory(const WebString& path, WebFileChooserCompletion*) { return false; }
 
+    // This method is called in response to WebView's saveImageAt(x, y).
+    // A data url from <canvas> or <img> is passed to the method's argument.
+    virtual void saveImageFromDataURL(const WebString&) { }
+
 
     // Editing -------------------------------------------------------------
 
