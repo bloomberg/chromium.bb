@@ -32,7 +32,6 @@ base::NullableString16 ParseName(const base::DictionaryValue& dictionary)  {
 
 // Parses the 'short_name' field of the manifest, as defined in:
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-short-name-member
-// |short_name| is an out parameter that must not be null.
 // Returns the parsed string if any, a null string if the parsing failed.
 base::NullableString16 ParseShortName(
     const base::DictionaryValue& dictionary)  {
@@ -49,11 +48,40 @@ base::NullableString16 ParseShortName(
   return base::NullableString16(short_name, false);
 }
 
+// Parses the 'start_url' field of the manifest, as defined in:
+// http://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member
+// Returns the parsed GURL if any, an empty GURL if the parsing failed.
+GURL ParseStartURL(const base::DictionaryValue& dictionary,
+                   const GURL& manifest_url,
+                   const GURL& document_url) {
+  if (!dictionary.HasKey("start_url"))
+    return GURL();
+
+  base::string16 start_url_str;
+  if (!dictionary.GetString("start_url", &start_url_str)) {
+    // TODO(mlamouri): provide a custom message to the developer console.
+    return GURL();
+  }
+
+  GURL start_url = manifest_url.Resolve(start_url_str);
+  if (!start_url.is_valid())
+    return GURL();
+
+  if (start_url.GetOrigin() != document_url.GetOrigin()) {
+    // TODO(mlamouri): provide a custom message to the developer console.
+    return GURL();
+  }
+
+  return start_url;
+}
+
 } // anonymous namespace
 
 namespace content {
 
-Manifest ManifestParser::Parse(const base::StringPiece& json) {
+Manifest ManifestParser::Parse(const base::StringPiece& json,
+                               const GURL& manifest_url,
+                               const GURL& document_url) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value) {
     // TODO(mlamouri): get the JSON parsing error and report it to the developer
@@ -77,6 +105,7 @@ Manifest ManifestParser::Parse(const base::StringPiece& json) {
 
   manifest.name = ParseName(*dictionary);
   manifest.short_name = ParseShortName(*dictionary);
+  manifest.start_url = ParseStartURL(*dictionary, manifest_url, document_url);
 
   return manifest;
 }

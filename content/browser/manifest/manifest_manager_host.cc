@@ -109,6 +109,8 @@ void ManifestManagerHost::OnRequestManifestResponse(
   manifest.short_name = base::NullableString16(
         manifest.short_name.string().substr(0, Manifest::kMaxIPCStringLength),
         manifest.short_name.is_null());
+  if (!manifest.start_url.is_empty() && !manifest.start_url.is_valid())
+    manifest.start_url = GURL();
 
   callback->Run(manifest);
   callbacks->Remove(request_id);

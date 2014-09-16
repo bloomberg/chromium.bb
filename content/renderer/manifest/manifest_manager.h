@@ -12,6 +12,8 @@
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
 
+class GURL;
+
 namespace blink {
 class WebURLResponse;
 }
@@ -53,7 +55,8 @@ class ManifestManager : public RenderFrameObserver {
   void OnRequestManifestComplete(int request_id, const Manifest&);
 
   void FetchManifest();
-  void OnManifestFetchComplete(const blink::WebURLResponse& response,
+  void OnManifestFetchComplete(const GURL& document_url,
+                               const blink::WebURLResponse& response,
                                const std::string& data);
   void ResolveCallbacks(ResolveState state);
 

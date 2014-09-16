@@ -17,6 +17,7 @@
 IPC_STRUCT_TRAITS_BEGIN(content::Manifest)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(short_name)
+  IPC_STRUCT_TRAITS_MEMBER(start_url)
 IPC_STRUCT_TRAITS_END()
 
 // The browser process requests for the manifest linked with the associated

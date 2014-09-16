@@ -10,74 +10,153 @@
 
 namespace content {
 
-TEST(ManifestParserTest, EmptyStringNull) {
-  Manifest manifest = ManifestParser::Parse("");
+class ManifestParserTest : public testing::Test  {
+ protected:
+  ManifestParserTest() {}
+  virtual ~ManifestParserTest() {}
+
+  Manifest ParseManifest(const base::StringPiece& json,
+                         const GURL& document_url = default_document_url,
+                         const GURL& manifest_url = default_manifest_url) {
+    return ManifestParser::Parse(json, document_url, manifest_url);
+  }
+
+  static const GURL default_document_url;
+  static const GURL default_manifest_url;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ManifestParserTest);
+};
+
+const GURL ManifestParserTest::default_document_url(
+    "http://foo.com/index.html");
+const GURL ManifestParserTest::default_manifest_url(
+    "http://foo.com/manifest.json");
+
+TEST_F(ManifestParserTest, EmptyStringNull) {
+  Manifest manifest = ParseManifest("");
 
   // A parsing error is equivalent to an empty manifest.
   ASSERT_TRUE(manifest.IsEmpty());
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
+  ASSERT_TRUE(manifest.start_url.is_empty());
 }
 
-TEST(ManifestParserTest, ValidNoContentParses) {
-  Manifest manifest = ManifestParser::Parse("{}");
+TEST_F(ManifestParserTest, ValidNoContentParses) {
+  Manifest manifest = ParseManifest("{}");
 
   // Check that all the fields are null in that case.
   ASSERT_TRUE(manifest.IsEmpty());
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
+  ASSERT_TRUE(manifest.start_url.is_empty());
 }
 
-TEST(ManifestParserTest, NameParseRules) {
+TEST_F(ManifestParserTest, NameParseRules) {
   // Smoke test.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"name\": \"foo\" }");
+    Manifest manifest = ParseManifest("{ \"name\": \"foo\" }");
     ASSERT_TRUE(EqualsASCII(manifest.name.string(), "foo"));
   }
 
   // Trim whitespaces.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"name\": \"  foo  \" }");
+    Manifest manifest = ParseManifest("{ \"name\": \"  foo  \" }");
     ASSERT_TRUE(EqualsASCII(manifest.name.string(), "foo"));
   }
 
   // Don't parse if name isn't a string.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"name\": {} }");
+    Manifest manifest = ParseManifest("{ \"name\": {} }");
     ASSERT_TRUE(manifest.name.is_null());
   }
 
   // Don't parse if name isn't a string.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"name\": 42 }");
+    Manifest manifest = ParseManifest("{ \"name\": 42 }");
     ASSERT_TRUE(manifest.name.is_null());
   }
 }
 
-TEST(ManifestParserTest, ShortNameParseRules) {
+TEST_F(ManifestParserTest, ShortNameParseRules) {
   // Smoke test.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"short_name\": \"foo\" }");
+    Manifest manifest = ParseManifest("{ \"short_name\": \"foo\" }");
     ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
   }
 
   // Trim whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"short_name\": \"  foo  \" }");
+    ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"short_name\": {} }");
+    ASSERT_TRUE(manifest.short_name.is_null());
+  }
+
+  // Don't parse if name isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"short_name\": 42 }");
+    ASSERT_TRUE(manifest.short_name.is_null());
+  }
+}
+
+TEST_F(ManifestParserTest, StartURLParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"start_url\": \"land.html\" }");
+    ASSERT_EQ(manifest.start_url.spec(),
+              default_document_url.Resolve("land.html").spec());
+  }
+
+  // Whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"start_url\": \"  land.html  \" }");
+    ASSERT_EQ(manifest.start_url.spec(),
+              default_document_url.Resolve("land.html").spec());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"start_url\": {} }");
+    ASSERT_TRUE(manifest.start_url.is_empty());
+  }
+
+  // Don't parse if property isn't a string.
+  {
+    Manifest manifest = ParseManifest("{ \"start_url\": 42 }");
+    ASSERT_TRUE(manifest.start_url.is_empty());
+  }
+
+  // Absolute start_url, same origin with document.
   {
     Manifest manifest =
-        ManifestParser::Parse("{ \"short_name\": \"  foo  \" }");
-    ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
+        ParseManifest("{ \"start_url\": \"http://foo.com/land.html\" }",
+                      GURL("http://foo.com/manifest.json"),
+                      GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.start_url.spec(), "http://foo.com/land.html");
   }
 
-  // Don't parse if name isn't a string.
+  // Absolute start_url, cross origin with document.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"short_name\": {} }");
-    ASSERT_TRUE(manifest.short_name.is_null());
+    Manifest manifest =
+        ParseManifest("{ \"start_url\": \"http://bar.com/land.html\" }",
+                      GURL("http://foo.com/manifest.json"),
+                      GURL("http://foo.com/index.html"));
+    ASSERT_TRUE(manifest.start_url.is_empty());
   }
 
-  // Don't parse if name isn't a string.
+  // Resolving has to happen based on the manifest_url.
   {
-    Manifest manifest = ManifestParser::Parse("{ \"short_name\": 42 }");
-    ASSERT_TRUE(manifest.short_name.is_null());
+    Manifest manifest =
+        ParseManifest("{ \"start_url\": \"land.html\" }",
+                      GURL("http://foo.com/landing/manifest.json"),
+                      GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.start_url.spec(), "http://foo.com/landing/land.html");
   }
 }
 

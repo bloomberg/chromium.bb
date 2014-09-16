@@ -103,10 +103,12 @@ void ManifestManager::FetchManifest() {
   // CSP rule, see http://crbug.com/409996.
   fetcher_->Start(render_frame()->GetWebFrame(),
                   base::Bind(&ManifestManager::OnManifestFetchComplete,
-                             base::Unretained(this)));
+                             base::Unretained(this),
+                             render_frame()->GetWebFrame()->document().url()));
 }
 
 void ManifestManager::OnManifestFetchComplete(
+    const GURL& document_url,
     const blink::WebURLResponse& response,
     const std::string& data) {
   if (response.isNull() && data.empty()) {
@@ -114,7 +116,7 @@ void ManifestManager::OnManifestFetchComplete(
     return;
   }
 
-  manifest_ = ManifestParser::Parse(data);
+  manifest_ = ManifestParser::Parse(data, response.url(), document_url);
 
   fetcher_.reset();
   ResolveCallbacks(ResolveStateSuccess);

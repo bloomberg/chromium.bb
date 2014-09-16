@@ -8,6 +8,8 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace base {
 class DictionaryValue;
 }
@@ -21,7 +23,9 @@ struct Manifest;
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
 class CONTENT_EXPORT ManifestParser {
  public:
-  static Manifest Parse(const base::StringPiece&);
+  static Manifest Parse(const base::StringPiece&,
+                        const GURL& manifest_url,
+                        const GURL& document_url);
 };
 
 } // namespace content
