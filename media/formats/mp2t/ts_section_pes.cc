@@ -10,56 +10,9 @@
 #include "media/base/buffers.h"
 #include "media/formats/mp2t/es_parser.h"
 #include "media/formats/mp2t/mp2t_common.h"
+#include "media/formats/mp2t/timestamp_unroller.h"
 
 static const int kPesStartCode = 0x000001;
-
-// Given that |time| is coded using 33 bits,
-// UnrollTimestamp returns the corresponding unrolled timestamp.
-// The unrolled timestamp is defined by:
-// |time| + k * (2 ^ 33)
-// where k is estimated so that the unrolled timestamp
-// is as close as possible to |previous_unrolled_time|.
-static int64 UnrollTimestamp(int64 previous_unrolled_time, int64 time) {
-  // Mpeg2 TS timestamps have an accuracy of 33 bits.
-  const int nbits = 33;
-
-  // |timestamp| has a precision of |nbits|
-  // so make sure the highest bits are set to 0.
-  DCHECK_EQ((time >> nbits), 0);
-
-  // Consider 3 possibilities to estimate the missing high bits of |time|.
-  int64 previous_unrolled_time_high =
-      (previous_unrolled_time >> nbits);
-  int64 time0 = ((previous_unrolled_time_high - 1) << nbits) | time;
-  int64 time1 = ((previous_unrolled_time_high + 0) << nbits) | time;
-  int64 time2 = ((previous_unrolled_time_high + 1) << nbits) | time;
-
-  // Select the min absolute difference with the current time
-  // so as to ensure time continuity.
-  int64 diff0 = time0 - previous_unrolled_time;
-  int64 diff1 = time1 - previous_unrolled_time;
-  int64 diff2 = time2 - previous_unrolled_time;
-  if (diff0 < 0)
-    diff0 = -diff0;
-  if (diff1 < 0)
-    diff1 = -diff1;
-  if (diff2 < 0)
-    diff2 = -diff2;
-
-  int64 unrolled_time;
-  int64 min_diff;
-  if (diff1 < diff0) {
-    unrolled_time = time1;
-    min_diff = diff1;
-  } else {
-    unrolled_time = time0;
-    min_diff = diff0;
-  }
-  if (diff2 < min_diff)
-    unrolled_time = time2;
-
-  return unrolled_time;
-}
 
 static bool IsTimestampSectionValid(int64 timestamp_section) {
   // |pts_section| has 40 bits:
@@ -82,14 +35,13 @@ static int64 ConvertTimestampSectionToTimestamp(int64 timestamp_section) {
 namespace media {
 namespace mp2t {
 
-TsSectionPes::TsSectionPes(scoped_ptr<EsParser> es_parser)
+TsSectionPes::TsSectionPes(scoped_ptr<EsParser> es_parser,
+                           TimestampUnroller* timestamp_unroller)
   : es_parser_(es_parser.release()),
     wait_for_pusi_(true),
-    previous_pts_valid_(false),
-    previous_pts_(0),
-    previous_dts_valid_(false),
-    previous_dts_(0) {
+    timestamp_unroller_(timestamp_unroller) {
   DCHECK(es_parser_);
+  DCHECK(timestamp_unroller_);
 }
 
 TsSectionPes::~TsSectionPes() {
@@ -138,12 +90,6 @@ void TsSectionPes::Flush() {
 
 void TsSectionPes::Reset() {
   ResetPesState();
-
-  previous_pts_valid_ = false;
-  previous_pts_ = 0;
-  previous_dts_valid_ = false;
-  previous_dts_ = 0;
-
   es_parser_->Reset();
 }
 
@@ -269,19 +215,13 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
   base::TimeDelta media_pts(kNoTimestamp());
   DecodeTimestamp media_dts(kNoDecodeTimestamp());
   if (is_pts_valid) {
-    int64 pts = ConvertTimestampSectionToTimestamp(pts_section);
-    if (previous_pts_valid_)
-      pts = UnrollTimestamp(previous_pts_, pts);
-    previous_pts_ = pts;
-    previous_pts_valid_ = true;
+    int64 pts = timestamp_unroller_->GetUnrolledTimestamp(
+        ConvertTimestampSectionToTimestamp(pts_section));
     media_pts = base::TimeDelta::FromMicroseconds((1000 * pts) / 90);
   }
   if (is_dts_valid) {
-    int64 dts = ConvertTimestampSectionToTimestamp(dts_section);
-    if (previous_dts_valid_)
-      dts = UnrollTimestamp(previous_dts_, dts);
-    previous_dts_ = dts;
-    previous_dts_valid_ = true;
+    int64 dts = timestamp_unroller_->GetUnrolledTimestamp(
+        ConvertTimestampSectionToTimestamp(dts_section));
     media_dts = DecodeTimestamp::FromMicroseconds((1000 * dts) / 90);
   }
 

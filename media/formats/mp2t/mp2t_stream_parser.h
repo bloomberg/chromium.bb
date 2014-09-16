@@ -15,6 +15,7 @@
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
+#include "media/formats/mp2t/timestamp_unroller.h"
 
 namespace media {
 
@@ -123,7 +124,11 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
 
   // Indicate whether a segment was started.
   bool segment_started_;
-  base::TimeDelta time_offset_;
+
+  // Timestamp unroller.
+  // Timestamps in PES packets must be unrolled using the same offset.
+  // So the unroller is global between PES pids.
+  TimestampUnroller timestamp_unroller_;
 
   DISALLOW_COPY_AND_ASSIGN(Mp2tStreamParser);
 };

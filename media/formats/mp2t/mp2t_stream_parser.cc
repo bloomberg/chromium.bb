@@ -218,6 +218,9 @@ void Mp2tStreamParser::Flush() {
   // Reset the selected PIDs.
   selected_audio_pid_ = -1;
   selected_video_pid_ = -1;
+
+  // Reset the timestamp unroller.
+  timestamp_unroller_.Reset();
 }
 
 bool Mp2tStreamParser::Parse(const uint8* buf, int size) {
@@ -368,7 +371,7 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
   // Create the PES state here.
   DVLOG(1) << "Create a new PES state";
   scoped_ptr<TsSection> pes_section_parser(
-      new TsSectionPes(es_parser.Pass()));
+      new TsSectionPes(es_parser.Pass(), &timestamp_unroller_));
   PidState::PidType pid_type =
       is_audio ? PidState::kPidAudioPes : PidState::kPidVideoPes;
   scoped_ptr<PidState> pes_pid_state(
@@ -531,10 +534,6 @@ void Mp2tStreamParser::OnEmitAudioBuffer(
       << stream_parser_buffer->timestamp().InMilliseconds()
       << " dur="
       << stream_parser_buffer->duration().InMilliseconds();
-  stream_parser_buffer->set_timestamp(
-      stream_parser_buffer->timestamp() - time_offset_);
-  stream_parser_buffer->SetDecodeTimestamp(
-      stream_parser_buffer->GetDecodeTimestamp() - time_offset_);
 
   // Ignore the incoming buffer if it is not associated with any config.
   if (buffer_queue_chain_.empty()) {
@@ -562,10 +561,6 @@ void Mp2tStreamParser::OnEmitVideoBuffer(
       << stream_parser_buffer->duration().InMilliseconds()
       << " IsKeyframe="
       << stream_parser_buffer->IsKeyframe();
-  stream_parser_buffer->set_timestamp(
-      stream_parser_buffer->timestamp() - time_offset_);
-  stream_parser_buffer->SetDecodeTimestamp(
-      stream_parser_buffer->GetDecodeTimestamp() - time_offset_);
 
   // Ignore the incoming buffer if it is not associated with any config.
   if (buffer_queue_chain_.empty()) {

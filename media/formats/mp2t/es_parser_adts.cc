@@ -159,6 +159,8 @@ bool EsParserAdts::ParseFromEsQueue() {
             is_key_frame,
             DemuxerStream::AUDIO, 0);
     stream_parser_buffer->set_timestamp(current_pts);
+    stream_parser_buffer->SetDecodeTimestamp(
+        DecodeTimestamp::FromPresentationTime(current_pts));
     stream_parser_buffer->set_duration(frame_duration);
     emit_buffer_cb_.Run(stream_parser_buffer);
 
