@@ -126,7 +126,7 @@ void HTMLScriptRunner::executeParsingBlockingScript()
 void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendingScript, PendingScriptType pendingScriptType)
 {
     bool errorOccurred = false;
-    double loadFinishTime = pendingScript.resource() ? pendingScript.resource()->loadFinishTime() : 0;
+    double loadFinishTime = pendingScript.resource() && pendingScript.resource()->url().protocolIsInHTTPFamily() ? pendingScript.resource()->loadFinishTime() : 0;
     ScriptSourceCode sourceCode = pendingScript.getSource(documentURLForScriptExecution(m_document), errorOccurred);
 
     // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
