@@ -12,6 +12,7 @@
       'target_name': 'webview',
       'type': '<(component)',
       'dependencies': [
+        '../../../aura/aura.gyp:aura',
         '../../../../base/base.gyp:base',
         '../../../../base/base.gyp:base_i18n',
         '../../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

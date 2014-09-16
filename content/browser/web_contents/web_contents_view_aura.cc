@@ -1578,19 +1578,6 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ConvertFromWeb(current_drag_op_);
 }
 
-void WebContentsViewAura::OnWindowParentChanged(aura::Window* window,
-                                                aura::Window* parent) {
-  // Ignore any visibility changes in the hierarchy below.
-  if (window != window_.get() && window_->Contains(window))
-    return;
-
-  // On Windows we will get called with a parent of NULL as part of the shut
-  // down process. As such we do only change the visibility when a parent gets
-  // set.
-  if (parent)
-    UpdateWebContentsVisibility(window->IsVisible());
-}
-
 void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
                                                     bool visible) {
   // Ignore any visibility changes in the hierarchy below.
