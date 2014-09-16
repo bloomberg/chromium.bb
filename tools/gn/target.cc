@@ -362,7 +362,7 @@ bool Target::CheckVisibility(Err* err) const {
   }
 
   for (size_t i = 0; i < datadeps_.size(); i++) {
-    if (deps_[i].origin &&
+    if (datadeps_[i].origin &&
         !Visibility::CheckItemVisibility(this, datadeps_[i].ptr, err))
       return false;
   }

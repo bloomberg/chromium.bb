@@ -373,6 +373,28 @@ TEST(Target, VisibilityFails) {
   ASSERT_FALSE(a.OnResolved(&err));
 }
 
+// Test visibility with a single datadep.
+TEST(Target, VisibilityDatadeps) {
+  TestWithScope setup;
+  Err err;
+
+  Target b(setup.settings(), Label(SourceDir("//public/"), "b"));
+  b.set_output_type(Target::STATIC_LIBRARY);
+  b.SetToolchain(setup.toolchain());
+  b.visibility().SetPublic();
+  ASSERT_TRUE(b.OnResolved(&err));
+
+  // Make a target depending on "b". The dependency must have an origin to mark
+  // it as user-set so we check visibility. This check should fail.
+  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
+  a.set_output_type(Target::EXECUTABLE);
+  a.datadeps().push_back(LabelTargetPair(&b));
+  IdentifierNode origin;  // Dummy origin.
+  a.datadeps()[0].origin = &origin;
+  a.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(a.OnResolved(&err)) << err.help_text();
+}
+
 // Tests that A -> Group -> B where the group is visible from A but B isn't,
 // passes visibility even though the group's deps get expanded into A.
 TEST(Target, VisibilityGroup) {
