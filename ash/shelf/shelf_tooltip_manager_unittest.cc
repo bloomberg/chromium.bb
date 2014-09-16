@@ -207,9 +207,11 @@ TEST_F(ShelfTooltipManagerTest, ShouldHideForEvents) {
 
   // Should hide for gesture events.
   ui::GestureEvent gesture_event(
-      0, 0, ui::EF_NONE,
+      0,
+      0,
+      ui::EF_NONE,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f));
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
   SetEventTarget(tooltip_widget->GetNativeWindow(), &gesture_event);
   event_handler->OnGestureEvent(&gesture_event);
   EXPECT_FALSE(gesture_event.handled());

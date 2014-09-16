@@ -10,10 +10,16 @@ GestureEventDetails::GestureEventDetails()
     : type_(ET_UNKNOWN), touch_points_(0), oldest_touch_id_(-1) {
 }
 
+GestureEventDetails::GestureEventDetails(ui::EventType type)
+    : type_(type), touch_points_(1), oldest_touch_id_(-1) {
+  DCHECK_GE(type, ET_GESTURE_TYPE_START);
+  DCHECK_LE(type, ET_GESTURE_TYPE_END);
+}
+
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,
                                          float delta_y)
-    : type_(type), touch_points_(1), oldest_touch_id_(0) {
+    : type_(type), touch_points_(1), oldest_touch_id_(-1) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);
   DCHECK_LE(type, ET_GESTURE_TYPE_END);
   switch (type_) {
@@ -37,11 +43,6 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       data.first_finger_enclosing_rectangle.height = delta_y;
       break;
 
-    case ui::ET_GESTURE_PINCH_UPDATE:
-      data.scale = delta_x;
-      CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for pinch";
-      break;
-
     case ui::ET_GESTURE_SWIPE:
       data.swipe.left = delta_x < 0;
       data.swipe.right = delta_x > 0;
@@ -49,19 +50,8 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       data.swipe.down = delta_y > 0;
       break;
 
-    case ui::ET_GESTURE_TAP:
-    case ui::ET_GESTURE_DOUBLE_TAP:
-    case ui::ET_GESTURE_TAP_UNCONFIRMED:
-      data.tap_count = static_cast<int>(delta_x);
-      CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for tap.";
-      break;
-
     default:
-      if (delta_x != 0.f || delta_y != 0.f) {
-        DLOG(WARNING) << "A gesture event (" << type << ") had unknown data: ("
-                      << delta_x << "," << delta_y;
-      }
-      break;
+      NOTREACHED() << "Invalid event type for constructor: " << type;
   }
 }
 
