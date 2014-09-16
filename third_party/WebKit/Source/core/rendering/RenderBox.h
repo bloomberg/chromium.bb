@@ -663,6 +663,8 @@ protected:
 #endif
 
 private:
+    void invalidatePaintRectClippedByOldAndNewBounds(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+
     void updateShapeOutsideInfoAfterStyleChange(const RenderStyle&, const RenderStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const RenderStyle*);
 
