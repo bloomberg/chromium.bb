@@ -41,7 +41,7 @@ static inline bool inheritColorFromParentStyle(RenderObject* object, bool applyT
         return false;
     const SVGRenderStyle& parentSVGStyle = object->parent()->style()->svgStyle();
     SVGPaintType paintType = applyToFill ? parentSVGStyle.fillPaintType() : parentSVGStyle.strokePaintType();
-    if (paintType != SVG_PAINTTYPE_RGBCOLOR && paintType != SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR)
+    if (paintType != SVG_PAINTTYPE_RGBCOLOR)
         return false;
     color = applyToFill ? parentSVGStyle.fillPaintColor() : parentSVGStyle.strokePaintColor();
     return true;
@@ -86,10 +86,8 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     switch (paintType) {
     case SVG_PAINTTYPE_CURRENTCOLOR:
     case SVG_PAINTTYPE_RGBCOLOR:
-    case SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR:
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
     case SVG_PAINTTYPE_URI_RGBCOLOR:
-    case SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
         color = applyToFill ? svgStyle.fillPaintColor() : svgStyle.strokePaintColor();
         hasColor = true;
     default:

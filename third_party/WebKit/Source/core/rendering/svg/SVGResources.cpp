@@ -167,7 +167,6 @@ static inline bool svgPaintTypeHasURL(SVGPaintType paintType)
     case SVG_PAINTTYPE_URI_NONE:
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
     case SVG_PAINTTYPE_URI_RGBCOLOR:
-    case SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
     case SVG_PAINTTYPE_URI:
         return true;
     default:
