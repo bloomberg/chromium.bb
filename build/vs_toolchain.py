@@ -172,7 +172,7 @@ wdk_dir = "%s"
       os.environ['GYP_MSVS_OVERRIDE_PATH'],
       os.environ['WINDOWSSDKDIR'],
       os.environ['GYP_MSVS_VERSION'],
-      os.environ['WDK_DIR'])
+      os.environ.get('WDK_DIR', ''))
 
 
 def main():
