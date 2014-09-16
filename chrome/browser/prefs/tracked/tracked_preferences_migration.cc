@@ -192,7 +192,12 @@ void MigratePrefsFromOldToNewStore(const std::set<std::string>& pref_names,
         new_hash_store_transaction->ImportHash(pref_name, old_hash);
         *new_store_altered = true;
       } else if (!destination_hash_missing) {
-        new_hash_store_transaction->ClearHash(pref_name);
+        // Do not allow values to be migrated without MACs if the destination
+        // already has a MAC (http://crbug.com/414554). Remove the migrated
+        // value in order to provide the same no-op behaviour as if the pref was
+        // added to the wrong file when there was already a value for
+        // |pref_name| in |new_store|.
+        new_store->Remove(pref_name, NULL);
         *new_store_altered = true;
       }
     }
