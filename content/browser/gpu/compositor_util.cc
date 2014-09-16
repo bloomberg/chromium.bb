@@ -270,6 +270,13 @@ bool IsForceGpuRasterizationEnabled() {
   return command_line.HasSwitch(switches::kForceGpuRasterization);
 }
 
+bool UseSurfacesEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  return command_line.HasSwitch(switches::kUseSurfaces);
+}
+
 base::Value* GetFeatureStatus() {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;

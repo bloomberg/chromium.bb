@@ -23,6 +23,7 @@
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "content/browser/compositor/surface_display_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -81,10 +82,8 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
     compositor_thread_.reset(new base::Thread("Browser Compositor"));
     compositor_thread_->Start();
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseSurfaces)) {
+  if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
-  }
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -174,8 +173,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
         compositor_thread_task_runner.get());
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseSurfaces)) {
+  if (UseSurfacesEnabled()) {
     // This gets a bit confusing. Here we have a ContextProvider configured to
     // render directly to this widget. We need to make an OnscreenDisplayClient
     // associated with this context, then return a SurfaceDisplayOutputSurface

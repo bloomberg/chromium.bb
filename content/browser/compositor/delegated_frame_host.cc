@@ -13,6 +13,7 @@
 #include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/surface_factory.h"
 #include "content/browser/compositor/resize_lock.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
@@ -53,8 +54,7 @@ void DelegatedFrameHostClient::RequestCopyOfOutput(
 
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
-      use_surfaces_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseSurfaces)),
+      use_surfaces_(UseSurfacesEnabled()),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),

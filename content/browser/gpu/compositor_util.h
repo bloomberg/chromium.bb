@@ -37,6 +37,9 @@ CONTENT_EXPORT int NumberOfRendererRasterThreads();
 // by the command line.
 CONTENT_EXPORT int ForceNumberOfRendererRasterThreads();
 
+// Returns true if using cc Surfaces is allowed.
+CONTENT_EXPORT bool UseSurfacesEnabled();
+
 CONTENT_EXPORT base::Value* GetFeatureStatus();
 CONTENT_EXPORT base::Value* GetProblems();
 CONTENT_EXPORT base::Value* GetDriverBugWorkarounds();
