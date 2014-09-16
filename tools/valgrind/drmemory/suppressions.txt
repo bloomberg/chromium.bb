@@ -657,3 +657,12 @@ INVALID HEAP ARGUMENT
 name=http://crbug.com/413215
 *!replace_operator_delete*
 v8.dll!*
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/414675
+blink_web.dll!blink::toCoreFrame
+blink_web.dll!blink::RemoteFrameClient::firstChild
+blink_web.dll!blink::WebRemoteFrameImpl::~WebRemoteFrameImpl
+blink_web.dll!blink::WebRemoteFrameImpl::close
+content.dll!content::RenderFrameProxy::~RenderFrameProxy
+
