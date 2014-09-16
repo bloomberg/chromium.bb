@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -18,7 +18,7 @@ namespace extensions {
 
 namespace {
 
-class SettingsOverridePermissionTest : public ExtensionManifestTest {
+class SettingsOverridePermissionTest : public ChromeManifestTest {
  protected:
   enum Flags {
     kHomepage = 1,
@@ -56,7 +56,7 @@ class SettingsOverridePermissionTest : public ExtensionManifestTest {
     ext_manifest.Set(
         manifest_keys::kSettingsOverride, settings_override.release());
 
-    Manifest manifest(&ext_manifest, "test");
+    ManifestData manifest(&ext_manifest, "test");
     return LoadAndExpectSuccess(manifest);
   }
 };

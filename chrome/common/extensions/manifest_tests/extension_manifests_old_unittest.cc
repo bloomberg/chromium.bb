@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -10,7 +10,7 @@
 
 // Tests that the old permission name "unlimited_storage" still works for
 // backwards compatibility (we renamed it to "unlimitedStorage").
-TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
+TEST_F(ChromeManifestTest, OldUnlimitedStoragePermission) {
   scoped_refptr<extensions::Extension> extension = LoadAndExpectSuccess(
       "old_unlimited_storage.json", extensions::Manifest::INTERNAL,
       extensions::Extension::NO_FLAGS);

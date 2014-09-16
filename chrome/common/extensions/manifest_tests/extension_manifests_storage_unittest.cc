@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extensions::manifest_keys;
 
-TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
+TEST_F(ChromeManifestTest, StorageAPIManifestVersionAvailability) {
   base::DictionaryValue base_manifest;
   {
     base_manifest.SetString(keys::kName, "test");
@@ -24,7 +24,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
 
   // Extension with no manifest version cannot use storage API.
   {
-    Manifest manifest(&base_manifest, "test");
+    ManifestData manifest(&base_manifest, "test");
     LoadAndExpectWarning(manifest, kManifestVersionError);
   }
 
@@ -34,7 +34,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.SetInteger(keys::kManifestVersion, 1);
     manifest_with_version.MergeDictionary(&base_manifest);
 
-    Manifest manifest(&manifest_with_version, "test");
+    ManifestData manifest(&manifest_with_version, "test");
     LoadAndExpectWarning(manifest, kManifestVersionError);
   }
 
@@ -44,7 +44,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.SetInteger(keys::kManifestVersion, 2);
     manifest_with_version.MergeDictionary(&base_manifest);
 
-    Manifest manifest(&manifest_with_version, "test");
+    ManifestData manifest(&manifest_with_version, "test");
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());

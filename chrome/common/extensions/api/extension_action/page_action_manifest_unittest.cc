@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -15,10 +17,12 @@ namespace extensions {
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-class PageActionManifestTest : public ExtensionManifestTest {
+class PageActionManifestTest : public ChromeManifestTest {
  protected:
-  virtual const char* test_data_dir() OVERRIDE {
-    return "page_action";
+  virtual base::FilePath GetTestDataDir() OVERRIDE {
+    base::FilePath path;
+    PathService::Get(chrome::DIR_TEST_DATA, &path);
+    return path.AppendASCII("extensions").AppendASCII("page_action");
   }
 
   scoped_ptr<ActionInfo> LoadAction(const std::string& manifest_filename);

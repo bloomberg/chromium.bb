@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -17,7 +17,7 @@ namespace extensions {
 
 namespace errors = manifest_errors;
 
-class CommandsManifestTest : public ExtensionManifestTest {
+class CommandsManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(CommandsManifestTest, CommandManifestSimple) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +15,7 @@ using extensions::Extension;
 
 namespace errors = extensions::manifest_errors;
 
-TEST_F(ExtensionManifestTest, AppWebUrls) {
+TEST_F(ChromeManifestTest, AppWebUrls) {
   Testcase testcases[] = {
     Testcase("web_urls_wrong_type.json", errors::kInvalidWebURLs),
     Testcase("web_urls_invalid_1.json",

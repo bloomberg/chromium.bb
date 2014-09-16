@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -16,7 +16,7 @@ namespace extensions {
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-class AppLaunchManifestTest : public ExtensionManifestTest {
+class AppLaunchManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(AppLaunchManifestTest, AppLaunchContainer) {

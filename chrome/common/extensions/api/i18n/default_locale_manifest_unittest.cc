@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-class DefaultLocaleManifestTest : public ExtensionManifestTest {
+class DefaultLocaleManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(DefaultLocaleManifestTest, DefaultLocale) {

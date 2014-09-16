@@ -6,7 +6,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
@@ -18,7 +18,7 @@ namespace extensions {
 
 namespace errors = manifest_errors;
 
-class PlatformAppsManifestTest : public ExtensionManifestTest {
+class PlatformAppsManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(PlatformAppsManifestTest, PlatformApps) {
@@ -131,7 +131,7 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
 
   // First try to load without any flags. This should fail for every API.
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    LoadAndExpectError(Manifest(manifests[i].get(), ""),
+    LoadAndExpectError(ManifestData(manifests[i].get(), ""),
                        errors::kExperimentalFlagRequired);
   }
 
@@ -139,7 +139,7 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    LoadAndExpectSuccess(Manifest(manifests[i].get(), ""));
+    LoadAndExpectSuccess(ManifestData(manifests[i].get(), ""));
   }
 }
 

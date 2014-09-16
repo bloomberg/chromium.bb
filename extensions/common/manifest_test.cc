@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "extensions/common/manifest_test.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -10,25 +10,18 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::Extension;
-
+namespace extensions {
 namespace {
 
-// If filename is a relative path, LoadManifestFile will treat it relative to
-// the appropriate test directory.
-base::DictionaryValue* LoadManifestFile(const base::FilePath& filename_path,
+// |manifest_path| is an absolute path to a manifest file.
+base::DictionaryValue* LoadManifestFile(const base::FilePath& manifest_path,
                                         std::string* error) {
-  base::FilePath extension_path;
-  base::FilePath manifest_path;
-
-  PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
-  manifest_path = manifest_path.Append(filename_path);
-  extension_path = manifest_path.DirName();
+  base::FilePath extension_path = manifest_path.DirName();
 
   EXPECT_TRUE(base::PathExists(manifest_path)) <<
       "Couldn't find " << manifest_path.value();
@@ -42,7 +35,7 @@ base::DictionaryValue* LoadManifestFile(const base::FilePath& filename_path,
   // Only localize manifests that indicate they want to be localized.
   // Calling LocalizeExtension at this point mirrors file_util::LoadExtension.
   if (manifest &&
-      filename_path.value().find(FILE_PATH_LITERAL("localized")) !=
+      manifest_path.value().find(FILE_PATH_LITERAL("localized")) !=
       std::string::npos)
     extension_l10n_util::LocalizeExtension(extension_path, manifest, error);
 
@@ -51,79 +44,76 @@ base::DictionaryValue* LoadManifestFile(const base::FilePath& filename_path,
 
 }  // namespace
 
-ExtensionManifestTest::ExtensionManifestTest()
-    : enable_apps_(true),
-      // UNKNOWN == trunk.
-      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+ManifestTest::ManifestTest()
+    : enable_apps_(true) {
+}
+
+ManifestTest::~ManifestTest() {
+}
 
 // Helper class that simplifies creating methods that take either a filename
 // to a manifest or the manifest itself.
-ExtensionManifestTest::Manifest::Manifest(const char* name)
+ManifestTest::ManifestData::ManifestData(const char* name)
     : name_(name), manifest_(NULL) {
 }
 
-ExtensionManifestTest::Manifest::Manifest(base::DictionaryValue* manifest,
+ManifestTest::ManifestData::ManifestData(base::DictionaryValue* manifest,
                                           const char* name)
     : name_(name), manifest_(manifest) {
   CHECK(manifest_) << "Manifest NULL";
 }
 
-ExtensionManifestTest::Manifest::Manifest(
+ManifestTest::ManifestData::ManifestData(
     scoped_ptr<base::DictionaryValue> manifest)
     : manifest_(manifest.get()), manifest_holder_(manifest.Pass()) {
   CHECK(manifest_) << "Manifest NULL";
 }
 
-ExtensionManifestTest::Manifest::Manifest(const Manifest& m) {
+ManifestTest::ManifestData::ManifestData(const ManifestData& m) {
   NOTREACHED();
 }
 
-ExtensionManifestTest::Manifest::~Manifest() {
+ManifestTest::ManifestData::~ManifestData() {
 }
 
-base::DictionaryValue* ExtensionManifestTest::Manifest::GetManifest(
-    char const* test_data_dir, std::string* error) const {
+base::DictionaryValue* ManifestTest::ManifestData::GetManifest(
+    base::FilePath test_data_dir, std::string* error) const {
   if (manifest_)
     return manifest_;
 
-  base::FilePath filename_path;
-  filename_path = filename_path.AppendASCII("extensions")
-      .AppendASCII(test_data_dir)
-      .AppendASCII(name_);
-  manifest_ = LoadManifestFile(filename_path, error);
+  base::FilePath manifest_path = test_data_dir.AppendASCII(name_);
+  manifest_ = LoadManifestFile(manifest_path, error);
   manifest_holder_.reset(manifest_);
   return manifest_;
 }
 
-char const* ExtensionManifestTest::test_data_dir() {
-  return "manifest_tests";
+base::FilePath ManifestTest::GetTestDataDir() {
+  base::FilePath path;
+  PathService::Get(DIR_TEST_DATA, &path);
+  return path.AppendASCII("manifest_tests");
 }
 
-scoped_ptr<base::DictionaryValue> ExtensionManifestTest::LoadManifest(
+scoped_ptr<base::DictionaryValue> ManifestTest::LoadManifest(
     char const* manifest_name, std::string* error) {
-  base::FilePath filename_path;
-  filename_path = filename_path.AppendASCII("extensions")
-      .AppendASCII(test_data_dir())
-      .AppendASCII(manifest_name);
-  return make_scoped_ptr(LoadManifestFile(filename_path, error));
+  base::FilePath manifest_path = GetTestDataDir().AppendASCII(manifest_name);
+  return make_scoped_ptr(LoadManifestFile(manifest_path, error));
 }
 
-scoped_refptr<Extension> ExtensionManifestTest::LoadExtension(
-    const Manifest& manifest,
+scoped_refptr<Extension> ManifestTest::LoadExtension(
+    const ManifestData& manifest,
     std::string* error,
     extensions::Manifest::Location location,
     int flags) {
-  base::DictionaryValue* value = manifest.GetManifest(test_data_dir(), error);
+  base::FilePath test_data_dir = GetTestDataDir();
+  base::DictionaryValue* value = manifest.GetManifest(test_data_dir, error);
   if (!value)
     return NULL;
-  base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions").AppendASCII(test_data_dir());
-  return Extension::Create(path.DirName(), location, *value, flags, error);
+  return Extension::Create(
+      test_data_dir.DirName(), location, *value, flags, error);
 }
 
-scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectSuccess(
-    const Manifest& manifest,
+scoped_refptr<Extension> ManifestTest::LoadAndExpectSuccess(
+    const ManifestData& manifest,
     extensions::Manifest::Location location,
     int flags) {
   std::string error;
@@ -134,22 +124,15 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectSuccess(
   return extension;
 }
 
-scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectSuccess(
+scoped_refptr<Extension> ManifestTest::LoadAndExpectSuccess(
     char const* manifest_name,
     extensions::Manifest::Location location,
     int flags) {
-  return LoadAndExpectSuccess(Manifest(manifest_name), location, flags);
+  return LoadAndExpectSuccess(ManifestData(manifest_name), location, flags);
 }
 
-scoped_refptr<Extension> ExtensionManifestTest::LoadFromStringAndExpectSuccess(
-    char const* manifest_json) {
-  return LoadAndExpectSuccess(
-      Manifest(extensions::test_util::ParseJsonDictionaryWithSingleQuotes(
-          manifest_json)));
-}
-
-scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
-    const Manifest& manifest,
+scoped_refptr<Extension> ManifestTest::LoadAndExpectWarning(
+    const ManifestData& manifest,
     const std::string& expected_warning,
     extensions::Manifest::Location location,
     int flags) {
@@ -163,16 +146,16 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
   return extension;
 }
 
-scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
+scoped_refptr<Extension> ManifestTest::LoadAndExpectWarning(
     char const* manifest_name,
     const std::string& expected_warning,
     extensions::Manifest::Location location,
     int flags) {
   return LoadAndExpectWarning(
-      Manifest(manifest_name), expected_warning, location, flags);
+      ManifestData(manifest_name), expected_warning, location, flags);
 }
 
-void ExtensionManifestTest::VerifyExpectedError(
+void ManifestTest::VerifyExpectedError(
     Extension* extension,
     const std::string& name,
     const std::string& error,
@@ -184,8 +167,8 @@ void ExtensionManifestTest::VerifyExpectedError(
       " expected '" << expected_error << "' but got '" << error << "'";
 }
 
-void ExtensionManifestTest::LoadAndExpectError(
-    const Manifest& manifest,
+void ManifestTest::LoadAndExpectError(
+    const ManifestData& manifest,
     const std::string& expected_error,
     extensions::Manifest::Location location,
     int flags) {
@@ -196,31 +179,22 @@ void ExtensionManifestTest::LoadAndExpectError(
                       expected_error);
 }
 
-void ExtensionManifestTest::LoadAndExpectError(
+void ManifestTest::LoadAndExpectError(
     char const* manifest_name,
     const std::string& expected_error,
     extensions::Manifest::Location location,
     int flags) {
   return LoadAndExpectError(
-      Manifest(manifest_name), expected_error, location, flags);
+      ManifestData(manifest_name), expected_error, location, flags);
 }
 
-void ExtensionManifestTest::LoadFromStringAndExpectError(
-    char const* manifest_json,
-    const std::string& expected_error) {
-  return LoadAndExpectError(
-      Manifest(extensions::test_util::ParseJsonDictionaryWithSingleQuotes(
-          manifest_json)),
-      expected_error);
-}
-
-void ExtensionManifestTest::AddPattern(extensions::URLPatternSet* extent,
+void ManifestTest::AddPattern(extensions::URLPatternSet* extent,
                                        const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-ExtensionManifestTest::Testcase::Testcase(
+ManifestTest::Testcase::Testcase(
     std::string manifest_filename,
     std::string expected_error,
     extensions::Manifest::Location location,
@@ -230,7 +204,7 @@ ExtensionManifestTest::Testcase::Testcase(
       location_(location), flags_(flags) {
 }
 
-ExtensionManifestTest::Testcase::Testcase(std::string manifest_filename,
+ManifestTest::Testcase::Testcase(std::string manifest_filename,
                                           std::string expected_error)
     : manifest_filename_(manifest_filename),
       expected_error_(expected_error),
@@ -238,12 +212,12 @@ ExtensionManifestTest::Testcase::Testcase(std::string manifest_filename,
       flags_(Extension::NO_FLAGS) {
 }
 
-ExtensionManifestTest::Testcase::Testcase(std::string manifest_filename)
+ManifestTest::Testcase::Testcase(std::string manifest_filename)
     : manifest_filename_(manifest_filename),
       location_(extensions::Manifest::INTERNAL),
       flags_(Extension::NO_FLAGS) {}
 
-ExtensionManifestTest::Testcase::Testcase(
+ManifestTest::Testcase::Testcase(
     std::string manifest_filename,
     extensions::Manifest::Location location,
     int flags)
@@ -251,14 +225,14 @@ ExtensionManifestTest::Testcase::Testcase(
       location_(location),
       flags_(flags) {}
 
-void ExtensionManifestTest::RunTestcases(const Testcase* testcases,
+void ManifestTest::RunTestcases(const Testcase* testcases,
                                          size_t num_testcases,
                                          ExpectType type) {
   for (size_t i = 0; i < num_testcases; ++i)
     RunTestcase(testcases[i], type);
 }
 
-void ExtensionManifestTest::RunTestcase(const Testcase& testcase,
+void ManifestTest::RunTestcase(const Testcase& testcase,
                                         ExpectType type) {
   switch (type) {
     case EXPECT_TYPE_ERROR:
@@ -280,3 +254,5 @@ void ExtensionManifestTest::RunTestcase(const Testcase& testcase,
       break;
    }
 }
+
+}  // namespace extensions

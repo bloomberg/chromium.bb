@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,7 +12,7 @@ using extensions::Extension;
 
 namespace errors = extensions::manifest_errors;
 
-TEST_F(ExtensionManifestTest, ManifestVersionError) {
+TEST_F(ChromeManifestTest, ManifestVersionError) {
   scoped_ptr<base::DictionaryValue> manifest1(new base::DictionaryValue());
   manifest1->SetString("name", "Miles");
   manifest1->SetString("version", "0.55");
@@ -43,13 +43,13 @@ TEST_F(ExtensionManifestTest, ManifestVersionError) {
       create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
     if (test_data[i].expect_error) {
         LoadAndExpectError(
-            Manifest(test_data[i].manifest,
+            ManifestData(test_data[i].manifest,
                      test_data[i].test_name),
             errors::kInvalidManifestVersionOld,
             extensions::Manifest::UNPACKED,
             create_flags);
     } else {
-      LoadAndExpectSuccess(Manifest(test_data[i].manifest,
+      LoadAndExpectSuccess(ManifestData(test_data[i].manifest,
                                     test_data[i].test_name),
                            extensions::Manifest::UNPACKED,
                            create_flags);
