@@ -506,9 +506,6 @@ private:
     // The last time a timeupdate event was sent (wall clock).
     double m_lastTimeUpdateEventWallTime;
 
-    // The last time a timeupdate event was sent in movie time.
-    double m_lastTimeUpdateEventMovieTime;
-
     // The default playback start position.
     double m_defaultPlaybackStartPosition;
 

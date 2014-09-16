@@ -323,7 +323,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_previousProgressTime(std::numeric_limits<double>::max())
     , m_duration(std::numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
-    , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
     , m_defaultPlaybackStartPosition(0)
     , m_loadState(WaitingForSource)
     , m_deferredLoadState(NotDeferred)
@@ -2425,14 +2424,8 @@ void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
     if (periodicEvent && timedelta < maxTimeupdateEventFrequency)
         return;
 
-    // Some media engines make multiple "time changed" callbacks at the same time, but we only want one
-    // event at a given time so filter here
-    double movieTime = currentTime();
-    if (movieTime != m_lastTimeUpdateEventMovieTime) {
-        scheduleEvent(EventTypeNames::timeupdate);
-        m_lastTimeUpdateEventWallTime = now;
-        m_lastTimeUpdateEventMovieTime = movieTime;
-    }
+    scheduleEvent(EventTypeNames::timeupdate);
+    m_lastTimeUpdateEventWallTime = now;
 }
 
 bool HTMLMediaElement::togglePlayStateWillPlay() const
