@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_decoder.idl modified Fri Aug 22 13:42:35 2014. */
+/* From ppb_video_decoder.idl modified Mon Sep  8 16:40:15 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_DECODER_H_
 #define PPAPI_C_PPB_VIDEO_DECODER_H_
@@ -17,8 +17,10 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_VIDEODECODER_INTERFACE_0_1 "PPB_VideoDecoder;0.1" /* dev */
-#define PPB_VIDEODECODER_INTERFACE_0_2 "PPB_VideoDecoder;0.2" /* dev */
+#define PPB_VIDEODECODER_INTERFACE_0_1 "PPB_VideoDecoder;0.1"
+#define PPB_VIDEODECODER_INTERFACE_0_2 "PPB_VideoDecoder;0.2"
+#define PPB_VIDEODECODER_INTERFACE PPB_VIDEODECODER_INTERFACE_0_2
+
 /**
  * @file
  * This file defines the <code>PPB_VideoDecoder</code> interface.
@@ -52,7 +54,7 @@
  * Chrome and ChromeOS: aac, h264.
  * ChromeOS: mpeg4.
  */
-struct PPB_VideoDecoder_0_2 { /* dev */
+struct PPB_VideoDecoder_0_2 {
   /**
    * Creates a new video decoder resource.
    *
@@ -215,7 +217,9 @@ struct PPB_VideoDecoder_0_2 { /* dev */
                    struct PP_CompletionCallback callback);
 };
 
-struct PPB_VideoDecoder_0_1 { /* dev */
+typedef struct PPB_VideoDecoder_0_2 PPB_VideoDecoder;
+
+struct PPB_VideoDecoder_0_1 {
   PP_Resource (*Create)(PP_Instance instance);
   PP_Bool (*IsVideoDecoder)(PP_Resource resource);
   int32_t (*Initialize)(PP_Resource video_decoder,

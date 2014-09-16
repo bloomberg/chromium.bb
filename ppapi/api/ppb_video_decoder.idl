@@ -10,8 +10,9 @@
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M36 = 0.1,
-  [channel=dev] M39 = 0.2
+  /** Though not labeled 'channel=dev', 0.1 is a still a 'Dev' only API. */
+  M36 = 0.1,
+  M39 = 0.2
 };
 
 /**

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_decoder.idl modified Thu Aug 21 16:59:07 2014.
+// From ppb_video_decoder.idl modified Mon Sep  8 16:40:15 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
