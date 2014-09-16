@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -411,11 +410,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                     throttles);
   }
 #endif
-
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
-        request, resource_type, info->GetChildID(), info->GetRenderFrameID());
-  }
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -677,9 +671,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     }
   }
 
-  if (io_data->resource_prefetch_predictor_observer())
-    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
-
   // Ignores x-frame-options for the chrome signin UI.
   const std::string request_spec(
       request->first_party_for_cookies().GetOrigin().spec());
@@ -722,11 +713,6 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // exception is requests from gaia webview, since the native profile
   // management UI is built on top of it.
   signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data);
-
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
-        redirect_url, request);
-  }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())

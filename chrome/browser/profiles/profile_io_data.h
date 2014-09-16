@@ -42,10 +42,6 @@ class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
 class SupervisedUserURLFilter;
 
-namespace chrome_browser_net {
-class ResourcePrefetchPredictorObserver;
-}
-
 namespace extensions {
 class InfoMap;
 }
@@ -232,11 +228,6 @@ class ProfileIOData {
     return &incognito_availibility_pref_;
   }
 
-  chrome_browser_net::ResourcePrefetchPredictorObserver*
-      resource_prefetch_predictor_observer() const {
-    return resource_prefetch_predictor_observer_.get();
-  }
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
     return policy_header_helper_.get();
@@ -319,8 +310,6 @@ class ProfileIOData {
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
-    scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
-        resource_prefetch_predictor_observer_;
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -611,9 +600,6 @@ class ProfileIOData {
   mutable scoped_refptr<CookieSettings> cookie_settings_;
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-  mutable scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
-      resource_prefetch_predictor_observer_;
 
   mutable scoped_ptr<ChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;
