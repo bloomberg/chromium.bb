@@ -2127,13 +2127,9 @@
           'dependencies': [
             '../ui/wm/wm.gyp:wm',
             '../ui/aura/aura.gyp:aura_test_support',
-            '../ui/views/views.gyp:views_test_support',
           ],
           'sources/': [
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
-          ],
-          'sources': [
-            '../ui/views/controls/webview/webview_unittest.cc',
           ],
         }],
         ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {

@@ -13,7 +13,6 @@
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
@@ -302,12 +301,6 @@ void WebView::AttachWebContents() {
   OnBoundsChanged(bounds());
   if (holder_->native_view() == view_to_attach)
     return;
-
-  // Fullscreen widgets are not parented by a WebContentsView. Their visibility
-  // is controlled by content i.e. (RenderWidgetHost)
-  if (!is_embedding_fullscreen_widget_)
-    view_to_attach->Show();
-
   holder_->Attach(view_to_attach);
 
   // The view will not be focused automatically when it is attached, so we need
@@ -327,11 +320,6 @@ void WebView::AttachWebContents() {
 
 void WebView::DetachWebContents() {
   if (web_contents()) {
-    // Fullscreen widgets are not parented by a WebContentsView. Their
-    // visibility is controlled by content i.e. (RenderWidgetHost).
-    if (!is_embedding_fullscreen_widget_)
-      web_contents()->GetNativeView()->Hide();
-
     holder_->Detach();
 #if defined(OS_WIN)
     if (!is_embedding_fullscreen_widget_)
