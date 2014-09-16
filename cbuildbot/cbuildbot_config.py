@@ -1153,6 +1153,13 @@ paladin.add_config('x32-generic-paladin',
   important=False,
 )
 
+paladin.add_config('arm-generic-paladin',
+  non_testable_builder,
+  boards=['arm-generic'],
+  paladin_builder_name='arm-generic paladin',
+  important=False,
+)
+
 paladin.add_config('arm-generic_freon-paladin',
   boards=['arm-generic_freon'],
   paladin_builder_name='arm-generic_freon paladin',
