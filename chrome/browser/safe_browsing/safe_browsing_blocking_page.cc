@@ -98,10 +98,6 @@ const char kProceedCommand[] = "proceed";
 const char kShowDiagnosticCommand[] = "showDiagnostic";
 const char kShowPrivacyCommand[] = "showPrivacy";
 const char kTakeMeBackCommand[] = "takeMeBack";
-// Special command that we use when the user navigated away from the
-// page.  E.g., closed the tab or the window.  This is only used by
-// RecordUserReactionTime.
-const char kNavigatedAwayMetaCommand[] = "closed";
 
 // Other constants used to communicate with the JavaScript.
 const char kBoxChecked[] = "boxchecked";
@@ -182,7 +178,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       web_contents_(web_contents),
       url_(unsafe_resources[0].url),
       interstitial_page_(NULL),
-      has_expanded_see_more_section_(false),
       create_view_(true),
       num_visits_(-1) {
   bool malware = false;
@@ -277,7 +272,6 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command.length() > 1 && command[0] == '"') {
     command = command.substr(1, command.length() - 2);
   }
-  RecordUserReactionTime(command);
   if (command == kDoReportCommand) {
     SetReportingPreference(true);
     return;
@@ -398,10 +392,6 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   if (command == kExpandedSeeMoreCommand) {
-    // User expanded the "see more info" section of the page.  We don't actually
-    // do any action based on this, it's just so that RecordUserReactionTime can
-    // track it.
-
 #if defined(ENABLE_EXTENSIONS)
     // ExperienceSampling: We track that the user expanded the details.
     if (sampling_event_.get())
@@ -475,8 +465,6 @@ void SafeBrowsingBlockingPage::Show() {
 }
 
 void SafeBrowsingBlockingPage::OnDontProceed() {
-  // Calling this method twice will not double-count.
-  RecordUserReactionTime(kNavigatedAwayMetaCommand);
   // We could have already called Proceed(), in which case we must not notify
   // the SafeBrowsingUIManager again, as the client has been deleted.
   if (proceeded_)
@@ -631,81 +619,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   }
 }
 
-void SafeBrowsingBlockingPage::RecordUserReactionTime(
-    const std::string& command) {
-  if (interstitial_show_time_.is_null())
-    return;  // We already reported the user reaction time.
-  base::TimeDelta dt = base::TimeTicks::Now() - interstitial_show_time_;
-  DVLOG(1) << "User reaction time for command:" << command
-           << " on interstitial_type_:" << interstitial_type_
-           << " warning took " << dt.InMilliseconds() << "ms";
-  bool recorded = true;
-  if (interstitial_type_ == TYPE_MALWARE) {
-    // There are six ways in which the malware interstitial can go
-    // away.  We handle all of them here but we group two together: closing the
-    // tag / browser window and clicking on the back button in the browser (not
-    // the big green button) are considered the same action.
-    if (command == kProceedCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeProceed", dt);
-    } else if (command == kTakeMeBackCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeTakeMeBack", dt);
-    } else if (command == kShowDiagnosticCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeDiagnostic", dt);
-    } else if (command == kShowPrivacyCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimePrivacyPolicy",
-                                 dt);
-    } else if (command == kLearnMoreCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialLearnMore",
-                                 dt);
-    } else if (command == kNavigatedAwayMetaCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeClosed", dt);
-    } else if (command == kExpandedSeeMoreCommand) {
-      // Only record the expanded histogram once per display of the
-      // interstitial.
-      if (has_expanded_see_more_section_)
-        return;
-      RecordUserAction(SHOW_ADVANCED);
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeExpandedSeeMore",
-                                 dt);
-      has_expanded_see_more_section_ = true;
-      // Expanding the "See More" section doesn't finish the interstitial, so
-      // don't mark the reaction time as recorded.
-      recorded = false;
-    } else {
-      recorded = false;
-    }
-  } else {
-    // Same as above but for phishing warnings.
-    if (command == kProceedCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeProceed", dt);
-    } else if (command == kTakeMeBackCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeTakeMeBack", dt);
-    } else if (command == kShowDiagnosticCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeReportError", dt);
-    } else if (command == kLearnMoreCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeLearnMore", dt);
-    } else if (command == kNavigatedAwayMetaCommand) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeClosed", dt);
-    } else if (command == kExpandedSeeMoreCommand) {
-      // Only record the expanded histogram once per display of the
-      // interstitial.
-      if (has_expanded_see_more_section_)
-        return;
-      RecordUserAction(SHOW_ADVANCED);
-      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeExpandedSeeMore",
-                                 dt);
-      has_expanded_see_more_section_ = true;
-      // Expanding the "See More" section doesn't finish the interstitial, so
-      // don't mark the reaction time as recorded.
-      recorded = false;
-    } else {
-      recorded = false;
-    }
-  }
-  if (recorded)  // Making sure we don't double-count reaction times.
-    interstitial_show_time_ = base::TimeTicks();  //  Resets the show time.
-}
-
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
@@ -831,8 +744,6 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
     PopulatePhishingLoadTimeData(&load_time_data);
   else
     PopulateMalwareLoadTimeData(&load_time_data);
-
-  interstitial_show_time_ = base::TimeTicks::Now();
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

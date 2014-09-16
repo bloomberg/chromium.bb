@@ -139,11 +139,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Used to query the HistoryService to see if the URL is in history. For UMA.
   void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
 
-  // Records the time it took for the user to react to the
-  // interstitial.  We won't double-count if this method is called
-  // multiple times.
-  void RecordUserReactionTime(const std::string& command);
-
   // Checks if we should even show the malware details option. For example, we
   // don't show it in incognito mode.
   bool CanShowMalwareDetailsOption();
@@ -203,16 +198,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   content::WebContents* web_contents_;
   GURL url_;
   content::InterstitialPage* interstitial_page_;  // Owns us
-
-  // Time when the interstitial was show.  This variable is set in
-  // GetHTMLContents() which is called right before the interstitial
-  // is shown to the user. Will return is_null() once we reported the
-  // user action.
-  base::TimeTicks interstitial_show_time_;
-
-  // Whether the user has expanded the "see more" section of the page already
-  // during this interstitial page.
-  bool has_expanded_see_more_section_;
 
   // Whether the interstitial should create a view.
   bool create_view_;

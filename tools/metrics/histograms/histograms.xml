@@ -27553,6 +27553,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeClosed" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27562,6 +27565,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeDiagnostic" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27571,6 +27577,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.MalwareInterstitialTimeExpandedSeeMore"
     units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27580,6 +27589,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeLearnMore" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27588,6 +27600,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimePrivacyPolicy" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27596,6 +27611,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeProceed" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -27604,6 +27622,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeTakeMeBack" units="milliseconds">
+  <obsolete>
+    Deprecated 9/2014.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
