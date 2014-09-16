@@ -556,7 +556,6 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     files = ('..|up', 'f.txt|MY FILE', 'm.log|MONKEY', 'b.bin|Yander',)
     commands.GenerateHtmlIndex(index, files)
     html = osutils.ReadFile(index)
-    osutils.WriteFile('/tmp/foo.html', html)
     for f in files:
       a = f.split('|')
       # TODO(build): Use assertIn w/python-2.7.
