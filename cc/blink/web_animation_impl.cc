@@ -114,7 +114,6 @@ void WebCompositorAnimationImpl::setTimeOffset(double monotonic_time) {
   animation_->set_time_offset(base::TimeDelta::FromSecondsD(monotonic_time));
 }
 
-#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
 blink::WebCompositorAnimation::Direction WebCompositorAnimationImpl::direction()
     const {
   switch (animation_->direction()) {
@@ -148,18 +147,6 @@ void WebCompositorAnimationImpl::setDirection(Direction direction) {
       break;
   }
 }
-#else
-bool WebCompositorAnimationImpl::alternatesDirection() const {
-  return animation_->direction() == cc::Animation::Alternate;
-}
-
-void WebCompositorAnimationImpl::setAlternatesDirection(bool alternates) {
-  if (alternates)
-    animation_->set_direction(cc::Animation::Alternate);
-  else
-    animation_->set_direction(cc::Animation::Normal);
-}
-#endif
 
 double WebCompositorAnimationImpl::playbackRate() const {
   return animation_->playback_rate();

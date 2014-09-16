@@ -42,13 +42,8 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   virtual void setStartTime(double monotonic_time);
   virtual double timeOffset() const;
   virtual void setTimeOffset(double monotonic_time);
-#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
   virtual Direction direction() const;
   virtual void setDirection(Direction);
-#else
-  virtual bool alternatesDirection() const;
-  virtual void setAlternatesDirection(bool alternates);
-#endif
   virtual double playbackRate() const;
   virtual void setPlaybackRate(double playback_rate);
 
