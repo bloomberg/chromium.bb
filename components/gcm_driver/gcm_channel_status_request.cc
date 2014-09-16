@@ -21,7 +21,7 @@ namespace {
 
 const char kGCMChannelStatusRequestURL[] =
     "https://clients4.google.com/chrome-sync/command/";
-const char kRequestContentType[] = "application/x-protobuf";
+const char kRequestContentType[] = "application/octet-stream";
 const char kGCMChannelTag[] = "gcm_channel";
 const int kDefaultPollIntervalSeconds = 60 * 60;  // 60 minutes.
 const int kMinPollIntervalSeconds = 30 * 60;  // 30 minutes.
