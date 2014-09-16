@@ -22,6 +22,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/mock_render_process.h"
+#include "content/test/test_content_client.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -391,7 +392,7 @@ blink::WebWidget* RenderViewTest::GetWebWidget() {
 
 
 ContentClient* RenderViewTest::CreateContentClient() {
-  return new ContentClient;
+  return new TestContentClient;
 }
 
 ContentBrowserClient* RenderViewTest::CreateContentBrowserClient() {

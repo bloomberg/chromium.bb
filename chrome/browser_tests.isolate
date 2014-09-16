@@ -92,6 +92,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
@@ -141,6 +142,7 @@
     ['chromeos==1', {
       'variables': {
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/keyboard_resources.pak',
           '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/nacl_helper',
