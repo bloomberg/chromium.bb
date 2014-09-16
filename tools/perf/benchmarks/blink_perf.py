@@ -35,8 +35,7 @@ def _CreatePageSetFromPath(path, skipped_file):
       if candidate_path == 'resources':
         continue
       candidate_path = os.path.join(dir_path, candidate_path)
-      if candidate_path.startswith(tuple([os.path.join(path, s)
-                                          for s in skipped])):
+      if candidate_path.startswith(skipped):
         continue
       if os.path.isdir(candidate_path):
         _AddDir(candidate_path, skipped)
@@ -49,8 +48,9 @@ def _CreatePageSetFromPath(path, skipped_file):
       for line in open(skipped_file, 'r').readlines():
         line = line.strip()
         if line and not line.startswith('#'):
-          skipped.append(line.replace('/', os.sep))
-    _AddDir(path, skipped)
+          skipped_path = os.path.join(os.path.dirname(skipped_file), line)
+          skipped.append(skipped_path.replace('/', os.sep))
+    _AddDir(path, tuple(skipped))
   else:
     _AddPage(path)
   ps = page_set.PageSet(file_path=os.getcwd()+os.sep, serving_dirs=serving_dirs)
