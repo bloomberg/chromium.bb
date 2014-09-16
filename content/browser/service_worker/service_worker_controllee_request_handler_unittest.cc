@@ -25,6 +25,7 @@ namespace content {
 namespace {
 
 int kMockRenderProcessId = 1224;
+int kMockProviderId = 1;
 
 void EmptyCallback() {}
 
@@ -48,7 +49,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId, 1 /* provider_id */,
+        kMockRenderProcessId, kMockProviderId,
         context()->AsWeakPtr(), NULL));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
@@ -121,6 +122,51 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Navigations should trigger an update too.
   handler.reset(NULL);
   EXPECT_TRUE(version_->update_timer_.IsRunning());
+}
+
+// Test to not regress crbug/414118.
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
+  // Store a registration so the call to FindRegistrationForDocument will read
+  // from the database.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_.get());
+  context()->storage()->StoreRegistration(
+      registration_.get(),
+      version_.get(),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+  version_ = NULL;
+  registration_ = NULL;
+
+  // Conduct a main resource load.
+  const GURL kDocUrl("http://host/scope/doc");
+  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+      kDocUrl,
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      NULL);
+  scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
+      new ServiceWorkerControlleeRequestHandler(
+          context()->AsWeakPtr(),
+          provider_host_,
+          base::WeakPtr<storage::BlobStorageContext>(),
+          RESOURCE_TYPE_MAIN_FRAME,
+          scoped_refptr<ResourceRequestBody>()));
+  scoped_refptr<net::URLRequestJob> job =
+      handler->MaybeCreateJob(request.get(), NULL);
+  ServiceWorkerURLRequestJob* sw_job =
+      static_cast<ServiceWorkerURLRequestJob*>(job.get());
+
+  EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
+
+  // Shouldn't crash if the ProviderHost is deleted prior to completion of
+  // the database lookup.
+  context()->RemoveProviderHost(kMockRenderProcessId, kMockProviderId);
+  EXPECT_FALSE(provider_host_.get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
 }
 
 }  // namespace content

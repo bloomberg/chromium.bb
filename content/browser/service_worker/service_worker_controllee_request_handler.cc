@@ -110,6 +110,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url) {
   DCHECK(job_.get());
   DCHECK(context_);
+  DCHECK(provider_host_);
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -136,8 +137,9 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(job_.get());
-  provider_host_->SetAllowAssociation(true);
-  if (status != SERVICE_WORKER_OK) {
+  if (provider_host_)
+    provider_host_->SetAllowAssociation(true);
+  if (status != SERVICE_WORKER_OK || !provider_host_) {
     job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -205,9 +207,11 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version) {
-  provider_host_->SetAllowAssociation(true);
+  if (provider_host_)
+    provider_host_->SetAllowAssociation(true);
   if (version != registration->active_version() ||
-      version->status() != ServiceWorkerVersion::ACTIVATED) {
+      version->status() != ServiceWorkerVersion::ACTIVATED ||
+      !provider_host_) {
     job_->FallbackToNetwork();
     return;
   }
