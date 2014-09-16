@@ -204,18 +204,17 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     return matchesRequestedFamily;
 }
 
-
-static bool typefacesHasVariantSuffix(const AtomicString& family,
+static bool typefacesHasWeightSuffix(const AtomicString& family,
     AtomicString& adjustedName, FontWeight& variantWeight)
 {
-    struct FamilyVariantSuffix {
+    struct FamilyWeightSuffix {
         const wchar_t* suffix;
         size_t length;
         FontWeight weight;
     };
     // Mapping from suffix to weight from the DirectWrite documentation.
-    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368082(v=vs.85).aspx
-    const static FamilyVariantSuffix variantForSuffix[] = {
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368082.aspx
+    const static FamilyWeightSuffix variantForSuffix[] = {
         { L" thin", 5,  FontWeight100 },
         { L" extralight", 11,  FontWeight200 },
         { L" ultralight", 11,  FontWeight200 },
@@ -231,12 +230,51 @@ static bool typefacesHasVariantSuffix(const AtomicString& family,
     size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
     bool caseSensitive = false;
     for (size_t i = 0; i < numVariants; i++) {
-        const FamilyVariantSuffix& entry = variantForSuffix[i];
+        const FamilyWeightSuffix& entry = variantForSuffix[i];
         if (family.endsWith(entry.suffix, caseSensitive)) {
             String familyName = family.string();
             familyName.truncate(family.length() - entry.length);
             adjustedName = AtomicString(familyName);
             variantWeight = entry.weight;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool typefacesHasStretchSuffix(const AtomicString& family,
+    AtomicString& adjustedName, FontStretch& variantStretch)
+{
+    struct FamilyStretchSuffix {
+        const wchar_t* suffix;
+        size_t length;
+        FontStretch stretch;
+    };
+    // Mapping from suffix to stretch value from the DirectWrite documentation.
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368078.aspx
+    // Also includes Narrow as a synonym for Condensed to to support Arial
+    // Narrow and other fonts following the same naming scheme.
+    const static FamilyStretchSuffix variantForSuffix[] = {
+        { L" ultracondensed", 15,  FontStretchUltraCondensed },
+        { L" extracondensed", 15,  FontStretchExtraCondensed },
+        { L" condensed", 10,  FontStretchCondensed },
+        { L" narrow", 7,  FontStretchCondensed },
+        { L" semicondensed", 14,  FontStretchSemiCondensed },
+        { L" semiexpanded", 13,  FontStretchSemiExpanded },
+        { L" expanded", 9,  FontStretchExpanded },
+        { L" extraexpanded", 14,  FontStretchExtraExpanded },
+        { L" ultraexpanded", 14,  FontStretchUltraExpanded }
+    };
+    size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
+    bool caseSensitive = false;
+    for (size_t i = 0; i < numVariants; i++) {
+        const FamilyStretchSuffix& entry = variantForSuffix[i];
+        if (family.endsWith(entry.suffix, caseSensitive)) {
+            String familyName = family.string();
+            familyName.truncate(family.length() - entry.length);
+            adjustedName = AtomicString(familyName);
+            variantStretch = entry.stretch;
             return true;
         }
     }
@@ -256,7 +294,9 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     if (!tf || !typefacesMatchesFamily(tf.get(), creationParams.family())) {
         AtomicString adjustedName;
         FontWeight variantWeight;
-        if (typefacesHasVariantSuffix(creationParams.family(), adjustedName,
+        FontStretch variantStretch;
+
+        if (typefacesHasWeightSuffix(creationParams.family(), adjustedName,
             variantWeight)) {
             FontFaceCreationParams adjustedParams(adjustedName);
             FontDescription adjustedFontDescription = fontDescription;
@@ -264,6 +304,16 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
             tf = createTypeface(adjustedFontDescription, adjustedParams, name);
             if (!tf || !typefacesMatchesFamily(tf.get(), adjustedName))
                 return 0;
+
+        } else if (typefacesHasStretchSuffix(creationParams.family(),
+            adjustedName, variantStretch)) {
+            FontFaceCreationParams adjustedParams(adjustedName);
+            FontDescription adjustedFontDescription = fontDescription;
+            adjustedFontDescription.setStretch(variantStretch);
+            tf = createTypeface(adjustedFontDescription, adjustedParams, name);
+            if (!tf || !typefacesMatchesFamily(tf.get(), adjustedName))
+                return 0;
+
         } else {
             return 0;
         }
