@@ -17,7 +17,6 @@ class Transform;
 
 namespace athena {
 class WindowListProvider;
-class SplitViewControllerTest;
 
 // Responsible for entering split view mode, exiting from split view mode, and
 // laying out the windows in split view mode.
@@ -29,6 +28,7 @@ class ATHENA_EXPORT SplitViewController
 
   virtual ~SplitViewController();
 
+  bool CanActivateSplitViewMode() const;
   bool IsSplitViewModeActive() const;
 
   // Activates split-view mode with |left| and |right| windows. If |left| and/or
@@ -56,8 +56,6 @@ class ATHENA_EXPORT SplitViewController
   aura::Window* right_window() { return right_window_; }
 
  private:
-  friend class SplitViewControllerTest;
-
   enum State {
     // Split View mode is not active. |left_window_| and |right_window| are
     // NULL.

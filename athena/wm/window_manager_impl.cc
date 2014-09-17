@@ -291,7 +291,6 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
 }
 
 void WindowManagerImpl::ToggleSplitview() {
-  // TODO(oshima): Figure out what to do.
   if (IsOverviewModeActive())
     return;
 
@@ -300,7 +299,7 @@ void WindowManagerImpl::ToggleSplitview() {
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeExit());
     // Relayout so that windows are maximzied.
     container_->layout_manager()->OnWindowResized();
-  } else if (window_list_provider_->GetWindowList().size() > 1) {
+  } else if (split_view_controller_->CanActivateSplitViewMode()) {
     FOR_EACH_OBSERVER(WindowManagerObserver,
                       observers_,
                       OnSplitViewModeEnter());

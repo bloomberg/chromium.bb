@@ -63,7 +63,7 @@ class SplitViewControllerTest : public test::AthenaTestBase {
   }
 
   bool IsSplitViewAllowed() const {
-    return api_->GetSplitViewController()->CanScroll();
+    return api_->GetSplitViewController()->CanActivateSplitViewMode();
   }
 
   test::WindowManagerImplTestApi* api() {

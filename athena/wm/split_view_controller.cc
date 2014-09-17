@@ -56,6 +56,14 @@ SplitViewController::SplitViewController(
 SplitViewController::~SplitViewController() {
 }
 
+bool SplitViewController::CanActivateSplitViewMode() const {
+  // TODO(mfomitchev): return false in full screen.
+  return (!IsSplitViewModeActive() &&
+              window_list_provider_->GetWindowList().size() >= 2 &&
+              IsLandscapeOrientation(gfx::Screen::GetNativeScreen()->
+                  GetDisplayNearestWindow(container_).rotation()));
+}
+
 bool SplitViewController::IsSplitViewModeActive() const {
   return state_ == ACTIVE;
 }
@@ -312,12 +320,7 @@ void SplitViewController::ScrollUpdate(float delta) {
 }
 
 bool SplitViewController::CanScroll() {
-  // TODO(mfomitchev): return false in full screen.
-  bool result = (!IsSplitViewModeActive() &&
-                 window_list_provider_->GetWindowList().size() >= 2 &&
-                 IsLandscapeOrientation(gfx::Screen::GetNativeScreen()->
-                     GetDisplayNearestWindow(container_).rotation()));
-  return result;
+  return CanActivateSplitViewMode();
 }
 
 }  // namespace athena

@@ -677,7 +677,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           // mode). If already in split-view mode, then do not show the 'Split'
           // option.
           overview_toolbar_.reset(new OverviewToolbar(container_));
-          if (split_view_controller_->IsSplitViewModeActive()) {
+          if (!split_view_controller_->CanActivateSplitViewMode()) {
             overview_toolbar_->DisableAction(
                 OverviewToolbar::ACTION_TYPE_SPLIT);
           }
