@@ -145,6 +145,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN version: //components/gcm_driver:jni_headers
           'target_name': 'gcm_driver_jni_headers',
           'type': 'none',
           'sources': [

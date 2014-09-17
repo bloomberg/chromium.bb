@@ -25,12 +25,9 @@ group("root") {
     "//cc/blink",
     "//chrome/browser",
     "//chrome/browser/devtools",
-    "//chrome/browser/ui",
-    "//chrome/browser/ui/views",
     "//chrome/common",
     "//chrome/plugin",
     "//chrome/renderer",
-    "//chrome/service",
     "//chrome/utility",
     "//components:all_components",
     "//content",
@@ -78,7 +75,6 @@ group("root") {
     "//third_party/iccjpeg",
     "//third_party/icu",
     "//third_party/leveldatabase",
-    "//third_party/libaddressinput",
     "//third_party/libphonenumber",
     "//third_party/libjingle",
     "//third_party/libpng",
@@ -183,15 +179,12 @@ group("root") {
 
     deps -= [
       "//apps",  # Needs testing.
-      "//chrome/browser",  # Blocked on content.
-      "//chrome/browser/devtools",  # Blocked on content.
-      "//chrome/browser/ui",  # Blocked on content.
-      "//chrome/browser/ui/views",  # Blocked on content.
-      "//chrome/common",  # Blocked on content.
-      "//chrome/plugin",  # Blocked on content.
-      "//chrome/renderer",  # Blocked on content.
-      "//chrome/service",  # Blocked on content.
-      "//chrome/utility",  # Blocked on content.
+      "//chrome/browser",
+      "//chrome/browser/devtools",
+      "//chrome/common",
+      "//chrome/plugin",
+      "//chrome/renderer",
+      "//chrome/utility",
       "//content/shell:content_shell",
       "//extensions/browser",
       "//extensions/common",
@@ -222,7 +215,6 @@ group("root") {
       "//remoting/client/plugin",
       "//storage/browser",
       "//third_party/cld_2",
-      "//third_party/libaddressinput",
       "//third_party/ffmpeg",
       "//ui/app_list",
       "//ui/web_dialogs",

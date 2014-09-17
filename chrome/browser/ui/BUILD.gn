@@ -38,7 +38,6 @@ static_library("ui") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
     "//chrome/browser/net:cert_logger_proto",
-    "//chrome/browser/ui/views",
     "//chrome/common",
     "//chrome/common/net",
     "//components/auto_login_parser",
@@ -83,6 +82,7 @@ static_library("ui") {
                            ".", "//chrome")
     deps += [
       "//chrome/browser/devtools",
+      "//chrome/browser/ui/views",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
@@ -266,9 +266,9 @@ static_library("ui") {
 
   if (is_android) {
     deps += [
+      "//chrome/browser:jni_headers",
       "//crypto:platform",
       #'../components/components.gyp:web_contents_delegate_android',  TODO(GYP)
-      #'chrome_browser_jni_headers',  TODO(GYP)
     ]
     deps -= [
       "//chrome/browser/ui/views",
@@ -278,6 +278,8 @@ static_library("ui") {
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,
                            ".", "//chrome")
+
+    defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
   } else {  # Non-Android.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_android_sources,
                            ".", "//chrome")

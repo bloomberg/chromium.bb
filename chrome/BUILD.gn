@@ -8,6 +8,8 @@ import("//build/config/ui.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/version.gni")
 
+if (!is_android) {
+
 # TODO(GYP) for Windows need to the the reorder-imports step which probably
 # means adding another target and renaming this to chrome_initial like in GYP.
 executable("chrome") {
@@ -104,13 +106,15 @@ executable("chrome") {
   }
 
 
-  if (!is_mac && !is_android) {
-    # On Mac this is done in chrome_dll.gypi. Android doesn't use pdfium.
+  if (!is_mac) {
+    # On Mac this is done in chrome_dll.gypi.
     datadeps += [ "//pdf" ]
 
     # TODO(GYP) pdf linux symbols
   }
 }
+
+}  # !is_android
 
 shared_library("main_dll") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -372,8 +376,6 @@ repack("packed_extra_resources") {
       "$root_gen_dir/blink/public/resources/blink_resources.pak",
       "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
       "$root_gen_dir/content/content_resources.pak",
-      "$root_gen_dir/extensions/extensions_renderer_resources.pak", 
-      "$root_gen_dir/extensions/extensions_resources.pak",
     ]
   }
   if (is_chromeos) {
@@ -381,7 +383,11 @@ repack("packed_extra_resources") {
     deps += [ "//ui/file_manager:resources" ]
   }
   if (enable_extensions) {
-    sources += [ "$root_gen_dir/chrome/extensions_api_resources.pak" ]
+    sources += [
+      "$root_gen_dir/chrome/extensions_api_resources.pak",
+      "$root_gen_dir/extensions/extensions_renderer_resources.pak",
+      "$root_gen_dir/extensions/extensions_resources.pak",
+    ]
     deps += [ "//chrome/common:extensions_api_resources" ]
   }
 

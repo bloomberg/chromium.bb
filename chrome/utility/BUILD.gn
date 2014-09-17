@@ -64,7 +64,7 @@ static_library("utility") {
   }
 
   if (use_openssl) {
-    if (!is_win && !is_mac) {
+    if (!is_win && !is_mac && !is_android) {
       sources -= [ "importer/nss_decryptor.cc" ]
     }
   } else {  # !use_openssl

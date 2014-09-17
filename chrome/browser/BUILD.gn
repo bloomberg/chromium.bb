@@ -6,7 +6,13 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/nacl_defines.gni")
-import("//tools/grit/grit_rule.gni")
+# //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
+# produces a conflict for the "grit" template so we have to only include one.
+if (is_android) {
+  import("//build/config/android/rules.gni")
+} else {
+  import("//tools/grit/grit_rule.gni")
+}
 
 about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
@@ -69,7 +75,6 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
-    "//components/pdf/browser",
     "//components/policy:policy_component",
     "//components/precache/core",
     "//components/query_parser",
@@ -263,7 +268,7 @@ static_library("browser") {
   # ["debug_devtools==1", {  TODO(GYP)
   #   "defines": [
   #     "DEBUG_DEVTOOLS=1",
-  # ],
+  # }],
   if (enable_configuration_policy) {
     sources += rebase_path(
         gypi_values.chrome_browser_policy_shared_with_ios_sources,
@@ -286,10 +291,7 @@ static_library("browser") {
       sources += rebase_path(gypi_values.chrome_browser_policy_desktop_sources,
                              ".", "//chrome")
     }
-    if (is_android || is_ios) {
-      sources += rebase_path(gypi_values.chrome_browser_mobile_sources,
-                             ".", "//chrome")
-    } else {  # Non-mobile
+    if (!is_android && !is_ios) {  # Non-mobile
       deps += [
         "//chrome/browser/policy:path_parser",
       ]
@@ -304,6 +306,7 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_plugins_sources,
                            ".", "//chrome")
     deps += [
+      "//components/pdf/browser",
       "//ppapi:ppapi_ipc",
       "//third_party/adobe/flash:flapper_version_h",
     ]
@@ -459,9 +462,9 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_android_sources,
                            ".", "//chrome")
     deps += [
+      ":jni_headers",
       "//components/cdm/browser",
       #"../components/components.gyp:web_contents_delegate_android",  TODO(GYP)
-      #"chrome_browser_jni_headers",  TODO(GYP)
     ]
     deps -= [
       "//third_party/libaddressinput",
@@ -613,6 +616,15 @@ static_library("browser") {
           gypi_values.chrome_browser_win_mac_wifi_bootstrapping_sources,
           ".", "//chrome")
     }
+  }
+}
+
+if (is_android) {
+  # GYP version: chrome/chrome_browser.gypi:chrome_browser_jni_headers
+  generate_jni("jni_headers") {
+    sources = rebase_path(
+        gypi_values.chrome_browser_jni_sources, ".", "//chrome")
+    jni_package = "chrome"
   }
 }
 
@@ -781,8 +793,13 @@ source_set("test_support") {
   if (!is_ios) {
     deps += [
       "//components/sessions:test_support",
-      "//extensions:test_support",
       "//google_apis:test_support",
+    ]
+  }
+
+  if (enable_extensions) {
+    deps += [
+      "//extensions:test_support",
     ]
   }
 

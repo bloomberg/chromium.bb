@@ -62,8 +62,6 @@ static_library("common") {
     "//components/variations",
     "//content/public/common",
     "//crypto",
-    "//extensions:extensions_resources",
-    "//extensions/strings",
     "//media/cast:net",
     "//net",
     "//skia",
@@ -91,8 +89,6 @@ static_library("common") {
       "//components/password_manager/core/common",
       "//components/signin/core/common",
       "//components/translate/content/common",
-      "//extensions/common",
-      "//extensions/common/api",
       "//ipc",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
@@ -106,6 +102,10 @@ static_library("common") {
     deps += [
       "//device/bluetooth",
       "//device/usb",
+      "//extensions/common",
+      "//extensions/common/api",
+      "//extensions/strings",
+      "//extensions:extensions_resources",
     ]
   }
 
@@ -235,7 +235,7 @@ static_library("common") {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_android) {
   # TODO(brettw) this duplicates "//chrome/common:version" which applies to
   # Windows.
   import("//chrome/version.gni")

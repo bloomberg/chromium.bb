@@ -4,13 +4,6 @@
 
 import("//tools/grit/grit_rule.gni")
 
-# The list of files in libaddressinput.gypi.
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("src/cpp/libaddressinput.gypi") ],
-    "scope",
-    [ "src/cpp/libaddressinput.gypi" ])
-
 libaddressinput_util_files = [
   "src/cpp/src/address_data.cc",
   "src/cpp/src/address_field.cc",
@@ -132,6 +125,16 @@ static_library("util") {
   ]
 }
 
+if (!is_android) {
+
+# The list of files in libaddressinput.gypi.
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("src/cpp/libaddressinput.gypi") ],
+    "scope",
+    [ "src/cpp/libaddressinput.gypi" ])
+
+
 # This target provides more complicated functionality like pinging servers
 # for validation rules.
 # GYP version: third_party/libaddressinput/libaddressinput.gyp:libaddressinput
@@ -199,3 +202,5 @@ test("libaddressinput_unittests") {
     "//testing/gtest",
   ]
 }
+
+}  # !is_android

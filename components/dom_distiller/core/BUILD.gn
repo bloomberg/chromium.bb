@@ -66,7 +66,7 @@ static_library("core") {
   ]
 
   if (is_android) {
-    #deps += [ ":dom_distiller_core_jni_headers" ]  TODO(GYP)
+    deps += [ ":jni_headers" ]
   }
 }
 
@@ -113,4 +113,17 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  generate_jni("jni_headers") {
+    sources = [
+      "../android/java/src/org/chromium/components/dom_distiller/core/DistilledPagePrefs.java",
+      "../android/java/src/org/chromium/components/dom_distiller/core/DomDistillerService.java",
+      "../android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
+    ]
+    jni_package = "dom_distiller_core"
+  }
 }

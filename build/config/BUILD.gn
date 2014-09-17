@@ -31,7 +31,6 @@ config("feature_flags") {
   # TODO(brettw) most of these need to be parameterized.
   defines = [
       "CHROMIUM_BUILD",
-      "ENABLE_NOTIFICATIONS",
       "ENABLE_EGLIMAGE=1",
       "ENABLE_BACKGROUND=1",
       "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
@@ -42,6 +41,9 @@ config("feature_flags") {
   }
   if (enable_mdns) {
     defines += [ "ENABLE_MDNS=1" ]
+  }
+  if (enable_notifications) {
+    defines += [ "ENABLE_NOTIFICATIONS" ]
   }
   if (enable_pepper_cdms) {
     # TODO(brettw) should probably be "=1"
