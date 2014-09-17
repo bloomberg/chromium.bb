@@ -478,6 +478,7 @@
           'type': 'static_library',
           'includes': [
             'command_buffer_service.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
           'dependencies': [
             'command_buffer_common',
@@ -530,6 +531,7 @@
             'gles2_cmd_helper.gypi',
             'gpu_config.gypi',
             'gpu_ipc.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
           'defines': [
             'GPU_IMPLEMENTATION',

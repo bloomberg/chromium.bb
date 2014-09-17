@@ -35,5 +35,10 @@ component("surfaces") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 

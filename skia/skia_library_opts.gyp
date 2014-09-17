@@ -29,6 +29,7 @@
       'type': 'static_library',
       'includes': [
         'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
@@ -160,6 +161,7 @@
       'type': 'static_library',
       'includes': [
         'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
@@ -214,6 +216,7 @@
       'type': 'static_library',
       'includes': [
         'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
@@ -254,7 +257,7 @@
           'sources': [
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S',
           ],
-       }],
+        }],
       ],
     },
     {
@@ -262,6 +265,7 @@
       'type': 'static_library',
       'includes': [
         'skia_common.gypi',
+        '../build/android/increase_size_for_speed.gypi',
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
@@ -293,6 +297,7 @@
           'type': 'static_library',
           'includes': [
             'skia_common.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
           'include_dirs': [
             '../third_party/skia/include/core',

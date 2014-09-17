@@ -251,6 +251,9 @@
         'sync_socket_win.cc',
         'sync_socket_posix.cc',
       ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
+      ],
     },
     {
       'target_name': 'base_i18n',
@@ -288,8 +291,9 @@
       'export_dependent_settings': [
         'base',
       ],
-
-
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
+      ],
     },
     {
       'target_name': 'base_message_loop_tests',
@@ -357,6 +361,9 @@
         'prefs/value_map_pref_store.h',
         'prefs/writeable_pref_store.h',
       ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
+      ],
     },
     {
       'target_name': 'base_prefs_test_support',
@@ -395,6 +402,9 @@
       ],
       'include_dirs': [
         '..',
+      ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
       ],
     },
     # Include this target for a main() function that simply instantiates
@@ -1197,6 +1207,9 @@
           'include_dirs': [
             '..',
           ],
+          'includes': [
+            '../build/android/increase_size_for_speed.gypi',
+          ],
         },
         {
           'target_name': 'xdg_mime',
@@ -1225,6 +1238,9 @@
             'third_party/xdg_mime/xdgmimemagic.h',
             'third_party/xdg_mime/xdgmimeparent.c',
             'third_party/xdg_mime/xdgmimeparent.h',
+          ],
+          'includes': [
+            '../build/android/increase_size_for_speed.gypi',
           ],
         },
       ],

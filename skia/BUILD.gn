@@ -552,6 +552,11 @@ component("skia") {
   if (skia_support_pdf) {
     deps += [ "//third_party/sfntly" ]
   }
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 # Separated out so it can be compiled with different flags for SSE.
@@ -687,6 +692,11 @@ source_set("skia_opts") {
     ]
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
+  }
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

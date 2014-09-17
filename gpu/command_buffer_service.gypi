@@ -139,12 +139,5 @@
         'command_buffer/service/async_pixel_transfer_manager_egl.h',
       ],
     }],
-    ['OS=="android"', {
-      'configurations': {
-        'Release': {
-          'cflags': ['-O2']
-        }
-      }
-    }]
   ],
 }

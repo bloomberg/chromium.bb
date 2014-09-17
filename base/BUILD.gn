@@ -910,6 +910,10 @@ component("base") {
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 # This is the subset of files from base that should not be used with a dynamic
@@ -922,6 +926,11 @@ source_set("base_static") {
     "win/pe_image.cc",
     "win/pe_image.h",
   ]
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 component("i18n") {
@@ -970,6 +979,11 @@ component("i18n") {
     "//base/third_party/dynamic_annotations",
     "//third_party/icu",
   ]
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 source_set("prefs") {
@@ -1015,6 +1029,11 @@ source_set("prefs") {
   defines = [ "BASE_PREFS_IMPLEMENTATION" ]
 
   deps = [ ":base" ]
+
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 source_set("prefs_test_support") {

@@ -491,7 +491,7 @@ component("cc") {
 
   defines = [ "CC_IMPLEMENTATION=1" ]
 
-  if (!is_debug && is_win) {
+  if (!is_debug && (is_win || is_android)) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }

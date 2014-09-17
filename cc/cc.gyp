@@ -497,6 +497,9 @@
         'trees/tree_synchronizer.cc',
         'trees/tree_synchronizer.h',
       ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
+      ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
@@ -536,6 +539,9 @@
         'surfaces/surface_resource_holder.cc',
         'surfaces/surface_resource_holder.h',
         'surfaces/surfaces_export.h',
+      ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
       ],
     },
   ],

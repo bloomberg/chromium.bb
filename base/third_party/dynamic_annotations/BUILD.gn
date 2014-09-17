@@ -8,4 +8,8 @@ source_set("dynamic_annotations") {
     "dynamic_annotations.h",
     "../valgrind/valgrind.h",
   ]
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }

@@ -16,6 +16,7 @@
           'includes': [
             'skia_library.gypi',
             'skia_common.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
         },
       ],
@@ -25,7 +26,10 @@
         {
           'target_name': 'skia_library',
           'type': 'none',
-          'includes': ['skia_system.gypi'],
+          'includes': [
+            'skia_system.gypi',
+            '../build/android/increase_size_for_speed.gypi',
+          ],
         },
       ],
     }],
@@ -49,6 +53,7 @@
           'includes': [
             'skia_chrome.gypi',
             'skia_common.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
         },
       ],
@@ -62,6 +67,7 @@
             'skia_library.gypi',
             'skia_chrome.gypi',
             'skia_common.gypi',
+            '../build/android/increase_size_for_speed.gypi',
           ],
           'defines': [
             'SKIA_DLL',
@@ -144,6 +150,9 @@
       ],
       'sources': [
         'tools/filter_fuzz_stub/filter_fuzz_stub.cc',
+      ],
+      'includes': [
+        '../build/android/increase_size_for_speed.gypi',
       ],
     },
   ],
