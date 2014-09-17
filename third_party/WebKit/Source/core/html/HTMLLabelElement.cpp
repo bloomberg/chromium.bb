@@ -32,6 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
+#include "core/page/EventHandler.h"
 
 namespace blink {
 
@@ -125,18 +126,6 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
     static bool processingClick = false;
 
     if (evt->type() == EventTypeNames::click && !processingClick) {
-        // If the click is not simulated and the text of label element is
-        // selected, do not pass the event to control element.
-        // Note: a click event may be not a mouse event if created by
-        // document.createEvent().
-        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated()) {
-            if (LocalFrame* frame = document().frame()) {
-                if (frame->selection().selection().isRange())
-                    return;
-            }
-        }
-
-
         RefPtrWillBeRawPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click
@@ -147,11 +136,50 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         if (evt->target() && isInInteractiveContent(evt->target()->toNode()))
             return;
 
+        //   Behaviour of label element is as follows:
+        //     - If there is double click, two clicks will be passed to control
+        //       element. Control element will *not* be focused.
+        //     - If there is selection of label element by dragging, no click
+        //       event is passed. Also, no focus on control element.
+        //     - If there is already a selection on label element and then label
+        //       is clicked, then click event is passed to control element and
+        //       control element is focused.
+
+        bool isLabelTextSelected = false;
+
+        // If the click is not simulated and the text of the label element
+        // is selected by dragging over it, then return without passing the
+        // click event to control element.
+        // Note: a click event may be not a mouse event if created by
+        // document.createEvent().
+        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated()) {
+            if (LocalFrame* frame = document().frame()) {
+                // Check if there is a selection and click is not on the
+                // selection.
+                if (frame->selection().isRange() && !frame->eventHandler().mouseDownWasSingleClickInSelection())
+                    isLabelTextSelected = true;
+                // If selection is there and is single click i.e. text is
+                // selected by dragging over label text, then return.
+                // Click count >=2, meaning double click or triple click,
+                // should pass click event to control element.
+                // Only in case of drag, *neither* we pass the click event,
+                // *nor* we focus the control element.
+                if (isLabelTextSelected && frame->eventHandler().clickCount() == 1)
+                    return;
+            }
+        }
+
         processingClick = true;
 
         document().updateLayoutIgnorePendingStylesheets();
-        if (element->isMouseFocusable())
-            element->focus(true, FocusTypeMouse);
+        if (element->isMouseFocusable()) {
+            // If the label is *not* selected, or if the click happened on
+            // selection of label, only then focus the control element.
+            // In case of double click or triple click, selection will be there,
+            // so do not focus the control element.
+            if (!isLabelTextSelected)
+                element->focus(true, FocusTypeMouse);
+        }
 
         // Click the corresponding control.
         element->dispatchSimulatedClick(evt);

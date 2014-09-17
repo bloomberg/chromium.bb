@@ -198,6 +198,9 @@ public:
 
     PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() { return m_lastMouseDownUserGestureToken.release(); }
 
+    int clickCount() { return m_clickCount; }
+    bool mouseDownWasSingleClickInSelection() { return m_mouseDownWasSingleClickInSelection; }
+
 private:
     static DragState& dragState();
 
