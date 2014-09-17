@@ -112,11 +112,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void ResetAllTilesPriorities();
   PictureLayerTilingSet* GetTilings() { return tilings_.get(); }
 
-  size_t release_resources_count() const { return release_resources_count_; }
-  void reset_release_resources_count() { release_resources_count_ = 0; }
-
-  virtual void ReleaseResources() OVERRIDE;
-
  protected:
   FakePictureLayerImpl(
       LayerTreeImpl* tree_impl,
@@ -135,7 +130,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t did_become_active_call_count_;
   bool has_valid_tile_priorities_;
   bool use_set_valid_tile_priorities_flag_;
-  size_t release_resources_count_;
 };
 
 }  // namespace cc
