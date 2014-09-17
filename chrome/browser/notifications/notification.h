@@ -38,17 +38,6 @@ class Notification : public message_center::Notification {
                const base::string16& replace_id,
                NotificationDelegate* delegate);
 
-  // Initializes a notification with text content and an icon image. Currently
-  // only used on Ash. Does not generate content_url_.
-  Notification(const GURL& origin_url,
-               const gfx::Image& icon,
-               const base::string16& title,
-               const base::string16& body,
-               blink::WebTextDirection dir,
-               const base::string16& display_source,
-               const base::string16& replace_id,
-               NotificationDelegate* delegate);
-
   Notification(
       message_center::NotificationType type,
       const GURL& origin_url,

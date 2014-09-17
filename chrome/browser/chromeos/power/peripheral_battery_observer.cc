@@ -216,16 +216,20 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       battery.level);
 
   Notification notification(
-      // TODO(mukai): add SYSTEM priority and use here.
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(kNotificationOriginUrl),
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
       base::UTF8ToUTF16(battery.name),
       string_text,
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
       blink::WebTextDirectionDefault,
+      message_center::NotifierId(GURL(kNotificationOriginUrl)),
       base::string16(),
       base::UTF8ToUTF16(address),
+      message_center::RichNotificationData(),
       new PeripheralBatteryNotificationDelegate(address));
+
+  notification.set_priority(message_center::SYSTEM_PRIORITY);
 
   notification_manager->Add(
       notification,

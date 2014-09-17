@@ -54,27 +54,6 @@ Notification::Notification(
   // to prevent "Downloading" the data url and overwriting the existing |icon|.
 }
 
-Notification::Notification(const GURL& origin_url,
-                           const gfx::Image& icon,
-                           const base::string16& title,
-                           const base::string16& body,
-                           blink::WebTextDirection dir,
-                           const base::string16& display_source,
-                           const base::string16& replace_id,
-                           NotificationDelegate* delegate)
-    : message_center::Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                                   delegate->id(),
-                                   title,
-                                   body,
-                                   icon,
-                                   display_source,
-                                   message_center::NotifierId(origin_url),
-                                   message_center::RichNotificationData(),
-                                   delegate),
-      origin_url_(origin_url),
-      replace_id_(replace_id),
-      delegate_(delegate) {}
-
 Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       origin_url_(notification.origin_url()),

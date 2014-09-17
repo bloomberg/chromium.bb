@@ -88,9 +88,17 @@ std::string DesktopNotificationService::AddIconNotification(
     const base::string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
-  Notification notification(origin_url, icon, title, message,
+  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                            origin_url,
+                            title,
+                            message,
+                            icon,
                             blink::WebTextDirectionDefault,
-                            base::string16(), replace_id, delegate);
+                            message_center::NotifierId(origin_url),
+                            base::string16(),
+                            replace_id,
+                            message_center::RichNotificationData(),
+                            delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);
   return notification.delegate_id();
 }
