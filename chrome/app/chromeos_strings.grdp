@@ -1829,6 +1829,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
     Accessibility
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION" desc="The 'Battery' button on the chrome://settings page.">
+    Battery...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_DESCRIPTION" desc="The 'Storage' button on the chrome://settings page.">
+    Stored data...
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_TIME_SYNCED_EXPLANATION" desc="In the settings tab, the text indicating that the date and time are set automatically.">
     Date and time are set automatically.
   </message>
@@ -3779,8 +3785,7 @@ Battery full
   <message name="IDS_DEVICE_UNKNOWN_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
    Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> could not be recognized.
   </message>
-  <message name="IDS_DEVICE_UNKNOWN_BUTTON_LABEL" desc="Text of a button label in a notification to format the device. If user clicks the button, Files.app opens and 
-  focus on unknown the device.">
+  <message name="IDS_DEVICE_UNKNOWN_BUTTON_LABEL" desc="Text of a button label in a notification to format the device. If user clicks the button, Files.app opens and focus on unknown the device.">
     Format this device
   </message>
   <message name="IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
@@ -5087,25 +5092,25 @@ Battery full
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS" desc="Message shown on screen when the system is updating kiosk apps from usb stick.">
     Kiosk applications are being updated from usb stick, please wait. Do not remove the usb stick.
-  </message>  
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_UPDATES" desc="Error message for no external extensions to update.">
     No kiosk apps with newer version are found on the usb stick, nothing to update. Please remove the usb stick.
-  </message>  
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_MANIFEST" desc="Error message for external update manifest file not found.">
     Can't find kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST" desc="Error message for invalid external update manifest file from usb stick.">
     Found invalid kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
-  </message>     
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE" desc="Message shown on screen when the system completes updating kiosk apps from usb stick.">
     Kiosk app updating from usb stick is completed. Please remove the usb stick from the device.
-  </message>  
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_SUCCESSFUL_UPDATED_APPS" desc="Message shown for successfully updated kiosk apps.">
     The following kiosk apps have been updated, please reboot the device to complete the update process: <ph name="updated_apps">$1<ex>PrintApp</ex></ph>.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS" desc="Message shown for failed updated kiosk apps.">
-    The following kiosk apps have been failed for updating: 
-  </message>    
+    The following kiosk apps have been failed for updating:
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_BAD_CRX" desc="Error message for crx file unpacking failure.">
     Bad crx file, unpacking failed.
   </message>
@@ -5117,10 +5122,10 @@ Battery full
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_CANNOT_INSTALL_IN_LOCAL_CACHE" desc="Error message for not being able to install kiosk external crx file in local cache.">
     Can't install <ph name="EXTERNAL_CRX_FILE">$1<ex>/media/usb/app_v2.crx</ex></ph> in local cache.
-  </message> 
+  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_FAILED_COPY_CRX_TO_TEMP" desc="Error message for not being able to copy external crx file to a temp file.">
     Can't copy external crx file to <ph name="TEMP_CRX_FILE">$1<ex>/tmp/kiosk_update/app.crx</ex></ph>.
-  </message> 
+  </message>
 
   <!-- About Chrome page -->
   <message name="IDS_UPGRADE_BUTTON" desc="The button label to check for updates and apply (download and install) if found">

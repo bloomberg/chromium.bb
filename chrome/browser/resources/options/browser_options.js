@@ -233,6 +233,12 @@ cr.define('options', function() {
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
+        $('battery-button').onclick = function(evt) {
+          WebsiteSettingsManager.showWebsiteSettings('battery');
+        };
+        $('stored-data-button').onclick = function(evt) {
+          WebsiteSettingsManager.showWebsiteSettings('storage');
+        };
         $('keyboard-settings-button').onclick = function(evt) {
           PageManager.showPageByName('keyboard-overlay');
           chrome.send('coreOptionsUserMetricsAction',

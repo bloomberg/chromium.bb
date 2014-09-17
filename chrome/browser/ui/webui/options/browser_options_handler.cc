@@ -447,6 +447,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_MESSAGE },
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
     { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
+    { "batteryButton", IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION},
+    { "storageButton", IDS_OPTIONS_SETTINGS_STORAGE_DESCRIPTION},
 #else
     { "proxiesConfigureButton", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
 #endif

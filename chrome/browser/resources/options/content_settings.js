@@ -56,14 +56,8 @@ cr.define('options', function() {
           this.pageDiv.querySelectorAll('.website-settings-permission-button');
       for (var i = 0; i < experimentalExceptionsButtons.length; i++) {
         experimentalExceptionsButtons[i].onclick = function(event) {
-          var page = WebsiteSettingsManager.getInstance();
           var hash = event.currentTarget.getAttribute('contentType');
-          var url = page.name + '#' + hash;
-          uber.pushState({pageName: page.name}, url);
-
-          // Navigate after the local history has been replaced in order to have
-          // the correct hash loaded.
-          PageManager.showPageByName('websiteSettings', false);
+          WebsiteSettingsManager.showWebsiteSettings(hash);
         };
       }
 

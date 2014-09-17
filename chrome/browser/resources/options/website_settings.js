@@ -17,7 +17,9 @@ cr.define('options.ContentSettings', function() {
     'images': 'images',
     'plugins': 'plugins',
     'popups': 'popups',
-    'javascript': 'javascript'
+    'javascript': 'javascript',
+    'battery': 'battery',
+    'storage': 'storage'
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -82,7 +84,7 @@ cr.define('options.ContentSettings', function() {
      * resource auditing for the location's hash.
      */
     didShowPage: function() {
-      var hash = location.hash;
+      var hash = this.hash;
       if (hash)
         hash = hash.slice(1);
       else
@@ -154,6 +156,7 @@ cr.define('options.ContentSettings', function() {
       } else {
         this.blockedList_.hidden = true;
         $('blocked-origin-list-title').hidden = true;
+        $('allowed-origin-list-title').hidden = true;
         this.allowedList_.classList.add('nonsplit-origin-list');
       }
     },
@@ -246,6 +249,10 @@ cr.define('options.ContentSettings', function() {
 
   WebsiteSettingsManager.updateDefault = function(dict) {
     WebsiteSettingsManager.getInstance().updateDefault(dict);
+  };
+
+  WebsiteSettingsManager.showWebsiteSettings = function(hash) {
+    PageManager.showPageByName('websiteSettings', true, {hash: '#' + hash});
   };
 
   // Export
