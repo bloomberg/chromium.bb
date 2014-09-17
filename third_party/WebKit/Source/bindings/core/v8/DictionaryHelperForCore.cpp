@@ -489,6 +489,7 @@ template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Element>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Element>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Path2D>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Path2D>& value);
 
 template <typename T>
 struct IntegralTypeTraits {
