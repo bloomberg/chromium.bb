@@ -1548,12 +1548,6 @@ void RenderObject::invalidatePaintForWholeRenderer() const
     if (view()->document().printing())
         return; // Don't invalidate paints if we're printing.
 
-    if (isText()) {
-        // The parent invalidates for RenderText.
-        parent()->setShouldDoFullPaintInvalidation(true);
-        return;
-    }
-
     // FIXME: really, we're in the paint invalidation phase here, and the following queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
@@ -3431,13 +3425,6 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
 
 void RenderObject::setShouldDoFullPaintInvalidation(bool b, MarkingBehavior markBehavior)
 {
-    // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds.
-    // Instead the parent fully invalidate when any text needs full paint invalidation.
-    if (isText()) {
-        parent()->setShouldDoFullPaintInvalidation(b, markBehavior);
-        return;
-    }
-
     m_bitfields.setShouldDoFullPaintInvalidation(b);
 
     if (markBehavior == MarkContainingBlockChain && b) {
