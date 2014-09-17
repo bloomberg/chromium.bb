@@ -59,7 +59,7 @@ class FormField {
   // success and fills |match| with a pointer to the field.
   static bool ParseField(AutofillScanner* scanner,
                          const base::string16& pattern,
-                         const AutofillField** match);
+                         AutofillField** match);
 
   // Parses the stream of fields in |scanner| with regular expression |pattern|
   // as specified in the |match_type| bit field (see |MatchType|).  If |match|
@@ -69,12 +69,11 @@ class FormField {
   static bool ParseFieldSpecifics(AutofillScanner* scanner,
                                   const base::string16& pattern,
                                   int match_type,
-                                  const AutofillField** match);
+                                  AutofillField** match);
 
   // Attempts to parse a field with an empty label.  Returns true
   // on success and fills |match| with a pointer to the field.
-  static bool ParseEmptyLabel(AutofillScanner* scanner,
-                              const AutofillField** match);
+  static bool ParseEmptyLabel(AutofillScanner* scanner, AutofillField** match);
 
   // Adds an association between a field and a type to |map|.
   static bool AddClassification(const AutofillField* field,
@@ -101,7 +100,7 @@ class FormField {
   static bool MatchAndAdvance(AutofillScanner* scanner,
                               const base::string16& pattern,
                               int match_type,
-                              const AutofillField** match);
+                              AutofillField** match);
 
   // Matches the regular expression |pattern| against the components of |field|
   // as specified in the |match_type| bit field (see |MatchType|).
@@ -115,7 +114,7 @@ class FormField {
   // holds any remaining unclassified fields for further processing.
   // Classification results of the processed fields are stored in |map|.
   static void ParseFormFieldsPass(ParseFunction parse,
-                                  std::vector<const AutofillField*>* fields,
+                                  std::vector<AutofillField*>* fields,
                                   ServerFieldTypeMap* map);
 
   // Returns true iff |type| matches |match_type|.

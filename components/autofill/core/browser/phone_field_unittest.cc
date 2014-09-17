@@ -20,7 +20,7 @@ class PhoneFieldTest : public testing::Test {
   PhoneFieldTest() {}
 
  protected:
-  ScopedVector<const AutofillField> list_;
+  ScopedVector<AutofillField> list_;
   scoped_ptr<PhoneField> field_;
   ServerFieldTypeMap field_type_map_;
 

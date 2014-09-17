@@ -125,7 +125,7 @@ FormField* PhoneField::Parse(AutofillScanner* scanner) {
   scanner->SaveCursor();
 
   // The form owns the following variables, so they should not be deleted.
-  const AutofillField* parsed_fields[FIELD_MAX];
+  AutofillField* parsed_fields[FIELD_MAX];
 
   for (size_t i = 0; i < arraysize(kPhoneFieldGrammars); ++i) {
     memset(parsed_fields, 0, sizeof(parsed_fields));

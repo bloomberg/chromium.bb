@@ -20,6 +20,7 @@ class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
+  virtual ~CreditCardField();
   static FormField* Parse(AutofillScanner* scanner);
 
  protected:
@@ -36,7 +37,7 @@ class CreditCardField : public FormField {
   // |CREDIT_CARD_EXP_2_DIGIT_YEAR|; otherwise |CREDIT_CARD_EXP_4_DIGIT_YEAR|.
   ServerFieldType GetExpirationYearType() const;
 
-  const AutofillField* cardholder_;  // Optional.
+  AutofillField* cardholder_;  // Optional.
 
   // Occasionally pages have separate fields for the cardholder's first and
   // last names; for such pages |cardholder_| holds the first name field and
@@ -45,20 +46,20 @@ class CreditCardField : public FormField {
   // because the text patterns for matching a cardholder name are different
   // than for ordinary names, and because cardholder names never have titles,
   // middle names or suffixes.)
-  const AutofillField* cardholder_last_;
+  AutofillField* cardholder_last_;
 
   // TODO(jhawkins): Parse the select control.
-  const AutofillField* type_;  // Optional.
-  const AutofillField* number_;  // Required.
+  AutofillField* type_;                  // Optional.
+  std::vector<AutofillField*> numbers_;  // Required.
 
   // The 3-digit card verification number; we don't currently fill this.
-  const AutofillField* verification_;
+  AutofillField* verification_;
 
   // Either |expiration_date_| or both |expiration_month_| and
   // |expiration_year_| are required.
-  const AutofillField* expiration_month_;
-  const AutofillField* expiration_year_;
-  const AutofillField* expiration_date_;
+  AutofillField* expiration_month_;
+  AutofillField* expiration_year_;
+  AutofillField* expiration_date_;
 
   // For combined expiration field having year as 2-digits we store here
   // |CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR|; otherwise we store

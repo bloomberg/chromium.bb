@@ -20,7 +20,7 @@ class NameFieldTest : public testing::Test {
   NameFieldTest() {}
 
  protected:
-  ScopedVector<const AutofillField> list_;
+  ScopedVector<AutofillField> list_;
   scoped_ptr<NameField> field_;
   ServerFieldTypeMap field_type_map_;
 

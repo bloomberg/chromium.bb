@@ -21,7 +21,7 @@ class AddressFieldTest : public testing::Test {
   AddressFieldTest() {}
 
  protected:
-  ScopedVector<const AutofillField> list_;
+  ScopedVector<AutofillField> list_;
   scoped_ptr<AddressField> field_;
   ServerFieldTypeMap field_type_map_;
 

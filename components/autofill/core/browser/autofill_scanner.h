@@ -17,7 +17,7 @@ class AutofillField;
 // A helper class for parsing a stream of |AutofillField|'s with lookahead.
 class AutofillScanner {
  public:
-  explicit AutofillScanner(const std::vector<const AutofillField*>& fields);
+  explicit AutofillScanner(std::vector<AutofillField*>& fields);
   ~AutofillScanner();
 
   // Advances the cursor by one step, if possible.
@@ -25,7 +25,7 @@ class AutofillScanner {
 
   // Returns the current field in the stream, or |NULL| if there are no more
   // fields in the stream.
-  const AutofillField* Cursor() const;
+  AutofillField* Cursor() const;
 
   // Returns |true| if the cursor has reached the end of the stream.
   bool IsEnd() const;
@@ -42,16 +42,16 @@ class AutofillScanner {
 
  private:
   // Indicates the current position in the stream, represented as a vector.
-  std::vector<const AutofillField*>::const_iterator cursor_;
+  std::vector<AutofillField*>::const_iterator cursor_;
 
   // The most recently saved cursor.
-  std::vector<const AutofillField*>::const_iterator saved_cursor_;
+  std::vector<AutofillField*>::const_iterator saved_cursor_;
 
   // The beginning pointer for the stream.
-  const std::vector<const AutofillField*>::const_iterator begin_;
+  const std::vector<AutofillField*>::iterator begin_;
 
   // The past-the-end pointer for the stream.
-  const std::vector<const AutofillField*>::const_iterator end_;
+  const std::vector<AutofillField*>::iterator end_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillScanner);
 };

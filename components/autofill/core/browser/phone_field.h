@@ -83,7 +83,7 @@ class PhoneField : public FormField {
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
-  const AutofillField* parsed_phone_fields_[FIELD_MAX];
+  AutofillField* parsed_phone_fields_[FIELD_MAX];
 
   DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };

@@ -299,6 +299,23 @@ void FillPhoneNumberField(const AutofillField& field,
   field_data->value = value;
 }
 
+// Set |field_data|'s value to |number|, or possibly an appropriate substring
+// of |number| for cases where credit card number splits across multiple HTML
+// form input fields.
+// The |field| specifies the |credit_card_number_offset_| to the substring
+// within credit card number.
+void FillCreditCardNumberField(const AutofillField& field,
+                               const base::string16& number,
+                               FormFieldData* field_data) {
+  base::string16 value = number;
+
+  // |field|'s max_length truncates credit card number to fit within.
+  if (field.credit_card_number_offset() < value.length())
+    value = value.substr(field.credit_card_number_offset());
+
+  field_data->value = value;
+}
+
 // Fills in the select control |field| with |value|.  If an exact match is not
 // found, falls back to alternate filling strategies based on the |type|.
 bool FillSelectControl(const AutofillType& type,
@@ -397,7 +414,8 @@ AutofillField::AutofillField()
       heuristic_type_(UNKNOWN_TYPE),
       html_type_(HTML_TYPE_UNKNOWN),
       html_mode_(HTML_MODE_NONE),
-      phone_part_(IGNORED) {
+      phone_part_(IGNORED),
+      credit_card_number_offset_(0) {
 }
 
 AutofillField::AutofillField(const FormFieldData& field,
@@ -408,7 +426,8 @@ AutofillField::AutofillField(const FormFieldData& field,
       heuristic_type_(UNKNOWN_TYPE),
       html_type_(HTML_TYPE_UNKNOWN),
       html_mode_(HTML_MODE_NONE),
-      phone_part_(IGNORED) {
+      phone_part_(IGNORED),
+      credit_card_number_offset_(0) {
 }
 
 AutofillField::~AutofillField() {}
@@ -486,6 +505,9 @@ bool AutofillField::FillFormField(const AutofillField& field,
     return FillMonthControl(value, field_data);
   } else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
     FillStreetAddress(value, address_language_code, field_data);
+    return true;
+  } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+    FillCreditCardNumberField(field, value, field_data);
     return true;
   }
 

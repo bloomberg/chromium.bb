@@ -49,15 +49,15 @@ class AddressField : public FormField {
   bool ParseCity(AutofillScanner* scanner);
   bool ParseState(AutofillScanner* scanner);
 
-  const AutofillField* company_;
-  const AutofillField* address1_;
-  const AutofillField* address2_;
-  const AutofillField* street_address_;
-  const AutofillField* city_;
-  const AutofillField* state_;
-  const AutofillField* zip_;
-  const AutofillField* zip4_;  // optional ZIP+4; we don't fill this yet.
-  const AutofillField* country_;
+  AutofillField* company_;
+  AutofillField* address1_;
+  AutofillField* address2_;
+  AutofillField* street_address_;
+  AutofillField* city_;
+  AutofillField* state_;
+  AutofillField* zip_;
+  AutofillField* zip4_;  // optional ZIP+4; we don't fill this yet.
+  AutofillField* country_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressField);
 };

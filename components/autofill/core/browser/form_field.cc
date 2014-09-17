@@ -37,7 +37,7 @@ bool IsCheckable(const AutofillField* field) {
 void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
                                 ServerFieldTypeMap* map) {
   // Set up a working copy of the fields to be processed.
-  std::vector<const AutofillField*> remaining_fields(fields.size());
+  std::vector<AutofillField*> remaining_fields(fields.size());
   std::copy(fields.begin(), fields.end(), remaining_fields.begin());
 
   // Ignore checkable fields as they interfere with parsers assuming context.
@@ -67,7 +67,7 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
 // static
 bool FormField::ParseField(AutofillScanner* scanner,
                            const base::string16& pattern,
-                           const AutofillField** match) {
+                           AutofillField** match) {
   return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, match);
 }
 
@@ -75,7 +75,7 @@ bool FormField::ParseField(AutofillScanner* scanner,
 bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
                                     const base::string16& pattern,
                                     int match_type,
-                                    const AutofillField** match) {
+                                    AutofillField** match) {
   if (scanner->IsEnd())
     return false;
 
@@ -89,7 +89,7 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 
 // static
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
-                                const AutofillField** match) {
+                                AutofillField** match) {
   return ParseFieldSpecifics(scanner,
                              base::ASCIIToUTF16("^$"),
                              MATCH_LABEL | MATCH_ALL_INPUTS,
@@ -111,8 +111,8 @@ bool FormField::AddClassification(const AutofillField* field,
 bool FormField::MatchAndAdvance(AutofillScanner* scanner,
                                 const base::string16& pattern,
                                 int match_type,
-                                const AutofillField** match) {
-  const AutofillField* field = scanner->Cursor();
+                                AutofillField** match) {
+  AutofillField* field = scanner->Cursor();
   if (FormField::Match(field, pattern, match_type)) {
     if (match)
       *match = field;
@@ -147,10 +147,10 @@ bool FormField::Match(const AutofillField* field,
 
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
-                                    std::vector<const AutofillField*>* fields,
+                                    std::vector<AutofillField*>* fields,
                                     ServerFieldTypeMap* map) {
   // Store unmatched fields for further processing by the caller.
-  std::vector<const AutofillField*> remaining_fields;
+  std::vector<AutofillField*> remaining_fields;
 
   AutofillScanner scanner(*fields);
   while (!scanner.IsEnd()) {

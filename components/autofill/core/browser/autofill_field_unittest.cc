@@ -34,6 +34,21 @@ FormFieldData GenerateSelectFieldWithOptions(const char* const* options,
   return form_field;
 }
 
+struct TestCase {
+  std::string card_number_;
+  size_t total_spilts_;
+  std::vector<int> splits_;
+  std::vector<std::string> expected_results_;
+};
+
+// Returns the offset to be set within the credit card number field.
+size_t GetNumberOffset(size_t index, const TestCase& test) {
+  size_t result = 0;
+  for (size_t i = 0; i < index; ++i)
+    result += test.splits_[i];
+  return result;
+}
+
 TEST(AutofillFieldTest, Type) {
   AutofillField field;
   ASSERT_EQ(NO_SERVER_DATA, field.server_type());
@@ -501,6 +516,110 @@ TEST(AutofillFieldTest, FillStreetAddressTextField) {
                                "en-US",
                                &field);
   EXPECT_EQ(UTF8ToUTF16("桜丘町26-1セルリアンタワー6階"), field.value);
+}
+
+TEST(AutofillFieldTest, FillCreditCardNumberWithoutSplits) {
+  // Case 1: card number without any spilt.
+  AutofillField cc_number_full;
+  cc_number_full.set_heuristic_type(CREDIT_CARD_NUMBER);
+  AutofillField::FillFormField(cc_number_full,
+                               ASCIIToUTF16("4111111111111111"),
+                               "en-US",
+                               "en-US",
+                               &cc_number_full);
+
+  // Verify that full card-number shall get fill properly.
+  EXPECT_EQ(ASCIIToUTF16("4111111111111111"), cc_number_full.value);
+  EXPECT_EQ(0U, cc_number_full.credit_card_number_offset());
+}
+
+TEST(AutofillFieldTest, FillCreditCardNumberWithEqualSizeSplits) {
+  // Case 2: card number broken up into four equal groups, of length 4.
+  TestCase test;
+  test.card_number_ = "5187654321098765";
+  test.total_spilts_ = 4;
+  int splits[] = {4, 4, 4, 4};
+  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  std::string results[] = {"5187", "6543", "2109", "8765"};
+  test.expected_results_ =
+      std::vector<std::string>(results, results + arraysize(results));
+
+  for (size_t i = 0; i < test.total_spilts_; ++i) {
+    AutofillField cc_number_part;
+    cc_number_part.set_heuristic_type(CREDIT_CARD_NUMBER);
+    cc_number_part.max_length = test.splits_[i];
+    cc_number_part.set_credit_card_number_offset(4 * i);
+
+    // Fill with a card-number; should fill just the card_number_part.
+    AutofillField::FillFormField(cc_number_part,
+                                 ASCIIToUTF16(test.card_number_),
+                                 "en-US",
+                                 "en-US",
+                                 &cc_number_part);
+
+    // Verify for expected results.
+    EXPECT_EQ(ASCIIToUTF16(test.expected_results_[i]),
+              cc_number_part.value.substr(0, cc_number_part.max_length));
+    EXPECT_EQ(4 * i, cc_number_part.credit_card_number_offset());
+  }
+
+  // Verify that full card-number shall get fill properly as well.
+  AutofillField cc_number_full;
+  cc_number_full.set_heuristic_type(CREDIT_CARD_NUMBER);
+  AutofillField::FillFormField(cc_number_full,
+                               ASCIIToUTF16(test.card_number_),
+                               "en-US",
+                               "en-US",
+                               &cc_number_full);
+
+  // Verify for expected results.
+  EXPECT_EQ(ASCIIToUTF16(test.card_number_), cc_number_full.value);
+}
+
+TEST(AutofillFieldTest, FillCreditCardNumberWithUnequalSizeSplits) {
+  // Case 3: card with 15 digits number, broken up into three unequal groups, of
+  // lengths 4, 6, and 5.
+  TestCase test;
+  test.card_number_ = "423456789012345";
+  test.total_spilts_ = 3;
+  int splits[] = {4, 6, 5};
+  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  std::string results[] = {"4234", "567890", "12345"};
+  test.expected_results_ =
+      std::vector<std::string>(results, results + arraysize(results));
+
+  // Start executing test cases to verify parts and full credit card number.
+  for (size_t i = 0; i < test.total_spilts_; ++i) {
+    AutofillField cc_number_part;
+    cc_number_part.set_heuristic_type(CREDIT_CARD_NUMBER);
+    cc_number_part.max_length = test.splits_[i];
+    cc_number_part.set_credit_card_number_offset(GetNumberOffset(i, test));
+
+    // Fill with a card-number; should fill just the card_number_part.
+    AutofillField::FillFormField(cc_number_part,
+                                 ASCIIToUTF16(test.card_number_),
+                                 "en-US",
+                                 "en-US",
+                                 &cc_number_part);
+
+    // Verify for expected results.
+    EXPECT_EQ(ASCIIToUTF16(test.expected_results_[i]),
+              cc_number_part.value.substr(0, cc_number_part.max_length));
+    EXPECT_EQ(GetNumberOffset(i, test),
+              cc_number_part.credit_card_number_offset());
+  }
+
+  // Verify that full card-number shall get fill properly as well.
+  AutofillField cc_number_full;
+  cc_number_full.set_heuristic_type(CREDIT_CARD_NUMBER);
+  AutofillField::FillFormField(cc_number_full,
+                               ASCIIToUTF16(test.card_number_),
+                               "en-US",
+                               "en-US",
+                               &cc_number_full);
+
+  // Verify for expected results.
+  EXPECT_EQ(ASCIIToUTF16(test.card_number_), cc_number_full.value);
 }
 
 }  // namespace

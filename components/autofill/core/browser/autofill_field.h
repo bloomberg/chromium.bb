@@ -65,6 +65,13 @@ class AutofillField : public FormFieldData {
   void set_default_value(const std::string& value) { default_value_ = value; }
   const std::string& default_value() const { return default_value_; }
 
+  void set_credit_card_number_offset(size_t position) {
+    credit_card_number_offset_ = position;
+  }
+  size_t credit_card_number_offset() const {
+    return credit_card_number_offset_;
+  }
+
   // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
   // and |app_locale| as hints when filling exceptional cases like phone number
   // values and <select> fields. Returns |true| if the field has been filled,
@@ -104,6 +111,10 @@ class AutofillField : public FormFieldData {
 
   // The default value returned by the Autofill server.
   std::string default_value_;
+
+  // Used to hold the position of the first digit to be copied as a substring
+  // from credit card number.
+  size_t credit_card_number_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };
