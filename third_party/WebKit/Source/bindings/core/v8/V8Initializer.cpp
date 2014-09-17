@@ -268,10 +268,8 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate)
     v8::V8::AddMessageListener(messageHandlerInWorker);
     v8::V8::SetFatalErrorHandler(reportFatalErrorInWorker);
 
-    v8::ResourceConstraints resourceConstraints;
     uint32_t here;
-    resourceConstraints.set_stack_limit(&here - kWorkerMaxStackSize / sizeof(uint32_t*));
-    v8::SetResourceConstraints(isolate, &resourceConstraints);
+    isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here - kWorkerMaxStackSize / sizeof(uint32_t*)));
 }
 
 } // namespace blink
