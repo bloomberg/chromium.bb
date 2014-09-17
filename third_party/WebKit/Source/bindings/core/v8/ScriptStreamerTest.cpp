@@ -12,6 +12,7 @@
 #include "core/dom/PendingScript.h"
 #include "core/frame/Settings.h"
 #include "platform/Task.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 
 #include <gtest/gtest.h>
@@ -21,6 +22,41 @@ namespace blink {
 
 namespace {
 
+// For the benefit of Oilpan, put the part object PendingScript inside
+// a wrapper that's on the Oilpan heap and hold a reference to that wrapper
+// from ScriptStreamingTest.
+class PendingScriptWrapper : public NoBaseWillBeGarbageCollectedFinalized<PendingScriptWrapper> {
+public:
+    static PassOwnPtrWillBeRawPtr<PendingScriptWrapper> create()
+    {
+        return adoptPtrWillBeNoop(new PendingScriptWrapper());
+    }
+
+    static PassOwnPtrWillBeRawPtr<PendingScriptWrapper> create(Element* element, ScriptResource* resource)
+    {
+        return adoptPtrWillBeNoop(new PendingScriptWrapper(element, resource));
+    }
+
+    PendingScript& get() { return m_pendingScript; }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_pendingScript);
+    }
+
+private:
+    PendingScriptWrapper()
+    {
+    }
+
+    PendingScriptWrapper(Element* element, ScriptResource* resource)
+        : m_pendingScript(PendingScript(element, resource))
+    {
+    }
+
+    PendingScript m_pendingScript;
+};
+
 class ScriptStreamingTest : public testing::Test {
 public:
     ScriptStreamingTest()
@@ -28,7 +64,7 @@ public:
         , m_settings(Settings::create())
         , m_resourceRequest("http://www.streaming-test.com/")
         , m_resource(new ScriptResource(m_resourceRequest, "text/utf-8"))
-        , m_pendingScript(0, m_resource) // Takes ownership of m_resource.
+        , m_pendingScript(PendingScriptWrapper::create(0, m_resource)) // Takes ownership of m_resource.
     {
         m_settings->setV8ScriptStreamingEnabled(true);
         m_resource->setLoading(true);
@@ -37,10 +73,7 @@ public:
     ScriptState* scriptState() const { return m_scope.scriptState(); }
     v8::Isolate* isolate() const { return m_scope.isolate(); }
 
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_pendingScript);
-    }
+    PendingScript& pendingScript() const { return m_pendingScript->get(); }
 
 protected:
     void appendData(const char* data)
@@ -85,7 +118,7 @@ protected:
     // ScriptResource::appendData.
     ResourceRequest m_resourceRequest;
     ScriptResource* m_resource;
-    PendingScript m_pendingScript;
+    OwnPtrWillBePersistent<PendingScriptWrapper> m_pendingScript;
 };
 
 class TestScriptResourceClient : public ScriptResourceClient {
@@ -104,9 +137,9 @@ private:
 TEST_F(ScriptStreamingTest, CompilingStreamedScript)
 {
     // Test that we can successfully compile a streamed script.
-    bool started = ScriptStreamer::startStreaming(m_pendingScript, m_settings.get(), m_scope.scriptState());
+    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
-    m_pendingScript.watchForLoad(&client);
+    pendingScript().watchForLoad(&client);
     EXPECT_TRUE(started);
 
     appendData("function foo() {");
@@ -122,7 +155,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript)
     processTasksUntilStreamingComplete();
     EXPECT_TRUE(client.finished());
     bool errorOccurred = false;
-    ScriptSourceCode sourceCode = m_pendingScript.getSource(KURL(), errorOccurred);
+    ScriptSourceCode sourceCode = pendingScript().getSource(KURL(), errorOccurred);
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
@@ -136,9 +169,9 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     // Test that scripts with parse errors are handled properly. In those cases,
     // the V8 side typically finished before loading finishes: make sure we
     // handle it gracefully.
-    bool started = ScriptStreamer::startStreaming(m_pendingScript, m_settings.get(), m_scope.scriptState());
+    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
-    m_pendingScript.watchForLoad(&client);
+    pendingScript().watchForLoad(&client);
     EXPECT_TRUE(started);
     appendData("function foo() {");
     appendData("this is the part which will be a parse error");
@@ -156,7 +189,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     EXPECT_TRUE(client.finished());
 
     bool errorOccurred = false;
-    ScriptSourceCode sourceCode = m_pendingScript.getSource(KURL(), errorOccurred);
+    ScriptSourceCode sourceCode = pendingScript().getSource(KURL(), errorOccurred);
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
@@ -169,9 +202,9 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
 {
     // Test that the upper layers (PendingScript and up) can be ramped down
     // while streaming is ongoing, and ScriptStreamer handles it gracefully.
-    bool started = ScriptStreamer::startStreaming(m_pendingScript, m_settings.get(), m_scope.scriptState());
+    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
-    m_pendingScript.watchForLoad(&client);
+    pendingScript().watchForLoad(&client);
     EXPECT_TRUE(started);
     appendData("function foo() {");
 
@@ -182,8 +215,8 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
     // Simulate cancelling the network load (e.g., because the user navigated
     // away).
     EXPECT_FALSE(client.finished());
-    m_pendingScript.stopWatchingForLoad(&client);
-    m_pendingScript = PendingScript(); // This will destroy m_resource.
+    pendingScript().stopWatchingForLoad(&client);
+    m_pendingScript = PendingScriptWrapper::create(); // This will destroy m_resource.
     m_resource = 0;
 
     // The V8 side will complete too. This should not crash. We don't receive
@@ -198,9 +231,9 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     // is suppressed (V8 doesn't parse while the script is loading), and the
     // upper layer (ScriptResourceClient) should get a notification when the
     // script is loaded.
-    bool started = ScriptStreamer::startStreaming(m_pendingScript, m_settings.get(), m_scope.scriptState());
+    bool started = ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState());
     TestScriptResourceClient client;
-    m_pendingScript.watchForLoad(&client);
+    pendingScript().watchForLoad(&client);
     EXPECT_TRUE(started);
     appendData("function foo() {");
     appendPadding();
@@ -213,7 +246,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     EXPECT_TRUE(client.finished());
 
     bool errorOccurred = false;
-    ScriptSourceCode sourceCode = m_pendingScript.getSource(KURL(), errorOccurred);
+    ScriptSourceCode sourceCode = pendingScript().getSource(KURL(), errorOccurred);
     EXPECT_FALSE(errorOccurred);
     // ScriptSourceCode doesn't refer to the streamer, since we have suppressed
     // the streaming and resumed the non-streaming code path for script
