@@ -21,7 +21,8 @@ function runTest()
     if (frame.src != 'about:blank') {
         description("Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.");
         oldChildWindow = frame.contentWindow;
-        collectProperties();
+        // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
+        collectProperties(false);
         frame.src = 'about:blank';
         return;
     }

@@ -1,8 +1,8 @@
-function collectProperties()
+function collectProperties(windowHasBeenGCed)
 {
     // Collect properties of the top-level window, since touching the properties
     // of a DOMWindow affects its internal C++ state.
-    collectPropertiesHelper(window, []);
+    collectPropertiesHelper(window, windowHasBeenGCed, []);
 
     propertiesToVerify.sort(function (a, b)
     {
@@ -80,7 +80,7 @@ function emitExpectedResult(path, expected)
     insertExpectedResult(path, expected);
 }
 
-function collectPropertiesHelper(object, path)
+function collectPropertiesHelper(object, windowHasBeenGCed, path)
 {
     if (path.length > 20)
         throw 'Error: probably looping';
@@ -99,14 +99,17 @@ function collectPropertiesHelper(object, path)
                 && !(object[property] instanceof MimeTypeArray)
                 && !(object[property] instanceof PluginArray)) {
                 // Skip some traversing through types that will end up in cycles...
-                collectPropertiesHelper(object[property], path);
+                collectPropertiesHelper(object[property], windowHasBeenGCed, path);
             }
         } else if (type == "string") {
             emitExpectedResult(path, "''");
         } else if (type == "number") {
             emitExpectedResult(path, "0");
         } else if (type == "boolean") {
-            emitExpectedResult(path, "false");
+            expected = "false";
+            if (path == "closed" && windowHasBeenGCed )
+                expected = "true";
+            emitExpectedResult(path, expected);
         }
         path.pop();
     }

@@ -98,6 +98,9 @@ public:
     // method.
     bool isRemoteFrameTemporary() const { return m_remotePlatformLayer; }
 
+    bool hasBeenClosed() const { return m_hasBeenClosed; }
+    void setHasBeenClosed();
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 
@@ -111,6 +114,14 @@ protected:
 private:
     FrameClient* m_client;
     blink::WebLayer* m_remotePlatformLayer;
+
+    // The closing of a frame by the embedder may not trigger the
+    // immediate release of this Frame object -- there might be
+    // other RefPtrs to the Frame, up the stack or elsewhere.
+    //
+    // Hence, keep a separate flag that's set when the frame is
+    // closed. It is consulted by window.closed.
+    bool m_hasBeenClosed;
 };
 
 inline FrameClient* Frame::client() const

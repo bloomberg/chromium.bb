@@ -14,7 +14,7 @@ FAIL childWindow.applicationCache.onobsolete should be null. Threw exception Typ
 FAIL childWindow.applicationCache.onprogress should be null. Threw exception TypeError: Cannot read property 'onprogress' of null
 FAIL childWindow.applicationCache.onupdateready should be null. Threw exception TypeError: Cannot read property 'onupdateready' of null
 FAIL childWindow.applicationCache.status should be 0. Threw exception TypeError: Cannot read property 'status' of null
-FAIL childWindow.closed should be false. Was true.
+PASS childWindow.closed is true
 PASS childWindow.defaultStatus is ''
 PASS childWindow.defaultstatus is ''
 PASS childWindow.devicePixelRatio is 0

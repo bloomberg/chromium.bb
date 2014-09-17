@@ -17,7 +17,8 @@ function runTest()
     description("Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.");
     var frame = document.getElementById("frame");
     childWindow = frame.contentWindow;
-    collectProperties();
+    // Have expected results assume that the frame has been closed (=> window.closed = true.)
+    collectProperties(true);
     frame.parentNode.removeChild(frame);
     for (var i = 0; i < propertiesToVerify.length; ++i)
         shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);

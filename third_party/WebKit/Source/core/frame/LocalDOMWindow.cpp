@@ -1195,7 +1195,7 @@ int LocalDOMWindow::scrollY() const
 
 bool LocalDOMWindow::closed() const
 {
-    return !m_frame;
+    return !m_frame || m_frame->hasBeenClosed();
 }
 
 unsigned LocalDOMWindow::length() const

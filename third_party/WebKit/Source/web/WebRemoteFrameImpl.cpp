@@ -130,6 +130,9 @@ WebRemoteFrame* WebRemoteFrameImpl::toWebRemoteFrame()
 
 void WebRemoteFrameImpl::close()
 {
+    if (m_frame)
+        m_frame->setHasBeenClosed();
+
     deref();
 }
 
@@ -835,4 +838,3 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
 }
 
 } // namespace blink
-
