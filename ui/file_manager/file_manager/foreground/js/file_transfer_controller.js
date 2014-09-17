@@ -40,12 +40,13 @@ function FileTransferController(doc,
   this.progressCenter_ = progressCenter;
 
   this.directoryModel_.getFileList().addEventListener(
-      'change', function(event) {
-    if (this.directoryModel_.getFileListSelection().
-        getIndexSelected(event.index)) {
-      this.onSelectionChanged_();
-    }
-  }.bind(this));
+      'change',
+      function(event) {
+        if (this.directoryModel_.getFileListSelection().
+            getIndexSelected(event.index)) {
+          this.onSelectionChanged_();
+        }
+      }.bind(this));
   this.directoryModel_.getFileListSelection().addEventListener('change',
       this.onSelectionChanged_.bind(this));
 
@@ -282,8 +283,7 @@ FileTransferController.prototype = {
         // crbug.com/345527.
         var urls = util.entriesToURLs(entries);
         chrome.fileManagerPrivate.getEntryProperties(urls, callback);
-      }).
-      then(function(metadatas) {
+      }).then(function(metadatas) {
         return entries.filter(function(entry, i) {
           var metadata = metadatas[i];
           return metadata && metadata.isHosted && !metadata.sharedWithMe;
@@ -351,8 +351,7 @@ FileTransferController.prototype = {
     var failureUrls;
     var taskId = this.fileOperationManager_.generateTaskId();
 
-    util.URLsToEntries(sourceURLs).
-    then(function(result) {
+    util.URLsToEntries(sourceURLs).then(function(result) {
       this.pendingTaskIds.push(taskId);
       entries = result.entries;
       failureUrls = result.failureUrls;
@@ -366,8 +365,7 @@ FileTransferController.prototype = {
       this.progressCenter_.updateItem(item);
       // Check if cross share is needed or not.
       return this.getMultiProfileShareEntries_(entries);
-    }.bind(this)).
-    then(function(shareEntries) {
+    }.bind(this)).then(function(shareEntries) {
       if (shareEntries.length === 0)
         return;
       return this.multiProfileShareDialog_.show(shareEntries.length > 1).
@@ -391,8 +389,7 @@ FileTransferController.prototype = {
             };
             return requestDriveShare(0);
           });
-    }.bind(this)).
-    then(function() {
+    }.bind(this)).then(function() {
       // Start the pasting operation.
       this.fileOperationManager_.paste(
           entries, destinationEntry, toMove, taskId);
@@ -408,8 +405,7 @@ FileTransferController.prototype = {
             toMove ? ProgressItemType.MOVE : ProgressItemType.COPY;
         this.dispatchEvent(event);
       }
-    }.bind(this)).
-    catch(function(error) {
+    }.bind(this)).catch(function(error) {
       if (error !== 'ABORT')
         console.error(error.stack ? error.stack : error);
     });
@@ -424,14 +420,15 @@ FileTransferController.prototype = {
    */
   preloadThumbnailImage_: function(entry) {
     var metadataPromise = new Promise(function(fulfill, reject) {
-      this.metadataCache_.getOne(entry,
-                                 'thumbnail|filesystem',
-                                 function(metadata) {
-        if (metadata)
-          fulfill(metadata);
-        else
-          reject('Failed to fetch metadata.');
-      });
+      this.metadataCache_.getOne(
+          entry,
+          'thumbnail|filesystem',
+          function(metadata) {
+            if (metadata)
+              fulfill(metadata);
+            else
+              reject('Failed to fetch metadata.');
+          });
     }.bind(this));
 
     var imagePromise = metadataPromise.then(function(metadata) {
@@ -565,7 +562,7 @@ FileTransferController.prototype = {
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
       sourceRootURL: dt.getData('fs/sourceRootURL'),
-      missingFileContents: dt.getData('fs/missingFileContents'),
+      missingFileContents: dt.getData('fs/missingFileContents')
     };
   },
 

@@ -60,6 +60,7 @@ Gallery.Item = function(
   /**
    * Last accessed date to be used for selecting items whose cache are evicted.
    * @type {number}
+   * @private
    */
   this.lastAccessed_ = Date.now();
 
@@ -229,6 +230,7 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
  * @param {VolumeManager} volumeManager Volume manager instance.
  * @param {string} fallbackDir Fallback directory in case the current directory
  *     is read only.
+ * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @param {HTMLCanvasElement} canvas Source canvas.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)=} opt_callback Callback accepting true for success.

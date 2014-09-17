@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * @extends cr.EventTarget
+ * @extends {cr.EventTarget}
  * @param {HTMLDivElement} div Div container for breadcrumbs.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
@@ -162,7 +162,7 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
  */
 BreadcrumbsController.prototype.truncate = function() {
   if (!this.bc_.firstChild)
-   return;
+    return;
 
   // Assume style.width == clientWidth (items have no margins or paddings).
 
@@ -188,8 +188,8 @@ BreadcrumbsController.prototype.truncate = function() {
   if (pathWidth + currentWidth <= containerWidth)
     return;
   if (!lastSeparator) {
-    this.bc_.lastChild.style.width = Math.min(currentWidth, containerWidth) +
-                                      'px';
+    this.bc_.lastChild.style.width =
+        Math.min(currentWidth, containerWidth) + 'px';
     return;
   }
   var lastCrumbSeparatorWidth = lastSeparator.clientWidth;

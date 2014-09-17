@@ -393,6 +393,9 @@ DirectoryItem.prototype.setContextMenu = function(menu) {
     cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
+/**
+ * Change current directory to the entry of this item.
+ */
 DirectoryItem.prototype.activate = function() {
   this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
 };
@@ -404,7 +407,7 @@ DirectoryItem.prototype.activate = function() {
  * A TreeItem which represents a volume. Volume items are displayed as
  * top-level children of DirectoryTree.
  *
- * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
+ * @param {DirectoryEntry} entry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
@@ -457,7 +460,7 @@ VolumeItem.prototype.searchAndSelectByEntry = function(entry) {
 
 /**
  * Decorates this element.
- * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
+ * @param {DirectoryEntry} entry DirectoryEntry of this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
@@ -581,7 +584,7 @@ VolumeItem.prototype.activate = function() {
       function() {
         // Error, the display root is not available. It may happen on Drive.
         this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
-      }.bind(this))
+      }.bind(this));
 };
 
 /**
@@ -1024,6 +1027,7 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
 /**
  * Select the volume or the shortcut corresponding to the given index.
  * @param {number} index 0-based index of the target top-level item.
+ * @return {boolean} True if one of the volume items is selected.
  */
 DirectoryTree.prototype.selectByIndex = function(index) {
   if (index < 0 || index >= this.items.length)
@@ -1057,9 +1061,9 @@ DirectoryTree.prototype.updateSubDirectories = function(
       }.bind(this)));
     } else {
       // Shortcuts' root entries can be obtained immediately.
-      itemPromises.push(
-          Promise.resolve({entry: this.dataModel.item(i).entry,
-                           modelItem: this.dataModel.item(i)}));
+      itemPromises.push(Promise.resolve({
+        entry: this.dataModel.item(i).entry,
+        modelItem: this.dataModel.item(i)}));
     }
   }
 

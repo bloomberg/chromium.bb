@@ -60,7 +60,7 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
 /**
  * Updates items to reflect metadata changes.
  * @param {string} type Type of metadata changed.
- * @param {Object.<string, Object>} props Map from entry URLs to metadata props.
+ * @param {Array.<Entry>} entries Entries whose metadata changed.
  */
 FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
   var urls = util.entriesToURLs(entries);
@@ -281,8 +281,8 @@ FileGrid.prototype.getHitIndex_ = function(coordinate, step, threshold) {
  *
  * @param {number} x X coordinate value.
  * @param {number} y Y coordinate value.
- * @param {=number} opt_width Width of the coordinate.
- * @param {=number} opt_height Height of the coordinate.
+ * @param {number=} opt_width Width of the coordinate.
+ * @param {number=} opt_height Height of the coordinate.
  * @return {Array.<number>} Index list of hit elements.
  */
 FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {

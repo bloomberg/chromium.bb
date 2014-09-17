@@ -746,15 +746,15 @@ MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
   var oldValue = this.getValueFromUI_();
   var step = 0;
   this.animationInterval_ = setInterval(function() {
-      step++;
-      var currentValue = oldValue +
-          (value - oldValue) * (step / MediaControls.AnimatedSlider.STEPS);
-      MediaControls.Slider.prototype.setValueToUI_.call(this, currentValue);
-      if (step == MediaControls.AnimatedSlider.STEPS) {
-        clearInterval(this.animationInterval_);
-      }
-    }.bind(this),
-    MediaControls.AnimatedSlider.DURATION / MediaControls.AnimatedSlider.STEPS);
+    step++;
+    var currentValue = oldValue +
+        (value - oldValue) * (step / MediaControls.AnimatedSlider.STEPS);
+    MediaControls.Slider.prototype.setValueToUI_.call(this, currentValue);
+    if (step == MediaControls.AnimatedSlider.STEPS) {
+      clearInterval(this.animationInterval_);
+    }
+  }.bind(this),
+  MediaControls.AnimatedSlider.DURATION / MediaControls.AnimatedSlider.STEPS);
 };
 
 /**
@@ -963,7 +963,7 @@ MediaControls.PreciseSlider.prototype.onInputDrag_ = function(on) {
  * @constructor
  */
 function VideoControls(containerElement, onMediaError, stringFunction,
-   opt_fullScreenToggle, opt_stateIconParent) {
+    opt_fullScreenToggle, opt_stateIconParent) {
   MediaControls.call(this, containerElement, onMediaError);
   this.stringFunction_ = stringFunction;
 

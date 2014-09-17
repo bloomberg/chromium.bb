@@ -332,7 +332,7 @@ function FileFilter(metadataCache, showHidden) {
   this.metadataCache_ = metadataCache;
 
   /**
-   * @type Object.<string, Function>
+   * @type {Object.<string, Function>}
    * @private
    */
   this.filters_ = {};
@@ -417,6 +417,7 @@ function FileListModel(metadataCache) {
   /**
    * Metadata cache.
    * @type {MetadataCache}
+   * @private
    */
   this.metadataCache_ = metadataCache;
 

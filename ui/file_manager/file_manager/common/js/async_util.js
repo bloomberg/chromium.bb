@@ -161,7 +161,9 @@ AsyncUtil.Queue = function() {
   AsyncUtil.ConcurrentQueue.call(this, 1);
 };
 
-AsyncUtil.Queue.prototype.__proto__ = AsyncUtil.ConcurrentQueue.prototype;
+AsyncUtil.Queue.prototype = {
+  __proto__: AsyncUtil.ConcurrentQueue.prototype
+};
 
 /**
  * Creates a class for executing several asynchronous closures in a group in

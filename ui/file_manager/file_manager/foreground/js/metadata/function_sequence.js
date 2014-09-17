@@ -36,7 +36,7 @@ function FunctionSequence(name, steps, logger, callback, failureCallback) {
  * @param {function} callback New callback to call on succeed.
  */
 FunctionSequence.prototype.setCallback = function(callback) {
-    this.callback_ = callback;
+  this.callback_ = callback;
 };
 
 /**
@@ -45,7 +45,7 @@ FunctionSequence.prototype.setCallback = function(callback) {
  * @param {function} failureCallback New callback to call on failure.
  */
 FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
-    this.failureCallback_ = failureCallback;
+  this.failureCallback_ = failureCallback;
 };
 
 

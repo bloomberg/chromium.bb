@@ -283,7 +283,7 @@ function DraggableRect(rect, viewport) {
   /**
    * Viewport.
    *
-   * @param {Viewport}
+   * @type {Viewport}
    * @private
    */
   this.viewport_ = viewport;
@@ -469,8 +469,8 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
 /**
  * Obtains the drag handler depending on the coordinate.
  *
- * @param {number} startScreenX X coordinate for cursor in the screen.
- * @param {number} startScreenY Y coordinate for cursor in the screen.
+ * @param {number} initialScreenX X coordinate for cursor in the screen.
+ * @param {number} initialScreenY Y coordinate for cursor in the screen.
  * @param {boolean} touch Whether the operation is done by touch or not.
  * @return {function(number,number,boolean)} Drag handler that takes x
  *     coordinate value, y coordinate value, and shift key flag.

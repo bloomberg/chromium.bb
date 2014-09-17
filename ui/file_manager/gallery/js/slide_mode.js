@@ -15,6 +15,7 @@
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {Object} context Context.
+ * @param {VolumeManager} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
@@ -334,19 +335,19 @@ SlideMode.prototype.enter = function(
  */
 SlideMode.prototype.leave = function(zoomToRect, callback) {
   var commitDone = function() {
-      this.stopEditing_();
-      this.stopSlideshow_();
-      ImageUtil.setAttribute(this.arrowBox_, 'active', false);
-      this.selectionModel_.removeEventListener(
-          'change', this.onSelectionBound_);
-      this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
-      this.ribbon_.disable();
-      this.active_ = false;
-      if (this.savedSelection_)
-        this.selectionModel_.selectedIndexes = this.savedSelection_;
-      this.unloadImage_(zoomToRect);
-      callback();
-    }.bind(this);
+    this.stopEditing_();
+    this.stopSlideshow_();
+    ImageUtil.setAttribute(this.arrowBox_, 'active', false);
+    this.selectionModel_.removeEventListener(
+        'change', this.onSelectionBound_);
+    this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
+    this.ribbon_.disable();
+    this.active_ = false;
+    if (this.savedSelection_)
+      this.selectionModel_.selectedIndexes = this.savedSelection_;
+    this.unloadImage_(zoomToRect);
+    callback();
+  }.bind(this);
 
   this.viewport_.resetView();
   if (this.getItemCount_() === 0) {
@@ -1033,7 +1034,7 @@ SlideMode.OVERWRITE_BUBBLE_MAX_TIMES = 5;
  * @private
  */
 SlideMode.prototype.shouldOverwriteOriginal_ = function() {
-   return this.overwriteOriginal_.checked;
+  return this.overwriteOriginal_.checked;
 };
 
 /**
@@ -1190,10 +1191,9 @@ SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
     clearTimeout(this.slideShowTimeout_);
 
   this.slideShowTimeout_ = setTimeout(function() {
-        this.slideShowTimeout_ = null;
-        this.selectNext(1);
-      }.bind(this),
-      opt_interval || SlideMode.SLIDESHOW_INTERVAL);
+    this.slideShowTimeout_ = null;
+    this.selectNext(1);
+  }.bind(this), opt_interval || SlideMode.SLIDESHOW_INTERVAL);
 };
 
 /**
@@ -1327,6 +1327,7 @@ function TouchHandler(targetElement, slideMode) {
   /**
    * Event source.
    * @type {DOMElement}
+   * @private
    */
   this.targetElement_ = targetElement;
 
@@ -1340,6 +1341,7 @@ function TouchHandler(targetElement, slideMode) {
   /**
    * Flag to enable/disable touch operation.
    * @type {boolean}
+   * @private
    */
   this.enabled_ = true;
 

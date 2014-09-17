@@ -264,7 +264,7 @@ ImageView.prototype.load =
     // Skip effects when reloading repeatedly very quickly.
     var time = Date.now();
     if (this.lastLoadTime_ &&
-       (time - this.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
+        (time - this.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
       effect = null;
     }
     this.lastLoadTime_ = time;
@@ -416,10 +416,9 @@ ImageView.prototype.unload = function(zoomToRect) {
     this.setTransform_(this.screenImage_, this.viewport_, effect);
     this.screenImage_.setAttribute('fade', true);
     this.unloadTimer_ = setTimeout(function() {
-        this.unloadTimer_ = null;
-        this.unload(null /* force unload */);
-      }.bind(this),
-      effect.getSafeInterval());
+      this.unloadTimer_ = null;
+      this.unload(null /* force unload */);
+    }.bind(this), effect.getSafeInterval());
     return;
   }
   this.container_.textContent = '';
@@ -698,10 +697,11 @@ ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
  * Obtains the CSS transformation string of the effect.
  * @param {DOMCanvas} element Canvas element to be applied the transformation.
  * @param {Viewport} viewport Current viewport.
- * @return CSS transformation description.
+ * @return {string} CSS transformation description.
  */
 ImageView.Effect.prototype.transform = function(element, viewport) {
   throw new Error('Not implemented.');
+  return '';
 };
 
 /**

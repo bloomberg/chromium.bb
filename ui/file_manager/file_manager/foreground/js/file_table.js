@@ -334,8 +334,8 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
    *
    * @param {number} x X coordinate value.
    * @param {number} y Y coordinate value.
-   * @param {=number} opt_width Width of the coordinate.
-   * @param {=number} opt_height Height of the coordinate.
+   * @param {number=} opt_width Width of the coordinate.
+   * @param {number=} opt_height Height of the coordinate.
    * @return {Array.<number>} Index list of hit elements.
    */
   self.list.getHitElements = function(x, y, opt_width, opt_height) {
@@ -356,14 +356,14 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
  */
 FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
   this.timeFormatter_ = Intl.DateTimeFormat(
-        [] /* default locale */,
-        {hour: 'numeric', minute: 'numeric',
-         hour12: use12hourClock});
+      [] /* default locale */,
+      {hour: 'numeric', minute: 'numeric', hour12: use12hourClock});
   this.dateFormatter_ = Intl.DateTimeFormat(
-        [] /* default locale */,
-        {year: 'numeric', month: 'short', day: 'numeric',
-         hour: 'numeric', minute: 'numeric',
-         hour12: use12hourClock});
+      [] /* default locale */,
+      {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', hour12: use12hourClock
+      });
 };
 
 /**

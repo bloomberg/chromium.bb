@@ -307,8 +307,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           this.nextStep();
         }
       ],
-      this
-  );
+      this);
 
   var id3v2Parser = new FunctionSequence(
       'id3v2parser',
@@ -388,9 +387,9 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
             if (typeof(Id3Parser.v2.MAPPERS[key]) != 'undefined' &&
                 id3v2[key].value.trim().length > 0) {
               metadata.description.push({
-                    key: Id3Parser.v2.MAPPERS[key],
-                    value: id3v2[key].value.trim()
-                  });
+                key: Id3Parser.v2.MAPPERS[key],
+                value: id3v2[key].value.trim()
+              });
             }
           }
 
@@ -415,8 +414,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           this.nextStep();
         }
       ],
-      this
-  );
+      this);
 
   var metadataParser = new FunctionParallel(
       'mp3metadataParser',
@@ -425,8 +423,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
       function() {
         callback.call(null, metadata);
       },
-      onError
-  );
+      onError);
 
   id3v1Parser.setCallback(metadataParser.nextStep);
   id3v2Parser.setCallback(metadataParser.nextStep);
@@ -677,22 +674,22 @@ Id3Parser.v2 = {
     UTF_8: 3
   },
   HANDLERS: {
-   //User defined text information frame
-   TXX: Id3Parser.prototype.readUserDefinedTextFrame_,
-   //User defined URL link frame
-   WXX: Id3Parser.prototype.readUserDefinedTextFrame_,
+    //User defined text information frame
+    TXX: Id3Parser.prototype.readUserDefinedTextFrame_,
+    //User defined URL link frame
+    WXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-   //User defined text information frame
-   TXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
+    //User defined text information frame
+    TXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-   //User defined URL link frame
-   WXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
+    //User defined URL link frame
+    WXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-   //User attached image
-   PIC: Id3Parser.prototype.readPIC_,
+    //User attached image
+    PIC: Id3Parser.prototype.readPIC_,
 
-   //User attached image
-   APIC: Id3Parser.prototype.readAPIC_
+    //User attached image
+    APIC: Id3Parser.prototype.readAPIC_
   },
   MAPPERS: {
     TALB: 'ID3_ALBUM',

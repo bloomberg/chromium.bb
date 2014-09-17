@@ -349,8 +349,8 @@ AudioPlayer.prototype.syncHeight_ = function() {
     if (!this.lastExpandedHeight_ ||
         this.lastExpandedHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
       var expandedListHeight =
-        Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
-                                       AudioPlayer.TRACK_HEIGHT;
+          Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
+              AudioPlayer.TRACK_HEIGHT;
       targetHeight = AudioPlayer.CONTROLS_HEIGHT + expandedListHeight;
       this.lastExpandedHeight_ = targetHeight;
     } else {

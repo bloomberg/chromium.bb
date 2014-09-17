@@ -905,7 +905,7 @@ Gallery.prototype.onFilenameFocus_ = function() {
  * Blur event handler on filename edit box.
  *
  * @param {Event} event Blur event.
- * @return {boolean} if default action should be prevented.
+ * @return {Promise} Promise fulfilled on renaming completed.
  * @private
  */
 Gallery.prototype.onFilenameEditBlur_ = function(event) {
@@ -921,7 +921,7 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
       this.dataModel_.dispatchEvent(event);
     }.bind(this), function(error) {
       if (error === 'NOT_CHANGED')
-        return;
+        return Promise.resolve();
       this.filenameEdit_.value =
           ImageUtil.getDisplayNameFromName(item.getEntry().name);
       this.filenameEdit_.focus();
@@ -936,6 +936,7 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
 
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', false);
   this.onUserAction_();
+  return Promise.resolve();
 };
 
 /**
@@ -1028,6 +1029,8 @@ window.initialize = function(backgroundComponents) {
 
 /**
  * Loads entries.
+ * @param {!Array.<Entry>} entries Array of entries.
+ * @param {!Array.<Entry>} selectedEntries Array of selected entries.
  */
 window.loadEntries = function(entries, selectedEntries) {
   gallery.load(entries, selectedEntries);

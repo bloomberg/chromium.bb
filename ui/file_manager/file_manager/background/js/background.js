@@ -291,17 +291,17 @@ AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
     if (opt_profileId) {
       onFulfilled(opt_profileId);
     } else {
-      chrome.fileManagerPrivate.getProfiles(function(profiles,
-                                                     currentId,
-                                                     displayedId) {
-        onFulfilled(currentId);
-      });
+      chrome.fileManagerPrivate.getProfiles(
+          function(profiles, currentId, displayedId) {
+            onFulfilled(currentId);
+          });
     }
   }).then(function(profileId) {
     appWindow.contentWindow.chrome.fileManagerPrivate.visitDesktop(
-        profileId, function() {
-      appWindow.focus();
-    });
+        profileId,
+        function() {
+          appWindow.focus();
+        });
   });
 };
 
@@ -805,12 +805,12 @@ audioPlayerInitializationQueue.run(function(callback) {
    * @type {Object}
    */
   var audioPlayerCreateOptions = Object.freeze({
-      type: 'panel',
-      hidden: true,
-      minHeight: 44 + 73,  // 44px: track, 73px: controller
-      minWidth: 292,
-      height: 44 + 73,  // collapsed
-      width: 292
+    type: 'panel',
+    hidden: true,
+    minHeight: 44 + 73,  // 44px: track, 73px: controller
+    minWidth: 292,
+    height: 44 + 73,  // collapsed
+    width: 292
   });
 
   audioPlayer = new SingletonAppWindowWrapper('audio_player.html',

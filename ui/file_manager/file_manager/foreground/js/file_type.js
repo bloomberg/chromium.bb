@@ -15,94 +15,170 @@ var FileType = {};
  */
 FileType.types = [
   // Images
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG',
-   pattern: /\.jpe?g$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'BMP',
-   pattern: /\.bmp$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'GIF',
-   pattern: /\.gif$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'ICO',
-   pattern: /\.ico$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'PNG',
-   pattern: /\.png$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP',
-   pattern: /\.webp$/i},
-  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'TIFF',
-   pattern: /\.tiff?$/i},
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG',
+    pattern: /\.jpe?g$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'BMP',
+    pattern: /\.bmp$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'GIF',
+    pattern: /\.gif$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'ICO',
+    pattern: /\.ico$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'PNG',
+    pattern: /\.png$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP',
+    pattern: /\.webp$/i
+  },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'TIFF',
+    pattern: /\.tiff?$/i
+  },
 
   // Video
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP',
-   pattern: /\.3gp$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI',
-   pattern: /\.avi$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime',
-   pattern: /\.mov$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MKV',
-   pattern: /\.mkv$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG',
-   pattern: /\.m(p4|4v|pg|peg|pg4|peg4)$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG',
-   pattern: /\.og(m|v|x)$/i},
-  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'WebM',
-   pattern: /\.webm$/i},
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP',
+    pattern: /\.3gp$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI',
+    pattern: /\.avi$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime',
+    pattern: /\.mov$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MKV',
+    pattern: /\.mkv$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG',
+    pattern: /\.m(p4|4v|pg|peg|pg4|peg4)$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG',
+    pattern: /\.og(m|v|x)$/i
+  },
+  {
+    type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'WebM',
+    pattern: /\.webm$/i
+  },
 
   // Audio
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'AMR',
-   pattern: /\.amr$/i},
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC',
-   pattern: /\.flac$/i},
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3',
-   pattern: /\.mp3$/i},
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MPEG',
-   pattern: /\.m4a$/i},
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG',
-   pattern: /\.og(a|g)$/i},
-  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'WAV',
-   pattern: /\.wav$/i},
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'AMR',
+    pattern: /\.amr$/i
+  },
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC',
+    pattern: /\.flac$/i
+  },
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3',
+    pattern: /\.mp3$/i
+  },
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MPEG',
+    pattern: /\.m4a$/i
+  },
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG',
+    pattern: /\.og(a|g)$/i
+  },
+  {
+    type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'WAV',
+    pattern: /\.wav$/i
+  },
 
   // Text
-  {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT',
-   pattern: /\.txt$/i},
+  {
+    type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT',
+    pattern: /\.txt$/i
+  },
 
   // Archive
-  {type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE', subtype: 'ZIP',
-   pattern: /\.zip$/i},
-  {type: 'archive', name: 'RAR_ARCHIVE_FILE_TYPE', subtype: 'RAR',
-   pattern: /\.rar$/i},
-  {type: 'archive', name: 'TAR_ARCHIVE_FILE_TYPE', subtype: 'TAR',
-   pattern: /\.tar$/i},
-  {type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE', subtype: 'TBZ2',
-   pattern: /\.(tar\.bz2|tbz|tbz2)$/i},
-  {type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE', subtype: 'TGZ',
-   pattern: /\.(tar\.|t)gz$/i},
+  {
+    type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE', subtype: 'ZIP',
+    pattern: /\.zip$/i
+  },
+  {
+    type: 'archive', name: 'RAR_ARCHIVE_FILE_TYPE', subtype: 'RAR',
+    pattern: /\.rar$/i
+  },
+  {
+    type: 'archive', name: 'TAR_ARCHIVE_FILE_TYPE', subtype: 'TAR',
+    pattern: /\.tar$/i
+  },
+  {
+    type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE', subtype: 'TBZ2',
+    pattern: /\.(tar\.bz2|tbz|tbz2)$/i
+  },
+  {
+    type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE', subtype: 'TGZ',
+    pattern: /\.(tar\.|t)gz$/i
+  },
 
   // Hosted docs.
-  {type: 'hosted', icon: 'gdoc', name: 'GDOC_DOCUMENT_FILE_TYPE',
-   subtype: 'doc', pattern: /\.gdoc$/i},
-  {type: 'hosted', icon: 'gsheet', name: 'GSHEET_DOCUMENT_FILE_TYPE',
-   subtype: 'sheet', pattern: /\.gsheet$/i},
-  {type: 'hosted', icon: 'gslides', name: 'GSLIDES_DOCUMENT_FILE_TYPE',
-   subtype: 'slides', pattern: /\.gslides$/i},
-  {type: 'hosted', icon: 'gdraw', name: 'GDRAW_DOCUMENT_FILE_TYPE',
-   subtype: 'draw', pattern: /\.gdraw$/i},
-  {type: 'hosted', icon: 'gtable', name: 'GTABLE_DOCUMENT_FILE_TYPE',
-   subtype: 'table', pattern: /\.gtable$/i},
-  {type: 'hosted', icon: 'glink', name: 'GLINK_DOCUMENT_FILE_TYPE',
-   subtype: 'glink', pattern: /\.glink$/i},
-  {type: 'hosted', icon: 'gform', name: 'GFORM_DOCUMENT_FILE_TYPE',
-   subtype: 'form', pattern: /\.gform$/i},
+  {
+    type: 'hosted', icon: 'gdoc', name: 'GDOC_DOCUMENT_FILE_TYPE',
+    subtype: 'doc', pattern: /\.gdoc$/i
+  },
+  {
+    type: 'hosted', icon: 'gsheet', name: 'GSHEET_DOCUMENT_FILE_TYPE',
+    subtype: 'sheet', pattern: /\.gsheet$/i
+  },
+  {
+    type: 'hosted', icon: 'gslides', name: 'GSLIDES_DOCUMENT_FILE_TYPE',
+    subtype: 'slides', pattern: /\.gslides$/i
+  },
+  {
+    type: 'hosted', icon: 'gdraw', name: 'GDRAW_DOCUMENT_FILE_TYPE',
+    subtype: 'draw', pattern: /\.gdraw$/i
+  },
+  {
+    type: 'hosted', icon: 'gtable', name: 'GTABLE_DOCUMENT_FILE_TYPE',
+    subtype: 'table', pattern: /\.gtable$/i
+  },
+  {
+    type: 'hosted', icon: 'glink', name: 'GLINK_DOCUMENT_FILE_TYPE',
+    subtype: 'glink', pattern: /\.glink$/i
+  },
+  {
+    type: 'hosted', icon: 'gform', name: 'GFORM_DOCUMENT_FILE_TYPE',
+    subtype: 'form', pattern: /\.gform$/i
+  },
 
   // Others
-  {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
-   subtype: 'PDF', pattern: /\.pdf$/i},
-  {type: 'document', name: 'HTML_DOCUMENT_FILE_TYPE',
-   subtype: 'HTML', pattern: /\.(html?|mht|mhtml)$/i},
-  {type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
-   subtype: 'Word', pattern: /\.(doc|docx)$/i},
-  {type: 'document', icon: 'ppt', name: 'POWERPOINT_PRESENTATION_FILE_TYPE',
-   subtype: 'PPT', pattern: /\.(ppt|pptx)$/i},
-  {type: 'document', icon: 'excel', name: 'EXCEL_FILE_TYPE',
-   subtype: 'Excel', pattern: /\.(xls|xlsx)$/i}
+  {
+    type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
+    subtype: 'PDF', pattern: /\.pdf$/i
+  },
+  {
+    type: 'document', name: 'HTML_DOCUMENT_FILE_TYPE',
+    subtype: 'HTML', pattern: /\.(html?|mht|mhtml)$/i
+  },
+  {
+    type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
+    subtype: 'Word', pattern: /\.(doc|docx)$/i
+  },
+  {
+    type: 'document', icon: 'ppt', name: 'POWERPOINT_PRESENTATION_FILE_TYPE',
+    subtype: 'PPT', pattern: /\.(ppt|pptx)$/i
+  },
+  {
+    type: 'document', icon: 'excel', name: 'EXCEL_FILE_TYPE',
+    subtype: 'Excel', pattern: /\.(xls|xlsx)$/i
+  }
 ];
 
 /**
@@ -151,8 +227,10 @@ FileType.getTypeForName = function(name) {
     return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
   }
   // subtype is the extension excluding the first dot.
-  return { name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
-           subtype: extension.substr(1).toUpperCase(), icon: '' };
+  return {
+    name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
+    subtype: extension.substr(1).toUpperCase(), icon: ''
+  };
 };
 
 /**
@@ -176,8 +254,10 @@ FileType.getType = function(entry) {
     return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
   }
   // subtype is the extension excluding the first dot.
-  return { name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
-           subtype: extension.substr(1).toUpperCase(), icon: '' };
+  return {
+    name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
+    subtype: extension.substr(1).toUpperCase(), icon: ''
+  };
 };
 
 /**

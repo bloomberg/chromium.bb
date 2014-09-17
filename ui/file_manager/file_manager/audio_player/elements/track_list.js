@@ -197,18 +197,17 @@
 
       if (this.model && this.model.shuffle) {
         // Randomizes the play order array (Schwarzian-transform algorithm).
-        this.playOrder =
-            this.playOrder.
-            map(function(a) {
+        this.playOrder = this.playOrder
+            .map(function(a) {
               return {weight: Math.random(), index: a};
-            }).
-            sort(function(a, b) { return a.weight - b.weight }).
-            map(function(a) { return a.index });
+            })
+            .sort(function(a, b) { return a.weight - b.weight })
+            .map(function(a) { return a.index });
 
         if (keepCurrentTrack) {
           // Puts the current track at the beginning of the play order.
-          this.playOrder =
-              this.playOrder.filter(function(value) {
+          this.playOrder = this.playOrder
+              .filter(function(value) {
                 return this.currentTrackIndex !== value;
               }, this);
           this.playOrder.splice(0, 0, this.currentTrackIndex);
@@ -281,7 +280,7 @@
       console.assert(
           (0 <= currentPlayOrder && currentPlayOrder < this.tracks.length),
           'Insufficient TrackList.playOrder. The current track is not on the ' +
-            'track list.');
+              'track list.');
 
       var newPlayOrder = currentPlayOrder + (forward ? +1 : -1);
       if (newPlayOrder === -1 || newPlayOrder === this.tracks.length)

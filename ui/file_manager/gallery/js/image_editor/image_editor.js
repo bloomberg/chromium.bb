@@ -118,16 +118,16 @@ ImageEditor.prototype.openSession = function(
   var self = this;
   this.imageView_.load(
       item, effect, displayCallback, function(loadType, delay, error) {
-    self.lockUI(false);
-    self.commandQueue_ = new CommandQueue(
-        self.container_.ownerDocument,
-        self.imageView_.getCanvas(),
-        saveFunction);
-    self.commandQueue_.attachUI(
-        self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
-    self.updateUndoRedo();
-    loadCallback(loadType, delay, error);
-  });
+        self.lockUI(false);
+        self.commandQueue_ = new CommandQueue(
+            self.container_.ownerDocument,
+            self.imageView_.getCanvas(),
+            saveFunction);
+        self.commandQueue_.attachUI(
+            self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
+        self.updateUndoRedo();
+        loadCallback(loadType, delay, error);
+      });
 };
 
 /**
@@ -807,8 +807,9 @@ ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
     return;
 
   if (this.touchStartInfo_ && !this.dragHappened_) {
-    var tapCircle = new Circle(this.touchStartInfo_.x, this.touchStartInfo_.y,
-                    ImageEditor.MouseControl.MAX_MOVEMENT_FOR_TAP_);
+    var tapCircle = new Circle(
+        this.touchStartInfo_.x, this.touchStartInfo_.y,
+        ImageEditor.MouseControl.MAX_MOVEMENT_FOR_TAP_);
     this.dragHappened_ = !tapCircle.inside(position.x, position.y);
   }
   if (this.dragHandler_ && this.dragHappened_) {
@@ -1128,9 +1129,9 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
  *
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {...Object} var_formatArgs varArgs for the formatting function.
+ * @param {...Object} var_args varArgs for the formatting function.
  */
-ImageEditor.Prompt.prototype.show = function(text, timeout, var_formatArgs) {
+ImageEditor.Prompt.prototype.show = function(text, timeout, var_args) {
   var args = [text].concat(Array.prototype.slice.call(arguments, 2));
   var message = this.displayStringFunction_.apply(null, args);
   this.showStringAt('center', message, timeout);
@@ -1142,10 +1143,10 @@ ImageEditor.Prompt.prototype.show = function(text, timeout, var_formatArgs) {
  * @param {string} pos The 'pos' attribute value.
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {...Object} var_formatArgs varArgs for the formatting function.
+ * @param {...Object} var_args varArgs for the formatting function.
  */
 ImageEditor.Prompt.prototype.showAt = function(
-    pos, text, timeout, var_formatArgs) {
+    pos, text, timeout, var_args) {
   var args = [text].concat(Array.prototype.slice.call(arguments, 3));
   var message = this.displayStringFunction_.apply(null, args);
   this.showStringAt(pos, message, timeout);

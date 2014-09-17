@@ -84,6 +84,7 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
  * Complete the initialization.
  *
  * @param {Array.<Entry>} entries List of file entries.
+ * @param {Array.<string>=} opt_mimeTypes Mime-type specified for each entries.
  */
 FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   this.entries_ = entries;
@@ -481,15 +482,15 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       fm.alert.showHtml(
           loadTimeData.getString('OFFLINE_HEADER'),
           props[0].hosted ?
-            loadTimeData.getStringF(
-                entries.length === 1 ?
-                    'HOSTED_OFFLINE_MESSAGE' :
-                    'HOSTED_OFFLINE_MESSAGE_PLURAL') :
-            loadTimeData.getStringF(
-                entries.length === 1 ?
-                    'OFFLINE_MESSAGE' :
-                    'OFFLINE_MESSAGE_PLURAL',
-                loadTimeData.getString('OFFLINE_COLUMN_LABEL')));
+              loadTimeData.getStringF(
+                  entries.length === 1 ?
+                      'HOSTED_OFFLINE_MESSAGE' :
+                      'HOSTED_OFFLINE_MESSAGE_PLURAL') :
+              loadTimeData.getStringF(
+                  entries.length === 1 ?
+                      'OFFLINE_MESSAGE' :
+                      'OFFLINE_MESSAGE_PLURAL',
+                  loadTimeData.getString('OFFLINE_COLUMN_LABEL')));
     });
     return;
   }
@@ -546,12 +547,11 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
     // crbug.com/345527.
     var urls = util.entriesToURLs(entries);
     var position = urls.indexOf(selectedEntry.toURL());
-    chrome.fileManagerPrivate.getProfiles(function(profiles,
-                                                   currentId,
-                                                   displayedId) {
-      fm.backgroundPage.launchAudioPlayer({items: urls, position: position},
-                                          displayedId);
-    });
+    chrome.fileManagerPrivate.getProfiles(
+        function(profiles, currentId, displayedId) {
+          fm.backgroundPage.launchAudioPlayer(
+              {items: urls, position: position}, displayedId);
+        });
     return;
   }
 
@@ -646,7 +646,7 @@ FileTasks.prototype.display_ = function(combobutton) {
 
     combobutton.addSeparator();
     var changeDefaultMenuItem = combobutton.addDropDownItem({
-        label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
+      label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
     });
     changeDefaultMenuItem.classList.add('change-default');
   }

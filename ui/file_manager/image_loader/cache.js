@@ -55,12 +55,13 @@ Cache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
  * @return {string} Cache key.
  */
 Cache.createKey = function(request) {
-  return JSON.stringify({url: request.url,
-                         scale: request.scale,
-                         width: request.width,
-                         height: request.height,
-                         maxWidth: request.maxWidth,
-                         maxHeight: request.maxHeight});
+  return JSON.stringify({
+    url: request.url,
+    scale: request.scale,
+    width: request.width,
+    height: request.height,
+    maxWidth: request.maxWidth,
+    maxHeight: request.maxHeight});
 };
 
 /**
@@ -223,15 +224,15 @@ Cache.prototype.saveImage = function(key, data, timestamp) {
   }
 
   var onNotFoundInCache = function() {
-    var metadataEntry = {key: key,
-                         timestamp: timestamp,
-                         size: data.length,
-                         lastLoadTimestamp: Date.now()};
-    var dataEntry = {key: key,
-                     data: data};
+    var metadataEntry = {
+      key: key,
+      timestamp: timestamp,
+      size: data.length,
+      lastLoadTimestamp: Date.now()};
+    var dataEntry = {key: key, data: data};
 
     var transaction = this.db_.transaction(['settings', 'metadata', 'data'],
-                                          'readwrite');
+                                           'readwrite');
     var metadataStore = transaction.objectStore('metadata');
     var dataStore = transaction.objectStore('data');
 

@@ -231,13 +231,14 @@ ImageLoaderClient.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  */
 ImageLoaderClient.Cache.createKey = function(url, opt_options) {
   opt_options = opt_options || {};
-  return JSON.stringify({url: url,
-                         orientation: opt_options.orientation,
-                         scale: opt_options.scale,
-                         width: opt_options.width,
-                         height: opt_options.height,
-                         maxWidth: opt_options.maxWidth,
-                         maxHeight: opt_options.maxHeight});
+  return JSON.stringify({
+    url: url,
+    orientation: opt_options.orientation,
+    scale: opt_options.scale,
+    width: opt_options.width,
+    height: opt_options.height,
+    maxWidth: opt_options.maxWidth,
+    maxHeight: opt_options.maxHeight});
 };
 
 /**
@@ -281,9 +282,11 @@ ImageLoaderClient.Cache.prototype.saveImage = function(
   }
 
   if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
-    this.images_[key] = {lastLoadTimestamp: Date.now(),
-                         timestamp: opt_timestamp ? opt_timestamp : null,
-                         data: data};
+    this.images_[key] = {
+      lastLoadTimestamp: Date.now(),
+      timestamp: opt_timestamp ? opt_timestamp : null,
+      data: data
+    };
     this.size_ += data.length;
   }
 };
@@ -344,8 +347,8 @@ ImageLoaderClient.Cache.prototype.removeImage = function(key) {
  * @param {Image} image Image node to load the requested picture into.
  * @param {Object} options Loader options, such as: orientation, scale,
  *     maxHeight, width, height and/or cache.
- * @param {function=} onSuccess Callback for success.
- * @param {function=} onError Callback for failure.
+ * @param {function} onSuccess Callback for success.
+ * @param {function} onError Callback for failure.
  * @param {function=} opt_isValid Function returning false in case
  *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.

@@ -195,5 +195,5 @@ SearchBox.prototype.onDragEnd_ = function() {
  */
 SearchBox.prototype.updateStyles_ = function() {
   this.element.classList.toggle('has-text',
-                                 !!this.inputElement.value);
+                                !!this.inputElement.value);
 };

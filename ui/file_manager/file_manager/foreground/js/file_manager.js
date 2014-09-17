@@ -806,7 +806,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // PyAuto tests monitor this state by polling this variable
     this.__defineGetter__('workerInitialized_', function() {
-       return this.metadataCache_.isInitialized();
+      return this.metadataCache_.isInitialized();
     }.bind(this));
 
     this.initDateTimeFormatters_();
@@ -1551,7 +1551,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.closeOnUnmount_) {
       this.volumeManager_.addEventListener('externally-unmounted',
-         this.onExternallyUnmounted_.bind(this));
+          this.onExternallyUnmounted_.bind(this));
     }
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
@@ -1818,17 +1818,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         if (!description)
           // Convert ['jpg', 'png'] to '*.jpg, *.png'.
           description = fileType.extensions.map(function(s) {
-           return '*.' + s;
+            return '*.' + s;
           }).join(', ');
-       }
-       option.innerText = description;
+      }
+      option.innerText = description;
 
-       option.value = i + 1;
+      option.value = i + 1;
 
-       if (fileType.selected)
-         option.selected = true;
+      if (fileType.selected)
+        option.selected = true;
 
-       this.fileTypeSelector_.appendChild(option);
+      this.fileTypeSelector_.appendChild(option);
     }
 
     var options = this.fileTypeSelector_.querySelectorAll('option');
@@ -2058,15 +2058,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           }, function() {
             // Failed to resolve as a file
             nextCurrentDirEntry.getDirectory(
-              this.initTargetName_,
-              {},
-              function(targetEntry) {
-                selectionEntry = targetEntry;
-                callback();
-              }, function() {
-                // Failed to resolve as either file or directory.
-                callback();
-              });
+                this.initTargetName_,
+                {},
+                function(targetEntry) {
+                  selectionEntry = targetEntry;
+                  callback();
+                }, function() {
+                  // Failed to resolve as either file or directory.
+                  callback();
+                });
           }.bind(this));
     }.bind(this));
 
@@ -2122,7 +2122,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (task) {
         var listener = function() {
           if (!util.isSameEntry(this.directoryModel_.getCurrentDirEntry(),
-                               directoryEntry)) {
+                                directoryEntry)) {
             // Opened on a different URL. Probably fallbacked. Therefore,
             // do not invoke a task.
             return;
@@ -3063,13 +3063,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Chrome will select-all after the focus event completes.  We
     // schedule a timeout to alter the focus after that happens.
     setTimeout(function() {
-        var selectionEnd = input.value.lastIndexOf('.');
-        if (selectionEnd == -1) {
-          input.select();
-        } else {
-          input.selectionStart = 0;
-          input.selectionEnd = selectionEnd;
-        }
+      var selectionEnd = input.value.lastIndexOf('.');
+      if (selectionEnd == -1) {
+        input.select();
+      } else {
+        input.selectionStart = 0;
+        input.selectionEnd = selectionEnd;
+      }
     }, 0);
   };
 
@@ -3661,7 +3661,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           //                via string concatenation.
           var currentDirUrl = directory.toURL();
           if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
-          currentDirUrl += '/';
+            currentDirUrl += '/';
           this.selectFilesAndClose_({
             urls: [currentDirUrl + encodeURIComponent(filename)],
             multiple: false,
@@ -3779,13 +3779,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         parentEntry,
         name,
         this.fileFilter_.isFilterHiddenOn());
-    fileNameErrorPromise.then(
-        onDone.bind(null, true),
-        function(message) {
-          this.alert.show(message, onDone.bind(null, false));
-        }.bind(this)).catch(function(error) {
-          console.error(error.stack || error);
-        });
+    fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
+      this.alert.show(message, onDone.bind(null, false));
+    }.bind(this)).catch(function(error) {
+      console.error(error.stack || error);
+    });
   };
 
   /**
@@ -3956,20 +3954,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       'maxResults': 4
     };
     chrome.fileManagerPrivate.searchDriveMetadata(
-      searchParams,
-      function(suggestions) {
-        this.autocompleteSuggestionsBusy_ = false;
+        searchParams,
+        function(suggestions) {
+          this.autocompleteSuggestionsBusy_ = false;
 
-        // Discard results for previous requests and fire a new search
-        // for the most recent query.
-        if (query != this.lastAutocompleteQuery_) {
-          this.requestAutocompleteSuggestions_(this.lastAutocompleteQuery_);
-          return;
-        }
+          // Discard results for previous requests and fire a new search
+          // for the most recent query.
+          if (query != this.lastAutocompleteQuery_) {
+            this.requestAutocompleteSuggestions_(this.lastAutocompleteQuery_);
+            return;
+          }
 
-        // Keeps the items in the suggestion list.
-        this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
-      }.bind(this));
+          // Keeps the items in the suggestion list.
+          this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
+        }.bind(this));
   };
 
   /**
@@ -4030,12 +4028,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         self.directoryModel_.addEventListener('scan-completed',
                                               onDirectoryChanged);
         self.directoryModel_.changeDirectoryEntry(
-          parentEntry,
-          function() {
-            // Remove the listner if the change directory failed.
-            self.directoryModel_.removeEventListener('scan-completed',
-                                                     onDirectoryChanged);
-          });
+            parentEntry,
+            function() {
+              // Remove the listner if the change directory failed.
+              self.directoryModel_.removeEventListener('scan-completed',
+                                                       onDirectoryChanged);
+            });
       });
     });
   };

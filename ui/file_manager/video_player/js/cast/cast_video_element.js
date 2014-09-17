@@ -121,8 +121,8 @@ CastVideoElement.prototype = {
     if (!this.castMedia_)
       return true;
 
-   return !this.playInProgress &&
-     this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
+    return !this.playInProgress &&
+           this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
   },
 
   /**
@@ -343,16 +343,16 @@ CastVideoElement.prototype = {
     var message = JSON.parse(messageAsJson);
     if (message['message'] === 'request-token') {
       if (message['previousToken'] === this.token_) {
-          this.mediaManager_.getToken(true).then(function(token) {
-            this.token_ = token;
-            this.sendMessage_({message: 'push-token', token: token});
-            // TODO(yoshiki): Revokes the previous token.
-          }.bind(this)).catch(function(error) {
-            // Send an empty token as an error.
-            this.sendMessage_({message: 'push-token', token: ''});
-            // TODO(yoshiki): Revokes the previous token.
-            console.error(error.stack || error);
-          });
+        this.mediaManager_.getToken(true).then(function(token) {
+          this.token_ = token;
+          this.sendMessage_({message: 'push-token', token: token});
+          // TODO(yoshiki): Revokes the previous token.
+        }.bind(this)).catch(function(error) {
+          // Send an empty token as an error.
+          this.sendMessage_({message: 'push-token', token: ''});
+          // TODO(yoshiki): Revokes the previous token.
+          console.error(error.stack || error);
+        });
       } else {
         console.error(
             'New token is requested, but the previous token mismatches.');

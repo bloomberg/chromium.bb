@@ -444,15 +444,14 @@ CommandHandler.COMMANDS_['new-folder'] = {
  */
 CommandHandler.COMMANDS_['new-window'] = {
   execute: function(event, fileManager) {
-    chrome.fileManagerPrivate.getProfiles(function(profiles,
-                                                   currentId,
-                                                   displayedId) {
-      fileManager.backgroundPage.launchFileManager({
-        currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
-            fileManager.getCurrentDirectoryEntry().toURL(),
-        displayedId: currentId !== displayedId ? displayedId : undefined
-      });
-    });
+    chrome.fileManagerPrivate.getProfiles(
+        function(profiles, currentId, displayedId) {
+          fileManager.backgroundPage.launchFileManager({
+            currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
+                fileManager.getCurrentDirectoryEntry().toURL(),
+            displayedId: currentId !== displayedId ? displayedId : undefined
+          });
+        });
   },
   canExecute: function(event, fileManager) {
     event.canExecute =
@@ -599,7 +598,7 @@ CommandHandler.COMMANDS_['volume-help'] = {
     event.canExecute = !hideHelp;
     event.command.setHidden(hideHelp);
     fileManager.document_.getElementById('help-separator').hidden = hideHelp;
-  },
+  }
 };
 
 /**

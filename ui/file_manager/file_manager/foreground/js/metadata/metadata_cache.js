@@ -226,6 +226,7 @@ MetadataCache.prototype.getLatest = function(entries, type, callback) {
  *     false to get the value from the cache.
  * @param {function(Object)} callback The metadata is passed to callback.
  *     The callback is called asynchronously.
+ * @private
  */
 MetadataCache.prototype.getInternal_ =
     function(entries, type, refresh, callback) {

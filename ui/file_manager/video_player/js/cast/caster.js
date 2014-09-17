@@ -105,7 +105,7 @@ function onLoadCastExtension(callback) {
   } else {
     setTimeout(callback);  // Runs asynchronously.
   }
-};
+}
 
 /**
  * Initialize Cast API.

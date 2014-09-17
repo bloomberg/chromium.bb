@@ -159,7 +159,7 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
 
   if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
       offsetY < 0 || offsetY + dstHeight > srcHeight)
-      throw new Error('Invalid offset');
+    throw new Error('Invalid offset');
 
   var dstIndex = 0;
   for (var y = 0; y != dstHeight; y++) {
@@ -379,7 +379,7 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
 
   if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
       offsetY < 0 || offsetY + dstHeight > srcHeight)
-      throw new Error('Invalid offset');
+    throw new Error('Invalid offset');
 
   // Javascript is not very good at inlining constants.
   // We inline manually and assert that the constant is equal to the variable.
@@ -520,16 +520,16 @@ filter.sharpen = function(options) {
  */
 filter.exposure = function(options) {
   var pixelMap = filter.precompute(
-    255,
-    function(value) {
-     if (options.brightness > 0) {
-       value *= (1 + options.brightness);
-     } else {
-       value += (0xFF - value) * options.brightness;
-     }
-     return 0x80 +
-         (value - 0x80) * Math.tan((options.contrast + 1) * Math.PI / 4);
-    });
+      255,
+      function(value) {
+        if (options.brightness > 0) {
+          value *= (1 + options.brightness);
+        } else {
+          value += (0xFF - value) * options.brightness;
+        }
+        return 0x80 +
+            (value - 0x80) * Math.tan((options.contrast + 1) * Math.PI / 4);
+      });
 
   return filter.mapPixels.bind(null, pixelMap, pixelMap, pixelMap);
 };

@@ -62,12 +62,14 @@ function Viewport() {
   /**
    * Offset specified by user operations.
    * @type {number}
+   * @private
    */
   this.offsetX_ = 0;
 
   /**
    * Offset specified by user operations.
    * @type {number}
+   * @private
    */
   this.offsetY_ = 0;
 
@@ -75,6 +77,7 @@ function Viewport() {
    * Integer Rotation value.
    * The rotation angle is this.rotation_ * 90.
    * @type {number}
+   * @private
    */
   this.rotation_ = 0;
 
@@ -195,6 +198,7 @@ Viewport.prototype.getRotation = function() {
  * @param {number} height Height of the full resolution image.
  * @return {number} The ratio of the full resotion image size and the calculated
  * displayed image size.
+ * @private
  */
 Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
   var scaleX = this.screenBounds_.width / width;
@@ -352,6 +356,11 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 };
 
 /**
+ * @param {number} width Width of the rectangle.
+ * @param {number} height Height of the rectangle.
+ * @param {number} offsetX X-offset of center position of the rectangle.
+ * @param {number} offsetY Y-offset of center position of the rectangle.
+ * @return {Rect} Rectangle with given geometry.
  * @private
  */
 Viewport.prototype.getCenteredRect_ = function(
@@ -460,7 +469,7 @@ Viewport.prototype.getTransformation = function() {
   }
   return [
     'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ',
-    'rotate(' + (this.rotation_ * 90)  + 'deg)',
+    'rotate(' + (this.rotation_ * 90) + 'deg)',
     'scale(' + (this.zoom_ * rotationScaleAdjustment) + ')'
   ].join(' ');
 };

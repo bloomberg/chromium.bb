@@ -71,7 +71,7 @@ FileSelection.prototype.createTasks = function(callback) {
   this.fileManager_.metadataCache_.get(
       this.entries, 'external', function(props) {
         var present = props.filter(function(p) {
-          return p && p.availableOffline
+          return p && p.availableOffline;
         });
         this.allDriveFilesPresent = present.length == props.length;
 

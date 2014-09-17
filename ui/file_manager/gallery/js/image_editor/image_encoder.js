@@ -135,8 +135,8 @@ ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
   var MAX_THUMBNAIL_DIMENSION = 320;
 
   opt_shrinkage = Math.max(opt_shrinkage || 4,
-                       canvas.width / MAX_THUMBNAIL_DIMENSION,
-                       canvas.height / MAX_THUMBNAIL_DIMENSION);
+                           canvas.width / MAX_THUMBNAIL_DIMENSION,
+                           canvas.height / MAX_THUMBNAIL_DIMENSION);
 
   var thumbnailCanvas = canvas.ownerDocument.createElement('canvas');
   thumbnailCanvas.width = Math.round(canvas.width / opt_shrinkage);

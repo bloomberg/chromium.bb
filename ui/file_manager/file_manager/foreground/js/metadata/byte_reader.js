@@ -126,8 +126,8 @@ ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
  * same name which side-effects the current read position.
  *
  * @param {DataView} dataView Data view instance.
- * @param {boolean} bom True if BOM should be parsed.
  * @param {number} pos Position in bytes to read from.
+ * @param {boolean} bom True if BOM should be parsed.
  * @param {number} size Number of bytes to read.
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
@@ -233,10 +233,10 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
 
   // Two bytes is enough to identify the mime type.
   var prefixToMime = {
-     '\x89P' : 'png',
-     '\xFF\xD8' : 'jpeg',
-     'BM' : 'bmp',
-     'GI' : 'gif'
+    '\x89P' : 'png',
+    '\xFF\xD8' : 'jpeg',
+    'BM' : 'bmp',
+    'GI' : 'gif'
   };
 
   var prefix = ByteReader.readString(dataView, pos, 2, opt_end);
@@ -256,7 +256,7 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
  * @return {boolean} True if allowed, false otherwise.
  */
 ByteReader.prototype.canRead = function(size) {
-   return this.pos_ + size <= this.view_.byteLength;
+  return this.pos_ + size <= this.view_.byteLength;
 };
 
 /**
@@ -396,7 +396,6 @@ ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
  * read would go past the end of the buffer.
  *
  * @param {boolean} bom True if BOM should be parsed.
- * @param {number} pos Position in bytes to read from.
  * @param {number} size Number of bytes to read.
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
@@ -469,7 +468,6 @@ ByteReader.prototype.readBase64 = function(size, opt_end) {
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
  *
- * @param {number} pos Position in bytes to read from.
  * @param {number} size Number of bytes to read.
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Image as a data url.

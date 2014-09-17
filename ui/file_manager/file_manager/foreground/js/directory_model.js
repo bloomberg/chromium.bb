@@ -450,7 +450,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
 
 /**
  * Adds/removes/updates items of file list.
- * @param {Array.<Entry>} updatedEntries Entries of updated/added files.
+ * @param {Array.<Entry>} changedEntries Entries of updated/added files.
  * @param {Array.<string>} removedUrls URLs of removed files.
  * @private
  */
@@ -716,7 +716,7 @@ DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
  *
  * @param {Entry} oldEntry The old entry.
  * @param {Entry} newEntry The new entry.
- * @param {function()} opt_callback Called on completion.
+ * @param {function()=} opt_callback Called on completion.
  */
 DirectoryModel.prototype.onRenameEntry = function(
     oldEntry, newEntry, opt_callback) {

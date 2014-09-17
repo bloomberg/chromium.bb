@@ -46,8 +46,8 @@ function MultiProfileShareDialog(parentNode) {
   this.currentProfileId_ = new Promise(function(callback) {
     chrome.fileManagerPrivate.getProfiles(
         function(profiles, currentId, displayedId) {
-      callback(currentId);
-    });
+          callback(currentId);
+        });
   });
 }
 
@@ -74,27 +74,26 @@ MultiProfileShareDialog.prototype = {
  *     is already opened, it returns null.
  */
 MultiProfileShareDialog.prototype.show = function(plural) {
-  return this.currentProfileId_.
-      then(function(currentProfileId) {
-        return new Promise(function(fulfill, reject) {
-          this.shareTypeSelect_.selectedIndex = 0;
-          this.mailLabel_.textContent = currentProfileId;
-          var result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
-              this,
-              str(plural ?
-                  'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
-                  'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
-              str(plural ?
-                  'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
-                  'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
-              function() {
-                fulfill(this.shareTypeSelect_.value);
-              }.bind(this),
-              function() {
-                fulfill(MultiProfileShareDialog.Result.CANCEL);
-              });
-          if (!result)
-            reject(new Error('Another dialog has already shown.'));
-        }.bind(this));
-      }.bind(this));
+  return this.currentProfileId_.then(function(currentProfileId) {
+    return new Promise(function(fulfill, reject) {
+      this.shareTypeSelect_.selectedIndex = 0;
+      this.mailLabel_.textContent = currentProfileId;
+      var result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
+          this,
+          str(plural ?
+              'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
+              'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
+          str(plural ?
+              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
+              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
+          function() {
+            fulfill(this.shareTypeSelect_.value);
+          }.bind(this),
+          function() {
+            fulfill(MultiProfileShareDialog.Result.CANCEL);
+          });
+      if (!result)
+        reject(new Error('Another dialog has already shown.'));
+    }.bind(this));
+  }.bind(this));
 };

@@ -136,7 +136,7 @@ function Rect() {
       return;
   }
   console.error('Invalid Rect constructor arguments:',
-       Array.apply(null, arguments));
+                Array.apply(null, arguments));
 }
 
 Rect.prototype = {
@@ -440,7 +440,7 @@ ImageUtil.ImageLoader = function(document) {
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
  *
- * @param {FileEntry} entry Image entry to be loaded.
+ * @param {Gallery.Item} item Item representing the image to be loaded.
  * @param {function(HTMLCanvasElement, string=)} callback Callback to be
  *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
@@ -493,7 +493,7 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
 
     // Load the image directly. The query parameter is workaround for
     // crbug.com/379678, which force to update the contents of the image.
-    this.image_.src = entry.toURL() + "?nocache=" + Date.now();
+    this.image_.src = entry.toURL() + '?nocache=' + Date.now();
   }.bind(this);
 
   // Loads the image. If already loaded, then forces a reload.

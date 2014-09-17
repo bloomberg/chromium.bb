@@ -70,9 +70,9 @@ ShareDialog.WebViewAuthorizer.prototype.initialize = function(callback) {
   var registerInjectionHooks = function() {
     this.webView_.removeEventListener('loadstop', registerInjectionHooks);
     this.webView_.request.onBeforeSendHeaders.addListener(
-      this.authorizeRequest_.bind(this),
-      {urls: [this.urlPattern_]},
-      ['blocking', 'requestHeaders']);
+        this.authorizeRequest_.bind(this),
+        {urls: [this.urlPattern_]},
+        ['blocking', 'requestHeaders']);
     this.initialized_ = true;
     callback();
   }.bind(this);
@@ -282,10 +282,10 @@ ShareDialog.prototype.show = function(entry, callback) {
   group.run(function() {
     // If the url is not obtained, return the network error.
     if (!shareUrl) {
-       // Logs added temporarily to track crbug.com/288783.
-       console.debug('The share URL is not available.');
+      // Logs added temporarily to track crbug.com/288783.
+      console.debug('The share URL is not available.');
 
-       this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+      this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
       return;
     }
     // Already inactive, therefore ignore.

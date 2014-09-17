@@ -120,7 +120,7 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
     ExifEncoder.findOrCreateTag(thumbnail, EXIF_TAG_ORIENTATION).value = 1;
   } else {
     console.warn(
-       'Thumbnail URL too long: ' + this.metadata_.thumbnailURL.length);
+        'Thumbnail URL too long: ' + this.metadata_.thumbnailURL.length);
     // Delete thumbnail ifd so that it is not written out to a file, but
     // keep thumbnailURL for display purposes.
     if (this.ifd_.thumbnail) {
@@ -379,7 +379,7 @@ ExifEncoder.writeValue = function(bw, tag) {
 
     var signed = (tag.format == 9 || tag.format == 10);
     if (tag.componentCount == 1) {
-       writeComponent(tag.value, signed);
+      writeComponent(tag.value, signed);
     } else {
       for (var i = 0; i != tag.componentCount; i++) {
         writeComponent(tag.value[i], signed);
@@ -477,9 +477,9 @@ ByteWriter.prototype.validateWrite = function(width) {
  */
 ByteWriter.prototype.writeScalar = function(value, width, opt_signed) {
   var method;
-// The below switch is so verbose for two reasons:
-// 1. V8 is faster on method names which are 'symbols'.
-// 2. Method names are discoverable by full text search.
+  // The below switch is so verbose for two reasons:
+  // 1. V8 is faster on method names which are 'symbols'.
+  // 2. Method names are discoverable by full text search.
   switch (width) {
     case 1:
       method = opt_signed ? 'setInt8' : 'setUint8';

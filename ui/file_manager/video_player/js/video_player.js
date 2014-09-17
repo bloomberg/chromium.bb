@@ -188,42 +188,42 @@ VideoPlayer.prototype.prepare = function(videos) {
 
   var maximizeButton = document.querySelector('.maximize-button');
   maximizeButton.addEventListener(
-    'click',
-    function(event) {
-      var appWindow = chrome.app.window.current();
-      if (appWindow.isMaximized())
-        appWindow.restore();
-      else
-        appWindow.maximize();
-      event.stopPropagation();
-    }.wrap(null));
+      'click',
+      function(event) {
+        var appWindow = chrome.app.window.current();
+        if (appWindow.isMaximized())
+          appWindow.restore();
+        else
+          appWindow.maximize();
+        event.stopPropagation();
+      }.wrap(null));
   maximizeButton.addEventListener('mousedown', preventDefault);
 
   var minimizeButton = document.querySelector('.minimize-button');
   minimizeButton.addEventListener(
-    'click',
-    function(event) {
-      chrome.app.window.current().minimize()
-      event.stopPropagation();
-    }.wrap(null));
+      'click',
+      function(event) {
+        chrome.app.window.current().minimize();
+        event.stopPropagation();
+      }.wrap(null));
   minimizeButton.addEventListener('mousedown', preventDefault);
 
   var closeButton = document.querySelector('.close-button');
   closeButton.addEventListener(
-    'click',
-    function(event) {
-      close();
-      event.stopPropagation();
-    }.wrap(null));
+      'click',
+      function(event) {
+        close();
+        event.stopPropagation();
+      }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
   var castButton = document.querySelector('.cast-button');
   cr.ui.decorate(castButton, cr.ui.MenuButton);
   castButton.addEventListener(
-    'click',
-    function(event) {
-      event.stopPropagation();
-    }.wrap(null));
+      'click',
+      function(event) {
+        event.stopPropagation();
+      }.wrap(null));
   castButton.addEventListener('mousedown', preventDefault);
 
   var menu = document.querySelector('#cast-menu');
@@ -311,13 +311,14 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
     var media = new MediaManager(video.entry);
 
-    Promise.all([media.getThumbnail(), media.getToken()]).then(
-        function(results) {
+    Promise.all([media.getThumbnail(), media.getToken()])
+        .then(function(results) {
           var url = results[0];
           var token = results[1];
           document.querySelector('#thumbnail').style.backgroundImage =
               'url(' + url + '&access_token=' + token + ')';
-        }).catch(function() {
+        })
+        .catch(function() {
           // Shows no image on error.
           document.querySelector('#thumbnail').style.backgroundImage = '';
         });
@@ -331,8 +332,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
       videoPlayerElement.setAttribute('castable', true);
 
-      videoElementInitializePromise =
-        media.isAvailableForCast().then(function(result) {
+      videoElementInitializePromise = media.isAvailableForCast()
+          .then(function(result) {
             if (!result)
               return Promise.reject('No casts are available.');
 
@@ -369,8 +370,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       videoElementInitializePromise = Promise.resolve();
     }
 
-    videoElementInitializePromise.
-        then(function() {
+    videoElementInitializePromise
+        .then(function() {
           var handler = function(currentPos) {
             if (currentPos === this.currentPos_) {
               if (opt_callback)
@@ -393,9 +394,9 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
           this.videoElement_.load();
           callback();
-        }.bind(this)).
+        }.bind(this))
         // In case of error.
-        catch(function(error) {
+        .catch(function(error) {
           videoPlayerElement.removeAttribute('loading');
           console.error('Failed to initialize the video element.',
                         error.stack || error);
@@ -514,6 +515,7 @@ VideoPlayer.prototype.reloadCurrentVideo = function(opt_callback) {
 /**
  * Invokes when a menuitem in the cast menu is selected.
  * @param {Object} cast Selected element in the list of casts.
+ * @private
  */
 VideoPlayer.prototype.onCastSelected_ = function(cast) {
   // If the selected item is same as the current item, do nothing.

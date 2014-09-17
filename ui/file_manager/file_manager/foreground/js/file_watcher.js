@@ -128,7 +128,7 @@ FileWatcher.prototype.changeWatchedDirectory = function(entry, callback) {
         callback,
         function() {
           console.error(
-             'Unable to change the watched directory to: ' + entry.toURL());
+              'Unable to change the watched directory to: ' + entry.toURL());
           callback();
         });
   } else {
@@ -199,20 +199,20 @@ FileWatcher.prototype.changeWatchedEntry_ = function(
             callback();
           }.bind(this));
       this.filesystemMetadataObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'filesystem',
-        this.onFilesystemMetadataChanged_.bind(this));
+          entry,
+          MetadataCache.CHILDREN,
+          'filesystem',
+          this.onFilesystemMetadataChanged_.bind(this));
       this.thumbnailMetadataObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'thumbnail',
-        this.onThumbnailMetadataChanged_.bind(this));
+          entry,
+          MetadataCache.CHILDREN,
+          'thumbnail',
+          this.onThumbnailMetadataChanged_.bind(this));
       this.externalMetadataObserverId_ = this.metadataCache_.addObserver(
-        entry,
-        MetadataCache.CHILDREN,
-        'external',
-        this.onExternalMetadataChanged_.bind(this));
+          entry,
+          MetadataCache.CHILDREN,
+          'external',
+          this.onExternalMetadataChanged_.bind(this));
     }.bind(this));
   }.bind(this);
 

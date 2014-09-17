@@ -14,7 +14,7 @@
  * @constructor
  * @extends {HTMLDivElement}
  */
- var CommandButton = cr.ui.define('button');
+var CommandButton = cr.ui.define('button');
 
 /** @override */
 CommandButton.prototype.__proto__ = HTMLButtonElement.prototype;

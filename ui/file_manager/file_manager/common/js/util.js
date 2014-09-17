@@ -219,15 +219,15 @@ util.getDirectories = function(dirEntry, params, paths, successCallback,
       return onComplete();
 
     dirEntry.getDirectory(
-      path, params,
-      function(entry) {
-        successCallback(entry);
-        getNextDirectory();
-      },
-      function(err) {
-        errorCallback(err);
-        getNextDirectory();
-      });
+        path, params,
+        function(entry) {
+          successCallback(entry);
+          getNextDirectory();
+        },
+        function(err) {
+          errorCallback(err);
+          getNextDirectory();
+        });
   };
 
   getNextDirectory();
@@ -268,15 +268,15 @@ util.getFiles = function(dirEntry, params, paths, successCallback,
       return onComplete();
 
     dirEntry.getFile(
-      path, params,
-      function(entry) {
-        successCallback(entry);
-        getNextFile();
-      },
-      function(err) {
-        errorCallback(err);
-        getNextFile();
-      });
+        path, params,
+        function(entry) {
+          successCallback(entry);
+          getNextFile();
+        },
+        function(err) {
+          errorCallback(err);
+          getNextFile();
+        });
   };
 
   getNextFile();
@@ -726,11 +726,11 @@ util.AppCache.cleanup_ = function(map) {
  */
 util.loadImage = function(image, url, opt_options, opt_isValid) {
   return ImageLoaderClient.loadToImage(url,
-                                      image,
-                                      opt_options || {},
-                                      function() {},
-                                      function() { image.onerror(); },
-                                      opt_isValid);
+                                       image,
+                                       opt_options || {},
+                                       function() {},
+                                       function() { image.onerror(); },
+                                       opt_isValid);
 };
 
 /**
@@ -926,8 +926,7 @@ util.UserDOMError.prototype = {
   /**
    * @return {string} File error name.
    */
-  get name() {
-    return this.name_;
+  get name() { return this.name_;
   }
 };
 
@@ -965,9 +964,8 @@ util.isSameFileSystem = function(fileSystem1, fileSystem2) {
  * Collator for sorting.
  * @type {Intl.Collator}
  */
-util.collator = new Intl.Collator([], {usage: 'sort',
-                                       numeric: true,
-                                       sensitivity: 'base'});
+util.collator = new Intl.Collator(
+    [], {usage: 'sort', numeric: true, sensitivity: 'base'});
 
 /**
  * Compare by name. The 2 entries must be in same directory.
@@ -1045,7 +1043,7 @@ util.getCurrentLocaleOrDefault = function() {
  */
 util.entriesToURLs = function(entries) {
   return entries.map(function(entry) {
-     return entry.toURL();
+    return entry.toURL();
   });
 };
 
@@ -1090,8 +1088,7 @@ util.URLsToEntries = function(urls, opt_callback) {
   if (opt_callback) {
     resultPromise.then(function(result) {
       opt_callback(result.entries, result.failureUrls);
-    }).
-    catch(function(error) {
+    }).catch(function(error) {
       console.error(
           'util.URLsToEntries is failed.',
           error.stack ? error.stack : error);
@@ -1108,11 +1105,10 @@ util.URLsToEntries = function(urls, opt_callback) {
  */
 util.isTeleported = function(window) {
   return new Promise(function(onFulfilled) {
-    window.chrome.fileManagerPrivate.getProfiles(function(profiles,
-                                                          currentId,
-                                                          displayedId) {
-      onFulfilled(currentId !== displayedId);
-    });
+    window.chrome.fileManagerPrivate.getProfiles(
+        function(profiles, currentId, displayedId) {
+          onFulfilled(currentId !== displayedId);
+        });
   });
 };
 
@@ -1127,33 +1123,32 @@ util.isTeleported = function(window) {
 util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
   if (!entries.length)
     return;
-  chrome.fileManagerPrivate.getProfiles(function(profiles,
-                                                 currentId,
-                                                 displayedId) {
-    // Find strings.
-    var displayName;
-    for (var i = 0; i < profiles.length; i++) {
-      if (profiles[i].profileId === currentId) {
-        displayName = profiles[i].displayName;
-        break;
-      }
-    }
-    if (!displayName) {
-      console.warn('Display name is not found.');
-      return;
-    }
+  chrome.fileManagerPrivate.getProfiles(
+      function(profiles, currentId, displayedId) {
+        // Find strings.
+        var displayName;
+        for (var i = 0; i < profiles.length; i++) {
+          if (profiles[i].profileId === currentId) {
+            displayName = profiles[i].displayName;
+            break;
+          }
+        }
+        if (!displayName) {
+          console.warn('Display name is not found.');
+          return;
+        }
 
-    var title = entries.size > 1 ?
-        entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
-    var message = strf(entries.size > 1 ?
-                       'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
-                       'OPEN_IN_OTHER_DESKTOP_MESSAGE',
-                       displayName,
-                       currentId);
+        var title = entries.size > 1 ?
+            entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
+        var message = strf(entries.size > 1 ?
+                           'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
+                           'OPEN_IN_OTHER_DESKTOP_MESSAGE',
+                           displayName,
+                           currentId);
 
-    // Show the dialog.
-    alertDialog.showWithTitle(title, message);
-  }.bind(this));
+        // Show the dialog.
+        alertDialog.showWithTitle(title, message);
+      }.bind(this));
 };
 
 /**

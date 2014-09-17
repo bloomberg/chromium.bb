@@ -47,6 +47,7 @@ fileOperationUtil.resolvePath = function(root, path) {
  *     deduplicated path on success.
  * @param {function(FileOperationManager.Error)=} opt_errorCallback Callback run
  *     on error.
+ * @return {Promise} Promise fulfilled with available path.
  */
 fileOperationUtil.deduplicatePath = function(
     dirEntry, relativePath, opt_successCallback, opt_errorCallback) {

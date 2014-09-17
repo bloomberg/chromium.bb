@@ -68,7 +68,7 @@ function onLaunched(launchData) {
 /**
  * Opens player window.
  * @param {Array.<Object>} videos List of videos to play.
- * @param {Promise} Promise to be fulfilled on success, or rejected on error.
+ * @return {Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function open(videos) {
   return new Promise(function(fulfill, reject) {
@@ -100,6 +100,7 @@ function open(videos) {
 // If is is run in the browser test, wait for the test resources are installed
 // as a component extension, and then load the test resources.
 if (chrome.test) {
+  /** @type {string} */
   window.testExtensionId = 'ljoplibgfehghmibaoaepfagnmbbfiga';
   chrome.runtime.onMessageExternal.addListener(function(message) {
     if (message.name !== 'testResourceLoaded')

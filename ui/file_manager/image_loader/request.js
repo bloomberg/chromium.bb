@@ -371,9 +371,8 @@ Request.prototype.sendImage_ = function(imageChanged) {
  * @private
  */
 Request.prototype.sendImageData_ = function(data) {
-  this.sendResponse_({status: 'success',
-                      data: data,
-                      taskId: this.request_.taskId});
+  this.sendResponse_(
+      {status: 'success', data: data, taskId: this.request_.taskId});
 };
 
 /**
@@ -407,8 +406,8 @@ Request.prototype.onImageLoad_ = function(callback) {
  * @private
  */
 Request.prototype.onImageError_ = function(callback) {
-  this.sendResponse_({status: 'error',
-                      taskId: this.request_.taskId});
+  this.sendResponse_(
+      {status: 'error', taskId: this.request_.taskId});
   this.cleanup_();
   this.downloadCallback_();
 };

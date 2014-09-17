@@ -134,10 +134,10 @@ ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
  *     for downloading thumbnails. By default optimizations are disabled.
- * @param {function(Image, Object)} opt_onSuccess Success callback,
+ * @param {function(Image, Object)=} opt_onSuccess Success callback,
  *     accepts the image and the transform.
- * @param {function} opt_onError Error callback.
- * @param {function} opt_onGeneric Callback for generic image used.
+ * @param {function=} opt_onError Error callback.
+ * @param {function=} opt_onGeneric Callback for generic image used.
  */
 ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     opt_onSuccess, opt_onError, opt_onGeneric) {
@@ -391,7 +391,7 @@ ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
         Math.min(fitScaleX, fitScaleY);
 
     if (fillMode !== ThumbnailLoader.FillMode.OVER_FILL)
-        scale = Math.min(scale, 1);  // Never overscale.
+      scale = Math.min(scale, 1);  // Never overscale.
 
     fractionX = imageWidth * scale / boxWidth;
     fractionY = imageHeight * scale / boxHeight;

@@ -1284,10 +1284,10 @@ Mosaic.Column.prototype.getEdgeTileIndex_ = function(y, direction) {
  * @return {Mosaic.Row} The row containing the tile with a given index.
  */
 Mosaic.Column.prototype.getRowByTileIndex = function(index) {
-  for (var r = 0; r !== this.rows_.length; r++)
+  for (var r = 0; r !== this.rows_.length; r++) {
     if (this.rows_[r].hasTile(index))
       return this.rows_[r];
-
+  }
   return null;
 };
 
@@ -1300,7 +1300,7 @@ Mosaic.Column.prototype.add = function(tile) {
   var rowIndex = this.getNextRowIndex();
 
   if (!this.newRow_)
-     this.newRow_ = new Mosaic.Row(this.getNextTileIndex());
+    this.newRow_ = new Mosaic.Row(this.getNextTileIndex());
 
   this.tiles_.push(tile);
   this.newRow_.add(tile);
@@ -1770,8 +1770,9 @@ Mosaic.Tile.prototype.init = function() {
         metadata,
         undefined,  // Media type.
         ThumbnailLoader.UseEmbedded.USE_EMBEDDED,
-        2);  // Preloaders have always higher priotity, so the preload images
-             // are loaded as soon as possible.
+        // Preloaders have always higher priotity, so the preload images
+        // are loaded as soon as possible.
+        2);
   }
 
   // Dimensions are always acquired from the metadata. For local files, it is

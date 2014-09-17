@@ -10,7 +10,7 @@
  * @param {VolumeManagerWrapper.DriveEnabledStatus} driveEnabled DRIVE_ENABLED
  *     if drive should be available. DRIVE_DISABLED if drive related
  *     data/events should be hidden.
- * @param {DOMWindow} opt_backgroundPage Window object of the background
+ * @param {DOMWindow=} opt_backgroundPage Window object of the background
  *     page. If this is specified, the class skips to get background page.
  *     TOOD(hirono): Let all clients of the class pass the background page and
  *     make the argument not optional.

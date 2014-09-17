@@ -33,11 +33,11 @@ function DriveSyncHandler(progressCenter) {
   this.item_ = new ProgressCenterItem();
   this.item_.id = 'drive-sync';
 
-   /**
-    * If the property is true, this item is syncing.
-    * @type {boolean}
-    * @private
-    */
+  /**
+   * If the property is true, this item is syncing.
+   * @type {boolean}
+   * @private
+   */
   this.syncing_ = false;
 
   /**
@@ -81,7 +81,7 @@ DriveSyncHandler.prototype = {
 
 /**
  * Handles file transfer updated events.
- * @param {Array.<FileTransferStatus>} statusList List of drive status.
+ * @param {FileTransferStatus} status Transfer status.
  * @private
  */
 DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {

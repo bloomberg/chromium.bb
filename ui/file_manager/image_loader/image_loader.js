@@ -50,23 +50,22 @@ function ImageLoader() {
   }.bind(this));
 
   // Listen for incoming requests.
-  chrome.extension.onMessageExternal.addListener(function(request,
-                                                          sender,
-                                                          sendResponse) {
-    if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1) {
-      // Sending a response may fail if the receiver already went offline.
-      // This is not an error, but a normal and quite common situation.
-      var failSafeSendResponse = function(response) {
-        try {
-          sendResponse(response);
+  chrome.extension.onMessageExternal.addListener(
+      function(request, sender, sendResponse) {
+        if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1) {
+          // Sending a response may fail if the receiver already went offline.
+          // This is not an error, but a normal and quite common situation.
+          var failSafeSendResponse = function(response) {
+            try {
+              sendResponse(response);
+            }
+            catch (e) {
+              // Ignore the error.
+            }
+          };
+          return this.onMessage_(sender.id, request, failSafeSendResponse);
         }
-        catch (e) {
-          // Ignore the error.
-        }
-      };
-      return this.onMessage_(sender.id, request, failSafeSendResponse);
-    }
-  }.bind(this));
+      }.bind(this));
 }
 
 /**
@@ -168,18 +167,16 @@ ImageLoader.resizeDimensions = function(width, height, options) {
     targetHeight = sourceHeight * options.scale;
   }
 
-  if (options.maxWidth &&
-      targetWidth > options.maxWidth) {
-      var scale = options.maxWidth / targetWidth;
-      targetWidth *= scale;
-      targetHeight *= scale;
+  if (options.maxWidth && targetWidth > options.maxWidth) {
+    var scale = options.maxWidth / targetWidth;
+    targetWidth *= scale;
+    targetHeight *= scale;
   }
 
-  if (options.maxHeight &&
-      targetHeight > options.maxHeight) {
-      var scale = options.maxHeight / targetHeight;
-      targetWidth *= scale;
-      targetHeight *= scale;
+  if (options.maxHeight && targetHeight > options.maxHeight) {
+    var scale = options.maxHeight / targetHeight;
+    targetWidth *= scale;
+    targetHeight *= scale;
   }
 
   if (options.width)

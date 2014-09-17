@@ -14,7 +14,7 @@ function NavigationModelItem(label) {
 }
 
 NavigationModelItem.prototype = {
-  get label() { return this.label_; },
+  get label() { return this.label_; }
 };
 
 /**

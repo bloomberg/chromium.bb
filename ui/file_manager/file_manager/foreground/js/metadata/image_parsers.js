@@ -22,16 +22,17 @@ SimpleImageParser.prototype = {__proto__: ImageParser.prototype};
 SimpleImageParser.prototype.parse = function(
     file, metadata, callback, errorCallback) {
   var self = this;
-  util.readFileBytes(file, 0, this.headerSize,
-    function(file, br) {
-      try {
-        self.parseHeader(metadata, br);
-        callback(metadata);
-      } catch (e) {
-        errorCallback(e.toString());
-      }
-    },
-    errorCallback);
+  util.readFileBytes(
+      file, 0, this.headerSize,
+      function(file, br) {
+        try {
+          self.parseHeader(metadata, br);
+          callback(metadata);
+        } catch (e) {
+          errorCallback(e.toString());
+        }
+      },
+      errorCallback);
 };
 
 
@@ -143,7 +144,7 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
       var lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
       if (lossySignature != 0x2a019d) {
         throw new Error('Invalid VP8 lossy bitstream signature: ' +
-          lossySignature);
+            lossySignature);
       }
       var dimensionBits = br.readScalar(4);
       metadata.width = dimensionBits & 0x3fff;
@@ -156,7 +157,7 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
       var losslessSignature = br.readScalar(1);
       if (losslessSignature != 0x2f) {
         throw new Error('Invalid VP8 lossless bitstream signature: ' +
-          losslessSignature);
+            losslessSignature);
       }
       var dimensionBits = br.readScalar(4);
       metadata.width = (dimensionBits & 0x3fff) + 1;
@@ -182,7 +183,7 @@ MetadataDispatcher.registerParserClass(WebpParser);
  * Parser for the header of .ico icon files.
  * @param {MetadataDispatcher} parent Parent metadata dispatcher object.
  * @constructor
- * @extends SimpleImageParser
+ * @extends {SimpleImageParser}
  */
 function IcoParser(parent) {
   SimpleImageParser.call(this, parent, 'ico', /\.ico$/i, 8);

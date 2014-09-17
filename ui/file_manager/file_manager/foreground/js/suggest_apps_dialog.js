@@ -386,21 +386,21 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
   this.installingItemId_ = null;
 
   switch (result) {
-  case AppInstaller.Result.SUCCESS:
-    SuggestAppsDialog.Metrics.recordInstall(
-        SuggestAppsDialog.Metrics.INSTALL.SUCCESS);
-    this.hide();
-    break;
-  case AppInstaller.Result.CANCELLED:
-    SuggestAppsDialog.Metrics.recordInstall(
-        SuggestAppsDialog.Metrics.INSTALL.CANCELLED);
-    // User cancelled the installation. Do nothing.
-    break;
-  case AppInstaller.Result.ERROR:
-    SuggestAppsDialog.Metrics.recordInstall(
-        SuggestAppsDialog.Metrics.INSTALL.FAILED);
-    fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'));
-    break;
+    case AppInstaller.Result.SUCCESS:
+      SuggestAppsDialog.Metrics.recordInstall(
+          SuggestAppsDialog.Metrics.INSTALL.SUCCESS);
+      this.hide();
+      break;
+    case AppInstaller.Result.CANCELLED:
+      SuggestAppsDialog.Metrics.recordInstall(
+          SuggestAppsDialog.Metrics.INSTALL.CANCELLED);
+      // User cancelled the installation. Do nothing.
+      break;
+    case AppInstaller.Result.ERROR:
+      SuggestAppsDialog.Metrics.recordInstall(
+          SuggestAppsDialog.Metrics.INSTALL.FAILED);
+      fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'));
+      break;
   }
 };
 

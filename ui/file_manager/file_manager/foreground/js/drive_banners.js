@@ -41,13 +41,14 @@ function FileListBannerController(
   chrome.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
   this.warningDismissedCounter_ = 0;
-  chrome.storage.local.get([WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
-                         function(values) {
-    this.welcomeHeaderCounter_ =
-        parseInt(values[WELCOME_HEADER_COUNTER_KEY]) || 0;
-    this.warningDismissedCounter_ =
-        parseInt(values[WARNING_DISMISSED_KEY]) || 0;
-  }.bind(this));
+  chrome.storage.local.get(
+      [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+      function(values) {
+        this.welcomeHeaderCounter_ =
+            parseInt(values[WELCOME_HEADER_COUNTER_KEY]) || 0;
+        this.warningDismissedCounter_ =
+            parseInt(values[WARNING_DISMISSED_KEY]) || 0;
+      }.bind(this));
 
   this.authFailedBanner_ =
       this.document_.querySelector('#drive-auth-failed-warning');
@@ -215,7 +216,7 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
  * @private
  */
 FileListBannerController.prototype.showLowDriveSpaceWarning_ =
-      function(show, sizeStats) {
+    function(show, sizeStats) {
   var box = this.document_.querySelector('#volume-space-warning');
 
   // Avoid showing two banners.

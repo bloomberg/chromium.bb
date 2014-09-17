@@ -500,6 +500,7 @@ VolumeManager.instance_ = null;
 
 /**
  * @type {Promise}
+ * @private
  */
 VolumeManager.instancePromise_ = null;
 
