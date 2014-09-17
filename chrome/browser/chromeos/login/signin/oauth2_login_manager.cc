@@ -312,7 +312,7 @@ void OAuth2LoginManager::OnListAccountsSuccess(const std::string& data) {
              accounts.begin();
          iter != accounts.end(); ++iter) {
       if (gaia::CanonicalizeEmail(iter->first) == user_email) {
-        found = true;
+        found = iter->second;
         break;
       }
 
