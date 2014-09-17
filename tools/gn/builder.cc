@@ -5,6 +5,7 @@
 #include "tools/gn/builder.h"
 
 #include "tools/gn/config.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/loader.h"
 #include "tools/gn/scheduler.h"
@@ -226,11 +227,12 @@ bool Builder::CheckForBadItems(Err* err) const {
 bool Builder::TargetDefined(BuilderRecord* record, Err* err) {
   Target* target = record->item()->AsTarget();
 
-  if (!AddDeps(record, target->deps(), err) ||
-      !AddDeps(record, target->datadeps(), err) ||
+  if (!AddDeps(record, target->public_deps(), err) ||
+      !AddDeps(record, target->private_deps(), err) ||
+      !AddDeps(record, target->data_deps(), err) ||
       !AddDeps(record, target->configs().vector(), err) ||
       !AddDeps(record, target->all_dependent_configs(), err) ||
-      !AddDeps(record, target->direct_dependent_configs(), err) ||
+      !AddDeps(record, target->public_configs(), err) ||
       !AddToolchainDep(record, target, err))
     return false;
 
@@ -403,11 +405,12 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
 
   if (record->type() == BuilderRecord::ITEM_TARGET) {
     Target* target = record->item()->AsTarget();
-    if (!ResolveDeps(&target->deps(), err) ||
-        !ResolveDeps(&target->datadeps(), err) ||
+    if (!ResolveDeps(&target->public_deps(), err) ||
+        !ResolveDeps(&target->private_deps(), err) ||
+        !ResolveDeps(&target->data_deps(), err) ||
         !ResolveConfigs(&target->configs(), err) ||
         !ResolveConfigs(&target->all_dependent_configs(), err) ||
-        !ResolveConfigs(&target->direct_dependent_configs(), err) ||
+        !ResolveConfigs(&target->public_configs(), err) ||
         !ResolveForwardDependentConfigs(target, err) ||
         !ResolveToolchain(target, err))
       return false;
@@ -473,19 +476,19 @@ bool Builder::ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err) {
 // "Forward dependent configs" should refer to targets in the deps that should
 // have their configs forwarded.
 bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
-  const LabelTargetVector& deps = target->deps();
   const UniqueVector<LabelTargetPair>& configs =
       target->forward_dependent_configs();
 
   // Assume that the lists are small so that brute-force n^2 is appropriate.
   for (size_t config_i = 0; config_i < configs.size(); config_i++) {
-    for (size_t dep_i = 0; dep_i < deps.size(); dep_i++) {
-      if (configs[config_i].label == deps[dep_i].label) {
-        DCHECK(deps[dep_i].ptr);  // Should already be resolved.
+    for (DepsIterator dep_iter(target, DepsIterator::LINKED_ONLY);
+         !dep_iter.done(); dep_iter.Advance()) {
+      if (configs[config_i].label == dep_iter.label()) {
+        DCHECK(dep_iter.target());  // Should already be resolved.
         // UniqueVector's contents are constant so uniqueness is preserved, but
         // we want to update this pointer which doesn't change uniqueness
         // (uniqueness in this vector is determined by the label only).
-        const_cast<LabelTargetPair&>(configs[config_i]).ptr = deps[dep_i].ptr;
+        const_cast<LabelTargetPair&>(configs[config_i]).ptr = dep_iter.target();
         break;
       }
     }

@@ -17,17 +17,33 @@ class HeaderCheckerTest : public testing::Test {
  public:
   HeaderCheckerTest()
       : a_(setup_.settings(), Label(SourceDir("//a/"), "a")),
-        b_(setup_.settings(), Label(SourceDir("//b/"), "a")),
+        b_(setup_.settings(), Label(SourceDir("//b/"), "b")),
         c_(setup_.settings(), Label(SourceDir("//c/"), "c")),
         d_(setup_.settings(), Label(SourceDir("//d/"), "d")) {
-    a_.deps().push_back(LabelTargetPair(&b_));
-    b_.deps().push_back(LabelTargetPair(&c_));
+    a_.set_output_type(Target::SOURCE_SET);
+    b_.set_output_type(Target::SOURCE_SET);
+    c_.set_output_type(Target::SOURCE_SET);
+    d_.set_output_type(Target::SOURCE_SET);
+
+    Err err;
+    a_.SetToolchain(setup_.toolchain(), &err);
+    b_.SetToolchain(setup_.toolchain(), &err);
+    c_.SetToolchain(setup_.toolchain(), &err);
+    d_.SetToolchain(setup_.toolchain(), &err);
+
+    a_.public_deps().push_back(LabelTargetPair(&b_));
+    b_.public_deps().push_back(LabelTargetPair(&c_));
 
     // Start with all public visibility.
     a_.visibility().SetPublic();
     b_.visibility().SetPublic();
     c_.visibility().SetPublic();
     d_.visibility().SetPublic();
+
+    d_.OnResolved(&err);
+    c_.OnResolved(&err);
+    b_.OnResolved(&err);
+    a_.OnResolved(&err);
 
     targets_.push_back(&a_);
     targets_.push_back(&b_);
@@ -56,89 +72,71 @@ TEST_F(HeaderCheckerTest, IsDependencyOf) {
   scoped_refptr<HeaderChecker> checker(
       new HeaderChecker(setup_.build_settings(), targets_));
 
-  std::vector<const Target*> chain;
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_, false, &chain, NULL));
+  // Add a target P ("private") that privately depends on C, and hook up the
+  // chain so that A -> P -> C. A will depend on C via two different paths.
+  Err err;
+  Target p(setup_.settings(), Label(SourceDir("//p/"), "p"));
+  p.set_output_type(Target::SOURCE_SET);
+  p.SetToolchain(setup_.toolchain(), &err);
+  EXPECT_FALSE(err.has_error());
+  p.private_deps().push_back(LabelTargetPair(&c_));
+  p.visibility().SetPublic();
+  p.OnResolved(&err);
 
+  a_.public_deps().push_back(LabelTargetPair(&p));
+
+  // A does not depend on itself.
+  bool is_public = false;
+  std::vector<const Target*> chain;
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_, &chain, &is_public));
+
+  // A depends on B.
   chain.clear();
-  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_, false, &chain, NULL));
+  is_public = false;
+  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_, &chain, &is_public));
   ASSERT_EQ(2u, chain.size());
   EXPECT_EQ(&b_, chain[0]);
   EXPECT_EQ(&a_, chain[1]);
+  EXPECT_TRUE(is_public);
 
+  // A indirectly depends on C. The "public" dependency path through B should
+  // be identified.
   chain.clear();
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, false, &chain, NULL));
+  is_public = false;
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
   ASSERT_EQ(3u, chain.size());
   EXPECT_EQ(&c_, chain[0]);
   EXPECT_EQ(&b_, chain[1]);
   EXPECT_EQ(&a_, chain[2]);
+  EXPECT_TRUE(is_public);
 
+  // C does not depend on A.
   chain.clear();
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_, false, &chain, NULL));
+  is_public = false;
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_, &chain, &is_public));
   EXPECT_TRUE(chain.empty());
+  EXPECT_FALSE(is_public);
 
-  // If an a -> c dependency exists, this should be chosen for the chain.
+  // Add a private A -> C dependency. This should not be detected since it's
+  // private, even though it's shorter than the A -> B -> C one.
   chain.clear();
-  a_.deps().push_back(LabelTargetPair(&c_));
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, false, &chain, NULL));
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&a_, chain[1]);
-}
-
-TEST_F(HeaderCheckerTest, IsDependencyOf_ForwardsDirectDependentConfigs) {
-  scoped_refptr<HeaderChecker> checker(
-      new HeaderChecker(setup_.build_settings(), targets_));
-
-  // The a -> b -> c chain is found, since no chains that forward direct-
-  // dependent configs exist.
-  std::vector<const Target*> chain;
-  bool direct_dependent_configs_apply = false;
-  EXPECT_TRUE(checker->IsDependencyOf(
-      &c_, &a_, true, &chain, &direct_dependent_configs_apply));
-  EXPECT_FALSE(direct_dependent_configs_apply);
-  EXPECT_EQ(3u, chain.size());
+  is_public = false;
+  a_.private_deps().push_back(LabelTargetPair(&c_));
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
   EXPECT_EQ(&c_, chain[0]);
   EXPECT_EQ(&b_, chain[1]);
   EXPECT_EQ(&a_, chain[2]);
+  EXPECT_TRUE(is_public);
 
-  // Create a chain a -> d -> c where d forwards direct-dependent configs.
-  // This path should be preferred when dependency chains which forward
-  // direct-dependent configs are preferred.
+  // Remove the B -> C public dependency, leaving A's private dep on C the only
+  // path. This should now be found.
   chain.clear();
-  direct_dependent_configs_apply = false;
-  d_.deps().push_back(LabelTargetPair(&c_));
-  d_.forward_dependent_configs().push_back(LabelTargetPair(&c_));
-  a_.deps().push_back(LabelTargetPair(&d_));
-  EXPECT_TRUE(checker->IsDependencyOf(
-      &c_, &a_, true, &chain, &direct_dependent_configs_apply));
-  EXPECT_TRUE(direct_dependent_configs_apply);
-  EXPECT_EQ(3u, chain.size());
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&d_, chain[1]);
-  EXPECT_EQ(&a_, chain[2]);
-
-  // d also forwards direct-dependent configs if it is a group.
-  chain.clear();
-  direct_dependent_configs_apply = false;
-  d_.set_output_type(Target::GROUP);
-  d_.forward_dependent_configs().clear();
-  EXPECT_TRUE(checker->IsDependencyOf(
-      &c_, &a_, true, &chain, &direct_dependent_configs_apply));
-  EXPECT_TRUE(direct_dependent_configs_apply);
-  EXPECT_EQ(3u, chain.size());
-  EXPECT_EQ(&c_, chain[0]);
-  EXPECT_EQ(&d_, chain[1]);
-  EXPECT_EQ(&a_, chain[2]);
-
-  // A direct dependency a -> c carries direct-dependent configs.
-  chain.clear();
-  direct_dependent_configs_apply = false;
-  a_.deps().push_back(LabelTargetPair(&c_));
-  EXPECT_TRUE(checker->IsDependencyOf(
-      &c_, &a_, true, &chain, &direct_dependent_configs_apply));
-  EXPECT_TRUE(direct_dependent_configs_apply);
-  EXPECT_EQ(2u, chain.size());
+  EXPECT_EQ(&c_, b_.public_deps()[0].ptr); // Validate it's the right one.
+  b_.public_deps().erase(b_.public_deps().begin());
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain, &is_public));
   EXPECT_EQ(&c_, chain[0]);
   EXPECT_EQ(&a_, chain[1]);
+  EXPECT_FALSE(is_public);
 }
 
 TEST_F(HeaderCheckerTest, CheckInclude) {
@@ -190,40 +188,6 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   EXPECT_TRUE(checker->CheckInclude(&a_, input_file, SourceFile("//random.h"),
                                     range, &err));
   EXPECT_FALSE(err.has_error());
-
-  // If C is not visible from A, A can't include public headers even if there
-  // is a dependency path.
-  c_.visibility().SetPrivate(c_.label().dir());
-  err = Err();
-  EXPECT_FALSE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
-  EXPECT_TRUE(err.has_error());
-  c_.visibility().SetPublic();
-
-  // If C has direct-dependent configs, then B must forward them to A.
-  // If B is a group, that suffices to forward direct-dependent configs.
-  {
-    Config direct(setup_.settings(), Label(SourceDir("//c/"), "config"));
-    direct.config_values().cflags().push_back("-DSOME_DEFINE");
-
-    c_.direct_dependent_configs().push_back(LabelConfigPair(&direct));
-    err = Err();
-    EXPECT_FALSE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
-    EXPECT_TRUE(err.has_error());
-
-    b_.forward_dependent_configs().push_back(LabelTargetPair(&c_));
-    err = Err();
-    EXPECT_TRUE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
-    EXPECT_FALSE(err.has_error());
-
-    b_.forward_dependent_configs().clear();
-    b_.set_output_type(Target::GROUP);
-    err = Err();
-    EXPECT_TRUE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
-    EXPECT_FALSE(err.has_error());
-
-    b_.set_output_type(Target::UNKNOWN);
-    c_.direct_dependent_configs().clear();
-  }
 }
 
 // Checks that the allow_circular_includes_from list works.
@@ -251,36 +215,4 @@ TEST_F(HeaderCheckerTest, CheckIncludeAllowCircular) {
   err = Err();
   EXPECT_TRUE(checker->CheckInclude(&b_, input_file, a_public, range, &err));
   EXPECT_FALSE(err.has_error());
-}
-
-TEST_F(HeaderCheckerTest, GetDependentConfigChainProblemIndex) {
-  // Assume we have a chain A -> B -> C -> D.
-  Target target_a(setup_.settings(), Label(SourceDir("//a/"), "a"));
-  Target target_b(setup_.settings(), Label(SourceDir("//b/"), "b"));
-  Target target_c(setup_.settings(), Label(SourceDir("//c/"), "c"));
-  Target target_d(setup_.settings(), Label(SourceDir("//d/"), "d"));
-
-  // C is a group, and B forwards deps from C, so A should get configs from D.
-  target_a.set_output_type(Target::SOURCE_SET);
-  target_b.set_output_type(Target::SOURCE_SET);
-  target_c.set_output_type(Target::GROUP);
-  target_d.set_output_type(Target::SOURCE_SET);
-  target_b.forward_dependent_configs().push_back(
-      LabelTargetPair(&target_c));
-
-  // Dependency chain goes from bottom to top.
-  std::vector<const Target*> chain;
-  chain.push_back(&target_d);
-  chain.push_back(&target_c);
-  chain.push_back(&target_b);
-  chain.push_back(&target_a);
-
-  // If C is not a group, it shouldn't work anymore.
-  target_c.set_output_type(Target::SOURCE_SET);
-  EXPECT_EQ(1u, HeaderChecker::GetDependentConfigChainProblemIndex(chain));
-
-  // Or if B stops forwarding from C, it shouldn't work anymore.
-  target_c.set_output_type(Target::GROUP);
-  target_b.forward_dependent_configs().clear();
-  EXPECT_EQ(2u, HeaderChecker::GetDependentConfigChainProblemIndex(chain));
 }

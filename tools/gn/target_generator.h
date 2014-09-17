@@ -48,11 +48,11 @@ class TargetGenerator {
 
   const BuildSettings* GetBuildSettings() const;
 
-  void FillSources();
-  void FillPublic();
-  void FillInputs();
-  void FillConfigs();
-  void FillOutputs(bool allow_substitutions);
+  bool FillSources();
+  bool FillPublic();
+  bool FillInputs();
+  bool FillConfigs();
+  bool FillOutputs(bool allow_substitutions);
 
   // Rrturns true if the given pattern will expand to a file in the output
   // directory. If not, returns false and sets the error, blaming the given
@@ -67,18 +67,18 @@ class TargetGenerator {
   Err* err_;
 
  private:
-  void FillDependentConfigs();  // Includes all types of dependent configs.
-  void FillData();
-  void FillDependencies();  // Includes data dependencies.
-  void FillTestonly();
+  bool FillDependentConfigs();  // Includes all types of dependent configs.
+  bool FillData();
+  bool FillDependencies();  // Includes data dependencies.
+  bool FillTestonly();
 
   // Reads configs/deps from the given var name, and uses the given setting on
   // the target to save them.
-  void FillGenericConfigs(const char* var_name,
+  bool FillGenericConfigs(const char* var_name,
                           UniqueVector<LabelConfigPair>* dest);
-  void FillGenericDeps(const char* var_name, LabelTargetVector* dest);
+  bool FillGenericDeps(const char* var_name, LabelTargetVector* dest);
 
-  void FillForwardDependentConfigs();
+  bool FillForwardDependentConfigs();
 
   DISALLOW_COPY_AND_ASSIGN(TargetGenerator);
 };

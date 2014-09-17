@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "tools/gn/commands.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/item.h"
@@ -30,17 +31,8 @@ void FillDepMap(Setup* setup, DepMap* dep_map) {
       setup->builder()->GetAllResolvedTargets();
 
   for (size_t target_i = 0; target_i < targets.size(); target_i++) {
-    const Target* target = targets[target_i];
-
-    // Add all deps to the map.
-    const LabelTargetVector& deps = target->deps();
-    for (size_t dep_i = 0; dep_i < deps.size(); dep_i++)
-      dep_map->insert(std::make_pair(deps[dep_i].ptr, target));
-
-    // Include data deps as well.
-    const LabelTargetVector& datadeps = target->datadeps();
-    for (size_t dep_i = 0; dep_i < datadeps.size(); dep_i++)
-      dep_map->insert(std::make_pair(datadeps[dep_i].ptr, target));
+    for (DepsIterator iter(targets[target_i]); !iter.done(); iter.Advance())
+      dep_map->insert(std::make_pair(iter.target(), targets[target_i]));
   }
 }
 

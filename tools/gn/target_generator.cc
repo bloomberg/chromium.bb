@@ -36,20 +36,16 @@ TargetGenerator::~TargetGenerator() {
 
 void TargetGenerator::Run() {
   // All target types use these.
-  FillDependentConfigs();
-  if (err_->has_error())
+  if (!FillDependentConfigs())
     return;
 
-  FillData();
-  if (err_->has_error())
+  if (!FillData())
     return;
 
-  FillDependencies();
-  if (err_->has_error())
+  if (!FillDependencies())
     return;
 
-  FillTestonly();
-  if (err_->has_error())
+  if (!FillTestonly())
     return;
 
   if (!Visibility::FillItemVisibility(target_, scope_, err_))
@@ -137,22 +133,23 @@ const BuildSettings* TargetGenerator::GetBuildSettings() const {
   return scope_->settings()->build_settings();
 }
 
-void TargetGenerator::FillSources() {
+bool TargetGenerator::FillSources() {
   const Value* value = scope_->GetValue(variables::kSources, true);
   if (!value)
-    return;
+    return true;
 
   Target::FileList dest_sources;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
                                   scope_->GetSourceDir(), &dest_sources, err_))
-    return;
+    return false;
   target_->sources().swap(dest_sources);
+  return true;
 }
 
-void TargetGenerator::FillPublic() {
+bool TargetGenerator::FillPublic() {
   const Value* value = scope_->GetValue(variables::kPublic, true);
   if (!value)
-    return;
+    return true;
 
   // If the public headers are defined, don't default to public.
   target_->set_all_headers_public(false);
@@ -160,84 +157,105 @@ void TargetGenerator::FillPublic() {
   Target::FileList dest_public;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
                                   scope_->GetSourceDir(), &dest_public, err_))
-    return;
+    return false;
   target_->public_headers().swap(dest_public);
+  return true;
 }
 
-void TargetGenerator::FillInputs() {
+bool TargetGenerator::FillInputs() {
   const Value* value = scope_->GetValue(variables::kInputs, true);
-  if (!value) {
+ if (!value) {
     // Older versions used "source_prereqs". Allow use of this variable until
     // all callers are updated.
     // TODO(brettw) remove this eventually.
     value = scope_->GetValue("source_prereqs", true);
-
     if (!value)
-      return;
+      return true;
   }
 
   Target::FileList dest_inputs;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
                                   scope_->GetSourceDir(), &dest_inputs, err_))
-    return;
+    return false;
   target_->inputs().swap(dest_inputs);
+  return true;
 }
 
-void TargetGenerator::FillConfigs() {
-  FillGenericConfigs(variables::kConfigs, &target_->configs());
+bool TargetGenerator::FillConfigs() {
+  return FillGenericConfigs(variables::kConfigs, &target_->configs());
 }
 
-void TargetGenerator::FillDependentConfigs() {
-  FillGenericConfigs(variables::kAllDependentConfigs,
-                     &target_->all_dependent_configs());
-  FillGenericConfigs(variables::kDirectDependentConfigs,
-                     &target_->direct_dependent_configs());
+bool TargetGenerator::FillDependentConfigs() {
+  if (!FillGenericConfigs(variables::kAllDependentConfigs,
+                          &target_->all_dependent_configs()))
+    return false;
+  if (!FillGenericConfigs(variables::kPublicConfigs,
+                          &target_->public_configs()))
+    return false;
+
+  // "public_configs" was previously named "direct_dependent_configs", fall
+  // back to that if public_configs was undefined.
+  if (!scope_->GetValue(variables::kPublicConfigs, false)) {
+    if (!FillGenericConfigs("direct_dependent_configs",
+                            &target_->public_configs()))
+      return false;
+  }
+  return true;
 }
 
-void TargetGenerator::FillData() {
+bool TargetGenerator::FillData() {
   const Value* value = scope_->GetValue(variables::kData, true);
   if (!value)
-    return;
+    return true;
 
   Target::FileList dest_data;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
                                   scope_->GetSourceDir(), &dest_data, err_))
-    return;
+    return false;
   target_->data().swap(dest_data);
+  return true;
 }
 
-void TargetGenerator::FillDependencies() {
-  FillGenericDeps(variables::kDeps, &target_->deps());
-  if (err_->has_error())
-    return;
-  FillGenericDeps(variables::kDatadeps, &target_->datadeps());
-  if (err_->has_error())
-    return;
+bool TargetGenerator::FillDependencies() {
+  if (!FillGenericDeps(variables::kDeps, &target_->private_deps()))
+    return false;
+  if (!FillGenericDeps(variables::kPublicDeps, &target_->public_deps()))
+    return false;
+  if (!FillGenericDeps(variables::kDataDeps, &target_->data_deps()))
+    return false;
+
+  // "data_deps" was previously named "datadeps". For backwards-compat, read
+  // the old one if no "data_deps" were specified.
+  if (!scope_->GetValue(variables::kDataDeps, false)) {
+    if (!FillGenericDeps("datadeps", &target_->data_deps()))
+      return false;
+  }
 
   // This is a list of dependent targets to have their configs fowarded, so
   // it goes here rather than in FillConfigs.
-  FillForwardDependentConfigs();
-  if (err_->has_error())
-    return;
+  if (!FillForwardDependentConfigs())
+    return false;
+  return true;
 }
 
-void TargetGenerator::FillTestonly() {
+bool TargetGenerator::FillTestonly() {
   const Value* value = scope_->GetValue(variables::kTestonly, true);
   if (value) {
     if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
-      return;
+      return false;
     target_->set_testonly(value->boolean_value());
   }
+  return true;
 }
 
-void TargetGenerator::FillOutputs(bool allow_substitutions) {
+bool TargetGenerator::FillOutputs(bool allow_substitutions) {
   const Value* value = scope_->GetValue(variables::kOutputs, true);
   if (!value)
-    return;
+    return true;
 
   SubstitutionList& outputs = target_->action_values().outputs();
   if (!outputs.Parse(*value, err_))
-    return;
+    return false;
 
   if (!allow_substitutions) {
     // Verify no substitutions were actually used.
@@ -246,22 +264,23 @@ void TargetGenerator::FillOutputs(bool allow_substitutions) {
           "The outputs of this target used source {{expansions}} but this "
           "targe type\ndoesn't support them. Just express the outputs "
           "literally.");
-      return;
+      return false;
     }
   }
 
   // Check the substitutions used are valid for this purpose.
   if (!EnsureValidSourcesSubstitutions(outputs.required_types(),
                                        value->origin(), err_))
-    return;
+    return false;
 
   // Validate that outputs are in the output dir.
   CHECK(outputs.list().size() == value->list_value().size());
   for (size_t i = 0; i < outputs.list().size(); i++) {
     if (!EnsureSubstitutionIsInOutputDir(outputs.list()[i],
                                          value->list_value()[i]))
-      return;
+      return false;
   }
+  return true;
 }
 
 bool TargetGenerator::EnsureSubstitutionIsInOutputDir(
@@ -295,25 +314,27 @@ bool TargetGenerator::EnsureSubstitutionIsInOutputDir(
   return true;
 }
 
-void TargetGenerator::FillGenericConfigs(const char* var_name,
+bool TargetGenerator::FillGenericConfigs(const char* var_name,
                                          UniqueVector<LabelConfigPair>* dest) {
   const Value* value = scope_->GetValue(var_name, true);
   if (value) {
     ExtractListOfUniqueLabels(*value, scope_->GetSourceDir(),
                               ToolchainLabelForScope(scope_), dest, err_);
   }
+  return !err_->has_error();
 }
 
-void TargetGenerator::FillGenericDeps(const char* var_name,
+bool TargetGenerator::FillGenericDeps(const char* var_name,
                                       LabelTargetVector* dest) {
   const Value* value = scope_->GetValue(var_name, true);
   if (value) {
     ExtractListOfLabels(*value, scope_->GetSourceDir(),
                         ToolchainLabelForScope(scope_), dest, err_);
   }
+  return !err_->has_error();
 }
 
-void TargetGenerator::FillForwardDependentConfigs() {
+bool TargetGenerator::FillForwardDependentConfigs() {
   const Value* value = scope_->GetValue(
       variables::kForwardDependentConfigsFrom, true);
   if (value) {
@@ -321,4 +342,5 @@ void TargetGenerator::FillForwardDependentConfigs() {
                               ToolchainLabelForScope(scope_),
                               &target_->forward_dependent_configs(), err_);
   }
+  return !err_->has_error();
 }

@@ -125,16 +125,20 @@ class Target : public Item {
            output_type_ == COPY_FILES;
   }
 
-  // Linked dependencies.
-  const LabelTargetVector& deps() const { return deps_; }
-  LabelTargetVector& deps() { return deps_; }
+  // Linked private dependencies.
+  const LabelTargetVector& private_deps() const { return private_deps_; }
+  LabelTargetVector& private_deps() { return private_deps_; }
+
+  // Linked public dependencies.
+  const LabelTargetVector& public_deps() const { return public_deps_; }
+  LabelTargetVector& public_deps() { return public_deps_; }
 
   // Non-linked dependencies.
-  const LabelTargetVector& datadeps() const { return datadeps_; }
-  LabelTargetVector& datadeps() { return datadeps_; }
+  const LabelTargetVector& data_deps() const { return data_deps_; }
+  LabelTargetVector& data_deps() { return data_deps_; }
 
   // List of configs that this class inherits settings from. Once a target is
-  // resolved, this will also list all- and direct-dependent configs.
+  // resolved, this will also list all-dependent and public configs.
   const UniqueVector<LabelConfigPair>& configs() const { return configs_; }
   UniqueVector<LabelConfigPair>& configs() { return configs_; }
 
@@ -149,16 +153,16 @@ class Target : public Item {
   }
 
   // List of configs that targets depending directly on this one get. These
-  // configs are not added to this target.
-  const UniqueVector<LabelConfigPair>& direct_dependent_configs() const {
-    return direct_dependent_configs_;
+  // configs are also added to this target.
+  const UniqueVector<LabelConfigPair>& public_configs() const {
+    return public_configs_;
   }
-  UniqueVector<LabelConfigPair>& direct_dependent_configs() {
-    return direct_dependent_configs_;
+  UniqueVector<LabelConfigPair>& public_configs() {
+    return public_configs_;
   }
 
-  // A list of a subset of deps where we'll re-export direct_dependent_configs
-  // as direct_dependent_configs of this target.
+  // A list of a subset of deps where we'll re-export public_configs as
+  // public_configs of this target.
   const UniqueVector<LabelTargetPair>& forward_dependent_configs() const {
     return forward_dependent_configs_;
   }
@@ -224,8 +228,6 @@ class Target : public Item {
   }
 
  private:
-  void ExpandGroups();
-
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
   void PullDependentTargetInfo();
@@ -233,6 +235,7 @@ class Target : public Item {
   // These each pull specific things from dependencies to this one when all
   // deps have been resolved.
   void PullForwardedDependentConfigs();
+  void PullForwardedDependentConfigsFrom(const Target* from);
   void PullRecursiveHardDeps();
 
   // Fills the link and dependency output files when a target is resolved.
@@ -257,23 +260,13 @@ class Target : public Item {
 
   bool hard_dep_;
 
-  // Note that if there are any groups in the deps, once the target is resolved
-  // these vectors will list *both* the groups as well as the groups' deps.
-  //
-  // This is because, in general, groups should be "transparent" ways to add
-  // groups of dependencies, so adding the groups deps make this happen with
-  // no additional complexity when iterating over a target's deps.
-  //
-  // However, a group may also have specific settings and configs added to it,
-  // so we also need the group in the list so we find these things. But you
-  // shouldn't need to look inside the deps of the group since those will
-  // already be added.
-  LabelTargetVector deps_;
-  LabelTargetVector datadeps_;
+  LabelTargetVector private_deps_;
+  LabelTargetVector public_deps_;
+  LabelTargetVector data_deps_;
 
   UniqueVector<LabelConfigPair> configs_;
   UniqueVector<LabelConfigPair> all_dependent_configs_;
-  UniqueVector<LabelConfigPair> direct_dependent_configs_;
+  UniqueVector<LabelConfigPair> public_configs_;
   UniqueVector<LabelTargetPair> forward_dependent_configs_;
 
   std::set<Label> allow_circular_includes_from_;

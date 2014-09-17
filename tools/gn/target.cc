@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "tools/gn/config_values_extractors.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/substitution_writer.h"
@@ -16,18 +17,17 @@ namespace {
 
 typedef std::set<const Config*> ConfigSet;
 
-// Merges the dependent configs from the given target to the given config list.
-void MergeDirectDependentConfigsFrom(const Target* from_target,
-                                     UniqueVector<LabelConfigPair>* dest) {
-  const UniqueVector<LabelConfigPair>& direct =
-      from_target->direct_dependent_configs();
-  for (size_t i = 0; i < direct.size(); i++)
-    dest->push_back(direct[i]);
+// Merges the public configs from the given target to the given config list.
+void MergePublicConfigsFrom(const Target* from_target,
+                            UniqueVector<LabelConfigPair>* dest) {
+  const UniqueVector<LabelConfigPair>& pub = from_target->public_configs();
+  for (size_t i = 0; i < pub.size(); i++)
+    dest->push_back(pub[i]);
 }
 
-// Like MergeDirectDependentConfigsFrom above except does the "all dependent"
-// ones. This additionally adds all configs to the all_dependent_configs_ of
-// the dest target given in *all_dest.
+// Like MergePublicConfigsFrom above except does the "all dependent" ones. This
+// additionally adds all configs to the all_dependent_configs_ of the dest
+// target given in *all_dest.
 void MergeAllDependentConfigsFrom(const Target* from_target,
                                   UniqueVector<LabelConfigPair>* dest,
                                   UniqueVector<LabelConfigPair>* all_dest) {
@@ -48,22 +48,6 @@ Err MakeTestOnlyError(const Target* from, const Target* to) {
       "can depend on other test-only targets.\n"
       "\n"
       "Either mark it test-only or don't do this dependency.");
-}
-
-// Inserts the given groups dependencies, starting at the given index of the
-// given vector. Returns the number of items inserted.
-size_t InsertGroupDeps(LabelTargetVector* vector,
-                       size_t insert_at,
-                       const Target* group) {
-  const LabelTargetVector& deps = group->deps();
-  vector->insert(vector->begin() + insert_at, deps.begin(), deps.end());
-
-  // Clear the origin of each of the insertions. This marks these dependencies
-  // as internally generated.
-  for (size_t i = insert_at; i < deps.size() + insert_at; i++)
-    (*vector)[i].origin = NULL;
-
-  return deps.size();
 }
 
 }  // namespace
@@ -120,12 +104,9 @@ bool Target::OnResolved(Err* err) {
   DCHECK(output_type_ != UNKNOWN);
   DCHECK(toolchain_) << "Toolchain should have been set before resolving.";
 
-  ExpandGroups();
-
   // Copy our own dependent configs to the list of configs applying to us.
   configs_.Append(all_dependent_configs_.begin(), all_dependent_configs_.end());
-  configs_.Append(direct_dependent_configs_.begin(),
-                  direct_dependent_configs_.end());
+  configs_.Append(public_configs_.begin(), public_configs_.end());
 
   // Copy our own libs and lib_dirs to the final set. This will be from our
   // target and all of our configs. We do this specially since these must be
@@ -213,25 +194,13 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
   return false;
 }
 
-void Target::ExpandGroups() {
-  // Convert any groups we depend on to just direct dependencies on that
-  // group's deps. We insert the new deps immediately after the group so that
-  // the ordering is preserved. We need to keep the original group so that any
-  // flags, etc. that it specifies itself are applied to us.
-  // TODO(brettw) bug 403488 this should also handle datadeps.
-  for (size_t i = 0; i < deps_.size(); i++) {
-    const Target* dep = deps_[i].ptr;
-    if (dep->output_type_ == GROUP)
-      i += InsertGroupDeps(&deps_, i + 1, dep);
-  }
-}
-
 void Target::PullDependentTargetInfo() {
   // Gather info from our dependents we need.
-  for (size_t dep_i = 0; dep_i < deps_.size(); dep_i++) {
-    const Target* dep = deps_[dep_i].ptr;
+  for (DepsIterator iter(this, DepsIterator::LINKED_ONLY); !iter.done();
+       iter.Advance()) {
+    const Target* dep = iter.target();
     MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
-    MergeDirectDependentConfigsFrom(dep, &configs_);
+    MergePublicConfigsFrom(dep, &configs_);
 
     // Direct dependent libraries.
     if (dep->output_type() == STATIC_LIBRARY ||
@@ -253,39 +222,46 @@ void Target::PullDependentTargetInfo() {
 }
 
 void Target::PullForwardedDependentConfigs() {
-  // Groups implicitly forward all if its dependency's configs.
-  if (output_type() == GROUP) {
-    for (size_t i = 0; i < deps_.size(); i++)
-      forward_dependent_configs_.push_back(deps_[i]);
-  }
+  // Pull public configs from each of our dependency's public deps.
+  for (size_t dep = 0; dep < public_deps_.size(); dep++)
+    PullForwardedDependentConfigsFrom(public_deps_[dep].ptr);
 
-  // Forward direct dependent configs if requested.
+  // Forward public configs if explicitly requested.
   for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
     const Target* from_target = forward_dependent_configs_[dep].ptr;
 
-    // The forward_dependent_configs_ must be in the deps already, so we
-    // don't need to bother copying to our configs, only forwarding.
-    DCHECK(std::find_if(deps_.begin(), deps_.end(),
+    // The forward_dependent_configs_ must be in the deps (public or private)
+    // already, so we don't need to bother copying to our configs, only
+    // forwarding.
+    DCHECK(std::find_if(private_deps_.begin(), private_deps_.end(),
                         LabelPtrPtrEquals<Target>(from_target)) !=
-           deps_.end());
-    direct_dependent_configs_.Append(
-        from_target->direct_dependent_configs().begin(),
-        from_target->direct_dependent_configs().end());
+               private_deps_.end() ||
+           std::find_if(public_deps_.begin(), public_deps_.end(),
+                        LabelPtrPtrEquals<Target>(from_target)) !=
+               public_deps_.end());
+
+    PullForwardedDependentConfigsFrom(from_target);
   }
 }
 
+void Target::PullForwardedDependentConfigsFrom(const Target* from) {
+  public_configs_.Append(from->public_configs().begin(),
+                         from->public_configs().end());
+}
+
 void Target::PullRecursiveHardDeps() {
-  for (size_t dep_i = 0; dep_i < deps_.size(); dep_i++) {
-    const Target* dep = deps_[dep_i].ptr;
-    if (dep->hard_dep())
-      recursive_hard_deps_.insert(dep);
+  for (DepsIterator iter(this, DepsIterator::LINKED_ONLY); !iter.done();
+       iter.Advance()) {
+    if (iter.target()->hard_dep())
+      recursive_hard_deps_.insert(iter.target());
 
     // Android STL doesn't like insert(begin, end) so do it manually.
-    // TODO(brettw) this can be changed to insert(dep->begin(), dep->end()) when
-    // Android uses a better STL.
+    // TODO(brettw) this can be changed to
+    // insert(iter.target()->begin(), iter.target()->end())
+    // when Android uses a better STL.
     for (std::set<const Target*>::const_iterator cur =
-             dep->recursive_hard_deps().begin();
-         cur != dep->recursive_hard_deps().end(); ++cur)
+             iter.target()->recursive_hard_deps().begin();
+         cur != iter.target()->recursive_hard_deps().end(); ++cur)
       recursive_hard_deps_.insert(*cur);
   }
 }
@@ -350,23 +326,10 @@ void Target::FillOutputFiles() {
 }
 
 bool Target::CheckVisibility(Err* err) const {
-  // Only check visibility when the origin of the dependency is non-null. These
-  // are dependencies added by the GN files. Internally added dependencies
-  // (expanded groups) will have a null origin. We don't want to check
-  // visibility for these, since the point of a group would often be to
-  // forward visibility.
-  for (size_t i = 0; i < deps_.size(); i++) {
-    if (deps_[i].origin &&
-        !Visibility::CheckItemVisibility(this, deps_[i].ptr, err))
+  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
+    if (!Visibility::CheckItemVisibility(this, iter.target(), err))
       return false;
   }
-
-  for (size_t i = 0; i < datadeps_.size(); i++) {
-    if (datadeps_[i].origin &&
-        !Visibility::CheckItemVisibility(this, datadeps_[i].ptr, err))
-      return false;
-  }
-
   return true;
 }
 
@@ -377,16 +340,9 @@ bool Target::CheckTestonly(Err* err) const {
     return true;
 
   // Verify no deps have "testonly" set.
-  for (size_t i = 0; i < deps_.size(); i++) {
-    if (deps_[i].ptr->testonly()) {
-      *err = MakeTestOnlyError(this, deps_[i].ptr);
-      return false;
-    }
-  }
-
-  for (size_t i = 0; i < datadeps_.size(); i++) {
-    if (datadeps_[i].ptr->testonly()) {
-      *err = MakeTestOnlyError(this, datadeps_[i].ptr);
+  for (DepsIterator iter(this); !iter.done(); iter.Advance()) {
+    if (iter.target()->testonly()) {
+      *err = MakeTestOnlyError(this, iter.target());
       return false;
     }
   }

@@ -249,7 +249,7 @@ const char kToolchain_Help[] =
     "\n"
     "  You can override this and refer to any other toolchain by explicitly\n"
     "  labeling the toolchain to use. For example:\n"
-    "    datadeps = [ \"//plugins:mine(//toolchains:plugin_toolchain)\" ]\n"
+    "    data_deps = [ \"//plugins:mine(//toolchains:plugin_toolchain)\" ]\n"
     "  The string \"//build/toolchains:plugin_toolchain\" is a label that\n"
     "  identifies the toolchain declaration for compiling the sources.\n"
     "\n"

@@ -115,34 +115,21 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   // dependency chain from the dest target (chain[0] = search_for) to the src
   // target (chain[chain.size() - 1] = search_from).
   //
-  // If prefer_direct_dependent_configs is true, chains which forward direct
-  // dependent configs will be considered first, and a chain which does not
-  // will be returned only if no such chain exists.
-  //
-  // If direct_dependent_configs_apply is non-null, it will be set to true
-  // if the chain was found during a search that requires forwarding direct
-  // dependent configs, and false if it was found during a search of the
-  // entire dependency graph.
+  // Chains with public dependencies will be considered first. If a public
+  // match is found, *is_public will be set to true. A chain with non-public
+  // dependencies will only be considered if there are no public chains. In
+  // this case, *is_public will be false.
   bool IsDependencyOf(const Target* search_for,
                       const Target* search_from,
-                      bool prefer_direct_dependent_configs,
                       std::vector<const Target*>* chain,
-                      bool* direct_dependent_configs_apply) const;
+                      bool* is_public) const;
 
-  // For internal use by the previous override of IsDependencyOf.
-  // If requires_dependent_configs is true, only chains which forward
-  // direct dependent configs are considered.
+  // For internal use by the previous override of IsDependencyOf.  If
+  // require_public is true, only public dependency chains are searched.
   bool IsDependencyOf(const Target* search_for,
                       const Target* search_from,
-                      bool requires_dependent_configs,
+                      bool require_public,
                       std::vector<const Target*>* chain) const;
-
-  // Given a reverse dependency chain (chain[0] is the lower-level target,
-  // chain[end] is the higher-level target) which does not forward direct
-  // dependent configs, determines the index of the target that caused the
-  // config to not apply.
-  static size_t GetDependentConfigChainProblemIndex(
-      const std::vector<const Target*>& chain);
 
   // Non-locked variables ------------------------------------------------------
   //

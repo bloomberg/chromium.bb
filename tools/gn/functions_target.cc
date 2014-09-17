@@ -13,11 +13,12 @@
 #include "tools/gn/variables.h"
 
 #define DEPENDENT_CONFIG_VARS \
-    "  Dependent configs: all_dependent_configs, direct_dependent_configs\n"
+    "  Dependent configs: all_dependent_configs, public_configs\n"
 #define DEPS_VARS \
-    "  Deps: data, datadeps, deps, forward_dependent_configs_from, hard_dep\n"
+    "  Deps: data_deps, deps, forward_dependent_configs_from, public_deps\n"
 #define GENERAL_TARGET_VARS \
-    "  General: configs, inputs, sources\n"
+    "  General: check_includes, configs, data, inputs, output_name,\n" \
+    "           output_extension, public, sources, testonly, visibility\n"
 
 namespace functions {
 
@@ -71,12 +72,12 @@ Value ExecuteGenericTarget(const char* target_type,
     "  respectively.\n"
 
 #define ACTION_DEPS \
-    "  The \"deps\" for an action will always be completed before any part\n" \
-    "  of the action is run so it can depend on the output of previous\n" \
-    "  steps. The \"datadeps\" will be built if the action is built, but\n" \
-    "  may not have completed before all steps of the action are started.\n" \
-    "  This can give additional parallelism in the build for runtime-only\n" \
-    "  dependencies.\n"
+    "  The \"deps\" and \"public_deps\" for an action will always be\n" \
+    "  completed before any part of the action is run so it can depend on\n" \
+    "  the output of previous steps. The \"data_deps\" will be built if the\n" \
+    "  action is built, but may not have completed before all steps of the\n" \
+    "  action are started. This can give additional parallelism in the build\n"\
+    "  for runtime-only dependencies.\n"
 
 const char kAction[] = "action";
 const char kAction_HelpShort[] =
@@ -121,7 +122,7 @@ const char kAction_Help[] =
     "\n"
     "Variables\n"
     "\n"
-    "  args, data, datadeps, depfile, deps, outputs*, script*,\n"
+    "  args, data, data_deps, depfile, deps, outputs*, script*,\n"
     "  inputs, sources\n"
     "  * = required\n"
     "\n"
@@ -192,7 +193,7 @@ const char kActionForEach_Help[] =
     "\n"
     "Variables\n"
     "\n"
-    "  args, data, datadeps, depfile, deps, outputs*, script*,\n"
+    "  args, data, data_deps, depfile, deps, outputs*, script*,\n"
     "  inputs, sources*\n"
     "  * = required\n"
     "\n"
@@ -361,7 +362,7 @@ const char kSharedLibrary_Help[] =
     "  A shared library will be specified on the linker line for targets\n"
     "  listing the shared library in its \"deps\". If you don't want this\n"
     "  (say you dynamically load the library at runtime), then you should\n"
-    "  depend on the shared library via \"datadeps\" instead.\n"
+    "  depend on the shared library via \"data_deps\" instead.\n"
     "\n"
     "Variables\n"
     "\n"

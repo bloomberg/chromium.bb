@@ -15,25 +15,29 @@ TEST(NinjaGroupTargetWriter, Run) {
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
   target.set_output_type(Target::GROUP);
+  target.visibility().SetPublic();
 
   Target dep(setup.settings(), Label(SourceDir("//foo/"), "dep"));
   dep.set_output_type(Target::ACTION);
+  dep.visibility().SetPublic();
   dep.SetToolchain(setup.toolchain());
   ASSERT_TRUE(dep.OnResolved(&err));
 
   Target dep2(setup.settings(), Label(SourceDir("//foo/"), "dep2"));
   dep2.set_output_type(Target::ACTION);
+  dep2.visibility().SetPublic();
   dep2.SetToolchain(setup.toolchain());
   ASSERT_TRUE(dep2.OnResolved(&err));
 
   Target datadep(setup.settings(), Label(SourceDir("//foo/"), "datadep"));
   datadep.set_output_type(Target::ACTION);
+  datadep.visibility().SetPublic();
   datadep.SetToolchain(setup.toolchain());
   ASSERT_TRUE(datadep.OnResolved(&err));
 
-  target.deps().push_back(LabelTargetPair(&dep));
-  target.deps().push_back(LabelTargetPair(&dep2));
-  target.datadeps().push_back(LabelTargetPair(&datadep));
+  target.public_deps().push_back(LabelTargetPair(&dep));
+  target.public_deps().push_back(LabelTargetPair(&dep2));
+  target.data_deps().push_back(LabelTargetPair(&datadep));
 
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));

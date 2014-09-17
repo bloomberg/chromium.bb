@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "tools/gn/config_values_extractors.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
 #include "tools/gn/ninja_utils.h"
@@ -366,13 +367,13 @@ void NinjaBinaryTargetWriter::GetDeps(
     UniqueVector<OutputFile>* extra_object_files,
     UniqueVector<const Target*>* linkable_deps,
     UniqueVector<const Target*>* non_linkable_deps) const {
-  const LabelTargetVector& deps = target_->deps();
   const UniqueVector<const Target*>& inherited =
       target_->inherited_libraries();
 
-  // Normal deps.
-  for (size_t i = 0; i < deps.size(); i++) {
-    ClassifyDependency(deps[i].ptr, extra_object_files,
+  // Normal public/private deps.
+  for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY); !iter.done();
+       iter.Advance()) {
+    ClassifyDependency(iter.target(), extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
@@ -383,9 +384,9 @@ void NinjaBinaryTargetWriter::GetDeps(
   }
 
   // Data deps.
-  const LabelTargetVector& datadeps = target_->datadeps();
-  for (size_t i = 0; i < datadeps.size(); i++)
-    non_linkable_deps->push_back(datadeps[i].ptr);
+  const LabelTargetVector& data_deps = target_->data_deps();
+  for (size_t i = 0; i < data_deps.size(); i++)
+    non_linkable_deps->push_back(data_deps[i].ptr);
 }
 
 void NinjaBinaryTargetWriter::ClassifyDependency(

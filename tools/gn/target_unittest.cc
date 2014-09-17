@@ -10,68 +10,6 @@
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/toolchain.h"
 
-// Tests that depending on a group is like depending directly on the group's
-// deps.
-TEST(Target, GroupDeps) {
-  TestWithScope setup;
-  Err err;
-
-  // Used as the origin for the not-automatically-set deps.
-  IdentifierNode origin;
-
-  // Two low-level targets.
-  Target x(setup.settings(), Label(SourceDir("//component/"), "x"));
-  x.set_output_type(Target::STATIC_LIBRARY);
-  x.SetToolchain(setup.toolchain());
-  ASSERT_TRUE(x.OnResolved(&err));
-  Target y(setup.settings(), Label(SourceDir("//component/"), "y"));
-  y.set_output_type(Target::STATIC_LIBRARY);
-  y.SetToolchain(setup.toolchain());
-  ASSERT_TRUE(y.OnResolved(&err));
-
-  // Make a group for both x and y.
-  Target g(setup.settings(), Label(SourceDir("//group/"), "g"));
-  g.set_output_type(Target::GROUP);
-  g.visibility().SetPublic();
-  g.deps().push_back(LabelTargetPair(&x));
-  g.deps()[0].origin = &origin;
-  g.deps().push_back(LabelTargetPair(&y));
-  g.deps()[1].origin = &origin;
-
-  // Random placeholder target so we can see the group's deps get inserted at
-  // the right place.
-  Target b(setup.settings(), Label(SourceDir("//app/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.SetToolchain(setup.toolchain());
-  b.visibility().SetPublic();
-  ASSERT_TRUE(b.OnResolved(&err));
-
-  // Make a target depending on the group and "b". OnResolved will expand.
-  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
-  a.deps().push_back(LabelTargetPair(&g));
-  a.deps()[0].origin = &origin;
-  a.deps().push_back(LabelTargetPair(&b));
-  a.deps()[1].origin = &origin;
-  a.SetToolchain(setup.toolchain());
-  ASSERT_TRUE(a.OnResolved(&err));
-
-  // The group's deps should be inserted after the group itself in the deps
-  // list, so we should get "g, x, y, b"
-  ASSERT_EQ(4u, a.deps().size());
-  EXPECT_EQ(&g, a.deps()[0].ptr);
-  EXPECT_EQ(&x, a.deps()[1].ptr);
-  EXPECT_EQ(&y, a.deps()[2].ptr);
-  EXPECT_EQ(&b, a.deps()[3].ptr);
-
-  // The "regular" deps on a should have the origin set. The automatically
-  // expanded ones will have a null origin so we know they are generated.
-  EXPECT_EQ(&origin, a.deps()[0].origin);
-  EXPECT_EQ(NULL, a.deps()[1].origin);
-  EXPECT_EQ(NULL, a.deps()[2].origin);
-  EXPECT_EQ(&origin, a.deps()[3].origin);
-}
-
 // Tests that lib[_dir]s are inherited across deps boundaries for static
 // libraries but not executables.
 TEST(Target, LibInheritance) {
@@ -86,6 +24,7 @@ TEST(Target, LibInheritance) {
   z.set_output_type(Target::STATIC_LIBRARY);
   z.config_values().libs().push_back(lib);
   z.config_values().lib_dirs().push_back(libdir);
+  z.visibility().SetPublic();
   z.SetToolchain(setup.toolchain());
   ASSERT_TRUE(z.OnResolved(&err));
 
@@ -103,7 +42,8 @@ TEST(Target, LibInheritance) {
   shared.set_output_type(Target::SHARED_LIBRARY);
   shared.config_values().libs().push_back(second_lib);
   shared.config_values().lib_dirs().push_back(second_libdir);
-  shared.deps().push_back(LabelTargetPair(&z));
+  shared.private_deps().push_back(LabelTargetPair(&z));
+  shared.visibility().SetPublic();
   shared.SetToolchain(setup.toolchain());
   ASSERT_TRUE(shared.OnResolved(&err));
 
@@ -117,14 +57,14 @@ TEST(Target, LibInheritance) {
   // Executable target shouldn't get either by depending on shared.
   Target exec(setup.settings(), Label(SourceDir("//foo/"), "exec"));
   exec.set_output_type(Target::EXECUTABLE);
-  exec.deps().push_back(LabelTargetPair(&shared));
+  exec.private_deps().push_back(LabelTargetPair(&shared));
   exec.SetToolchain(setup.toolchain());
   ASSERT_TRUE(exec.OnResolved(&err));
   EXPECT_EQ(0u, exec.all_libs().size());
   EXPECT_EQ(0u, exec.all_lib_dirs().size());
 }
 
-// Test all/direct_dependent_configs inheritance, and
+// Test all_dependent_configs, public_config inheritance, and
 // forward_dependent_configs_from
 TEST(Target, DependentConfigs) {
   TestWithScope setup;
@@ -133,15 +73,18 @@ TEST(Target, DependentConfigs) {
   // Set up a dependency chain of a -> b -> c
   Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
+  a.visibility().SetPublic();
   a.SetToolchain(setup.toolchain());
   Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::STATIC_LIBRARY);
+  b.visibility().SetPublic();
   b.SetToolchain(setup.toolchain());
   Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
+  c.visibility().SetPublic();
   c.SetToolchain(setup.toolchain());
-  a.deps().push_back(LabelTargetPair(&b));
-  b.deps().push_back(LabelTargetPair(&c));
+  a.private_deps().push_back(LabelTargetPair(&b));
+  b.private_deps().push_back(LabelTargetPair(&c));
 
   // Normal non-inherited config.
   Config config(setup.settings(), Label(SourceDir("//foo/"), "config"));
@@ -153,7 +96,7 @@ TEST(Target, DependentConfigs) {
 
   // Direct dependent config.
   Config direct(setup.settings(), Label(SourceDir("//foo/"), "direct"));
-  c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
+  c.public_configs().push_back(LabelConfigPair(&direct));
 
   ASSERT_TRUE(c.OnResolved(&err));
   ASSERT_TRUE(b.OnResolved(&err));
@@ -174,12 +117,14 @@ TEST(Target, DependentConfigs) {
   // Making an an alternate A and B with B forwarding the direct dependents.
   Target a_fwd(setup.settings(), Label(SourceDir("//foo/"), "a_fwd"));
   a_fwd.set_output_type(Target::EXECUTABLE);
+  a_fwd.visibility().SetPublic();
   a_fwd.SetToolchain(setup.toolchain());
   Target b_fwd(setup.settings(), Label(SourceDir("//foo/"), "b_fwd"));
   b_fwd.set_output_type(Target::STATIC_LIBRARY);
   b_fwd.SetToolchain(setup.toolchain());
-  a_fwd.deps().push_back(LabelTargetPair(&b_fwd));
-  b_fwd.deps().push_back(LabelTargetPair(&c));
+  b_fwd.visibility().SetPublic();
+  a_fwd.private_deps().push_back(LabelTargetPair(&b_fwd));
+  b_fwd.private_deps().push_back(LabelTargetPair(&c));
   b_fwd.forward_dependent_configs().push_back(LabelTargetPair(&c));
 
   ASSERT_TRUE(b_fwd.OnResolved(&err));
@@ -193,42 +138,6 @@ TEST(Target, DependentConfigs) {
   EXPECT_EQ(&all, a_fwd.all_dependent_configs()[0].ptr);
 }
 
-// Tests that forward_dependent_configs_from works for groups, forwarding the
-// group's deps' dependent configs.
-TEST(Target, ForwardDependentConfigsFromGroups) {
-  TestWithScope setup;
-  Err err;
-
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::GROUP);
-  b.SetToolchain(setup.toolchain());
-  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
-  c.set_output_type(Target::STATIC_LIBRARY);
-  c.SetToolchain(setup.toolchain());
-  a.deps().push_back(LabelTargetPair(&b));
-  b.deps().push_back(LabelTargetPair(&c));
-
-  // Direct dependent config on C.
-  Config direct(setup.settings(), Label(SourceDir("//foo/"), "direct"));
-  c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
-
-  // A forwards the dependent configs from B.
-  a.forward_dependent_configs().push_back(LabelTargetPair(&b));
-
-  ASSERT_TRUE(c.OnResolved(&err));
-  ASSERT_TRUE(b.OnResolved(&err));
-  ASSERT_TRUE(a.OnResolved(&err));
-
-  // The config should now be on A, and in A's direct dependent configs.
-  ASSERT_EQ(1u, a.configs().size());
-  ASSERT_EQ(&direct, a.configs()[0].ptr);
-  ASSERT_EQ(1u, a.direct_dependent_configs().size());
-  ASSERT_EQ(&direct, a.direct_dependent_configs()[0].ptr);
-}
-
 TEST(Target, InheritLibs) {
   TestWithScope setup;
   Err err;
@@ -237,19 +146,23 @@ TEST(Target, InheritLibs) {
   //   A (executable) -> B (shared lib) -> C (static lib) -> D (source set)
   Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
+  a.visibility().SetPublic();
   a.SetToolchain(setup.toolchain());
   Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::SHARED_LIBRARY);
+  b.visibility().SetPublic();
   b.SetToolchain(setup.toolchain());
   Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
+  c.visibility().SetPublic();
   c.SetToolchain(setup.toolchain());
   Target d(setup.settings(), Label(SourceDir("//foo/"), "d"));
   d.set_output_type(Target::SOURCE_SET);
+  d.visibility().SetPublic();
   d.SetToolchain(setup.toolchain());
-  a.deps().push_back(LabelTargetPair(&b));
-  b.deps().push_back(LabelTargetPair(&c));
-  c.deps().push_back(LabelTargetPair(&d));
+  a.private_deps().push_back(LabelTargetPair(&b));
+  b.private_deps().push_back(LabelTargetPair(&c));
+  c.private_deps().push_back(LabelTargetPair(&d));
 
   ASSERT_TRUE(d.OnResolved(&err));
   ASSERT_TRUE(c.OnResolved(&err));
@@ -282,16 +195,19 @@ TEST(Target, InheritCompleteStaticLib) {
   //   A (executable) -> B (complete static lib) -> C (source set)
   Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
+  a.visibility().SetPublic();
   a.SetToolchain(setup.toolchain());
   Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::STATIC_LIBRARY);
+  b.visibility().SetPublic();
   b.set_complete_static_lib(true);
   b.SetToolchain(setup.toolchain());
   Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::SOURCE_SET);
+  c.visibility().SetPublic();
   c.SetToolchain(setup.toolchain());
-  a.deps().push_back(LabelTargetPair(&b));
-  b.deps().push_back(LabelTargetPair(&c));
+  a.public_deps().push_back(LabelTargetPair(&b));
+  b.public_deps().push_back(LabelTargetPair(&c));
 
   ASSERT_TRUE(c.OnResolved(&err));
   ASSERT_TRUE(b.OnResolved(&err));
@@ -366,14 +282,14 @@ TEST(Target, VisibilityFails) {
   // it as user-set so we check visibility. This check should fail.
   Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  a.deps().push_back(LabelTargetPair(&b));
+  a.private_deps().push_back(LabelTargetPair(&b));
   IdentifierNode origin;  // Dummy origin.
-  a.deps()[0].origin = &origin;
+  a.private_deps()[0].origin = &origin;
   a.SetToolchain(setup.toolchain());
   ASSERT_FALSE(a.OnResolved(&err));
 }
 
-// Test visibility with a single datadep.
+// Test visibility with a single data_dep.
 TEST(Target, VisibilityDatadeps) {
   TestWithScope setup;
   Err err;
@@ -388,9 +304,9 @@ TEST(Target, VisibilityDatadeps) {
   // it as user-set so we check visibility. This check should fail.
   Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  a.datadeps().push_back(LabelTargetPair(&b));
+  a.data_deps().push_back(LabelTargetPair(&b));
   IdentifierNode origin;  // Dummy origin.
-  a.datadeps()[0].origin = &origin;
+  a.data_deps()[0].origin = &origin;
   a.SetToolchain(setup.toolchain());
   ASSERT_TRUE(a.OnResolved(&err)) << err.help_text();
 }
@@ -415,16 +331,16 @@ TEST(Target, VisibilityGroup) {
   Target g(setup.settings(), Label(SourceDir("//private/"), "g"));
   g.set_output_type(Target::GROUP);
   g.SetToolchain(setup.toolchain());
-  g.deps().push_back(LabelTargetPair(&b));
-  g.deps()[0].origin = &origin;
+  g.private_deps().push_back(LabelTargetPair(&b));
+  g.private_deps()[0].origin = &origin;
   g.visibility().SetPublic();
   ASSERT_TRUE(b.OnResolved(&err));
 
   // Make a target depending on "g". This should succeed.
   Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  a.deps().push_back(LabelTargetPair(&g));
-  a.deps()[0].origin = &origin;
+  a.private_deps().push_back(LabelTargetPair(&g));
+  a.private_deps()[0].origin = &origin;
   a.SetToolchain(setup.toolchain());
   ASSERT_TRUE(a.OnResolved(&err));
 }
@@ -440,6 +356,7 @@ TEST(Target, Testonly) {
   Target testlib(setup.settings(), Label(SourceDir("//test/"), "testlib"));
   testlib.set_testonly(true);
   testlib.set_output_type(Target::STATIC_LIBRARY);
+  testlib.visibility().SetPublic();
   testlib.SetToolchain(setup.toolchain());
   ASSERT_TRUE(testlib.OnResolved(&err));
 
@@ -447,7 +364,7 @@ TEST(Target, Testonly) {
   Target test(setup.settings(), Label(SourceDir("//test/"), "test"));
   test.set_testonly(true);
   test.set_output_type(Target::EXECUTABLE);
-  test.deps().push_back(LabelTargetPair(&testlib));
+  test.private_deps().push_back(LabelTargetPair(&testlib));
   test.SetToolchain(setup.toolchain());
   ASSERT_TRUE(test.OnResolved(&err));
 
@@ -455,7 +372,7 @@ TEST(Target, Testonly) {
   Target product(setup.settings(), Label(SourceDir("//app/"), "product"));
   product.set_testonly(false);
   product.set_output_type(Target::EXECUTABLE);
-  product.deps().push_back(LabelTargetPair(&testlib));
+  product.private_deps().push_back(LabelTargetPair(&testlib));
   product.SetToolchain(setup.toolchain());
   ASSERT_FALSE(product.OnResolved(&err));
 }

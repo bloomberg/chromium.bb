@@ -18,6 +18,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::SOURCE_SET);
+  target.visibility().SetPublic();
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
   // Also test object files, which should be just passed through to the
@@ -57,7 +58,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   // A shared library that depends on the source set.
   Target shlib_target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
   shlib_target.set_output_type(Target::SHARED_LIBRARY);
-  shlib_target.deps().push_back(LabelTargetPair(&target));
+  shlib_target.public_deps().push_back(LabelTargetPair(&target));
   shlib_target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(shlib_target.OnResolved(&err));
 
@@ -94,7 +95,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   // A static library that depends on the source set (should not link it).
   Target stlib_target(setup.settings(), Label(SourceDir("//foo/"), "stlib"));
   stlib_target.set_output_type(Target::STATIC_LIBRARY);
-  stlib_target.deps().push_back(LabelTargetPair(&target));
+  stlib_target.public_deps().push_back(LabelTargetPair(&target));
   stlib_target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(stlib_target.OnResolved(&err));
 
@@ -171,6 +172,7 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   // An action for our library to depend on.
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
   action.set_output_type(Target::ACTION_FOREACH);
+  action.visibility().SetPublic();
   action.SetToolchain(setup.toolchain());
   ASSERT_TRUE(action.OnResolved(&err));
 
@@ -180,7 +182,7 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   target.set_output_extension(std::string("so.6"));
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
-  target.deps().push_back(LabelTargetPair(&action));
+  target.public_deps().push_back(LabelTargetPair(&action));
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 

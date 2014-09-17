@@ -22,12 +22,12 @@ class ActionTargetGenerator : public TargetGenerator {
   virtual void DoRun() OVERRIDE;
 
  private:
-  void FillScript();
-  void FillScriptArgs();
-  void FillDepfile();
+  bool FillScript();
+  bool FillScriptArgs();
+  bool FillDepfile();
 
   // Checks for errors in the outputs variable.
-  void CheckOutputs();
+  bool CheckOutputs();
 
   Target::OutputType output_type_;
 

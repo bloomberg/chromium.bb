@@ -45,6 +45,8 @@
         'config_values_generator.h',
         'copy_target_generator.cc',
         'copy_target_generator.h',
+        'deps_iterator.cc',
+        'deps_iterator.h',
         'err.cc',
         'err.h',
         'escape.cc',

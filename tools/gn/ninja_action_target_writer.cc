@@ -5,6 +5,7 @@
 #include "tools/gn/ninja_action_target_writer.h"
 
 #include "base/strings/string_util.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/string_utils.h"
@@ -31,8 +32,9 @@ void NinjaActionTargetWriter::Run() {
   // operating on the result of that previous step, so we need to be sure to
   // serialize these.
   std::vector<const Target*> extra_hard_deps;
-  for (size_t i = 0; i < target_->deps().size(); i++)
-    extra_hard_deps.push_back(target_->deps()[i].ptr);
+  for (DepsIterator iter(target_, DepsIterator::LINKED_ONLY);
+       !iter.done(); iter.Advance())
+    extra_hard_deps.push_back(iter.target());
 
   // For ACTIONs this is a bit inefficient since it creates an input dep
   // stamp file even though we're only going to use it once. It would save a
@@ -75,12 +77,12 @@ void NinjaActionTargetWriter::Run() {
   }
   out_ << std::endl;
 
-  // Write the stamp, which also depends on all datadeps. These are needed at
+  // Write the stamp, which also depends on all data deps. These are needed at
   // runtime and should be compiled when the action is, but don't need to be
   // done before we run the action.
   std::vector<OutputFile> data_outs;
-  for (size_t i = 0; i < target_->datadeps().size(); i++)
-    data_outs.push_back(target_->datadeps()[i].ptr->dependency_output_file());
+  for (size_t i = 0; i < target_->data_deps().size(); i++)
+    data_outs.push_back(target_->data_deps()[i].ptr->dependency_output_file());
   WriteStampForTarget(output_files, data_outs);
 }
 

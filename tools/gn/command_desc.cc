@@ -10,6 +10,7 @@
 #include "tools/gn/commands.h"
 #include "tools/gn/config.h"
 #include "tools/gn/config_values_extractors.h"
+#include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label.h"
@@ -50,13 +51,8 @@ void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
 }
 
 void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result) {
-  const LabelTargetVector& deps = target->deps();
-  for (size_t i = 0; i < deps.size(); i++)
-    RecursiveCollectDeps(deps[i].ptr, result);
-
-  const LabelTargetVector& datadeps = target->datadeps();
-  for (size_t i = 0; i < datadeps.size(); i++)
-    RecursiveCollectDeps(datadeps[i].ptr, result);
+  for (DepsIterator iter(target); !iter.done(); iter.Advance())
+    RecursiveCollectDeps(iter.target(), result);
 }
 
 // Prints dependencies of the given target (not the target itself). If the
@@ -67,26 +63,16 @@ void RecursivePrintDeps(const Target* target,
                         const Label& default_toolchain,
                         std::set<const Target*>* seen_targets,
                         int indent_level) {
-  LabelTargetVector sorted_deps = target->deps();
-  const LabelTargetVector& datadeps = target->datadeps();
-  sorted_deps.insert(sorted_deps.end(), datadeps.begin(), datadeps.end());
+  // Combine all deps into one sorted list.
+  std::vector<LabelTargetPair> sorted_deps;
+  for (DepsIterator iter(target); !iter.done(); iter.Advance())
+    sorted_deps.push_back(iter.pair());
   std::sort(sorted_deps.begin(), sorted_deps.end(),
             LabelPtrLabelLess<Target>());
 
   std::string indent(indent_level * 2, ' ');
   for (size_t i = 0; i < sorted_deps.size(); i++) {
     const Target* cur_dep = sorted_deps[i].ptr;
-
-    // Don't print groups. Groups are flattened such that the deps of the
-    // group are added directly to the target that depended on the group.
-    // Printing and recursing into groups here will cause such targets to be
-    // duplicated.
-    //
-    // It would be much more intuitive to do the opposite and not display the
-    // deps that were copied from the group to the target and instead display
-    // the group, but the source of those dependencies is not tracked.
-    if (cur_dep->output_type() == Target::GROUP)
-      continue;
 
     OutputString(indent +
         cur_dep->label().GetUserVisibleName(default_toolchain));
@@ -100,7 +86,9 @@ void RecursivePrintDeps(const Target* target,
         print_children = false;
         // Only print "..." if something is actually elided, which means that
         // the current target has children.
-        if (!cur_dep->deps().empty() || !cur_dep->datadeps().empty())
+        if (!cur_dep->public_deps().empty() ||
+            !cur_dep->private_deps().empty() ||
+            !cur_dep->data_deps().empty())
           OutputString("...");
       }
     }
@@ -136,6 +124,7 @@ void PrintDeps(const Target* target, bool display_header) {
   // Collect the deps to display.
   std::vector<Label> deps;
   if (cmdline->HasSwitch("all")) {
+    // Show all dependencies.
     if (display_header)
       OutputString("\nAll recursive dependencies:\n");
 
@@ -145,19 +134,14 @@ void PrintDeps(const Target* target, bool display_header) {
          i != all_deps.end(); ++i)
       deps.push_back(*i);
   } else {
+    // Show direct dependencies only.
     if (display_header) {
       OutputString(
           "\nDirect dependencies "
           "(try also \"--all\", \"--tree\", or even \"--all --tree\"):\n");
     }
-
-    const LabelTargetVector& target_deps = target->deps();
-    for (size_t i = 0; i < target_deps.size(); i++)
-      deps.push_back(target_deps[i].label);
-
-    const LabelTargetVector& target_datadeps = target->datadeps();
-    for (size_t i = 0; i < target_datadeps.size(); i++)
-      deps.push_back(target_datadeps[i].label);
+    for (DepsIterator iter(target); !iter.done(); iter.Advance())
+      deps.push_back(iter.label());
   }
 
   std::sort(deps.begin(), deps.end());
@@ -305,9 +289,9 @@ void PrintConfigs(const Target* target, bool display_header) {
                      display_header);
 }
 
-void PrintDirectDependentConfigs(const Target* target, bool display_header) {
-  PrintConfigsVector(target, target->direct_dependent_configs(),
-                     "direct_dependent_configs", display_header);
+void PrintPublicConfigs(const Target* target, bool display_header) {
+  PrintConfigsVector(target, target->public_configs(),
+                     "public_configs", display_header);
 }
 
 void PrintAllDependentConfigs(const Target* target, bool display_header) {
@@ -510,10 +494,10 @@ const char kDesc_Help[] =
     "      recursive) dependencies of the given target. \"--tree\" shows them\n"
     "      in a tree format with duplicates elided (noted by \"...\").\n"
     "      \"--all\" shows them sorted alphabetically. Using both flags will\n"
-    "      print a tree with no omissions. Both \"deps\" and \"datadeps\"\n"
-    "      will be included.\n"
+    "      print a tree with no omissions. The \"deps\", \"public_deps\", and\n"
+    "      \"data_deps\" will all be included.\n"
     "\n"
-    "  direct_dependent_configs\n"
+    "  public_configs\n"
     "  all_dependent_configs\n"
     "      Shows the labels of configs applied to targets that depend on this\n"
     "      one (either directly or all of them).\n"
@@ -596,8 +580,8 @@ int RunDesc(const std::vector<std::string>& args) {
     const std::string& what = args[2];
     if (what == variables::kConfigs) {
       PrintConfigs(target, false);
-    } else if (what == variables::kDirectDependentConfigs) {
-      PrintDirectDependentConfigs(target, false);
+    } else if (what == variables::kPublicConfigs) {
+      PrintPublicConfigs(target, false);
     } else if (what == variables::kAllDependentConfigs) {
       PrintAllDependentConfigs(target, false);
     } else if (what == variables::kForwardDependentConfigsFrom) {
@@ -684,7 +668,7 @@ int RunDesc(const std::vector<std::string>& args) {
     PrintConfigs(target, true);
   }
 
-  PrintDirectDependentConfigs(target, true);
+  PrintPublicConfigs(target, true);
   PrintAllDependentConfigs(target, true);
   PrintForwardDependentConfigsFrom(target, true);
 

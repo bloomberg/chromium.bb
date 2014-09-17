@@ -162,18 +162,20 @@ TEST(NinjaActionTargetWriter, ForEach) {
   // binaries).
   Target dep(setup.settings(), Label(SourceDir("//foo/"), "dep"));
   dep.set_output_type(Target::ACTION);
+  dep.visibility().SetPublic();
   dep.SetToolchain(setup.toolchain());
   ASSERT_TRUE(dep.OnResolved(&err));
 
   Target datadep(setup.settings(), Label(SourceDir("//foo/"), "datadep"));
   datadep.set_output_type(Target::ACTION);
+  datadep.visibility().SetPublic();
   datadep.SetToolchain(setup.toolchain());
   ASSERT_TRUE(datadep.OnResolved(&err));
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
-  target.deps().push_back(LabelTargetPair(&dep));
-  target.datadeps().push_back(LabelTargetPair(&datadep));
+  target.private_deps().push_back(LabelTargetPair(&dep));
+  target.data_deps().push_back(LabelTargetPair(&datadep));
 
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.sources().push_back(SourceFile("//foo/input2.txt"));
