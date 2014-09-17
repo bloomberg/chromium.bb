@@ -511,10 +511,12 @@ void SyncSetupHandler::DisplayGaiaLogin() {
 void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
+  bool force_new_tab = false;
   if (!browser) {
     // Settings is not displayed in a browser window. Open a new window.
     browser = new Browser(Browser::CreateParams(
         Browser::TYPE_TABBED, GetProfile(), chrome::GetActiveDesktop()));
+    force_new_tab = true;
   }
 
   // If the signin manager already has an authenticated username, this is a
@@ -531,7 +533,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
             signin_error_controller();
     DCHECK(error_controller->HasError());
-    if (switches::IsNewAvatarMenu()) {
+    if (switches::IsNewAvatarMenu() && !force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
           signin::ManageAccountsParams());
@@ -540,7 +542,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
                                  error_controller->error_account_id());
     }
   } else {
-    if (switches::IsNewAvatarMenu()) {
+    if (switches::IsNewAvatarMenu() && !force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams());
