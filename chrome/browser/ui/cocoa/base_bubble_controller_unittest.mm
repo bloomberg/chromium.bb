@@ -86,33 +86,68 @@ const CGFloat kAnchorPointY = 300;
 
 class BaseBubbleControllerTest : public CocoaTest {
  public:
+  BaseBubbleControllerTest() : controller_(nil) {}
+
   virtual void SetUp() OVERRIDE {
-    bubbleWindow_.reset([[InfoBubbleWindow alloc]
+    bubble_window_.reset([[InfoBubbleWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, kBubbleWindowWidth,
                                        kBubbleWindowHeight)
                   styleMask:NSBorderlessWindowMask
                     backing:NSBackingStoreBuffered
                       defer:YES]);
-    [bubbleWindow_ setAllowedAnimations:0];
+    [bubble_window_ setAllowedAnimations:0];
 
     // The bubble controller will release itself when the window closes.
     controller_ = [[BaseBubbleController alloc]
-        initWithWindow:bubbleWindow_.get()
+        initWithWindow:bubble_window_
           parentWindow:test_window()
             anchoredAt:NSMakePoint(kAnchorPointX, kAnchorPointY)];
     EXPECT_TRUE([controller_ bubble]);
+    EXPECT_EQ(bubble_window_.get(), [controller_ window]);
   }
 
   virtual void TearDown() OVERRIDE {
     // Close our windows.
     [controller_ close];
-    bubbleWindow_.reset(NULL);
+    bubble_window_.reset();
     CocoaTest::TearDown();
   }
 
- public:
-  base::scoped_nsobject<InfoBubbleWindow> bubbleWindow_;
+  // Closing the bubble will autorelease the controller. Give callers a keep-
+  // alive to run checks after closing.
+  base::scoped_nsobject<BaseBubbleController> ShowBubble() WARN_UNUSED_RESULT {
+    base::scoped_nsobject<BaseBubbleController> keep_alive(
+        [controller_ retain]);
+    EXPECT_FALSE([bubble_window_ isVisible]);
+    [controller_ showWindow:nil];
+    EXPECT_TRUE([bubble_window_ isVisible]);
+    return keep_alive;
+  }
+
+  // Fake the key state notification. Because unit_tests is a "daemon" process
+  // type, its windows can never become key (nor can the app become active).
+  // Instead of the hacks below, one could make a browser_test or transform the
+  // process type, but this seems easiest and is best suited to a unit test.
+  //
+  // On Lion and above, which have the event taps, simply post a notification
+  // that will cause the controller to call |-windowDidResignKey:|. Earlier
+  // OSes can call through directly.
+  void SimulateKeyStatusChange() {
+    NSNotification* notif =
+        [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                      object:[controller_ window]];
+    if (base::mac::IsOSLionOrLater())
+      [[NSNotificationCenter defaultCenter] postNotification:notif];
+    else
+      [controller_ windowDidResignKey:notif];
+  }
+
+ protected:
+  base::scoped_nsobject<InfoBubbleWindow> bubble_window_;
   BaseBubbleController* controller_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BaseBubbleControllerTest);
 };
 
 // Test that kAlignEdgeToAnchorEdge and a left bubble arrow correctly aligns the
@@ -200,42 +235,19 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignCenterArrow) {
 // Tests that when a new window gets key state (and the bubble resigns) that
 // the key window changes.
 TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
-  // Closing the bubble will autorelease the controller.
-  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
-
-  NSWindow* bubble_window = [controller_ window];
-  EXPECT_FALSE([bubble_window isVisible]);
-
   base::scoped_nsobject<NSWindow> other_window(
       [[NSWindow alloc] initWithContentRect:NSMakeRect(500, 500, 500, 500)
                                   styleMask:NSTitledWindowMask
                                     backing:NSBackingStoreBuffered
                                       defer:YES]);
-  EXPECT_FALSE([other_window isVisible]);
 
-  [controller_ showWindow:nil];
-  EXPECT_TRUE([bubble_window isVisible]);
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   EXPECT_FALSE([other_window isVisible]);
 
   [other_window makeKeyAndOrderFront:nil];
-  // Fake the key state notification. Because unit_tests is a "daemon" process
-  // type, its windows can never become key (nor can the app become active).
-  // Instead of the hacks below, one could make a browser_test or transform the
-  // process type, but this seems easiest and is best suited to a unit test.
-  //
-  // On Lion and above, which have the event taps, simply post a notification
-  // that will cause the controller to call |-windowDidResignKey:|. Earlier
-  // OSes can call through directly.
-  NSNotification* notif =
-      [NSNotification notificationWithName:NSWindowDidResignKeyNotification
-                                    object:bubble_window];
-  if (base::mac::IsOSLionOrLater())
-    [[NSNotificationCenter defaultCenter] postNotification:notif];
-  else
-    [controller_ windowDidResignKey:notif];
+  SimulateKeyStatusChange();
 
-
-  EXPECT_FALSE([bubble_window isVisible]);
+  EXPECT_FALSE([bubble_window_ isVisible]);
   EXPECT_TRUE([other_window isVisible]);
 }
 
@@ -246,17 +258,10 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideClosesWithoutContextMenu) {
   if (!base::mac::IsOSLionOrLater())
     return;
 
-  // Closing the bubble will autorelease the controller.
-  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   NSWindow* window = [controller_ window];
 
   EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify default value.
-  EXPECT_FALSE([window isVisible]);
-
-  [controller_ showWindow:nil];
-
-  EXPECT_TRUE([window isVisible]);
-
   [controller_ setShouldCloseOnResignKey:NO];
   NSEvent* event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
       NSMakePoint(10, 10), test_window());
@@ -295,16 +300,8 @@ TEST_F(BaseBubbleControllerTest, LionRightClickOutsideClosesWithContextMenu) {
   if (!base::mac::IsOSLionOrLater())
     return;
 
-  // Closing the bubble will autorelease the controller.
-  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   NSWindow* window = [controller_ window];
-
-  EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify default value.
-  EXPECT_FALSE([window isVisible]);
-
-  [controller_ showWindow:nil];
-
-  EXPECT_TRUE([window isVisible]);
 
   base::scoped_nsobject<NSMenu> context_menu(
       [[NSMenu alloc] initWithTitle:@""]);
@@ -341,3 +338,46 @@ TEST_F(BaseBubbleControllerTest, LionRightClickOutsideClosesWithContextMenu) {
   EXPECT_TRUE([menu_controller didOpen]);
 }
 
+// Test that the bubble is not dismissed when it has an attached sheet, or when
+// a sheet loses key status (since the sheet is not attached when that happens).
+TEST_F(BaseBubbleControllerTest, BubbleStaysOpenWithSheet) {
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
+
+  // Make a dummy NSPanel for the sheet. Don't use [NSOpenPanel openPanel],
+  // otherwise a stray FI_TFloatingInputWindow is created which the unit test
+  // harness doesn't like.
+  base::scoped_nsobject<NSPanel> panel(
+      [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 100, 50)
+                                 styleMask:NSTitledWindowMask
+                                   backing:NSBackingStoreBuffered
+                                     defer:YES]);
+  EXPECT_FALSE([panel isReleasedWhenClosed]);  // scoped_nsobject releases it.
+
+  // With a NSOpenPanel, we would call -[NSSavePanel beginSheetModalForWindow]
+  // here. In 10.9, we would call [NSWindow beginSheet:]. For 10.6, this:
+  [[NSApplication sharedApplication] beginSheet:panel
+                                 modalForWindow:bubble_window_
+                                  modalDelegate:nil
+                                 didEndSelector:NULL
+                                    contextInfo:NULL];
+
+  EXPECT_TRUE([bubble_window_ isVisible]);
+  EXPECT_TRUE([panel isVisible]);
+  // Losing key status while there is an attached window should not close the
+  // bubble.
+  SimulateKeyStatusChange();
+  EXPECT_TRUE([bubble_window_ isVisible]);
+  EXPECT_TRUE([panel isVisible]);
+
+  // Closing the attached sheet should not close the bubble.
+  [[NSApplication sharedApplication] endSheet:panel];
+  [panel close];
+
+  EXPECT_FALSE([bubble_window_ attachedSheet]);
+  EXPECT_TRUE([bubble_window_ isVisible]);
+  EXPECT_FALSE([panel isVisible]);
+
+  // Now that the sheet is gone, a key status change should close the bubble.
+  SimulateKeyStatusChange();
+  EXPECT_FALSE([bubble_window_ isVisible]);
+}
