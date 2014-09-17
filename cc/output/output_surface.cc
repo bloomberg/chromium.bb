@@ -46,8 +46,8 @@ OutputSurface::OutputSurface(
       context_provider_(context_provider),
       device_scale_factor_(-1),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize) {
+      gpu_latency_history_(kGpuLatencyHistorySize),
+      weak_ptr_factory_(this) {
 }
 
 OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
@@ -55,8 +55,8 @@ OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
       software_device_(software_device.Pass()),
       device_scale_factor_(-1),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize) {
+      gpu_latency_history_(kGpuLatencyHistorySize),
+      weak_ptr_factory_(this) {
 }
 
 OutputSurface::OutputSurface(
@@ -67,8 +67,8 @@ OutputSurface::OutputSurface(
       software_device_(software_device.Pass()),
       device_scale_factor_(-1),
       external_stencil_test_enabled_(false),
-      weak_ptr_factory_(this),
-      gpu_latency_history_(kGpuLatencyHistorySize) {
+      gpu_latency_history_(kGpuLatencyHistorySize),
+      weak_ptr_factory_(this) {
 }
 
 void OutputSurface::CommitVSyncParameters(base::TimeTicks timebase,

@@ -178,11 +178,11 @@ class CC_EXPORT OutputSurface {
 
   bool external_stencil_test_enabled_;
 
-  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
-
   std::deque<unsigned> available_gpu_latency_query_ids_;
   std::deque<unsigned> pending_gpu_latency_query_ids_;
   RollingTimeDeltaHistory gpu_latency_history_;
+
+  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
