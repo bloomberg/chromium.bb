@@ -62,21 +62,11 @@ using content::RenderViewHost;
 #if defined(DISABLE_NACL)
 
 #define TEST_PPAPI_NACL(test_name)
-#define TEST_PPAPI_NACL_NO_PNACL(test_name)
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
 #define TEST_PPAPI_NACL_SUBTESTS(test_name, run_statement)
 
 #else
-
-// TODO(dmichael): Remove this macro, crbug.com/384539
-#define TEST_PPAPI_NACL_NO_PNACL(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(test_name)) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL(test_name) \
@@ -1288,9 +1278,7 @@ TEST_PPAPI_NACL(VideoSource)
 // Printing doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)
 
-// TODO(dmichael): Make this work on PNaCl and remove the macro.
-//                 crbug.com/384539
-TEST_PPAPI_NACL_NO_PNACL(MessageHandler)
+TEST_PPAPI_NACL(MessageHandler)
 
 TEST_PPAPI_NACL(MessageLoop_Basics)
 TEST_PPAPI_NACL(MessageLoop_Post)

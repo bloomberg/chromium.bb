@@ -9,11 +9,9 @@
  * specific module instance.
  */
 
-[generate_thunk]
-
 label Chrome {
   M14 = 1.0,
-  [channel=dev] M37 = 1.1
+  [channel=dev] M39 = 1.2
 };
 
 /**
@@ -120,7 +118,7 @@ interface PPB_Messaging {
    * PPP_MessageHandler functions should be invoked.
    * @return PP_OK on success, or an error from pp_errors.h.
    */
-  [version=1.1]
+  [version=1.2]
   int32_t RegisterMessageHandler([in] PP_Instance instance,
                                  [inout] mem_t user_data,
                                  [in] PPP_MessageHandler handler,
@@ -140,7 +138,7 @@ interface PPB_Messaging {
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    */
-  [version=1.1]
+  [version=1.2]
   void UnregisterMessageHandler([in] PP_Instance instance);
 };
 

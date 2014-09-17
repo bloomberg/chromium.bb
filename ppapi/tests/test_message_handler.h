@@ -26,7 +26,7 @@ class TestMessageHandler : public TestCase {
   std::string TestRegisterErrorConditions();
   std::string TestPostMessageAndAwaitResponse();
 
-  const PPB_Messaging_1_1* ppb_messaging_if_;
+  const PPB_Messaging_1_2* ppb_messaging_if_;
   pp::SimpleThread handler_thread_;
 };
 

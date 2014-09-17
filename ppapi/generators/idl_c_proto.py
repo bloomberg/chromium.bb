@@ -148,6 +148,7 @@ class CGen(object):
     },
     'TypeValue': {
       'in': '%s',
+      'constptr_in': 'const %s*',  # So we can use const* for PP_Var sometimes.
       'inout': '%s*',
       'out': '%s*',
       'return': '%s',
@@ -382,6 +383,7 @@ class CGen(object):
     if node.GetProperty('in'): return 'in'
     if node.GetProperty('out'): return 'out'
     if node.GetProperty('inout'): return 'inout'
+    if node.GetProperty('constptr_in'): return 'constptr_in'
     return 'return'
 
   #

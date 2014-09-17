@@ -11,7 +11,7 @@
  */
 
 label Chrome {
-  [channel=none] M37 = 0.1
+  [channel=dev] M39 = 0.2
 };
 
 /**
@@ -38,7 +38,7 @@ interface PPP_MessageHandler {
    */
   void HandleMessage([in] PP_Instance instance,
                      [inout] mem_t user_data,
-                     [in] PP_Var message);
+                     [constptr_in] PP_Var message);
   /**
    * Invoked as a result of JavaScript invoking postMessageAndAwaitResponse()
    * on the plugin's DOM element.
@@ -49,12 +49,14 @@ interface PPP_MessageHandler {
    * RegisterMessageHandler.
    * @param[in] message is a copy of the parameter that JavaScript provided
    * to postMessageAndAwaitResponse.
-   * @return will be copied to a JavaScript object which is returned as
-   * the result of postMessageAndAwaitResponse to the invoking JavaScript.
+   * @param[out] response will be copied to a JavaScript object which is
+   * returned as the result of postMessageAndAwaitResponse to the invoking
+     JavaScript.
    */
-  PP_Var HandleBlockingMessage([in] PP_Instance instance,
-                               [inout] mem_t user_data,
-                               [in] PP_Var message);
+  void HandleBlockingMessage([in] PP_Instance instance,
+                             [inout] mem_t user_data,
+                             [constptr_in] PP_Var message,
+                             [out] PP_Var response);
   /**
    * Invoked when the handler object is no longer needed. After this, no more
    * calls will be made which pass this same value for <code>instance</code>

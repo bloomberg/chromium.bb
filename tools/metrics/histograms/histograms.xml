@@ -47781,6 +47781,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="22816901" label="PPB_FileChooser(Dev);0.5"/>
   <int value="28187368" label="PPB_IMEInputEvent(Dev);0.2"/>
   <int value="37307420" label="PPB_Scrollbar(Dev);0.5"/>
+  <int value="59327104" label="PPB_Messaging;1.2"/>
   <int value="62905097" label="PPB_TrueTypeFont(Dev);0.1"/>
   <int value="79708274" label="PPB_TCPSocket;1.1"/>
   <int value="110360074" label="PPB_Var;1.1"/>

@@ -11,6 +11,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_message_handler.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
@@ -43,9 +44,9 @@ class EchoingMessageHandler {
                                  const pp::MessageLoop& loop)
       : pp_instance_(instance),
         message_handler_loop_(loop),
-        ppb_messaging_if_(static_cast<const PPB_Messaging_1_1*>(
+        ppb_messaging_if_(static_cast<const PPB_Messaging_1_2*>(
             pp::Module::Get()->GetBrowserInterface(
-                PPB_MESSAGING_INTERFACE_1_1))),
+                PPB_MESSAGING_INTERFACE_1_2))),
         ppp_message_handler_if_(),
         is_registered_(false),
         test_finished_event_(instance),
@@ -114,23 +115,24 @@ class EchoingMessageHandler {
   }
   static void HandleMessage(PP_Instance instance,
                             void* user_data,
-                            struct PP_Var message_data) {
+                            const PP_Var* message_data) {
     EchoingMessageHandler* thiz =
         static_cast<EchoingMessageHandler*>(user_data);
     if (pp::MessageLoop::GetCurrent() != thiz->message_handler_loop_)
       thiz->AddError("HandleMessage was called on the wrong thread!");
     if (instance != thiz->pp_instance_)
       thiz->AddError("HandleMessage was passed the wrong instance!");
-    pp::Var var(message_data);
+    pp::Var var(*message_data);
     if (var.is_string() && var.AsString() == "FINISHED_TEST")
       thiz->test_finished_event_.Signal();
     else
-      thiz->ppb_messaging_if_->PostMessage(instance, message_data);
+      thiz->ppb_messaging_if_->PostMessage(instance, *message_data);
   }
 
-  static PP_Var HandleBlockingMessage(PP_Instance instance,
-                                      void* user_data,
-                                      struct PP_Var message_data) {
+  static void HandleBlockingMessage(PP_Instance instance,
+                                    void* user_data,
+                                    const PP_Var* message_data,
+                                    PP_Var* result) {
     EchoingMessageHandler* thiz =
         static_cast<EchoingMessageHandler*>(user_data);
     if (pp::MessageLoop::GetCurrent() != thiz->message_handler_loop_)
@@ -142,9 +144,9 @@ class EchoingMessageHandler {
     // giving us a ref-count. The ref-count it has will be decremented after we
     // return. But we need to add a ref when returning a PP_Var, to pass to the
     // caller.
-    pp::Var take_ref(message_data);
+    pp::Var take_ref(*message_data);
     take_ref.Detach();
-    return message_data;
+    *result = *message_data;
   }
 
   static void Destroy(PP_Instance instance, void* user_data) {
@@ -164,10 +166,10 @@ class EchoingMessageHandler {
   const PP_Instance pp_instance_;
   const pp::MessageLoop message_handler_loop_;
   const pp::MessageLoop main_loop_;
-  const PPB_Messaging_1_1* const ppb_messaging_if_;
+  const PPB_Messaging_1_2* const ppb_messaging_if_;
   // Spiritually, this member is const, but we can't initialize it in C++03,
   // so it has to be non-const to be set in the constructor body.
-  PPP_MessageHandler_0_1 ppp_message_handler_if_;
+  PPP_MessageHandler_0_2 ppp_message_handler_if_;
 
   // is_registered_ is only read/written on the main thread.
   bool is_registered_;
@@ -186,12 +188,11 @@ class EchoingMessageHandler {
 
 void FakeHandleMessage(PP_Instance instance,
                        void* user_data,
-                       struct PP_Var message_data) {}
-PP_Var FakeHandleBlockingMessage(PP_Instance instance,
-                                 void* user_data,
-                                 struct PP_Var message_data) {
-  return PP_MakeUndefined();
-}
+                       const PP_Var* message_data) {}
+void FakeHandleBlockingMessage(PP_Instance instance,
+                               void* user_data,
+                               const PP_Var* message_data,
+                               PP_Var* result) {}
 void FakeDestroy(PP_Instance instance, void* user_data) {}
 
 }  // namespace
@@ -207,8 +208,8 @@ TestMessageHandler::~TestMessageHandler() {
 }
 
 bool TestMessageHandler::Init() {
-  ppb_messaging_if_ = static_cast<const PPB_Messaging_1_1*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_MESSAGING_INTERFACE_1_1));
+  ppb_messaging_if_ = static_cast<const PPB_Messaging_1_2*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_MESSAGING_INTERFACE_1_2));
   return ppb_messaging_if_ &&
          CheckTestingInterface() &&
          handler_thread_.Start();
@@ -227,7 +228,7 @@ void TestMessageHandler::HandleMessage(const pp::Var& message_data) {
 std::string TestMessageHandler::TestRegisterErrorConditions() {
   {
     // Test registering with the main thread as the message loop.
-    PPP_MessageHandler_0_1 fake_ppp_message_handler = {
+    PPP_MessageHandler_0_2 fake_ppp_message_handler = {
       &FakeHandleMessage, &FakeHandleBlockingMessage, &FakeDestroy
     };
     pp::MessageLoop main_loop = pp::MessageLoop::GetForMainThread();
@@ -240,7 +241,7 @@ std::string TestMessageHandler::TestRegisterErrorConditions() {
   }
   {
     // Test registering with incomplete PPP_Messaging interface.
-    PPP_MessageHandler_0_1 bad_ppp_ifs[] = {
+    PPP_MessageHandler_0_2 bad_ppp_ifs[] = {
         { NULL, &FakeHandleBlockingMessage, &FakeDestroy },
         { &FakeHandleMessage, NULL, &FakeDestroy },
         { &FakeHandleMessage, &FakeHandleBlockingMessage, NULL }};

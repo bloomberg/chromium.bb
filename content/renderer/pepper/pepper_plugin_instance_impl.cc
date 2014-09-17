@@ -1386,7 +1386,17 @@ void PepperPluginInstanceImpl::PostMessageToJavaScript(PP_Var message) {
 int32_t PepperPluginInstanceImpl::RegisterMessageHandler(
     PP_Instance instance,
     void* user_data,
-    const PPP_MessageHandler_0_1* handler,
+    const PPP_MessageHandler_0_2* handler,
+    PP_Resource message_loop) {
+  // Not supported in-process.
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperPluginInstanceImpl::RegisterMessageHandler_1_1_Deprecated(
+    PP_Instance instance,
+    void* user_data,
+    const PPP_MessageHandler_0_1_Deprecated* handler,
     PP_Resource message_loop) {
   // Not supported in-process.
   NOTIMPLEMENTED();

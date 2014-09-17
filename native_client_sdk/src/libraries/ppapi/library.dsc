@@ -100,6 +100,7 @@
         'ppb_file_chooser_dev.h',
         'ppb_font_dev.h',
         'ppb_memory_dev.h',
+        'ppb_messaging_deprecated.h',
         'ppb_opengles2ext_dev.h',
         'ppb_printing_dev.h',
         'ppb_trace_event_dev.h',
