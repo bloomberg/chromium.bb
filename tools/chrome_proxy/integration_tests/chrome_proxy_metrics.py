@@ -248,6 +248,39 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
+  def AddResultsForBlockOnce(self, tab, results):
+    eligible_response_count = 0
+    bypass_count = 0
+    for resp in self.IterResponses(tab):
+      if resp.ShouldHaveChromeProxyViaHeader():
+        eligible_response_count += 1
+        if not resp.HasChromeProxyViaHeader():
+          bypass_count += 1
+
+    if tab:
+      info = GetProxyInfoFromNetworkInternals(tab)
+      if not info['enabled']:
+        raise ChromeProxyMetricException, (
+            'Chrome proxy should be enabled. proxy info: %s' % info)
+      self.VerifyBadProxies(info['badProxies'], [])
+
+    if eligible_response_count <= 1:
+      raise ChromeProxyMetricException, (
+          'There should be more than one DRP eligible response '
+          '(eligible_response_count=%d, bypass_count=%d)\n' % (
+              eligible_response_count, bypass_count))
+    elif bypass_count != 1:
+      raise ChromeProxyMetricException, (
+          'Exactly one response should be bypassed. '
+          '(eligible_response_count=%d, bypass_count=%d)\n' % (
+              eligible_response_count, bypass_count))
+    else:
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'eligible_responses', 'count',
+          eligible_response_count))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'bypass', 'count', bypass_count))
+
   def AddResultsForSafebrowsing(self, tab, results):
     count = 0
     safebrowsing_count = 0

@@ -82,6 +82,12 @@ class ChromeProxyBypass(benchmark.Benchmark):
   test = measurements.ChromeProxyBypass
   page_set = pagesets.BypassPageSet
 
+@benchmark.Enabled('android')
+class ChromeProxyBlockOnce(benchmark.Benchmark):
+  tag = 'block_once'
+  test = measurements.ChromeProxyBlockOnce
+  page_set = pagesets.BlockOncePageSet
+
 
 @benchmark.Enabled('android')
 class ChromeProxySafeBrowsing(benchmark.Benchmark):

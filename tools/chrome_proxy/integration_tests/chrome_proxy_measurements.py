@@ -112,6 +112,16 @@ class ChromeProxyBypass(ChromeProxyValidation):
     self._metrics.AddResultsForBypass(tab, results)
 
 
+class ChromeProxyBlockOnce(ChromeProxyValidation):
+  """Correctness measurement for block-once responses."""
+
+  def __init__(self):
+    super(ChromeProxyBlockOnce, self).__init__(restart_after_each_page=True)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForBlockOnce(tab, results)
+
+
 class ChromeProxySafebrowsing(ChromeProxyValidation):
   """Correctness measurement for safebrowsing."""
 
