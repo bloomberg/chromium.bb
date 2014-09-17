@@ -11,6 +11,7 @@ namespace safe_browsing {
 namespace download_protection_util {
 
 bool IsArchiveFile(const base::FilePath& file) {
+  // TODO(mattm): should .dmg be checked here instead of IsBinaryFile?
   return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
 }
 
@@ -33,6 +34,11 @@ bool IsBinaryFile(const base::FilePath& file) {
       // Chrome extensions and android APKs are also reported.
       file.MatchesExtension(FILE_PATH_LITERAL(".crx")) ||
       file.MatchesExtension(FILE_PATH_LITERAL(".apk")) ||
+      // Mac extensions.
+      file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
+      file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||
+      file.MatchesExtension(FILE_PATH_LITERAL(".osx")) ||
+      file.MatchesExtension(FILE_PATH_LITERAL(".app")) ||
       // Archives _may_ contain binaries, we'll check in ExtractFileFeatures.
       IsArchiveFile(file));
 }
@@ -48,6 +54,11 @@ ClientDownloadRequest::DownloadType GetDownloadType(
   // the pingback if we find an executable inside the zip archive.
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".zip")))
     return ClientDownloadRequest::ZIPPED_EXECUTABLE;
+  else if (file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".osx")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".app")))
+    return ClientDownloadRequest::MAC_EXECUTABLE;
   return ClientDownloadRequest::WIN_EXECUTABLE;
 }
 

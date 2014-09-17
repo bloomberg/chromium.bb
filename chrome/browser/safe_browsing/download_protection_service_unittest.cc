@@ -41,6 +41,11 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/metrics/field_trial.h"
+#include "components/variations/entropy_provider.h"
+#endif
+
 using ::testing::Assign;
 using ::testing::ContainerEq;
 using ::testing::DoAll;
@@ -197,6 +202,13 @@ class DownloadProtectionServiceTest : public testing::Test {
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
   virtual void SetUp() {
+#if defined(OS_MACOSX)
+    field_trial_list_.reset(new base::FieldTrialList(
+          new metrics::SHA1EntropyProvider("42")));
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+          "SafeBrowsingOSXClientDownloadPings",
+          "Enabled"));
+#endif
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();
@@ -358,6 +370,9 @@ class DownloadProtectionServiceTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
   base::FilePath testdata_path_;
+#if defined(OS_MACOSX)
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+#endif
 };
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
@@ -510,7 +525,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+#endif
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
@@ -943,6 +962,57 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
+#if defined(OS_MACOSX)
+// TODO(mattm): remove this (see crbug.com/414834).
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadPingOnOSXRequiresFieldTrial) {
+  // Clear the field trial that was set in SetUp().
+  field_trial_list_.reset();
+
+  net::TestURLFetcherFactory factory;
+
+  base::FilePath tmp_path(FILE_PATH_LITERAL("bla.tmp"));
+  base::FilePath final_path(FILE_PATH_LITERAL("bla.exe"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("http://www.google.com/"));
+  url_chain.push_back(GURL("http://www.google.com/bla.exe"));
+  GURL referrer("http://www.google.com/");
+  std::string hash = "hash";
+  std::string remote_address = "10.11.12.13";
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(remote_address));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
+      .WillOnce(SetCertificateContents("dummy cert data"));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(tmp_path, _))
+      .WillOnce(SetDosHeaderContents("dummy dos header"));
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+
+  // SendRequest is not called.  Wait for FinishRequest to call our callback.
+  MessageLoop::current()->Run();
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_EQ(NULL, fetcher);
+}
+#endif
+
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   net::TestURLFetcherFactory factory;
 
@@ -981,7 +1051,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1066,7 +1136,7 @@ TEST_F(DownloadProtectionServiceTest,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1154,7 +1224,7 @@ TEST_F(DownloadProtectionServiceTest,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1229,7 +1299,7 @@ TEST_F(DownloadProtectionServiceTest,
         &item,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
