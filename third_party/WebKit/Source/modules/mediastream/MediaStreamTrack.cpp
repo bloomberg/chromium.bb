@@ -27,12 +27,14 @@
 #include "modules/mediastream/MediaStreamTrack.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
+#include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebSourceInfo.h"
@@ -128,9 +130,14 @@ String MediaStreamTrack::readyState() const
 
 void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
+    LocalFrame* frame = toDocument(context)->frame();
+    UserMediaController* userMedia = UserMediaController::from(frame);
+    if (!userMedia) {
+        exceptionState.throwDOMException(NotSupportedError, "No sources controller available; is this a detached window?");
+        return;
+    }
     MediaStreamTrackSourcesRequest* request = MediaStreamTrackSourcesRequestImpl::create(*context, callback);
-    if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
+    userMedia->requestSources(request);
 }
 
 void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
