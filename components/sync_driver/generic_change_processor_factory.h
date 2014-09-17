@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_FACTORY_H_
 
 #include "base/memory/weak_ptr.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 class AttachmentService;
@@ -34,6 +35,7 @@ class GenericChangeProcessorFactory {
   GenericChangeProcessorFactory();
   virtual ~GenericChangeProcessorFactory();
   virtual scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
+      syncer::ModelType type,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,

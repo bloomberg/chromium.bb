@@ -12,15 +12,18 @@
 namespace sync_driver {
 
 FakeGenericChangeProcessor::FakeGenericChangeProcessor(
+    syncer::ModelType type,
     SyncApiComponentFactory* sync_factory)
-    : GenericChangeProcessor(NULL,
+    : GenericChangeProcessor(type,
+                             NULL,
                              base::WeakPtr<syncer::SyncableService>(),
                              base::WeakPtr<syncer::SyncMergeResult>(),
                              NULL,
                              sync_factory,
                              scoped_refptr<syncer::AttachmentStore>()),
       sync_model_has_user_created_nodes_(true),
-      sync_model_has_user_created_nodes_success_(true) {}
+      sync_model_has_user_created_nodes_success_(true) {
+}
 
 FakeGenericChangeProcessor::~FakeGenericChangeProcessor() {}
 
@@ -40,28 +43,25 @@ syncer::SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
 }
 
 syncer::SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
-    syncer::ModelType type, syncer::SyncDataList* current_sync_data) const {
+    syncer::SyncDataList* current_sync_data) const {
   return syncer::SyncError();
 }
 
 bool FakeGenericChangeProcessor::GetDataTypeContext(
-    syncer::ModelType type,
     std::string* context) const {
   return false;
 }
 
-int FakeGenericChangeProcessor::GetSyncCountForType(syncer::ModelType type) {
+int FakeGenericChangeProcessor::GetSyncCount() {
   return 0;
 }
 
-bool FakeGenericChangeProcessor::SyncModelHasUserCreatedNodes(
-    syncer::ModelType type, bool* has_nodes) {
+bool FakeGenericChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = sync_model_has_user_created_nodes_;
   return sync_model_has_user_created_nodes_success_;
 }
 
-bool FakeGenericChangeProcessor::CryptoReadyIfNecessary(
-    syncer::ModelType type) {
+bool FakeGenericChangeProcessor::CryptoReadyIfNecessary() {
   return true;
 }
 
@@ -73,6 +73,7 @@ FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
 
 scoped_ptr<GenericChangeProcessor>
 FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
+    syncer::ModelType type,
     syncer::UserShare* user_share,
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,

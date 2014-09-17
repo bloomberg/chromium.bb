@@ -16,6 +16,7 @@ GenericChangeProcessorFactory::~GenericChangeProcessorFactory() {}
 
 scoped_ptr<GenericChangeProcessor>
 GenericChangeProcessorFactory::CreateGenericChangeProcessor(
+    syncer::ModelType type,
     syncer::UserShare* user_share,
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
@@ -23,6 +24,7 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     SyncApiComponentFactory* sync_factory) {
   DCHECK(user_share);
   return make_scoped_ptr(new GenericChangeProcessor(
+                             type,
                              error_handler,
                              local_service,
                              merge_result,

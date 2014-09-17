@@ -67,7 +67,8 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   }
 
   generic_change_processor_ =
-      processor_factory->CreateGenericChangeProcessor(user_share,
+      processor_factory->CreateGenericChangeProcessor(type,
+                                                      user_share,
                                                       error_handler,
                                                       local_service,
                                                       merge_result,
@@ -97,7 +98,7 @@ int SharedChangeProcessor::GetSyncCount() {
     LOG(ERROR) << "Change processor disconnected.";
     return 0;
   }
-  return generic_change_processor_->GetSyncCountForType(type_);
+  return generic_change_processor_->GetSyncCount();
 }
 
 syncer::SyncError SharedChangeProcessor::ProcessSyncChanges(
@@ -139,7 +140,7 @@ syncer::SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
                             type_);
     return error;
   }
-  return generic_change_processor_->GetAllSyncDataReturnError(type, data);
+  return generic_change_processor_->GetAllSyncDataReturnError(data);
 }
 
 syncer::SyncError SharedChangeProcessor::UpdateDataTypeContext(
@@ -168,8 +169,7 @@ bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     LOG(ERROR) << "Change processor disconnected.";
     return false;
   }
-  return generic_change_processor_->SyncModelHasUserCreatedNodes(
-      type_, has_nodes);
+  return generic_change_processor_->SyncModelHasUserCreatedNodes(has_nodes);
 }
 
 bool SharedChangeProcessor::CryptoReadyIfNecessary() {
@@ -180,7 +180,7 @@ bool SharedChangeProcessor::CryptoReadyIfNecessary() {
     LOG(ERROR) << "Change processor disconnected.";
     return true;  // Otherwise we get into infinite spin waiting.
   }
-  return generic_change_processor_->CryptoReadyIfNecessary(type_);
+  return generic_change_processor_->CryptoReadyIfNecessary();
 }
 
 bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
@@ -191,7 +191,7 @@ bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
     LOG(ERROR) << "Change processor disconnected.";
     return false;
   }
-  return generic_change_processor_->GetDataTypeContext(type_, context);
+  return generic_change_processor_->GetDataTypeContext(context);
 }
 
 syncer::SyncError SharedChangeProcessor::CreateAndUploadError(

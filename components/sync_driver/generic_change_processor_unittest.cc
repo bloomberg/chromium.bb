@@ -102,24 +102,46 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
 
 class SyncGenericChangeProcessorTest : public testing::Test {
  public:
-  // It doesn't matter which type we use.  Just pick one.
+  // Most test cases will use this type.  For those that need a
+  // GenericChangeProcessor for a different type, use |InitializeForType|.
   static const syncer::ModelType kType = syncer::PREFERENCES;
 
   SyncGenericChangeProcessorTest()
-      : sync_merge_result_(kType),
-        merge_result_ptr_factory_(&sync_merge_result_),
-        syncable_service_ptr_factory_(&fake_syncable_service_),
+      : syncable_service_ptr_factory_(&fake_syncable_service_),
         mock_attachment_service_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    test_user_share_.SetUp();
+    // Use kType by default, but allow test cases to re-initialize with whatever
+    // type they choose.  Therefore, it's important that all type dependent
+    // initialization occurs in InitializeForType.
+    InitializeForType(kType);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    mock_attachment_service_ = NULL;
+    if (test_user_share_) {
+      test_user_share_->TearDown();
+    }
+  }
+
+  // Initialize GenericChangeProcessor and related classes for testing with
+  // model type |type|.
+  void InitializeForType(syncer::ModelType type) {
+    TearDown();
+    test_user_share_.reset(new syncer::TestUserShare);
+    test_user_share_->SetUp();
+    sync_merge_result_.reset(new syncer::SyncMergeResult(type));
+    merge_result_ptr_factory_.reset(
+        new base::WeakPtrFactory<syncer::SyncMergeResult>(
+            sync_merge_result_.get()));
+
     syncer::ModelTypeSet types = syncer::ProtocolTypes();
     for (syncer::ModelTypeSet::Iterator iter = types.First(); iter.Good();
          iter.Inc()) {
       syncer::TestUserShare::CreateRoot(iter.Get(),
-                                        test_user_share_.user_share());
+                                        test_user_share_->user_share());
     }
-    test_user_share_.encryption_handler()->Init();
+    test_user_share_->encryption_handler()->Init();
     scoped_refptr<syncer::AttachmentStore> attachment_store(
         new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
 
@@ -133,26 +155,22 @@ class SyncGenericChangeProcessorTest : public testing::Test {
     sync_factory_.reset(new MockSyncApiComponentFactory(
         mock_attachment_service.PassAs<syncer::AttachmentService>()));
     change_processor_.reset(
-        new GenericChangeProcessor(&data_type_error_handler_,
+        new GenericChangeProcessor(type,
+                                   &data_type_error_handler_,
                                    syncable_service_ptr_factory_.GetWeakPtr(),
-                                   merge_result_ptr_factory_.GetWeakPtr(),
-                                   test_user_share_.user_share(),
+                                   merge_result_ptr_factory_->GetWeakPtr(),
+                                   test_user_share_->user_share(),
                                    sync_factory_.get(),
                                    attachment_store));
   }
 
-  virtual void TearDown() OVERRIDE {
-    mock_attachment_service_ = NULL;
-    test_user_share_.TearDown();
-  }
-
-  void BuildChildNodes(int n) {
+  void BuildChildNodes(syncer::ModelType type, int n) {
     syncer::WriteTransaction trans(FROM_HERE, user_share());
     syncer::ReadNode root(&trans);
-    ASSERT_EQ(syncer::BaseNode::INIT_OK, root.InitTypeRoot(kType));
+    ASSERT_EQ(syncer::BaseNode::INIT_OK, root.InitTypeRoot(type));
     for (int i = 0; i < n; ++i) {
       syncer::WriteNode node(&trans);
-      node.InitUniqueByCreation(kType, root, base::StringPrintf("node%05d", i));
+      node.InitUniqueByCreation(type, root, base::StringPrintf("node%05d", i));
     }
   }
 
@@ -161,7 +179,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   syncer::UserShare* user_share() {
-    return test_user_share_.user_share();
+    return test_user_share_->user_share();
   }
 
   MockAttachmentService* mock_attachment_service() {
@@ -176,15 +194,16 @@ class SyncGenericChangeProcessorTest : public testing::Test {
  private:
   base::MessageLoopForUI loop_;
 
-  syncer::SyncMergeResult sync_merge_result_;
-  base::WeakPtrFactory<syncer::SyncMergeResult> merge_result_ptr_factory_;
+  scoped_ptr<syncer::SyncMergeResult> sync_merge_result_;
+  scoped_ptr<base::WeakPtrFactory<syncer::SyncMergeResult> >
+      merge_result_ptr_factory_;
 
   syncer::FakeSyncableService fake_syncable_service_;
   base::WeakPtrFactory<syncer::FakeSyncableService>
       syncable_service_ptr_factory_;
 
   DataTypeErrorHandlerMock data_type_error_handler_;
-  syncer::TestUserShare test_user_share_;
+  scoped_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
   scoped_ptr<SyncApiComponentFactory> sync_factory_;
 
@@ -197,7 +216,7 @@ TEST_F(SyncGenericChangeProcessorTest, StressGetAllSyncData) {
   const int kNumChildNodes = 1000;
   const int kRepeatCount = 1;
 
-  ASSERT_NO_FATAL_FAILURE(BuildChildNodes(kNumChildNodes));
+  ASSERT_NO_FATAL_FAILURE(BuildChildNodes(kType, kNumChildNodes));
 
   for (int i = 0; i < kRepeatCount; ++i) {
     syncer::SyncDataList sync_data =
@@ -209,6 +228,7 @@ TEST_F(SyncGenericChangeProcessorTest, StressGetAllSyncData) {
 }
 
 TEST_F(SyncGenericChangeProcessorTest, SetGetPasswords) {
+  InitializeForType(syncer::PASSWORDS);
   const int kNumPasswords = 10;
   sync_pb::PasswordSpecificsData password_data;
   password_data.set_username_value("user");
@@ -266,6 +286,7 @@ TEST_F(SyncGenericChangeProcessorTest, SetGetPasswords) {
 }
 
 TEST_F(SyncGenericChangeProcessorTest, UpdatePasswords) {
+  InitializeForType(syncer::PASSWORDS);
   const int kNumPasswords = 10;
   sync_pb::PasswordSpecificsData password_data;
   password_data.set_username_value("user");
@@ -420,8 +441,7 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
   change_processor()->OnAttachmentUploaded(attachment_id);
   syncer::ReadTransaction read_transaction(FROM_HERE, user_share());
   syncer::ReadNode node(&read_transaction);
-  ASSERT_EQ(node.InitByClientTagLookup(syncer::PREFERENCES, tag),
-            syncer::BaseNode::INIT_OK);
+  ASSERT_EQ(node.InitByClientTagLookup(kType, tag), syncer::BaseNode::INIT_OK);
   attachment_ids = node.GetAttachmentIds();
   EXPECT_EQ(1U, attachment_ids.size());
 }

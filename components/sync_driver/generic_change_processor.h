@@ -44,10 +44,11 @@ class GenericChangeProcessor : public ChangeProcessor,
                                public syncer::AttachmentService::Delegate,
                                public base::NonThreadSafe {
  public:
-  // Create a change processor and connect it to the syncer.
+  // Create a change processor for |type| and connect it to the syncer.
   // |attachment_store| can be NULL which means that datatype will not use sync
   // attachments.
   GenericChangeProcessor(
+      syncer::ModelType type,
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
@@ -84,23 +85,20 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Similar to above, but returns a SyncError for use by direct clients
   // of GenericChangeProcessor that may need more error visibility.
   virtual syncer::SyncError GetAllSyncDataReturnError(
-      syncer::ModelType type,
       syncer::SyncDataList* data) const;
 
-  // If a datatype context associated with |type| exists, fills |context| and
-  // returns true. Otheriwse, if there has not been a context set, returns
-  // false.
-  virtual bool GetDataTypeContext(syncer::ModelType type,
-                                  std::string* context) const;
+  // If a datatype context associated with this GenericChangeProcessor's type
+  // exists, fills |context| and returns true. Otheriwse, if there has not been
+  // a context set, returns false.
+  virtual bool GetDataTypeContext(std::string* context) const;
 
   // Returns the number of items for this type.
-  virtual int GetSyncCountForType(syncer::ModelType type);
+  virtual int GetSyncCount();
 
   // Generic versions of AssociatorInterface methods. Called by
   // syncer::SyncableServiceAdapter or the DataTypeController.
-  virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
-                                            bool* has_nodes);
-  virtual bool CryptoReadyIfNecessary(syncer::ModelType type);
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
+  virtual bool CryptoReadyIfNecessary();
 
  protected:
   // ChangeProcessor interface.
@@ -114,7 +112,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   // that need to be stored.  This method will append to it.
   syncer::SyncError HandleActionAdd(const syncer::SyncChange& change,
                                     const std::string& type_str,
-                                    const syncer::ModelType& type,
                                     const syncer::WriteTransaction& trans,
                                     syncer::WriteNode* sync_node,
                                     syncer::AttachmentIdList* new_attachments);
@@ -126,7 +123,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   syncer::SyncError HandleActionUpdate(
       const syncer::SyncChange& change,
       const std::string& type_str,
-      const syncer::ModelType& type,
       const syncer::WriteTransaction& trans,
       syncer::WriteNode* sync_node,
       syncer::AttachmentIdList* new_attachments);
@@ -136,6 +132,8 @@ class GenericChangeProcessor : public ChangeProcessor,
   // This function assumes that attachments were already stored in
   // AttachmentStore.
   void UploadAttachments(const syncer::AttachmentIdList& attachment_ids);
+
+  const syncer::ModelType type_;
 
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;
