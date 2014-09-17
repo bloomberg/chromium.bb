@@ -249,7 +249,7 @@
       'filepath': 'Source/modules/device_orientation/' \
                   '|LayoutTests/fast/dom/DeviceMotion/' \
                   '|LayoutTests/fast/dom/DeviceOrientation/' \
-                  '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base' \
+                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)' \
                   '|Source/core/frame/DeviceSingleWindowEventController'
     },
     'web': {
@@ -285,7 +285,7 @@
     'battery_status': {
       'filepath': 'Source/modules/battery/' \
                   '|LayoutTests/battery-status/' \
-                  '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base'
+                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)'
     },
     'device_light': {
       'filepath': 'Source/modules/device_light/' \
