@@ -643,6 +643,8 @@ static void interiorCursorDestroy(RecoverInteriorCursor *pCursor){
 /* Internal helper.  Reset storage in preparation for iterating pPage. */
 static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
                                   DbPage *pPage){
+  const unsigned knMinCellLength = 2 + 4 + 1;
+  unsigned nMaxChildren;
   assert( PageHeader(pPage)[kiPageTypeOffset]==kTableInteriorPage );
 
   if( pCursor->pPage ){
@@ -669,8 +671,7 @@ static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
    * byte is corrupted.  Could be an overflow page, but it would require
    * a very large database.
    */
-  const unsigned knMinCellLength = 2 + 4 + 1;
-  unsigned nMaxChildren =
+  nMaxChildren =
       (pCursor->nPageSize - kiPageInteriorHeaderBytes) / knMinCellLength + 1;
   if (pCursor->nChildren > nMaxChildren) {
     pCursor->nChildren = nMaxChildren;
