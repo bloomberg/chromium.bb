@@ -26,6 +26,10 @@ concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 #  environment: File name of environment file.
 #  force_win64 (optional): value for this build arg.
 template("msvc_toolchain") {
+  if (defined(invoker.concurrent_links)) {
+    concurrent_links = invoker.concurrent_links
+  }
+
   env = invoker.environment
 
   toolchain(target_name) {
