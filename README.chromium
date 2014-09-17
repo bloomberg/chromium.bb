@@ -19,11 +19,11 @@ This directory contains the source code of ICU 52.1 for C/C++
    - source/layoutex
    - source/data/xml
 
-  patches/configure.patch is applied to get runConfigureICU work in the 
+  patches/configure.patch is applied to get runConfigureICU work in the
   icudata generation step without layout and layoutex directory by removing the
   corresponding Makefile's from ac_config variable.
 
-2. Apply the following patch for platform related headers (putilimpl.h and 
+2. Apply the following patch for platform related headers (putilimpl.h and
    others).
 
   - patches/putil.patch for Android, QNX and newlib(NaCl-newlib).
@@ -37,12 +37,12 @@ This directory contains the source code of ICU 52.1 for C/C++
 
 3. Breakiterator patches
 
-   - Apply patches/brkitr.patch 
-     * word.txt 
+   - Apply patches/brkitr.patch
+     * word.txt
        a. Move full stops (U+002E, U+FF0E) from MidNumLet to MidNum so that
           FQDN labels can be split at '.'
        b. Move fullwidth digits (U+FF10 - U+FF19) from Ideographic to Numeric.
-          See http://unicode.org/cldr/trac/ticket/6555 
+          See http://unicode.org/cldr/trac/ticket/6555
      * line.txt
        a. Use Japanese rules for all locales because Japanese tailoring only
           affects Japanese specific characters.
@@ -51,15 +51,15 @@ This directory contains the source code of ICU 52.1 for C/C++
           more consistenly.
           See http://unicode.org/cldr/trac/ticket/6557
        c. Fix line breaking for Chinese characters and quotation marks
-          See http://unicode.org/cldr/trac/ticket/4200 and 
+          See http://unicode.org/cldr/trac/ticket/4200 and
               http://crbug.com/39779
-             
+
 
    - Add a new file brklocal.mk (copied from brkfiles.mk) with line_ja.txt
      and word_POSIX.txt dropped from the build list.
 
    - Apply patches/khmer-dictbe.patch and put in a smaller Khmer dictionary
-     (source/data/brkitr/khmerdict.txt) obtained from 
+     (source/data/brkitr/khmerdict.txt) obtained from
      http://bugs.icu-project.org/trac/ticket/9451
 
    - Add several common Chinese words that were dropped previously to
@@ -72,9 +72,9 @@ This directory contains the source code of ICU 52.1 for C/C++
        Reverts some changes about Chinese/Japanese segmentation rules in
        patches/brkitr.patch to reduce binary size for Android.
 
-4. Converter changes : 
+4. Converter changes :
 
-  - converters.patch : 
+  - converters.patch :
      a. revises existing mapping tables
      b. Remove a lot of unused aliases in the converter alias table
         (source/data/mappings/convrtrs.txt ) leading to 40kB size reduction.
@@ -82,20 +82,20 @@ This directory contains the source code of ICU 52.1 for C/C++
   - Add source/data/mappings/ucmlocal.txt : to list only converters we need.
   - Add three new tables per WHATWG encoding standards for EUC-JP,
     Shift_JIS and CP866.
-    They're generated with scripts/{eucjp, sjis, ibm866}_gen.sh. 
+    They're generated with scripts/{eucjp, sjis, ibm866}_gen.sh.
   - Add three 'fake' tables for ISO-2022-CN(-Ext) : noop-*.ucm.
 
-  - uconv.patch 
+  - uconv.patch
     a. ucnv2022 uses 3 fake tables for ISO-2022-CN(-Ext) instead of two
        huge tables.
     b. ISO-2022-JP-[1-4] is dropped.
-    c. SCSU, BOCU, ISCII, UTF-7 conversion is diabled leading to 
+    c. SCSU, BOCU, ISCII, UTF-7 conversion is diabled leading to
        the 47kB reduction in the code size.
 
 5. Locale changes
   - patches/locale1.patch :
       a. Exemplar character set changes for zh*, ja + 9 Indian locales
-      b. Minor fixes for Korean, a few Indic (AmPmMarkers) and 
+      b. Minor fixes for Korean, a few Indic (AmPmMarkers) and
       others (datetime format)
 
   - Locale build configuration files: To include the full locale data
@@ -103,7 +103,7 @@ This directory contains the source code of ICU 52.1 for C/C++
     add reslocal.mk or {trns,sprep,rbnf,coll}local.mk files to
     source/data/{coll,curr,lang.locale,curr,region,translit,zone,rbnf,sprep}.
 
-    This along with #8 (data.build.patch), #3 (brkiter) and #4 (converter) 
+    This along with #8 (data.build.patch), #3 (brkiter) and #4 (converter)
     cuts down the data size by ~ 11MB.
 
   - Run scripts/trim_data.sh : About 2.1MB data size reduction.
@@ -112,7 +112,7 @@ This directory contains the source code of ICU 52.1 for C/C++
       b. Trim the locale data for non-UI languages to the bare minimum :
         ExemplarCharacters, LocaleScript, layout, and the name of the
         language for a locale in its native language.
-      c. Remove the legacy Chinese character set-based collation 
+      c. Remove the legacy Chinese character set-based collation
          (big5han/gb2312han) that don't make any sense and nobdoy uses.
 
   - android/patch_locale.sh (to be run for Android build only):
@@ -120,7 +120,7 @@ This directory contains the source code of ICU 52.1 for C/C++
          except the language and script names of zh_Hans and zh_Hant.
       b. Remove exemplar cities in timezone data (data/zone)
       c. Keep only the minimal calendar data in data/locales
- 
+
   - Add tg.txt to source/data/locale source/data/lang to add the minimal locale
     data necessary for the spellchecker. In both directories, add tg.txt to
     reslocal.mk
@@ -154,7 +154,7 @@ This directory contains the source code of ICU 52.1 for C/C++
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
      c. fix a Windows build failure with U_USING_ICU_NAMESPACE=0
-        upstream bug: http://bugs.icu-project.org/trac/ticket/10486 
+        upstream bug: http://bugs.icu-project.org/trac/ticket/10486
         fixed in ICU 53)
      d. Explicitly use Windows 'A' API when argument is an LPSTR in wintz.c
         upstream bug : http://bugs.icu-project.org/trac/ticket/10870
@@ -165,19 +165,19 @@ This directory contains the source code of ICU 52.1 for C/C++
       Windows-only data build patch.
 
   - patches/clang_win.patch :
-    Take care of 3 warnings from clang and MSVC 2013. 
+    Take care of 3 warnings from clang and MSVC 2013.
     upstream bug : http://bugs.icu-project.org/trac/ticket/11102
 
 9. Pre-built data files are checked in with the following steps on Linux:
 
-    a. Make a icu data build directory outside the Chromium source tree 
+    a. Make a icu data build directory outside the Chromium source tree
        and cd to that directory.
-    b. Run 
+    b. Run
 
       ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout
 
     c. Run 'make'
-    d. 'make' will fail in the 1st pass. Copy 
+    d. 'make' will fail in the 1st pass. Copy
        ${CHROME_ICU_TREE_TOP}/source/data/in/coll/invuca.icu
        to {BUILD_DIR_ROOT}/data/out/build/icudt52l/coll and re-run 'make'
        in {BUILD_DIR_ROOT}/data.
@@ -199,7 +199,7 @@ This directory contains the source code of ICU 52.1 for C/C++
       icudt52l_dat.S, but '52' is dropped while copying.
 
       mac/icudtl_dat.S is identical to linux/icudtl_dat.S except for
-      the header portion. With "linux/icudtl_dat.S" in its place, 
+      the header portion. With "linux/icudtl_dat.S" in its place,
       run scripts/make_mac_assembly.sh to generate it.
 
     - android/icudtl_dat.S : Built on Linux with all the patches above and
@@ -211,24 +211,28 @@ This directory contains the source code of ICU 52.1 for C/C++
       copied to the above location with '52' dropped in its name.
 
     - windows/icudt.dll (by default, we set icu_use_icu_data_flag to 1
-      and don't use this file.) 
+      and don't use this file.)
 
       a. check out a clean copy of icu52  from the upstream on Windows
          outside the Chrome tree.
 
         $ svn export --native-eol LF http://source.icu-project.org/repos/icu/icu/tags/release-52-1 ${SEPARATE_ICU_ROOT}/icu52
 
-      b. copy ${CHROME_ICU_ROOT}/source/data/in/icudtl.dat to 
+      b. copy ${CHROME_ICU_ROOT}/source/data/in/icudtl.dat to
          ${SEPARATE_ICU_ROOT}/source/data/in/icudt52l.dat
       c. copy ${CHROME_ICU_ROOT}/source/data/makedata.mak to
          ${SEPARATE_ICU_ROOT}/source/data/makedata.mak
       c. In Visual Studio, open source/allinone/allinone.sln solution
          in ${SEPARATE_ICU_ROOT}
-      d. Build 'makedata' target 
+      d. Build 'makedata' target
       e. icudt52.dll will be generated in ${SEPARATE_ICU_ROOT}/bin
-      f. Copy that icudt52.dll to ${CHROME_ICU_ROOT}/windows/icudt.dll 
+      f. Copy that icudt52.dll to ${CHROME_ICU_ROOT}/windows/icudt.dll
          and check that in.
 
 
 10. Change export of U_ICUDATA_ENTRY_POINT from U_IMPORT to U_EXPORT.
     - patches/declspec.patch
+
+11. Cherry-pick an upstream patch to fix a bug in bidi.
+    - patches/bidi.patch
+    - upstream bug : http://bugs.icu-project.org/trac/ticket/11054

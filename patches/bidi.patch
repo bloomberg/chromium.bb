@@ -1,0 +1,95 @@
+Index: source/test/cintltst/cbiditst.c
+===================================================================
+--- source/test/cintltst/cbiditst.c	(revision 36303)
++++ source/test/cintltst/cbiditst.c	(revision 36304)
+@@ -87,6 +87,8 @@
+ 
+ static void doTailTest(void);
+ 
++static void testBracketOverflow(void);
++
+ /* new BIDI API */
+ static void testReorderingMode(void);
+ static void testReorderRunsOnly(void);
+@@ -133,6 +135,7 @@
+     addTest(root, testClassOverride, "complex/bidi/TestClassOverride");
+     addTest(root, testGetBaseDirection, "complex/bidi/testGetBaseDirection");
+     addTest(root, testContext, "complex/bidi/testContext");
++    addTest(root, testBracketOverflow, "complex/bidi/TestBracketOverflow");
+ 
+     addTest(root, doArabicShapingTest, "complex/arabic-shaping/ArabicShapingTest");
+     addTest(root, doLamAlefSpecialVLTRArabicShapingTest, "complex/arabic-shaping/lamalef");
+@@ -4896,3 +4899,25 @@
+ 
+     log_verbose("\nExiting TestContext \n\n");
+ }
++
++/* Ticket#11054 ubidi_setPara crash with heavily nested brackets */
++static void
++testBracketOverflow(void) {
++    static const char* TEXT = "(((((((((((((((((((((((((((((((((((((((((a)(A)))))))))))))))))))))))))))))))))))))))))";
++    UErrorCode status = U_ZERO_ERROR;
++    UBiDi* bidi;
++    UChar src[100];
++    UChar dest[100];
++    int32_t len;
++
++    bidi = ubidi_open();
++    len = uprv_strlen(TEXT);
++    pseudoToU16(len, TEXT, src);
++    ubidi_setPara(bidi, src, len, UBIDI_DEFAULT_LTR , NULL, &status);
++    if (U_FAILURE(status)) {
++        log_err("setPara failed with heavily nested brackets - %s", u_errorName(status));
++    }
++
++    ubidi_close(bidi);
++}
++
+Index: source/common/ubidiimp.h
+===================================================================
+--- source/common/ubidiimp.h	(revision 36303)
++++ source/common/ubidiimp.h	(revision 36304)
+@@ -173,7 +173,7 @@
+     /* array of opening entries which should be enough in most cases; no malloc() */
+     Opening simpleOpenings[SIMPLE_OPENINGS_SIZE];
+     Opening *openings;                  /* pointer to current array of entries */
+-    int32_t openingsSize;               /* number of allocated entries */
++    int32_t openingsCount;              /* number of allocated entries */
+     int32_t isoRunLast;                 /* index of last used entry */
+     /* array of nested isolated sequence entries; can never excess UBIDI_MAX_EXPLICIT_LEVEL
+        + 1 for index 0, + 1 for before the first isolated sequence */
+Index: source/common/ubidi.c
+===================================================================
+--- source/common/ubidi.c	(revision 36303)
++++ source/common/ubidi.c	(revision 36304)
+@@ -679,10 +679,10 @@
+     bd->isoRuns[0].contextPos=0;
+     if(pBiDi->openingsMemory) {
+         bd->openings=pBiDi->openingsMemory;
+-        bd->openingsSize=pBiDi->openingsSize;
++        bd->openingsCount=pBiDi->openingsSize / sizeof(Opening);
+     } else {
+         bd->openings=bd->simpleOpenings;
+-        bd->openingsSize=SIMPLE_OPENINGS_SIZE;
++        bd->openingsCount=SIMPLE_OPENINGS_SIZE;
+     }
+     bd->isNumbersSpecial=bd->pBiDi->reorderingMode==UBIDI_REORDER_NUMBERS_SPECIAL ||
+                          bd->pBiDi->reorderingMode==UBIDI_REORDER_INVERSE_FOR_NUMBERS_SPECIAL;
+@@ -743,7 +743,7 @@
+ bracketAddOpening(BracketData *bd, UChar match, int32_t position) {
+     IsoRun *pLastIsoRun=&bd->isoRuns[bd->isoRunLast];
+     Opening *pOpening;
+-    if(pLastIsoRun->limit>=bd->openingsSize) {  /* no available new entry */
++    if(pLastIsoRun->limit>=bd->openingsCount) {  /* no available new entry */
+         UBiDi *pBiDi=bd->pBiDi;
+         if(!getInitialOpeningsMemory(pBiDi, pLastIsoRun->limit * 2))
+             return FALSE;
+@@ -751,7 +751,7 @@
+             uprv_memcpy(pBiDi->openingsMemory, bd->simpleOpenings,
+                         SIMPLE_OPENINGS_SIZE * sizeof(Opening));
+         bd->openings=pBiDi->openingsMemory;     /* may have changed */
+-        bd->openingsSize=pBiDi->openingsSize;
++        bd->openingsCount=pBiDi->openingsSize / sizeof(Opening);
+     }
+     pOpening=&bd->openings[pLastIsoRun->limit];
+     pOpening->position=position;
