@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
@@ -25,7 +26,8 @@ namespace apps {
 // Monitors apps being reloaded and performs app specific actions (like launch
 // or restart) on them. Also provides an interface to schedule these actions.
 class AppLoadService : public KeyedService,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public extensions::ExtensionRegistryObserver {
  public:
   enum PostReloadActionType {
     LAUNCH,
@@ -67,8 +69,15 @@ class AppLoadService : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   bool WasUnloadedForReload(
-      const extensions::UnloadedExtensionInfo& unload_info);
+      const extensions::ExtensionId& extension_id,
+      const extensions::UnloadedExtensionInfo::Reason reason);
   bool HasPostReloadAction(const std::string& extension_id);
 
   // Map of extension id to reload action. Absence from the map implies

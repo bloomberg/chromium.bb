@@ -9,6 +9,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -28,10 +29,11 @@ AppLoadServiceFactory::AppLoadServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AppLoadService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
+  DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
-  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
 }
 
 AppLoadServiceFactory::~AppLoadServiceFactory() {
