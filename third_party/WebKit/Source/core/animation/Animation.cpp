@@ -202,7 +202,6 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
             : std::numeric_limits<double>::infinity();
     case PhaseActive:
         if (forwards && hasActiveAnimationsOnCompositor()) {
-            ASSERT(specifiedTiming().playbackRate == 1);
             // Need service to apply fill / fire events.
             const double timeToEnd = end - localTime;
             if (hasEvents()) {
@@ -247,21 +246,26 @@ void Animation::notifyElementDestroyed()
 }
 #endif
 
-bool Animation::isCandidateForAnimationOnCompositor() const
+bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) const
 {
     if (!effect() || !m_target)
         return false;
-    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect());
+    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect(), playerPlaybackRate);
 }
 
 bool Animation::maybeStartAnimationOnCompositor(double startTime, double currentTime)
 {
+    return maybeStartAnimationOnCompositor(startTime, currentTime, 1);
+}
+
+bool Animation::maybeStartAnimationOnCompositor(double startTime, double currentTime, double playerPlaybackRate)
+{
     ASSERT(!hasActiveAnimationsOnCompositor());
-    if (!isCandidateForAnimationOnCompositor())
+    if (!isCandidateForAnimationOnCompositor(playerPlaybackRate))
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;

@@ -47,6 +47,9 @@ public:
 
     virtual Direction direction() const = 0;
     virtual void setDirection(Direction) = 0;
+
+    virtual double playbackRate() const = 0;
+    virtual void setPlaybackRate(double) = 0;
 };
 
 } // namespace blink

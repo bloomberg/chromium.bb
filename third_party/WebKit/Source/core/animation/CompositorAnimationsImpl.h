@@ -45,11 +45,12 @@ private:
         double scaledDuration;
         double scaledTimeOffset;
         double adjustedIterationCount;
+        double playbackRate;
     };
 
-    static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out);
+    static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double playerPlaybackRate);
 
-    static void getAnimationOnCompositor(const Timing&, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations);
+    static void getAnimationOnCompositor(const Timing&, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate);
 
     static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&);
 

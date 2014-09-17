@@ -553,8 +553,7 @@ void AnimationPlayer::setOutdated()
 
 bool AnimationPlayer::canStartAnimationOnCompositor()
 {
-    // FIXME: Need compositor support for playback rate != 1.
-    if (playbackRate() != 1)
+    if (playbackRate() == 0)
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();
@@ -570,7 +569,7 @@ bool AnimationPlayer::maybeStartAnimationOnCompositor()
     if (std::isnan(startTime)) {
         timeOffset = currentTimeInternal();
     }
-    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime, timeOffset);
+    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime, timeOffset, m_playbackRate);
 }
 
 void AnimationPlayer::setCompositorPending(bool sourceChanged)
