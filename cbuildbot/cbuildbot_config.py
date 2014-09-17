@@ -1423,6 +1423,7 @@ _x86_release_boards = frozenset([
   'beltino',
   'butterfly',
   'candy',
+  'cranky',
   'clapper',
   'enguarde',
   'expresso',
@@ -1805,6 +1806,12 @@ internal_paladin.add_config('butterfly-paladin',
 internal_paladin.add_config('candy-paladin',
   boards=['candy'],
   paladin_builder_name='candy paladin',
+  important=False,
+)
+
+internal_paladin.add_config('cranky-paladin',
+  boards=['cranky'],
+  paladin_builder_name='cranky paladin',
   important=False,
 )
 
@@ -2558,6 +2565,8 @@ _AddGroupConfig('rambi-c', 'squawks', (
     'winky',
     'candy',
 ))
+
+_AddGroupConfig('rambi-d', 'cranky', ())
 
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
