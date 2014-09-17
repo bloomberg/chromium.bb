@@ -40,6 +40,7 @@
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/quic_sent_entropy_manager.h"
 #include "net/quic/quic_sent_packet_manager.h"
+#include "net/quic/quic_time.h"
 #include "net/quic/quic_types.h"
 
 namespace net {

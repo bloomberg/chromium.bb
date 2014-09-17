@@ -22,6 +22,7 @@
 #include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_config.h"
+#include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
