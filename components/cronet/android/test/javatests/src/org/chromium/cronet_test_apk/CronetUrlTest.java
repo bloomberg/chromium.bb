@@ -234,6 +234,8 @@ public class CronetUrlTest extends CronetTestBase {
     public void testLegacyLoadUrl() throws Exception {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableLegacyMode(true);
+        // TODO(mef) fix tests so that library isn't loaded for legacy stack
+        config.setLibraryName("cronet_tests");
 
         String[] commandLineArgs = {
                 CronetTestActivity.CONFIG_KEY, config.toString() };

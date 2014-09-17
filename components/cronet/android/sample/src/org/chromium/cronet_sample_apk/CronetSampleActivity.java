@@ -19,7 +19,6 @@ import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
-import org.chromium.net.LibraryLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -85,14 +84,6 @@ public class CronetSampleActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        try {
-            LibraryLoader.ensureInitialized();
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "libcronet_sample initialization failed.", e);
-            finish();
-            return;
-        }
 
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,

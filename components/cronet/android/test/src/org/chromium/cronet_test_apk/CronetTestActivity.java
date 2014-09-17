@@ -61,14 +61,6 @@ public class CronetTestActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try {
-            System.loadLibrary("cronet_tests");
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "libcronet_test initialization failed.", e);
-            finish();
-            return;
-        }
-
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
                                100 * 1024)
@@ -87,6 +79,9 @@ public class CronetTestActivity extends Activity {
                 return;
             }
         }
+
+        // Setting this here so it isn't overridden on the command line
+        config.setLibraryName("cronet_tests");
 
         mRequestFactory = HttpUrlRequestFactory.createFactory(
                 getApplicationContext(), config);

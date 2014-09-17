@@ -212,7 +212,6 @@
               '**/ChromiumUrlRequestError.java',
               '**/ChromiumUrlRequestFactory.java',
               '**/ChromiumUrlRequestPriority.java',
-              '**/LibraryLoader.java',
               '**/UsedByReflection.java',
             ],
           },

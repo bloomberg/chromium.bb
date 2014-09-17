@@ -13,6 +13,7 @@ import org.json.JSONObject;
  * HttpUrlRequestFactory.
  */
 public class HttpUrlRequestFactoryConfig {
+
     /**
      * Default config enables SPDY, QUIC, in memory http cache.
      */
@@ -21,6 +22,13 @@ public class HttpUrlRequestFactoryConfig {
         enableQUIC(false);
         enableSPDY(true);
         enableHttpCache(HttpCache.IN_MEMORY, 100 * 1024);
+    }
+
+    /**
+     * Override the name of the native library backing cronet.
+     */
+    public HttpUrlRequestFactoryConfig setLibraryName(String libName) {
+        return putString(UrlRequestContextConfig.NATIVE_LIBRARY_NAME, libName);
     }
 
     /**
@@ -38,7 +46,7 @@ public class HttpUrlRequestFactoryConfig {
         return putBoolean(UrlRequestContextConfig.ENABLE_LEGACY_MODE, value);
     }
 
-    public boolean legacyMode() {
+    boolean legacyMode() {
         return mConfig.optBoolean(UrlRequestContextConfig.ENABLE_LEGACY_MODE);
     }
 
@@ -54,6 +62,11 @@ public class HttpUrlRequestFactoryConfig {
      */
     public HttpUrlRequestFactoryConfig enableSPDY(boolean value) {
         return putBoolean(UrlRequestContextConfig.ENABLE_SPDY, value);
+    }
+
+    String libraryName() {
+        return mConfig.optString(UrlRequestContextConfig.NATIVE_LIBRARY_NAME,
+                                 "cronet");
     }
 
     /**

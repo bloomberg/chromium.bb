@@ -26,6 +26,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         config.enableQUIC(true);
         config.addQuicHint("www.google.com", 443, 443);
         config.addQuicHint("www.youtube.com", 443, 443);
+        config.setLibraryName("cronet_tests");
         String[] commandLineArgs = {
                 CronetTestActivity.CONFIG_KEY, config.toString() };
         CronetTestActivity activity =
