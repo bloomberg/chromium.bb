@@ -444,14 +444,18 @@ cr.define('login', function() {
   };
 
   // Forward public APIs to private implementations.
-  cr.makePublic(UserImageScreen, [
+  [
     'setDefaultImages',
     'setCameraPresent',
     'setProfilePictureEnabled',
     'setProfileImage',
     'setSelectedImage',
     'hideCurtain'
-  ], $('user-image'));
+  ].forEach(function(name) {
+    UserImageScreen[name] = function(value) {
+      $('user-image')[name + '_'](value);
+    };
+  });
 
   return {
     UserImageScreen: UserImageScreen
