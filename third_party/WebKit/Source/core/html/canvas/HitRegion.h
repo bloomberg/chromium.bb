@@ -17,7 +17,9 @@
 
 namespace blink {
 
-struct HitRegionOptions {
+// FIXME: We already have IDL dictionary support; this should be removed.
+// http://crbug.com/403150
+struct HitRegionOptionsInternal {
     STACK_ALLOCATED();
 
 public:
@@ -29,7 +31,7 @@ public:
 
 class HitRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<HitRegion> {
 public:
-    static PassRefPtrWillBeRawPtr<HitRegion> create(const HitRegionOptions& options)
+    static PassRefPtrWillBeRawPtr<HitRegion> create(const HitRegionOptionsInternal& options)
     {
         return adoptRefWillBeNoop(new HitRegion(options));
     }
@@ -49,7 +51,7 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit HitRegion(const HitRegionOptions&);
+    explicit HitRegion(const HitRegionOptionsInternal&);
 
     String m_id;
     RefPtrWillBeMember<Element> m_control;

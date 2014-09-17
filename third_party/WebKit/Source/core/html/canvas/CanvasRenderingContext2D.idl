@@ -124,9 +124,7 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap imageBitmap, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
 
     // hit regions
-    // FIXME: Blink does not currently support WebIDL dictionary definitions.
-    // See http://crbug.com/321462
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void addHitRegion(optional Dictionary options);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void addHitRegion(optional HitRegionOptions options);
     [RuntimeEnabled=ExperimentalCanvasFeatures] void removeHitRegion(DOMString id);
     [RuntimeEnabled=ExperimentalCanvasFeatures] void clearHitRegions();
 

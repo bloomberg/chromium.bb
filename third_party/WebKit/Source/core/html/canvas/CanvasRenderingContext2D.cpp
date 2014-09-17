@@ -55,6 +55,7 @@
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
+#include "core/html/canvas/HitRegionOptions.h"
 #include "core/html/canvas/Path2D.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
@@ -2416,25 +2417,17 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     didDraw(dirtyRect);
 }
 
-void CanvasRenderingContext2D::addHitRegion(ExceptionState& exceptionState)
+void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, ExceptionState& exceptionState)
 {
-    addHitRegion(Dictionary(), exceptionState);
-}
-
-void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, ExceptionState& exceptionState)
-{
-    HitRegionOptions passOptions;
-
-    options.getWithUndefinedOrNullCheck("id", passOptions.id);
-    options.getWithUndefinedOrNullCheck("control", passOptions.control);
+    HitRegionOptionsInternal passOptions;
+    passOptions.id = options.id();
+    passOptions.control = options.control();
     if (passOptions.id.isEmpty() && !passOptions.control) {
         exceptionState.throwDOMException(NotSupportedError, "Both id and control are null.");
         return;
     }
 
-    RefPtrWillBeMember<Path2D> path2d;
-    options.getWithUndefinedOrNullCheck("path", path2d);
-    Path hitRegionPath = path2d ? path2d->path() : m_path;
+    Path hitRegionPath = options.hasPath() ? options.path()->path() : m_path;
 
     FloatRect clipBounds;
     GraphicsContext* context = drawingContext();
@@ -2457,9 +2450,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
 
     passOptions.path = hitRegionPath;
 
-    String fillRuleString;
-    options.getWithUndefinedOrNullCheck("fillRule", fillRuleString);
-    if (fillRuleString.isEmpty() || fillRuleString != "evenodd")
+    if (options.fillRule() != "evenodd")
         passOptions.fillRule = RULE_NONZERO;
     else
         passOptions.fillRule = RULE_EVENODD;
@@ -2467,7 +2458,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
     addHitRegionInternal(passOptions, exceptionState);
 }
 
-void CanvasRenderingContext2D::addHitRegionInternal(const HitRegionOptions& options, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::addHitRegionInternal(const HitRegionOptionsInternal& options, ExceptionState& exceptionState)
 {
     if (!m_hitRegionManager)
         m_hitRegionManager = HitRegionManager::create();

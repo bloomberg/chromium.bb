@@ -476,6 +476,11 @@ struct DictionaryHelperTraits<Element> {
     typedef V8Element type;
 };
 
+template <>
+struct DictionaryHelperTraits<Path2D> {
+    typedef V8Path2D type;
+};
+
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<Uint8Array>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<ArrayBufferView>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<MediaKeyError>& value);
@@ -483,6 +488,7 @@ template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Element>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, RawPtr<Element>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Path2D>& value);
 
 template <typename T>
 struct IntegralTypeTraits {

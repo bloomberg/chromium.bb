@@ -60,6 +60,7 @@ class GraphicsContext;
 class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
+class HitRegionOptions;
 class ImageBitmap;
 class ImageData;
 class TextMetrics;
@@ -232,8 +233,7 @@ public:
     void drawFocusIfNeeded(Element*);
     void drawFocusIfNeeded(Path2D*, Element*);
 
-    void addHitRegion(ExceptionState&);
-    void addHitRegion(const Dictionary&, ExceptionState&);
+    void addHitRegion(const HitRegionOptions&, ExceptionState&);
     void removeHitRegion(const String& id);
     void clearHitRegions();
     HitRegion* hitRegionAtPoint(const LayoutPoint&);
@@ -354,7 +354,7 @@ private:
     bool focusRingCallIsValid(const Path&, Element*);
     void drawFocusRing(const Path&);
 
-    void addHitRegionInternal(const HitRegionOptions&, ExceptionState&);
+    void addHitRegionInternal(const HitRegionOptionsInternal&, ExceptionState&);
     bool hasClip() { return state().m_hasClip; }
 
     void validateStateStack();

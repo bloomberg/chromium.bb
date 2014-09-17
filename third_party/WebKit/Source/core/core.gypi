@@ -3355,6 +3355,7 @@
           'css/FontFaceDescriptors.idl',
           'dom/DOMPointInit.idl',
           'dom/MutationObserverInit.idl',
+          'html/canvas/HitRegionOptions.idl',
           'page/EventSourceInit.idl',
         ],
         'generated_core_dictionary_files': [
@@ -3364,6 +3365,8 @@
           '<(blink_core_output_dir)/dom/DOMPointInit.h',
           '<(blink_core_output_dir)/dom/MutationObserverInit.cpp',
           '<(blink_core_output_dir)/dom/MutationObserverInit.h',
+          '<(blink_core_output_dir)/html/canvas/HitRegionOptions.cpp',
+          '<(blink_core_output_dir)/html/canvas/HitRegionOptions.h',
           '<(blink_core_output_dir)/page/EventSourceInit.cpp',
           '<(blink_core_output_dir)/page/EventSourceInit.h',
         ],
