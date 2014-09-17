@@ -290,11 +290,9 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     }
   }
 
-  if (blacklist_ && blacklist_->HasURL(url))
-    return BLOCK;
-
-  // If the default behavior is to allow, we don't need to check anything else.
-  if (default_behavior_ == ALLOW)
+  // If there's no blacklist and the default behavior is to allow, we don't need
+  // to check anything else.
+  if (!blacklist_ && default_behavior_ == ALLOW)
     return ALLOW;
 
   // Check the list of URL patterns.
@@ -306,6 +304,10 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   // Check the list of hostname hashes.
   if (contents_->hash_site_map.count(GetHostnameHash(url)))
     return ALLOW;
+
+  // Check the static blacklist.
+  if (blacklist_ && blacklist_->HasURL(url))
+    return BLOCK;
 
   // Fall back to the default behavior.
   return default_behavior_;
