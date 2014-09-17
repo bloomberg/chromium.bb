@@ -3403,9 +3403,8 @@ retry:
 
 	close_bo.handle = userptr.handle;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
-	if (ret == 0) {
-		free(ptr);
-	} else {
+	free(ptr);
+	if (ret) {
 		fprintf(stderr, "Failed to release test userptr object! (%d) "
 				"i915 kernel driver may not be sane!\n", errno);
 		return false;
