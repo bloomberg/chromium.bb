@@ -117,6 +117,77 @@ PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSetting
     return settings;
 }
 
+class RedirectSetHasViewportUnits {
+public:
+    RedirectSetHasViewportUnits(RenderStyle* from, RenderStyle* to)
+        : m_from(from), m_to(to), m_hadViewportUnits(from->hasViewportUnits())
+    {
+        from->setHasViewportUnits(false);
+    }
+    ~RedirectSetHasViewportUnits()
+    {
+        m_to->setHasViewportUnits(m_from->hasViewportUnits());
+        m_from->setHasViewportUnits(m_hadViewportUnits);
+    }
+private:
+    RenderStyle* m_from;
+    RenderStyle* m_to;
+    bool m_hadViewportUnits;
+};
+
+static float computeFontSize(StyleResolverState& state, CSSPrimitiveValue* primitiveValue, const FontDescription::Size& parentSize)
+{
+    RedirectSetHasViewportUnits redirect(state.parentStyle(), state.style());
+
+    CSSToLengthConversionData conversionData(state.parentStyle(), state.rootElementStyle(), state.document().renderView(), 1.0f, true);
+    if (primitiveValue->isLength())
+        return primitiveValue->computeLength<float>(conversionData);
+    if (primitiveValue->isCalculatedPercentageWithLength())
+        return primitiveValue->cssCalcValue()->toCalcValue(conversionData)->evaluate(parentSize.value);
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    FontDescription::Size parentSize(0, 0.0f, false);
+
+    // FIXME: Find out when parentStyle could be 0?
+    if (state.parentStyle())
+        parentSize = state.parentFontDescription().size();
+
+    if (CSSValueID valueID = primitiveValue->getValueID()) {
+        switch (valueID) {
+        case CSSValueXxSmall:
+        case CSSValueXSmall:
+        case CSSValueSmall:
+        case CSSValueMedium:
+        case CSSValueLarge:
+        case CSSValueXLarge:
+        case CSSValueXxLarge:
+        case CSSValueWebkitXxxLarge:
+            return FontDescription::Size(FontSize::keywordSize(valueID), 0.0f, false);
+        case CSSValueLarger:
+            return FontDescription::largerSize(parentSize);
+        case CSSValueSmaller:
+            return FontDescription::smallerSize(parentSize);
+        default:
+            ASSERT_NOT_REACHED();
+            return FontBuilder::initialSize();
+        }
+    }
+
+    bool parentIsAbsoluteSize = state.parentFontDescription().isAbsoluteSize();
+
+    if (primitiveValue->isPercentage())
+        return FontDescription::Size(0, (primitiveValue->getFloatValue() * parentSize.value / 100.0f), parentIsAbsoluteSize);
+
+    return FontDescription::Size(0, computeFontSize(state, primitiveValue, parentSize), parentIsAbsoluteSize || !primitiveValue->isFontRelativeLength());
+}
+
 FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

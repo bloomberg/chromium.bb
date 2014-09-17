@@ -103,8 +103,21 @@ public:
         unsigned contextual : 2;
     };
 
+    struct Size {
+        Size(unsigned keyword, float value, bool isAbsolute)
+            : keyword(keyword)
+            , isAbsolute(isAbsolute)
+            , value(value)
+        {
+        }
+        unsigned keyword : 4; // FontDescription::keywordSize
+        unsigned isAbsolute : 1; // FontDescription::isAbsoluteSize
+        float value;
+    };
+
     const FontFamily& family() const { return m_familyList; }
     FontFamily& firstFamily() { return m_familyList; }
+    Size size() const { return Size(m_keywordSize, m_specifiedSize, m_isAbsoluteSize); }
     float specifiedSize() const { return m_specifiedSize; }
     float computedSize() const { return m_computedSize; }
     FontStyle style() const { return static_cast<FontStyle>(m_style); }
@@ -115,6 +128,8 @@ public:
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
     static FontWeight lighterWeight(FontWeight);
     static FontWeight bolderWeight(FontWeight);
+    static Size largerSize(const Size&);
+    static Size smallerSize(const Size&);
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
 
     // only use fixed default size when there is only one font family, and that family is "monospace"

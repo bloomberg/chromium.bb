@@ -247,21 +247,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolverState& 
     state.fontBuilder().setFontFamilyValue(value);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolverState& state)
-{
-    state.fontBuilder().setFontSizeInitial();
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontSize(StyleResolverState& state)
-{
-    state.fontBuilder().setFontSizeInherit(state.parentFontDescription());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolverState& state, CSSValue* value)
-{
-    state.fontBuilder().setFontSizeValue(value, state.parentStyle(), state.rootElementStyle());
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)

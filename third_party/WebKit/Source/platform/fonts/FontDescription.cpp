@@ -96,6 +96,16 @@ FontWeight FontDescription::bolderWeight(FontWeight weight)
     return FontWeightNormal;
 }
 
+FontDescription::Size FontDescription::largerSize(const Size& size)
+{
+    return Size(0, size.value * 1.2, size.isAbsolute);
+}
+
+FontDescription::Size FontDescription::smallerSize(const Size& size)
+{
+    return Size(0, size.value / 1.2, size.isAbsolute);
+}
+
 FontTraits FontDescription::traits() const
 {
     return FontTraits(style(), variant(), weight(), stretch());

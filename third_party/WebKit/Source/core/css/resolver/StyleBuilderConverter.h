@@ -50,6 +50,7 @@ public:
     static LengthBox convertClip(StyleResolverState&, CSSValue*);
     template <typename T> static T convertFlags(StyleResolverState&, CSSValue*);
     static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(StyleResolverState&, CSSValue*);
+    static FontDescription::Size convertFontSize(StyleResolverState&, CSSValue*);
     static FontWeight convertFontWeight(StyleResolverState&, CSSValue*);
     static FontDescription::VariantLigatures convertFontVariantLigatures(StyleResolverState&, CSSValue*);
     static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);

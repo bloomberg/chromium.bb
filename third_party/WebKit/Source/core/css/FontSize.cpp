@@ -128,9 +128,9 @@ static int inline rowFromMediumFontSizeInRange(const Settings* settings, bool qu
     return -1;
 }
 
-float FontSize::fontSizeForKeyword(const Document* document, CSSValueID keyword, FixedPitchFontType fixedPitchFontType)
+float FontSize::fontSizeForKeyword(const Document* document, unsigned keyword, FixedPitchFontType fixedPitchFontType)
 {
-    ASSERT(keyword >= CSSValueXxSmall && keyword <= CSSValueWebkitXxxLarge);
+    ASSERT(keyword >= 1 && keyword <= 8);
     const Settings* settings = document->settings();
     if (!settings)
         return 1.0f;
@@ -139,13 +139,13 @@ float FontSize::fontSizeForKeyword(const Document* document, CSSValueID keyword,
     int mediumSize = 0;
     int row = rowFromMediumFontSizeInRange(settings, quirksMode, fixedPitchFontType, mediumSize);
     if (row >= 0) {
-        int col = (keyword - CSSValueXxSmall);
+        int col = (keyword - 1);
         return quirksMode ? quirksFontSizeTable[row][col] : strictFontSizeTable[row][col];
     }
 
     // Value is outside the range of the table. Apply the scale factor instead.
     float minLogicalSize = std::max(settings->minimumLogicalFontSize(), 1);
-    return std::max(fontSizeFactors[keyword - CSSValueXxSmall] * mediumSize, minLogicalSize);
+    return std::max(fontSizeFactors[keyword - 1] * mediumSize, minLogicalSize);
 }
 
 

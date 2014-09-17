@@ -1638,8 +1638,7 @@ int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, Fix
         int pixelFontSize = value->getIntValue(CSSPrimitiveValue::CSS_PX);
         int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, fixedPitchFontType);
         // Use legacy font size only if pixel value matches exactly to that of legacy font size.
-        CSSValueID cssPrimitiveEquivalent = static_cast<CSSValueID>(legacyFontSize - 1 + CSSValueXSmall);
-        if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, cssPrimitiveEquivalent, fixedPitchFontType) == pixelFontSize)
+        if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, legacyFontSize, fixedPitchFontType) == pixelFontSize)
             return legacyFontSize;
 
         return 0;

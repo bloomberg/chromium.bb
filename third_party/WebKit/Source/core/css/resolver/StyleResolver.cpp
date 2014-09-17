@@ -925,8 +925,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 void StyleResolver::updateFont(StyleResolverState& state)
 {
     state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
-    if (state.fontBuilder().fontSizeHasViewportUnits())
-        state.style()->setHasViewportUnits();
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)

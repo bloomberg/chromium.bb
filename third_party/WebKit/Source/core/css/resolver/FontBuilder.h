@@ -24,7 +24,7 @@
 #define FontBuilder_h
 
 #include "core/CSSValueKeywords.h"
-
+#include "core/css/FontSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -57,11 +57,8 @@ public:
     void setFontFamilyInherit(const FontDescription&);
     void setFontFamilyValue(CSSValue*);
 
-    void setFontSizeInitial();
-    void setFontSizeInherit(const FontDescription&);
-    void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, const RenderStyle* rootElementStyle);
-
     void setWeight(FontWeight);
+    void setSize(const FontDescription::Size&);
     void setStretch(FontStretch);
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
     void setScript(const String& locale);
@@ -74,11 +71,8 @@ public:
 
     // FIXME: These need to just vend a Font object eventually.
     void createFont(PassRefPtrWillBeRawPtr<FontSelector>, const RenderStyle* parentStyle, RenderStyle*);
-    // FIXME: This is nearly static, should either made fully static or decomposed into
-    // FontBuilder calls at the callsite.
-    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
 
-    bool fontSizeHasViewportUnits() { return m_fontSizehasViewportUnits; }
+    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
 
     // FIXME: These should not be necessary eventually.
     void setFontDirty(bool fontDirty) { m_fontDirty = fontDirty; }
@@ -87,6 +81,7 @@ public:
 
     static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
     static FontDescription::GenericFamilyType initialGenericFamily() { return FontDescription::NoFamily; }
+    static FontDescription::Size initialSize() { return FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false); }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
@@ -101,16 +96,16 @@ public:
 private:
 
     // FIXME: "size" arg should be first for consistency with other similar functions.
-    void setSize(FontDescription&, float effectiveZoom, float size);
+    void setSize(FontDescription&, const FontDescription::Size&);
     void checkForOrientationChange(RenderStyle*);
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
     void checkForGenericFamilyChange(RenderStyle*, const RenderStyle* parentStyle);
     void updateComputedSize(RenderStyle*, const RenderStyle* parentStyle);
+    void updateComputedSize(FontDescription&, RenderStyle*);
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
     RawPtrWillBeMember<const Document> m_document;
-    bool m_fontSizehasViewportUnits;
     // FIXME: This member is here on a short-term lease. The plan is to remove
     // any notion of RenderStyle from here, allowing FontBuilder to build Font objects
     // directly, rather than as a byproduct of calling RenderStyle::setFontDescription.
