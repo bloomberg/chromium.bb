@@ -510,7 +510,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+#endif
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
@@ -981,7 +985,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1066,7 +1070,7 @@ TEST_F(DownloadProtectionServiceTest,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1154,7 +1158,7 @@ TEST_F(DownloadProtectionServiceTest,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1229,7 +1233,7 @@ TEST_F(DownloadProtectionServiceTest,
         &item,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
