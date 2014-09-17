@@ -113,6 +113,11 @@ def GetFlags(lines):
             os.path.join(os.getcwd(),
                          os.path.normpath(
                              os.path.join('out/gn_flags', x.split(' ', 1)[1]))))
+      elif x.startswith('-B'):
+        others_filtered.append(
+            '-B' +
+            os.path.join(os.getcwd(),
+                         os.path.normpath(os.path.join('out/gn_flags', x[2:]))))
       else:
         others_filtered.append(x)
     others = others_filtered

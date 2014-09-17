@@ -14,6 +14,12 @@ declare_args() {
   # Normally, Android builds are lightly optimized, even for debug builds, to
   # keep binary size down. Setting this flag to true disables such optimization
   android_full_debug = false
+
+  # Whether to use the binary binutils checked into third_party/binutils.
+  # These are not multi-arch so cannot be used except on x86 and x86-64 (the
+  # only two architectures that are currently checked in). Turn this off when
+  # you are using a custom toolchain and need to control -B in cflags.
+  linux_use_bundled_binutils = is_linux && cpu_arch == "x64"
 }
 
 use_gold = is_linux && cpu_arch == "x64"
@@ -24,11 +30,7 @@ if (!is_win) {
   # with some utilities such as icecc and ccache. Requires gold and
   # gcc >= 4.8 or clang.
   # http://gcc.gnu.org/wiki/DebugFission
-  #
-  # TODO(GYP) enable this. Currently this gives errors from objcopy, presumably
-  # because some other symbol or toolchain setting isn't correct.
-  #use_debug_fission = use_gold
-  use_debug_fission = false
+  use_debug_fission = use_gold && linux_use_bundled_binutils
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -265,6 +267,12 @@ config("compiler") {
       #"-Wl,--threads",
       #"-Wl,--thread-count=4",
     ]
+  }
+
+  if (linux_use_bundled_binutils) {
+    binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                                root_build_dir)
+    cflags += [ "-B$binutils_path" ]
   }
 
   # Clang-specific compiler flags setup.
