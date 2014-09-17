@@ -4,11 +4,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS window.innerWidth - document.body.clientWidth is > 5
-PASS window.scrollY is 0
-PASS window.scrollY is 0
-PASS window.scrollY is > 20
-PASS window.scrollY is > 85
-PASS window.scrollY is > 85
+PASS window.scrollY is 800
+PASS window.scrollY is 800
+PASS window.scrollY is > 820
+PASS window.scrollY is > 885
+PASS window.scrollY is > 885
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -36,6 +36,8 @@ namespace blink {
 class HitTestLocation {
 public:
 
+    // Note that all points are in contents (aka "page") coordinate space for the
+    // document that is being hit tested.
     HitTestLocation();
     HitTestLocation(const LayoutPoint&);
     HitTestLocation(const FloatPoint&);
