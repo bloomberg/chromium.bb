@@ -11,10 +11,6 @@
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
-namespace gfx {
-class Image;
-}
-
 namespace extensions {
 
 class ScreenlockPrivateGetLockedFunction : public ChromeAsyncExtensionFunction {
@@ -39,73 +35,6 @@ class ScreenlockPrivateSetLockedFunction : public ChromeAsyncExtensionFunction {
  private:
   virtual ~ScreenlockPrivateSetLockedFunction();
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateSetLockedFunction);
-};
-
-class ScreenlockPrivateShowMessageFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showMessage",
-                             SCREENLOCKPRIVATE_SHOWMESSAGE)
-  ScreenlockPrivateShowMessageFunction();
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  virtual ~ScreenlockPrivateShowMessageFunction();
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowMessageFunction);
-};
-
-class ScreenlockPrivateShowCustomIconFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showCustomIcon",
-                             SCREENLOCKPRIVATE_SHOWCUSTOMICON)
-  ScreenlockPrivateShowCustomIconFunction();
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  virtual ~ScreenlockPrivateShowCustomIconFunction();
-  void OnImageLoaded(const gfx::Image& image);
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowCustomIconFunction);
-};
-
-class ScreenlockPrivateHideCustomIconFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.hideCustomIcon",
-                             SCREENLOCKPRIVATE_HIDECUSTOMICON)
-  ScreenlockPrivateHideCustomIconFunction();
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  virtual ~ScreenlockPrivateHideCustomIconFunction();
-  void OnImageLoaded(const gfx::Image& image);
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateHideCustomIconFunction);
-};
-
-class ScreenlockPrivateSetAuthTypeFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.setAuthType",
-                             SCREENLOCKPRIVATE_SETAUTHTYPE)
-  ScreenlockPrivateSetAuthTypeFunction();
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  virtual ~ScreenlockPrivateSetAuthTypeFunction();
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateSetAuthTypeFunction);
-};
-
-class ScreenlockPrivateGetAuthTypeFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.getAuthType",
-                             SCREENLOCKPRIVATE_GETAUTHTYPE)
-  ScreenlockPrivateGetAuthTypeFunction();
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  virtual ~ScreenlockPrivateGetAuthTypeFunction();
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateGetAuthTypeFunction);
 };
 
 class ScreenlockPrivateAcceptAuthAttemptFunction

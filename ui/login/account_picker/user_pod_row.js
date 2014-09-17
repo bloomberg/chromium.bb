@@ -304,19 +304,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Set the icon's background image as image set with different
-     * representations for available screen scale factors.
-     * @param {!{scale1x: string, scale2x: string}} icon The icon
-     *     representations.
-     */
-    setIconAsImageSet: function(icon) {
-      this.iconElement.style.backgroundImage =
-          '-webkit-image-set(' +
-              'url(' + icon.scale1x + ') 1x,' +
-              'url(' + icon.scale2x + ') 2x)';
-    },
-
-    /**
      * Sets the icon background image to a chrome://theme URL.
      * @param {!string} iconUrl The icon's background image URL.
      */
@@ -2310,14 +2297,10 @@ cr.define('login', function() {
         return;
       }
 
-      if (icon.resourceUrl) {
-        pod.customIconElement.setIconAsResourceUrl(icon.resourceUrl);
-      } else if (icon.data) {
-        pod.customIconElement.setIconAsImageSet(icon.data);
-      } else {
+      if (!icon.resourceUrl)
         return;
-      }
 
+      pod.customIconElement.setIconAsResourceUrl(icon.resourceUrl);
       pod.customIconElement.setSize(icon.size || {width: 0, height: 0});
       pod.customIconElement.setAnimation(icon.animation || null);
       pod.customIconElement.setOpacity(icon.opacity || 100);

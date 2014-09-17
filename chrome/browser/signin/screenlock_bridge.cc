@@ -9,9 +9,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "ui/base/webui/web_ui_util.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -46,24 +43,10 @@ ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
 scoped_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  if (!icon_image_ && icon_resource_url_.empty())
+  if (icon_resource_url_.empty())
     return result.Pass();
 
-  if (icon_image_) {
-    gfx::ImageSkia icon_skia = icon_image_->AsImageSkia();
-    base::DictionaryValue* icon_representations = new base::DictionaryValue();
-    icon_representations->SetString(
-        "scale1x",
-        webui::GetBitmapDataUrl(
-            icon_skia.GetRepresentation(1.0f).sk_bitmap()));
-    icon_representations->SetString(
-        "scale2x",
-        webui::GetBitmapDataUrl(
-            icon_skia.GetRepresentation(2.0f).sk_bitmap()));
-    result->Set("data", icon_representations);
-  } else {
-    result->SetString("resourceUrl", icon_resource_url_);
-  }
+  result->SetString("resourceUrl", icon_resource_url_);
 
   if (!tooltip_.empty()) {
     base::DictionaryValue* tooltip_options = new base::DictionaryValue();
@@ -96,18 +79,9 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetIconAsResourceURL(
     const std::string& url) {
-  DCHECK(!icon_image_);
-
   icon_resource_url_ = url;
 }
 
-void ScreenlockBridge::UserPodCustomIconOptions::SetIconAsImage(
-    const gfx::Image& image) {
-  DCHECK(icon_resource_url_.empty());
-
-  icon_image_.reset(new gfx::Image(image));
-  SetSize(image.Width(), image.Height());
-}
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetSize(size_t icon_width,
                                                          size_t icon_height) {

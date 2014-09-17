@@ -4,17 +4,9 @@
 
 var authAttempted = false;
 
-function setAuthType() {
-  chrome.screenlockPrivate.setAuthType('userClick');
-  chrome.screenlockPrivate.getAuthType(function(authType) {
-    chrome.test.assertEq('userClick', authType);
-    chrome.test.sendMessage('attemptClickAuth');
-  });
-}
-
 chrome.screenlockPrivate.onChanged.addListener(function(locked) {
   if (locked && !authAttempted) {
-    setAuthType();
+    chrome.test.sendMessage('attemptClickAuth');
   } else if (!locked && authAttempted) {
     chrome.test.succeed();
   } else {

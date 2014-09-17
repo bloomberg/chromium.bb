@@ -15,9 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 
-namespace gfx {
-class Image;
-}
 
 class Profile;
 
@@ -50,21 +47,14 @@ class ScreenlockBridge {
     // Sets the icon as chrome://theme resource URL.
     void SetIconAsResourceURL(const std::string& url);
 
-    // Sets the icon as a gfx::Image. The image will be converted to set of data
-    // URLs for each icon representation. Use |SetIconAsResourceURL| instead of
-    // this.
-    // TODO(tbarzic): Remove this one once easy unlock app stops using
-    // screenlockPrivate.showCustomIcon.
-    void SetIconAsImage(const gfx::Image& image);
-
-    // Sets the icon size. Has to be called if |SetIconAsResourceURL| was used
-    // to set the icon. For animated icon, this should be set to a single frame
-    // size, not the animation resource size.
+    // Sets the icon size. If not called, the icon will not be visible.
+    // For animated icon, this should be set to a single frame size, not the
+    // animation resource size.
     void SetSize(size_t icon_width, size_t icon_height);
 
     // If the icon is supposed to be animated, sets the animation parameters.
-    // If set, it expects that the resource set using |SetIcon*| methods
-    // contains horizontally arranged ordered list of animation frames.
+    // If set, it expects that the resource set using |SetIconAsResourceURL|
+    // method contains horizontally arranged ordered list of animation frames.
     // Note that the icon size set in |SetSize| should be a single frame size.
     // |resource_width|: Total animation resource width.
     // |frame_length_ms|: Time for which a single animation frame is shown.
@@ -84,7 +74,6 @@ class ScreenlockBridge {
 
    private:
     std::string icon_resource_url_;
-    scoped_ptr<gfx::Image> icon_image_;
 
     size_t width_;
     size_t height_;
