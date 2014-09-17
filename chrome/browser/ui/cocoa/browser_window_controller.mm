@@ -379,27 +379,21 @@ using content::WebContents;
     // has no effect on Snow Leopard or earlier.  Panels can share a fullscreen
     // space with a tabbed window, but they can not be primary fullscreen
     // windows.
+    // This ensures the fullscreen button is appropriately positioned. It must
+    // be done before calling layoutSubviews because the new avatar button's
+    // position depends on the fullscreen button's position, as well as
+    // TabStripController's rightIndentForControls.
+    // The fullscreen button's position may depend on the old avatar button's
+    // width, but that does not require calling layoutSubviews first.
     NSUInteger collectionBehavior = [window collectionBehavior];
     collectionBehavior |=
        browser_->type() == Browser::TYPE_TABBED ||
            browser_->type() == Browser::TYPE_POPUP ?
                NSWindowCollectionBehaviorFullScreenPrimary :
                NSWindowCollectionBehaviorFullScreenAuxiliary;
+    [window setCollectionBehavior:collectionBehavior];
 
-    if ([self shouldUseNewAvatarButton]) {
-      // The new avatar button is to the left of the fullscreen button.
-      // We need to call layoutSubviews after the fullscreen button is enabled
-      // because the avatar button's position depends on it.
-      [window setCollectionBehavior:collectionBehavior];
-      [self layoutSubviews];
-    } else {
-      // The old avatar button is to the right of the fullscreen button.
-      // We need to call layoutSubviews first because the fullscreen button's
-      // position depends on it.
-      // See -[FramedBrowserWindow fullScreenButtonOriginAdjustment].
-      [self layoutSubviews];
-      [window setCollectionBehavior:collectionBehavior];
-    }
+    [self layoutSubviews];
 
     // For a popup window, |desiredContentRect| contains the desired height of
     // the content, not of the whole window.  Now that all the views are laid
