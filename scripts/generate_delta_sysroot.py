@@ -110,8 +110,8 @@ def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
   if not build_tests:
     cmd.append('--nowithautotest')
   env = {'USE': os.environ.get('USE', ''),
-         'PORTAGE_BINHOST': 'file://localhost%s' %
-         portage_util.GetBinaryPackageDir(board)}
+         'PORTAGE_BINHOST': 'file://%s' % portage_util.GetBinaryPackageDir(
+             sysroot=cros_build_lib.GetSysroot(board))}
   cros_build_lib.RunCommand(cmd, extra_env=env)
 
 
