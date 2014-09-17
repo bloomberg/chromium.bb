@@ -64,6 +64,8 @@ def ParseArgs(args):
   parser.add_option(
       '--extra-res-packages',
       help='Additional package names to generate R.java files for')
+  # TODO(cjhopman): Actually use --extra-r-text-files. We currently include all
+  # the resources in all R.java files for a particular apk.
   parser.add_option(
       '--extra-r-text-files',
       help='For each additional package, the R.txt file should contain a '
@@ -99,12 +101,7 @@ def ParseArgs(args):
   return options
 
 
-def CreateExtraRJavaFiles(
-    r_dir, extra_packages, extra_r_text_files):
-  if len(extra_packages) != len(extra_r_text_files):
-    raise Exception('--extra-res-packages and --extra-r-text-files'
-                    'should have the same length')
-
+def CreateExtraRJavaFiles(r_dir, extra_packages):
   java_files = build_utils.FindInDirectory(r_dir, "R.java")
   if len(java_files) != 1:
     return
@@ -236,8 +233,7 @@ def main():
     if options.extra_res_packages:
       CreateExtraRJavaFiles(
           gen_dir,
-          build_utils.ParseGypList(options.extra_res_packages),
-          build_utils.ParseGypList(options.extra_r_text_files))
+          build_utils.ParseGypList(options.extra_res_packages))
 
     # This is the list of directories with resources to put in the final .zip
     # file. The order of these is important so that crunched/v14 resources

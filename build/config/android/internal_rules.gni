@@ -74,6 +74,7 @@ template("write_build_config") {
   action(target_name) {
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
+    inputs = []
 
     deps = []
     if (defined(invoker.deps)) {
@@ -115,6 +116,19 @@ template("write_build_config") {
       args += [
         "--resources-zip", rebase_path(invoker.resources_zip, root_build_dir),
       ]
+      if (defined(invoker.android_manifest)) {
+        inputs += [
+          invoker.android_manifest
+        ]
+        args += [
+          "--android-manifest", rebase_path(invoker.android_manifest, root_build_dir),
+        ]
+      }
+      if (defined(invoker.custom_package)) {
+        args += [
+          "--package-name", invoker.custom_package
+        ]
+      }
     }
 
     if (type == "android_apk") {
@@ -643,6 +657,7 @@ template("process_resources") {
       "--resource-zip-out", rebase_path(zip_path, root_build_dir),
 
       "--dependencies-res-zips=@FileArg($rebase_build_config:resources:dependency_zips)",
+      "--extra-res-packages=@FileArg($rebase_build_config:resources:extra_package_names)",
     ]
 
     if (non_constant_id) {

@@ -368,9 +368,9 @@ template("android_resources") {
     type = "android_resources"
     resources_zip = zip_path
     srcjar = srcjar_path
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.android_manifest)) { android_manifest = invoker.android_manifest }
+    if (defined(invoker.custom_package)) { custom_package = invoker.custom_package }
   }
 
   android_manifest = "//build/android/AndroidManifest.xml"
@@ -675,7 +675,6 @@ template("android_apk") {
   build_config = "$base_path.build_config"
   resources_zip_path = "$base_path.resources.zip"
   all_resources_zip_path = "$base_path.resources.all.zip"
-  resource_srcjar_path = "$base_path.resources.srcjar"
   jar_path = "$base_path.jar"
   final_dex_path = "$gen_dir/classes.dex"
   _template_name = target_name
@@ -697,12 +696,6 @@ template("android_apk") {
     _native_libs_dir = base_path + "/libs"
   }
 
-  _has_java = (
-      defined(invoker.java_files)
-      || defined(invoker.DEPRECATED_java_in_dir)
-      || _native_libs != []
-      )
-
   _keystore_path = android_default_keystore_path
   _keystore_name = android_default_keystore_name
   _keystore_password = android_default_keystore_password
@@ -722,7 +715,6 @@ template("android_apk") {
 
   write_build_config("${_template_name}__build_config") {
     type = "android_apk"
-    srcjar = resource_srcjar_path
     dex_path = final_dex_path
     resources_zip = resources_zip_path
 
@@ -740,14 +732,13 @@ template("android_apk") {
 
   final_deps += [":${_template_name}__process_resources"]
   process_resources("${_template_name}__process_resources") {
+    srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
     android_manifest = invoker.android_manifest
-
     resource_dirs = ["//build/android/ant/empty/res"]
     zip_path = resources_zip_path
-    srcjar_path = resource_srcjar_path
-
     generate_constant_ids = true
   }
+  _srcjar_deps += [":${_template_name}__process_resources"]
 
   if (_native_libs != []) {
     _use_chromium_linker = false
@@ -783,23 +774,18 @@ template("android_apk") {
     _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
   }
 
-  if (_has_java) {
-    final_deps += [ ":${_template_name}__java" ]
-    android_java_library("${_template_name}__java") {
-      android_manifest = invoker.android_manifest
-      if (defined(invoker.java_files)) {
-        java_files = invoker.java_files
-      } else if (defined(invoker.DEPRECATED_java_in_dir)) {
-        DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-      } else {
-        assert(_srcjar_deps != [])
-        java_files = []
-      }
-      srcjar_deps = _srcjar_deps
-      dex_path = base_path + ".dex.jar"
+  final_deps += [ ":${_template_name}__java" ]
+  android_java_library("${_template_name}__java") {
+    android_manifest = invoker.android_manifest
+    if (defined(invoker.java_files)) {
+      java_files = invoker.java_files
+    } else if (defined(invoker.DEPRECATED_java_in_dir)) {
+      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+    } else {
+      java_files = []
     }
-  } else {
-    assert(_srcjar_deps == [])
+    srcjar_deps = _srcjar_deps
+    dex_path = base_path + ".dex.jar"
   }
 
   if (_dist_jar_path != "") {
@@ -819,23 +805,18 @@ template("android_apk") {
         "--output", rebase_path(_dist_jar_path, root_build_dir),
         "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)",
       ]
-      if (_has_java) {
-        inputs += [ jar_path ]
-        _rebased_jar_path = rebase_path([ jar_path ], root_build_dir)
-        args += [
-          "--inputs=$_rebased_jar_path",
-        ]
-      }
+      inputs += [ jar_path ]
+      _rebased_jar_path = rebase_path([ jar_path ], root_build_dir)
+      args += [
+        "--inputs=$_rebased_jar_path",
+      ]
     }
   }
 
   final_deps += [":${_template_name}__final_dex"]
   dex("${_template_name}__final_dex") {
-    sources = []
-    if (_has_java) {
-      deps = [ ":${_template_name}__java" ]
-      sources += [ jar_path ]
-    }
+    deps = [ ":${_template_name}__java" ]
+    sources = [ jar_path ]
     inputs = [ build_config ]
     output = final_dex_path
     dex_arg_key = "${_rebased_build_config}:apk_dex:dependency_dex_files"
