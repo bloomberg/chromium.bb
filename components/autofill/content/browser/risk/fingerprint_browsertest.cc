@@ -77,7 +77,10 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
     EXPECT_TRUE(machine.has_operating_system_build());
     EXPECT_TRUE(machine.has_browser_install_time_hours());
     EXPECT_GT(machine.font_size(), 0);
-    EXPECT_EQ(machine.plugin_size(), 0);  // TODO(isherman): crbug.com/358548.
+
+    // TODO(isherman): http://crbug.com/358548 and EXPECT_EQ.
+    EXPECT_GE(machine.plugin_size(), 0);
+
     EXPECT_TRUE(machine.has_utc_offset_ms());
     EXPECT_TRUE(machine.has_browser_language());
     EXPECT_GT(machine.requested_language_size(), 0);
