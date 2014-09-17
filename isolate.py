@@ -917,7 +917,14 @@ def CMDrun(parser, args):
         complete_state.saved_state.relative_cwd,
         complete_state.saved_state.read_only)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
-    result = subprocess.call(cmd, cwd=cwd)
+    try:
+      result = subprocess.call(cmd, cwd=cwd)
+    except OSError:
+      sys.stderr.write(
+          'Failed to executed the command; executable is missing, maybe you\n'
+          'forgot to map it in the .isolate file?\n  %s\n  in %s\n' %
+          (' '.join(cmd), cwd))
+      result = 1
   finally:
     run_isolated.rmtree(outdir)
 
