@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/pairing/host_pairing_controller.h"
 #include "components/pairing/proto_decoder.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
@@ -28,6 +29,7 @@ namespace pairing_chromeos {
 class BluetoothHostPairingController
     : public HostPairingController,
       public ProtoDecoder::Observer,
+      public device::BluetoothAdapter::Observer,
       public device::BluetoothDevice::PairingDelegate {
  public:
   typedef HostPairingController::Observer Observer;
@@ -42,6 +44,7 @@ class BluetoothHostPairingController
   void Reset();
 
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+  void SetName();
   void OnSetName();
   void OnSetPowered();
   void OnCreateService(scoped_refptr<device::BluetoothSocket> socket);
@@ -79,6 +82,10 @@ class BluetoothHostPairingController
   virtual void OnCompleteSetupMessage(
       const pairing_api::CompleteSetup& message) OVERRIDE;
   virtual void OnErrorMessage(const pairing_api::Error& message) OVERRIDE;
+
+  // BluetoothAdapter::Observer:
+  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                                     bool present) OVERRIDE;
 
   // device::BluetoothDevice::PairingDelegate:
   virtual void RequestPinCode(device::BluetoothDevice* device) OVERRIDE;

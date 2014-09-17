@@ -26,7 +26,10 @@ BluetoothHostPairingController::BluetoothHostPairingController()
       ptr_factory_(this) {
 }
 
-BluetoothHostPairingController::~BluetoothHostPairingController() {}
+BluetoothHostPairingController::~BluetoothHostPairingController() {
+  if (adapter_.get())
+    adapter_->RemoveObserver(this);
+}
 
 void BluetoothHostPairingController::ChangeStage(Stage new_stage) {
   if (current_stage_ == new_stage)
@@ -106,9 +109,19 @@ void BluetoothHostPairingController::OnGetAdapter(
   DCHECK(!adapter_.get());
   adapter_ = adapter;
 
+  if (adapter_->IsPresent()) {
+    SetName();
+  } else {
+    // Set the name once the adapter is present.
+    adapter_->AddObserver(this);
+  }
+}
+
+void BluetoothHostPairingController::SetName() {
   // TODO(zork): Make the device name prettier. (http://crbug.com/405774)
   device_name_ = base::StringPrintf("%s%s", kDeviceNamePrefix,
                                     adapter_->GetAddress().c_str());
+
   adapter_->SetName(
       device_name_,
       base::Bind(&BluetoothHostPairingController::OnSetName,
@@ -296,6 +309,16 @@ void BluetoothHostPairingController::OnCompleteSetupMessage(
 void BluetoothHostPairingController::OnErrorMessage(
     const pairing_api::Error& message) {
   NOTREACHED();
+}
+
+void BluetoothHostPairingController::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  DCHECK_EQ(adapter, adapter_.get());
+  if (present) {
+    adapter_->RemoveObserver(this);
+    SetName();
+  }
 }
 
 void BluetoothHostPairingController::AddObserver(Observer* observer) {
