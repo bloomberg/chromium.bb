@@ -17,7 +17,7 @@ class FindBadConstructsAction : public clang::PluginASTAction {
 
  protected:
   // Overridden from PluginASTAction:
-  virtual clang::ASTConsumer* CreateASTConsumer(
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
       clang::CompilerInstance& instance,
       llvm::StringRef ref);
   virtual bool ParseArgs(const clang::CompilerInstance& instance,
