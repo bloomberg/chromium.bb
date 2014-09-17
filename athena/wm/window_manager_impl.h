@@ -66,11 +66,11 @@ class WindowManagerImpl : public WindowManager,
 
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE;
-  virtual void OnSplitViewMode(aura::Window* left,
-                               aura::Window* right) OVERRIDE;
+  virtual void OnSelectSplitViewWindow(aura::Window* left,
+                                       aura::Window* right,
+                                       aura::Window* to_activate) OVERRIDE;
 
   // aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // AcceleratorHandler:

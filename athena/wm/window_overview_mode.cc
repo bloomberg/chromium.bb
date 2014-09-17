@@ -592,7 +592,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     OverviewToolbar::ActionType action = overview_toolbar_->current_action();
     overview_toolbar_.reset();
     if (action == OverviewToolbar::ACTION_TYPE_SPLIT) {
-      delegate_->OnSplitViewMode(NULL, dragged_window_);
+      delegate_->OnSelectSplitViewWindow(NULL,
+                                         dragged_window_,
+                                         dragged_window_);
       return;
     }
 
@@ -606,7 +608,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         left = dragged_window_;
       else
         right = dragged_window_;
-      delegate_->OnSplitViewMode(left, right);
+      delegate_->OnSelectSplitViewWindow(left, right, dragged_window_);
       return;
     }
 
@@ -624,8 +626,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       // current state.
       if (window == split_view_controller_->left_window() ||
           window == split_view_controller_->right_window()) {
-        delegate_->OnSplitViewMode(split_view_controller_->left_window(),
-                                   split_view_controller_->right_window());
+        delegate_->OnSelectSplitViewWindow(
+            split_view_controller_->left_window(),
+            split_view_controller_->right_window(),
+            window);
       } else {
         delegate_->OnSelectWindow(window);
       }

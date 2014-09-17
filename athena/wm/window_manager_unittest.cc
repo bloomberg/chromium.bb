@@ -19,32 +19,29 @@
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
 
-namespace {
-
-scoped_ptr<aura::Window> CreateWindow(aura::WindowDelegate* delegate) {
-  scoped_ptr<aura::Window> window(new aura::Window(delegate));
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
-  window->Show();
-  return window.Pass();
-}
-
-}  // namespace
-
 namespace athena {
 
-typedef test::AthenaTestBase WindowManagerTest;
+class WindowManagerTest : public test::AthenaTestBase {
+ public:
+  WindowManagerTest() {}
+  virtual ~WindowManagerTest() {}
+
+  scoped_ptr<aura::Window> CreateAndShowWindow(aura::WindowDelegate* delegate) {
+    scoped_ptr<aura::Window> window(CreateTestWindow(delegate, gfx::Rect()));
+    window->Show();
+    return window.Pass();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerTest);
+};
 
 TEST_F(WindowManagerTest, OverviewModeBasics) {
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
   wm::ActivateWindow(second.get());
 
   ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
@@ -82,9 +79,9 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
   test::WindowManagerImplTestApi wm_api;
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> w1(CreateTestWindow(&delegate, gfx::Rect()));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(&delegate, gfx::Rect()));
-  scoped_ptr<aura::Window> w3(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w1(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndShowWindow(&delegate));
   wm::ActivateWindow(w3.get());
 
   WindowManager::GetInstance()->ToggleOverview();
@@ -94,25 +91,39 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
 
   // Go into split-view mode.
   WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
-  overview_delegate->OnSplitViewMode(NULL, w2.get());
+  overview_delegate->OnSelectSplitViewWindow(w3.get(), NULL, w3.get());
   EXPECT_TRUE(w3->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_FALSE(w1->IsVisible());
 }
 
+TEST_F(WindowManagerTest, NewWindowFromOverview) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndShowWindow(&delegate));
+
+  WindowManager::GetInstance()->ToggleOverview();
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+
+  // Test that opening a new window exits overview mode. The new window could
+  // have been opened by JavaScript or by the home card.
+  scoped_ptr<aura::Window> w3(CreateAndShowWindow(&delegate));
+
+  ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+}
+
 TEST_F(WindowManagerTest, BezelGestureToSplitViewMode) {
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> third(CreateAndShowWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
 
   // Test that going into split-view mode with two-finger gesture selects the
   // correct windows on left and right splits.
@@ -133,19 +144,13 @@ TEST_F(WindowManagerTest, BezelGestureToSplitViewMode) {
 
 TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> third(CreateAndShowWindow(&delegate));
   first->Hide();
   second->Hide();
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
 
   EXPECT_EQ(third.get(),
             wm_api.GetWindowListProvider()->GetWindowList().back());
@@ -167,17 +172,11 @@ TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> third(CreateAndShowWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
 
   EXPECT_EQ(third.get(),
             wm_api.GetWindowListProvider()->GetWindowList().back());
@@ -220,20 +219,12 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
-  scoped_ptr<aura::Window> fourth(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> third(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> fourth(CreateAndShowWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  aura::client::ParentWindowWithContext(
-      fourth.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
 
   // Test that going into split-view mode with two-finger gesture selects the
   // correct windows on left and right splits.
@@ -277,11 +268,9 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
 
 TEST_F(WindowManagerTest, NewWindowBounds) {
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
+  scoped_ptr<aura::Window> first(CreateAndShowWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-  aura::client::ParentWindowWithContext(
-      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
   // The window should have the same size as the container.
   const gfx::Size work_area =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
@@ -290,9 +279,7 @@ TEST_F(WindowManagerTest, NewWindowBounds) {
   EXPECT_TRUE(first->bounds().origin().IsOrigin());
 
   // A second window should have the same bounds as the first one.
-  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
-  aura::client::ParentWindowWithContext(
-      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  scoped_ptr<aura::Window> second(CreateAndShowWindow(&delegate));
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
 
   // Get into split view.
@@ -303,9 +290,7 @@ TEST_F(WindowManagerTest, NewWindowBounds) {
             left_bounds.size().ToString());
 
   // A new window should replace the left window when in split view.
-  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
-  aura::client::ParentWindowWithContext(
-      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  scoped_ptr<aura::Window> third(CreateAndShowWindow(&delegate));
   EXPECT_EQ(wm_api.GetSplitViewController()->left_window(), third.get());
   EXPECT_EQ(left_bounds.ToString(), third->bounds().ToString());
 }
@@ -324,7 +309,7 @@ TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {
   generator.ReleaseKey(ui::VKEY_F6, ui::EF_CONTROL_DOWN);
   EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
 
-  scoped_ptr<aura::Window> w2(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w2(CreateAndShowWindow(&delegate));
   w2->Show();
 
   generator.PressKey(ui::VKEY_F6, ui::EF_CONTROL_DOWN);
@@ -349,9 +334,9 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
   test::WindowManagerImplTestApi wm_api;
 
   aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> w1(CreateTestWindow(&delegate, gfx::Rect()));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(&delegate, gfx::Rect()));
-  scoped_ptr<aura::Window> w3(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w1(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndShowWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndShowWindow(&delegate));
 
   // Get into split-view mode, and then turn on overview mode.
   wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL);
