@@ -204,20 +204,15 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     ContextualSearchParams(
         const int version,
-        const size_t start,
-        const size_t end,
         const std::string& selection,
-        const std::string& content,
         const std::string& base_page_url,
-        const std::string& encoding)
+        const bool resolve)
     : version(version),
-      start(start),
-      end(end),
+      start(base::string16::npos),
+      end(base::string16::npos),
       selection(selection),
-      content(content),
       base_page_url(base_page_url),
-      encoding(encoding),
-      resolve(true) {
+      resolve(resolve) {
 }
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
