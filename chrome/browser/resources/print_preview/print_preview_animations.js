@@ -48,10 +48,11 @@ function fadeInElement(el, opt_justShow) {
   el.setAttribute('aria-hidden', 'false');
   el.style.height = 'auto';
   var height = el.offsetHeight;
-  el.style.height = height + 'px';
-  if (opt_justShow) {
-    el.style.opacity = 1;
+  if (opt_justShow && false) {
+    el.style.height = '';
+    el.style.opacity = '';
   } else {
+    el.style.height = height + 'px';
     var animName = addAnimation(getFadeInAnimationCode(height));
     animationEventTracker_.add(
         el, 'webkitAnimationEnd', onFadeInAnimationEnd.bind(el), false);
