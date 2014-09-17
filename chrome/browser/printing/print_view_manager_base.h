@@ -24,7 +24,6 @@ namespace printing {
 
 class JobEventDetails;
 class MetafilePlayer;
-class PdfToEmfConverter;
 class PrintJob;
 class PrintJobWorkerOwner;
 class PrintQueriesQueue;
@@ -134,13 +133,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Release the PrinterQuery associated with our |cookie_|.
   void ReleasePrinterQuery();
 
-#if defined(OS_WIN)
-  // Called on completion of converting the pdf to emf.
-  void OnPdfToEmfConverted(const PrintHostMsg_DidPrintPage_Params& params,
-                           double scale_factor,
-                           ScopedVector<MetafilePlayer>* emf_files);
-#endif  // OS_WIN
-
   content::NotificationRegistrar registrar_;
 
   // Manages the low-level talk to the printer.
@@ -161,10 +153,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Set to true when OnDidPrintPage() should be expecting the first page.
   bool expecting_first_page_;
 #endif  // OS_MACOSX
-
-#if defined(OS_WIN)
-  scoped_ptr<PdfToEmfConverter> pdf_to_emf_converter_;
-#endif  // OS_WIN
 
   // The document cookie of the current PrinterQuery.
   int cookie_;

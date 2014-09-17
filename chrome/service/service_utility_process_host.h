@@ -7,20 +7,16 @@
 
 #include "build/build_config.h"
 
-#include <string>
-#include <vector>
-
-#include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/child_process_host_delegate.h"
-#include "ipc/ipc_channel.h"
-#include "printing/pdf_render_settings.h"
+#include "ipc/ipc_platform_file.h"
 
 namespace base {
 class CommandLine;
+class File;
+class FilePath;
 class MessageLoopProxy;
 class ScopedTempDir;
 }  // namespace base
@@ -31,6 +27,7 @@ class ChildProcessHost;
 
 namespace printing {
 class MetafilePlayer;
+class PdfRenderSettings;
 struct PageRange;
 struct PrinterCapsAndDefaults;
 struct PrinterSemanticCapsAndDefaults;
@@ -51,14 +48,12 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     // Called when the child process died before a reply was receieved.
     virtual void OnChildDied() {}
 
-    // Called when at least one page in the specified PDF has been rendered
-    // successfully into |metafile|.
-    virtual void OnRenderPDFPagesToMetafileSucceeded(
-        const printing::MetafilePlayer& metafile,
-        int highest_rendered_page_number,
-        double scale_factor) {}
-    // Called when no page in the passed in PDF could be rendered.
-    virtual void OnRenderPDFPagesToMetafileFailed() {}
+    virtual void OnRenderPDFPagesToMetafilePageDone(
+        double scale_factor,
+        const printing::MetafilePlayer& emf) {}
+
+    // Called when at all pages in the PDF has been rendered.
+    virtual void OnRenderPDFPagesToMetafileDone(bool success) {}
 
     // Called when the printer capabilities and defaults have been
     // retrieved successfully or if retrieval failed.
@@ -82,9 +77,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     friend class ServiceUtilityProcessHost;
 
     // Invoked when a metafile file is ready.
-    void MetafileAvailable(const base::FilePath& metafile_path,
-                           int highest_rendered_page_number,
-                           double scale_factor);
+    // Returns true if metafile successfully loaded from |file|.
+    bool MetafileAvailable(double scale_factor, base::File file);
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -98,8 +92,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // pages than the specified page ranges, it will render as many as available.
   bool StartRenderPDFPagesToMetafile(
       const base::FilePath& pdf_path,
-      const printing::PdfRenderSettings& render_settings,
-      const std::vector<printing::PageRange>& page_ranges);
+      const printing::PdfRenderSettings& render_settings);
 
   // Starts a process to get capabilities and defaults for the specified
   // printer. Used on Windows to isolate the service process from printer driver
@@ -114,6 +107,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   bool StartGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
 
  protected:
+  bool Send(IPC::Message* msg);
+
   // Allows this method to be overridden for tests.
   virtual base::FilePath GetUtilityProcessCmd();
 
@@ -123,26 +118,20 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   virtual base::ProcessHandle GetHandle() const OVERRIDE;
 
  private:
-  // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
-  // path to the exposed to the sandbox. This is ignored if |no_sandbox| is
-  // true.
-  bool StartProcess(bool no_sandbox, const base::FilePath& exposed_dir);
+  // Starts a process.  Returns true iff it succeeded.
+  bool StartProcess(bool no_sandbox);
 
   // Launch the child process synchronously.
-  // TODO(sanjeevr): Determine whether we need to make the launch asynchronous.
-  // |exposed_dir| is the path to tbe exposed to the sandbox. This is ignored
-  // if |no_sandbox| is true.
-  bool Launch(base::CommandLine* cmd_line,
-              bool no_sandbox,
-              const base::FilePath& exposed_dir);
+  bool Launch(base::CommandLine* cmd_line, bool no_sandbox);
 
   base::ProcessHandle handle() const { return handle_; }
 
+  void OnMetafileSpooled(bool success);
+  void OnPDFToEmfFinished(bool success);
+
   // Messages handlers:
-  void OnRenderPDFPagesToMetafilesSucceeded(
-      const std::vector<printing::PageRange>& page_ranges,
-      double scale_factor);
-  void OnRenderPDFPagesToMetafileFailed();
+  void OnRenderPDFPagesToMetafilesPageCount(int page_count);
+  void OnRenderPDFPagesToMetafilesPageDone(bool success, double scale_factor);
   void OnGetPrinterCapsAndDefaultsSucceeded(
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
@@ -159,12 +148,14 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<Client> client_;
   scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
   bool waiting_for_reply_;
-  // The base path to the temp file where the metafile will be written to.
-  base::FilePath metafile_path_;
-  // The temporary folder created for the metafile.
-  scoped_ptr<base::ScopedTempDir> scratch_metafile_dir_;
+
   // Start time of operation.
   base::Time start_time_;
+
+  class PdfToEmfState;
+  scoped_ptr<PdfToEmfState> pdf_to_emf_state_;
+
+  base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUtilityProcessHost);
 };

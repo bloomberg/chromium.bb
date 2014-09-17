@@ -61,6 +61,23 @@ IPC_STRUCT_TRAITS_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
+#if defined(OS_WIN)
+// Tell the utility process to start rendering the given PDF into a metafile.
+// Utility process would be alive until
+// ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop message.
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
+                     IPC::PlatformFileForTransit, /* input_file */
+                     printing::PdfRenderSettings /* settings */)
+
+// Requests conversion of the next page.
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,
+                     int /* page_number */,
+                     IPC::PlatformFileForTransit /* output_file */)
+
+// Requests utility process to stop conversion and exit.
+IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop)
+#endif  // OS_WIN
+
 // Tell the utility process to render the given PDF into a PWGRaster.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                      IPC::PlatformFileForTransit, /* Input PDF file */
@@ -86,6 +103,18 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
+
+#if defined(OS_WIN)
+// Reply when the utility process loaded PDF. |page_count| is 0, if loading
+// failed.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,
+                     int /* page_count */)
+
+// Reply when the utility process rendered the PDF page.
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
+                     bool /* success */,
+                     double /* scale_factor */)
+#endif  // OS_WIN
 
 // Reply when the utility process has succeeded in rendering the PDF to PWG.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded)
@@ -118,23 +147,3 @@ IPC_MESSAGE_CONTROL1(
   std::string /* printer name */)
 
 #endif  // ENABLE_FULL_PRINTING
-
-#if defined(OS_WIN)
-// Tell the utility process to render the given PDF into a metafile.
-// The metafile path will have ".%d" inserted where the %d is the page number.
-// If no page range is specified, all pages will be converted.
-IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
-                     IPC::PlatformFileForTransit,  // PDF file
-                     base::FilePath,  // Base location for output metafile
-                     printing::PdfRenderSettings,  // PDF render settings
-                     std::vector<printing::PageRange>)
-
-// Reply when the utility process has succeeded in rendering the PDF.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
-                     std::vector<printing::PageRange>,  // Pages rendered
-                     double)                            // Scale factor
-
-// Reply when an error occurred rendering the PDF.
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed)
-
-#endif  // OS_WIN

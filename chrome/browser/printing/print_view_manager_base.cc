@@ -33,14 +33,6 @@
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/printing/pdf_to_emf_converter.h"
-#include "printing/emf_win.h"
-#include "printing/pdf_render_settings.h"
-#endif
-
 using base::TimeDelta;
 using content::BrowserThread;
 
@@ -126,40 +118,6 @@ void PrintViewManagerBase::OnDidGetDocumentCookie(int cookie) {
   cookie_ = cookie;
 }
 
-#if defined(OS_WIN)
-void PrintViewManagerBase::OnPdfToEmfConverted(
-    const PrintHostMsg_DidPrintPage_Params& params,
-    double scale_factor,
-    ScopedVector<MetafilePlayer>* emf_files) {
-  if (!print_job_.get())
-    return;
-
-  PrintedDocument* document = print_job_->document();
-  if (!document)
-    return;
-
-  for (size_t i = 0; i < emf_files->size(); ++i) {
-    if (!(*emf_files)[i]) {
-      web_contents()->Stop();
-      return;
-    }
-  }
-
-  for (size_t i = 0; i < emf_files->size(); ++i) {
-    // Update the rendered document. It will send notifications to the listener.
-    document->SetPage(i,
-                      make_scoped_ptr((*emf_files)[i]),
-                      scale_factor,
-                      params.page_size,
-                      params.content_area);
-  }
-  // document->SetPage took ownership of all EMFs.
-  emf_files->weak_clear();
-
-  ShouldQuitFromInnerMessageLoop();
-}
-#endif  // OS_WIN
-
 void PrintViewManagerBase::OnDidPrintPage(
   const PrintHostMsg_DidPrintPage_Params& params) {
   if (!OpportunisticallyCreatePrintJob(params.document_cookie))
@@ -212,17 +170,8 @@ void PrintViewManagerBase::OnDidPrintPage(
         params.data_size);
 
     document->DebugDumpData(bytes, FILE_PATH_LITERAL(".pdf"));
-
-    if (!pdf_to_emf_converter_)
-      pdf_to_emf_converter_ = PdfToEmfConverter::CreateDefault();
-
-    const int kPrinterDpi = print_job_->settings().dpi();
-    pdf_to_emf_converter_->Start(
-        bytes,
-        printing::PdfRenderSettings(params.content_area, kPrinterDpi, true),
-        base::Bind(&PrintViewManagerBase::OnPdfToEmfConverted,
-                   base::Unretained(this),
-                   params));
+    print_job_->StartPdfToEmfConversion(
+        bytes, params.page_size, params.content_area);
   }
 #endif  // !OS_WIN
 }

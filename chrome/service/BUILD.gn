@@ -44,8 +44,6 @@ static_library("service") {
     "service_process.h",
     "service_process_prefs.cc",
     "service_process_prefs.h",
-    "service_utility_process_host.cc",
-    "service_utility_process_host.h",
   ]
 
   deps = [
@@ -65,7 +63,12 @@ static_library("service") {
   if (use_cups) {
     sources += [ "cloud_print/print_system_cups.cc" ]
     configs += [ "//printing:cups" ]
-  } else if (!is_win) {
-    sources += [ "cloud_print/print_system_dummp.cc" ]
+  } else if (is_win) {
+    sources += [
+      "service_utility_process_host.cc",
+      "service_utility_process_host.h",
+    ]
+  } else {
+    sources += [ "cloud_print/print_system_dummy.cc" ]
   }
 }

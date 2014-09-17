@@ -772,6 +772,12 @@
                 'service/cloud_print/print_system_dummy.cc',
               ],
             }],
+            ['OS!="win"', {
+              'sources!': [
+                'service/service_utility_process_host.cc',
+                'service/service_utility_process_host.h',
+              ],
+            }],
           ],
         },
       ],

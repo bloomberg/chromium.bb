@@ -4,70 +4,34 @@
 
 #include "chrome/service/service_utility_process_host.h"
 
+#include <queue>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/process/launch.h"
+#include "base/task_runner_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init.h"
-#include "ipc/ipc_switches.h"
-#include "printing/page_range.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/gfx/rect.h"
-
-#if defined(OS_WIN)
-#include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/process/launch.h"
-#include "base/win/scoped_handle.h"
-#include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "ipc/ipc_switches.h"
 #include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
-
-// NOTE: changes to this class need to be reviewed by the security team.
-class ServiceSandboxedProcessLauncherDelegate
-    : public content::SandboxedProcessLauncherDelegate {
- public:
-  explicit ServiceSandboxedProcessLauncherDelegate(
-      const base::FilePath& exposed_dir)
-    : exposed_dir_(exposed_dir) {
-  }
-
-  virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) OVERRIDE {
-    *exposed_dir = exposed_dir_;
-  }
-
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) OVERRIDE {
-    // Service process may run as windows service and it fails to create a
-    // window station.
-    policy->SetAlternateDesktop(false);
-  }
-
- private:
-  base::FilePath exposed_dir_;
-};
-
-}  // namespace
-
-#endif  // OS_WIN
 
 using content::ChildProcessHost;
-
-namespace {
 
 enum ServiceUtilityProcessHostEvent {
   SERVICE_UTILITY_STARTED,
@@ -91,14 +55,109 @@ void ReportUmaEvent(ServiceUtilityProcessHostEvent id) {
                             SERVICE_UTILITY_EVENT_MAX);
 }
 
+// NOTE: changes to this class need to be reviewed by the security team.
+class ServiceSandboxedProcessLauncherDelegate
+    : public content::SandboxedProcessLauncherDelegate {
+ public:
+  ServiceSandboxedProcessLauncherDelegate() {}
+
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) OVERRIDE {
+    // Service process may run as windows service and it fails to create a
+    // window station.
+    policy->SetAlternateDesktop(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceSandboxedProcessLauncherDelegate);
+};
+
 }  // namespace
 
+class ServiceUtilityProcessHost::PdfToEmfState {
+ public:
+  explicit PdfToEmfState(ServiceUtilityProcessHost* host)
+      : host_(host), page_count_(0), current_page_(0), pages_in_progress_(0) {}
+  ~PdfToEmfState() { Stop(); }
+
+  bool Start(base::File pdf_file,
+             const printing::PdfRenderSettings& conversion_settings) {
+    if (!temp_dir_.CreateUniqueTempDir())
+      return false;
+    return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
+        IPC::TakeFileHandleForProcess(pdf_file.Pass(), host_->handle()),
+        conversion_settings));
+  }
+
+  void GetMorePages() {
+    const int kMaxNumberOfTempFilesPerDocument = 3;
+    while (pages_in_progress_ < kMaxNumberOfTempFilesPerDocument &&
+           current_page_ < page_count_) {
+      ++pages_in_progress_;
+      emf_files_.push(CreateTempFile());
+      host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage(
+          current_page_++,
+          IPC::GetFileHandleForProcess(
+              emf_files_.back().GetPlatformFile(), host_->handle(), false)));
+    }
+  }
+
+  // Returns true if all pages processed and client should not expect more
+  // results.
+  bool OnPageProcessed() {
+    --pages_in_progress_;
+    GetMorePages();
+    if (pages_in_progress_ || current_page_ < page_count_)
+      return false;
+    Stop();
+    return true;
+  }
+
+  base::File TakeNextFile() {
+    DCHECK(!emf_files_.empty());
+    base::File file;
+    if (!emf_files_.empty())
+      file = emf_files_.front().Pass();
+    emf_files_.pop();
+    return file.Pass();
+  }
+
+  void set_page_count(int page_count) { page_count_ = page_count; }
+  bool has_page_count() { return page_count_ > 0; }
+
+ private:
+  void Stop() {
+    host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop());
+  }
+
+  base::File CreateTempFile() {
+    base::FilePath path;
+    if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &path))
+      return base::File();
+    return base::File(path,
+                      base::File::FLAG_CREATE_ALWAYS |
+                      base::File::FLAG_WRITE |
+                      base::File::FLAG_READ |
+                      base::File::FLAG_DELETE_ON_CLOSE |
+                      base::File::FLAG_TEMPORARY);
+  }
+
+  base::ScopedTempDir temp_dir_;
+  ServiceUtilityProcessHost* host_;
+  std::queue<base::File> emf_files_;
+  int page_count_;
+  int current_page_;
+  int pages_in_progress_;
+};
+
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
-    Client* client, base::MessageLoopProxy* client_message_loop_proxy)
-        : handle_(base::kNullProcessHandle),
-          client_(client),
-          client_message_loop_proxy_(client_message_loop_proxy),
-          waiting_for_reply_(false) {
+    Client* client,
+    base::MessageLoopProxy* client_message_loop_proxy)
+    : handle_(base::kNullProcessHandle),
+      client_(client),
+      client_message_loop_proxy_(client_message_loop_proxy),
+      waiting_for_reply_(false),
+      weak_ptr_factory_(this) {
   child_process_host_.reset(ChildProcessHost::Create(this));
 }
 
@@ -109,66 +168,44 @@ ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
     const base::FilePath& pdf_path,
-    const printing::PdfRenderSettings& render_settings,
-    const std::vector<printing::PageRange>& page_ranges) {
+    const printing::PdfRenderSettings& render_settings) {
   ReportUmaEvent(SERVICE_UTILITY_METAFILE_REQUEST);
   start_time_ = base::Time::Now();
-#if !defined(OS_WIN)
-  // This is only implemented on Windows (because currently it is only needed
-  // on Windows). Will add implementations on other platforms when needed.
-  NOTIMPLEMENTED();
-  return false;
-#else  // !defined(OS_WIN)
-  scratch_metafile_dir_.reset(new base::ScopedTempDir);
-  if (!scratch_metafile_dir_->CreateUniqueTempDir())
-    return false;
-  metafile_path_ = scratch_metafile_dir_->path().AppendASCII("output.emf");
-  if (!StartProcess(false, scratch_metafile_dir_->path()))
+  base::File pdf_file(pdf_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!pdf_file.IsValid() || !StartProcess(false))
     return false;
 
-  base::File pdf_file(
-      pdf_path,
-      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
-  return child_process_host_->Send(
-      new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
-          IPC::TakeFileHandleForProcess(pdf_file.Pass(), handle()),
-          metafile_path_,
-          render_settings,
-          page_ranges));
-#endif  // !defined(OS_WIN)
+
+  pdf_to_emf_state_.reset(new PdfToEmfState(this));
+  return pdf_to_emf_state_->Start(pdf_file.Pass(), render_settings);
 }
 
 bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
   ReportUmaEvent(SERVICE_UTILITY_CAPS_REQUEST);
   start_time_ = base::Time::Now();
-  base::FilePath exposed_path;
-  if (!StartProcess(true, exposed_path))
+  if (!StartProcess(true))
     return false;
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
-  return child_process_host_->Send(
-      new ChromeUtilityMsg_GetPrinterCapsAndDefaults(printer_name));
+  return Send(new ChromeUtilityMsg_GetPrinterCapsAndDefaults(printer_name));
 }
 
 bool ServiceUtilityProcessHost::StartGetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name) {
   ReportUmaEvent(SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST);
   start_time_ = base::Time::Now();
-  base::FilePath exposed_path;
-  if (!StartProcess(true, exposed_path))
+  if (!StartProcess(true))
     return false;
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
-  return child_process_host_->Send(
+  return Send(
       new ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults(printer_name));
 }
 
-bool ServiceUtilityProcessHost::StartProcess(
-    bool no_sandbox,
-    const base::FilePath& exposed_dir) {
+bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   std::string channel_id = child_process_host_->CreateChannel();
   if (channel_id.empty())
     return false;
@@ -179,12 +216,12 @@ bool ServiceUtilityProcessHost::StartProcess(
     return false;
   }
 
-  CommandLine cmd_line(exe_path);
+  base::CommandLine cmd_line(exe_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
 
-  if (Launch(&cmd_line, no_sandbox, exposed_dir)) {
+  if (Launch(&cmd_line, no_sandbox)) {
     ReportUmaEvent(SERVICE_UTILITY_STARTED);
     return true;
   }
@@ -192,25 +229,24 @@ bool ServiceUtilityProcessHost::StartProcess(
   return false;
 }
 
-bool ServiceUtilityProcessHost::Launch(CommandLine* cmd_line,
-                                       bool no_sandbox,
-                                       const base::FilePath& exposed_dir) {
-#if !defined(OS_WIN)
-  // TODO(sanjeevr): Implement for non-Windows OSes.
-  NOTIMPLEMENTED();
-  return false;
-#else  // !defined(OS_WIN)
-
+bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
+                                       bool no_sandbox) {
   if (no_sandbox) {
     base::ProcessHandle process = base::kNullProcessHandle;
     cmd_line->AppendSwitch(switches::kNoSandbox);
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
   } else {
-    ServiceSandboxedProcessLauncherDelegate delegate(exposed_dir);
+    ServiceSandboxedProcessLauncherDelegate delegate;
     handle_ = content::StartSandboxedProcess(&delegate, cmd_line);
   }
   return (handle_ != base::kNullProcessHandle);
-#endif  // !defined(OS_WIN)
+}
+
+bool ServiceUtilityProcessHost::Send(IPC::Message* msg) {
+  if (child_process_host_)
+    return child_process_host_->Send(msg);
+  delete msg;
+  return false;
 }
 
 base::FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
@@ -238,13 +274,11 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
-#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(
-        ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
-        OnRenderPDFPagesToMetafilesSucceeded)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed,
-                        OnRenderPDFPagesToMetafileFailed)
-#endif
+        ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,
+        OnRenderPDFPagesToMetafilesPageCount)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
+                        OnRenderPDFPagesToMetafilesPageDone)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
         OnGetPrinterCapsAndDefaultsSucceeded)
@@ -265,47 +299,59 @@ base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
   return handle_;
 }
 
-#if defined(OS_WIN)
-void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesSucceeded(
-    const std::vector<printing::PageRange>& page_ranges,
-    double scale_factor) {
-  ReportUmaEvent(SERVICE_UTILITY_METAFILE_SUCCEEDED);
-  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileTime",
-                      base::Time::Now() - start_time_);
-  DCHECK(waiting_for_reply_);
-  waiting_for_reply_ = false;
-  // If the metafile was successfully created, we need to take our hands off the
-  // scratch metafile directory. The client will delete it when it is done with
-  // metafile.
-  scratch_metafile_dir_->Take();
+void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {
+  if (!success || pdf_to_emf_state_->OnPageProcessed())
+    OnPDFToEmfFinished(success);
+}
 
-  // TODO(vitalybuka|scottmg): http://crbug.com/170859: Currently, only one
-  // page is printed at a time. This would need to be refactored to change
-  // this.
-  CHECK_EQ(1u, page_ranges.size());
-  CHECK_EQ(page_ranges[0].from, page_ranges[0].to);
-  int page_number = page_ranges[0].from;
-  client_message_loop_proxy_->PostTask(
+void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount(
+    int page_count) {
+  DCHECK(waiting_for_reply_);
+  if (!pdf_to_emf_state_ || page_count <= 0 ||
+      pdf_to_emf_state_->has_page_count()) {
+    return OnPDFToEmfFinished(false);
+  }
+  pdf_to_emf_state_->set_page_count(page_count);
+  pdf_to_emf_state_->GetMorePages();
+}
+
+void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
+    bool success,
+    double scale_factor) {
+  DCHECK(waiting_for_reply_);
+  if (!pdf_to_emf_state_ || !success)
+    return OnPDFToEmfFinished(false);
+  base::File emf_file = pdf_to_emf_state_->TakeNextFile();
+  base::PostTaskAndReplyWithResult(
+      client_message_loop_proxy_,
       FROM_HERE,
       base::Bind(&Client::MetafileAvailable,
                  client_.get(),
-                 metafile_path_.InsertBeforeExtensionASCII(
-                     base::StringPrintf(".%d", page_number)),
-                 page_number,
-                 scale_factor));
+                 scale_factor,
+                 base::Passed(&emf_file)),
+      base::Bind(&ServiceUtilityProcessHost::OnMetafileSpooled,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
-  DCHECK(waiting_for_reply_);
-  ReportUmaEvent(SERVICE_UTILITY_METAFILE_FAILED);
-  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileFailTime",
-                      base::Time::Now() - start_time_);
+void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
+  if (!waiting_for_reply_)
+    return;
   waiting_for_reply_ = false;
+  if (success) {
+    ReportUmaEvent(SERVICE_UTILITY_METAFILE_SUCCEEDED);
+    UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileTime",
+                        base::Time::Now() - start_time_);
+  } else {
+    ReportUmaEvent(SERVICE_UTILITY_METAFILE_FAILED);
+    UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileFailTime",
+                        base::Time::Now() - start_time_);
+  }
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnRenderPDFPagesToMetafileFailed, client_.get()));
+      base::Bind(
+          &Client::OnRenderPDFPagesToMetafileDone, client_.get(), success));
+  pdf_to_emf_state_.reset();
 }
-#endif  // defined(OS_WIN)
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
     const std::string& printer_name,
@@ -362,27 +408,24 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
                  printing::PrinterSemanticCapsAndDefaults()));
 }
 
-void ServiceUtilityProcessHost::Client::MetafileAvailable(
-    const base::FilePath& metafile_path,
-    int highest_rendered_page_number,
-    double scale_factor) {
-  // The metafile was created in a temp folder which needs to get deleted after
-  // we have processed it.
-  base::ScopedTempDir scratch_metafile_dir;
-  if (!scratch_metafile_dir.Set(metafile_path.DirName()))
-    LOG(WARNING) << "Unable to set scratch metafile directory";
-#if defined(OS_WIN)
-  // It's important that metafile is declared after scratch_metafile_dir so
-  // that the metafile destructor closes the file before the base::ScopedTempDir
-  // destructor tries to remove the directory.
-  printing::Emf metafile;
-  if (!metafile.InitFromFile(metafile_path)) {
-    OnRenderPDFPagesToMetafileFailed();
-  } else {
-    OnRenderPDFPagesToMetafileSucceeded(metafile,
-                                        highest_rendered_page_number,
-                                        scale_factor);
+bool ServiceUtilityProcessHost::Client::MetafileAvailable(double scale_factor,
+                                                          base::File file) {
+  file.Seek(base::File::FROM_BEGIN, 0);
+  int64 size = file.GetLength();
+  if (size <= 0) {
+    OnRenderPDFPagesToMetafileDone(false);
+    return false;
   }
-#endif  // defined(OS_WIN)
+  std::vector<char> data(size);
+  if (file.ReadAtCurrentPos(data.data(), data.size()) != size) {
+    OnRenderPDFPagesToMetafileDone(false);
+    return false;
+  }
+  printing::Emf emf;
+  if (!emf.InitFromData(data.data(), data.size())) {
+    OnRenderPDFPagesToMetafileDone(false);
+    return false;
+  }
+  OnRenderPDFPagesToMetafilePageDone(scale_factor, emf);
+  return true;
 }
-

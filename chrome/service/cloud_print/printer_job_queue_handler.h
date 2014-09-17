@@ -18,7 +18,7 @@
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 
 namespace base {
-  class DictionaryValue;
+class DictionaryValue;
 }
 
 namespace cloud_print {

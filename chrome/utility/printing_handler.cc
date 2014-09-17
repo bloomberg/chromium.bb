@@ -262,6 +262,10 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                         OnRenderPDFPagesToMetafile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,
+                        OnRenderPDFPagesToMetafileGetPage)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop,
+                        OnRenderPDFPagesToMetafileStop)
 #endif  // OS_WIN
 #if defined(ENABLE_FULL_PRINTING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
@@ -279,31 +283,29 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
 void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
-    const base::FilePath& metafile_path,
-    const printing::PdfRenderSettings& settings,
-    const std::vector<printing::PageRange>& page_ranges_const) {
-  bool succeeded = false;
+    const printing::PdfRenderSettings& settings) {
+  pdf_rendering_settings_ = settings;
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
-  int highest_rendered_page_number = 0;
+  int page_count = LoadPDF(pdf_file.Pass());
+  Send(
+      new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount(page_count));
+}
+
+void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
+    int page_number,
+    IPC::PlatformFileForTransit output_file) {
+  base::File emf_file = IPC::PlatformFileForTransitToFile(output_file);
   double scale_factor = 1.0;
-  std::vector<printing::PageRange> page_ranges = page_ranges_const;
-  succeeded = RenderPDFToWinMetafile(pdf_file.Pass(),
-                                     metafile_path,
-                                     settings,
-                                     &page_ranges,
-                                     &highest_rendered_page_number,
-                                     &scale_factor);
-  if (succeeded) {
-    // TODO(vitalybuka|scottmg): http://crbug.com/170859. These could
-    // potentially be sent as each page is converted so that the spool could
-    // start sooner.
-    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded(
-        page_ranges, scale_factor));
-  } else {
-    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed());
-  }
+  bool success =
+      RenderPdfPageToMetafile(page_number, emf_file.Pass(), &scale_factor);
+  Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone(
+      success, scale_factor));
+}
+
+void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
   ReleaseProcessIfNeeded();
 }
+
 #endif  // OS_WIN
 
 #if defined(ENABLE_FULL_PRINTING)
@@ -325,88 +327,71 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
 #endif  // ENABLE_FULL_PRINTING
 
 #if defined(OS_WIN)
-bool PrintingHandler::RenderPDFToWinMetafile(
-    base::File pdf_file,
-    const base::FilePath& metafile_path,
-    const printing::PdfRenderSettings& settings,
-    std::vector<printing::PageRange>* page_ranges,
-    int* highest_rendered_page_number,
-    double* scale_factor) {
-  DCHECK(page_ranges);
-  *highest_rendered_page_number = -1;
-  *scale_factor = 1.0;
-
+int PrintingHandler::LoadPDF(base::File pdf_file) {
   if (!g_pdf_lib.Get().IsValid())
-    return false;
+    return 0;
 
-  // TODO(sanjeevr): Add a method to the PDF DLL that takes in a file handle
-  // and a page range array. That way we don't need to read the entire PDF into
-  // memory.
   int64 length = pdf_file.GetLength();
   if (length < 0)
-    return false;
+    return 0;
 
-  std::vector<char> buffer;
-  buffer.resize(length);
-  if (length != pdf_file.Read(0, &buffer.front(), length))
-    return false;
+  pdf_data_.resize(length);
+  if (length != pdf_file.Read(0, pdf_data_.data(), pdf_data_.size()))
+    return 0;
 
   int total_page_count = 0;
-  if (!g_pdf_lib.Get().GetPDFDocInfo(&buffer.front(), buffer.size(),
-                                     &total_page_count, NULL)) {
+  if (!g_pdf_lib.Get().GetPDFDocInfo(
+          &pdf_data_.front(), pdf_data_.size(), &total_page_count, NULL)) {
+    return 0;
+  }
+  return total_page_count;
+}
+
+bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
+                                              base::File output_file,
+                                              double* scale_factor) {
+  printing::Emf metafile;
+  metafile.Init();
+
+  // We need to scale down DC to fit an entire page into DC available area.
+  // Current metafile is based on screen DC and have current screen size.
+  // Writing outside of those boundaries will result in the cut-off output.
+  // On metafiles (this is the case here), scaling down will still record
+  // original coordinates and we'll be able to print in full resolution.
+  // Before playback we'll need to counter the scaling up that will happen
+  // in the service (print_system_win.cc).
+  *scale_factor =
+      gfx::CalculatePageScale(metafile.context(),
+                              pdf_rendering_settings_.area().right(),
+                              pdf_rendering_settings_.area().bottom());
+  gfx::ScaleDC(metafile.context(), *scale_factor);
+
+  // The underlying metafile is of type Emf and ignores the arguments passed
+  // to StartPage.
+  metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
+  if (!g_pdf_lib.Get().RenderPDFPageToDC(
+          &pdf_data_.front(),
+          pdf_data_.size(),
+          page_number,
+          metafile.context(),
+          pdf_rendering_settings_.dpi(),
+          pdf_rendering_settings_.dpi(),
+          pdf_rendering_settings_.area().x(),
+          pdf_rendering_settings_.area().y(),
+          pdf_rendering_settings_.area().width(),
+          pdf_rendering_settings_.area().height(),
+          true,
+          false,
+          true,
+          true,
+          pdf_rendering_settings_.autorotate())) {
     return false;
   }
-
-  // If no range supplied, do all pages.
-  if (page_ranges->empty()) {
-    printing::PageRange page_range_all;
-    page_range_all.from = 0;
-    page_range_all.to = total_page_count - 1;
-    page_ranges->push_back(page_range_all);
-  }
-
-  bool ret = false;
-  std::vector<printing::PageRange>::const_iterator iter;
-  for (iter = page_ranges->begin(); iter != page_ranges->end(); ++iter) {
-    for (int page_number = iter->from; page_number <= iter->to; ++page_number) {
-      if (page_number >= total_page_count)
-        break;
-
-      printing::Emf metafile;
-      metafile.InitToFile(metafile_path.InsertBeforeExtensionASCII(
-          base::StringPrintf(".%d", page_number)));
-
-      // We need to scale down DC to fit an entire page into DC available area.
-      // Current metafile is based on screen DC and have current screen size.
-      // Writing outside of those boundaries will result in the cut-off output.
-      // On metafiles (this is the case here), scaling down will still record
-      // original coordinates and we'll be able to print in full resolution.
-      // Before playback we'll need to counter the scaling up that will happen
-      // in the service (print_system_win.cc).
-      *scale_factor = gfx::CalculatePageScale(metafile.context(),
-                                              settings.area().right(),
-                                              settings.area().bottom());
-      gfx::ScaleDC(metafile.context(), *scale_factor);
-
-      // The underlying metafile is of type Emf and ignores the arguments passed
-      // to StartPage.
-      metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
-      if (g_pdf_lib.Get().RenderPDFPageToDC(
-              &buffer.front(), buffer.size(), page_number, metafile.context(),
-              settings.dpi(), settings.dpi(), settings.area().x(),
-              settings.area().y(), settings.area().width(),
-              settings.area().height(), true, false, true, true,
-              settings.autorotate())) {
-        if (*highest_rendered_page_number < page_number)
-          *highest_rendered_page_number = page_number;
-        ret = true;
-      }
-      metafile.FinishPage();
-      metafile.FinishDocument();
-    }
-  }
-  return ret;
+  metafile.FinishPage();
+  metafile.FinishDocument();
+  return metafile.SaveTo(&output_file);
 }
+
 #endif  // OS_WIN
 
 #if defined(ENABLE_FULL_PRINTING)

@@ -23,7 +23,9 @@
 #include "printing/backend/win_helper.h"
 #include "printing/emf_win.h"
 #include "printing/page_range.h"
+#include "printing/pdf_render_settings.h"
 #include "printing/printing_utils.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cloud_print {
 
@@ -245,12 +247,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
   class Core : public ServiceUtilityProcessHost::Client,
                public base::win::ObjectWatcher::Delegate {
    public:
-    Core()
-        : last_page_printed_(-1),
-          job_id_(-1),
-          delegate_(NULL),
-          saved_dc_(0) {
-    }
+    Core() : job_id_(-1), delegate_(NULL), saved_dc_(0) {}
 
     ~Core() {}
 
@@ -267,7 +264,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return false;
       }
       base::string16 printer_wide = base::UTF8ToWide(printer_name);
-      last_page_printed_ = -1;
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
         scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
@@ -302,7 +298,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         saved_dc_ = SaveDC(printer_dc_.Get());
         print_data_file_path_ = print_data_file_path;
         delegate_ = delegate;
-        RenderNextPDFPages();
+        RenderPDFPages();
       } else if (print_data_mime_type == kContentTypeXPS) {
         DCHECK(print_ticket_mime_type == kContentTypeXML);
         bool ret = PrintXPSDocument(printer_name,
@@ -335,20 +331,19 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
     // ServiceUtilityProcessHost::Client implementation.
-    virtual void OnRenderPDFPagesToMetafileSucceeded(
-        const printing::MetafilePlayer& metafile,
-        int highest_rendered_page_number,
-        double scale_factor) OVERRIDE {
+    virtual void OnRenderPDFPagesToMetafilePageDone(
+        double scale_factor,
+        const printing::MetafilePlayer& emf) OVERRIDE {
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
-      metafile.SafePlayback(printer_dc_.Get());
-      bool done_printing = (highest_rendered_page_number !=
-          last_page_printed_ + kPageCountPerBatch);
-      last_page_printed_ = highest_rendered_page_number;
-      if (done_printing)
-        PrintJobDone();
-      else
-        RenderNextPDFPages();
+      emf.SafePlayback(printer_dc_.Get());
     }
+
+    // ServiceUtilityProcessHost::Client implementation.
+    virtual void OnRenderPDFPagesToMetafileDone(bool success) OVERRIDE {
+      PrintJobDone(success);
+    }
+
+    virtual void OnChildDied() OVERRIDE { PrintJobDone(false); }
 
     // base::win::ObjectWatcher::Delegate implementation.
     virtual void OnObjectSignaled(HANDLE object) OVERRIDE {
@@ -374,14 +369,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       }
     }
 
-    virtual void OnRenderPDFPagesToMetafileFailed() OVERRIDE {
-      PrintJobDone();
-    }
-
-    virtual void OnChildDied() OVERRIDE {
-      PrintJobDone();
-    }
-
    private:
     // Helper class to allow PrintXPSDocument() to have multiple exits.
     class PrintJobCanceler {
@@ -405,45 +392,41 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       DISALLOW_COPY_AND_ASSIGN(PrintJobCanceler);
     };
 
-    void PrintJobDone() {
+    void PrintJobDone(bool success) {
       // If there is no delegate, then there is nothing pending to process.
       if (!delegate_)
         return;
       RestoreDC(printer_dc_.Get(), saved_dc_);
       EndDoc(printer_dc_.Get());
-      if (-1 == last_page_printed_) {
-        delegate_->OnJobSpoolFailed();
-      } else {
+      if (success) {
         delegate_->OnJobSpoolSucceeded(job_id_);
+      } else {
+        delegate_->OnJobSpoolFailed();
       }
       delegate_ = NULL;
     }
 
-    void RenderNextPDFPages() {
-      printing::PageRange range;
-      // Render 10 pages at a time.
-      range.from = last_page_printed_ + 1;
-      range.to = last_page_printed_ + kPageCountPerBatch;
-      std::vector<printing::PageRange> page_ranges;
-      page_ranges.push_back(range);
-
+    void RenderPDFPages() {
       int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
       int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
       int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
       gfx::Rect render_area(0, 0, dc_width, dc_height);
       g_service_process->io_thread()->message_loop_proxy()->PostTask(
           FROM_HERE,
-          base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox, this,
-                      print_data_file_path_, render_area, printer_dpi,
-                      page_ranges, base::MessageLoopProxy::current()));
+          base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox,
+                     this,
+                     print_data_file_path_,
+                     render_area,
+                     printer_dpi,
+                     base::MessageLoopProxy::current()));
     }
 
     // Called on the service process IO thread.
-    void RenderPDFPagesInSandbox(
-        const base::FilePath& pdf_path, const gfx::Rect& render_area,
-        int render_dpi, const std::vector<printing::PageRange>& page_ranges,
-        const scoped_refptr<base::MessageLoopProxy>&
-            client_message_loop_proxy) {
+    void RenderPDFPagesInSandbox(const base::FilePath& pdf_path,
+                                 const gfx::Rect& render_area,
+                                 int render_dpi,
+                                 const scoped_refptr<base::MessageLoopProxy>&
+                                     client_message_loop_proxy) {
       DCHECK(g_service_process->io_thread()->message_loop_proxy()->
           BelongsToCurrentThread());
       scoped_ptr<ServiceUtilityProcessHost> utility_host(
@@ -455,10 +438,12 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       // PDF that matches paper size and orientation.
       if (utility_host->StartRenderPDFPagesToMetafile(
               pdf_path,
-              printing::PdfRenderSettings(render_area, render_dpi, false),
-              page_ranges)) {
+              printing::PdfRenderSettings(render_area, render_dpi, false))) {
         // The object will self-destruct when the child process dies.
         utility_host.release();
+      } else {
+        client_message_loop_proxy->PostTask(
+            FROM_HERE, base::Bind(&Core::PrintJobDone, this, false));
       }
     }
 
@@ -509,14 +494,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       return true;
     }
 
-    // Some Cairo-generated PDFs from Chrome OS result in huge metafiles.
-    // So the PageCountPerBatch is set to 1 for now.
-    // TODO(sanjeevr): Figure out a smarter way to determine the pages per
-    // batch. Filed a bug to track this at
-    // http://code.google.com/p/chromium/issues/detail?id=57350.
-    static const int kPageCountPerBatch = 1;
-
-    int last_page_printed_;
     PlatformJobId job_id_;
     PrintSystem::JobSpooler::Delegate* delegate_;
     int saved_dc_;
