@@ -58,7 +58,8 @@ class SurfaceAggregator::RenderPassIdAllocator {
 static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
                         const ReturnedResourceArray& resources,
                         BlockingTaskRunner* main_thread_task_runner) {
-  surface_factory->UnrefResources(resources);
+  if (surface_factory)
+    surface_factory->UnrefResources(resources);
 }
 
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
