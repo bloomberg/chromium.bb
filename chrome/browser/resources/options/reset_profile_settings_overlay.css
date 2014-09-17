@@ -48,12 +48,10 @@
 }
 
 #expand-feedback {
-  background: center bottom no-repeat;
-  background-image: url('chrome://theme/IDR_QUESTION_MARK');
+  background: url('chrome://theme/IDR_QUESTION_MARK') no-repeat center;
   display: inline-block;
   height: 14px;
   opacity: 0.33;
-  vertical-align: text-top;
   width: 14px;
 }
 

@@ -9,35 +9,41 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="cookies" value="allow">
-            <span i18n-content="cookiesAllow"></span>
+            <span>
+              <span i18n-content="cookiesAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="cookies" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="cookies" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="cookies" value="session">
-            <span i18n-content="cookies_session_only"></span>
+            <span>
+              <span i18n-content="cookies_session_only"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="cookies" value="session"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="cookies" value="session"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="cookies" value="block">
-            <span i18n-content="cookiesBlock"></span>
+            <span>
+              <span i18n-content="cookiesBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="cookies" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="cookies" value="block"></span>
         </div>
         <div class="checkbox controlled-setting-with-label">
           <label>
             <input pref="profile.block_third_party_cookies" type="checkbox">
-            <span i18n-content="cookies_block_3rd_party"></span>
+            <span>
+              <span i18n-content="cookies_block_3rd_party"></span>
+              <span class="controlled-setting-indicator"
+                  pref="profile.block_third_party_cookies"></span>
           </label>
-          <span class="controlled-setting-indicator"
-              pref="profile.block_third_party_cookies">
-          </span>
         </div>
         <!-- TODO(jochen): remove the div with the clear cookies on exit option
                            once this has shipped. -->
@@ -76,18 +82,19 @@
           <label>
             <input type="radio" name="images" value="allow">
             <span i18n-content="imagesAllow"></span>
+            <span class="controlled-setting-indicator"
+                content-setting="images" value="allow"></span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="images" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="images" value="block">
-            <span i18n-content="imagesBlock"></span>
+            <span>
+              <span i18n-content="imagesBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="images" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="images" value="block">
-          </span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="images"
@@ -109,18 +116,22 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="javascript" value="allow">
-            <span i18n-content="javascriptAllow"></span>
+            <span>
+              <span i18n-content="javascriptAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="javascript" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="javascript" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="javascript" value="block">
-            <span i18n-content="javascriptBlock"></span>
+            <span>
+              <span i18n-content="javascriptBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="javascript" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="javascript" value="block"></span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="javascript"
@@ -166,26 +177,32 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="plugins" value="allow">
-            <span i18n-content="pluginsAllow"></span>
+            <span>
+              <span i18n-content="pluginsAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="plugins" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="plugins" value="allow"></span>
         </div>
         <div id="click_to_play" class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="plugins" value="ask">
-            <span i18n-content="pluginsAsk"></span>
+            <span>
+              <span i18n-content="pluginsAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="plugins" value="ask"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="plugins" value="ask"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="plugins" value="block">
-            <span i18n-content="pluginsBlock"></span>
+            <span>
+              <span i18n-content="pluginsBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="plugins" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="plugins" value="block"></span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="plugins"
@@ -211,18 +228,22 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="popups" value="allow">
-            <span i18n-content="popupsAllow"></span>
+            <span>
+              <span i18n-content="popupsAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="popups" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="popups" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="popups" value="block">
-            <span i18n-content="popupsBlock"></span>
+            <span>
+              <span i18n-content="popupsBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="popups" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="popups" value="block"></span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="popups"
@@ -244,27 +265,33 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="location" value="allow">
-            <span i18n-content="locationAllow"></span>
+            <span>
+              <span i18n-content="locationAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="location" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="location" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="location" value="ask">
-            <span i18n-content="locationAsk"></span>
+            <span>
+              <span i18n-content="locationAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="location" value="ask"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="location" value="ask"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="location"
                 value="block">
-            <span i18n-content="locationBlock"></span>
+            <span>
+              <span i18n-content="locationBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="location" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="location" value="block"></span>
         </div>
 <if expr="enable_google_now">
         <div class="checkbox controlled-setting-with-label"
@@ -273,10 +300,12 @@
             <input pref="googlegeolocationaccess.enabled"
                 metric="Options_GoogleGeolocationAccessCheckbox"
                 type="checkbox">
-            <span i18n-content="googleGeolocationAccessEnable"></span>
+            <span>
+              <span i18n-content="googleGeolocationAccessEnable"></span>
+              <span class="controlled-setting-indicator"
+                  pref="googlegeolocationaccess.enabled"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              pref="googlegeolocationaccess.enabled"></span>
         </div>
 </if>
         <div class="settings-row">
@@ -299,26 +328,32 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="notifications" value="allow">
-            <span i18n-content="notificationsAllow"></span>
+            <span>
+              <span i18n-content="notificationsAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="notifications" value="allow"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="notifications" value="allow"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="notifications" value="ask">
-            <span i18n-content="notificationsAsk"></span>
+            <span>
+              <span i18n-content="notificationsAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="notifications" value="ask"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="notifications" value="ask"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="notifications" value="block">
-            <span i18n-content="notificationsBlock"></span>
+            <span>
+              <span i18n-content="notificationsBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="notifications" value="block"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="notifications" value="block"></span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="notifications"
@@ -414,20 +449,25 @@
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="media-stream" value="ask">
-            <span id="media-stream-ask-label" i18n-content="mediaStreamAsk">
+            <span>
+              <span id="media-stream-ask-label" i18n-content="mediaStreamAsk">
+              </span>
+              <span class="controlled-setting-indicator"
+                  content-setting="media-stream" value="ask"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="media-stream" value="ask"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input id="media-stream-block" type="radio" name="media-stream"
                 value="block">
-            <span id="media-stream-block-label" i18n-content="mediaStreamBlock">
+            <span>
+              <span id="media-stream-block-label"
+                 i18n-content="mediaStreamBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="media-stream" value="block"></span>
             </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="media-stream" value="block"></span>
         </div>
         <div class="settings-row replace-with-website-settings">
           <button class="exceptions-list-button" contentType="media-stream"
@@ -482,29 +522,36 @@
           <label>
             <input type="radio" name="multiple-automatic-downloads"
                 value="allow">
-            <span i18n-content="multipleAutomaticDownloadsAllow"></span>
+            <span>
+              <span i18n-content="multipleAutomaticDownloadsAllow"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="multiple-automatic-downloads" value="allow">
+              </span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="multiple-automatic-downloads" value="allow">
-          </span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="multiple-automatic-downloads" value="ask">
-            <span i18n-content="multipleAutomaticDownloadsAsk"></span>
+            <span>
+              <span i18n-content="multipleAutomaticDownloadsAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="multiple-automatic-downloads" value="ask">
+              </span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="multiple-automatic-downloads" value="ask"></span>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="multiple-automatic-downloads"
                 value="block">
-            <span i18n-content="multipleAutomaticDownloadsBlock"></span>
+            <span>
+              <span i18n-content="multipleAutomaticDownloadsBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="multiple-automatic-downloads" value="block">
+              </span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator"
-              content-setting="multiple-automatic-downloads" value="block">
-          </span>
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button"
