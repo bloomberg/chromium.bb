@@ -876,6 +876,8 @@ public:
     virtual void invalidatePaintForOverflow();
     void invalidatePaintForOverflowIfNeeded();
 
+    void invalidatePaintIncludingNonCompositingDescendants();
+
     bool checkForPaintInvalidation() const;
 
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
@@ -1155,6 +1157,8 @@ private:
     // Invalidate the paint of the entire object. This is only used when a renderer is to be removed.
     // For other cases, the caller should call setShouldDoFullPaintInvalidation() instead.
     void invalidatePaintForWholeRenderer() const;
+
+    void invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
     const RenderLayerModelObject* enclosingCompositedContainer() const;
 

@@ -58,8 +58,6 @@ class RenderLayerRepainter {
 public:
     RenderLayerRepainter(RenderLayerModelObject&);
 
-    void paintInvalidationIncludingNonCompositingDescendants();
-
     void computePaintInvalidationRectsIncludingNonCompositingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect
@@ -67,8 +65,6 @@ public:
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
 
 private:
-    void paintInvalidationIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
-
     RenderLayerModelObject& m_renderer;
 };
 

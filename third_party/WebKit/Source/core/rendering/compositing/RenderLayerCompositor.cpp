@@ -479,7 +479,7 @@ void RenderLayerCompositor::paintInvalidationOnCompositingChange(RenderLayer* la
     // compositing state when changing the compositing backing of the layer.
     DisableCompositingQueryAsserts disabler;
 
-    layer->paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
+    layer->renderer()->invalidatePaintIncludingNonCompositingDescendants();
 }
 
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)

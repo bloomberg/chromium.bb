@@ -3477,6 +3477,23 @@ bool DeprecatedDisableModifyRenderTreeStructureAsserts::canModifyRenderTreeState
     return gModifyRenderTreeStructureAnyState;
 }
 
+// Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
+void RenderObject::invalidatePaintIncludingNonCompositingDescendants()
+{
+    invalidatePaintIncludingNonCompositingDescendantsInternal(containerForPaintInvalidation());
+}
+
+void RenderObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* paintInvalidationContainer)
+{
+    invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), InvalidationLayer);
+
+    for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isPaintInvalidationContainer())
+            child->invalidatePaintIncludingNonCompositingDescendantsInternal(paintInvalidationContainer);
+    }
+}
+
+
 } // namespace blink
 
 #ifndef NDEBUG

@@ -73,25 +73,6 @@ void RenderLayerRepainter::computePaintInvalidationRectsIncludingNonCompositingD
     }
 }
 
-// Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
-void RenderLayerRepainter::paintInvalidationIncludingNonCompositingDescendants()
-{
-    paintInvalidationIncludingNonCompositingDescendantsInternal(m_renderer.containerForPaintInvalidation());
-}
-
-void RenderLayerRepainter::paintInvalidationIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* paintInvalidationContainer)
-{
-    m_renderer.invalidatePaintUsingContainer(paintInvalidationContainer, m_renderer.previousPaintInvalidationRect(), InvalidationLayer);
-
-    // Disable for reading compositingState() below.
-    DisableCompositingQueryAsserts disabler;
-
-    for (RenderLayer* curr = m_renderer.layer()->firstChild(); curr; curr = curr->nextSibling()) {
-        if (curr->compositingState() != PaintsIntoOwnBacking && curr->compositingState() != PaintsIntoGroupedBacking)
-            curr->paintInvalidator().paintInvalidationIncludingNonCompositingDescendantsInternal(paintInvalidationContainer);
-    }
-}
-
 void RenderLayerRepainter::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
