@@ -31,6 +31,7 @@ try:
   from dev.host.lib import update_payload
 except ImportError:
   update_payload = None
+  logging.exception('update_payload import failed. Normal during bootstrap.')
 
 
 class Error(Exception):
@@ -104,6 +105,11 @@ class _PaygenPayload(object):
     self.delta_log_file = os.path.join(work_dir, 'delta.log')
 
     self.signer = None
+
+    if self._verify and update_payload is None:
+      # TODO(dgarrett): Change to a hard failure after crbug.com/415027 fixed.
+      logging.error('Verification disabled because update_payload unavailable.')
+      self._verify = False
 
     if sign:
       self.signed_payload_file = self.payload_file + '.signed'
