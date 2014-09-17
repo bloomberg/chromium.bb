@@ -1079,6 +1079,8 @@ public:
     void setNeedsOverflowRecalcAfterStyleChange();
     void markContainingBlocksForOverflowRecalc();
 
+    // FIXME: This is temporary for cases that setShouldDoFullPaintInvalidation(true) doesn't work yet.
+    void doNotUseInvalidatePaintForWholeRendererSynchronously() const { invalidatePaintForWholeRenderer(); }
     virtual LayoutRect viewRect() const;
 
     // FIXME: make this not public.
