@@ -1921,6 +1921,12 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithMissingTiles) {
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
 
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = true;
   bool had_incomplete_tile = false;
   bool is_animating = false;
@@ -1931,10 +1937,10 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithMissingTiles) {
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+  LayerTreeHostImpl::FrameData frame2;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithIncompleteTile) {
@@ -1943,6 +1949,12 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithIncompleteTile) {
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
 
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = false;
   bool had_incomplete_tile = true;
   bool is_animating = false;
@@ -1953,10 +1965,10 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithIncompleteTile) {
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+  LayerTreeHostImpl::FrameData frame2;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -1965,6 +1977,13 @@ TEST_F(LayerTreeHostImplTest,
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = true;
   bool had_incomplete_tile = false;
   bool is_animating = true;
@@ -1975,11 +1994,11 @@ TEST_F(LayerTreeHostImplTest,
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame;
+  LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS,
-            host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+            host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -1988,6 +2007,13 @@ TEST_F(LayerTreeHostImplTest,
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = false;
   bool had_incomplete_tile = true;
   bool is_animating = true;
@@ -1998,10 +2024,10 @@ TEST_F(LayerTreeHostImplTest,
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+  LayerTreeHostImpl::FrameData frame2;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
@@ -2009,6 +2035,13 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = false;
   bool had_incomplete_tile = false;
   bool is_animating = false;
@@ -2020,10 +2053,10 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
                                            is_animating,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+  LayerTreeHostImpl::FrameData frame2;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -2032,6 +2065,13 @@ TEST_F(LayerTreeHostImplTest,
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = false;
   bool had_incomplete_tile = true;
   bool is_animating = false;
@@ -2043,11 +2083,11 @@ TEST_F(LayerTreeHostImplTest,
                                            is_animating,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame;
+  LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
-            host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+            host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -2056,6 +2096,13 @@ TEST_F(LayerTreeHostImplTest,
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
   bool tile_missing = true;
   bool had_incomplete_tile = false;
   bool is_animating = false;
@@ -2067,11 +2114,11 @@ TEST_F(LayerTreeHostImplTest,
                                            is_animating,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame;
+  LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
-            host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
+            host_impl_->PrepareToDraw(&frame2));
+  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame2);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootIgnored) {
@@ -5889,7 +5936,11 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
 TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
   ASSERT_TRUE(host_impl_->active_tree());
 
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  // RequiresHighResToDraw is set when new output surface is used.
+  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+
+  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+
   host_impl_->SetVisible(false);
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetVisible(true);
@@ -5897,8 +5948,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
   host_impl_->SetVisible(false);
   EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
 
-  host_impl_->CreatePendingTree();
-  host_impl_->ActivateSyncTree();
+  host_impl_->active_tree()->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetVisible(true);
@@ -5909,7 +5959,11 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   ASSERT_TRUE(host_impl_->active_tree());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  // RequiresHighResToDraw is set when new output surface is used.
+  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+
+  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+
   host_impl_->SetUseGpuRasterization(false);
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(true);
@@ -5917,8 +5971,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   host_impl_->SetUseGpuRasterization(false);
   EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
 
-  host_impl_->CreatePendingTree();
-  host_impl_->ActivateSyncTree();
+  host_impl_->active_tree()->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(true);

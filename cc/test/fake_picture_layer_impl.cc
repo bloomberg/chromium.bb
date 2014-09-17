@@ -17,7 +17,8 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false) {
+      use_set_valid_tile_priorities_flag_(false),
+      release_resources_count_(0) {
   pile_ = pile;
   SetBounds(pile_->tiling_size());
   SetContentBounds(pile_->tiling_size());
@@ -31,7 +32,8 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false) {
+      use_set_valid_tile_priorities_flag_(false),
+      release_resources_count_(0) {
   pile_ = pile;
   SetBounds(layer_bounds);
   SetContentBounds(layer_bounds);
@@ -42,7 +44,8 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false) {
+      use_set_valid_tile_priorities_flag_(false),
+      release_resources_count_(0) {
 }
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
@@ -177,6 +180,11 @@ bool FakePictureLayerImpl::HasValidTilePriorities() const {
   return use_set_valid_tile_priorities_flag_
              ? has_valid_tile_priorities_
              : PictureLayerImpl::HasValidTilePriorities();
+}
+
+void FakePictureLayerImpl::ReleaseResources() {
+  PictureLayerImpl::ReleaseResources();
+  ++release_resources_count_;
 }
 
 }  // namespace cc

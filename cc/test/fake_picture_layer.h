@@ -35,6 +35,11 @@ class FakePictureLayer : public PictureLayer {
 
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
+  virtual void OnOutputSurfaceCreated() OVERRIDE;
+  size_t output_surface_created_count() const {
+    return output_surface_created_count_;
+  }
+
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
   virtual ~FakePictureLayer();
@@ -42,6 +47,7 @@ class FakePictureLayer : public PictureLayer {
   size_t update_count_;
   size_t push_properties_count_;
   bool always_update_resources_;
+  size_t output_surface_created_count_;
 };
 
 }  // namespace cc
