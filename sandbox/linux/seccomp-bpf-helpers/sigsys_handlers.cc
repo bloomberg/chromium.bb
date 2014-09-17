@@ -13,6 +13,11 @@
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
+#if defined(__mips__)
+// __NR_Linux, is defined in <asm/unistd.h>.
+#include <asm/unistd.h>
+#endif
+
 #define SECCOMP_MESSAGE_COMMON_CONTENT "seccomp-bpf failure"
 #define SECCOMP_MESSAGE_CLONE_CONTENT "clone() failure"
 #define SECCOMP_MESSAGE_PRCTL_CONTENT "prctl() failure"
