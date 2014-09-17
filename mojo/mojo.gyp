@@ -566,15 +566,10 @@
           },
           'sources': [
             'public/python/mojo/c_core.pxd',
-            'public/python/mojo/c_environment.pxd',
             'public/python/mojo/system.pyx',
-            'public/python/src/python_system_helper.cc',
-            'public/python/src/python_system_helper.h',
           ],
           'dependencies': [
-            'mojo_base.gyp:mojo_environment_standalone',
             'mojo_base.gyp:mojo_system',
-            'mojo_base.gyp:mojo_utility',
           ],
           'includes': [ '../third_party/cython/cython_compiler.gypi' ],
         },

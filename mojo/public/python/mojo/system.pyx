@@ -5,8 +5,6 @@
 # distutils language = c++
 
 cimport c_core
-cimport c_environment
-
 
 from cpython.buffer cimport PyBUF_CONTIG
 from cpython.buffer cimport PyBUF_CONTIG_RO
@@ -696,32 +694,3 @@ class DuplicateSharedBufferOptions(object):
 
   def __init__(self):
     self.flags = DuplicateSharedBufferOptions.FLAG_NONE
-
-
-cdef class RunLoop(object):
-  """RunLoop to use when using asynchronous operations on handles."""
-
-  cdef c_environment.CRunLoop c_run_loop
-
-  def Run(self):
-    """Run the runloop until Quit is called."""
-    self.c_run_loop.Run()
-
-  def RunUntilIdle(self):
-    """Run the runloop until Quit is called or no operation is waiting."""
-    self.c_run_loop.RunUntilIdle()
-
-  def Quit(self):
-    """Quit the runloop."""
-    self.c_run_loop.Quit()
-
-  def PostDelayedTask(self, runnable, delay=0):
-    """
-    Post a task on the runloop. This must be called from the thread owning the
-    runloop.
-    """
-    cdef c_environment.CClosure closure = c_environment.BuildClosure(runnable)
-    self.c_run_loop.PostDelayedTask(closure, delay)
-
-
-cdef c_environment.CEnvironment* _ENVIRONMENT = new c_environment.CEnvironment()
