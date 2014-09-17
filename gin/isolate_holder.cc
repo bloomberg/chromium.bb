@@ -35,12 +35,10 @@ IsolateHolder::IsolateHolder() {
   v8::Isolate::CreateParams params;
   params.entry_hook = DebugImpl::GetFunctionEntryHook();
   params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
+  params.constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
+                                       base::SysInfo::AmountOfVirtualMemory(),
+                                       base::SysInfo::NumberOfProcessors());
   isolate_ = v8::Isolate::New(params);
-  v8::ResourceConstraints constraints;
-  constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
-                                base::SysInfo::AmountOfVirtualMemory(),
-                                base::SysInfo::NumberOfProcessors());
-  v8::SetResourceConstraints(isolate_, &constraints);
   isolate_data_.reset(new PerIsolateData(isolate_, g_array_buffer_allocator));
 }
 
