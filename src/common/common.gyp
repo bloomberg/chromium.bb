@@ -235,6 +235,9 @@
         '../build/testing.gypi:gmock',
         '../build/testing.gypi:gtest',
       ],
+      'libraries': [
+        '-ldl',
+      ],
     },
   ],
 }

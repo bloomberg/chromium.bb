@@ -30,6 +30,9 @@
 // A wrapper for libcurl to do HTTP Uploads, to support easy mocking
 // and unit testing of the HTTPUpload class.
 
+#ifndef COMMON_LINUX_LIBCURL_WRAPPER_H_
+#define COMMON_LINUX_LIBCURL_WRAPPER_H_
+
 #include <string>
 #include <map>
 
@@ -83,3 +86,5 @@ class LibcurlWrapper {
 
 };
 }
+
+#endif  // COMMON_LINUX_LIBCURL_WRAPPER_H_
