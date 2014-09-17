@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extensions::manifest_errors;
 
-class ContentSecurityPolicyManifestTest : public ExtensionManifestTest {
+class ContentSecurityPolicyManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(ContentSecurityPolicyManifestTest, InsecureContentSecurityPolicy) {

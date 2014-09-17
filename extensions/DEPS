@@ -39,7 +39,7 @@ specific_include_rules = {
     "+chrome/browser/ui/browser.h",
     "+chrome/common/chrome_paths.h",
     "+chrome/common/extensions/features/feature_channel.h",
-    "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
+    "+chrome/common/extensions/manifest_tests/chrome_manifest_test.h",
     "+chrome/test/base/testing_profile.h",
     "+chrome/test/base/ui_test_utils.h",
   ],

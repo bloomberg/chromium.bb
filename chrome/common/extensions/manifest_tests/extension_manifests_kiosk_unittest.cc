@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-class ExtensionManifestKioskModeTest : public ExtensionManifestTest {
+class ExtensionManifestKioskModeTest : public ChromeManifestTest {
 };
 
 TEST_F(ExtensionManifestKioskModeTest, InvalidKioskEnabled) {

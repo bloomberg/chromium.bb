@@ -4,8 +4,7 @@
 
 #include <algorithm>
 
-#include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -19,9 +18,11 @@ namespace extensions {
 
 namespace errors = externally_connectable_errors;
 
-class ExternallyConnectableTest : public ExtensionManifestTest {
+// TODO(jamescook): Convert from ChromeManifestTest to ManifestTest.
+class ExternallyConnectableTest : public ChromeManifestTest {
  public:
-  ExternallyConnectableTest() : channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+  ExternallyConnectableTest() {}
+  virtual ~ExternallyConnectableTest() {}
 
  protected:
   ExternallyConnectableInfo* GetExternallyConnectableInfo(
@@ -29,9 +30,6 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
     return static_cast<ExternallyConnectableInfo*>(
         extension->GetManifestData(manifest_keys::kExternallyConnectable));
   }
-
- private:
-  ScopedCurrentChannel channel_;
 };
 
 TEST_F(ExternallyConnectableTest, IDsAndMatches) {

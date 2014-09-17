@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,7 +11,7 @@ namespace extensions {
 
 namespace errors = manifest_errors;
 
-class SandboxedPagesManifestTest : public ExtensionManifestTest {
+class SandboxedPagesManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(SandboxedPagesManifestTest, SandboxedPages) {

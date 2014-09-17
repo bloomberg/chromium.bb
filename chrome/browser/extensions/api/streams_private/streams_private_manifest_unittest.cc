@@ -5,7 +5,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_builder.h"
@@ -22,7 +22,7 @@ using extensions::ListBuilder;
 
 namespace {
 
-class StreamsPrivateManifestTest : public ExtensionManifestTest {
+class StreamsPrivateManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(StreamsPrivateManifestTest, ValidMimeTypesHandlerMIMETypes) {

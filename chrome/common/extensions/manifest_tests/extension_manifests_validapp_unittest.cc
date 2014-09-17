@@ -5,10 +5,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef ExtensionManifestTest ValidAppManifestTest;
+typedef ChromeManifestTest ValidAppManifestTest;
 
 TEST_F(ValidAppManifestTest, ValidApp) {
   scoped_refptr<extensions::Extension> extension(
@@ -30,5 +30,5 @@ TEST_F(ValidAppManifestTest, AllowUnrecognizedPermissions) {
   base::ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
   permissions->Append(new base::StringValue("not-a-valid-permission"));
-  LoadAndExpectSuccess(Manifest(manifest.get(), ""));
+  LoadAndExpectSuccess(ManifestData(manifest.get(), ""));
 }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -12,7 +12,7 @@
 
 namespace extensions {
 
-class IconsManifestTest : public ExtensionManifestTest {
+class IconsManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(IconsManifestTest, NormalizeIconPaths) {
