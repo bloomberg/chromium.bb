@@ -52,7 +52,7 @@ class UsbServiceImpl : public UsbService,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // TODO(ikarienator): Figure out a better solution.
+  // TODO(reillyg): Figure out a better solution.
   uint32 next_unique_id_;
 
   // The map from PlatformUsbDevices to UsbDevices.

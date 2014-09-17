@@ -120,7 +120,7 @@ SocketPermissionEntry& SocketPermissionData::entry() {
   return entry_;
 }
 
-// TODO(ikarienator): Rewrite this method to support IPv6.
+// TODO(reillyg): Rewrite this method to support IPv6.
 bool SocketPermissionData::Parse(const std::string& permission) {
   Reset();
 
