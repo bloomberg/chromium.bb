@@ -60,9 +60,8 @@ namespace {
 const int kDragBufferPx = 20;
 
 // Padding space in pixels for fixed layout.
-const int kLeftRightPadding = 20;
+const int kLeftRightPadding = 23;
 const int kTopPadding = 1;
-const int kBottomPadding = 24;
 
 // Padding space in pixels between pages.
 const int kPagePadding = 40;
@@ -426,7 +425,10 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
   rows_per_page_ = rows_per_page;
 
   SetBorder(views::Border::CreateEmptyBorder(
-      kTopPadding, kLeftRightPadding, 0, kLeftRightPadding));
+      switches::IsExperimentalAppListEnabled() ? 0 : kTopPadding,
+      kLeftRightPadding,
+      0,
+      kLeftRightPadding));
 }
 
 void AppsGridView::ResetForShowApps() {
@@ -894,7 +896,7 @@ bool AppsGridView::IsAnimatingView(views::View* view) {
 
 gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
-  int page_switcher_height = kBottomPadding;
+  int page_switcher_height = 0;
   if (page_switcher_view_)
     page_switcher_height = page_switcher_view_->GetPreferredSize().height();
   gfx::Size size = GetTileGridSize();

@@ -18,6 +18,7 @@ namespace {
 
 const int kButtonImageSize = 32;
 const int kButtonSpacing = 4;
+const int kMinimumHeight = 39;
 
 class ContentsPageIndicatorView : public views::View {
  public:
@@ -40,6 +41,7 @@ ContentsSwitcherView::ContentsSwitcherView(ContentsView* contents_view)
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_minimum_cross_axis_size(kMinimumHeight);
   SetLayoutManager(layout);
 }
 

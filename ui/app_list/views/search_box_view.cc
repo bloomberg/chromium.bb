@@ -38,9 +38,6 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const int kMenuYOffsetFromButton = -4;
 const int kMenuXOffsetFromButton = -7;
 
-// Experimental app list constants.
-const int kExperimentalSearchBoxHeight = 37;
-
 const int kBackgroundBorderWidth = 1;
 const int kBackgroundBorderBottomWidth = 1;
 const int kBackgroundBorderCornerRadius = 2;
@@ -102,9 +99,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  layout->set_minimum_cross_axis_size(switches::IsExperimentalAppListEnabled()
-                                          ? kExperimentalSearchBoxHeight
-                                          : kPreferredHeight);
+  layout->set_minimum_cross_axis_size(kPreferredHeight);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -166,10 +161,7 @@ void SearchBoxView::InvalidateMenu() {
 }
 
 gfx::Size SearchBoxView::GetPreferredSize() const {
-  return gfx::Size(kPreferredWidth,
-                   switches::IsExperimentalAppListEnabled()
-                       ? kExperimentalSearchBoxHeight
-                       : kPreferredHeight);
+  return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {

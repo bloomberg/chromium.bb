@@ -36,15 +36,14 @@ namespace app_list {
 
 namespace {
 
-// Inner padding space in pixels of bubble contents.
-const int kInnerPadding = 1;
+// Border padding space around the bubble contents.
+const int kPadding = 1;
 
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
 // The padding around the search box in the experimental app list.
-const int kSearchBoxViewPadding = 24;
-const int kSearchBoxViewPaddingBottom = 12;
+const int kSearchBoxViewPadding = 23;
 
 // A view that holds another view and takes its preferred size. This is used for
 // wrapping the search box view so it still gets laid out while hidden. This is
@@ -119,10 +118,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       contents_view_(NULL),
       contents_switcher_view_(NULL),
       weak_ptr_factory_(this) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        kInnerPadding,
-                                        kInnerPadding,
-                                        kInnerPadding));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, kPadding, kPadding, 0));
 
   search_box_view_ = new SearchBoxView(this, delegate);
   views::View* container = new SearchBoxContainerView(this, search_box_view_);
@@ -130,7 +127,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
     container->SetBorder(
         views::Border::CreateEmptyBorder(kSearchBoxViewPadding,
                                          kSearchBoxViewPadding,
-                                         kSearchBoxViewPaddingBottom,
+                                         0,
                                          kSearchBoxViewPadding));
   }
   AddChildView(container);
