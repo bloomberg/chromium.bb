@@ -1337,7 +1337,6 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 
 crbug.com/413249 http/tests/perf/large-inlined-script.html [ Skip ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
-crbug.com/414034 [ Lion MountainLion Retina Mavericks ] fast/events/touch/gesture/gesture-tap-frame-scrollbar.html [ Failure ]
 
 crbug.com/414649 [ Mavericks ] media/media-controller-effective-playback-rate.html [ Failure ]
 crbug.com/414649 [ Mavericks ] media/media-controller-playbackrate.html [ Failure ]
