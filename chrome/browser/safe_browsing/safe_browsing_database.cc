@@ -448,9 +448,9 @@ void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
     : creation_loop_(base::MessageLoop::current()),
       browse_store_(new SafeBrowsingStoreFile),
-      reset_factory_(this),
       corruption_detected_(false),
-      change_detected_(false) {
+      change_detected_(false),
+      reset_factory_(this) {
   DCHECK(browse_store_.get());
   DCHECK(!download_store_.get());
   DCHECK(!csd_whitelist_store_.get());
@@ -476,8 +476,8 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       extension_blacklist_store_(extension_blacklist_store),
       side_effect_free_whitelist_store_(side_effect_free_whitelist_store),
       ip_blacklist_store_(ip_blacklist_store),
-      reset_factory_(this),
-      corruption_detected_(false) {
+      corruption_detected_(false),
+      reset_factory_(this) {
   DCHECK(browse_store_.get());
 }
 

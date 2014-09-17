@@ -172,12 +172,12 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   bool should_classify_for_malware_;
   bool pageload_complete_;
 
-  base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
-
   // Unique page ID of the most recent unsafe site that was loaded in this tab
   // as well as the UnsafeResource.
   int unsafe_unique_page_id_;
   scoped_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource_;
+
+  base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };

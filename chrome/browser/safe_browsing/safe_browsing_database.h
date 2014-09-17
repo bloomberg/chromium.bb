@@ -456,9 +456,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // empty full_hashes field.  Cleared on each update.
   std::map<SBPrefix, SBCachedFullHashResult> browse_gethash_cache_;
 
-  // Used to schedule resetting the database because of corruption.
-  base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;
-
   // Set if corruption is detected during the course of an update.
   // Causes the update functions to fail with no side effects, until
   // the next call to |UpdateStarted()|.
@@ -473,6 +470,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Used to check if a prefix was in the browse database.
   scoped_ptr<safe_browsing::PrefixSet> side_effect_free_whitelist_prefix_set_;
+
+  // Used to schedule resetting the database because of corruption.
+  base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_

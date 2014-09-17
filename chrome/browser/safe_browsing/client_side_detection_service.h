@@ -316,10 +316,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // of malware requests that we send in a day.
   std::queue<base::Time> malware_report_times_;
 
-  // Used to asynchronously call the callbacks for
-  // SendClientReportPhishingRequest.
-  base::WeakPtrFactory<ClientSideDetectionService> weak_factory_;
-
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
@@ -328,6 +324,10 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   BadSubnetMap bad_subnets_;
 
   content::NotificationRegistrar registrar_;
+
+  // Used to asynchronously call the callbacks for
+  // SendClientReportPhishingRequest.
+  base::WeakPtrFactory<ClientSideDetectionService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };
