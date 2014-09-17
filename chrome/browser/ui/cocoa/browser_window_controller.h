@@ -463,6 +463,31 @@ class Command;
 //
 // + HTML5 fullscreen. <-- Currently uses AppKitFullscreen API. This should
 // eventually migrate to the Immersive Fullscreen API.
+//
+// There are more fullscreen styles on OSX than other OSes. However, all OSes
+// share the same cross-platform code for entering fullscreen
+// (FullscreenController). It is important for OSX fullscreen logic to track
+// how the user triggered fullscreen mode.
+// There are currently 5 possible mechanisms:
+//   - User clicks the AppKit Fullscreen button.
+//     -- This invokes -[BrowserWindowController windowWillEnterFullscreen:]
+//   - User selects the menu item "Enter Full Screen".
+//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
+//        BROWSER_WITH_CHROME)
+//   - User selects the menu item "Enter Presentation Mode".
+//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
+//        BROWSER)
+//     -- The corresponding URL will be empty.
+//   - User requests fullscreen via an extension.
+//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
+//        BROWSER)
+//     -- The corresponding URL will be the url of the extension.
+//   - User requests fullscreen via Flash or JavaScript apis.
+//     -- This invokes FullscreenController::ToggleFullscreenModeInternal(
+//        BROWSER)
+//     -- browser_->fullscreen_controller()->
+//        IsWindowFullscreenForTabOrPending() returns true.
+//     -- The corresponding URL will be the url of the web page.
 
 // Methods having to do with fullscreen and presentation mode.
 @interface BrowserWindowController(Fullscreen)
@@ -494,13 +519,16 @@ class Command;
 // and other UI is expected to slide.
 - (BOOL)isInFullscreenWithOmniboxSliding;
 
-// Enters (or exits) presentation mode.
-- (void)enterPresentationModeForURL:(const GURL&)url
-                         bubbleType:(FullscreenExitBubbleType)bubbleType;
+// Enters presentation mode.
+- (void)enterPresentationMode;
+
+// Enter fullscreen for an extension.
+- (void)enterExtensionFullscreenForURL:(const GURL&)url
+                            bubbleType:(FullscreenExitBubbleType)bubbleType;
 
 // Enters Immersive Fullscreen for the given URL.
-- (void)enterHTML5FullscreenForURL:(const GURL&)url
-                        bubbleType:(FullscreenExitBubbleType)bubbleType;
+- (void)enterWebContentFullscreenForURL:(const GURL&)url
+                             bubbleType:(FullscreenExitBubbleType)bubbleType;
 
 // Exits the current fullscreen mode.
 - (void)exitAnyFullscreen;
