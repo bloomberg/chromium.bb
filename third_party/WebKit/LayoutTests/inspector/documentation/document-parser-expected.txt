@@ -258,6 +258,11 @@ Running: testWikiParser
                             {
                                 _children : [
                                     {
+                                        _isHighlighted : false
+                                        _text : " "
+                                        _type : "PlainText"
+                                    }
+                                    {
                                         _children : [
                                             {
                                                 _children : [
@@ -290,13 +295,18 @@ Running: testWikiParser
 {
     A : undefined
 }
-"{{A|B= [[google.com{{!}}Google]]}}" is parsed
+"{{A|B= [[http://google.com{{!}}Google]]}}" is parsed
 {
     A : {
         B : {
             _children : [
                 {
                     _children : [
+                        {
+                            _isHighlighted : false
+                            _text : " "
+                            _type : "PlainText"
+                        }
                         {
                             _children : [
                                 {
@@ -311,7 +321,7 @@ Running: testWikiParser
                                 }
                             ]
                             _type : "Link"
-                            _url : "google.com"
+                            _url : "http://google.com"
                         }
                     ]
                     _hasBullet : false
@@ -374,9 +384,20 @@ Running: testWikiParser
                 {
                     _children : [
                         {
-                            _isHighlighted : false
-                            _text : "[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]"
-                            _type : "PlainText"
+                            _children : [
+                                {
+                                    _children : [
+                                        {
+                                            _isHighlighted : false
+                                            _text : "cloneNode Method"
+                                            _type : "PlainText"
+                                        }
+                                    ]
+                                    _type : "Inline"
+                                }
+                            ]
+                            _type : "Link"
+                            _url : "http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx"
                         }
                     ]
                     _hasBullet : false
@@ -407,29 +428,17 @@ Running: testWikiParser
                                     }
                                     {
                                         _isHighlighted : false
-                                        _text : " value"
+                                        _text : " value "
                                         _type : "PlainText"
-                                    }
-                                    {
-                                        _children : [
-                                        ]
-                                        _type : "Link"
-                                        _url : " , replacer"
-                                    }
-                                    {
-                                        _children : [
-                                        ]
-                                        _type : "Link"
-                                        _url : " , space"
                                     }
                                     {
                                         _isHighlighted : false
-                                        _text : " "
+                                        _text : "[ , replacer] "
                                         _type : "PlainText"
                                     }
                                     {
-                                        _isHighlighted : true
-                                        _text : ")"
+                                        _isHighlighted : false
+                                        _text : "[ , space] ''')'''"
                                         _type : "PlainText"
                                     }
                                 ]
@@ -469,7 +478,7 @@ Running: testJS
                 _children : [
                     {
                         _isHighlighted : false
-                        _text : "If no arguments are provided, the return value is equal to"
+                        _text : "If no arguments are provided, the return value is equal to "
                         _type : "PlainText"
                     }
                     {
@@ -588,7 +597,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : " is a shorthand property comprised of the"
+                        _text : " is a shorthand property comprised of the "
                         _type : "PlainText"
                     }
                     {
@@ -609,7 +618,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : ","
+                        _text : ", "
                         _type : "PlainText"
                     }
                     {
@@ -630,7 +639,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : ", and"
+                        _text : ", and "
                         _type : "PlainText"
                     }
                     {
@@ -675,6 +684,11 @@ Running: testNamedLink
         _children : [
             {
                 _children : [
+                    {
+                        _isHighlighted : false
+                        _text : " "
+                        _type : "PlainText"
+                    }
                     {
                         _children : [
                             {
@@ -862,6 +876,11 @@ Running: testComplexLinkName
             {
                 _children : [
                     {
+                        _isHighlighted : false
+                        _text : " "
+                        _type : "PlainText"
+                    }
+                    {
                         _children : [
                             {
                                 _children : [
@@ -950,6 +969,11 @@ Running: testLinkInsideCode
                     {
                         _children : [
                             {
+                                _isHighlighted : false
+                                _text : " "
+                                _type : "PlainText"
+                            }
+                            {
                                 _children : [
                                     {
                                         _children : [
@@ -963,7 +987,7 @@ Running: testLinkInsideCode
                                     }
                                 ]
                                 _type : "Link"
-                                _url : "google.com"
+                                _url : "https://google.com"
                             }
                             {
                                 _isHighlighted : false
@@ -1104,5 +1128,53 @@ Running: testJsMethod
 }
 
 Running: testLinkWithoutSpace
-Expected error: Error: Two closing braces expected; found WRONG_LINK
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    remarks : null
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "LINK_WITHOUT_SPACE"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "http://google.com"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testEmptyParameters
+{
+    examples : [
+    ]
+    methods : {
+        returnValueDescription : "Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain."
+        returnValueName : "DOM Node"
+    }
+    parameters : [
+    ]
+    remarks : null
+    summary : undefined
+}
 
