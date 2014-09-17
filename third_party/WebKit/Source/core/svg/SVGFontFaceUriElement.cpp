@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> SVGFontFaceUriElement::srcValue() co
 {
     RefPtrWillBeRawPtr<CSSFontFaceSrcValue> src = CSSFontFaceSrcValue::create(getAttribute(XLinkNames::hrefAttr));
     AtomicString value(fastGetAttribute(formatAttr));
-    src->setFormat(value.isEmpty() ? "svg" : value); // Default format
+    src->setFormat(value.isEmpty() ? AtomicString("svg", AtomicString::ConstructFromLiteral) : value); // Default format
     return src.release();
 }
 

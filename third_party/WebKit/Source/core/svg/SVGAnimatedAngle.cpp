@@ -49,9 +49,10 @@ SVGAnimatedAngle::~SVGAnimatedAngle()
 
 void SVGAnimatedAngle::synchronizeAttribute()
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, autoValue, ("auto", AtomicString::ConstructFromLiteral));
     AtomicString value;
     if (m_orientType->currentValue()->enumValue() == SVGMarkerOrientAuto)
-        value = "auto";
+        value = autoValue;
     else
         value = AtomicString(currentValue()->valueAsString());
 

@@ -491,7 +491,7 @@ void MediaControls::resetHideMediaControlsTimer()
 
 const AtomicString& MediaControls::shadowPseudoId() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls"));
+    DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls", AtomicString::ConstructFromLiteral));
     return id;
 }
 
