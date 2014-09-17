@@ -7,7 +7,7 @@
 function test()
 {
     InspectorTest.registerModule("documentation", true);
-    InspectorTest.killLoadXHRWithPrefix(WebInspector.DocumentationURLProvider.urlPrefix);
+    InspectorTest.killLoadXHRWithPrefix(WebInspector.DocumentationCatalog.apiURLPrefix);
     var testCases = [
         "max",
         "insertBefore",
@@ -22,7 +22,25 @@ function test()
         "setDate",
         "parse"
     ];
-    var urlProvider = new WebInspector.DocumentationURLProvider();
+    var articleList = [
+        "javascript/Math/max",
+        "dom/Node/insertBefore",
+        "javascript/eval",
+        "javascript/JSON/stringify",
+        "javascript/Array/isArray",
+        "javascript/Date/now",
+        "javascript/String/fromCharCode",
+        "javascript/Object/keys",
+        "javascript/Array/indexOf",
+        "javascript/String/indexOf",
+        "javascript/Date/setDate",
+        "javascript/Date/parse",
+        "javascript/JSON/parse"
+    ]
+
+    var urlProvider = WebInspector.DocumentationCatalog.instance();
+    for (var i = 0; i < articleList.length; ++i)
+        urlProvider._addDescriptorToList(articleList[i]);
     for (var i = 0; i < testCases.length; ++i) {
         InspectorTest.addResult("Property " + testCases[i] + ":");
         var properties = urlProvider.itemDescriptors(testCases[i]);
@@ -39,6 +57,6 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-This test verifies URL created by WebInspector.DocumentationURLProvider
+This test verifies URL created by WebInspector.DocumentationCatalog
 </body>
 </html>

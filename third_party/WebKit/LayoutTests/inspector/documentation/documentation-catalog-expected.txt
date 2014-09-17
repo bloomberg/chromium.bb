@@ -1,4 +1,4 @@
-This test verifies URL created by WebInspector.DocumentationURLProvider
+This test verifies URL created by WebInspector.DocumentationCatalog
 Property max:
     0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Math/max&prop=revisions&rvprop=timestamp|content&format=json
 Property insertBefore:
@@ -15,7 +15,6 @@ Property fromCharCode:
     0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/String/fromCharCode&prop=revisions&rvprop=timestamp|content&format=json
 Property keys:
     0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Object/keys&prop=revisions&rvprop=timestamp|content&format=json
-    1: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/keys&prop=revisions&rvprop=timestamp|content&format=json
 Property notExist:
     null
 Property indexOf:
