@@ -66,8 +66,8 @@ ObjectProxy::~ObjectProxy() {
 // Originally we tried to make |method_call| a const reference, but we
 // gave up as dbus_connection_send_with_reply_and_block() takes a
 // non-const pointer of DBusMessage as the second parameter.
-scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
-                                                     int timeout_ms) {
+scoped_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
+    MethodCall* method_call, int timeout_ms, ScopedDBusError* error) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() ||
@@ -77,12 +77,10 @@ scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
 
   DBusMessage* request_message = method_call->raw_message();
 
-  ScopedDBusError error;
-
   // Send the message synchronously.
   const base::TimeTicks start_time = base::TimeTicks::Now();
   DBusMessage* response_message =
-      bus_->SendWithReplyAndBlock(request_message, timeout_ms, error.get());
+      bus_->SendWithReplyAndBlock(request_message, timeout_ms, error->get());
   // Record if the method call is successful, or not. 1 if successful.
   UMA_HISTOGRAM_ENUMERATION("DBus.SyncMethodCallSuccess",
                             response_message ? 1 : 0,
@@ -94,8 +92,8 @@ scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
   if (!response_message) {
     LogMethodCallFailure(method_call->GetInterface(),
                          method_call->GetMember(),
-                         error.is_set() ? error.name() : "unknown error type",
-                         error.is_set() ? error.message() : "");
+                         error->is_set() ? error->name() : "unknown error type",
+                         error->is_set() ? error->message() : "");
     return scoped_ptr<Response>();
   }
   // Record time spent for the method call. Don't include failures.
@@ -103,6 +101,12 @@ scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
                       base::TimeTicks::Now() - start_time);
 
   return Response::FromRawMessage(response_message);
+}
+
+scoped_ptr<Response> ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
+                                                     int timeout_ms) {
+  ScopedDBusError error;
+  return CallMethodAndBlockWithErrorDetails(method_call, timeout_ms, &error);
 }
 
 void ObjectProxy::CallMethod(MethodCall* method_call,

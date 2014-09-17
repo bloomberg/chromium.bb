@@ -25,6 +25,17 @@ class MockObjectProxy : public ObjectProxy {
   // uncopyable. This is a workaround which defines |MockCallMethodAndBlock| as
   // a mock method and makes |CallMethodAndBlock| call the mocked method.
   // Use |MockCallMethodAndBlock| for setting/testing expectations.
+  MOCK_METHOD3(MockCallMethodAndBlockWithErrorDetails,
+               Response*(MethodCall* method_call,
+                         int timeout_ms,
+                         ScopedDBusError* error));
+  virtual scoped_ptr<Response> CallMethodAndBlockWithErrorDetails(
+      MethodCall* method_call,
+      int timeout_ms,
+      ScopedDBusError* error) OVERRIDE {
+    return scoped_ptr<Response>(
+        MockCallMethodAndBlockWithErrorDetails(method_call, timeout_ms, error));
+  }
   MOCK_METHOD2(MockCallMethodAndBlock, Response*(MethodCall* method_call,
                                                  int timeout_ms));
   virtual scoped_ptr<Response> CallMethodAndBlock(MethodCall* method_call,

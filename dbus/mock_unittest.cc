@@ -13,6 +13,7 @@
 #include "dbus/mock_exported_object.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_path.h"
+#include "dbus/scoped_dbus_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,6 +45,10 @@ class MockTest : public testing::Test {
     // CreateMockProxyResponse() to return responses.
     EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(this, &MockTest::CreateMockProxyResponse));
+    EXPECT_CALL(*mock_proxy_.get(),
+                MockCallMethodAndBlockWithErrorDetails(_, _, _))
+        .WillRepeatedly(
+            Invoke(this, &MockTest::CreateMockProxyResponseWithErrorDetails));
 
     // Set an expectation so mock_proxy's CallMethod() will use
     // HandleMockProxyResponseWithMessageLoop() to return responses.
@@ -104,6 +109,12 @@ class MockTest : public testing::Test {
     return NULL;
   }
 
+  Response* CreateMockProxyResponseWithErrorDetails(
+      MethodCall* method_call, int timeout_ms, ScopedDBusError* error) {
+    dbus_set_error(error->get(), DBUS_ERROR_NOT_SUPPORTED, "Not implemented");
+    return NULL;
+  }
+
   // Creates a response and runs the given response callback in the
   // message loop with the response. Used to implement for |mock_proxy_|.
   void HandleMockProxyResponseWithMessageLoop(
@@ -127,7 +138,7 @@ class MockTest : public testing::Test {
   }
 };
 
-// This test demonstrates how to mock a synchronos method call using the
+// This test demonstrates how to mock a synchronous method call using the
 // mock classes.
 TEST_F(MockTest, CallMethodAndBlock) {
   const char kHello[] = "Hello";
@@ -155,7 +166,29 @@ TEST_F(MockTest, CallMethodAndBlock) {
   EXPECT_EQ(kHello, text_message);
 }
 
-// This test demonstrates how to mock an asynchronos method call using the
+TEST_F(MockTest, CallMethodAndBlockWithErrorDetails) {
+  // Get an object proxy from the mock bus.
+  ObjectProxy* proxy = mock_bus_->GetObjectProxy(
+      "org.chromium.TestService",
+      ObjectPath("/org/chromium/TestObject"));
+
+  // Create a method call.
+  MethodCall method_call("org.chromium.TestInterface", "Echo");
+
+  ScopedDBusError error;
+  // Call the method.
+  scoped_ptr<Response> response(
+      proxy->CallMethodAndBlockWithErrorDetails(
+          &method_call, ObjectProxy::TIMEOUT_USE_DEFAULT, &error));
+
+  // Check the response.
+  ASSERT_FALSE(response.get());
+  ASSERT_TRUE(error.is_set());
+  EXPECT_STREQ(DBUS_ERROR_NOT_SUPPORTED, error.name());
+  EXPECT_STREQ("Not implemented", error.message());
+}
+
+// This test demonstrates how to mock an asynchronous method call using the
 // mock classes.
 TEST_F(MockTest, CallMethod) {
   const char kHello[] = "hello";
