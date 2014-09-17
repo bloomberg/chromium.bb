@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "chromecast/shell/renderer/key_systems_cast.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
@@ -46,6 +47,8 @@ void CastContentRendererClient::RenderViewCreated(
 
 void CastContentRendererClient::AddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems) {
+  AddChromecastKeySystems(key_systems);
+  AddChromecastPlatformKeySystems(key_systems);
 }
 
 }  // namespace shell

@@ -1825,6 +1825,7 @@
         'enable_mpeg2ts_stream_parser%': 1,
         'ffmpeg_branding%': 'Chrome',
         'ozone_platform_ozonex%': 1,
+        'use_playready%': 0,
         'conditions': [
           ['target_arch=="arm"', {
             'arm_arch%': '',
@@ -2819,6 +2820,11 @@
               # this define once the toolchain is updated.
               # See crbug.com/388933.
               '__SOFTFP',
+            ],
+          }],
+          ['use_playready==1', {
+            'defines': [
+              'PLAYREADY_CDM_AVAILABLE',
             ],
           }],
         ],

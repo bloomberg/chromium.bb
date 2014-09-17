@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/cdm/renderer",
   "+content/public/renderer",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",

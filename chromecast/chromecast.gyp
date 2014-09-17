@@ -200,10 +200,12 @@
         'cast_version_header',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
+        'media/media.gyp:media_base',
         '../components/components.gyp:component_metrics_proto',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
         '../skia/skia.gyp:skia',
+        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'sources': [
         'shell/app/cast_main_delegate.cc',
@@ -231,6 +233,8 @@
         'shell/common/cast_content_client.h',
         'shell/renderer/cast_content_renderer_client.cc',
         'shell/renderer/cast_content_renderer_client.h',
+        'shell/renderer/key_systems_cast.cc',
+        'shell/renderer/key_systems_cast.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {
@@ -241,6 +245,7 @@
           'sources': [
             'shell/browser/devtools/remote_debugging_server_simple.cc',
             'shell/browser/webui/webui_cast_simple.cc',
+            'shell/renderer/key_systems_cast_simple.cc',
           ],
         }],
       ],

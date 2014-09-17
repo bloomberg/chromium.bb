@@ -3,7 +3,33 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromecast_branding%': 'Chromium',
+  },
   'targets': [
+    {
+      'target_name': 'media_base',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
+      ],
+      'sources': [
+        'base/key_systems_common.cc',
+        'base/key_systems_common.h',
+      ],
+      'conditions': [
+        ['chromecast_branding=="Chrome"', {
+          'dependencies': [
+            'internal/chromecast_internal.gyp:media_base_internal',
+          ],
+        }, {
+          'sources': [
+            'base/key_systems_common_simple.cc',
+          ],
+        }],
+      ],
+    },
     {
       'target_name': 'cma_base',
       'type': '<(component)',
