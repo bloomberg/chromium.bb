@@ -223,5 +223,13 @@
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30500],
   },
+
+  # These files don't need to reserve resource ids, but are listed here so that
+  # translation scripts know of their existence.
+  "android_webview/java/strings/android_webview_strings.grd": {},
+  "chrome/android/java/strings/android_chrome_strings.grd": {},
+  "content/public/android/java/strings/android_content_strings.grd": {},
+  "ui/android/java/strings/android_ui_strings.grd": {},
+
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }
