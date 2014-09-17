@@ -31,22 +31,24 @@
 
 namespace blink {
 
-InspectorStyleTextEditor::InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format)
+InspectorStyleTextEditor::InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const SourceRange& styleRange, const NewLineAndWhitespace& format)
     : m_allProperties(allProperties)
     , m_styleText(styleText)
+    , m_styleRange(styleRange)
     , m_format(format)
 {
 }
 
-void InspectorStyleTextEditor::insertProperty(unsigned index, const String& propertyText, unsigned styleBodyLength)
+void InspectorStyleTextEditor::insertProperty(unsigned index, const String& propertyText)
 {
+    unsigned styleBodyLength = m_styleRange.length();
     long propertyStart = 0;
 
     bool insertLast = true;
     if (index < m_allProperties->size()) {
         const InspectorStyleProperty& property = m_allProperties->at(index);
         if (property.hasSource) {
-            propertyStart = property.sourceData.range.start;
+            propertyStart = property.sourceData.range.start - m_styleRange.start;
             // If inserting before a disabled property, it should be shifted, too.
             insertLast = false;
         }
@@ -113,8 +115,8 @@ void InspectorStyleTextEditor::replaceProperty(unsigned index, const String& new
 void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStyleProperty& property, const String& newText)
 {
     const SourceRange& range = property.sourceData.range;
-    long replaceRangeStart = range.start;
-    long replaceRangeEnd = range.end;
+    long replaceRangeStart = range.start - m_styleRange.start;
+    long replaceRangeEnd = range.end - m_styleRange.start;
     long newTextLength = newText.length();
     String finalNewText = newText;
 

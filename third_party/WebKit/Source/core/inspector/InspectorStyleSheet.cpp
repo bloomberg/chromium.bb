@@ -208,7 +208,6 @@ static inline void fixUnparsedProperties(const CharacterType* characters, CSSRul
     if (!size)
         return;
 
-    unsigned styleStart = ruleData->ruleBodyRange.start;
     CSSPropertySourceData* nextData = &(propertyData.at(0));
     for (unsigned i = 0; i < size; ++i) {
         CSSPropertySourceData* currentData = nextData;
@@ -216,31 +215,31 @@ static inline void fixUnparsedProperties(const CharacterType* characters, CSSRul
 
         if (currentData->parsedOk)
             continue;
-        if (currentData->range.end > 0 && characters[styleStart + currentData->range.end - 1] == ';')
+        if (currentData->range.end > 0 && characters[currentData->range.end - 1] == ';')
             continue;
 
-        unsigned propertyEndInStyleSheet;
+        unsigned propertyEnd;
         if (!nextData)
-            propertyEndInStyleSheet = ruleData->ruleBodyRange.end - 1;
+            propertyEnd = ruleData->ruleBodyRange.end - 1;
         else
-            propertyEndInStyleSheet = styleStart + nextData->range.start - 1;
+            propertyEnd = nextData->range.start - 1;
 
-        while (isHTMLSpace<CharacterType>(characters[propertyEndInStyleSheet]))
-            --propertyEndInStyleSheet;
+        while (isHTMLSpace<CharacterType>(characters[propertyEnd]))
+            --propertyEnd;
 
-        // propertyEndInStyleSheet points at the last property text character.
-        unsigned newPropertyEnd = propertyEndInStyleSheet - styleStart + 1; // Exclusive of the last property text character.
+        // propertyEnd points at the last property text character.
+        unsigned newPropertyEnd = propertyEnd + 1; // Exclusive of the last property text character.
         if (currentData->range.end != newPropertyEnd) {
             currentData->range.end = newPropertyEnd;
-            unsigned valueStartInStyleSheet = styleStart + currentData->range.start + currentData->name.length();
-            while (valueStartInStyleSheet < propertyEndInStyleSheet && characters[valueStartInStyleSheet] != ':')
-                ++valueStartInStyleSheet;
-            if (valueStartInStyleSheet < propertyEndInStyleSheet)
-                ++valueStartInStyleSheet; // Shift past the ':'.
-            while (valueStartInStyleSheet < propertyEndInStyleSheet && isHTMLSpace<CharacterType>(characters[valueStartInStyleSheet]))
-                ++valueStartInStyleSheet;
+            unsigned valueStart = currentData->range.start + currentData->name.length();
+            while (valueStart < propertyEnd && characters[valueStart] != ':')
+                ++valueStart;
+            if (valueStart < propertyEnd)
+                ++valueStart; // Shift past the ':'.
+            while (valueStart < propertyEnd && isHTMLSpace<CharacterType>(characters[valueStart]))
+                ++valueStart;
             // Need to exclude the trailing ';' from the property value.
-            currentData->value = String(characters + valueStartInStyleSheet, propertyEndInStyleSheet - valueStartInStyleSheet + (characters[propertyEndInStyleSheet] == ';' ? 0 : 1));
+            currentData->value = String(characters + valueStart, propertyEnd - valueStart + (characters[propertyEnd] == ';' ? 0 : 1));
         }
     }
 }
@@ -289,10 +288,8 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
 
     String name = propertyString.left(colonIndex).stripWhiteSpace();
     String value = propertyString.substring(colonIndex + 1, propertyString.length()).stripWhiteSpace();
-    // The property range is relative to the declaration start offset.
-    unsigned topRuleBodyRangeStart = m_currentRuleDataStack.last()->ruleBodyRange.start;
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
-        CSSPropertySourceData(name, value, isImportant, false, isParsed, SourceRange(start - topRuleBodyRangeStart, end - topRuleBodyRangeStart)));
+        CSSPropertySourceData(name, value, isImportant, false, isParsed, SourceRange(start, end)));
     m_propertyRangeStart = UINT_MAX;
 }
 
@@ -347,9 +344,8 @@ void StyleSheetHandler::endComment(unsigned offset)
     if (propertyData.range.length() != commentText.length())
         return;
 
-    unsigned topRuleBodyRangeStart = m_currentRuleDataStack.last()->ruleBodyRange.start;
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
-        CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset - topRuleBodyRangeStart, offset - topRuleBodyRangeStart)));
+        CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset, offset)));
 }
 
 } // namespace
@@ -601,7 +597,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     WillBeHeapVector<InspectorStyleProperty> allProperties;
     populateAllProperties(allProperties);
 
-    InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
+    InspectorStyleTextEditor editor(&allProperties, text, sourceData->ruleBodyRange, newLineAndWhitespaceDelimiters());
     if (overwrite) {
         if (index >= allProperties.size()) {
             exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than or equal to the maximum bound (" + String::number(allProperties.size()) + ").");
@@ -609,7 +605,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
         }
         editor.replaceProperty(index, propertyText);
     } else {
-        editor.insertProperty(index, propertyText, sourceData->ruleBodyRange.length());
+        editor.insertProperty(index, propertyText);
     }
 
     return m_parentStyleSheet->setStyleText(m_styleId, editor.styleText());
@@ -621,13 +617,20 @@ bool InspectorStyle::styleText(String* result) const
     if (!sourceData)
         return false;
 
+    return textForRange(sourceData->ruleBodyRange, result);
+}
+
+bool InspectorStyle::textForRange(const SourceRange& range, String* result) const
+{
     String styleSheetText;
     bool success = m_parentStyleSheet->getText(&styleSheetText);
     if (!success)
         return false;
 
-    SourceRange& bodyRange = sourceData->ruleBodyRange;
-    *result = styleSheetText.substring(bodyRange.start, bodyRange.end - bodyRange.start);
+    ASSERT(0 <= range.start);
+    ASSERT(range.start <= range.end);
+    ASSERT(range.end <= styleSheetText.length());
+    *result = styleSheetText.substring(range.start, range.end - range.start);
     return true;
 }
 
@@ -637,13 +640,11 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<InspectorStyleProper
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (sourceData && sourceData->styleSourceData) {
-        String styleDeclaration;
-        bool isStyleTextKnown = styleText(&styleDeclaration);
-        ASSERT_UNUSED(isStyleTextKnown, isStyleTextKnown);
         WillBeHeapVector<CSSPropertySourceData>& sourcePropertyData = sourceData->styleSourceData->propertyData;
         for (WillBeHeapVector<CSSPropertySourceData>::const_iterator it = sourcePropertyData.begin(); it != sourcePropertyData.end(); ++it) {
             InspectorStyleProperty p(*it, true);
-            p.setRawTextFromStyleDeclaration(styleDeclaration);
+            bool isPropertyTextKnown = textForRange(p.sourceData.range, &p.rawText);
+            ASSERT_UNUSED(isPropertyTextKnown, isPropertyTextKnown);
             result.append(p);
             sourcePropertyNames.add(it->name.lower());
         }
@@ -668,7 +669,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     HashSet<String> foundShorthands;
     OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    unsigned ruleBodyRangeStart = sourceData ? sourceData->ruleBodyRange.start : 0;
 
     WillBeHeapVector<InspectorStyleProperty> properties;
     populateAllProperties(properties);
@@ -691,13 +691,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         if (propertyEntry.important)
             property->setImportant(true);
         if (it->hasSource) {
-            // The property range is relative to the style body start.
-            // Should be converted into an absolute range (relative to the stylesheet start)
-            // for the proper conversion into line:column.
-            SourceRange absolutePropertyRange = propertyEntry.range;
-            absolutePropertyRange.start += ruleBodyRangeStart;
-            absolutePropertyRange.end += ruleBodyRangeStart;
-            property->setRange(buildSourceRangeObject(absolutePropertyRange, lineEndings.get()));
+            property->setRange(buildSourceRangeObject(propertyEntry.range, lineEndings.get()));
             if (!propertyEntry.disabled) {
                 ASSERT(sourceData);
                 property->setImplicit(false);
@@ -775,8 +769,8 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
         return m_format; // Do not remember the default formatting and attempt to acquire it later.
     }
 
-    String text;
-    bool success = styleText(&text);
+    String styleSheetText;
+    bool success = m_parentStyleSheet->getText(&styleSheetText);
     ASSERT_UNUSED(success, success);
 
     m_formatAcquired = true;
@@ -784,7 +778,7 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
     String candidatePrefix = defaultPrefix;
     StringBuilder formatLineFeed;
     StringBuilder prefix;
-    int scanStart = 0;
+    int scanStart = sourceData->ruleBodyRange.start;
     int propertyIndex = 0;
     bool isFullPrefixScanned = false;
     bool lineFeedTerminated = false;
@@ -794,7 +788,7 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
         bool processNextProperty = false;
         int scanEnd = currentProperty.range.start;
         for (int i = scanStart; i < scanEnd; ++i) {
-            UChar ch = text[i];
+            UChar ch = styleSheetText[i];
             bool isLineFeed = isHTMLLineBreak(ch);
             if (isLineFeed) {
                 if (!lineFeedTerminated)
@@ -930,13 +924,13 @@ bool InspectorStyleSheetBase::findPropertyByRange(const SourceRange& sourceRange
         for (size_t j = 0; j < propertyData.size(); ++j) {
             CSSPropertySourceData& property = propertyData.at(j);
             unsigned styleStart = ruleSourceData->ruleBodyRange.start;
-            if (sourceRange.length() && property.range.start + styleStart == sourceRange.start && property.range.end + styleStart == sourceRange.end) {
+            if (sourceRange.length() && property.range.start == sourceRange.start && property.range.end == sourceRange.end) {
                 *ruleId = InspectorCSSId(id(), i);
                 *propertyIndex = j;
                 *overwrite = true;
                 return true;
             }
-            if (!sourceRange.length() && styleStart <= sourceRange.start && sourceRange.start <= property.range.start + styleStart) {
+            if (!sourceRange.length() && styleStart <= sourceRange.start && sourceRange.start <= property.range.start) {
                 *ruleId = InspectorCSSId(id(), i);
                 *propertyIndex = j;
                 *overwrite = false;

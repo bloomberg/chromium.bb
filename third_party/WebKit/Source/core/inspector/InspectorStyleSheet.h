@@ -94,15 +94,6 @@ public:
     {
     }
 
-    void setRawTextFromStyleDeclaration(const String& styleDeclaration)
-    {
-        unsigned start = sourceData.range.start;
-        unsigned end = sourceData.range.end;
-        ASSERT(start < end);
-        ASSERT(end <= styleDeclaration.length());
-        rawText = styleDeclaration.substring(start, end - start);
-    }
-
     bool hasRawText() const { return !rawText.isEmpty(); }
 
     void trace(Visitor* visitor) { visitor->trace(sourceData); }
@@ -121,6 +112,7 @@ public:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
     bool setPropertyText(unsigned index, const String& text, bool overwrite, ExceptionState&);
     bool styleText(String* result) const;
+    bool textForRange(const SourceRange&, String* result) const;
 
     void trace(Visitor*);
 

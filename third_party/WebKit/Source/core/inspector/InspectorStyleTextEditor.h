@@ -25,6 +25,7 @@
 #ifndef InspectorStyleTextEditor_h
 #define InspectorStyleTextEditor_h
 
+#include "core/css/CSSPropertySourceData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -40,8 +41,8 @@ typedef std::pair<String, String> NewLineAndWhitespace;
 class InspectorStyleTextEditor {
     STACK_ALLOCATED();
 public:
-    InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format);
-    void insertProperty(unsigned index, const String& propertyText, unsigned styleBodyLength);
+    InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const SourceRange& styleRange, const NewLineAndWhitespace& format);
+    void insertProperty(unsigned index, const String& propertyText);
     void replaceProperty(unsigned index, const String& newText);
     const String& styleText() const { return m_styleText; }
 
@@ -50,6 +51,7 @@ private:
 
     WillBeHeapVector<InspectorStyleProperty>* m_allProperties;
     String m_styleText;
+    SourceRange m_styleRange;
     const std::pair<String, String> m_format;
 };
 
