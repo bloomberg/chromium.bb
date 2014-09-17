@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import re
 import signal
 import time
 
@@ -161,6 +162,14 @@ def _interpret_test_failures(failures):
         test_dict['is_testharness_test'] = True
 
     return test_dict
+
+
+def _chromium_commit_position(scm, path):
+    log = scm.most_recent_log_matching('Cr-Commit-Position:', path)
+    match = re.search('^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}', log, re.MULTILINE)
+    if not match:
+        return ""
+    return str(match.group('commit_position'))
 
 
 def summarize_results(port_obj, expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=False):
@@ -316,7 +325,10 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         for (name, path) in port_obj.repository_paths():
             scm = port_obj.host.scm_for_path(path)
             if scm:
-                rev = scm.svn_revision(path)
+                if name.lower() == 'chromium':
+                    rev = _chromium_commit_position(scm, path)
+                else:
+                    rev = scm.svn_revision(path)
             if rev:
                 results[name.lower() + '_revision'] = rev
             else:
