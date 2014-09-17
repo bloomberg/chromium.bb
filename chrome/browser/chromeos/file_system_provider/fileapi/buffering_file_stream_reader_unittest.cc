@@ -281,8 +281,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read_bytes));
   std::vector<int> read_log;
-  const int result =
-      reader.Read(buffer, read_bytes, base::Bind(&LogValue<int>, &read_log));
+  const int result = reader.Read(
+      buffer.get(), read_bytes, base::Bind(&LogValue<int>, &read_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -308,8 +308,8 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read_bytes));
   std::vector<int> read_log;
-  const int result =
-      reader.Read(buffer, read_bytes, base::Bind(&LogValue<int>, &read_log));
+  const int result = reader.Read(
+      buffer.get(), read_bytes, base::Bind(&LogValue<int>, &read_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);
