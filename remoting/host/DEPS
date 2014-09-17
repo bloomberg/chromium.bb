@@ -1,4 +1,6 @@
 include_rules = [
+  "+ash",
+  "+cc/output",
   "+jingle/glue",
   "+net",
   "+remoting/codec",
@@ -6,6 +8,7 @@ include_rules = [
   "+remoting/signaling",
   "+third_party/jsoncpp",
   "+third_party/modp_b64",
+  "+third_party/skia",
   "+third_party/webrtc",
   "+ui",
 ]

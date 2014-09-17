@@ -12,10 +12,18 @@
   'variables': {
     'conditions': [
       # Remoting host is supported only on Windows, OSX and Linux (with X11).
-      ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0 and use_x11==1)', {
+      ['OS=="win" or OS=="mac" or (OS=="linux" and use_x11==1)', {
+        'enable_me2me_host': 1,
+        'enable_it2me_host': 1,
         'enable_remoting_host': 1,
       }, {
+        'enable_me2me_host': 0,
+        'enable_it2me_host': 0,
         'enable_remoting_host': 0,
+      }],
+      ['chromeos==1', {
+        'enable_me2me_host': 0,
+        'enable_it2me_host': 0,
       }],
     ],
   },
@@ -64,6 +72,8 @@
             'host/branding.h',
             'host/capture_scheduler.cc',
             'host/capture_scheduler.h',
+            'host/chromeos/aura_desktop_capturer.cc',
+            'host/chromeos/aura_desktop_capturer.h',
             'host/chromium_port_allocator_factory.cc',
             'host/chromium_port_allocator_factory.h',
             'host/chromoting_host.cc',
@@ -287,8 +297,6 @@
           'conditions': [
             ['OS=="linux"', {
               'dependencies': [
-                # Always use GTK on Linux, even for Aura builds.
-                '../build/linux/system.gyp:gtk',
                 '../build/linux/system.gyp:x11',
                 '../build/linux/system.gyp:xext',
                 '../build/linux/system.gyp:xfixes',
@@ -301,6 +309,39 @@
                   '-lpam',
                 ],
               },
+            }],
+            ['OS=="linux" and chromeos==0', {
+              'dependencies' : [
+                # Always use GTK on Linux, even for Aura builds.
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
+            ['chromeos==1', {
+              'dependencies' : [
+                '../ash/ash.gyp:ash',
+                '../cc/cc.gyp:cc',
+                '../content/content.gyp:content',
+                '../ppapi/ppapi_internal.gyp:ppapi_host',
+                '../skia/skia.gyp:skia',
+                '../ui/aura/aura.gyp:aura',
+                '../ui/compositor/compositor.gyp:compositor',
+              ],
+              'include_dirs': [
+                '../third_party/skia/include/utils',
+              ],
+              'sources!' : [
+                'host/continue_window.cc',
+                'host/continue_window.h',
+                'host/continue_window_linux.cc',
+                'host/disconnect_window.cc',
+                'host/disconnect_window_linux.cc',
+                'host/remoting_me2me_host.cc',
+              ]
+            }, {  # chromeos==0
+               'sources!' : [
+                 'host/chromeos/aura_desktop_capturer.cc',
+                 'host/chromeos/aura_desktop_capturer.h',
+               ],
             }],
             ['OS=="mac"', {
               'dependencies': [
@@ -398,40 +439,6 @@
         },  # end of target 'remoting_native_messaging_base'
 
         {
-          'target_name': 'remoting_me2me_host_static',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../net/net.gyp:net',
-            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-            'remoting_base',
-            'remoting_breakpad',
-            'remoting_host',
-            'remoting_protocol',
-          ],
-          'defines': [
-            'VERSION=<(version_full)',
-          ],
-          'sources': [
-            'host/curtain_mode.h',
-            'host/curtain_mode_linux.cc',
-            'host/curtain_mode_mac.cc',
-            'host/curtain_mode_win.cc',
-            'host/posix/signal_handler.cc',
-            'host/posix/signal_handler.h',
-          ],
-          'conditions': [
-            ['os_posix != 1', {
-              'sources/': [
-                ['exclude', '^host/posix/'],
-              ],
-            }],
-          ],  # end of 'conditions'
-        },  # end of target 'remoting_me2me_host_static'
-
-        {
           'target_name': 'remoting_host_setup_base',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -480,30 +487,6 @@
             }],
           ],
         },  # end of target 'remoting_host_setup_base'
-
-        {
-          'target_name': 'remoting_it2me_host_static',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base_i18n',
-            '../net/net.gyp:net',
-            'remoting_base',
-            'remoting_host',
-            'remoting_infoplist_strings',
-            'remoting_protocol',
-            'remoting_resources',
-          ],
-          'defines': [
-            'VERSION=<(version_full)',
-          ],
-          'sources': [
-            'host/it2me/it2me_host.cc',
-            'host/it2me/it2me_host.h',
-            'host/it2me/it2me_native_messaging_host.cc',
-            'host/it2me/it2me_native_messaging_host.h',
-          ],
-        },  # end of target 'remoting_it2me_host_static'
 
         # Generates native messaging manifest files.
         {
@@ -617,7 +600,73 @@
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
 
-    ['OS!="win" and enable_remoting_host==1', {
+    ['enable_me2me_host==1', {
+      'targets': [
+        {
+          'target_name': 'remoting_me2me_host_static',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../net/net.gyp:net',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+            'remoting_base',
+            'remoting_breakpad',
+            'remoting_host',
+            'remoting_protocol',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/curtain_mode.h',
+            'host/curtain_mode_linux.cc',
+            'host/curtain_mode_mac.cc',
+            'host/curtain_mode_win.cc',
+            'host/posix/signal_handler.cc',
+            'host/posix/signal_handler.h',
+          ],
+          'conditions': [
+            ['os_posix != 1', {
+              'sources/': [
+                ['exclude', '^host/posix/'],
+              ],
+            }],
+          ],  # end of 'conditions'
+        },  # end of target 'remoting_me2me_host_static'
+      ] # end of targets
+    }], # end of enable_me2me_host==1
+
+    ['enable_it2me_host==1', {
+      'targets': [
+        {
+          'target_name': 'remoting_it2me_host_static',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base_i18n',
+            '../net/net.gyp:net',
+            'remoting_base',
+            'remoting_host',
+            'remoting_infoplist_strings',
+            'remoting_protocol',
+            'remoting_resources',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/it2me/it2me_host.cc',
+            'host/it2me/it2me_host.h',
+            'host/it2me/it2me_native_messaging_host.cc',
+            'host/it2me/it2me_native_messaging_host.h',
+          ],
+        },  # end of target 'remoting_it2me_host_static'
+      ] # end of targets
+    }], # end of 'enable_it2me_host==1'
+
+    ['OS!="win" and enable_me2me_host==1', {
       'targets': [
         {
           'target_name': 'remoting_me2me_host',
@@ -795,6 +844,11 @@
             }],  # OS=mac
           ],
         },  # end of target 'remoting_me2me_native_messaging_host'
+      ], # targets
+    }], # end of OS!="win" and enable_me2me_host==1
+
+    ['OS!="win" and enable_it2me_host==1', {
+      'targets': [
         {
           'target_name': 'remoting_it2me_native_messaging_host',
           'type': 'executable',
@@ -818,7 +872,7 @@
             'host/it2me/it2me_native_messaging_host_main.h',
           ],
           'conditions': [
-            ['OS=="linux"', {
+            ['OS=="linux" and chromeos==0', {
               'dependencies': [
                 # Always use GTK on Linux, even for Aura builds.
                 '../build/linux/system.gyp:gtk',
@@ -890,7 +944,7 @@
           ],
         },  # end of target 'remoting_it2me_native_messaging_host'
       ],  # end of 'targets'
-    }],  # OS!="win"
+    }],  # # end of OS!="win" and enable_it2me_host==1
 
   ],  # end of 'conditions'
 }
