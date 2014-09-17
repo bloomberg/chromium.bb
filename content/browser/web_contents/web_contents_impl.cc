@@ -1740,8 +1740,11 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
       !new_contents->GetRenderViewHost()->GetView())
     return NULL;
 
+  // Resume blocked requests for both the RenderViewHost and RenderFrameHost.
   // TODO(brettw): It seems bogus to reach into here and initialize the host.
   static_cast<RenderViewHostImpl*>(new_contents->GetRenderViewHost())->Init();
+  static_cast<RenderFrameHostImpl*>(new_contents->GetMainFrame())->Init();
+
   return new_contents;
 }
 

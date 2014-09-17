@@ -116,7 +116,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool CreateRenderFrame(int parent_routing_id);
   bool IsRenderFrameLive();
+
+  // Called for renderer-created windows to resume requests from this frame,
+  // after they are blocked in RenderWidgetHelper::CreateNewWindow.
   void Init();
+
   int routing_id() const { return routing_id_; }
   void OnCreateChildFrame(int new_routing_id,
                           const std::string& frame_name);
