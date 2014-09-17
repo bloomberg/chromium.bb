@@ -155,20 +155,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       will have a BuilderStatus with status MISSING.
     """
     if not self._run.config.master:
-      # This is a slave build, so return the status for this build.
-      if self._run.options.debug:
-        # In debug mode, nothing is uploaded to Google Storage, so we bypass
-        # the extra hop and just look at what we have locally.
-        status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
-        status_obj = manifest_version.BuilderStatus(status, self.message)
-        return {self._bot_id: status_obj}
-      else:
-        # Slaves only need to look at their own status.
-        # TODO: add a method in cidb to allow querying build status using
-        # the build id directly (crbug.com/412845).
-        master_build_id = self._run.attrs.metadata.GetValue('master_build_id')
-        return self._run.attrs.manifest_manager.GetBuildersStatus(
-            master_build_id, [self._bot_id])
+      # This is a slave build, so return the status for this
+      # build. The status is available locally.
+      status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
+      status_obj = manifest_version.BuilderStatus(status, self.message)
+      return {self._bot_id: status_obj}
     else:
       # This is a master build, so wait for all the slaves to finish
       # and return their statuses.
@@ -181,7 +172,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       else:
         timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
 
-      master_build_id = self._run.attrs.metadata.GetValue('build_id')
       builders = self._GetSlaveConfigs()
       builder_names = [b['name'] for b in builders]
 
@@ -189,8 +179,10 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
 
-      return manager.GetBuildersStatus(master_build_id, builder_names,
-                                       timeout=timeout)
+      return manager.GetBuildersStatus(
+          self._run.attrs.metadata.GetValue('build_id'),
+          builder_names,
+          timeout=timeout)
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
