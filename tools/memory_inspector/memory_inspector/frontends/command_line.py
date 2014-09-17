@@ -86,8 +86,8 @@ def main():
         stats = process.GetStats()
         run_time_min, run_time_sec = divmod(stats.run_time, 60)
         print '%10s : %-50s : %6s m %2s s %8s %12s' % (
-            process.pid, process.name, run_time_min, run_time_sec,
-            stats.threads, stats.vm_rss)
+            process.pid, _Truncate(process.name, 50), run_time_min,
+            run_time_sec, stats.threads, stats.vm_rss)
     return 0
 
   if not options.process_id:
@@ -131,7 +131,7 @@ def _ListProcessStats(process):
     stats = process.GetStats()
     run_time_min, run_time_sec = divmod(stats.run_time, 60)
     print '%10s : %-50s : %6s m %2s s %8s %12s %13s %11s' % (
-        process.pid, process.name, run_time_min, run_time_sec,
+        process.pid, _Truncate(process.name, 50), run_time_min, run_time_sec,
         stats.threads, stats.cpu_usage, stats.vm_rss, stats.page_faults)
     time.sleep(1)
 
@@ -167,3 +167,7 @@ def _ListProcessClassifiedMmaps(process, mmap_rule):
   print json.dumps(classified_results_tree, cls=serialization.Encoder)
 
 
+def _Truncate(name, max_length):
+  if len(name) <= max_length:
+    return name
+  return '%s...' % name[0:(max_length - 3)]
