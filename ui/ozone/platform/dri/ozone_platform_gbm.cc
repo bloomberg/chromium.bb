@@ -110,8 +110,7 @@ class OzonePlatformGbm : public OzonePlatform {
                           gpu_platform_support_host_.get())),
                       event_factory_ozone_.get(),
                       ui_window_delegate_manager_.get(),
-                      window_manager_.get(),
-                      cursor_.get()));
+                      window_manager_.get()));
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
@@ -125,17 +124,16 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual void InitializeUI() OVERRIDE {
     vt_manager_.reset(new VirtualTerminalManager());
     ui_window_delegate_manager_.reset(new DriWindowDelegateManager());
-    window_manager_.reset(new DriWindowManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    cursor_.reset(
-        new DriCursor(gpu_platform_support_host_.get(), window_manager_.get()));
-    event_factory_ozone_.reset(
-        new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
+    window_manager_.reset(
+        new DriWindowManager(gpu_platform_support_host_.get()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
+                                                     device_manager_.get()));
   }
 
   virtual void InitializeGPU() OVERRIDE {
@@ -179,7 +177,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<DriCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   scoped_ptr<GpuPlatformSupportGbm> gpu_platform_support_;

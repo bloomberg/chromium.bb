@@ -19,7 +19,7 @@ DriCursor::DriCursor(HardwareCursorDelegate* hardware,
                      DriWindowManager* window_manager)
     : hardware_(hardware),
       window_manager_(window_manager),
-      cursor_window_(DriSurfaceFactory::kDefaultWidgetHandle) {
+      cursor_window_(gfx::kNullAcceleratedWidget) {
 }
 
 DriCursor::~DriCursor() {

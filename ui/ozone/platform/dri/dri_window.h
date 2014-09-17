@@ -13,7 +13,6 @@
 
 namespace ui {
 
-class DriCursor;
 class DriWindowDelegate;
 class DriWindowDelegateManager;
 class DriWindowManager;
@@ -27,8 +26,7 @@ class DriWindow : public PlatformWindow,
             scoped_ptr<DriWindowDelegate> dri_window_delegate,
             EventFactoryEvdev* event_factory,
             DriWindowDelegateManager* window_delegate_manager,
-            DriWindowManager* window_manager,
-            DriCursor* cursor);
+            DriWindowManager* window_manager);
   virtual ~DriWindow();
 
   void Initialize();
@@ -60,7 +58,6 @@ class DriWindow : public PlatformWindow,
   EventFactoryEvdev* event_factory_;
   DriWindowDelegateManager* window_delegate_manager_;
   DriWindowManager* window_manager_;
-  DriCursor* cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindow);
 };

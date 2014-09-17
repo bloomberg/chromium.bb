@@ -69,11 +69,10 @@ class OzonePlatformDri : public OzonePlatform {
         delegate,
         bounds,
         scoped_ptr<DriWindowDelegate>(new DriWindowDelegateImpl(
-            window_manager_.NextAcceleratedWidget(), screen_manager_.get())),
+            window_manager_->NextAcceleratedWidget(), screen_manager_.get())),
         event_factory_ozone_.get(),
         &window_delegate_manager_,
-        &window_manager_,
-        cursor_.get()));
+        window_manager_.get()));
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
@@ -89,10 +88,9 @@ class OzonePlatformDri : public OzonePlatform {
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_delegate_manager_));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    cursor_.reset(
-        new DriCursor(surface_factory_ozone_.get(), &window_manager_));
-    event_factory_ozone_.reset(
-        new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
+    window_manager_.reset(new DriWindowManager(surface_factory_ozone_.get()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
+                                                     device_manager_.get()));
     if (surface_factory_ozone_->InitializeHardware() !=
         DriSurfaceFactory::INITIALIZED)
       LOG(FATAL) << "failed to initialize display hardware";
@@ -110,10 +108,9 @@ class OzonePlatformDri : public OzonePlatform {
 
   scoped_ptr<DriSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<DriCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
-  DriWindowManager window_manager_;
+  scoped_ptr<DriWindowManager> window_manager_;
   DriWindowDelegateManager window_delegate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);

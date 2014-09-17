@@ -13,7 +13,6 @@
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
@@ -23,16 +22,14 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      scoped_ptr<DriWindowDelegate> dri_window_delegate,
                      EventFactoryEvdev* event_factory,
                      DriWindowDelegateManager* window_delegate_manager,
-                     DriWindowManager* window_manager,
-                     DriCursor* cursor)
+                     DriWindowManager* window_manager)
     : delegate_(delegate),
       bounds_(bounds),
       widget_(dri_window_delegate->GetAcceleratedWidget()),
       dri_window_delegate_(dri_window_delegate.get()),
       event_factory_(event_factory),
       window_delegate_manager_(window_delegate_manager),
-      window_manager_(window_manager),
-      cursor_(cursor) {
+      window_manager_(window_manager) {
   window_delegate_manager_->AddWindowDelegate(widget_,
                                               dri_window_delegate.Pass());
   window_manager_->AddWindow(widget_, this);
@@ -61,13 +58,13 @@ void DriWindow::Close() {}
 void DriWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
-  if (cursor_->GetCursorWindow() == widget_)
-    cursor_->HideCursor();
+  if (window_manager_->cursor()->GetCursorWindow() == widget_)
+    window_manager_->cursor()->HideCursor();
 
   dri_window_delegate_->OnBoundsChanged(bounds);
 
-  if (cursor_->GetCursorWindow() == widget_)
-    cursor_->ShowCursor();
+  if (window_manager_->cursor()->GetCursorWindow() == widget_)
+    window_manager_->cursor()->ShowCursor();
 }
 
 gfx::Rect DriWindow::GetBounds() {
@@ -87,7 +84,7 @@ void DriWindow::Minimize() {}
 void DriWindow::Restore() {}
 
 void DriWindow::SetCursor(PlatformCursor cursor) {
-  cursor_->SetCursor(widget_, cursor);
+  window_manager_->cursor()->SetCursor(widget_, cursor);
 }
 
 void DriWindow::MoveCursorTo(const gfx::Point& location) {
@@ -98,7 +95,7 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
   if (event->IsMouseEvent() || event->IsScrollEvent())
-    return cursor_->GetCursorWindow() == widget_;
+    return window_manager_->cursor()->GetCursorWindow() == widget_;
 
   return true;
 }

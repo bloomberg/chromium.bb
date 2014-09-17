@@ -18,8 +18,10 @@ CrtcState::CrtcState(DriWrapper* drm,
       is_disabled_(true) {}
 
 CrtcState::~CrtcState() {
-  if (!is_disabled_)
+  if (!is_disabled_) {
     drm_->SetCrtc(saved_crtc_.get(), std::vector<uint32_t>(1, connector_));
+    drm_->SetCursor(crtc_, 0, gfx::Size());
+  }
 }
 
 }  // namespace ui
