@@ -50,13 +50,17 @@ class ClipboardTest : public PlatformTest {
   ClipboardTest() {}
 #endif
 
+  virtual ~ClipboardTest() {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+  }
+
   static void WriteObjectsToClipboard(ui::Clipboard* clipboard,
                                       const Clipboard::ObjectMap& objects) {
     clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
   }
 
  protected:
-  Clipboard& clipboard() { return clipboard_; }
+  Clipboard& clipboard() { return *ui::Clipboard::GetForCurrentThread(); }
 
   void WriteObjectsToClipboard(const Clipboard::ObjectMap& objects) {
     WriteObjectsToClipboard(&clipboard(), objects);
@@ -67,7 +71,6 @@ class ClipboardTest : public PlatformTest {
 #if defined(USE_AURA)
   scoped_ptr<PlatformEventSource> event_source_;
 #endif
-  Clipboard clipboard_;
 };
 
 namespace {
@@ -81,8 +84,7 @@ bool MarkupMatches(const base::string16& expected_markup,
 
 TEST_F(ClipboardTest, ClearTest) {
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(ASCIIToUTF16("clear me"));
   }
 
@@ -99,8 +101,7 @@ TEST_F(ClipboardTest, TextTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(text);
   }
 
@@ -121,8 +122,7 @@ TEST_F(ClipboardTest, HTMLTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
@@ -147,8 +147,7 @@ TEST_F(ClipboardTest, RTFTest) {
       "}";
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteRTF(rtf);
   }
 
@@ -168,14 +167,12 @@ TEST_F(ClipboardTest, MultipleBufferTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(text);
   }
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_SELECTION);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_SELECTION);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -211,8 +208,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
   base::string16 plain(ASCIIToUTF16("Bye!")), plain_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
@@ -237,8 +233,7 @@ TEST_F(ClipboardTest, UniodeHTMLTest) {
   std::string url, url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -263,8 +258,7 @@ TEST_F(ClipboardTest, BookmarkTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteBookmark(title, url);
   }
 
@@ -283,8 +277,7 @@ TEST_F(ClipboardTest, MultiFormatTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteHTML(markup, url);
     clipboard_writer.WriteText(text);
   }
@@ -314,8 +307,7 @@ TEST_F(ClipboardTest, URLTest) {
   base::string16 url(ASCIIToUTF16("http://www.google.com/"));
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteURL(url);
   }
 
@@ -542,8 +534,7 @@ TEST_F(ClipboardTest, DataTest) {
   write_pickle.WriteString(payload);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
@@ -574,8 +565,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   write_pickle2.WriteString(payload2);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
@@ -596,8 +586,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   EXPECT_EQ(payload2, unpickled_string2);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
@@ -629,8 +618,7 @@ TEST_F(ClipboardTest, HyperlinkTest) {
   std::string url_result;
   base::string16 html_result;
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteHyperlink(ASCIIToUTF16(kTitle), kUrl);
   }
 
@@ -646,8 +634,7 @@ TEST_F(ClipboardTest, HyperlinkTest) {
 #if defined(OS_WIN)  // Windows only tests.
 TEST_F(ClipboardTest, WebSmartPasteTest) {
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteWebSmartPaste();
   }
 
@@ -701,7 +688,7 @@ TEST_F(ClipboardTest, HtmlTest) {
 // Test writing all formats we have simultaneously.
 TEST_F(ClipboardTest, WriteEverything) {
   {
-    ScopedClipboardWriter writer(&clipboard(), CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter writer(CLIPBOARD_TYPE_COPY_PASTE);
     writer.WriteText(UTF8ToUTF16("foo"));
     writer.WriteURL(UTF8ToUTF16("foo"));
     writer.WriteHTML(UTF8ToUTF16("foo"), "bar");
@@ -727,7 +714,7 @@ TEST_F(ClipboardTest, GetSequenceNumber) {
       clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
 
   {
-    ScopedClipboardWriter writer(&clipboard(), CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter writer(CLIPBOARD_TYPE_COPY_PASTE);
     writer.WriteText(UTF8ToUTF16("World"));
   }
 
@@ -749,8 +736,7 @@ TEST_F(ClipboardTest, GetSequenceNumber) {
 TEST_F(ClipboardTest, InternalClipboardInvalidation) {
   // Write a Webkit smart paste tag to our clipboard.
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard(),
-                                           CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteWebSmartPaste();
   }
   EXPECT_TRUE(clipboard().IsFormatAvailable(

@@ -74,8 +74,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
 
   // Can we pull straight text off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
-                                               ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(kPlainText);
   }
   EXPECT_EQ(kPlainText, OmniboxView::GetClipboardText());
@@ -84,8 +83,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   const base::string16 kSpace6(ASCIIToUTF16("      "));
   const base::string16 kSpace1(ASCIIToUTF16(" "));
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
-                                               ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(kSpace6);
   }
   EXPECT_EQ(kSpace1, OmniboxView::GetClipboardText());
@@ -100,16 +98,14 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   const base::string16 kTitle(ASCIIToUTF16("The Example Company"));
   // Can we pull a bookmark off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
-                                               ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteBookmark(kTitle, kURL);
   }
   EXPECT_EQ(ASCIIToUTF16(kURL), OmniboxView::GetClipboardText());
 
   // Do we pull text in preference to a bookmark?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
-                                               ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(kPlainText);
     clipboard_writer.WriteBookmark(kTitle, kURL);
   }
@@ -119,8 +115,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   // Do we get nothing if there is neither text nor a bookmark?
   {
     const base::string16 kMarkup(ASCIIToUTF16("<strong>Hi!</string>"));
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
-                                               ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteHTML(kMarkup, kURL);
   }
   EXPECT_TRUE(OmniboxView::GetClipboardText().empty());

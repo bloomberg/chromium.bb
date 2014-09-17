@@ -953,8 +953,7 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
     data.ReadFromTuple(url, selected_text);
     data.WriteToClipboard(clipboard_type);
   } else {
-    ui::ScopedClipboardWriter scoped_clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(), clipboard_type);
+    ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
     scoped_clipboard_writer.WriteText(selected_text);
   }
 }

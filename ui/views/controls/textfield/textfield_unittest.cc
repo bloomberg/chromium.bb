@@ -139,8 +139,7 @@ base::string16 GetClipboardText(ui::ClipboardType type) {
 }
 
 void SetClipboardText(ui::ClipboardType type, const std::string& text) {
-  ui::ScopedClipboardWriter(ui::Clipboard::GetForCurrentThread(), type)
-      .WriteText(ASCIIToUTF16(text));
+  ui::ScopedClipboardWriter(type).WriteText(ASCIIToUTF16(text));
 }
 
 }  // namespace

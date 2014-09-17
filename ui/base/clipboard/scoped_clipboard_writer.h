@@ -4,7 +4,7 @@
 
 // This file declares the ScopedClipboardWriter class, a wrapper around
 // the Clipboard class which simplifies writing data to the system clipboard.
-// Upon deletion the class atomically writes all data to |clipboard_|,
+// Upon deletion the class atomically writes all data to the clipboard,
 // avoiding any potential race condition with other processes that are also
 // writing to the system clipboard.
 
@@ -25,8 +25,9 @@ namespace ui {
 // into a Clipboard::ObjectMap.
 class UI_BASE_EXPORT ScopedClipboardWriter {
  public:
-  // Create an instance that is a simple wrapper around clipboard.
-  ScopedClipboardWriter(Clipboard* clipboard, ClipboardType type);
+  // Create an instance that is a simple wrapper around the clipboard of the
+  // given type.
+  explicit ScopedClipboardWriter(ClipboardType type);
 
   ~ScopedClipboardWriter();
 
@@ -71,8 +72,7 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   // We accumulate the data passed to the various targets in the |objects_|
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
-  Clipboard* clipboard_;
-  ClipboardType type_;
+  const ClipboardType type_;
 
   // We keep around the UTF-8 text of the URL in order to pass it to
   // Clipboard::DidWriteURL().

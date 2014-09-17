@@ -13,10 +13,8 @@
 
 namespace chrome_common_net {
 
-void WriteURLToClipboard(const GURL& url,
-                         const std::string& languages,
-                         ui::Clipboard *clipboard) {
-  if (url.is_empty() || !url.is_valid() || !clipboard)
+void WriteURLToClipboard(const GURL& url, const std::string& languages) {
+  if (url.is_empty() || !url.is_valid())
     return;
 
   // Unescaping path and query is not a good idea because other applications
@@ -26,7 +24,7 @@ void WriteURLToClipboard(const GURL& url,
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
                      net::UnescapeRule::NONE, NULL, NULL, NULL);
 
-  ui::ScopedClipboardWriter scw(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
   scw.WriteURL(text);
 }
 

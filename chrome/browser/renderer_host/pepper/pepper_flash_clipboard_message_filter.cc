@@ -302,7 +302,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
     return PP_OK;
   }
 
-  ui::ScopedClipboardWriter scw(clipboard, type);
+  ui::ScopedClipboardWriter scw(type);
   std::map<base::string16, std::string> custom_data_map;
   int32_t res = PP_OK;
   for (uint32_t i = 0; i < formats.size(); ++i) {

@@ -479,8 +479,8 @@ TEST_F(TextfieldModelTest, Clipboard) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   const base::string16 initial_clipboard_text =
       base::ASCIIToUTF16("initial text");
-  ui::ScopedClipboardWriter(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE).
-      WriteText(initial_clipboard_text);
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(initial_clipboard_text);
 
   base::string16 clipboard_text;
   TextfieldModel model(NULL);

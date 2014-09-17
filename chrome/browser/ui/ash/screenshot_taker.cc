@@ -74,8 +74,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   // TODO(dcheng): Why don't we take advantage of the ability to write bitmaps
   // to the clipboard here?
   {
-    ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                  ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
     std::string html(kImageClipboardFormatPrefix);
     html += encoded;
     html += kImageClipboardFormatSuffix;

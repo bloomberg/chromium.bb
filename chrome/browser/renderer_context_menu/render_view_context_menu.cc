@@ -1761,9 +1761,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   chrome_common_net::WriteURLToClipboard(
-      url,
-      GetPrefs(browser_context_)->GetString(prefs::kAcceptLanguages),
-      ui::Clipboard::GetForCurrentThread());
+      url, GetPrefs(browser_context_)->GetString(prefs::kAcceptLanguages));
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(

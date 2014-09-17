@@ -616,7 +616,6 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
         OnBeforeUserAction();
         ClearSelection();
         ui::ScopedClipboardWriter(
-            ui::Clipboard::GetForCurrentThread(),
             ui::CLIPBOARD_TYPE_SELECTION).WriteText(base::string16());
         OnAfterUserAction();
       } else if (!read_only()) {
@@ -1791,7 +1790,6 @@ void Textfield::UpdateSelectionClipboard() const {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (performing_user_action_ && HasSelection()) {
     ui::ScopedClipboardWriter(
-        ui::Clipboard::GetForCurrentThread(),
         ui::CLIPBOARD_TYPE_SELECTION).WriteText(GetSelectedText());
     if (controller_)
       controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_SELECTION);

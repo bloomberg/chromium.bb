@@ -9,16 +9,10 @@
 
 class GURL;
 
-namespace ui {
-class Clipboard;
-}
-
 namespace chrome_common_net {
 
 // Writes a string representation of |url| to the system clipboard.
-void WriteURLToClipboard(const GURL& url,
-                         const std::string& languages,
-                         ui::Clipboard *clipboard);
+void WriteURLToClipboard(const GURL& url, const std::string& languages);
 
 }  // namespace chrome_common_net
 

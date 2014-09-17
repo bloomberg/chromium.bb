@@ -157,8 +157,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url,
 void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
   DCHECK(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE ||
          clipboard_type == ui::CLIPBOARD_TYPE_SELECTION);
-  ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                clipboard_type);
+  ui::ScopedClipboardWriter scw(clipboard_type);
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.

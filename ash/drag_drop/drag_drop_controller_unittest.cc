@@ -628,7 +628,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   std::string clip_str("I am on the clipboard");
   {
     // We first copy some text to the clipboard.
-    ui::ScopedClipboardWriter scw(cb, ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
     scw.WriteText(base::ASCIIToUTF16(clip_str));
   }
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),

@@ -150,11 +150,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (prompt_field_ && prompt_field_->HasFocus())
     return false;
 
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  if (!clipboard)
-    return false;
-
-  ui::ScopedClipboardWriter scw(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
   base::string16 text = message_labels_[0]->text();
   for (size_t i = 1; i < message_labels_.size(); ++i)
     text += message_labels_[i]->text();

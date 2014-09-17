@@ -107,8 +107,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
 
   // Put an URL on the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(), ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
   }
 
@@ -307,7 +306,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
   // of the writer.
   {
     ui::ScopedClipboardWriter clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(),
         ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
   }

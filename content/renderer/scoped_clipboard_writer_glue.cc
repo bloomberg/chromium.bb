@@ -8,17 +8,18 @@
 namespace content {
 
 ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(ClipboardClient* client)
-    : ui::ScopedClipboardWriter(client->GetClipboard(),
-                                ui::CLIPBOARD_TYPE_COPY_PASTE),
+    : ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE),
       context_(client->CreateWriteContext()) {
-  // We should never have an instance where both are set.
-  DCHECK((clipboard_ && !context_.get()) ||
-         (!clipboard_ && context_.get()));
+  DCHECK(context_);
 }
 
 ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
   if (!objects_.empty() && context_) {
     context_->Flush(objects_);
+    // TODO(dcheng): Temporary hack while the clipboard IPCs are cleaned up.
+    // This prevents the base class destructor from also trying to (probably
+    // unsuccessfully) flush things to the clipboard.
+    objects_.clear();
   }
 }
 

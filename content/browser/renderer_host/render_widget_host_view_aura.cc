@@ -909,9 +909,7 @@ void RenderWidgetHostViewAura::SelectionChanged(const base::string16& text,
   }
 
   // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-  ui::ScopedClipboardWriter clipboard_writer(
-      ui::Clipboard::GetForCurrentThread(),
-      ui::CLIPBOARD_TYPE_SELECTION);
+  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
   clipboard_writer.WriteText(text.substr(pos, n));
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }
