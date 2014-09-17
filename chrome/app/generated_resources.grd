@@ -10809,7 +10809,7 @@ Chrome ran out of memory.
         Your bookmarks, history, and other settings will be synced to your Google Account.
       </message>
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON" desc="The text of the OK button of the one click sign-in dialog.">
-        OK, got it!
+        OK, got it
       </message>
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON" desc="The text of the undo button of the one click sign-in dialog.">
         Undo
@@ -11394,7 +11394,7 @@ Chrome ran out of memory.
         Your tabs, bookmarks, history, and other settings will be synced to your Google Account and available across all your devices.
       </message>
       <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Button in the avatar menu tutorial card for dismissing the signin confirmation bubble">
-        Ok, got it!
+        OK, got it
       </message>
       <message name="IDS_PROFILES_ERROR_TUTORIAL_TITLE" desc="Title in the tutorial card for showing signin errors">
         Uh-oh!
@@ -13460,7 +13460,7 @@ Creating a supervised user does not create a Google Account, and their bookmarks
 After you create a new supervised user, you can manage their settings at any time, from any device, at www.chrome.com/manage. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more about supervised users<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
       <message name="IDS_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">
-        OK, got it!
+        OK, got it
       </message>
       <message name="IDS_SUPERVISED_USER_CREATED_TITLE" desc="Title for the confirmation dialog that appears after a supervised user has been created.">
         <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created as a supervised user!
@@ -13611,7 +13611,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Next
       </message>
       <message name="IDS_USER_MANAGER_TUTORIAL_DONE" desc="The text of the OK button on the last tutorial slide">
-        OK, got it!
+        OK, got it
       </message>
       <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TITLE" desc="Title of the guest user slide">
         Share with guests
