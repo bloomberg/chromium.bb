@@ -42656,6 +42656,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="527" label="MixedContentPrivateIPInPublicWebsitePassive"/>
   <int value="528" label="MixedContentPrivateIPInPublicWebsiteActive"/>
   <int value="529" label="XMLExternalResourceLoad"/>
+  <int value="530" label="MixedContentPrivateHostnameInPublicHostname"/>
+  <int value="531" label="LegacyProtocolEmbeddedAsSubresource"/>
+  <int value="532" label="RequestedSubresourceWithEmbeddedCredentials"/>
+  <int value="533" label="NotificationCreated"/>
+  <int value="534" label="NotificationClosed"/>
+  <int value="535" label="NotificationPermissionRequested"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
