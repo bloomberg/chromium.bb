@@ -180,9 +180,6 @@ private:
     void checkLayoutState();
 #endif
 
-    void positionDialog(RenderBox*);
-    void positionDialogs();
-
     friend class ForceHorriblySlowRectMapping;
 
     bool shouldUsePrintingLayout() const;

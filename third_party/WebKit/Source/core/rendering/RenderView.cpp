@@ -24,7 +24,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/page/Page.h"
@@ -137,56 +136,11 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
     return child->isBox();
 }
 
-static bool canCenterDialog(const RenderStyle* style)
-{
-    return (style->position() == AbsolutePosition || style->position() == FixedPosition) && style->hasAutoTopAndBottom();
-}
-
-void RenderView::positionDialog(RenderBox* box)
-{
-    HTMLDialogElement* dialog = toHTMLDialogElement(box->node());
-    if (dialog->centeringMode() == HTMLDialogElement::NotCentered)
-        return;
-    if (dialog->centeringMode() == HTMLDialogElement::Centered) {
-        if (canCenterDialog(box->style()))
-            box->setY(dialog->centeredPosition());
-        return;
-    }
-
-    ASSERT(dialog->centeringMode() == HTMLDialogElement::NeedsCentering);
-    if (!canCenterDialog(box->style())) {
-        dialog->setNotCentered();
-        return;
-    }
-    FrameView* frameView = document().view();
-    LayoutUnit top = (box->style()->position() == FixedPosition) ? 0 : frameView->scrollOffset().height();
-    int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
-    if (box->height() < visibleHeight)
-        top += (visibleHeight - box->height()) / 2;
-    box->setY(top);
-    dialog->setCentered(top);
-}
-
-void RenderView::positionDialogs()
-{
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
-    if (!positionedDescendants)
-        return;
-    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-        RenderBox* box = *it;
-        if (isHTMLDialogElement(box->node()))
-            positionDialog(box);
-    }
-}
-
 void RenderView::layoutContent()
 {
     ASSERT(needsLayout());
 
     RenderBlockFlow::layout();
-
-    positionDialogs();
 
 #if ENABLE(ASSERT)
     checkLayoutState();

@@ -494,7 +494,7 @@ private:
     // Positions new floats and also adjust all floats encountered on the line if any of them
     // have to move to the next page/column.
     bool positionNewFloatOnLine(FloatingObject* newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
-
+    void positionDialog();
 
 // END METHODS DEFINED IN RenderBlockLineLayout
 

@@ -35,6 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -381,6 +382,9 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
         if (hasVisibleContent)
             setShouldInvalidateOverflowForPaint(true);
     }
+
+    if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
+        positionDialog();
 
     clearNeedsLayout();
 }
@@ -2909,6 +2913,36 @@ RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()
 
     m_rareData = adoptPtrWillBeNoop(new RenderBlockFlowRareData(this));
     return *m_rareData;
+}
+
+void RenderBlockFlow::positionDialog()
+{
+    HTMLDialogElement* dialog = toHTMLDialogElement(node());
+    if (dialog->centeringMode() == HTMLDialogElement::NotCentered)
+        return;
+
+    bool canCenterDialog = (style()->position() == AbsolutePosition || style()->position() == FixedPosition)
+        && style()->hasAutoTopAndBottom();
+
+    if (dialog->centeringMode() == HTMLDialogElement::Centered) {
+        if (canCenterDialog)
+            setY(dialog->centeredPosition());
+        return;
+    }
+
+    ASSERT(dialog->centeringMode() == HTMLDialogElement::NeedsCentering);
+    if (!canCenterDialog) {
+        dialog->setNotCentered();
+        return;
+    }
+
+    FrameView* frameView = document().view();
+    LayoutUnit top = (style()->position() == FixedPosition) ? 0 : frameView->scrollOffset().height();
+    int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
+    if (height() < visibleHeight)
+        top += (visibleHeight - height()) / 2;
+    setY(top);
+    dialog->setCentered(top);
 }
 
 } // namespace blink
