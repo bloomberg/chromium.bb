@@ -43,7 +43,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -351,20 +350,9 @@ void BrowserWindowCocoa::Restore() {
     [window() deminiaturize:controller_];
 }
 
-// See browser_window_controller.h for a detailed explanation of the logic in
-// this method.
-void BrowserWindowCocoa::EnterFullscreen(const GURL& url,
-                                         FullscreenExitBubbleType bubble_type) {
-  if (browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending()) {
-    [controller_ enterWebContentFullscreenForURL:url bubbleType:bubble_type];
-    return;
-  }
-
-  if (url.is_empty()) {
-    [controller_ enterPresentationMode];
-  } else {
-    [controller_ enterExtensionFullscreenForURL:url bubbleType:bubble_type];
-  }
+void BrowserWindowCocoa::EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType bubble_type) {
+  [controller_ enterHTML5FullscreenForURL:url bubbleType:bubble_type];
 }
 
 void BrowserWindowCocoa::ExitFullscreen() {
