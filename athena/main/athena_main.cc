@@ -142,8 +142,9 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
       extension_system->LoadApp(app_absolute_dir);
     }
 
-    athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
-        content::BrowserThread::FILE));
+    athena::StartAthenaEnv(content::BrowserThread::GetBlockingPool()->
+        GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
     athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
     athena::CreateVirtualKeyboardWithContext(context);
     athena::StartAthenaSessionWithContext(context);

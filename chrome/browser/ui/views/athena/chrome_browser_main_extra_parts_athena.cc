@@ -38,8 +38,9 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
  private:
   // Overridden from ChromeBrowserMainExtraParts:
   virtual void PreProfileInit() OVERRIDE {
-    athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
-        content::BrowserThread::FILE));
+    athena::StartAthenaEnv(content::BrowserThread::GetBlockingPool()->
+        GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   }
   virtual void PostProfileInit() OVERRIDE {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
