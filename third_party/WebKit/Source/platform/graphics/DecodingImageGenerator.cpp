@@ -83,7 +83,7 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
     return decoded;
 }
 
-bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3])
+bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace* colorSpace)
 {
     if (!planes || !planes[0]) {
         return m_frameGenerator->getYUVComponentSizes(sizes);
@@ -93,6 +93,8 @@ bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], 
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
     bool decoded = m_frameGenerator->decodeToYUV(sizes, planes, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
+    if (colorSpace)
+        *colorSpace = kJPEG_SkYUVColorSpace;
     return decoded;
 }
 
