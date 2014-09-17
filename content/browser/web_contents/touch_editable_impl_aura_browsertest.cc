@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       10,
       0,
       ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&long_press);
   touch_editable->WaitForSelectionChangeCallback();
