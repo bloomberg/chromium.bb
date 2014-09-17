@@ -18,6 +18,10 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/tab_helper.h"
+#endif
+
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -46,6 +50,9 @@ class ConstrainedWebDialogDelegateUserData
 
 ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
+#if defined(ENABLE_EXTENSIONS)
+  extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
+#endif
 }
 
 ConstrainedWebDialogUI::~ConstrainedWebDialogUI() {
