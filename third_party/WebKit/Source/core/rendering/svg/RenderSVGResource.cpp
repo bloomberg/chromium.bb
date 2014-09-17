@@ -109,9 +109,8 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     // If the primary resource is just a color, return immediately.
     RenderSVGResourceSolidColor* colorResource = RenderSVGResource::sharedSolidPaintingResource();
     if (paintType < SVG_PAINTTYPE_URI_NONE) {
-        if (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color))
-            return 0;
-
+        // |paintType| will be either <current-color> or <rgb-color> here - both of which will have a color.
+        ASSERT(hasColor);
         colorResource->setColor(color);
         return colorResource;
     }
