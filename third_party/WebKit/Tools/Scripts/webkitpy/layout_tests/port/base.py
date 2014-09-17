@@ -1508,11 +1508,16 @@ class Port(object):
             # Running the symbolizer script can take a lot of memory, so we need to
             # serialize access to it across all the concurrently running drivers.
 
-            # FIXME: investigate using LLVM_SYMBOLIZER_PATH here to reduce the overhead.
+            llvm_symbolizer_path = self.path_from_chromium_base('third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
+            if self._filesystem.exists(llvm_symbolizer_path):
+                env = os.environ.copy()
+                env['LLVM_SYMBOLIZER_PATH'] = llvm_symbolizer_path
+            else:
+                env = None
             sanitizer_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
             sanitizer_strip_path_prefix = 'Release/../../'
             if self._filesystem.exists(sanitizer_filter_path):
-                stderr = self._executive.run_command(['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False)
+                stderr = self._executive.run_command(['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False, env=env)
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')

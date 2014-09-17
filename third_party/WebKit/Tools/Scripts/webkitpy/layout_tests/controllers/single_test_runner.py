@@ -132,9 +132,13 @@ class SingleTestRunner(object):
         # indicate problems found by a sanitizer (ASAN, LSAN, etc.), but we will report
         # on other crashes and timeouts as well in order to detect at least *some* basic failures.
         driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        expected_driver_output = self._expected_driver_output()
         failures = self._handle_error(driver_output)
-        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid)
+        test_result = TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
+                                 pid=driver_output.pid)
+        test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory, self._test_name, driver_output, expected_driver_output, test_result.failures)
+        return test_result
+
 
     def _run_compare_test(self):
         driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
@@ -229,7 +233,8 @@ class SingleTestRunner(object):
         if driver_output.crash:
             failures.append(test_failures.FailureCrash(bool(reference_filename),
                                                        driver_output.crashed_process_name,
-                                                       driver_output.crashed_pid))
+                                                       driver_output.crashed_pid,
+                                                       bool('No crash log found' not in driver_output.crash_log)))
             if driver_output.error:
                 _log.debug("%s %s crashed, (stderr lines):" % (self._worker_name, testname))
             else:

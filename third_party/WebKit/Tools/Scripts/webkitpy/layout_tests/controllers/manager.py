@@ -392,6 +392,8 @@ class Manager(object):
             for failure in result.failures:
                 if not isinstance(failure, test_failures.FailureCrash):
                     continue
+                if failure.has_log:
+                    continue
                 crashed_processes.append([test, failure.process_name, failure.pid])
 
         sample_files = self._port.look_for_new_samples(crashed_processes, start_time)
