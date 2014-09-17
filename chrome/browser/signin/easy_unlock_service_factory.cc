@@ -8,12 +8,14 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #endif
 
 // static
@@ -41,17 +43,17 @@ EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {
 
 KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new EasyUnlockService(Profile::FromBrowserContext(context));
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(
+          Profile::FromBrowserContext(context))) {
+    return new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
+  }
+#endif
+  return new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
       content::BrowserContext* context) const {
-#if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(
-          Profile::FromBrowserContext(context))) {
-    return NULL;
-  }
-#endif
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
