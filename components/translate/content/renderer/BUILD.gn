@@ -7,12 +7,21 @@ import("//build/config/features.gni")
 static_library("renderer") {
   sources = [
     "renderer_cld_data_provider.h",
+    "translate_helper.cc",
+    "translate_helper.h",
   ]
 
   deps = [
     "//base",
+    "//components/translate/content/common",
+    "//components/translate/core/common",
+    "//components/translate/core/language_detection",
     "//content/public/common",
+    "//content/public/renderer",
     "//ipc",
+    "//third_party/WebKit/public:blink",
+    "//url",
+    "//v8",
   ]
 
   if (cld_version == 0 || cld_version == 2) {

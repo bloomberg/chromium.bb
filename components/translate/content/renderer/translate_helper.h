@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
-#define CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
+#ifndef COMPONENTS_TRANSLATE_CONTENT_RENDERER_TRANSLATE_HELPER_H_
+#define COMPONENTS_TRANSLATE_CONTENT_RENDERER_TRANSLATE_HELPER_H_
 
 #include <string>
 
@@ -25,6 +25,8 @@ class WebFrame;
 namespace content {
 class RendererCldDataProvider;
 }
+
+namespace translate {
 
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
@@ -77,7 +79,10 @@ class RendererCldDataProvider;
 // message to be sent to the browser process immediately.
 class TranslateHelper : public content::RenderViewObserver {
  public:
-  explicit TranslateHelper(content::RenderView* render_view);
+  explicit TranslateHelper(content::RenderView* render_view,
+                           int world_id,
+                           int extension_group,
+                           const std::string& extension_scheme);
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
@@ -195,7 +200,7 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
-  void NotifyBrowserTranslationFailed(translate::TranslateErrors::Type error);
+  void NotifyBrowserTranslationFailed(TranslateErrors::Type error);
 
   // Convenience method to access the main frame.  Can return NULL, typically
   // if the page is being closed.
@@ -239,7 +244,7 @@ class TranslateHelper : public content::RenderViewObserver {
   base::TimeTicks language_determined_time_;
 
   // Provides CLD data for this process.
-  scoped_ptr<translate::RendererCldDataProvider> cld_data_provider_;
+  scoped_ptr<RendererCldDataProvider> cld_data_provider_;
 
   // Whether or not polling for CLD2 data has started.
   bool cld_data_polling_started_;
@@ -255,6 +260,15 @@ class TranslateHelper : public content::RenderViewObserver {
   // deferred_page_capture_ is true.
   int deferred_page_seq_no_;
 
+  // The world ID to use for script execution.
+  int world_id_;
+
+  // The extension group.
+  int extension_group_;
+
+  // The URL scheme for translate extensions.
+  std::string extension_scheme_;
+
   // The contents of the page most recently reported to PageCaptured if
   // deferred_page_capture_ is true.
   base::string16 deferred_contents_;
@@ -265,4 +279,6 @@ class TranslateHelper : public content::RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };
 
-#endif  // CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
+}  // namespace translate
+
+#endif  // COMPONENTS_TRANSLATE_CONTENT_RENDERER_TRANSLATE_HELPER_H_

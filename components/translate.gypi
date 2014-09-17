@@ -206,9 +206,16 @@
           'target_name': 'translate_content_renderer',
           'type': 'static_library',
           'dependencies': [
+            'translate_content_common',
+            'translate_core_common',
+            'translate_core_language_detection',
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
+            '../content/content.gyp:content_renderer',
             '../ipc/ipc.gyp:ipc',
+            '../third_party/WebKit/public/blink.gyp:blink',
+            '../url/url.gyp:url_lib',
+            '../v8/tools/gyp/v8.gyp:v8',
           ],
           'include_dirs': [
             '..',
@@ -216,6 +223,8 @@
           'sources': [
             # Note: sources list duplicated in GN build.
             'translate/content/renderer/renderer_cld_data_provider.h',
+            'translate/content/renderer/translate_helper.cc',
+            'translate/content/renderer/translate_helper.h',
            ],
           'conditions': [
             ['cld_version==0 or cld_version==2', {

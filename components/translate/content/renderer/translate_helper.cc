@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/translate/translate_helper.h"
+#include "components/translate/content/renderer/translate_helper.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -12,19 +12,16 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/isolated_world_ids.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/constants.h"
-#include "extensions/renderer/extension_groups.h"
 #include "ipc/ipc_platform_file.h"
-#include "content/public/common/url_constants.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -73,11 +70,15 @@ bool g_cld_callback_set = false;
 
 }  // namespace
 
+namespace translate {
 
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
-TranslateHelper::TranslateHelper(content::RenderView* render_view)
+TranslateHelper::TranslateHelper(content::RenderView* render_view,
+                                 int world_id,
+                                 int extension_group,
+                                 const std::string& extension_scheme)
     : content::RenderViewObserver(render_view),
       page_seq_no_(0),
       translation_pending_(false),
@@ -86,6 +87,9 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view)
       cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
       deferred_page_seq_no_(-1),
+      world_id_(world_id),
+      extension_group_(extension_group),
+      extension_scheme_(extension_scheme),
       weak_method_factory_(this) {
 }
 
@@ -116,7 +120,7 @@ void TranslateHelper::PrepareForUrl(const GURL& url) {
     return;
   if (url.SchemeIs(url::kFtpScheme))
     return;
-  if (url.SchemeIs(extensions::kExtensionScheme))
+  if (url.SchemeIs(extension_scheme_.c_str()))
     return;
 
   // Start polling for CLD data.
@@ -172,7 +176,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
     html_lang = html_element.getAttribute("lang").utf8();
   std::string cld_language;
   bool is_cld_reliable;
-  std::string language = translate::DeterminePageLanguage(
+  std::string language = DeterminePageLanguage(
       content_language, html_lang, contents, &cld_language, &is_cld_reliable);
 
   if (language.empty())
@@ -181,7 +185,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   language_determined_time_ = base::TimeTicks::Now();
 
   GURL url(document.url());
-  translate::LanguageDetectionDetails details;
+  LanguageDetectionDetails details;
   details.time = base::Time::Now();
   details.url = url;
   details.content_language = content_language;
@@ -255,10 +259,7 @@ void TranslateHelper::ExecuteScript(const std::string& script) {
 
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
   main_frame->executeScriptInIsolatedWorld(
-      chrome::ISOLATED_WORLD_ID_TRANSLATE,
-      &source,
-      1,
-      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS);
+      world_id_, &source, 1, extension_group_);
 }
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
@@ -271,11 +272,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
   main_frame->executeScriptInIsolatedWorld(
-      chrome::ISOLATED_WORLD_ID_TRANSLATE,
-      &source,
-      1,
-      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
-      &results);
+      world_id_, &source, 1, extension_group_, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsBoolean()) {
     NOTREACHED();
     return fallback;
@@ -294,11 +291,7 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
   main_frame->executeScriptInIsolatedWorld(
-      chrome::ISOLATED_WORLD_ID_TRANSLATE,
-      &source,
-      1,
-      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
-      &results);
+      world_id_, &source, 1, extension_group_, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsString()) {
     NOTREACHED();
     return std::string();
@@ -321,11 +314,7 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
   main_frame->executeScriptInIsolatedWorld(
-      chrome::ISOLATED_WORLD_ID_TRANSLATE,
-      &source,
-      1,
-      extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
-      &results);
+      world_id_, &source, 1, extension_group_, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
     NOTREACHED();
     return 0.0;
@@ -408,28 +397,25 @@ void TranslateHelper::OnTranslatePage(int page_seq_no,
 
   // If the source language is undetermined, we'll let the translate element
   // detect it.
-  source_lang_ = (source_lang != translate::kUnknownLanguageCode) ?
-                  source_lang : kAutoDetectionLanguage;
+  source_lang_ = (source_lang != kUnknownLanguageCode) ? source_lang
+                                                       : kAutoDetectionLanguage;
   target_lang_ = target_lang;
 
-  translate::ReportUserActionDuration(language_determined_time_,
-                                      base::TimeTicks::Now());
+  ReportUserActionDuration(language_determined_time_, base::TimeTicks::Now());
 
   GURL url(main_frame->document().url());
-  translate::ReportPageScheme(url.scheme());
+  ReportPageScheme(url.scheme());
 
   // Set up v8 isolated world with proper content-security-policy and
   // security-origin.
   WebFrame* frame = GetMainFrame();
   if (frame) {
     frame->setIsolatedWorldContentSecurityPolicy(
-        chrome::ISOLATED_WORLD_ID_TRANSLATE,
-        WebString::fromUTF8(kContentSecurityPolicy));
+        world_id_, WebString::fromUTF8(kContentSecurityPolicy));
 
-    GURL security_origin = translate::GetTranslateSecurityOrigin();
+    GURL security_origin = GetTranslateSecurityOrigin();
     frame->setIsolatedWorldSecurityOrigin(
-        chrome::ISOLATED_WORLD_ID_TRANSLATE,
-        WebSecurityOrigin::create(security_origin));
+        world_id_, WebSecurityOrigin::create(security_origin));
   }
 
   if (!IsTranslateLibAvailable()) {
@@ -465,8 +451,7 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
   // First check if there was an error.
   if (HasTranslationFailed()) {
     // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
-    NotifyBrowserTranslationFailed(
-        translate::TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
     return;  // There was an error.
   }
 
@@ -477,12 +462,10 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
     if (source_lang_ == kAutoDetectionLanguage) {
       actual_source_lang = GetOriginalPageLanguage();
       if (actual_source_lang.empty()) {
-        NotifyBrowserTranslationFailed(
-            translate::TranslateErrors::UNKNOWN_LANGUAGE);
+        NotifyBrowserTranslationFailed(TranslateErrors::UNKNOWN_LANGUAGE);
         return;
       } else if (actual_source_lang == target_lang_) {
-        NotifyBrowserTranslationFailed(
-            translate::TranslateErrors::IDENTICAL_LANGUAGES);
+        NotifyBrowserTranslationFailed(TranslateErrors::IDENTICAL_LANGUAGES);
         return;
       }
     } else {
@@ -497,7 +480,7 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
     translation_pending_ = false;
 
     // Check JavaScript performance counters for UMA reports.
-    translate::ReportTimeToTranslate(
+    ReportTimeToTranslate(
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
@@ -505,7 +488,7 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
         new ChromeViewHostMsg_PageTranslated(render_view()->GetRoutingID(),
                                              actual_source_lang,
                                              target_lang_,
-                                             translate::TranslateErrors::NONE));
+                                             TranslateErrors::NONE));
     return;
   }
 
@@ -526,8 +509,7 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
     // The library is not ready, try again later, unless we have tried several
     // times unsucessfully already.
     if (++count >= kMaxTranslateInitCheckAttempts) {
-      NotifyBrowserTranslationFailed(
-          translate::TranslateErrors::INITIALIZATION_ERROR);
+      NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
     base::MessageLoop::current()->PostDelayedTask(
@@ -541,14 +523,13 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
 
   // The library is loaded, and ready for translation now.
   // Check JavaScript performance counters for UMA reports.
-  translate::ReportTimeToBeReady(
+  ReportTimeToBeReady(
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.readyTime"));
-  translate::ReportTimeToLoad(
+  ReportTimeToLoad(
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {
-    NotifyBrowserTranslationFailed(
-        translate::TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
     return;
   }
   // Check the status of the translation.
@@ -560,7 +541,7 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
 }
 
 void TranslateHelper::NotifyBrowserTranslationFailed(
-    translate::TranslateErrors::Type error) {
+    TranslateErrors::Type error) {
   translation_pending_ = false;
   // Notify the browser there was an error.
   render_view()->Send(new ChromeViewHostMsg_PageTranslated(
@@ -653,3 +634,5 @@ void TranslateHelper::RecordLanguageDetectionTiming(
   content::RenderThread::Get()->UpdateHistograms(
       content::kHistogramSynchronizerReservedSequenceNumber);
 }
+
+}  // namespace translate

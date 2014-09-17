@@ -20,7 +20,6 @@
 
 class ContentSettingsObserver;
 class SkBitmap;
-class TranslateHelper;
 class WebViewColorOverlay;
 class WebViewAnimatingOverlay;
 
@@ -31,6 +30,10 @@ struct WebWindowFeatures;
 
 namespace safe_browsing {
 class PhishingClassifierDelegate;
+}
+
+namespace translate {
+class TranslateHelper;
 }
 
 namespace web_cache {
@@ -98,7 +101,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer_;
 
   // Have the same lifetime as us.
-  TranslateHelper* translate_helper_;
+  translate::TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
   // A color page overlay when visually de-emaphasized.

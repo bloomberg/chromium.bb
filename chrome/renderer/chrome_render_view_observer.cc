@@ -17,17 +17,19 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/isolated_world_ids.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "chrome/renderer/translate/translate_helper.h"
 #include "chrome/renderer/web_apps.h"
 #include "chrome/renderer/webview_color_overlay.h"
+#include "components/translate/content/renderer/translate_helper.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
+#include "extensions/renderer/extension_groups.h"
 #include "net/base/data_url.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -158,7 +160,11 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
     : content::RenderViewObserver(render_view),
       web_cache_render_process_observer_(web_cache_render_process_observer),
-      translate_helper_(new TranslateHelper(render_view)),
+      translate_helper_(new translate::TranslateHelper(
+          render_view,
+          chrome::ISOLATED_WORLD_ID_TRANSLATE,
+          extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
+          extensions::kExtensionScheme)),
       phishing_classifier_(NULL),
       capture_timer_(false, false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
