@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -48,38 +49,40 @@ public class AwWebResourceResponse {
         }
     }
 
+    @VisibleForTesting
     @CalledByNative
     public String getMimeType() {
         return mMimeType;
     }
 
     @CalledByNative
-    public String getCharset() {
+    private String getCharset() {
         return mCharset;
     }
 
+    @VisibleForTesting
     @CalledByNative
     public InputStream getData() {
         return mData;
     }
 
     @CalledByNative
-    public int getStatusCode() {
+    private int getStatusCode() {
         return mStatusCode;
     }
 
     @CalledByNative
-    public String getReasonPhrase() {
+    private String getReasonPhrase() {
         return mReasonPhrase;
     }
 
     @CalledByNative
-    public String[] getResponseHeaderNames() {
+    private String[] getResponseHeaderNames() {
         return mResponseHeaderNames;
     }
 
     @CalledByNative
-    public String[] getResponseHeaderValues() {
+    private String[] getResponseHeaderValues() {
         return mResponseHeaderValues;
     }
 }
