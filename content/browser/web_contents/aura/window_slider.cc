@@ -52,14 +52,14 @@ WindowSlider::WindowSlider(Delegate* delegate,
       owner_(owner),
       active_animator_(NULL),
       delta_x_(0.f),
-      weak_factory_(this),
       active_start_threshold_(0.f),
       start_threshold_touchscreen_(content::GetOverscrollConfig(
           content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
       start_threshold_touchpad_(content::GetOverscrollConfig(
           content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD)),
       complete_threshold_(content::GetOverscrollConfig(
-          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE)) {
+          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE)),
+      weak_factory_(this) {
   event_window_->AddPreTargetHandler(this);
 
   event_window_->AddObserver(this);

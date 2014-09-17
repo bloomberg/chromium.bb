@@ -69,8 +69,8 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : callback_factory_(this),
-      next_surface_id_namespace_(1u) {
+    : next_surface_id_namespace_(1u),
+      callback_factory_(this) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
 #if defined(OS_CHROMEOS)

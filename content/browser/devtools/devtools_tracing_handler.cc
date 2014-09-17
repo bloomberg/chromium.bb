@@ -56,7 +56,7 @@ const double DevToolsTracingHandler::kMinimumReportingInterval = 250.0;
 
 DevToolsTracingHandler::DevToolsTracingHandler(
     DevToolsTracingHandler::Target target)
-    : weak_factory_(this), target_(target), is_recording_(false) {
+    : target_(target), is_recording_(false), weak_factory_(this) {
   RegisterCommandHandler(devtools::Tracing::start::kName,
                          base::Bind(&DevToolsTracingHandler::OnStart,
                                     base::Unretained(this)));

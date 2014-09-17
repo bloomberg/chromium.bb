@@ -354,7 +354,6 @@ WebContentsImpl::WebContentsImpl(
       waiting_for_response_(false),
       load_state_(net::LOAD_STATE_IDLE, base::string16()),
       loading_total_progress_(0.0),
-      loading_weak_factory_(this),
       loading_frames_in_progress_(0),
       upload_size_(0),
       upload_position_(0),
@@ -380,7 +379,8 @@ WebContentsImpl::WebContentsImpl(
       last_dialog_suppressed_(false),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
-      audio_stream_monitor_(this) {
+      audio_stream_monitor_(this),
+      loading_weak_factory_(this) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
   frame_tree_.SetFrameRemoveListener(

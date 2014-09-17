@@ -1061,8 +1061,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   base::TimeTicks loading_last_progress_update_;
 
-  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
-
   // Counter to track how many frames have sent start notifications but not
   // stop notifications.
   int loading_frames_in_progress_;
@@ -1240,6 +1238,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;
+
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

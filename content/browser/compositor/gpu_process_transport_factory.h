@@ -87,7 +87,6 @@ class GpuProcessTransportFactory
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
-  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
   scoped_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_id_namespace_;
 
@@ -96,6 +95,8 @@ class GpuProcessTransportFactory
   IDMap<BrowserCompositorOutputSurface> output_surface_map_;
 
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
+
+  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
 };

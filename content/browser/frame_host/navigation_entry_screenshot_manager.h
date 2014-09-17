@@ -74,13 +74,13 @@ class CONTENT_EXPORT NavigationEntryScreenshotManager {
   // The navigation controller that owns this screenshot-manager.
   NavigationControllerImpl* owner_;
 
+  base::Time last_screenshot_time_;
+  int min_screenshot_interval_ms_;
+
   // Taking a screenshot and encoding them can be async. So use a weakptr for
   // the callback to make sure that the screenshot/encoding completion callback
   // does not trigger on a destroyed NavigationEntryScreenshotManager.
   base::WeakPtrFactory<NavigationEntryScreenshotManager> screenshot_factory_;
-
-  base::Time last_screenshot_time_;
-  int min_screenshot_interval_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryScreenshotManager);
 };

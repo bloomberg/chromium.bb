@@ -64,8 +64,9 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
 NavigationEntryScreenshotManager::NavigationEntryScreenshotManager(
     NavigationControllerImpl* owner)
     : owner_(owner),
-      screenshot_factory_(this),
-      min_screenshot_interval_ms_(kMinScreenshotIntervalMS) {
+      min_screenshot_interval_ms_(kMinScreenshotIntervalMS),
+      screenshot_factory_(this) {
+
 }
 
 NavigationEntryScreenshotManager::~NavigationEntryScreenshotManager() {

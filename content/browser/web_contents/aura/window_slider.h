@@ -140,13 +140,13 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
   // This manages the shadow for the layers.
   scoped_ptr<ShadowLayerDelegate> shadow_;
 
-  base::WeakPtrFactory<WindowSlider> weak_factory_;
-
   float active_start_threshold_;
 
   const float start_threshold_touchscreen_;
   const float start_threshold_touchpad_;
   const float complete_threshold_;
+
+  base::WeakPtrFactory<WindowSlider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSlider);
 };
