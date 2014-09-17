@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -211,10 +212,61 @@ static int my_fstat(int fd, struct stat *buf) {
 
 static int my_getdents(int fd, struct dirent *ents, size_t count,
                        size_t *nread) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid &&
+      g_activated_env->file_descs[fd].data != NULL) {
+    const struct inode_data *dir_node = g_activated_env->file_descs[fd].data;
+    if (!S_ISDIR(dir_node->mode))
+      return ENOTDIR;
+
+    int dir_position = g_activated_env->file_descs[fd].dir_position;
+    char *ent_iter = (char *) ents;
+    char *ent_end = (char *) ents + count;
+    for (int i = dir_position;
+         i < NACL_ARRAY_SIZE(g_activated_env->inode_datas);
+         i++) {
+      const struct inode_data *inode_iter = &g_activated_env->inode_datas[i];
+      if (inode_iter->valid && inode_iter->parent_dir == dir_node) {
+        size_t name_len = strlen(inode_iter->name) + 1;
+        size_t ent_len = offsetof(struct dirent, d_name) + name_len;
+        char *next_ent = ent_iter + ent_len;
+        if (next_ent > ent_end)
+          break;
+
+        struct dirent *ent_desc = (struct dirent *) ent_iter;
+        memset(ent_desc, 0, ent_len);
+        ent_desc->d_ino = i;
+        ent_desc->d_reclen = ent_len;
+        memcpy(ent_desc->d_name, inode_iter->name, name_len);
+
+        ent_iter = next_ent;
+      }
+
+      g_activated_env->file_descs[fd].dir_position++;
+    }
+
+    *nread = ent_iter - (char *) ents;
+    return 0;
+  }
+
   return EBADF;
 }
 
 static int my_fchdir(int fd) {
+  if (g_activated_env &&
+      fd >= 0 &&
+      fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
+      g_activated_env->file_descs[fd].valid &&
+      g_activated_env->file_descs[fd].data != NULL) {
+    if (!S_ISDIR(g_activated_env->file_descs[fd].data->mode))
+      return ENOTDIR;
+
+    g_activated_env->current_dir = g_activated_env->file_descs[fd].data;
+    return 0;
+  }
+
   return EBADF;
 }
 

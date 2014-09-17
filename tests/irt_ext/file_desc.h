@@ -74,6 +74,7 @@ struct inode_data {
 struct file_descriptor {
   bool valid;
   int oflag;
+  int dir_position;
   struct inode_data *data;
 };
 

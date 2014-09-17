@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,18 @@ static const char TEST_TEXT[] = "test text";
  * newlib toolchain.
  */
 extern int utimes(const char *filename, const struct timeval times[2]);
+extern int fchdir(int dir_fd);
+
+/*
+ * TODO(dyen): Move the definition and declaration of this function to newlib.
+ */
+int dirfd(DIR *dir) {
+  if (dir == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+  return dir->dd_fd;
+}
 
 typedef int (*TYPE_file_test)(struct file_desc_environment *file_desc_env);
 
@@ -37,7 +50,7 @@ static int do_mkdir_rmdir_test(struct file_desc_environment *file_desc_env) {
   struct inode_data *parent_dir = NULL;
   struct inode_data *test_dir = NULL;
 
-  if (0 != mkdir(TEST_DIRECTORY, S_IRWXO)) {
+  if (0 != mkdir(TEST_DIRECTORY, S_IRUSR | S_IWUSR)) {
     irt_ext_test_print("Could not create directory: %s\n",
                        strerror(errno));
     return 1;
@@ -65,7 +78,7 @@ static int do_mkdir_rmdir_test(struct file_desc_environment *file_desc_env) {
 }
 
 static int do_chdir_test(struct file_desc_environment *file_desc_env) {
-  if (0 != mkdir(TEST_DIRECTORY, S_IRWXO)) {
+  if (0 != mkdir(TEST_DIRECTORY, S_IRUSR | S_IWUSR)) {
     irt_ext_test_print("Could not create directory: %s\n",
                        strerror(errno));
     return 1;
@@ -117,6 +130,167 @@ static int do_cwd_test(struct file_desc_environment *file_desc_env) {
   return 0;
 }
 
+static int do_opendir_test(struct file_desc_environment *file_desc_env) {
+  if (0 != mkdir(TEST_DIRECTORY, S_IRUSR | S_IWUSR)) {
+    irt_ext_test_print("do_opendir_test: could not create directory - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  struct inode_data *parent_dir = NULL;
+  struct inode_data *test_dir = find_inode_path(file_desc_env,
+                                                "/" TEST_DIRECTORY,
+                                                &parent_dir);
+  if (test_dir == NULL) {
+    irt_ext_test_print("do_opendir_test: dir was not successfully created.\n");
+    return 1;
+  }
+
+  DIR *dir = opendir(TEST_DIRECTORY);
+  if (NULL == dir) {
+    irt_ext_test_print("do_opendir_test: opendir has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int dir_fd = dirfd(dir);
+  if (dir_fd == -1) {
+    irt_ext_test_print("do_opendir_test: dirfd has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (dir_fd < 0 ||
+      dir_fd >= NACL_ARRAY_SIZE(file_desc_env->file_descs) ||
+      !file_desc_env->file_descs[dir_fd].valid) {
+    irt_ext_test_print("do_opendir_test: directory fd is invalid (%d).\n",
+                       dir_fd);
+    return 1;
+  }
+
+  if (0 != closedir(dir)) {
+    irt_ext_test_print("do_opendir_test: closedir failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (file_desc_env->file_descs[dir_fd].valid) {
+    irt_ext_test_print("do_opendir_test: closed directory fd is valid.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_fchdir_test(struct file_desc_environment *file_desc_env) {
+  if (0 != mkdir(TEST_DIRECTORY, S_IRUSR | S_IWUSR)) {
+    irt_ext_test_print("do_fchdir_test: could not create directory - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  DIR *dir = opendir(TEST_DIRECTORY);
+  if (NULL == dir) {
+    irt_ext_test_print("do_fchdir_test: opendir has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  int dir_fd = dirfd(dir);
+  if (dir_fd == -1) {
+    irt_ext_test_print("do_fchdir_test: dirfd has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (0 != fchdir(dir_fd)) {
+    irt_ext_test_print("do_fchdir_test: fchdir has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (strcmp(file_desc_env->current_dir->name, TEST_DIRECTORY) != 0) {
+    irt_ext_test_print("do_fchdir_test: directory change failed.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_readdir_test(struct file_desc_environment *file_desc_env) {
+  if (0 != mkdir(TEST_DIRECTORY, S_IRUSR | S_IWUSR)) {
+    irt_ext_test_print("do_readdir_test: could not create directory - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  FILE *fp = fopen(TEST_DIRECTORY "/" TEST_FILE, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_readdir_test: fopen 1 failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (0 != fclose(fp)) {
+    irt_ext_test_print("do_readdir_test: fclose 1 failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  fp = fopen(TEST_DIRECTORY "/" TEST_FILE2, "w+");
+  if (fp == NULL) {
+    irt_ext_test_print("do_readdir_test: fopen 2 failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (0 != fclose(fp)) {
+    irt_ext_test_print("do_readdir_test: fclose 2 failed - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  DIR *dir = opendir(TEST_DIRECTORY);
+  if (NULL == dir) {
+    irt_ext_test_print("do_readdir_test: opendir has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  /*
+   * A real readdir will include the contents as well as "." and ".." entries,
+   * our own test harness only returns the list of files contained within the
+   * directory. This strengthens our test that these results are coming from
+   * our test harness.
+   */
+  int items_read = 0;
+  errno = 0;
+  for (struct dirent *dp = readdir(dir); dp != NULL; dp = readdir(dir)) {
+    items_read++;
+    if (strcmp(dp->d_name, TEST_FILE) != 0 &&
+        strcmp(dp->d_name, TEST_FILE2) != 0) {
+      irt_ext_test_print("do_readdir_test: unexpected directory listing - %s\n",
+                         dp->d_name);
+      return 1;
+    }
+  }
+
+  if (errno != 0) {
+    irt_ext_test_print("do_readdir_test: readdir has failed - %s\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (items_read != 2) {
+    irt_ext_test_print("do_readdir_test: unexpected number of items read.\n"
+                       "  Expected 2 items, retrieved %d.\n",
+                       items_read);
+    return 1;
+  }
+
+  return 0;
+}
+
 /* File IO tests. */
 static int do_fopenclose_test(struct file_desc_environment *file_desc_env) {
   FILE *fp = NULL;
@@ -147,7 +321,12 @@ static int do_fopenclose_test(struct file_desc_environment *file_desc_env) {
     return 1;
   }
 
-  fclose(fp);
+  if (0 != fclose(fp)) {
+    irt_ext_test_print("do_fopenclose_test: fclose was not successful - %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
   if (file_desc_env->file_descs[fd].valid) {
     irt_ext_test_print("do_fopenclose_test: did not close file descriptor.\n");
     return 1;
@@ -802,6 +981,9 @@ static const TYPE_file_test g_file_tests[] = {
   do_mkdir_rmdir_test,
   do_chdir_test,
   do_cwd_test,
+  do_opendir_test,
+  do_fchdir_test,
+  do_readdir_test,
 
   /* File IO tests. */
   do_fopenclose_test,
