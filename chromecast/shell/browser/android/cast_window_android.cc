@@ -126,5 +126,10 @@ void CastWindowAndroid::DeactivateContents(content::WebContents* contents) {
   contents->GetRenderViewHost()->Blur();
 }
 
+void CastWindowAndroid::RenderProcessGone(base::TerminationStatus status) {
+  LOG(ERROR) << "Render process gone: status=" << status;
+  Close();
+}
+
 }  // namespace shell
 }  // namespace chromecast

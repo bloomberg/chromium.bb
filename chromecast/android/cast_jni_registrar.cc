@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "chromecast/android/chromecast_config_android.h"
 #include "chromecast/shell/browser/android/cast_window_android.h"
 #include "chromecast/shell/browser/android/cast_window_manager.h"
 

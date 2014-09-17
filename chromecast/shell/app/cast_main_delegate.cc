@@ -93,7 +93,7 @@ void CastMainDelegate::InitializeResourceBundle() {
         base::File(pak_fd), ui::SCALE_FACTOR_100P);
     return;
   }
-#endif
+#endif  // defined(OS_ANDROID)
 
   resource_delegate_.reset(new CastResourceDelegate());
   // TODO(gunsch): Use LOAD_COMMON_RESOURCES once ResourceBundle no longer

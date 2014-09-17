@@ -50,7 +50,7 @@ class CastWindowAndroid : public content::WebContentsDelegate,
   // Registers the JNI methods for CastWindowAndroid.
   static bool RegisterJni(JNIEnv* env);
 
-  // WebContentsDelegate implementation.
+  // content::WebContentsDelegate implementation:
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
@@ -66,6 +66,9 @@ class CastWindowAndroid : public content::WebContentsDelegate,
                                    const base::string16& source_id) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
   virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
+
+  // content::WebContentsObserver implementation:
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
  private:
   explicit CastWindowAndroid(content::WebContents* web_contents);

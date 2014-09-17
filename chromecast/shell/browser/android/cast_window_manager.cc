@@ -16,6 +16,7 @@
 #include "chromecast/shell/browser/android/cast_window_android.h"
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
+#include "chromecast/shell/browser/cast_browser_process.h"
 #include "chromecast/shell/browser/cast_content_browser_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -25,19 +26,13 @@
 
 namespace {
 
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject>>
+base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
     g_window_manager = LAZY_INSTANCE_INITIALIZER;
-
-content::BrowserContext* g_browser_context = NULL;
 
 }  // namespace
 
 namespace chromecast {
 namespace shell {
-
-void SetBrowserContextAndroid(content::BrowserContext* browser_context) {
-  g_browser_context = browser_context;
-}
 
 base::android::ScopedJavaLocalRef<jobject>
 CreateCastWindowView(CastWindowAndroid* shell) {
@@ -63,10 +58,11 @@ void Init(JNIEnv* env, jclass clazz, jobject obj) {
 }
 
 jlong LaunchCastWindow(JNIEnv* env, jclass clazz, jstring jurl) {
-  DCHECK(g_browser_context);
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   return reinterpret_cast<jlong>(
-      CastWindowAndroid::CreateNewWindow(g_browser_context, url));
+      CastWindowAndroid::CreateNewWindow(
+          CastBrowserProcess::GetInstance()->browser_context(),
+          url));
 }
 
 void StopCastWindow(JNIEnv* env, jclass clazz, jlong nativeCastWindow) {

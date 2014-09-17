@@ -19,10 +19,6 @@ class BrowserContext;
 namespace chromecast {
 namespace shell {
 
-// Sets the browser context to use for creating windows. Must be invoked before
-// a LaunchCastWindow call.
-void SetBrowserContextAndroid(content::BrowserContext* browser_context);
-
 // Given a CastWindowAndroid instance, creates and returns a Java wrapper.
 base::android::ScopedJavaLocalRef<jobject>
 CreateCastWindowView(CastWindowAndroid* shell);

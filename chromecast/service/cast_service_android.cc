@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "chromecast/android/chromecast_config_android.h"
-#include "chromecast/shell/browser/android/cast_window_manager.h"
 
 namespace chromecast {
 
@@ -17,7 +16,6 @@ CastService* CastService::Create(content::BrowserContext* browser_context) {
 
 CastServiceAndroid::CastServiceAndroid(content::BrowserContext* browser_context)
     : CastService(browser_context) {
-  shell::SetBrowserContextAndroid(browser_context);
 }
 
 CastServiceAndroid::~CastServiceAndroid() {
