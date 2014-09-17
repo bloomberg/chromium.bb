@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
 #include "base/json/string_escape.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_ui.h"
@@ -69,9 +70,8 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       const scoped_refptr<base::RefCountedString> chunk) {
     if (!OpenFileIfNeededOnFileThread())
       return;
-    size_t written = fwrite(chunk->data().c_str(),
-        strlen(chunk->data().c_str()), 1, file_);
-    DCHECK_EQ(1u, written);
+    ignore_result(fwrite(chunk->data().c_str(), strlen(chunk->data().c_str()),
+        1, file_));
   }
 
   bool OpenFileIfNeededOnFileThread() {
@@ -83,8 +83,7 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       return false;
     }
     const char preamble[] = "{\"traceEvents\": [";
-    size_t written = fwrite(preamble, strlen(preamble), 1, file_);
-    DCHECK_EQ(1u, written);
+    ignore_result(fwrite(preamble, strlen(preamble), 1, file_));
     return true;
   }
 
@@ -93,12 +92,10 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       fputc(']', file_);
       if (!system_trace_.empty()) {
         const char systemTraceEvents[] = ",\"systemTraceEvents\": ";
-        size_t written = fwrite(systemTraceEvents, strlen(systemTraceEvents),
-            1, file_);
-        DCHECK_EQ(1u, written);
-        written = fwrite(system_trace_.c_str(),
-            strlen(system_trace_.c_str()), 1, file_);
-        DCHECK_EQ(1u, written);
+        ignore_result(fwrite(systemTraceEvents, strlen(systemTraceEvents),
+            1, file_));
+        ignore_result(fwrite(system_trace_.c_str(),
+            strlen(system_trace_.c_str()), 1, file_));
       }
       fputc('}', file_);
       base::CloseFile(file_);
