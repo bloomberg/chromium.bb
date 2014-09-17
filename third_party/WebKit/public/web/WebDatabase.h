@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class DatabaseBackendBase;
+class DatabaseBackend;
 class WebString;
 
 class WebDatabase {
@@ -59,12 +59,12 @@ public:
         const WebString& originIdentifier, const WebString& databaseName);
 
 #if BLINK_IMPLEMENTATION
-    WebDatabase(const DatabaseBackendBase*);
+    WebDatabase(const DatabaseBackend*);
 #endif
 
 private:
     WebDatabase() { }
-    const DatabaseBackendBase* m_database;
+    const DatabaseBackend* m_database;
 };
 
 } // namespace blink

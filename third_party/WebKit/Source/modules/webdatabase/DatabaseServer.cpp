@@ -38,21 +38,21 @@ String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String&
     return DatabaseTracker::tracker().fullPathForDatabase(origin, name, createIfDoesNotExist);
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(DatabaseContext* backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseServer::openDatabase(DatabaseContext* backendContext,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
-    RefPtrWillBeRawPtr<DatabaseBackendBase> database = nullptr;
+    RefPtrWillBeRawPtr<DatabaseBackend> database = nullptr;
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext, name, displayName, estimatedSize, error))
         database = createDatabase(backendContext, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(DatabaseContext* backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseServer::createDatabase(DatabaseContext* backendContext,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    RefPtrWillBeRawPtr<DatabaseBackendBase> database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
+    RefPtrWillBeRawPtr<DatabaseBackend> database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
     if (!database->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
         return nullptr;
     return database.release();

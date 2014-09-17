@@ -56,7 +56,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase> backend)
+PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackend> backend)
 {
     // FIXME: Currently, we're only simulating the backend by return the
     // frontend database as its own the backend. When we split the 2 apart,
@@ -99,7 +99,7 @@ PassRefPtrWillBeRawPtr<DatabaseBackend> Database::backend()
 
 String Database::version() const
 {
-    return DatabaseBackendBase::version();
+    return DatabaseBackend::version();
 }
 
 void Database::closeImmediately()

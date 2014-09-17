@@ -26,7 +26,10 @@
 #ifndef DatabaseBackend_h
 #define DatabaseBackend_h
 
-#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseError.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 #include "wtf/text/WTFString.h"
 
@@ -34,7 +37,10 @@ namespace blink {
 
 class ChangeVersionData;
 class Database;
+class DatabaseAuthorizer;
+class DatabaseContext;
 class DatabaseServer;
+class ExecutionContext;
 class SQLTransaction;
 class SQLTransactionBackend;
 class SQLTransactionClient;
@@ -46,13 +52,12 @@ class SQLTransactionCoordinator;
 // DatabaseBackend to do so before the proper backend split is
 // available. This should be replaced with the actual implementation later.
 
-class DatabaseBackend : public DatabaseBackendBase {
+class DatabaseBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackend> {
 public:
-    DatabaseBackend(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     virtual ~DatabaseBackend();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*);
 
-    virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
+    bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
     void close();
 
     PassRefPtrWillBeRawPtr<SQLTransactionBackend> runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
@@ -62,22 +67,98 @@ public:
     SQLTransactionClient* transactionClient() const;
     SQLTransactionCoordinator* transactionCoordinator() const;
 
+    virtual String version() const;
+
+    bool opened() const { return m_opened; }
+    bool isNew() const { return m_new; }
+
+    virtual SecurityOrigin* securityOrigin() const;
+    virtual String stringIdentifier() const;
+    virtual String displayName() const;
+    virtual unsigned long estimatedSize() const;
+    virtual String fileName() const;
+    SQLiteDatabase& sqliteDatabase() { return m_sqliteDatabase; }
+
+    unsigned long long maximumSize() const;
+    void incrementalVacuumIfNeeded();
+
+    void disableAuthorizer();
+    void enableAuthorizer();
+    void setAuthorizerPermissions(int);
+    bool lastActionChangedDatabase();
+    bool lastActionWasInsert();
+    void resetDeletes();
+    bool hadDeletes();
+    void resetAuthorizer();
+
+    virtual void closeImmediately() = 0;
+    void closeDatabase();
+
+    DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
+    ExecutionContext* executionContext() const;
+    void setFrontend(Database* frontend) { m_frontend = frontend; }
+
+protected:
+    DatabaseBackend(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
+
 private:
     class DatabaseOpenTask;
     class DatabaseCloseTask;
     class DatabaseTransactionTask;
     class DatabaseTableNamesTask;
 
-    virtual bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
+    bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     void scheduleTransaction();
+
+    bool getVersionFromDatabase(String& version, bool shouldCacheVersion = true);
+    bool setVersionInDatabase(const String& version, bool shouldCacheVersion = true);
+    void setExpectedVersion(const String&);
+    const String& expectedVersion() const { return m_expectedVersion; }
+    String getCachedVersion()const;
+    void setCachedVersion(const String&);
+    bool getActualVersionForTransaction(String& version);
+
+    void reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportChangeVersionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportExecuteStatementResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
+    void reportVacuumDatabaseResult(int sqliteErrorCode);
+    void logErrorMessage(const String&);
+    static const char* databaseInfoTableName();
+#if !LOG_DISABLED || !ERROR_DISABLED
+    String databaseDebugName() const { return m_contextThreadSecurityOrigin->toString() + "::" + m_name; }
+#endif
+
+    RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
+    RefPtrWillBeMember<DatabaseContext> m_databaseContext; // Associated with m_executionContext.
+
+    String m_name;
+    String m_expectedVersion;
+    String m_displayName;
+    unsigned long m_estimatedSize;
+    String m_filename;
+
+    Database* m_frontend;
+
+    DatabaseGuid m_guid;
+    bool m_opened;
+    bool m_new;
+
+    SQLiteDatabase m_sqliteDatabase;
+
+    RefPtrWillBeMember<DatabaseAuthorizer> m_databaseAuthorizer;
 
     Deque<RefPtrWillBeMember<SQLTransactionBackend> > m_transactionQueue;
     Mutex m_transactionInProgressMutex;
     bool m_transactionInProgress;
     bool m_isTransactionQueueEnabled;
 
+    friend class ChangeVersionWrapper;
     friend class Database;
+    friend class SQLStatementBackend;
+    friend class SQLTransactionBackend;
 };
 
 } // namespace blink

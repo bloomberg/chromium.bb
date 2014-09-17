@@ -36,7 +36,6 @@
 namespace blink {
 
 class Database;
-class DatabaseBackendBase;
 class DatabaseContext;
 class TaskSynchronizer;
 class DatabaseThread;

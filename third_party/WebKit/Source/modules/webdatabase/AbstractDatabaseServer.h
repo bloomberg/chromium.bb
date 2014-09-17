@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class DatabaseBackendBase;
+class DatabaseBackend;
 class DatabaseContext;
 class DatabaseManagerClient;
 class SecurityOrigin;
@@ -42,7 +42,7 @@ class SecurityOrigin;
 class AbstractDatabaseServer {
 public:
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true) = 0;
-    virtual PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabase(DatabaseContext*,
+    virtual PassRefPtrWillBeRawPtr<DatabaseBackend> openDatabase(DatabaseContext*,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) = 0;
 

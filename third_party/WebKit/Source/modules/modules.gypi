@@ -885,8 +885,6 @@
       'webdatabase/DatabaseAuthorizer.h',
       'webdatabase/DatabaseBackend.cpp',
       'webdatabase/DatabaseBackend.h',
-      'webdatabase/DatabaseBackendBase.cpp',
-      'webdatabase/DatabaseBackendBase.h',
       'webdatabase/DatabaseBasicTypes.h',
       'webdatabase/DatabaseCallback.h',
       'webdatabase/DatabaseClient.cpp',

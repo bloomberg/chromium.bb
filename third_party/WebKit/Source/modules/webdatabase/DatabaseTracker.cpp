@@ -33,7 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/QuotaTracker.h"
@@ -48,7 +48,7 @@
 
 namespace blink {
 
-static void databaseClosed(DatabaseBackendBase* database)
+static void databaseClosed(DatabaseBackend* database)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->databaseClosed(
@@ -82,7 +82,7 @@ String DatabaseTracker::fullPathForDatabase(SecurityOrigin* origin, const String
     return createDatabaseIdentifierFromSecurityOrigin(origin) + "/" + name + "#";
 }
 
-void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
+void DatabaseTracker::addOpenDatabase(DatabaseBackend* database)
 {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)
@@ -107,7 +107,7 @@ void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
 
 class NotifyDatabaseObserverOnCloseTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtrWillBeRawPtr<DatabaseBackendBase> database)
+    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtrWillBeRawPtr<DatabaseBackend> database)
     {
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
@@ -123,15 +123,15 @@ public:
     }
 
 private:
-    explicit NotifyDatabaseObserverOnCloseTask(PassRefPtrWillBeRawPtr<DatabaseBackendBase> database)
+    explicit NotifyDatabaseObserverOnCloseTask(PassRefPtrWillBeRawPtr<DatabaseBackend> database)
         : m_database(database)
     {
     }
 
-    RefPtrWillBeCrossThreadPersistent<DatabaseBackendBase> m_database;
+    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
 };
 
-void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)
+void DatabaseTracker::removeOpenDatabase(DatabaseBackend* database)
 {
     String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
@@ -166,7 +166,7 @@ void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)
         databaseClosed(database);
 }
 
-void DatabaseTracker::prepareToOpenDatabase(DatabaseBackendBase* database)
+void DatabaseTracker::prepareToOpenDatabase(DatabaseBackend* database)
 {
     ASSERT(database->databaseContext()->executionContext()->isContextThread());
     if (Platform::current()->databaseObserver()) {
@@ -178,7 +178,7 @@ void DatabaseTracker::prepareToOpenDatabase(DatabaseBackendBase* database)
     }
 }
 
-void DatabaseTracker::failedToOpenDatabase(DatabaseBackendBase* database)
+void DatabaseTracker::failedToOpenDatabase(DatabaseBackend* database)
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread())
@@ -187,7 +187,7 @@ void DatabaseTracker::failedToOpenDatabase(DatabaseBackendBase* database)
         databaseClosed(database);
 }
 
-unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendBase* database)
+unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackend* database)
 {
     unsigned long long spaceAvailable = 0;
     unsigned long long databaseSize = 0;
@@ -199,7 +199,7 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendB
 
 class DatabaseTracker::CloseOneDatabaseImmediatelyTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, DatabaseBackendBase* database)
+    static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, DatabaseBackend* database)
     {
         return adoptPtr(new CloseOneDatabaseImmediatelyTask(originIdentifier, name, database));
     }
@@ -210,7 +210,7 @@ public:
     }
 
 private:
-    CloseOneDatabaseImmediatelyTask(const String& originIdentifier, const String& name, DatabaseBackendBase* database)
+    CloseOneDatabaseImmediatelyTask(const String& originIdentifier, const String& name, DatabaseBackend* database)
         : m_originIdentifier(originIdentifier.isolatedCopy())
         , m_name(name.isolatedCopy())
         , m_database(database)
@@ -219,7 +219,7 @@ private:
 
     String m_originIdentifier;
     String m_name;
-    DatabaseBackendBase* m_database; // Intentionally a raw pointer.
+    DatabaseBackend* m_database; // Intentionally a raw pointer.
 };
 
 void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, const String& name)
@@ -243,7 +243,7 @@ void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, 
         (*it)->databaseContext()->executionContext()->postTask(CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
 }
 
-void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier, const String& name, DatabaseBackendBase* database)
+void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier, const String& name, DatabaseBackend* database)
 {
     // First we have to confirm the 'database' is still in our collection.
     {

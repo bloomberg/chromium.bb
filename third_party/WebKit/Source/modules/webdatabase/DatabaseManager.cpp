@@ -36,7 +36,6 @@
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -163,13 +162,13 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
         context->securityOrigin()->toString().ascii().data());
 }
 
-PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
+PassRefPtrWillBeRawPtr<DatabaseBackend> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
 
-    RefPtrWillBeRawPtr<DatabaseBackendBase> backend = m_server->openDatabase(
+    RefPtrWillBeRawPtr<DatabaseBackend> backend = m_server->openDatabase(
         databaseContextFor(context)->backend(), name, expectedVersion,
         displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
 
@@ -201,7 +200,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    RefPtrWillBeRawPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, name,
+    RefPtrWillBeRawPtr<DatabaseBackend> backend = openDatabaseBackend(context, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
         return nullptr;
