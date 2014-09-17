@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -181,9 +182,16 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
           IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
 #endif
   SetProfile(profile);
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
+  // Note that the destructor is not always called. E.g. on Mac, this is owned
+  // by a leaky singleton. Essential shutdown work must be done by observing
+  // chrome::NOTIFICATION_APP_TERMINATING.
   SetProfile(NULL);
   g_browser_process->profile_manager()->GetProfileInfoCache().RemoveObserver(
       this);
@@ -194,6 +202,9 @@ AppListViewDelegate::~AppListViewDelegate() {
 }
 
 void AppListViewDelegate::SetProfile(Profile* new_profile) {
+  if (profile_ == new_profile)
+    return;
+
   if (profile_) {
     // Note: |search_controller_| has a reference to |speech_ui_| so must be
     // destroyed first.
@@ -248,6 +259,11 @@ void AppListViewDelegate::SetUpSearchUI() {
 }
 
 void AppListViewDelegate::SetUpProfileSwitcher() {
+  // If a profile change is observed when there is no app list, there is nothing
+  // to update until SetProfile() calls this function again.
+  if (!profile_)
+    return;
+
   // Don't populate the app list users if we are on the ash desktop.
   chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
       controller_->GetAppListWindow());
@@ -439,6 +455,9 @@ void AppListViewDelegate::Dismiss()  {
 void AppListViewDelegate::ViewClosing() {
   controller_->ViewClosing();
 
+  if (!profile_)
+    return;
+
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   if (service) {
@@ -622,4 +641,21 @@ void AppListViewDelegate::AddObserver(
 void AppListViewDelegate::RemoveObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppListViewDelegate::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      SetProfile(NULL);  // Ensures launcher page web contents are torn down.
+
+      // SigninManagerFactory is not a leaky singleton (unlike this class), and
+      // its destructor will check that it has no remaining observers.
+      scoped_observer_.RemoveAll();
+      SigninManagerFactory::GetInstance()->RemoveObserver(this);
+      break;
+    default:
+      NOTREACHED();
+  }
 }

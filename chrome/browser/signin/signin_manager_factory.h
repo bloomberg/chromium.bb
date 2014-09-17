@@ -76,14 +76,8 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   SigninManagerFactory();
   virtual ~SigninManagerFactory();
 
-#if defined(OS_MACOSX)
-  // List of observers. Does not check that list is empty on destruction, as
-  // there are some leaky singletons that observe the SigninManagerFactory.
-  mutable ObserverList<Observer> observer_list_;
-#else
   // List of observers. Checks that list is empty on destruction.
   mutable ObserverList<Observer, true> observer_list_;
-#endif
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
