@@ -5,55 +5,21 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="../model/ct-builder-list.html">
+<link rel="import" href="ct-button.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <polymer-element name="ct-failure-card-buttons" attributes="group bug">
   <template>
-    <style>
-      :host {
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* FIXME: All this paper-button styling should go in a cr-button component so that
-         we can use buttons in different places and have them all look the same. */
-      paper-button {
-        -webkit-user-select: none;
-        background: #f5f5f5;
-        border-radius: 2px;
-        border: 1px solid #dcdcdc;
-        color: #444;
-        padding: 0 16px;
-        margin-bottom: 5px;
-        text-align: center;
-      }
-
-      paper-button:focus {
-        border: 1px solid #4d90fe;
-        outline: none;
-      }
-
-      paper-button:active {
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-      }
-
-      paper-button:active, paper-button:hover {
-        background: #f8f8f8;
-        border-color: #c6c6c6;
-        box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
-        color: #222;
-      }
-    </style>
-    <paper-button id="examine" on-tap="{{ examine }}" label="Examine"></paper-button>
+    <ct-button id="examine" on-tap="{{ examine }}" label="Examine"></ct-button>
     <template if="{{ !group.isSnoozed }}">
-      <paper-button id="snooze" on-tap="{{ snooze }}" label="Snooze"></paper-button>
+      <ct-button id="snooze" on-tap="{{ snooze }}" label="Snooze"></ct-button>
     </template>
     <template if="{{ group.isSnoozed }}">
-      <paper-button id="snooze" on-tap="{{ unsnooze }}" label="Unsnooze"></paper-button>
+      <ct-button id="snooze" on-tap="{{ unsnooze }}" label="Unsnooze"></ct-button>
     </template>
-    <paper-button id="link-bug" on-tap="{{ linkBug }}" label="Link Bug"></paper-button>
+    <ct-button id="link-bug" on-tap="{{ linkBug }}" label="Link Bug"></ct-button>
     <template if="{{ group.bug !== undefined }}">
       <div>
         <a href="{{ group.bug }}">
@@ -63,8 +29,8 @@ found in the LICENSE file.
 
     <paper-dialog heading="Enter bug number" transition="paper-transition-center" id="bugDialog">
       <paper-input label="Bug# or URL" floatingLabel autofocus id="bug"></paper-input>
-      <paper-button label="Remove bug link" on-tap="{{ removeBug }}" dismissive id="dialogRemoveBug"></paper-button>
-      <paper-button label="OK" on-tap="{{ saveBug }}" affirmative id="dialogOk"></paper-button>
+      <ct-button label="Remove bug link" on-tap="{{ removeBug }}" dismissive id="dialogRemoveBug"></ct-button>
+      <ct-button label="OK" on-tap="{{ saveBug }}" affirmative id="dialogOk"></ct-button>
     </paper-dialog>
   </template>
   <script>

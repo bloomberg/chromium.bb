@@ -8,8 +8,9 @@ found in the LICENSE file.
 <link rel="import" href="ct-results-by-builder.html">
 <link rel="import" href="ct-embedded-flakiness-dashboard.html">
 <link rel="import" href="ct-popout-iframe.html">
+<link rel="import" href="ct-commit-list.html">
 
-<polymer-element name="ct-results-panel" attributes="failures tree">
+<polymer-element name="ct-results-panel" attributes="failures commitList tree">
   <template>
     <style>
       :host {
@@ -71,6 +72,7 @@ found in the LICENSE file.
           <ct-embedded-flakiness-dashboard test="{{ failures[selected] }}" tree="{{ tree }}"></ct-embedded-flakiness-dashboard>
         </template>
         <ct-results-by-builder failure="{{ failures[selected] }}"></ct-results-by-builder>
+        <ct-commit-list commitList="{{ commitList }}" detailed="true"></ct-commit-list>
       </div>
     </template>
   </template>

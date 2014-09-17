@@ -22,7 +22,10 @@ CTSheriffFailureGroupData.prototype.getAnnotations = function() {
 };
 
 CTSheriffFailureGroupData.prototype.dataToExamine = function() {
-  return this.failures;
+  return {
+    'failures': this.failures,
+    'commitList': this.commitList
+  }
 };
 
 CTSheriffFailureGroupData.prototype.failureKeys = function() {

@@ -1,0 +1,29 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-button.html">
+
+<polymer-element name="ct-detailed-commit" attributes="data" noscript>
+  <template>
+    <style>
+      .header {
+        text-align: center;
+        font-size: 20px;
+      }
+    </style>
+
+    <div class="header">
+      <a href="{{ data.url }}">{{ data.repository }}:{{ data.revision }}</a>
+    </div>
+
+    <pre>{{ data.message }}</pre>
+
+    <!-- TODO(sergiyb): Add modified files linked to their diffs from
+         http://src.chromium.org/viewvc/blink/path/to/file?pathrev=123456.  -->
+    <!-- <iframe src="{{ data.url }}"></iframe> -->
+    <hr/>
+  </template>
+</polymer-element>
