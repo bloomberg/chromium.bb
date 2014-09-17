@@ -73,27 +73,27 @@ const int kShellWindowId_LockSystemModalContainer = 16;
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 17;
 
+// A parent container that holds the virtual keyboard container. This is to
+// ensure that the virtual keyboard is stacked above most containers but below
+// the mouse cursor, context menus and the power off animation.
+const int kShellWindowId_VirtualKeyboardParentContainer = 18;
+
 // The container for menus.
-const int kShellWindowId_MenuContainer = 18;
+const int kShellWindowId_MenuContainer = 19;
 
 // The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 19;
+const int kShellWindowId_DragImageAndTooltipContainer = 20;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, input method bubbles, etc.).
-const int kShellWindowId_SettingBubbleContainer = 20;
+const int kShellWindowId_SettingBubbleContainer = 21;
 
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 21;
+const int kShellWindowId_OverlayContainer = 22;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
-const int kShellWindowId_PhantomWindow = 22;
-
-// A parent container that holds the virtual keyboard container. This is to
-// ensure that the virtual keyboard is stacked above most containers but below
-// the mouse cursor and the power off animation.
-const int kShellWindowId_VirtualKeyboardParentContainer = 23;
+const int kShellWindowId_PhantomWindow = 23;
 
 // The container for mouse cursor.
 const int kShellWindowId_MouseCursorContainer = 24;

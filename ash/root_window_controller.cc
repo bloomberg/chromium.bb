@@ -1016,6 +1016,14 @@ void RootWindowController::CreateContainersInRootWindow(
   SetUsesScreenCoordinates(settings_bubble_container);
   DescendantShouldStayInSameRootWindow(settings_bubble_container);
 
+  aura::Window* virtual_keyboard_parent_container =
+      CreateContainer(kShellWindowId_VirtualKeyboardParentContainer,
+                      "VirtualKeyboardParentContainer",
+                      lock_screen_related_containers);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(
+      virtual_keyboard_parent_container);
+  SetUsesScreenCoordinates(virtual_keyboard_parent_container);
+
   aura::Window* menu_container = CreateContainer(
       kShellWindowId_MenuContainer,
       "MenuContainer",
@@ -1038,14 +1046,6 @@ void RootWindowController::CreateContainersInRootWindow(
       lock_screen_related_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(overlay_container);
   SetUsesScreenCoordinates(overlay_container);
-
-  aura::Window* virtual_keyboard_parent_container = CreateContainer(
-      kShellWindowId_VirtualKeyboardParentContainer,
-      "VirtualKeyboardParentContainer",
-      root_window);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(
-      virtual_keyboard_parent_container);
-  SetUsesScreenCoordinates(virtual_keyboard_parent_container);
 
 #if defined(OS_CHROMEOS)
   aura::Window* mouse_cursor_container = CreateContainer(
