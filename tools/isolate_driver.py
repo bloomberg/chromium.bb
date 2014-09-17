@@ -176,11 +176,13 @@ def post_process_deps(build_dir, dependencies):
       return i[:-4]
     return i
 
-  # Check for execute access. This gets rid of all the phony rules.
-  return [
-    i for i in map(filter_item, dependencies)
-    if os.access(os.path.join(build_dir, i), os.X_OK)
-  ]
+  def f(i):
+    # Check for execute access and strip directories. This gets rid of all the
+    # phony rules.
+    p = os.path.join(build_dir, i)
+    return os.access(p, os.X_OK) and not os.path.isdir(p)
+
+  return filter(f, map(filter_item, dependencies))
 
 
 def create_wrapper(args, isolate_index, isolated_index):
