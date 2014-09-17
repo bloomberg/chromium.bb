@@ -54,10 +54,6 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   FRIEND_TEST_ALL_PREFIXES(UploadDataStreamTest, FileSmallerThanLength);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            UploadFileSmallerThanLength);
-  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy2Test,
-                           UploadFileSmallerThanLength);
-  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy3Test,
-                           UploadFileSmallerThanLength);
 
   // Resets this instance to the uninitialized state.
   void Reset();
