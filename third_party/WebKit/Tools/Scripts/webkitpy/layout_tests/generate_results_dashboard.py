@@ -152,5 +152,5 @@ class GenerateDashBoard(object):
             self._final_result = process_json_data.generate_archived_result()
             final_json = json.dumps(self._final_result)
             final_json = 'ADD_RESULTS(' + final_json + ');'
-            with self._filesystem.open_text_file_for_writing(self._filesystem.join(self._results_directory, 'archived_results.json')) as file:
-                file.write(final_json)
+            archived_results_file_path = self._filesystem.join(self._results_directory, 'archived_results.json')
+            self._filesystem.write_text_file(archived_results_file_path, final_json)
