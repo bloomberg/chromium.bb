@@ -710,7 +710,6 @@
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/webrtc/video_destination_handler_unittest.cc',
         'renderer/npapi/webplugin_impl_unittest.cc',
-        'renderer/p2p/ipc_network_manager_unittest.cc',
         'renderer/pepper/event_conversion_unittest.cc',
         'renderer/pepper/host_var_tracker_unittest.cc',
         'renderer/pepper/mock_resource.h',
@@ -817,6 +816,7 @@
             'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
             'renderer/media/webrtc_uma_histograms_unittest.cc',
+            'renderer/p2p/ipc_network_manager_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
