@@ -43,8 +43,8 @@
 namespace blink {
 
 class ExecutionContext;
-class Response;
 class WebServiceWorkerCacheStorage;
+class WebServiceWorkerResponse;
 class WebURL;
 class WorkerClients;
 
@@ -59,8 +59,10 @@ public:
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) = 0;
-    // A null response means no valid response was provided by the service worker, so fallback to native.
-    virtual void didHandleFetchEvent(int fetchEventID, Response* = 0) = 0;
+    // Calling didHandleFetchEvent without response means no response was
+    // provided by the service worker in the fetch events, so fallback to native.
+    virtual void didHandleFetchEvent(int fetchEventID) = 0;
+    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
 
