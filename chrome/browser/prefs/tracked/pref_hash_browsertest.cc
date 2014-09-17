@@ -840,3 +840,70 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
 
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefs,
                        UntrustedAdditionToPrefs);
+
+// Verifies that adding a value to unprotected preferences while wiping a
+// user-selected value from protected preferences doesn't allow that value to
+// slip in with no valid MAC (regression test for http://crbug.com/414554).
+class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
+    : public PrefHashBrowserTestBase {
+ public:
+  virtual void SetupPreferences() OVERRIDE {
+    profile()->GetPrefs()->SetString(prefs::kHomePage, "http://example.com");
+  }
+
+  virtual void AttackPreferencesOnDisk(
+      base::DictionaryValue* unprotected_preferences,
+      base::DictionaryValue* protected_preferences) OVERRIDE {
+    // Set or change the value in Preferences to the attacker's choice.
+    unprotected_preferences->SetString(prefs::kHomePage, "http://example.net");
+    // Clear the value in Secure Preferences, if any.
+    if (protected_preferences)
+      protected_preferences->Remove(prefs::kHomePage, NULL);
+  }
+
+  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+    // Expect a single Changed event for tracked pref #2 (kHomePage) if
+    // not protecting; if protection is enabled the change should be a Cleared.
+    int changed_expected =
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+        protection_level_ < PROTECTION_ENABLED_BASIC
+        ? 1 : 0;
+    int cleared_expected =
+        protection_level_ >= PROTECTION_ENABLED_BASIC
+        ? 1 : 0;
+    EXPECT_EQ(changed_expected,
+              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
+                                           BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    EXPECT_EQ(cleared_expected,
+              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceCleared",
+                                           BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+                  ? num_tracked_prefs() - changed_expected - cleared_expected
+                  : 0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceUnchanged", ALLOW_ANY));
+
+    EXPECT_EQ(
+        changed_expected,
+        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceWantedReset",
+                                     BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount("Settings.TrackedPreferenceReset",
+                                           ALLOW_NONE));
+
+    // Nothing else should have triggered.
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceInitialized", ALLOW_NONE));
+    EXPECT_EQ(0,
+              GetTrackedPrefHistogramCount(
+                  "Settings.TrackedPreferenceTrustedInitialized", ALLOW_NONE));
+    EXPECT_EQ(
+        0,
+        GetTrackedPrefHistogramCount(
+            "Settings.TrackedPreferenceMigratedLegacyDeviceId", ALLOW_NONE));
+  }
+};
+
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe,
+                       UntrustedAdditionToPrefsAfterWipe);
