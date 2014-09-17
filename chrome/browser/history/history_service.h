@@ -827,9 +827,6 @@ class HistoryService : public content::NotificationObserver,
                                       a, b, c, d, e));
   }
 
-  // All vended weak pointers are invalidated in Cleanup().
-  base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
-
   base::ThreadChecker thread_checker_;
 
   content::NotificationRegistrar registrar_;
@@ -882,6 +879,9 @@ class HistoryService : public content::NotificationObserver,
       favicon_changed_callback_list_;
 
   history::DeleteDirectiveHandler delete_directive_handler_;
+
+  // All vended weak pointers are invalidated in Cleanup().
+  base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

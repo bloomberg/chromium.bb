@@ -168,9 +168,6 @@ class ChromePasswordManagerClient
   base::WeakPtr<
     autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
 
-  // Allows authentication callbacks to be destroyed when this client is gone.
-  base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
-
   // True if |this| is registered with some LogRouter which can accept logs.
   bool can_use_log_router_;
 
@@ -180,6 +177,9 @@ class ChromePasswordManagerClient
   // If the sync credential was filtered during autofill. Used for statistics
   // reporting.
   bool sync_credential_was_filtered_;
+
+  // Allows authentication callbacks to be destroyed when this client is gone.
+  base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

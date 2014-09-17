@@ -92,7 +92,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void OnRegistrationDone();
 
   scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
-  base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
 
   // Weak pointer to the token service used to authenticate the
   // CloudPolicyClient during registration.
@@ -100,6 +99,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   // The PrefService associated with the profile.
   PrefService* profile_prefs_;
+
+  base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

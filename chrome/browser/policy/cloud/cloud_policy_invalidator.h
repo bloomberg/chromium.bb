@@ -221,9 +221,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // The most up to date invalidation.
   scoped_ptr<syncer::Invalidation> invalidation_;
 
-  // WeakPtrFactory used to create callbacks to this object.
-  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_;
-
   // The maximum random delay, in ms, between receiving an invalidation and
   // fetching the new policy.
   int max_fetch_delay_;
@@ -235,6 +232,9 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // A thread checker to make sure that callbacks are invoked on the correct
   // thread.
   base::ThreadChecker thread_checker_;
+
+  // WeakPtrFactory used to create callbacks to this object.
+  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidator);
 };

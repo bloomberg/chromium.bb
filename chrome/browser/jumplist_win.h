@@ -134,9 +134,6 @@ class JumpList : public TabRestoreServiceObserver,
   // loaded icons.
   void CreateIconFiles(const ShellLinkItemList& item_list);
 
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<JumpList> weak_ptr_factory_;
-
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
@@ -173,6 +170,9 @@ class JumpList : public TabRestoreServiceObserver,
   // Lock for most_visited_pages_, recently_closed_pages_, icon_urls_
   // as they may be used by up to 3 threads.
   base::Lock list_lock_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<JumpList> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JumpList);
 };

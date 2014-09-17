@@ -132,8 +132,8 @@ ExpireHistoryBackend::ExpireHistoryBackend(
     : delegate_(delegate),
       main_db_(NULL),
       thumb_db_(NULL),
-      weak_factory_(this),
-      history_client_(history_client) {
+      history_client_(history_client),
+      weak_factory_(this) {
 }
 
 ExpireHistoryBackend::~ExpireHistoryBackend() {

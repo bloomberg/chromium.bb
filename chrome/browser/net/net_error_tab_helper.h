@@ -87,8 +87,6 @@ class NetErrorTabHelper
   void InitializePref(content::WebContents* contents);
   bool ProbesAllowed() const;
 
-  base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
-
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;
 
@@ -111,6 +109,8 @@ class NetErrorTabHelper
   // "Use a web service to resolve navigation errors" preference is required
   // to allow probes.
   BooleanPrefMember resolve_errors_with_web_service_;
+
+  base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorTabHelper);
 };

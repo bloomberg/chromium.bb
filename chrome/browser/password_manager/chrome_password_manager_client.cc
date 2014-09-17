@@ -68,10 +68,10 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       driver_(web_contents, this, autofill_client),
       observer_(NULL),
-      weak_factory_(this),
       can_use_log_router_(false),
       autofill_sync_state_(ALLOW_SYNC_CREDENTIALS),
-      sync_credential_was_filtered_(false) {
+      sync_credential_was_filtered_(false),
+      weak_factory_(this) {
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
   if (service)

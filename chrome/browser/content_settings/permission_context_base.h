@@ -109,10 +109,11 @@ class PermissionContextBase : public KeyedService {
 
   Profile* profile_;
   const ContentSettingsType permission_type_;
-  base::WeakPtrFactory<PermissionContextBase> weak_factory_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
   base::ScopedPtrHashMap<std::string, PermissionBubbleRequest>
       pending_bubbles_;
+
+  base::WeakPtrFactory<PermissionContextBase> weak_factory_;
 };
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_

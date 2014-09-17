@@ -186,9 +186,9 @@ bool UpdateJumpList(const wchar_t* app_id,
 }  // namespace
 
 JumpList::JumpList(Profile* profile)
-    : weak_ptr_factory_(this),
-      profile_(profile),
-      task_id_(base::CancelableTaskTracker::kBadTaskId) {
+    : profile_(profile),
+      task_id_(base::CancelableTaskTracker::kBadTaskId),
+      weak_ptr_factory_(this) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
   // the observer list of the TabRestoreService class.

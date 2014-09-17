@@ -50,9 +50,9 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       unknown_version_invalidation_count_(0),
       highest_handled_invalidation_version_(
           highest_handled_invalidation_version),
-      weak_factory_(this),
       max_fetch_delay_(kMaxFetchDelayDefault),
-      policy_hash_value_(0) {
+      policy_hash_value_(0),
+      weak_factory_(this) {
   DCHECK(core);
   DCHECK(task_runner.get());
   // |highest_handled_invalidation_version_| indicates the highest actual

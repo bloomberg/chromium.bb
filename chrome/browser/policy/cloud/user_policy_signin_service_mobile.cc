@@ -57,9 +57,9 @@ UserPolicySigninService::UserPolicySigninService(
                                   policy_manager,
                                   signin_manager,
                                   system_request_context),
-      weak_factory_(this),
       oauth2_token_service_(token_service),
-      profile_prefs_(profile->GetPrefs()) {
+      profile_prefs_(profile->GetPrefs()),
+      weak_factory_(this) {
 #if defined(OS_IOS)
   // iOS doesn't create this service with the Profile; instead it's created
   // a little bit later. See UserPolicySigninServiceFactory.

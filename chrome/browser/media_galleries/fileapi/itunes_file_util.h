@@ -84,9 +84,9 @@ class ITunesFileUtil : public NativeMediaFileUtil {
 
   virtual ITunesDataProvider* GetDataProvider();
 
-  base::WeakPtrFactory<ITunesFileUtil> weak_factory_;
-
   ImportedMediaGalleryRegistry* imported_registry_;
+
+  base::WeakPtrFactory<ITunesFileUtil> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesFileUtil);
 };

@@ -449,8 +449,8 @@ IOThread::IOThread(
 #endif
       globals_(NULL),
       is_spdy_disabled_by_policy_(false),
-      weak_factory_(this),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      weak_factory_(this) {
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(
       prefs::kDisableAuthNegotiateCnameLookup);

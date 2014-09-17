@@ -253,10 +253,6 @@ class ExpireHistoryBackend {
   HistoryDatabase* main_db_;       // Main history database.
   ThumbnailDatabase* thumb_db_;    // Thumbnails and favicons.
 
-  // Used to generate runnable methods to do timers on this class. They will be
-  // automatically canceled when this class is deleted.
-  base::WeakPtrFactory<ExpireHistoryBackend> weak_factory_;
-
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;
 
@@ -280,6 +276,10 @@ class ExpireHistoryBackend {
   // Use GetHistoryClient to access this, which makes sure the bookmarks are
   // loaded before returning.
   HistoryClient* history_client_;
+
+  // Used to generate runnable methods to do timers on this class. They will be
+  // automatically canceled when this class is deleted.
+  base::WeakPtrFactory<ExpireHistoryBackend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpireHistoryBackend);
 };

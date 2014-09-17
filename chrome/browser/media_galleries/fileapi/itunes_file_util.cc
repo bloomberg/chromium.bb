@@ -58,8 +58,8 @@ const char kITunesAutoAddDir[] = "Automatically Add to iTunes";
 
 ITunesFileUtil::ITunesFileUtil(MediaPathFilter* media_path_filter)
     : NativeMediaFileUtil(media_path_filter),
-      weak_factory_(this),
-      imported_registry_(NULL) {
+      imported_registry_(NULL),
+      weak_factory_(this) {
 }
 
 ITunesFileUtil::~ITunesFileUtil() {

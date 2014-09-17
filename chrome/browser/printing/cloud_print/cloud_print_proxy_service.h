@@ -96,14 +96,14 @@ class CloudPrintProxyService : public KeyedService {
   // Virtual for testing.
   virtual ServiceProcessControl* GetServiceProcessControl();
 
-  base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
-
   // For watching for connector policy changes.
   PrefChangeRegistrar pref_change_registrar_;
 
   // If set, continue trying to disable the connector, and quit the process
   // once successful.
   bool enforcing_connector_policy_;
+
+  base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

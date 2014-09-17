@@ -459,9 +459,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // True if SPDY is disabled by policy.
   bool is_spdy_disabled_by_policy_;
 
-  base::WeakPtrFactory<IOThread> weak_factory_;
-
   const base::TimeTicks creation_time_;
+
+  base::WeakPtrFactory<IOThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };

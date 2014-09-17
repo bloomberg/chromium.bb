@@ -146,11 +146,11 @@ void NetErrorTabHelper::DidFailProvisionalLoad(
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
-      weak_factory_(this),
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
-      dns_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE) {
+      dns_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
+      weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If this helper is under test, it won't have a WebContents.

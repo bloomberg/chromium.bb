@@ -63,8 +63,6 @@ class DnsProbeRunner {
                              const net::DnsResponse* response);
   void CallCallback();
 
-  base::WeakPtrFactory<DnsProbeRunner> weak_factory_;
-
   scoped_ptr<net::DnsClient> client_;
 
   // The callback passed to |RunProbe|.  Cleared right before calling the
@@ -76,6 +74,8 @@ class DnsProbeRunner {
   scoped_ptr<net::DnsTransaction> transaction_;
 
   Result result_;
+
+  base::WeakPtrFactory<DnsProbeRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeRunner);
 };

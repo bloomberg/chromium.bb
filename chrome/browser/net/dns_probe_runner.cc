@@ -79,7 +79,7 @@ DnsProbeRunner::Result EvaluateResponse(
 
 }  // namespace
 
-DnsProbeRunner::DnsProbeRunner() : weak_factory_(this), result_(UNKNOWN) {}
+DnsProbeRunner::DnsProbeRunner() : result_(UNKNOWN), weak_factory_(this) {}
 
 DnsProbeRunner::~DnsProbeRunner() {}
 

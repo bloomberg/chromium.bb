@@ -206,23 +206,23 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 // sync integration unit tests depend on being able to create more than one
 // history thread.
 HistoryService::HistoryService()
-    : weak_ptr_factory_(this),
-      thread_(new base::Thread(kHistoryThreadName)),
+    : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(NULL),
       profile_(NULL),
       backend_loaded_(false),
-      no_db_(false) {
+      no_db_(false),
+      weak_ptr_factory_(this) {
 }
 
 HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
-    : weak_ptr_factory_(this),
-      thread_(new base::Thread(kHistoryThreadName)),
+    : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(client),
       profile_(profile),
       visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
       backend_loaded_(false),
-      no_db_(false) {
+      no_db_(false),
+      weak_ptr_factory_(this) {
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  content::Source<Profile>(profile_));
