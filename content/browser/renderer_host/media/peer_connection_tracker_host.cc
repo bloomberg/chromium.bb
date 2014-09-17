@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
+#include "base/power_monitor/power_monitor.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(int render_process_id)
     : BrowserMessageFilter(PeerConnectionTrackerMsgStart),
-      render_process_id_(render_process_id) {}
+      render_process_id_(render_process_id) {
+}
 
 bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -36,6 +39,27 @@ void PeerConnectionTrackerHost::OverrideThreadForMessage(
 }
 
 PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
+}
+
+void PeerConnectionTrackerHost::OnChannelConnected(int32 peer_pid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Add PowerMonitor when connected to channel rather than in constructor due
+  // to thread safety concerns. Observers of PowerMonitor must be added and
+  // removed on the same thread. BrowserMessageFilter is created on the UI
+  // thread but can be destructed on the UI or IO thread because they are
+  // referenced by RenderProcessHostImpl on the UI thread and ChannelProxy on
+  // the IO thread. Using OnChannelConnected and OnChannelClosing guarantees
+  // execution on the IO thread.
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->AddObserver(this);
+}
+
+void PeerConnectionTrackerHost::OnChannelClosing() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
 }
 
 void PeerConnectionTrackerHost::OnAddPeerConnection(
@@ -80,6 +104,19 @@ void PeerConnectionTrackerHost::OnGetUserMedia(
                                                  video,
                                                  audio_constraints,
                                                  video_constraints);
+}
+
+void PeerConnectionTrackerHost::OnSuspend() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&PeerConnectionTrackerHost::SendOnSuspendOnUIThread, this));
+}
+
+void PeerConnectionTrackerHost::SendOnSuspendOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (host)
+    host->Send(new PeerConnectionTracker_OnSuspend());
 }
 
 }  // namespace content

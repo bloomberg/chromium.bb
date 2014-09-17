@@ -185,6 +185,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                 webrtc::MediaStreamTrackInterface* track,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level);
 
+  // Tells the |client_| to close RTCPeerConnection.
+  void CloseClientPeerConnection();
+
   PeerConnectionTracker* peer_connection_tracker();
 
  protected:
