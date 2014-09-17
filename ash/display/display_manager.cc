@@ -165,7 +165,12 @@ DisplayManager::DisplayManager()
       mirrored_display_id_(gfx::Display::kInvalidDisplayID),
       registered_internal_display_rotation_lock_(false),
       registered_internal_display_rotation_(gfx::Display::ROTATE_0) {
+
 #if defined(OS_CHROMEOS)
+  // Enable only on the device so that DisplayManagerFontTest passes.
+  if (base::SysInfo::IsRunningOnChromeOS())
+    DisplayInfo::SetUse125DSFForUIScaling(true);
+
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE,

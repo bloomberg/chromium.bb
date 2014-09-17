@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -889,6 +890,8 @@ TEST_F(DisplayManagerTest, Rotate) {
 }
 
 TEST_F(DisplayManagerTest, UIScale) {
+  DisplayInfo::SetUse125DSFForUIScaling(false);
+
   UpdateDisplay("1280x800");
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   display_manager()->SetDisplayUIScale(display_id, 1.125f);
