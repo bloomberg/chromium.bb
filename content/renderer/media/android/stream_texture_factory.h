@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
@@ -25,13 +26,12 @@ class StreamTextureProxy {
  public:
   virtual ~StreamTextureProxy() {}
 
-  // Initialize and bind to the current thread, which becomes the thread that
-  // a connected client will receive callbacks on.
-  virtual void BindToCurrentThread(int32 stream_id) = 0;
-
-  // Setting the target for callback when a frame is available. This function
-  // could be called on both the main thread and the compositor thread.
-  virtual void SetClient(cc::VideoFrameProvider::Client* client) = 0;
+  // Initialize and bind to the loop, which becomes the thread that
+  // a connected client will receive callbacks on. This can be called
+  // on any thread, but must be called with the same loop every time.
+  virtual void BindToLoop(int32 stream_id,
+                          cc::VideoFrameProvider::Client* client,
+                          scoped_refptr<base::MessageLoopProxy> loop) = 0;
 
   // Causes this instance to be deleted on the thread it is bound to.
   virtual void Release() = 0;
@@ -43,6 +43,12 @@ class StreamTextureProxy {
 
 typedef scoped_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
     ScopedStreamTextureProxy;
+
+class StreamTextureFactoryContextObserver {
+ public:
+  virtual ~StreamTextureFactoryContextObserver() {}
+  virtual void ResetStreamTextureProxy() = 0;
+};
 
 // Factory class for managing stream textures.
 class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
@@ -68,6 +74,9 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
                                     const gfx::Size& size) = 0;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+
+  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) = 0;
+  virtual void RemoveObserver(StreamTextureFactoryContextObserver* obs) = 0;
 
  protected:
   friend class base::RefCounted<StreamTextureFactory>;

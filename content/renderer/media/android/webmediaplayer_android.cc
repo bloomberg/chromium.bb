@@ -136,8 +136,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_id_(0),
       is_playing_(false),
       needs_establish_peer_(true),
-      stream_texture_proxy_initialized_(false),
       has_size_info_(false),
+      compositor_loop_(
+          RenderThreadImpl::current()->compositor_message_loop_proxy()),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       has_valid_metadata_(false),
@@ -155,6 +156,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   DCHECK(cdm_manager_);
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  stream_texture_factory_->AddObserver(this);
 
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
@@ -197,6 +199,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   if (delegate_)
     delegate_->PlayerGone(this);
+
+  stream_texture_factory_->RemoveObserver(this);
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
@@ -1214,22 +1218,15 @@ void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
     cc::VideoFrameProvider::Client* client) {
   // This is called from both the main renderer thread and the compositor
   // thread (when the main thread is blocked).
-  if (video_frame_provider_client_)
+
+  // Set the callback target when a frame is produced. Need to do this before
+  // StopUsingProvider to ensure we really stop using the client.
+  if (stream_texture_proxy_)
+    stream_texture_proxy_->BindToLoop(stream_id_, client, compositor_loop_);
+
+  if (video_frame_provider_client_ && video_frame_provider_client_ != client)
     video_frame_provider_client_->StopUsingProvider();
   video_frame_provider_client_ = client;
-
-  // Set the callback target when a frame is produced.
-  if (stream_texture_proxy_) {
-    stream_texture_proxy_->SetClient(client);
-    // If client exists, the compositor thread calls it. At that time,
-    // stream_id_, needs_external_surface_, is_remote_ can be accessed because
-    // the main thread is blocked.
-    if (client && !stream_texture_proxy_initialized_ && stream_id_ &&
-        !needs_external_surface_ && !is_remote_) {
-      stream_texture_proxy_->BindToCurrentThread(stream_id_);
-      stream_texture_proxy_initialized_ = true;
-    }
-  }
 }
 
 void WebMediaPlayerAndroid::SetCurrentFrameInternal(
@@ -1253,6 +1250,26 @@ void WebMediaPlayerAndroid::PutCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
 }
 
+void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (stream_id_) {
+    GLES2Interface* gl = stream_texture_factory_->ContextGL();
+    gl->DeleteTextures(1, &texture_id_);
+    texture_id_ = 0;
+    texture_mailbox_ = gpu::Mailbox();
+    stream_id_ = 0;
+  }
+  stream_texture_proxy_.reset();
+  needs_establish_peer_ = !needs_external_surface_ && !is_remote_ &&
+                          !player_manager_->IsInFullscreen(frame_) &&
+                          (hasVideo() || IsHLSStream());
+
+  TryCreateStreamTextureProxyIfNeeded();
+  if (needs_establish_peer_ && is_playing_)
+    EstablishSurfaceTexturePeer();
+}
+
 void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Already created.
@@ -1263,14 +1280,19 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   if (!stream_texture_factory_)
     return;
 
+  // Not needed for hole punching.
+  if (!needs_establish_peer_)
+    return;
+
   stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
-  if (needs_establish_peer_ && stream_texture_proxy_) {
+  if (stream_texture_proxy_) {
     DoCreateStreamTexture();
     ReallocateVideoFrame();
+    if (video_frame_provider_client_) {
+      stream_texture_proxy_->BindToLoop(
+          stream_id_, video_frame_provider_client_, compositor_loop_);
+    }
   }
-
-  if (stream_texture_proxy_ && video_frame_provider_client_)
-    stream_texture_proxy_->SetClient(video_frame_provider_client_);
 }
 
 void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {

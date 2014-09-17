@@ -72,7 +72,8 @@ class WebContentDecryptionModuleImpl;
 // player.
 class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                               public cc::VideoFrameProvider,
-                              public RenderFrameObserver {
+                              public RenderFrameObserver,
+                              public StreamTextureFactoryContextObserver {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates with the
   // MediaPlayerAndroid object in the browser process through |proxy|.
@@ -198,6 +199,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnMediaPlayerPlay();
   void OnMediaPlayerPause();
   void OnRequestFullscreen();
+
+  // StreamTextureFactoryContextObserver implementation.
+  virtual void ResetStreamTextureProxy() OVERRIDE;
 
   // Called when the player is released.
   virtual void OnPlayerReleased();
@@ -413,17 +417,18 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 
-  // Whether |stream_texture_proxy_| is initialized.
-  bool stream_texture_proxy_initialized_;
-
   // Whether the video size info is available.
   bool has_size_info_;
+
+  const scoped_refptr<base::MessageLoopProxy> compositor_loop_;
 
   // Object for allocating stream textures.
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 
   // Object for calling back the compositor thread to repaint the video when a
   // frame available. It should be initialized on the compositor thread.
+  // Accessed on main thread and on compositor thread when main thread is
+  // blocked.
   ScopedStreamTextureProxy stream_texture_proxy_;
 
   // Whether media player needs external surface.
@@ -435,6 +440,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
+  // Accessed on main thread and on compositor thread when main thread is
+  // blocked.
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;

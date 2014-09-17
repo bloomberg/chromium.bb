@@ -37,6 +37,9 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) OVERRIDE;
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
+  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) OVERRIDE;
+  virtual void RemoveObserver(
+      StreamTextureFactoryContextObserver* obs) OVERRIDE;
 
  private:
   friend class base::RefCounted<StreamTextureFactoryImpl>;

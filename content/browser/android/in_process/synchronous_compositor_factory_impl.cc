@@ -4,6 +4,7 @@
 
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
+#include "base/observer_list.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
@@ -103,7 +104,9 @@ WrapContextWithAttributes(
           context.Pass(), attributes));
 }
 
-class VideoContextProvider
+}  // namespace
+
+class SynchronousCompositorFactoryImpl::VideoContextProvider
     : public StreamTextureFactorySynchronousImpl::ContextProvider {
  public:
   VideoContextProvider(
@@ -125,17 +128,31 @@ class VideoContextProvider
     return context_provider_->ContextGL();
   }
 
+  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) OVERRIDE {
+    observer_list_.AddObserver(obs);
+  }
+
+  virtual void RemoveObserver(
+      StreamTextureFactoryContextObserver* obs) OVERRIDE {
+    observer_list_.RemoveObserver(obs);
+  }
+
+  void RestoreContext() {
+    FOR_EACH_OBSERVER(StreamTextureFactoryContextObserver,
+                      observer_list_,
+                      ResetStreamTextureProxy());
+  }
+
  private:
   friend class base::RefCountedThreadSafe<VideoContextProvider>;
   virtual ~VideoContextProvider() {}
 
   scoped_refptr<cc::ContextProvider> context_provider_;
   gpu::GLInProcessContext* gl_in_process_context_;
+  ObserverList<StreamTextureFactoryContextObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
 };
-
-}  // namespace
 
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
@@ -216,12 +233,24 @@ SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   num_hardware_compositors_++;
+  if (num_hardware_compositors_ == 1 && main_thread_proxy_) {
+    main_thread_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &SynchronousCompositorFactoryImpl::RestoreContextOnMainThread,
+            base::Unretained(this)));
+  }
 }
 
 void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   DCHECK_GT(num_hardware_compositors_, 0u);
   num_hardware_compositors_--;
+}
+
+void SynchronousCompositorFactoryImpl::RestoreContextOnMainThread() {
+  if (CanCreateMainThreadContext() && video_context_provider_ )
+    video_context_provider_->RestoreContext();
 }
 
 bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
@@ -231,6 +260,11 @@ bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
 
 scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
 SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
+  {
+    base::AutoLock lock(num_hardware_compositor_lock_);
+    main_thread_proxy_ = base::MessageLoopProxy::current();
+  }
+
   // Always fail creation even if |video_context_provider_| is not NULL.
   // This is to avoid synchronous calls that may deadlock. Setting
   // |video_context_provider_| to null is also not safe since it makes
