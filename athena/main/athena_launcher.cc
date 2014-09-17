@@ -83,7 +83,7 @@ class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardObserver);
 };
 
-void StartAthenaEnv(scoped_refptr<base::TaskRunner> blocking_task_runner) {
+void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
   athena::AthenaEnv::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -109,7 +109,7 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> blocking_task_runner) {
 
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
-  athena::SystemUI::Create(blocking_task_runner);
+  athena::SystemUI::Create(file_runner);
   athena::WindowManager::Create();
   athena::AppRegistry::Create();
   SetupBackgroundImage();

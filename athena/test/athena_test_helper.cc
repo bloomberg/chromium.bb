@@ -60,7 +60,6 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   aura::test::EnvTestHelper(aura::Env::GetInstance())
       .SetInputStateLookup(scoped_ptr<aura::InputStateLookup>());
 
-  // TODO(oshima): Use a BlockingPool task runner.
   athena::StartAthenaEnv(file_thread_->message_loop_proxy());
   athena::ExtensionsDelegate::CreateExtensionsDelegateForTest();
   athena::StartAthenaSession(new SampleActivityFactory(),

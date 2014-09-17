@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_ACCELEROMETER_ACCELEROMETER_READER_H_
 #define CHROMEOS_ACCELEROMETER_ACCELEROMETER_READER_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -26,20 +28,12 @@ class CHROMEOS_EXPORT AccelerometerReader {
     ConfigurationData();
     ~ConfigurationData();
 
-    // Number of accelerometers on device.
-    size_t count;
-
-    // Length of accelerometer updates.
-    size_t length;
-
-    // Which accelerometers are present on device.
-    bool has[ui::ACCELEROMETER_SOURCE_COUNT];
-
-    // Scale of accelerometers (i.e. raw value * scale = m/s^2).
-    float scale[ui::ACCELEROMETER_SOURCE_COUNT][3];
+    // Scale of accelerometers (i.e. raw value * 1.0f / scale = G's).
+    unsigned int base_scale;
+    unsigned int lid_scale;
 
     // Index of each accelerometer axis in data stream.
-    int index[ui::ACCELEROMETER_SOURCE_COUNT][3];
+    std::vector<unsigned int> index;
   };
   typedef base::RefCountedData<ConfigurationData> Configuration;
   typedef base::RefCountedData<char[12]> Reading;

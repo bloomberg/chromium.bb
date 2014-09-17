@@ -6,6 +6,7 @@
 
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/background_controller.h"
+#include "athena/system/device_socket_listener.h"
 #include "athena/system/orientation_controller.h"
 #include "athena/system/power_button_controller.h"
 #include "athena/system/status_icon_container_view.h"
@@ -74,12 +75,12 @@ class SystemInfoView : public views::View {
 
 class SystemUIImpl : public SystemUI {
  public:
-  SystemUIImpl(scoped_refptr<base::TaskRunner> blocking_task_runner)
+  SystemUIImpl(scoped_refptr<base::TaskRunner> file_task_runner)
       : orientation_controller_(new OrientationController()),
         power_button_controller_(new PowerButtonController),
         background_container_(NULL),
         system_modal_container_(NULL) {
-    orientation_controller_->InitWith(blocking_task_runner);
+    orientation_controller_->InitWith(file_task_runner);
   }
 
   virtual ~SystemUIImpl() {
@@ -112,7 +113,7 @@ class SystemUIImpl : public SystemUI {
   }
 
  private:
-  scoped_ptr<OrientationController> orientation_controller_;
+  scoped_refptr<OrientationController> orientation_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<BackgroundController> background_controller_;
 
@@ -128,9 +129,9 @@ class SystemUIImpl : public SystemUI {
 }  // namespace
 
 // static
-SystemUI* SystemUI::Create(
-    scoped_refptr<base::TaskRunner> blocking_task_runner) {
-  SystemUIImpl* system_ui = new SystemUIImpl(blocking_task_runner);
+SystemUI* SystemUI::Create(scoped_refptr<base::TaskRunner> file_task_runner) {
+  DeviceSocketListener::CreateSocketManager(file_task_runner);
+  SystemUIImpl* system_ui = new SystemUIImpl(file_task_runner);
   instance = system_ui;
   system_ui->Init();
   return instance;
@@ -147,6 +148,7 @@ void SystemUI::Shutdown() {
   CHECK(instance);
   delete instance;
   instance = NULL;
+  DeviceSocketListener::ShutdownSocketManager();
 }
 
 }  // namespace athena
