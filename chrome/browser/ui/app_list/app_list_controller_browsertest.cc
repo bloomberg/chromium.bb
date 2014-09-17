@@ -120,9 +120,16 @@ class AppListControllerSearchResultsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(AppListControllerSearchResultsBrowserTest);
 };
 
+
+// Flaky on Mac. https://crbug.com/415264
+#if defined(OS_MACOSX)
+#define MAYBE_UninstallSearchResult DISABLED_UninstallSearchResult
+#else
+#define MAYBE_UninstallSearchResult UninstallSearchResult
+#endif
 // Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
-                       UninstallSearchResult) {
+                       MAYBE_UninstallSearchResult) {
   base::FilePath test_extension_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
   test_extension_path = test_extension_path.AppendASCII("extensions")

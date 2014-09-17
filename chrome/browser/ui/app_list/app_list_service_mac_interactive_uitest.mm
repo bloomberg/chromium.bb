@@ -61,8 +61,9 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
 
 }  // namespace
 
+// Flaky on Mac. See https://crbug.com/415264
 IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest,
-                       ShowAppListUsingShim) {
+                       DISABLED_ShowAppListUsingShim) {
   // Check that AppListService has registered as a shim handler for "app_list".
   EXPECT_TRUE(AppShimHandler::GetForAppMode(app_mode::kAppListModeId));
 

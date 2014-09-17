@@ -46,7 +46,8 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 
 // ChromeOS does not support ShowForProfile(), or profile switching within the
 // app list. Profile switching on CrOS goes through a different code path.
-#if defined(OS_CHROMEOS)
+// The tests are flaky on Mac, so disable there too. See http://crbug.com/415264
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
 #define MAYBE_SwitchAppListProfilesDuringSearch \
