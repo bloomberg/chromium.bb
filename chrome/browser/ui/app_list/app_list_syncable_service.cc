@@ -216,6 +216,7 @@ AppListSyncableService::AppListSyncableService(
     : profile_(profile),
       extension_system_(extension_system),
       model_(new AppListModel),
+      initial_sync_data_processed_(false),
       first_app_list_sync_(true) {
   if (!extension_system) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
@@ -572,11 +573,13 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     }
     unsynced_items.erase(item_id);
   }
-
   result.set_num_items_after_association(sync_items_.size());
   result.set_num_items_added(new_items);
   result.set_num_items_deleted(0);
   result.set_num_items_modified(updated_items);
+
+  // Initial sync data has been processed, it is safe now to add new sync items.
+  initial_sync_data_processed_ = true;
 
   // Send unsynced items. Does not affect |result|.
   syncer::SyncChangeList change_list;
@@ -786,6 +789,16 @@ void AppListSyncableService::SendSyncChange(
     SyncChange::SyncChangeType sync_change_type) {
   if (!SyncStarted()) {
     DVLOG(2) << this << " - SendSyncChange: SYNC NOT STARTED: "
+             << sync_item->ToString();
+    return;
+  }
+  if (!initial_sync_data_processed_ &&
+      sync_change_type == SyncChange::ACTION_ADD) {
+    // This can occur if an initial item is created before its folder item.
+    // A sync item should already exist for the folder, so we do not want to
+    // send an ADD event, since that would trigger a CHECK in the sync code.
+    DCHECK(sync_item->item_type == sync_pb::AppListSpecifics::TYPE_FOLDER);
+    DVLOG(2) << this << " - SendSyncChange: ADD before initial data processed: "
              << sync_item->ToString();
     return;
   }
