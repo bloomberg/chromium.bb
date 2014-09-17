@@ -365,6 +365,12 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // We should have a response now.
   DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
 
+  // Treat a response whose status is 0 as an error.
+  if (response.status_code == 0) {
+    DeliverErrorResponse();
+    return;
+  }
+
   // Set up a request for reading the blob.
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     scoped_ptr<storage::BlobDataHandle> blob_data_handle =
