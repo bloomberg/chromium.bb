@@ -66,11 +66,11 @@ protected:
 // This struct is used when the selection changes to cache the old and new state of the selection for each RenderObject.
 class RenderSelectionInfo FINAL : public RenderSelectionInfoBase {
 public:
-    RenderSelectionInfo(RenderObject* o, bool clipToVisibleContent)
+    RenderSelectionInfo(RenderObject* o)
         : RenderSelectionInfoBase(o)
     {
         if (m_paintInvalidationContainer && o->canUpdateSelectionOnRootLineBoxes()) {
-            m_rect = o->selectionRectForPaintInvalidation(m_paintInvalidationContainer, clipToVisibleContent);
+            m_rect = o->selectionRectForPaintInvalidation(m_paintInvalidationContainer);
             // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
             if (m_paintInvalidationContainer->layer()->groupedMapping())
                 RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, m_rect);

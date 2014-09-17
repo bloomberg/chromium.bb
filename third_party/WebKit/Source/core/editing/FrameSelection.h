@@ -205,7 +205,7 @@ public:
     String selectedText() const;
     String selectedTextForClipboard() const;
 
-    FloatRect bounds(bool clipToVisibleContent = true) const;
+    FloatRect bounds() const;
 
     HTMLFormElement* currentForm() const;
 

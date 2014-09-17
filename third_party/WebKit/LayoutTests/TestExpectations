@@ -407,6 +407,10 @@ crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pas
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
+Bug(jchaffraix) fast/repaint/selection-rl.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/text-selection-rect-in-overflow-2.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/text-selection-rect-in-overflow.html [ NeedsRebaseline ]
+
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 

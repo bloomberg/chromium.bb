@@ -87,7 +87,7 @@ private:
 
     virtual bool canBeSelectionLeaf() const OVERRIDE { return true; }
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent = true) const OVERRIDE FINAL;
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE FINAL;
     void computeAspectRatioInformationForRenderBox(RenderBox*, FloatSize& constrainedSize, double& intrinsicRatio) const;
 
     mutable LayoutSize m_intrinsicSize;

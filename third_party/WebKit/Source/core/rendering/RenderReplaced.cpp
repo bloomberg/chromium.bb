@@ -493,7 +493,7 @@ PositionWithAffinity RenderReplaced::positionForPoint(const LayoutPoint& point)
     return RenderBox::positionForPoint(point);
 }
 
-LayoutRect RenderReplaced::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent) const
+LayoutRect RenderReplaced::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 
@@ -501,12 +501,7 @@ LayoutRect RenderReplaced::selectionRectForPaintInvalidation(const RenderLayerMo
         return LayoutRect();
 
     LayoutRect rect = localSelectionRect();
-    if (clipToVisibleContent)
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
-    else
-        rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
-
-    return rect;
+    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 }
 
 LayoutRect RenderReplaced::localSelectionRect(bool checkWhetherSelected) const

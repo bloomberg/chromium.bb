@@ -392,7 +392,7 @@ private:
     virtual void updateDragState(bool dragOn) OVERRIDE FINAL;
     virtual void childBecameNonInline(RenderObject* child) OVERRIDE FINAL;
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool /*clipToVisibleContent*/) const OVERRIDE FINAL
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE FINAL
     {
         return selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     }

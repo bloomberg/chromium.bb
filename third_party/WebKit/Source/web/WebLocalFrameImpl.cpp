@@ -1503,7 +1503,7 @@ void WebLocalFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSiz
 
 WebRect WebLocalFrameImpl::selectionBoundsRect() const
 {
-    return hasSelection() ? WebRect(IntRect(frame()->selection().bounds(false))) : WebRect();
+    return hasSelection() ? WebRect(IntRect(frame()->selection().bounds())) : WebRect();
 }
 
 bool WebLocalFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length) const

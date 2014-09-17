@@ -36,7 +36,7 @@ public:
 
     virtual const char* renderName() const OVERRIDE { return "RenderBR"; }
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* /*paintInvalidationContainer*/, bool /*clipToVisibleContent*/) const OVERRIDE { return LayoutRect(); }
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* /*paintInvalidationContainer*/) const OVERRIDE { return LayoutRect(); }
 
     virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const OVERRIDE { return 0; }
     virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const OVERRIDE { return 0; }

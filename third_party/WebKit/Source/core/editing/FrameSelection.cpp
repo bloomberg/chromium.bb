@@ -1715,7 +1715,7 @@ String FrameSelection::selectedTextForClipboard() const
     return selectedText();
 }
 
-FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
+FloatRect FrameSelection::bounds() const
 {
     m_frame->document()->updateRenderTreeIfNeeded();
 
@@ -1725,8 +1725,8 @@ FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
     if (!view || !renderView)
         return FloatRect();
 
-    LayoutRect selectionRect = renderView->selectionBounds(clipToVisibleContent);
-    return clipToVisibleContent ? intersection(selectionRect, view->visibleContentRect()) : selectionRect;
+    LayoutRect selectionRect = renderView->selectionBounds();
+    return selectionRect;
 }
 
 static inline HTMLFormElement* associatedFormElement(HTMLElement& element)
@@ -1787,7 +1787,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = absoluteCaretBounds();
         break;
     case RangeSelection:
-        rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(bounds(false));
+        rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(bounds());
         break;
     }
 

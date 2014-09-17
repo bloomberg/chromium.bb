@@ -1587,7 +1587,7 @@ LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayer
     return parent()->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
-LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent) const
+LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 
@@ -1621,16 +1621,10 @@ LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelO
         rect.unite(ellipsisRectForBox(box, startPos, endPos));
     }
 
-    if (clipToVisibleContent) {
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
-    } else {
-        if (cb->hasColumns())
-            cb->adjustRectForColumns(rect);
+    if (cb->hasColumns())
+        cb->adjustRectForColumns(rect);
 
-        rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
-    }
-
-    return rect;
+    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 }
 
 int RenderText::caretMinOffset() const

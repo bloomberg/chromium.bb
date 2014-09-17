@@ -508,7 +508,7 @@ static RenderObject* rendererAfterPosition(RenderObject* object, unsigned offset
     return child ? child : object->nextInPreOrderAfterChildren();
 }
 
-IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
+IntRect RenderView::selectionBounds() const
 {
     typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, OwnPtrWillBeMember<RenderSelectionInfo> > SelectionMap;
     SelectionMap selectedObjects;
@@ -518,13 +518,13 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
     while (os && os != stop) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
-            selectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os, clipToVisibleContent)));
+            selectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os)));
             RenderBlock* cb = os->containingBlock();
             while (cb && !cb->isRenderView()) {
                 OwnPtrWillBeMember<RenderSelectionInfo>& blockInfo = selectedObjects.add(cb, nullptr).storedValue->value;
                 if (blockInfo)
                     break;
-                blockInfo = adoptPtrWillBeNoop(new RenderSelectionInfo(cb, clipToVisibleContent));
+                blockInfo = adoptPtrWillBeNoop(new RenderSelectionInfo(cb));
                 cb = cb->containingBlock();
             }
         }
@@ -563,13 +563,13 @@ void RenderView::invalidatePaintForSelection() const
         if (o->selectionState() == SelectionNone)
             continue;
 
-        RenderSelectionInfo(o, true).invalidatePaint();
+        RenderSelectionInfo(o).invalidatePaint();
 
         // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
         for (RenderBlock* block = o->containingBlock(); block && !block->isRenderView(); block = block->containingBlock()) {
             if (!processedBlocks.add(block).isNewEntry)
                 break;
-            RenderSelectionInfo(block, true).invalidatePaint();
+            RenderSelectionInfo(block).invalidatePaint();
         }
     }
 }
@@ -636,7 +636,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     while (continueExploring) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps.  They must be examined as well.
-            oldSelectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os, true)));
+            oldSelectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os)));
             if (blockPaintInvalidationMode == PaintInvalidationNewXOROld) {
                 RenderBlock* cb = os->containingBlock();
                 while (cb && !cb->isRenderView()) {
@@ -692,7 +692,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     continueExploring = o && (o != stop);
     while (continueExploring) {
         if ((o->canBeSelectionLeaf() || o == start || o == end) && o->selectionState() != SelectionNone) {
-            newSelectedObjects.set(o, adoptPtrWillBeNoop(new RenderSelectionInfo(o, true)));
+            newSelectedObjects.set(o, adoptPtrWillBeNoop(new RenderSelectionInfo(o)));
             RenderBlock* cb = o->containingBlock();
             while (cb && !cb->isRenderView()) {
                 OwnPtrWillBeMember<RenderBlockSelectionInfo>& blockInfo = newSelectedBlocks.add(cb, nullptr).storedValue->value;

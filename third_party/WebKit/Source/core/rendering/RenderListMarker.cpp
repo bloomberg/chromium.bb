@@ -1815,7 +1815,7 @@ void RenderListMarker::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent) const
+LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 
@@ -1825,12 +1825,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
     RootInlineBox& root = inlineBoxWrapper()->root();
     LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
 
-    if (clipToVisibleContent)
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
-    else
-        rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
-
-    return rect;
+    return localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 }
 
 } // namespace blink
