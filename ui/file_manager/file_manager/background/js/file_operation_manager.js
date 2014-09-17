@@ -1184,9 +1184,12 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
  *     directory.
  * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
  *     if the operation is "copy") false.
+ * @param {string=} opt_taskId If the corresponding item has already created
+ *     at another places, we need to specify the ID of the item. If the
+ *     item is not created, FileOperationManager generates new ID.
  */
 FileOperationManager.prototype.paste = function(
-    sourceEntries, targetEntry, isMove) {
+    sourceEntries, targetEntry, isMove, opt_taskId) {
   // Do nothing if sourceEntries is empty.
   if (sourceEntries.length === 0)
     return;
@@ -1220,7 +1223,7 @@ FileOperationManager.prototype.paste = function(
     if (filteredEntries.length === 0)
       return;
 
-    this.queueCopy_(targetEntry, filteredEntries, isMove);
+    this.queueCopy_(targetEntry, filteredEntries, isMove, opt_taskId);
   }.bind(this));
 };
 
@@ -1231,10 +1234,13 @@ FileOperationManager.prototype.paste = function(
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} isMove In case of move.
+ * @param {string=} opt_taskId If the corresponding item has already created
+ *     at another places, we need to specify the ID of the item. If the
+ *     item is not created, FileOperationManager generates new ID.
  * @private
  */
 FileOperationManager.prototype.queueCopy_ = function(
-    targetDirEntry, entries, isMove) {
+    targetDirEntry, entries, isMove, opt_taskId) {
   var task;
   if (isMove) {
     // When moving between different volumes, moving is implemented as a copy
@@ -1250,7 +1256,7 @@ FileOperationManager.prototype.queueCopy_ = function(
     task = new FileOperationManager.CopyTask(entries, targetDirEntry, false);
   }
 
-  task.taskId = this.generateTaskId_();
+  task.taskId = opt_taskId || this.generateTaskId();
   this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
   task.initialize(function() {
     this.copyTasks_.push(task);
@@ -1327,7 +1333,7 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
   // TODO(hirono): Make FileOperationManager.DeleteTask.
   var task = Object.seal({
     entries: entries,
-    taskId: this.generateTaskId_(),
+    taskId: this.generateTaskId(),
     entrySize: {},
     totalBytes: 0,
     processedBytes: 0,
@@ -1438,7 +1444,7 @@ FileOperationManager.prototype.zipSelection = function(
     dirEntry, selectionEntries) {
   var zipTask = new FileOperationManager.ZipTask(
       selectionEntries, dirEntry, dirEntry);
-  zipTask.taskId = this.generateTaskId_(this.copyTasks_);
+  zipTask.taskId = this.generateTaskId(this.copyTasks_);
   zipTask.zip = true;
   this.eventRouter_.sendProgressEvent('BEGIN',
                                       zipTask.getStatus(),
@@ -1454,8 +1460,7 @@ FileOperationManager.prototype.zipSelection = function(
  * Generates new task ID.
  *
  * @return {string} New task ID.
- * @private
  */
-FileOperationManager.prototype.generateTaskId_ = function() {
+FileOperationManager.prototype.generateTaskId = function() {
   return 'file-operation-' + this.taskIdCounter_++;
 };

@@ -959,12 +959,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'entries-changed', this.onEntriesChangedBound_);
 
     var controller = this.fileTransferController_ =
-        new FileTransferController(this.document_,
-                                   this.fileOperationManager_,
-                                   this.metadataCache_,
-                                   this.directoryModel_,
-                                   this.volumeManager_,
-                                   this.ui_.multiProfileShareDialog);
+        new FileTransferController(
+                this.document_,
+                this.fileOperationManager_,
+                this.metadataCache_,
+                this.directoryModel_,
+                this.volumeManager_,
+                this.ui_.multiProfileShareDialog,
+                this.backgroundPage_.background.progressCenter);
     controller.attachDragSource(this.table_.list);
     controller.attachFileListDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
@@ -2829,9 +2831,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.directoryModel_.dispose();
     if (this.volumeManager_)
       this.volumeManager_.dispose();
-    if (this.progressCenterPanel_)
+    for (var i = 0;
+         i < this.fileTransferController_.pendingTaskId.length;
+         i++) {
+      var taskId = this.fileTransferController_.pendingTaskId[i];
+      var item =
+          this.backgroundPage_.background.progressCenter.getItemById(taskId);
+      item.message = '';
+      item.state = ProgressItemState.CANCELED;
+      this.backgroundPage_.background.progressCenter.updateItem(item);
+    }
+    if (this.progressCenterPanel_) {
       this.backgroundPage_.background.progressCenter.removePanel(
           this.progressCenterPanel_);
+    }
     if (this.fileOperationManager_) {
       if (this.onCopyProgressBound_) {
         this.fileOperationManager_.removeEventListener(

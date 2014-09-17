@@ -21,6 +21,7 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {MultiProfileShareDialog} multiProfileShareDialog Share dialog to be
  *     used to share files from another profile.
+ * @param {ProgressCenter} progressCenter To notify starting copy operation.
  * @constructor
  */
 function FileTransferController(doc,
@@ -28,13 +29,15 @@ function FileTransferController(doc,
                                 metadataCache,
                                 directoryModel,
                                 volumeManager,
-                                multiProfileShareDialog) {
+                                multiProfileShareDialog,
+                                progressCenter) {
   this.document_ = doc;
   this.fileOperationManager_ = fileOperationManager;
   this.metadataCache_ = metadataCache;
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.multiProfileShareDialog_ = multiProfileShareDialog;
+  this.progressCenter_ = progressCenter;
 
   this.directoryModel_.getFileList().addEventListener(
       'change', function(event) {
@@ -45,6 +48,12 @@ function FileTransferController(doc,
   }.bind(this));
   this.directoryModel_.getFileListSelection().addEventListener('change',
       this.onSelectionChanged_.bind(this));
+
+  /**
+   * The array of pending task ID.
+   * @type {Array.<string>}
+   */
+  this.pendingTaskIds = [];
 
   /**
    * Promise to be fulfilled with the thumbnail image of selected file in drag
@@ -75,6 +84,13 @@ function FileTransferController(doc,
    * @private
    */
   this.touching_ = false;
+
+  /**
+   * Task ID counter.
+   * @type {number}
+   * @private
+   */
+  this.taskIdCounter_ = 0;
 }
 
 /**
@@ -333,11 +349,21 @@ FileTransferController.prototype = {
         opt_destinationEntry || this.currentDirectoryContentEntry;
     var entries;
     var failureUrls;
+    var taskId = this.fileOperationManager_.generateTaskId();
 
     util.URLsToEntries(sourceURLs).
     then(function(result) {
+      this.pendingTaskIds.push(taskId);
       entries = result.entries;
       failureUrls = result.failureUrls;
+      var item = new ProgressCenterItem();
+      item.id = taskId;
+      item.type = ProgressItemType.COPY;
+      if (result.entries.length === 1)
+        item.message = strf('COPY_FILE_NAME', result.entries[0].name);
+      else
+        item.message = strf('COPY_ITEMS_REMAINING', result.entries.length);
+      this.progressCenter_.updateItem(item);
       // Check if cross share is needed or not.
       return this.getMultiProfileShareEntries_(entries);
     }.bind(this)).
@@ -369,7 +395,8 @@ FileTransferController.prototype = {
     then(function() {
       // Start the pasting operation.
       this.fileOperationManager_.paste(
-          entries, destinationEntry, toMove);
+          entries, destinationEntry, toMove, taskId);
+      this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
 
       // Publish events for failureUrls.
       for (var i = 0; i < failureUrls.length; i++) {
