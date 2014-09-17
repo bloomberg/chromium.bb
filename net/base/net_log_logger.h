@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "net/base/net_log.h"
 
 namespace base {

@@ -17,6 +17,39 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 
+namespace {
+
+struct StringToConstant {
+  const char* name;
+  const int constant;
+};
+
+const StringToConstant kCertStatusFlags[] = {
+#define CERT_STATUS_FLAG(label, value) { #label, value },
+#include "net/cert/cert_status_flags_list.h"
+#undef CERT_STATUS_FLAG
+};
+
+const StringToConstant kLoadFlags[] = {
+#define LOAD_FLAG(label, value) { #label, value },
+#include "net/base/load_flags_list.h"
+#undef LOAD_FLAG
+};
+
+const StringToConstant kLoadStateTable[] = {
+#define LOAD_STATE(label) { # label, net::LOAD_STATE_ ## label },
+#include "net/base/load_states_list.h"
+#undef LOAD_STATE
+};
+
+const short kNetErrors[] = {
+#define NET_ERROR(label, value) value,
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+};
+
+}  // namespace
+
 namespace net {
 
 // This should be incremented when significant changes are made that will
@@ -82,9 +115,8 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-#define CERT_STATUS_FLAG(label, value) dict->SetInteger(#label, value);
-#include "net/cert/cert_status_flags_list.h"
-#undef CERT_STATUS_FLAG
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCertStatusFlags); i++)
+      dict->SetInteger(kCertStatusFlags[i].name, kCertStatusFlags[i].constant);
 
     constants_dict->Set("certStatusFlag", dict);
   }
@@ -94,10 +126,8 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-#define LOAD_FLAG(label, value) \
-    dict->SetInteger(# label, static_cast<int>(value));
-#include "net/base/load_flags_list.h"
-#undef LOAD_FLAG
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLoadFlags); i++)
+      dict->SetInteger(kLoadFlags[i].name, kLoadFlags[i].constant);
 
     constants_dict->Set("loadFlag", dict);
   }
@@ -107,10 +137,8 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-#define LOAD_STATE(label) \
-    dict->SetInteger(# label, net::LOAD_STATE_ ## label);
-#include "net/base/load_states_list.h"
-#undef LOAD_STATE
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLoadStateTable); i++)
+      dict->SetInteger(kLoadStateTable[i].name, kLoadStateTable[i].constant);
 
     constants_dict->Set("loadState", dict);
   }
@@ -120,10 +148,8 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-#define NET_ERROR(label, value) \
-    dict->SetInteger(ErrorToShortString(value), static_cast<int>(value));
-#include "net/base/net_error_list.h"
-#undef NET_ERROR
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNetErrors); i++)
+      dict->SetInteger(ErrorToShortString(kNetErrors[i]), kNetErrors[i]);
 
     constants_dict->Set("netError", dict);
   }
