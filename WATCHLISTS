@@ -493,6 +493,11 @@
         'chrome/browser/resources/net_internals/|' \
         'chrome/browser/ui/webui/net_internals/'
     },
+    'notifications': {
+      'filepath': 'chrome/browser/extensions/api/notifications/|' \
+        'chrome/browser/notifications/|' \
+        'ui/message_center/'
+    },
     'npapi_headers': {
       'filepath': 'third_party/npapi/bindings/',
     },
@@ -915,6 +920,7 @@
     'net': ['cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
+    'notifications': ['peter+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'ntp': ['estade+watch@chromium.org', 'dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
