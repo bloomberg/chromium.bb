@@ -698,12 +698,17 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
     const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
+  AsValueInto(state.get());
+  return state;
+}
+
+void Scheduler::AsValueInto(base::debug::TracedValue* state) const {
   state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state.get());
+  state_machine_.AsValueInto(state, Now());
   state->EndDictionary();
   if (synthetic_begin_frame_source_) {
     state->BeginDictionary("synthetic_begin_frame_source_");
-    synthetic_begin_frame_source_->AsValueInto(state.get());
+    synthetic_begin_frame_source_->AsValueInto(state);
     state->EndDictionary();
   }
 
@@ -725,7 +730,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
   state->SetBoolean("advance_commit_state_task_",
                     !advance_commit_state_task_.IsCancelled());
   state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_args_.AsValueInto(state.get());
+  begin_impl_frame_args_.AsValueInto(state);
   state->EndDictionary();
 
   state->EndDictionary();
@@ -740,7 +745,6 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
       "commit_to_activate_duration_estimate_ms",
       client_->CommitToActivateDurationEstimate().InMillisecondsF());
   state->EndDictionary();
-  return state;
 }
 
 bool Scheduler::CanCommitAndActivateBeforeDeadline() const {

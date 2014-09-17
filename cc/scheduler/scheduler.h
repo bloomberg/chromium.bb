@@ -128,6 +128,7 @@ class CC_EXPORT Scheduler {
   void BeginFrame(const BeginFrameArgs& args);
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* state) const;
 
   void SetContinuousPainting(bool continuous_painting) {
     state_machine_.SetContinuousPainting(continuous_painting);

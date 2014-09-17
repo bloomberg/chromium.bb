@@ -107,7 +107,7 @@ class CC_EXPORT SchedulerStateMachine {
   static const char* ActionToString(Action action);
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  void AsValueInto(base::debug::TracedValue* dict, base::TimeTicks now) const;
 
   Action NextAction() const;
   void UpdateState(Action action);

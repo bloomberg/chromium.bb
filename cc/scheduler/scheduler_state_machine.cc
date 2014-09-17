@@ -152,11 +152,12 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
 SchedulerStateMachine::AsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
-  AsValueInto(state.get());
+  AsValueInto(state.get(), gfx::FrameTime::Now());
   return state;
 }
 
-void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state) const {
+void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
+                                        base::TimeTicks now) const {
   state->BeginDictionary("major_state");
   state->SetString("next_action", ActionToString(NextAction()));
   state->SetString("begin_impl_frame_state",
@@ -169,7 +170,6 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state) const {
   state->EndDictionary();
 
   state->BeginDictionary("major_timestamps_in_ms");
-  base::TimeTicks now = gfx::FrameTime::Now();
   state->SetDouble("0_interval",
                    begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
   state->SetDouble(
