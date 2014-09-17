@@ -228,7 +228,7 @@ void StreamTextureFactorySynchronousImpl::RemoveObserver(
   DCHECK_EQ(observer_, obs);
   observer_ = NULL;
   if (context_provider_)
-    context_provider_->AddObserver(obs);
+    context_provider_->RemoveObserver(obs);
 }
 
 }  // namespace content
