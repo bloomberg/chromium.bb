@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -53,13 +54,6 @@ namespace {
 
 // Space between the incognito badge and the right edge of the window.
 const CGFloat kAvatarRightOffset = 4;
-
-// Insets for the location bar, used when the full toolbar is hidden.
-// TODO(viettrungluu): We can argue about the "correct" insetting; I like the
-// following best, though arguably 0 inset is better/more correct.
-const CGFloat kLocBarLeftRightInset = 1;
-const CGFloat kLocBarTopInset = 0;
-const CGFloat kLocBarBottomInset = 1;
 
 }  // namespace
 
@@ -171,131 +165,19 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)layoutSubviews {
-  // With the exception of the top tab strip, the subviews which we lay out are
-  // subviews of the content view, so we mainly work in the content view's
-  // coordinate system. Note, however, that the content view's coordinate system
-  // and the window's base coordinate system should coincide.
-  NSWindow* window = [self window];
-  NSView* contentView = [window contentView];
-  NSRect contentBounds = [contentView bounds];
-  CGFloat minX = NSMinX(contentBounds);
-  CGFloat minY = NSMinY(contentBounds);
-  CGFloat width = NSWidth(contentBounds);
-
   // Suppress title drawing if necessary.
-  if ([window respondsToSelector:@selector(setShouldHideTitle:)])
-    [(id)window setShouldHideTitle:![self hasTitleBar]];
+  if ([self.window respondsToSelector:@selector(setShouldHideTitle:)])
+    [(id)self.window setShouldHideTitle:![self hasTitleBar]];
 
-  // Update z-order. The code below depends on this.
-  [self updateSubviewZOrder:[self isInFullscreenWithOmniboxSliding]];
+  [bookmarkBarController_ updateHiddenState];
+  [self updateSubviewZOrder];
 
-  CGFloat floatingBarHeight = [self floatingBarHeight];
-  CGFloat yOffset = 0;
-  if ([self isInFullscreenWithOmniboxSliding]) {
-    yOffset += [presentationModeController_ menubarOffset];
-    switch (presentationModeController_.get().slidingStyle) {
-      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
-        break;
-      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
-        // In presentation mode, |yOffset| accounts for the sliding position of
-        // the floating bar and the extra offset needed to dodge the menu bar.
-        yOffset +=
-            std::floor((1 - presentationModeController_.get().toolbarFraction) *
-                       floatingBarHeight);
-        break;
-    }
-  }
+  base::scoped_nsobject<BrowserWindowLayout> layout(
+      [[BrowserWindowLayout alloc] init]);
+  [self updateLayoutParameters:layout];
+  [self applyLayout:layout];
 
-  CGFloat maxY = NSMaxY(contentBounds) + yOffset;
-
-  if ([self hasTabStrip]) {
-    // If we need to lay out the top tab strip, replace |maxY| with a higher
-    // value, and then lay out the tab strip.
-    NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
-    maxY = NSHeight(windowFrame) + yOffset;
-    maxY = [self layoutTabStripAtMaxY:maxY
-                                width:width
-                           fullscreen:[self isInAnyFullscreenMode]];
-  }
-
-  // Sanity-check |maxY|.
-  DCHECK_GE(maxY, minY);
-  DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
-
-  // Place the toolbar at the top of the reserved area.
-  maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
-
-  // If we're not displaying the bookmark bar below the info bar, then it goes
-  // immediately below the toolbar.
-  BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
-  if (!placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
-
-  // The floating bar backing view doesn't actually add any height.
-  NSRect floatingBarBackingRect =
-      NSMakeRect(minX, maxY, width, floatingBarHeight);
-  [self layoutFloatingBarBackingView:floatingBarBackingRect
-                    presentationMode:[self isInFullscreenWithOmniboxSliding]];
-
-  // Place the find bar immediately below the toolbar/attached bookmark bar. In
-  // presentation mode, it hangs off the top of the screen when the bar is
-  // hidden.
-  [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
-  [fullscreenExitBubbleController_ positionInWindowAtTop:maxY width:width];
-
-  if ([self isInFullscreenWithOmniboxSliding]) {
-    switch (presentationModeController_.get().slidingStyle) {
-      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
-        // Do nothing in Canonical Fullscreen. All content slides.
-        break;
-      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
-        // If in presentation mode, reset |maxY| to top of screen, so that the
-        // floating bar slides over the things which appear to be in the content
-        // area.
-        maxY = NSMaxY(contentBounds);
-        break;
-    }
-  }
-
-  // Also place the info bar container immediate below the toolbar, except in
-  // presentation mode in which case it's at the top of the visual content area.
-  maxY = [self layoutInfoBarAtMinX:minX maxY:maxY width:width];
-
-  // If the bookmark bar is detached, place it next in the visual content area.
-  if (placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
-
-  // Place the download shelf, if any, at the bottom of the view.
-  minY = [self layoutDownloadShelfAtMinX:minX minY:minY width:width];
-
-  // Finally, the content area takes up all of the remaining space.
-  NSRect contentAreaRect = NSMakeRect(minX, minY, width, maxY - minY);
-  [self layoutTabContentArea:contentAreaRect];
-
-  // Normally, we don't need to tell the toolbar whether or not to show the
-  // divider, but things break down during animation.
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
-}
-
-- (CGFloat)floatingBarHeight {
-  if (![self isInFullscreenWithOmniboxSliding])
-    return 0;
-
-  CGFloat totalHeight = 0;
-  if ([self hasTabStrip])
-    totalHeight += NSHeight([[self tabStripView] frame]);
-
-  if ([self hasToolbar]) {
-    totalHeight += NSHeight([[toolbarController_ view] frame]);
-  } else if ([self hasLocationBar]) {
-    totalHeight += NSHeight([[toolbarController_ view] frame]) +
-                   kLocBarTopInset + kLocBarBottomInset;
-  }
-
-  if (![self placeBookmarkBarBelowInfoBar])
-    totalHeight += NSHeight([[bookmarkBarController_ view] frame]);
-
-  return totalHeight;
 }
 
 - (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
@@ -384,38 +266,6 @@ willPositionSheet:(NSWindow*)sheet
   return maxY;
 }
 
-- (CGFloat)layoutToolbarAtMinX:(CGFloat)minX
-                          maxY:(CGFloat)maxY
-                         width:(CGFloat)width {
-  NSView* toolbarView = [toolbarController_ view];
-  NSRect toolbarFrame = [toolbarView frame];
-  if ([self hasToolbar]) {
-    // The toolbar is present in the window, so we make room for it.
-    DCHECK(![toolbarView isHidden]);
-    toolbarFrame.origin.x = minX;
-    toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);
-    toolbarFrame.size.width = width;
-    maxY -= NSHeight(toolbarFrame);
-  } else {
-    if ([self hasLocationBar]) {
-      // Location bar is present with no toolbar. Put a border of
-      // |kLocBar...Inset| pixels around the location bar.
-      // TODO(viettrungluu): This is moderately ridiculous. The toolbar should
-      // really be aware of what its height should be (the way the toolbar
-      // compression stuff is currently set up messes things up).
-      DCHECK(![toolbarView isHidden]);
-      toolbarFrame.origin.x = kLocBarLeftRightInset;
-      toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame) - kLocBarTopInset;
-      toolbarFrame.size.width = width - 2 * kLocBarLeftRightInset;
-      maxY -= kLocBarTopInset + NSHeight(toolbarFrame) + kLocBarBottomInset;
-    } else {
-      DCHECK([toolbarView isHidden]);
-    }
-  }
-  [toolbarView setFrame:toolbarFrame];
-  return maxY;
-}
-
 - (BOOL)placeBookmarkBarBelowInfoBar {
   // If we are currently displaying the NTP detached bookmark bar or animating
   // to/from it (from/to anything else), we display the bookmark bar below the
@@ -423,81 +273,6 @@ willPositionSheet:(NSWindow*)sheet
   return [bookmarkBarController_ isInState:BookmarkBar::DETACHED] ||
          [bookmarkBarController_ isAnimatingToState:BookmarkBar::DETACHED] ||
          [bookmarkBarController_ isAnimatingFromState:BookmarkBar::DETACHED];
-}
-
-- (CGFloat)layoutBookmarkBarAtMinX:(CGFloat)minX
-                              maxY:(CGFloat)maxY
-                             width:(CGFloat)width {
-  [bookmarkBarController_ updateHiddenState];
-
-  NSView* bookmarkBarView = [bookmarkBarController_ view];
-  NSRect frame = [bookmarkBarView frame];
-  frame.origin.x = minX;
-  frame.origin.y = maxY - NSHeight(frame);
-  frame.size.width = width;
-  [bookmarkBarView setFrame:frame];
-  maxY -= NSHeight(frame);
-
-  // Pin the bookmark bar to the top of the window and make the width flexible.
-  [bookmarkBarView setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
-
-  // TODO(viettrungluu): Does this really belong here? Calling it shouldn't be
-  // necessary in the non-NTP case.
-  [bookmarkBarController_ layoutSubviews];
-
-  return maxY;
-}
-
-- (void)layoutFloatingBarBackingView:(NSRect)frame
-                    presentationMode:(BOOL)presentationMode {
-  // Only display when in presentation mode.
-  if (presentationMode) {
-    // For certain window types such as app windows (e.g., the dev tools
-    // window), there's no actual overlay. (Displaying one would result in an
-    // overly sliding in only under the menu, which gives an ugly effect.)
-    if (floatingBarBackingView_.get()) {
-      // Set its frame.
-      [floatingBarBackingView_ setFrame:frame];
-    }
-
-    // But we want the logic to work as usual (for show/hide/etc. purposes).
-    [presentationModeController_ overlayFrameChanged:frame];
-  } else {
-    // Okay to call even if |floatingBarBackingView_| is nil.
-    if ([floatingBarBackingView_ superview])
-      [floatingBarBackingView_ removeFromSuperview];
-  }
-}
-
-- (CGFloat)layoutInfoBarAtMinX:(CGFloat)minX
-                          maxY:(CGFloat)maxY
-                         width:(CGFloat)width {
-  NSView* containerView = [infoBarContainerController_ view];
-  NSRect containerFrame = [containerView frame];
-  maxY -= NSHeight(containerFrame);
-  maxY += [infoBarContainerController_ overlappingTipHeight];
-  containerFrame.origin.x = minX;
-  containerFrame.origin.y = maxY;
-  containerFrame.size.width = width;
-  [containerView setFrame:containerFrame];
-  [infoBarContainerController_ setMaxTopArrowHeight:[self
-      infoBarMaxTopArrowHeight]];
-  return maxY;
-}
-
-- (CGFloat)layoutDownloadShelfAtMinX:(CGFloat)minX
-                                minY:(CGFloat)minY
-                               width:(CGFloat)width {
-  if (downloadShelfController_.get()) {
-    NSView* downloadView = [downloadShelfController_ view];
-    NSRect downloadFrame = [downloadView frame];
-    downloadFrame.origin.x = minX;
-    downloadFrame.origin.y = minY;
-    downloadFrame.size.width = width;
-    [downloadView setFrame:downloadFrame];
-    minY += NSHeight(downloadFrame);
-  }
-  return minY;
 }
 
 - (void)layoutTabContentArea:(NSRect)newFrame {
@@ -1010,80 +785,216 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-// TODO(erikchen): The implementation of this method is quite fragile. The
-// method cr_ensureSubview:... does not check that the subview is /directly/
-// above/below the given view. e.g. There are 3 subviews: A, B, C, in that
-// order.  The method cr_ensureSubview:A isPositioned:NSWindowBelow
-// relativeTo:C will have no effect, even though the desired result may have
-// been: B, A, C.  Consider changing it?
-- (void)updateSubviewZOrder:(BOOL)inAnyFullscreen {
-  NSView* contentView = [[self window] contentView];
-  NSView* toolbarView = [toolbarController_ view];
+- (void)updateInfoBarTipVisibility {
+  // If there's no toolbar then hide the infobar tip.
+  [infoBarContainerController_
+      setShouldSuppressTopInfoBarTip:![self hasToolbar]];
+}
 
-  if (inAnyFullscreen) {
-    // Toolbar is above tab contents so that it can slide down from top of
-    // screen.
-    [contentView cr_ensureSubview:toolbarView
-                     isPositioned:NSWindowAbove
-                       relativeTo:[self tabContentArea]];
+- (NSInteger)pageInfoBubblePointY {
+  LocationBarViewMac* locationBarView = [self locationBarBridge];
+
+  // The point, in window coordinates.
+  NSPoint iconBottom = locationBarView->GetPageInfoBubblePoint();
+
+  // The toolbar, in window coordinates.
+  NSView* toolbar = [toolbarController_ view];
+  CGFloat toolbarY = NSMinY([toolbar convertRect:[toolbar bounds] toView:nil]);
+
+  return iconBottom.y - toolbarY;
+}
+
+- (void)enterAppKitFullscreen {
+  DCHECK(base::mac::IsOSLionOrLater());
+  if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+    [framedBrowserWindow toggleSystemFullScreen];
+  }
+}
+
+- (void)exitAppKitFullscreen {
+  DCHECK(base::mac::IsOSLionOrLater());
+  if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+    [framedBrowserWindow toggleSystemFullScreen];
+  }
+}
+
+- (void)updateLayoutParameters:(BrowserWindowLayout*)layout {
+  [layout setContentViewSize:[[[self window] contentView] bounds].size];
+  [layout setWindowSize:[[self window] frame].size];
+
+  [layout setInAnyFullscreen:[self isInFullscreenWithOmniboxSliding]];
+  [layout setFullscreenSlidingStyle:
+      presentationModeController_.get().slidingStyle];
+  [layout setFullscreenMenubarOffset:
+      [presentationModeController_ menubarOffset]];
+  [layout setFullscreenToolbarFraction:
+      [presentationModeController_ toolbarFraction]];
+
+  [layout setHasTabStrip:[self hasTabStrip]];
+
+  [layout setHasToolbar:[self hasToolbar]];
+  [layout setToolbarHeight:NSHeight([[toolbarController_ view] bounds])];
+
+  [layout setHasLocationBar:[self hasLocationBar]];
+
+  [layout setPlaceBookmarkBarBelowInfoBar:[self placeBookmarkBarBelowInfoBar]];
+  [layout setBookmarkBarHidden:[bookmarkBarController_ view].isHidden];
+  [layout setBookmarkBarHeight:
+      NSHeight([[bookmarkBarController_ view] bounds])];
+
+  [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
+  [layout setPageInfoBubblePointY:[self pageInfoBubblePointY]];
+
+  [layout setHasDownloadShelf:(downloadShelfController_.get() != nil)];
+  [layout setDownloadShelfHeight:
+      NSHeight([[downloadShelfController_ view] bounds])];
+}
+
+- (void)applyLayout:(BrowserWindowLayout*)layout {
+  chrome::LayoutOutput output = [layout computeLayout];
+
+  if (!NSIsEmptyRect(output.tabStripFrame)) {
+    // Note: The fullscreen parameter passed to the method is different from
+    // the field in |parameters| with the similar name.
+    [self layoutTabStripAtMaxY:NSMaxY(output.tabStripFrame)
+                         width:NSWidth(output.tabStripFrame)
+                    fullscreen:[self isInAnyFullscreenMode]];
+  }
+
+  if (!NSIsEmptyRect(output.toolbarFrame)) {
+    [[toolbarController_ view] setFrame:output.toolbarFrame];
+  }
+
+  if (!NSIsEmptyRect(output.bookmarkFrame)) {
+    NSView* bookmarkBarView = [bookmarkBarController_ view];
+    [bookmarkBarView setFrame:output.bookmarkFrame];
+
+    // Pin the bookmark bar to the top of the window and make the width
+    // flexible.
+    [bookmarkBarView setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
+
+    [bookmarkBarController_ layoutSubviews];
+  }
+
+  // The info bar is never hidden. Sometimes it has zero effective height.
+  [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
+  [infoBarContainerController_
+      setMaxTopArrowHeight:output.infoBarMaxTopArrowHeight];
+
+  if (!NSIsEmptyRect(output.downloadShelfFrame))
+    [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
+
+  [self layoutTabContentArea:output.contentAreaFrame];
+
+  if (!NSIsEmptyRect(output.fullscreenBackingBarFrame)) {
+    [floatingBarBackingView_ setFrame:output.fullscreenBackingBarFrame];
+    [presentationModeController_
+        overlayFrameChanged:output.fullscreenBackingBarFrame];
+  }
+
+  [findBarCocoaController_
+      positionFindBarViewAtMaxY:output.findBarMaxY
+                       maxWidth:NSWidth(output.contentAreaFrame)];
+
+  [fullscreenExitBubbleController_
+      positionInWindowAtTop:output.fullscreenExitButtonMaxY
+                      width:NSWidth(output.contentAreaFrame)];
+}
+
+- (void)updateSubviewZOrder {
+  if ([self isInFullscreenWithOmniboxSliding])
+    [self updateSubviewZOrderFullscreen];
+  else
+    [self updateSubviewZOrderNormal];
+
+  [self updateSubviewZOrderHack];
+}
+
+- (void)updateSubviewZOrderNormal {
+  base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
+  if ([downloadShelfController_ view])
+    [subviews addObject:[downloadShelfController_ view]];
+  if ([bookmarkBarController_ view])
+    [subviews addObject:[bookmarkBarController_ view]];
+  if ([toolbarController_ view])
+    [subviews addObject:[toolbarController_ view]];
+  if ([infoBarContainerController_ view])
+    [subviews addObject:[infoBarContainerController_ view]];
+  if ([self tabContentArea])
+    [subviews addObject:[self tabContentArea]];
+  if ([findBarCocoaController_ view])
+    [subviews addObject:[findBarCocoaController_ view]];
+
+  [self setContentViewSubviews:subviews];
+}
+
+- (void)updateSubviewZOrderFullscreen {
+  base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
+  if ([downloadShelfController_ view])
+    [subviews addObject:[downloadShelfController_ view]];
+  if ([infoBarContainerController_ view])
+    [subviews addObject:[infoBarContainerController_ view]];
+  if ([self tabContentArea])
+    [subviews addObject:[self tabContentArea]];
+  if ([self placeBookmarkBarBelowInfoBar]) {
+    if ([bookmarkBarController_ view])
+      [subviews addObject:[bookmarkBarController_ view]];
+    if (floatingBarBackingView_)
+      [subviews addObject:floatingBarBackingView_];
   } else {
-    // Toolbar is below tab contents so that the info bar arrow can appear above
-    // it.
-    [contentView cr_ensureSubview:toolbarView
-                     isPositioned:NSWindowBelow
-                       relativeTo:[self tabContentArea]];
+    if (floatingBarBackingView_)
+      [subviews addObject:floatingBarBackingView_];
+    if ([bookmarkBarController_ view])
+      [subviews addObject:[bookmarkBarController_ view]];
   }
 
-  // The bookmark bar is always below the toolbar.
-  [contentView cr_ensureSubview:[bookmarkBarController_ view]
-                   isPositioned:NSWindowBelow
-                     relativeTo:toolbarView];
+  if ([toolbarController_ view])
+    [subviews addObject:[toolbarController_ view]];
+  if ([findBarCocoaController_ view])
+    [subviews addObject:[findBarCocoaController_ view]];
 
-  if (inAnyFullscreen) {
-    // In presentation mode the info bar is below all other views.
-    [contentView cr_ensureSubview:[infoBarContainerController_ view]
-                     isPositioned:NSWindowBelow
-                       relativeTo:[self tabContentArea]];
-  } else {
-    // Above the toolbar but still below tab contents. Similar to the bookmark
-    // bar, this allows Instant results to be above the info bar.
-    [contentView cr_ensureSubview:[infoBarContainerController_ view]
-                     isPositioned:NSWindowAbove
-                       relativeTo:toolbarView];
+  [self setContentViewSubviews:subviews];
+}
+
+- (void)setContentViewSubviews:(NSArray*)subviews {
+  // Subviews already match.
+  if ([[self.window.contentView subviews] isEqual:subviews])
+    return;
+
+  // The tabContentArea isn't a subview, so just set all the subviews.
+  NSView* tabContentArea = [self tabContentArea];
+  if (![[self.window.contentView subviews] containsObject:tabContentArea]) {
+    [self.window.contentView setSubviews:subviews];
+    return;
   }
 
-  // The find bar is above everything.
-  if (findBarCocoaController_) {
-    NSView* relativeView = nil;
-    if (inAnyFullscreen)
-      relativeView = toolbarView;
-    else
-      relativeView = [self tabContentArea];
-    [contentView cr_ensureSubview:[findBarCocoaController_ view]
-                     isPositioned:NSWindowAbove
-                       relativeTo:relativeView];
+  // Remove all subviews that aren't the tabContentArea.
+  for (NSView* view in [[self.window.contentView subviews] copy]) {
+    if (view != tabContentArea)
+      [view removeFromSuperview];
   }
 
-  if (floatingBarBackingView_) {
-    if ([floatingBarBackingView_ cr_isBelowView:[self tabContentArea]])
-      [floatingBarBackingView_ removeFromSuperview];
-    if ([self placeBookmarkBarBelowInfoBar]) {
-      [contentView cr_ensureSubview:floatingBarBackingView_
-                       isPositioned:NSWindowAbove
-                         relativeTo:[bookmarkBarController_ view]];
-    } else {
-      [contentView cr_ensureSubview:floatingBarBackingView_
-                       isPositioned:NSWindowBelow
-                         relativeTo:[bookmarkBarController_ view]];
-    }
-
-    // TODO(erikchen): This constraint is necessary. See comment at the
-    // beginning of the method.
-    [contentView cr_ensureSubview:floatingBarBackingView_
-                     isPositioned:NSWindowAbove
-                       relativeTo:[self tabContentArea]];
+  // Add in the subviews below the tabContentArea.
+  NSInteger index = [subviews indexOfObject:tabContentArea];
+  for (int i = index - 1; i >= 0; --i) {
+    NSView* view = [subviews objectAtIndex:i];
+    [self.window.contentView addSubview:view
+                             positioned:NSWindowBelow
+                             relativeTo:nil];
   }
 
+  // Add in the subviews above the tabContentArea.
+  for (NSUInteger i = index + 1; i < [subviews count]; ++i) {
+    NSView* view = [subviews objectAtIndex:i];
+    [self.window.contentView addSubview:view
+                             positioned:NSWindowAbove
+                             relativeTo:nil];
+  }
+}
+
+- (void)updateSubviewZOrderHack {
   // TODO(erikchen): Remove and then add the tabStripView to the root NSView.
   // This fixes a layer ordering problem that occurs between the contentView
   // and the tabStripView. This is a hack required because NSThemeFrame is not
@@ -1110,45 +1021,6 @@ willPositionSheet:(NSWindow*)sheet
     }
   } else {
     hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = NO;
-  }
-}
-
-- (void)updateInfoBarTipVisibility {
-  // If there's no toolbar then hide the infobar tip.
-  [infoBarContainerController_
-      setShouldSuppressTopInfoBarTip:![self hasToolbar]];
-}
-
-- (NSInteger)infoBarMaxTopArrowHeight {
-  NSInteger topArrowHeight = 0;
-  LocationBarViewMac* locationBarView = [self locationBarBridge];
-  NSPoint iconBottom = locationBarView->GetPageInfoBubblePoint();
-
-  CGFloat overlappingTipHeight =
-      [infoBarContainerController_ overlappingTipHeight];
-  NSPoint infoBarTop =
-      NSMakePoint(0, NSHeight([infoBarContainerController_ view].frame) -
-                  overlappingTipHeight);
-  infoBarTop = [[infoBarContainerController_ view] convertPoint:infoBarTop
-                                                         toView:nil];
-
-  topArrowHeight = iconBottom.y - infoBarTop.y;
-  return topArrowHeight;
-}
-
-- (void)enterAppKitFullscreen {
-  DCHECK(base::mac::IsOSLionOrLater());
-  if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-    [framedBrowserWindow toggleSystemFullScreen];
-  }
-}
-
-- (void)exitAppKitFullscreen {
-  DCHECK(base::mac::IsOSLionOrLater());
-  if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-    [framedBrowserWindow toggleSystemFullScreen];
   }
 }
 

@@ -520,6 +520,7 @@ bool BrowserWindowCocoa::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
+  [controller_ createAndAddDownloadShelf];
   DownloadShelfController* shelfController = [controller_ downloadShelf];
   return [shelfController bridge];
 }

@@ -993,6 +993,7 @@
       'browser/ui/cocoa/browser/zoom_bubble_controller_unittest.mm',
       'browser/ui/cocoa/browser_window_cocoa_unittest.mm',
       'browser/ui/cocoa/browser_window_controller_unittest.mm',
+      'browser/ui/cocoa/browser_window_layout_unittest.mm',
       'browser/ui/cocoa/bubble_view_unittest.mm',
       'browser/ui/cocoa/chrome_browser_window_unittest.mm',
       'browser/ui/cocoa/chrome_event_processing_window_unittest.mm',

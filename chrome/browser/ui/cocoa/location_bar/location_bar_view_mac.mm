@@ -154,6 +154,10 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
   if (chrome::ShouldDisplayOriginChip())
     origin_chip_decoration_.reset(new OriginChipDecoration(
         this, location_icon_decoration_.get()));
+
+  // Sets images for the decorations, and performs a layout. This call ensures
+  // that this class is in a consistent state after initialization.
+  OnChanged();
 }
 
 LocationBarViewMac::~LocationBarViewMac() {

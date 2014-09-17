@@ -32,8 +32,11 @@
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:nil bundle:nil])) {
+    // This view and its subviews use autoresizing masks, The starting frame
+    // needs to be reasonably large, although its exactly values don't matter.
+    // It cannot be NSZeroRect.
     base::scoped_nsobject<NSView> view(
-        [[NSView alloc] initWithFrame:NSZeroRect]);
+        [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 800, 100)]);
     [view setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
     view_id_util::SetID(view, VIEW_ID_INFO_BAR_CONTAINER);
     [self setView:view];
@@ -128,17 +131,7 @@
     [controller layoutArrow];
   }
 
-  int totalHeight = 0;
-  int overlap = containerCocoa_->GetVerticalOverlap(&totalHeight);
-
-  if (NSHeight([[self view] frame]) != totalHeight) {
-    [resizeDelegate_ resizeView:[self view] newHeight:totalHeight];
-  } else if (oldOverlappingTipHeight_ != overlap) {
-    // If the infobar overlap changed but the height didn't change then
-    // explicitly ask for a layout.
-    [[self browserWindowController] layoutInfoBars];
-  }
-  oldOverlappingTipHeight_ = overlap;
+  [resizeDelegate_ resizeView:[self view] newHeight:[self heightOfInfoBars]];
 }
 
 - (void)setShouldSuppressTopInfoBarTip:(BOOL)flag {
@@ -162,6 +155,15 @@
 
 - (void)setMaxTopArrowHeight:(NSInteger)height {
   containerCocoa_->SetMaxTopArrowHeight(height);
+}
+
+- (CGFloat)heightOfInfoBars {
+  CGFloat totalHeight = 0;
+  for (InfoBarController* controller in infobarControllers_.get()) {
+    totalHeight += [controller infobar]->total_height() -
+                   [controller infobar]->arrow_height();
+  }
+  return totalHeight;
 }
 
 @end

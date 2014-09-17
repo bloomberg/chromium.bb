@@ -43,6 +43,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
@@ -972,6 +973,22 @@ using content::WebContents;
          view == [downloadShelfController_ view] ||
          view == [bookmarkBarController_ view]);
 
+  // The infobar has insufficient information to determine its new height. It
+  // knows the total height of all of the info bars (which is what it passes
+  // into this method), but knows nothing about the maximum arrow height, which
+  // is determined by this class.
+  if (view == [infoBarContainerController_ view]) {
+    base::scoped_nsobject<BrowserWindowLayout> layout(
+        [[BrowserWindowLayout alloc] init]);
+    [self updateLayoutParameters:layout];
+    // Use the new height for the info bar.
+    [layout setInfoBarHeight:height];
+
+    chrome::LayoutOutput output = [layout computeLayout];
+
+    height = NSHeight(output.infoBarFrame);
+  }
+
   // Change the height of the view and call |-layoutSubViews|. We set the height
   // here without regard to where the view is on the screen or whether it needs
   // to "grow up" or "grow down."  The below call to |-layoutSubviews| will
@@ -1558,12 +1575,15 @@ using content::WebContents;
       [downloadShelfController_ isVisible];
 }
 
-- (DownloadShelfController*)downloadShelf {
+- (void)createAndAddDownloadShelf {
   if (!downloadShelfController_.get()) {
     downloadShelfController_.reset([[DownloadShelfController alloc]
         initWithBrowser:browser_.get() resizeDelegate:self]);
     [[[self window] contentView] addSubview:[downloadShelfController_ view]];
   }
+}
+
+- (DownloadShelfController*)downloadShelf {
   return downloadShelfController_;
 }
 
@@ -1574,7 +1594,7 @@ using content::WebContents;
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
   [self layoutSubviews];
-  [self updateSubviewZOrder:[self isInFullscreenWithOmniboxSliding]];
+  [self updateSubviewZOrder];
 }
 
 - (NSWindow*)createFullscreenWindow {

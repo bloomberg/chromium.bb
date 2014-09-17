@@ -249,7 +249,9 @@ void CheckViewPositions(BrowserWindowController* controller) {
   NSRect toolbar = [[controller toolbarView] frame];
   NSRect infobar = [[controller infoBarContainerView] frame];
   NSRect contentArea = [[controller tabContentArea] frame];
-  NSRect download = [[[controller downloadShelf] view] frame];
+  NSRect download = NSZeroRect;
+  if ([[[controller downloadShelf] view] superview])
+    download = [[[controller downloadShelf] view] frame];
 
   EXPECT_EQ(NSMinY(contentView), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
@@ -414,8 +416,8 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
 
-  // The download shelf is created lazily.  Force-create it and set its initial
-  // height to 0.
+  // Make the download shelf and set its initial height to 0.
+  [controller_ createAndAddDownloadShelf];
   NSView* download = [[controller_ downloadShelf] view];
   NSRect downloadFrame = [download frame];
   downloadFrame.size.height = 0;
@@ -465,6 +467,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 
   // The download shelf is created lazily.  Force-create it and set its initial
   // height to 0.
+  [controller_ createAndAddDownloadShelf];
   NSView* download = [[controller_ downloadShelf] view];
   NSRect downloadFrame = [download frame];
   downloadFrame.size.height = 0;
@@ -492,6 +495,8 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 
   // Remove the bookmark bar and recheck
   profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   [controller_ resizeView:bookmark newHeight:0];
   CheckViewPositions(controller_);
 
@@ -517,13 +522,13 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
 TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
   // The bookmark bubble must be attached to a lit and visible star.
   [controller_ setStarredState:YES];
-  NSPoint p = [controller_ bookmarkBubblePoint];
-  NSRect all = [[controller_ window] frame];
+  NSPoint p = [controller_ bookmarkBubblePoint];  // Window coordinates.
+  NSRect all = [[controller_ window] frame];      // Screen coordinates.
 
   // As a sanity check make sure the point is vaguely in the top right
   // of the window.
-  EXPECT_GT(p.y, all.origin.y + (all.size.height/2));
-  EXPECT_GT(p.x, all.origin.x + (all.size.width/2));
+  EXPECT_GT(p.y, all.size.height / 2);
+  EXPECT_GT(p.x, all.size.width / 2);
 }
 
 // By the "zoom frame", we mean what Apple calls the "standard frame".

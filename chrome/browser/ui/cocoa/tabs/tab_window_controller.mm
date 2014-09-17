@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
 #include "base/logging.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -64,8 +65,8 @@
                                          NSViewHeightSizable];
     [[[self window] contentView] addSubview:tabContentArea_];
 
-    tabStripView_.reset([[TabStripView alloc] initWithFrame:
-        NSMakeRect(0, 0, 750, 37)]);
+    tabStripView_.reset([[TabStripView alloc]
+        initWithFrame:NSMakeRect(0, 0, 750, chrome::kTabStripHeight)]);
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
                                        NSViewMinYMargin];
     if (hasTabStrip)

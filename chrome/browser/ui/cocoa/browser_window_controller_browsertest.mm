@@ -132,9 +132,17 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void VerifyZOrder(const std::vector<ViewID>& view_list) const {
-    for (size_t i = 0; i < view_list.size() - 1; ++i) {
-      NSView* bottom_view = GetViewWithID(view_list[i]);
-      NSView* top_view = GetViewWithID(view_list[i + 1]);
+    std::vector<NSView*> visible_views;
+    for (size_t i = 0; i < view_list.size(); ++i) {
+      NSView* view = GetViewWithID(view_list[i]);
+      if ([view superview])
+        visible_views.push_back(view);
+    }
+
+    for (size_t i = 0; i < visible_views.size() - 1; ++i) {
+      NSView* bottom_view = visible_views[i];
+      NSView* top_view = visible_views[i + 1];
+
       EXPECT_NSEQ([bottom_view superview], [top_view superview]);
       EXPECT_TRUE([bottom_view cr_isBelowView:top_view]);
     }
@@ -214,6 +222,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         convertPoint:info_bar_top toView:nil];
     return icon_bottom.y - info_bar_top.y;
   }
+
   // The traffic lights should always be in front of the content view and the
   // tab strip view. Since the traffic lights change across OSX versions, this
   // test verifies that the contentView is in the back, and if the tab strip
@@ -299,12 +308,20 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
   browser()->GetFindBarController();  // add find bar
 
   std::vector<ViewID> view_list;
+  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
   view_list.push_back(VIEW_ID_BOOKMARK_BAR);
   view_list.push_back(VIEW_ID_TOOLBAR);
   view_list.push_back(VIEW_ID_INFO_BAR);
   view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
   view_list.push_back(VIEW_ID_FIND_BAR);
-  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
+  VerifyZOrder(view_list);
+
+  [controller() showOverlay];
+  [controller() removeOverlay];
+  VerifyZOrder(view_list);
+
+  [controller() enterImmersiveFullscreen];
+  [controller() exitImmersiveFullscreen];
   VerifyZOrder(view_list);
 }
 
@@ -343,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   [[[controller() window] contentView] addSubview:fullscreen_floating_bar
                                        positioned:NSWindowBelow
                                        relativeTo:nil];
-  [controller() updateSubviewZOrder:[controller() inPresentationMode]];
+  [controller() updateSubviewZOrder];
 
   std::vector<ViewID> view_list;
   view_list.push_back(VIEW_ID_INFO_BAR);
@@ -451,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
 // Tests that top infobar tip is streched when bookmark bar becomes SHOWN/HIDDEN
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       InfoBarTipStrechedWhenBookmarkBarStatusChanged) {
+                       InfoBarTipStretchedWhenBookmarkBarStatusChanged) {
   EXPECT_FALSE([controller() isBookmarkBarVisible]);
   ShowInfoBar(browser());
   // The infobar tip is animated during the infobar is being added, wait until

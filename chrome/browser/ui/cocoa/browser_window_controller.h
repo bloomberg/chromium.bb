@@ -301,6 +301,9 @@ class Command;
 - (BOOL)isDownloadShelfVisible;
 
 // Lazily creates the download shelf in visible state if it doesn't exist yet.
+- (void)createAndAddDownloadShelf;
+
+// Returns the download shelf controller, if it exists.
 - (DownloadShelfController*)downloadShelf;
 
 // Retains the given FindBarCocoaController and adds its view to this

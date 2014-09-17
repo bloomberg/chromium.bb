@@ -58,11 +58,6 @@ class InfoBarDelegate;
 
   // If YES then an infobar animation is in progress.
   BOOL isAnimating_;
-
-  // The last overlap tip height. This is used to ensure that the info bar
-  // position is updated if the infobar height doesn't change but the overlap
-  // does change.
-  int oldOverlappingTipHeight_;
 }
 
 @property(nonatomic, assign) BOOL shouldSuppressTopInfoBarTip;
@@ -94,6 +89,9 @@ class InfoBarDelegate;
 
 // Set the max arrow height of the top infobar.
 - (void)setMaxTopArrowHeight:(NSInteger)height;
+
+// The height of all the info bars. Does not include the top arrow.
+- (CGFloat)heightOfInfoBars;
 
 @end
 

@@ -315,6 +315,8 @@
       'browser/ui/cocoa/browser_window_cocoa.mm',
       'browser/ui/cocoa/browser_window_controller.h',
       'browser/ui/cocoa/browser_window_controller.mm',
+      'browser/ui/cocoa/browser_window_layout.h',
+      'browser/ui/cocoa/browser_window_layout.mm',
       'browser/ui/cocoa/browser_window_controller_private.h',
       'browser/ui/cocoa/browser_window_controller_private.mm',
       'browser/ui/cocoa/browser_window_factory.mm',
