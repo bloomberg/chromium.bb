@@ -99,6 +99,7 @@ public class CronetUrlTest extends CronetTestBase {
         ConditionVariable mComplete = new ConditionVariable();
         public String negotiatedProtocol;
         public int httpStatusCode = 0;
+        public byte httpResponseData[];
 
         public SimpleHttpUrlRequestListener() {
         }
@@ -111,6 +112,7 @@ public class CronetUrlTest extends CronetTestBase {
 
         @Override
         public void onRequestComplete(HttpUrlRequest request) {
+            httpResponseData = request.getResponseAsBytes();
             mComplete.open();
         }
 
@@ -155,7 +157,8 @@ public class CronetUrlTest extends CronetTestBase {
         listener.blockForComplete();
         assertTrue(request.isCanceled());
         assertNotNull(request.getException());
-        assertEquals(listener.THROW_TAG, request.getException().getCause().getMessage());
+        assertEquals(listener.THROW_TAG,
+                     request.getException().getCause().getMessage());
     }
 
     @SmallTest
@@ -251,5 +254,29 @@ public class CronetUrlTest extends CronetTestBase {
         // Make sure that the URL is set as expected.
         assertEquals(URL, activity.getUrl());
         assertEquals(200, activity.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testRequestHead() throws Exception {
+        CronetTestActivity activity = launchCronetTestAppWithUrl(URL);
+
+        // Make sure the activity was created as expected.
+        waitForActiveShellToBeDoneLoading();
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        SimpleHttpUrlRequestListener listener =
+                new SimpleHttpUrlRequestListener();
+
+        // Create request.
+        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+        request.setHttpMethod("HEAD");
+        request.start();
+        listener.blockForComplete();
+        assertEquals(200, listener.httpStatusCode);
+        // HEAD requests do not get any response data and Content-Length must be
+        // ignored.
+        assertEquals(0, listener.httpResponseData.length);
     }
 }

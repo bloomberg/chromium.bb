@@ -182,10 +182,6 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
     @Override
     public void setHttpMethod(String method) {
         validateNotStarted();
-        if (!("PUT".equals(method) || "POST".equals(method))) {
-            throw new IllegalArgumentException(
-                "Only PUT and POST are allowed.");
-        }
         mMethod = method;
     }
 

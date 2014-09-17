@@ -73,13 +73,12 @@ public interface HttpUrlRequest {
                           long contentLength);
 
     /**
-     * Sets the HTTP method verb to use for this request. Currently can only be
-     * "POST" or "PUT".
+     * Sets the HTTP method verb to use for this request.
      *
      * <p>The default when this method is not called is "GET" if the request has
      * no body or "POST" if it does.
      *
-     * @param method Either "POST" or "PUT".
+     * @param method "GET", "POST", etc. Must be all uppercase.
      */
     void setHttpMethod(String method);
 

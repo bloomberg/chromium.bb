@@ -295,14 +295,9 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
         }
     }
 
-    /**
-     * Sets HTTP method for upload request. Only PUT or POST are allowed.
-     */
+    @Override
     public void setHttpMethod(String method) {
         validateNotStarted();
-        if (!("PUT".equals(method) || "POST".equals(method))) {
-            throw new IllegalArgumentException("Only PUT or POST are allowed.");
-        }
         mMethod = method;
     }
 
