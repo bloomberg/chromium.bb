@@ -14,6 +14,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 
+ExtensionJSBrowserTest::ExtensionJSBrowserTest() : libs_loaded_(false) {
+}
+
+ExtensionJSBrowserTest::~ExtensionJSBrowserTest() {
+}
+
 void ExtensionJSBrowserTest::WaitForExtension(const char* extension_id,
                                               const base::Closure& load_cb) {
   load_waiter_.reset(new ExtensionLoadWaiterOneShot());

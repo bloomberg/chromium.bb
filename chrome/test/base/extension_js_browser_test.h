@@ -15,9 +15,9 @@
 //chrome/browser/resources/chromeos/chromevox2/cvox2/background/background.extjs
 class ExtensionJSBrowserTest : public JavaScriptBrowserTest {
  public:
-  ExtensionJSBrowserTest() : libs_loaded_(false) {}
+  ExtensionJSBrowserTest();
 
-  virtual ~ExtensionJSBrowserTest() {}
+  virtual ~ExtensionJSBrowserTest();
 
  protected:
   // Waits for an extension to load; returns immediately if already loaded.
