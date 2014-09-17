@@ -1288,6 +1288,22 @@ chrome_pfq.add_config('falco-chrome-pfq',
   important=True,
 )
 
+chrome_pfq.add_config('link_freon-chrome-pfq',
+  boards=['link_freon'],
+  hw_tests=[],
+  important=False,
+  usepkg_toolchain=False,
+  usepkg_build_packages=False,
+)
+
+chrome_pfq.add_config('rush-chrome-pfq',
+  non_testable_builder,
+  boards=['rush'],
+  important=False,
+  usepkg_toolchain=False,
+  usepkg_build_packages=False,
+)
+
 chrome_try = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   chrome_rev=constants.CHROME_REV_TOT,
@@ -1981,6 +1997,7 @@ internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
   important=False,
   paladin_builder_name='link_freon paladin',
+  usepkg_build_packages=False,
 )
 
 internal_paladin.add_config('stumpy_moblab-paladin',
