@@ -345,9 +345,8 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
 class PaintingResourceScope {
 public:
-    PaintingResourceScope(RenderObject& renderer, TextRun::RenderingContext* renderingContext = 0)
+    PaintingResourceScope(RenderObject& renderer)
         : m_renderer(renderer)
-        , m_renderingContext(renderingContext)
         , m_paintingResource(0)
     {
     }
@@ -358,7 +357,6 @@ public:
 
 private:
     RenderObject& m_renderer;
-    TextRun::RenderingContext* m_renderingContext;
     RenderSVGResource* m_paintingResource;
 };
 
@@ -387,12 +385,6 @@ bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, f
     if (scalingFactor != 1 && resourceModeFlags & ApplyToStrokeMode)
         context->setStrokeThickness(context->strokeThickness() * scalingFactor);
 
-#if ENABLE(SVG_FONTS)
-    // SVG Fonts need access to the painting resource used to draw the current text chunk.
-    if (m_renderingContext)
-        static_cast<SVGTextRunRenderingContext*>(m_renderingContext)->setActivePaintingResource(m_paintingResource);
-#endif
-
     return true;
 }
 
@@ -402,11 +394,6 @@ void PaintingResourceScope::releasePaintingResource(GraphicsContext*& context)
 
     m_paintingResource->postApplyResource(&m_renderer, context);
     m_paintingResource = 0;
-
-#if ENABLE(SVG_FONTS)
-    if (m_renderingContext)
-        static_cast<SVGTextRunRenderingContext*>(m_renderingContext)->setActivePaintingResource(0);
-#endif
 }
 
 TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFragment& fragment) const
@@ -618,7 +605,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     if (hasShadow)
         context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha));
 
-    PaintingResourceScope resourceScope(parent()->renderer(), textRun.renderingContext());
+    PaintingResourceScope resourceScope(parent()->renderer());
     if (resourceScope.acquirePaintingResource(context, scalingFactor, style, resourceMode)) {
         TextRunPaintInfo textRunPaintInfo(textRun);
         textRunPaintInfo.from = startPosition;

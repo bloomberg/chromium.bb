@@ -70,13 +70,6 @@ static inline RenderObject* renderObjectFromRun(const TextRun& run)
     return 0;
 }
 
-static inline RenderSVGResource* activePaintingResourceFromRun(const TextRun& run)
-{
-    if (TextRun::RenderingContext* renderingContext = run.renderingContext())
-        return static_cast<SVGTextRunRenderingContext*>(renderingContext)->activePaintingResource();
-    return 0;
-}
-
 float SVGTextRunRenderingContext::floatWidthUsingSVGFont(const Font& font, const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
     WidthIterator it(&font, run);
@@ -96,36 +89,23 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
         return;
 
     // We can only paint SVGFonts if a context is available.
-    RenderSVGResource* activePaintingResource = activePaintingResourceFromRun(run);
     RenderObject* renderObject = renderObjectFromRun(run);
-    RenderObject* parentRenderObject = firstParentRendererForNonTextNode(renderObject);
-    RenderStyle* parentRenderObjectStyle = 0;
-
     ASSERT(renderObject);
-    if (!activePaintingResource) {
-        // TODO: We're only supporting simple filled HTML text so far.
-        RenderSVGResourceSolidColor* solidPaintingResource = RenderSVGResource::sharedSolidPaintingResource();
-        solidPaintingResource->setColor(context->fillColor());
-        activePaintingResource = solidPaintingResource;
-    }
 
     bool isVerticalText = false;
-    if (parentRenderObject) {
-        parentRenderObjectStyle = parentRenderObject->style();
+    if (RenderObject* parentRenderObject = firstParentRendererForNonTextNode(renderObject)) {
+        RenderStyle* parentRenderObjectStyle = parentRenderObject->style();
         ASSERT(parentRenderObjectStyle);
         isVerticalText = parentRenderObjectStyle->svgStyle().isVerticalWritingMode();
     }
 
     float scale = scaleEmToUnits(fontData->platformData().size(), fontFaceElement->unitsPerEm());
-    ASSERT(activePaintingResource);
 
     FloatPoint glyphOrigin;
     glyphOrigin.setX(svgFontData->horizontalOriginX() * scale);
     glyphOrigin.setY(svgFontData->horizontalOriginY() * scale);
 
     unsigned short resourceMode = context->textDrawingMode() == TextModeStroke ? ApplyToStrokeMode : ApplyToFillMode;
-    // From a resource perspective this ought to be treated as "text mode".
-    resourceMode |= ApplyToTextMode;
 
     FloatPoint currentPoint = point;
     for (int i = 0; i < numGlyphs; ++i) {
@@ -161,14 +141,7 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
         Path glyphPath = svgGlyph.pathData;
         glyphPath.transform(glyphPathTransform);
 
-        if (activePaintingResource->applyResource(parentRenderObject, parentRenderObjectStyle, context, resourceMode)) {
-            float strokeThickness = context->strokeThickness();
-            if (renderObject && renderObject->isSVGInlineText())
-                context->setStrokeThickness(strokeThickness * toRenderSVGInlineText(renderObject)->scalingFactor());
-            SVGRenderSupport::fillOrStrokePath(context, resourceMode, glyphPath);
-            activePaintingResource->postApplyResource(parentRenderObject, context);
-            context->setStrokeThickness(strokeThickness);
-        }
+        SVGRenderSupport::fillOrStrokePath(context, resourceMode, glyphPath);
 
         if (isVerticalText)
             currentPoint.move(0, advance);
