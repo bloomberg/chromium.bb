@@ -831,9 +831,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
                                        &append_quads_data);
     } else if (it.represents_itself() &&
                !it->visible_content_rect().IsEmpty()) {
-      bool occluded = occlusion_tracker.Occluded(it->render_target(),
-                                                 it->visible_content_rect(),
-                                                 it->draw_transform());
+      bool occluded =
+          occlusion_tracker.GetCurrentOcclusionForLayer(it->draw_transform())
+              .IsOccluded(it->visible_content_rect());
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 

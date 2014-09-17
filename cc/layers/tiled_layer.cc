@@ -368,8 +368,8 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
       gfx::Rect visible_tile_rect = gfx::IntersectRects(
           tiler_->tile_bounds(i, j), visible_content_rect());
       if (!draw_transform_is_animating() && occlusion &&
-          occlusion->Occluded(
-              render_target(), visible_tile_rect, draw_transform())) {
+          occlusion->GetCurrentOcclusionForLayer(draw_transform())
+              .IsOccluded(visible_tile_rect)) {
         tile->occluded = true;
         occluded_tile_count++;
       } else {
