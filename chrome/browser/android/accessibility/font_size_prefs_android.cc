@@ -30,10 +30,6 @@ FontSizePrefsAndroid::FontSizePrefsAndroid(JNIEnv* env, jobject obj)
 FontSizePrefsAndroid::~FontSizePrefsAndroid() {
 }
 
-void FontSizePrefsAndroid::Destroy(JNIEnv* env, jobject obj) {
-  delete this;
-}
-
 void FontSizePrefsAndroid::SetFontScaleFactor(JNIEnv* env,
                                               jobject obj,
                                               jfloat font_size) {

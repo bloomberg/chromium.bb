@@ -170,11 +170,6 @@ public class FontSizePrefs implements OnSharedPreferenceChangeListener {
         return nativeGetForceEnableZoom(mFontSizePrefsAndroidPtr);
     }
 
-    public void destroy() {
-        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
-        nativeDestroy(mFontSizePrefsAndroidPtr);
-    }
-
     private native void nativeAddObserver(long nativeFontSizePrefsAndroid,
             long nativeObserverPtr);
 
@@ -182,8 +177,6 @@ public class FontSizePrefs implements OnSharedPreferenceChangeListener {
             long nativeObserverPtr);
 
     private native long nativeInit();
-
-    private native void nativeDestroy(long nativeFontSizePrefsAndroid);
 
     private native void nativeSetFontScaleFactor(long nativeFontSizePrefsAndroid, float font);
 

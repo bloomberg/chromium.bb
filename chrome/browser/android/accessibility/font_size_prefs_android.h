@@ -26,7 +26,6 @@ class FontSizePrefsAndroid {
 
   FontSizePrefsAndroid(JNIEnv* env, jobject obj);
   ~FontSizePrefsAndroid();
-  void Destroy(JNIEnv* env, jobject obj);
 
   void SetFontScaleFactor(JNIEnv* env, jobject obj, jfloat font);
   float GetFontScaleFactor(JNIEnv* env, jobject obj);
