@@ -169,7 +169,7 @@ cr.define('cr.ui', function() {
     reposition: function() {
       var documentWidth = document.documentElement.clientWidth;
       var documentHeight = document.documentElement.clientHeight;
-      var anchor = this.anchorNode.getBoundingClientRect();
+      var anchor = this.anchorNode_.getBoundingClientRect();
       var anchorMid = (anchor.left + anchor.right) / 2;
       var bubble = this.getBoundingClientRect();
       var arrow = this.querySelector('.bubble-arrow').getBoundingClientRect();
@@ -487,7 +487,7 @@ cr.define('cr.ui', function() {
         // handle the event and close the bubble itself).
         case 'mousedown':
           if (event.button == 0 &&
-              this.anchorNode.contains(assertInstanceof(event.target, Node))) {
+              this.anchorNode_.contains(assertInstanceof(event.target, Node))) {
             break;
           }
         // Close the bubble when the underlying document is scrolled.
@@ -497,7 +497,6 @@ cr.define('cr.ui', function() {
             break;
         // Close the bubble when the window is resized.
         case 'resize':
-          assert(event.target == window);
           this.hide();
           break;
         // Close the bubble when the focus moves to an element that is not the
