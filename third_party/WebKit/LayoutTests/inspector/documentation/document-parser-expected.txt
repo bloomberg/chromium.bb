@@ -9,6 +9,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "<code>it's not a code <code>"
                             _type : "PlainText"
                         }
@@ -31,6 +32,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "="
                             _type : "PlainText"
                         }
@@ -57,6 +59,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "c"
                                         _type : "PlainText"
                                     }
@@ -79,6 +82,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "Z"
                                         _type : "PlainText"
                                     }
@@ -99,6 +103,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "blabla"
                             _type : "PlainText"
                         }
@@ -121,6 +126,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "C"
                             _type : "PlainText"
                         }
@@ -147,6 +153,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "blablabla"
                                         _type : "PlainText"
                                     }
@@ -176,6 +183,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "bla"
                                         _type : "PlainText"
                                     }
@@ -196,6 +204,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "y"
                             _type : "PlainText"
                         }
@@ -221,6 +230,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : "black"
                             _type : "PlainText"
                         }
@@ -242,6 +252,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "color"
                                         _type : "PlainText"
                                     }
@@ -259,6 +270,7 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : " "
                                         _type : "PlainText"
                                     }
@@ -268,6 +280,7 @@ Running: testWikiParser
                                                 _children : [
                                                     {
                                                         _isHighlighted : false
+                                                        _isItalic : false
                                                         _text : "CSS color value"
                                                         _type : "PlainText"
                                                     }
@@ -304,6 +317,7 @@ Running: testWikiParser
                     _children : [
                         {
                             _isHighlighted : false
+                            _isItalic : false
                             _text : " "
                             _type : "PlainText"
                         }
@@ -313,6 +327,7 @@ Running: testWikiParser
                                     _children : [
                                         {
                                             _isHighlighted : false
+                                            _isItalic : false
                                             _text : "Google"
                                             _type : "PlainText"
                                         }
@@ -342,6 +357,7 @@ Running: testWikiParser
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "xyz"
                         _type : "PlainText"
                     }
@@ -363,6 +379,7 @@ Running: testWikiParser
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "there is a table {{{!}}"
                         _type : "PlainText"
                     }
@@ -373,6 +390,80 @@ Running: testWikiParser
         ]
         _hasBullet : false
         _type : "Block"
+    }
+}
+"{{Notes_Section
+|Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.
+This method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.
+}}" is parsed
+{
+    Notes_Section : {
+        Notes : {
+            _children : [
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : "Do not specify the "
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : true
+                            _text : "refChild"
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : " parameter when inserting the first child node. If children already exist and you do not specify the "
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : true
+                            _text : "refChild"
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : " parameter, the "
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : true
+                            _text : "newChild"
+                            _type : "PlainText"
+                        }
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : " becomes the last child of the parent object."
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+                {
+                    _children : [
+                        {
+                            _isHighlighted : false
+                            _isItalic : false
+                            _text : "This method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render."
+                            _type : "PlainText"
+                        }
+                    ]
+                    _hasBullet : false
+                    _type : "Block"
+                }
+            ]
+            _hasBullet : false
+            _type : "Block"
+        }
     }
 }
 "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}" is parsed
@@ -389,6 +480,7 @@ Running: testWikiParser
                                     _children : [
                                         {
                                             _isHighlighted : false
+                                            _isItalic : false
                                             _text : "cloneNode Method"
                                             _type : "PlainText"
                                         }
@@ -423,21 +515,25 @@ Running: testWikiParser
                                 _children : [
                                     {
                                         _isHighlighted : true
+                                        _isItalic : false
                                         _text : "JSON.stringify("
                                         _type : "PlainText"
                                     }
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : " value "
                                         _type : "PlainText"
                                     }
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "[ , replacer] "
                                         _type : "PlainText"
                                     }
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "[ , space] ''')'''"
                                         _type : "PlainText"
                                     }
@@ -467,6 +563,7 @@ Running: testJS
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated."
                         _type : "PlainText"
                     }
@@ -478,6 +575,7 @@ Running: testJS
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "If no arguments are provided, the return value is equal to "
                         _type : "PlainText"
                     }
@@ -487,6 +585,7 @@ Running: testJS
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "Number.NEGATIVE_INFINITY"
                                         _type : "PlainText"
                                     }
@@ -499,26 +598,31 @@ Running: testJS
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : ". If any argument is "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "NaN"
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " , the return value is also "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "NaN"
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "."
                         _type : "PlainText"
                     }
@@ -546,11 +650,13 @@ Running: testSmall
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "blabla "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "oops"
                         _type : "PlainText"
                     }
@@ -577,26 +683,31 @@ Running: testHighlightAndLink
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "The "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "flex"
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " CSS property specifies the ability of a flex item to alter its dimensions to fill the available space. "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "flex"
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " is a shorthand property comprised of the "
                         _type : "PlainText"
                     }
@@ -606,6 +717,7 @@ Running: testHighlightAndLink
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "flex-grow"
                                         _type : "PlainText"
                                     }
@@ -618,6 +730,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : ", "
                         _type : "PlainText"
                     }
@@ -627,6 +740,7 @@ Running: testHighlightAndLink
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "flex-shrink"
                                         _type : "PlainText"
                                     }
@@ -639,6 +753,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : ", and "
                         _type : "PlainText"
                     }
@@ -648,6 +763,7 @@ Running: testHighlightAndLink
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "flex-basis"
                                         _type : "PlainText"
                                     }
@@ -660,6 +776,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " properties. A flex item can be stretched to use available space proportional to its flex grow factor, or reduced proportional to its flex shrink factor to prevent overflow."
                         _type : "PlainText"
                     }
@@ -686,6 +803,7 @@ Running: testNamedLink
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " "
                         _type : "PlainText"
                     }
@@ -695,6 +813,7 @@ Running: testNamedLink
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "naaaame"
                                         _type : "PlainText"
                                     }
@@ -728,6 +847,7 @@ Running: testBullet
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "blabla"
                         _type : "PlainText"
                     }
@@ -739,6 +859,7 @@ Running: testBullet
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "some_text"
                         _type : "PlainText"
                     }
@@ -750,6 +871,7 @@ Running: testBullet
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "bullet"
                         _type : "PlainText"
                     }
@@ -775,16 +897,19 @@ Running: testRemarks
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "In JavaScript arrays are sparse, and the elements in an array do not have to be contiguous. The "
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : true
+                        _isItalic : false
                         _text : "length"
                         _type : "PlainText"
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " property is not necessarily the number of elements in the array. For example, in the following array definition, "
                         _type : "PlainText"
                     }
@@ -792,6 +917,7 @@ Running: testRemarks
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : "my_array.length"
                                 _type : "PlainText"
                             }
@@ -800,6 +926,7 @@ Running: testRemarks
                     }
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " contains 7, not 2:"
                         _type : "PlainText"
                     }
@@ -821,6 +948,7 @@ console.log(my_array.length);
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "Even if you set length to a number greater than its previous value, the number of actual elements does not increase."
                         _type : "PlainText"
                     }
@@ -841,6 +969,7 @@ console.log(Object.keys(my_array));
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "On the other hand, when decreasing length, the array is truncated."
                         _type : "PlainText"
                     }
@@ -877,6 +1006,7 @@ Running: testComplexLinkName
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : " "
                         _type : "PlainText"
                     }
@@ -886,6 +1016,7 @@ Running: testComplexLinkName
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "text "
                                         _type : "PlainText"
                                     }
@@ -893,6 +1024,7 @@ Running: testComplexLinkName
                                         _children : [
                                             {
                                                 _isHighlighted : false
+                                                _isItalic : false
                                                 _text : "blabla"
                                                 _type : "PlainText"
                                             }
@@ -929,6 +1061,7 @@ Running: testCodeInsideBullet
                 _children : [
                     {
                         _isHighlighted : false
+                        _isItalic : false
                         _text : "some text "
                         _type : "PlainText"
                     }
@@ -936,6 +1069,7 @@ Running: testCodeInsideBullet
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : "bullet & code "
                                 _type : "PlainText"
                             }
@@ -970,6 +1104,7 @@ Running: testLinkInsideCode
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : " "
                                 _type : "PlainText"
                             }
@@ -979,6 +1114,7 @@ Running: testLinkInsideCode
                                         _children : [
                                             {
                                                 _isHighlighted : false
+                                                _isItalic : false
                                                 _text : "GOOGLE!"
                                                 _type : "PlainText"
                                             }
@@ -991,6 +1127,7 @@ Running: testLinkInsideCode
                             }
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : " "
                                 _type : "PlainText"
                             }
@@ -1038,16 +1175,19 @@ Running: testExamples
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : "The following example shows how to use the "
                                 _type : "PlainText"
                             }
                             {
                                 _isHighlighted : true
+                                _isItalic : false
                                 _text : "insertBefore"
                                 _type : "PlainText"
                             }
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : " method to insert a new item into an existing list."
                                 _type : "PlainText"
                             }
@@ -1086,6 +1226,7 @@ Running: testJsMethod
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : "The new node to be inserted."
                                 _type : "PlainText"
                             }
@@ -1108,6 +1249,7 @@ Running: testJsMethod
                         _children : [
                             {
                                 _isHighlighted : false
+                                _isItalic : false
                                 _text : "Supplies the placement of the new node. If this parameter is specified, the new element will be inserted immediately before this existing child node. If not, it will be added after the last child node."
                                 _type : "PlainText"
                             }
@@ -1144,6 +1286,7 @@ Running: testLinkWithoutSpace
                                 _children : [
                                     {
                                         _isHighlighted : false
+                                        _isItalic : false
                                         _text : "LINK_WITHOUT_SPACE"
                                         _type : "PlainText"
                                     }

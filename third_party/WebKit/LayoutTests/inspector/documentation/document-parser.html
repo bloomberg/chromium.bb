@@ -22,6 +22,7 @@ function test()
                 "{{A|B= [[http://google.com{{!}}Google]]}}",
                 "{{AbC|xyz \n\t \r}}",
                 "{{Table|there is a table {{{!}}\n}}",
+                "{{Notes_Section\n|Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.\nThis method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.\n}}",
                 "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}",
                 "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"];
             for (var i = 0; i < testCases.length; i++) {
