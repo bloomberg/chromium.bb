@@ -95,24 +95,29 @@ Error MemFsNode::Resize(off_t new_length) {
     return EINVAL;
   size_t new_size = static_cast<size_t>(new_length);
 
+  size_t new_capacity = data_capacity_;
   if (new_size > data_capacity_) {
     // While the node size is small, grow exponentially. When it starts to get
     // larger, grow linearly.
     size_t extra = std::min(new_size, kMaxResizeIncrement);
-    data_capacity_ = new_size + extra;
-  } else {
-    data_capacity_ = new_size;
+    new_capacity = new_size + extra;
+  } else if (new_length < stat_.st_size) {
+    // Shrinking capacity
+    new_capacity = new_size;
   }
 
-  data_ = (char*)realloc(data_, data_capacity_);
-  if (data_capacity_ != 0) {
-    assert(data_ != NULL);
-    if (data_ == NULL)
-      return ENOMEM;
-    if (new_length > stat_.st_size)
-      memset(data_ + stat_.st_size, 0, new_length - stat_.st_size);
+  if (new_capacity != data_capacity_) {
+    data_ = (char*)realloc(data_, new_capacity);
+    if (new_capacity != 0) {
+      assert(data_ != NULL);
+      if (data_ == NULL)
+        return ENOMEM;
+    }
+    data_capacity_ = new_capacity;
   }
 
+  if (new_length > stat_.st_size)
+    memset(data_ + stat_.st_size, 0, new_length - stat_.st_size);
   stat_.st_size = new_length;
   return 0;
 }

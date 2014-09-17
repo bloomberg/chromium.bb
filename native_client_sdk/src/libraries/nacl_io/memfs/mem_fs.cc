@@ -114,7 +114,7 @@ Error MemFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
       return EEXIST;
 
     if (open_flags & O_TRUNC)
-      static_cast<MemFsNode*>(node.get())->Resize(0);
+      node->FTruncate(0);
   }
 
   *out_node = node;
