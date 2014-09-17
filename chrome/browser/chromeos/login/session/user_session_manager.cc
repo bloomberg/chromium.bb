@@ -319,7 +319,7 @@ void UserSessionManager::InitRlz(Profile* profile) {
     return;
   }
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false),
+      base::WorkerPool::GetTaskRunner(false).get(),
       FROM_HERE,
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
