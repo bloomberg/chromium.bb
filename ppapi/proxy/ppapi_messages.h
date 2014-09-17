@@ -1728,11 +1728,11 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_Bind,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocket_BindReply,
                      PP_NetAddress_Private /* bound_addr */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_RecvFrom,
-                     int32_t /* num_bytes */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocket_RecvFromReply,
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_UDPSocket_PushRecvResult,
+                     int32_t /* result */,
                      std::string /* data */,
                      PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_RecvSlotAvailable)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocket_SendTo,
                      std::string /* data */,
                      PP_NetAddress_Private /* net_addr */)

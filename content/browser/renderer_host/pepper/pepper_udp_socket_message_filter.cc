@@ -23,6 +23,7 @@
 #include "ppapi/host/error_conversion.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/udp_socket_resource_base.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
@@ -46,6 +47,8 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     : allow_address_reuse_(false),
       allow_broadcast_(false),
       closed_(false),
+      remaining_recv_slots_(
+          ppapi::proxy::UDPSocketResourceBase::kPluginReceiveBufferSlots),
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
@@ -74,8 +77,8 @@ PepperUDPSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case PpapiHostMsg_UDPSocket_SetOption::ID:
-    case PpapiHostMsg_UDPSocket_RecvFrom::ID:
     case PpapiHostMsg_UDPSocket_Close::ID:
+    case PpapiHostMsg_UDPSocket_RecvSlotAvailable::ID:
       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
     case PpapiHostMsg_UDPSocket_Bind::ID:
     case PpapiHostMsg_UDPSocket_SendTo::ID:
@@ -91,12 +94,12 @@ int32_t PepperUDPSocketMessageFilter::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_SetOption,
                                       OnMsgSetOption)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_Bind, OnMsgBind)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_RecvFrom,
-                                      OnMsgRecvFrom)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_SendTo,
                                       OnMsgSendTo)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_UDPSocket_Close,
                                         OnMsgClose)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_UDPSocket_RecvSlotAvailable, OnMsgRecvSlotAvailable)
   PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -188,45 +191,6 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperUDPSocketMessageFilter::OnMsgRecvFrom(
-    const ppapi::host::HostMessageContext* context,
-    int32_t num_bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(context);
-  DCHECK(socket_.get());
-
-  if (closed_ || !socket_.get())
-    return PP_ERROR_FAILED;
-
-  if (recvfrom_buffer_.get())
-    return PP_ERROR_INPROGRESS;
-
-  if (num_bytes <= 0 ||
-      num_bytes > ppapi::proxy::UDPSocketResourceBase::kMaxReadSize) {
-    // |num_bytes| value is checked on the plugin side.
-    NOTREACHED();
-    return PP_ERROR_BADARGUMENT;
-  }
-
-  recvfrom_buffer_ = new net::IOBuffer(num_bytes);
-
-  // Use base::Unretained(this), so that the lifespan of this object doesn't
-  // have to last until the callback is called.
-  // It is safe to do so because |socket_| is owned by this object. If this
-  // object gets destroyed (and so does |socket_|), the callback won't be
-  // called.
-  int net_result = socket_->RecvFrom(
-      recvfrom_buffer_.get(),
-      num_bytes,
-      &recvfrom_address_,
-      base::Bind(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
-                 base::Unretained(this),
-                 context->MakeReplyMessageContext()));
-  if (net_result != net::ERR_IO_PENDING)
-    OnRecvFromCompleted(context->MakeReplyMessageContext(), net_result);
-  return PP_OK_COMPLETIONPENDING;
-}
-
 int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
     const ppapi::host::HostMessageContext* context,
     const std::string& data,
@@ -259,6 +223,23 @@ int32_t PepperUDPSocketMessageFilter::OnMsgClose(
     const ppapi::host::HostMessageContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Close();
+  return PP_OK;
+}
+
+int32_t PepperUDPSocketMessageFilter::OnMsgRecvSlotAvailable(
+    const ppapi::host::HostMessageContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (remaining_recv_slots_ <
+          ppapi::proxy::UDPSocketResourceBase::kPluginReceiveBufferSlots) {
+    remaining_recv_slots_++;
+  }
+
+  if (!recvfrom_buffer_.get() && !closed_ && socket_.get()) {
+    DCHECK_EQ(1u, remaining_recv_slots_);
+    DoRecvFrom();
+  }
+
   return PP_OK;
 }
 
@@ -312,6 +293,33 @@ void PepperUDPSocketMessageFilter::DoBind(
   allow_broadcast_ = false;
   socket_.swap(socket);
   SendBindReply(context, PP_OK, net_address);
+
+  DoRecvFrom();
+}
+
+void PepperUDPSocketMessageFilter::DoRecvFrom() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!closed_);
+  DCHECK(socket_.get());
+  DCHECK(!recvfrom_buffer_.get());
+  DCHECK_GT(remaining_recv_slots_, 0u);
+
+  recvfrom_buffer_ = new net::IOBuffer(
+      ppapi::proxy::UDPSocketResourceBase::kMaxReadSize);
+
+  // Use base::Unretained(this), so that the lifespan of this object doesn't
+  // have to last until the callback is called.
+  // It is safe to do so because |socket_| is owned by this object. If this
+  // object gets destroyed (and so does |socket_|), the callback won't be
+  // called.
+  int net_result = socket_->RecvFrom(
+      recvfrom_buffer_.get(),
+      ppapi::proxy::UDPSocketResourceBase::kMaxReadSize,
+      &recvfrom_address_,
+      base::Bind(&PepperUDPSocketMessageFilter::OnRecvFromCompleted,
+                 base::Unretained(this)));
+  if (net_result != net::ERR_IO_PENDING)
+    OnRecvFromCompleted(net_result);
 }
 
 void PepperUDPSocketMessageFilter::DoSendTo(
@@ -371,9 +379,7 @@ void PepperUDPSocketMessageFilter::Close() {
   closed_ = true;
 }
 
-void PepperUDPSocketMessageFilter::OnRecvFromCompleted(
-    const ppapi::host::ReplyMessageContext& context,
-    int net_result) {
+void PepperUDPSocketMessageFilter::OnRecvFromCompleted(int net_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(recvfrom_buffer_.get());
 
@@ -389,13 +395,19 @@ void PepperUDPSocketMessageFilter::OnRecvFromCompleted(
   }
 
   if (pp_result >= 0) {
-    SendRecvFromReply(
-        context, PP_OK, std::string(recvfrom_buffer_->data(), pp_result), addr);
+    SendRecvFromResult(PP_OK, std::string(recvfrom_buffer_->data(), pp_result),
+                       addr);
   } else {
-    SendRecvFromError(context, pp_result);
+    SendRecvFromError(pp_result);
   }
 
   recvfrom_buffer_ = NULL;
+
+  DCHECK_GT(remaining_recv_slots_, 0u);
+  remaining_recv_slots_--;
+
+  if (remaining_recv_slots_ > 0 && !closed_ && socket_.get())
+    DoRecvFrom();
 }
 
 void PepperUDPSocketMessageFilter::OnSendToCompleted(
@@ -421,14 +433,13 @@ void PepperUDPSocketMessageFilter::SendBindReply(
   SendReply(reply_context, PpapiPluginMsg_UDPSocket_BindReply(addr));
 }
 
-void PepperUDPSocketMessageFilter::SendRecvFromReply(
-    const ppapi::host::ReplyMessageContext& context,
+void PepperUDPSocketMessageFilter::SendRecvFromResult(
     int32_t result,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  ppapi::host::ReplyMessageContext reply_context(context);
-  reply_context.params.set_result(result);
-  SendReply(reply_context, PpapiPluginMsg_UDPSocket_RecvFromReply(data, addr));
+  resource_host()->host()->SendUnsolicitedReply(
+      resource_host()->pp_resource(),
+      PpapiPluginMsg_UDPSocket_PushRecvResult(result, data, addr));
 }
 
 void PepperUDPSocketMessageFilter::SendSendToReply(
@@ -447,12 +458,9 @@ void PepperUDPSocketMessageFilter::SendBindError(
 }
 
 void PepperUDPSocketMessageFilter::SendRecvFromError(
-    const ppapi::host::ReplyMessageContext& context,
     int32_t result) {
-  SendRecvFromReply(context,
-                    result,
-                    std::string(),
-                    NetAddressPrivateImpl::kInvalidNetAddress);
+  SendRecvFromResult(result, std::string(),
+                     NetAddressPrivateImpl::kInvalidNetAddress);
 }
 
 void PepperUDPSocketMessageFilter::SendSendToError(

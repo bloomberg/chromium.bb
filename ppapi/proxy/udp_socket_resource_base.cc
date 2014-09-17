@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/error_conversion.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/thunk/enter.h"
@@ -20,13 +21,13 @@
 namespace ppapi {
 namespace proxy {
 
-const int32_t UDPSocketResourceBase::kMaxReadSize = 1024 * 1024;
-const int32_t UDPSocketResourceBase::kMaxWriteSize = 1024 * 1024;
+const int32_t UDPSocketResourceBase::kMaxReadSize = 128 * 1024;
+const int32_t UDPSocketResourceBase::kMaxWriteSize = 128 * 1024;
 const int32_t UDPSocketResourceBase::kMaxSendBufferSize =
     1024 * UDPSocketResourceBase::kMaxWriteSize;
 const int32_t UDPSocketResourceBase::kMaxReceiveBufferSize =
     1024 * UDPSocketResourceBase::kMaxReadSize;
-
+const size_t UDPSocketResourceBase::kPluginReceiveBufferSlots = 32u;
 
 UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
                                              PP_Instance instance,
@@ -36,7 +37,8 @@ UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
       bound_(false),
       closed_(false),
       read_buffer_(NULL),
-      bytes_to_read_(-1) {
+      bytes_to_read_(-1),
+      recvfrom_addr_resource_(NULL) {
   recvfrom_addr_.size = 0;
   memset(recvfrom_addr_.data, 0,
          arraysize(recvfrom_addr_.data) * sizeof(*recvfrom_addr_.data));
@@ -48,6 +50,9 @@ UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
     SendCreate(BROWSER, PpapiHostMsg_UDPSocket_CreatePrivate());
   else
     SendCreate(BROWSER, PpapiHostMsg_UDPSocket_Create());
+
+  PluginGlobals::Get()->resource_reply_thread_registrar()->HandleOnIOThread(
+      PpapiPluginMsg_UDPSocket_PushRecvResult::ID);
 }
 
 UDPSocketResourceBase::~UDPSocketResourceBase() {
@@ -139,18 +144,27 @@ int32_t UDPSocketResourceBase::RecvFromImpl(
   if (TrackedCallback::IsPending(recvfrom_callback_))
     return PP_ERROR_INPROGRESS;
 
-  read_buffer_ = buffer;
-  bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
-  recvfrom_callback_ = callback;
+  if (recv_buffers_.empty()) {
+    read_buffer_ = buffer;
+    bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
+    recvfrom_addr_resource_ = addr;
+    recvfrom_callback_ = callback;
 
-  // Send the request, the browser will call us back via RecvFromReply.
-  Call<PpapiPluginMsg_UDPSocket_RecvFromReply>(
-      BROWSER,
-      PpapiHostMsg_UDPSocket_RecvFrom(bytes_to_read_),
-      base::Bind(&UDPSocketResourceBase::OnPluginMsgRecvFromReply,
-                 base::Unretained(this), addr),
-      callback);
-  return PP_OK_COMPLETIONPENDING;
+    return PP_OK_COMPLETIONPENDING;
+  } else {
+    RecvBuffer& front = recv_buffers_.front();
+
+    if (num_bytes < static_cast<int32_t>(front.data.size()))
+      return PP_ERROR_MESSAGE_TOO_BIG;
+
+    int32_t result = SetRecvFromOutput(front.result, front.data, front.addr,
+                                       buffer, num_bytes, addr);
+
+    recv_buffers_.pop();
+    Post(BROWSER, PpapiHostMsg_UDPSocket_RecvSlotAvailable());
+
+    return result;
+  }
 }
 
 PP_Bool UDPSocketResourceBase::GetRecvFromAddressImpl(
@@ -205,6 +219,18 @@ void UDPSocketResourceBase::CloseImpl() {
   bytes_to_read_ = -1;
 }
 
+void UDPSocketResourceBase::OnReplyReceived(
+    const ResourceMessageReplyParams& params,
+    const IPC::Message& msg) {
+  PPAPI_BEGIN_MESSAGE_MAP(UDPSocketResourceBase, msg)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_UDPSocket_PushRecvResult,
+        OnPluginMsgPushRecvResult)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
+        PluginResource::OnReplyReceived(params, msg))
+  PPAPI_END_MESSAGE_MAP()
+}
+
 void UDPSocketResourceBase::PostAbortIfNecessary(
     scoped_refptr<TrackedCallback>* callback) {
   if (TrackedCallback::IsPending(*callback))
@@ -234,43 +260,47 @@ void UDPSocketResourceBase::OnPluginMsgBindReply(
   RunCallback(bind_callback_, params.result());
 }
 
-void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
-    PP_Resource* output_addr,
+void UDPSocketResourceBase::OnPluginMsgPushRecvResult(
     const ResourceMessageReplyParams& params,
+    int32_t result,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  // It is possible that |recvfrom_callback_| is pending while |read_buffer_| is
-  // NULL: CloseImpl() has been called, but a RecvFromReply came earlier than
-  // the task to abort |recvfrom_callback_|. We shouldn't access the buffer in
-  // that case. The user may have released it.
-  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_)
-    return;
+  // TODO(yzshen): Support passing in a non-const string ref, so that we can
+  // eliminate one copy when storing the data in the buffer.
 
-  int32_t result = params.result();
-  if (result == PP_OK && output_addr) {
-    thunk::EnterResourceCreationNoLock enter(pp_instance());
-    if (enter.succeeded()) {
-      *output_addr = enter.functions()->CreateNetAddressFromNetAddressPrivate(
-          pp_instance(), addr);
-    } else {
-      result = PP_ERROR_FAILED;
-    }
+  DCHECK_LT(recv_buffers_.size(), kPluginReceiveBufferSlots);
+
+  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
+    recv_buffers_.push(RecvBuffer());
+    RecvBuffer& back = recv_buffers_.back();
+    back.result = result;
+    back.data = data;
+    back.addr = addr;
+
+    return;
   }
 
-  if (result == PP_OK) {
-    CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
-    if (!data.empty())
-      memcpy(read_buffer_, data.c_str(), data.size());
+  DCHECK_EQ(recv_buffers_.size(), 0u);
+
+  if (bytes_to_read_ < static_cast<int32_t>(data.size())) {
+    recv_buffers_.push(RecvBuffer());
+    RecvBuffer& back = recv_buffers_.back();
+    back.result = result;
+    back.data = data;
+    back.addr = addr;
+
+    result = PP_ERROR_MESSAGE_TOO_BIG;
+  } else {
+    result = SetRecvFromOutput(result, data, addr, read_buffer_, bytes_to_read_,
+                               recvfrom_addr_resource_);
+    Post(BROWSER, PpapiHostMsg_UDPSocket_RecvSlotAvailable());
   }
 
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
-  recvfrom_addr_ = addr;
+  recvfrom_addr_resource_ = NULL;
 
-  if (result == PP_OK)
-    RunCallback(recvfrom_callback_, static_cast<int32_t>(data.size()));
-  else
-    RunCallback(recvfrom_callback_, result);
+  RunCallback(recvfrom_callback_, result);
 }
 
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
@@ -289,6 +319,34 @@ void UDPSocketResourceBase::RunCallback(scoped_refptr<TrackedCallback> callback,
                                         int32_t pp_result) {
   callback->Run(ConvertNetworkAPIErrorForCompatibility(pp_result,
                                                        private_api_));
+}
+
+int32_t UDPSocketResourceBase::SetRecvFromOutput(
+    int32_t browser_result,
+    const std::string& data,
+    const PP_NetAddress_Private& addr,
+    char* output_buffer,
+    int32_t num_bytes,
+    PP_Resource* output_addr) {
+  DCHECK_GE(num_bytes, static_cast<int32_t>(data.size()));
+
+  int32_t result = browser_result;
+  if (result == PP_OK && output_addr) {
+    thunk::EnterResourceCreationNoLock enter(pp_instance());
+    if (enter.succeeded()) {
+      *output_addr = enter.functions()->CreateNetAddressFromNetAddressPrivate(
+          pp_instance(), addr);
+    } else {
+      result = PP_ERROR_FAILED;
+    }
+  }
+
+  if (result == PP_OK && !data.empty())
+    memcpy(output_buffer, data.c_str(), data.size());
+
+  recvfrom_addr_ = addr;
+
+  return result == PP_OK ? static_cast<int32_t>(data.size()) : result;
 }
 
 }  // namespace proxy

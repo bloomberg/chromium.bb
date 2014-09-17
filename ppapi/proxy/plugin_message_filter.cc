@@ -83,12 +83,16 @@ void PluginMessageFilter::OnMsgResourceReply(
     const ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
   scoped_refptr<base::MessageLoopProxy> target =
-      resource_reply_thread_registrar_->GetTargetThreadAndUnregister(
-          reply_params.pp_resource(), reply_params.sequence());
+      resource_reply_thread_registrar_->GetTargetThread(reply_params,
+                                                        nested_msg);
 
-  target->PostTask(
-      FROM_HERE,
-      base::Bind(&DispatchResourceReply, reply_params, nested_msg));
+  if (!target.get()) {
+    DispatchResourceReply(reply_params, nested_msg);
+  } else {
+    target->PostTask(
+        FROM_HERE,
+        base::Bind(&DispatchResourceReply, reply_params, nested_msg));
+  }
 }
 
 // static

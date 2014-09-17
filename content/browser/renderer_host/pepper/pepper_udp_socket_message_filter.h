@@ -68,40 +68,38 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
                          const ppapi::SocketOptionData& value);
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& addr);
-  int32_t OnMsgRecvFrom(const ppapi::host::HostMessageContext* context,
-                        int32_t num_bytes);
   int32_t OnMsgSendTo(const ppapi::host::HostMessageContext* context,
                       const std::string& data,
                       const PP_NetAddress_Private& addr);
   int32_t OnMsgClose(const ppapi::host::HostMessageContext* context);
+  int32_t OnMsgRecvSlotAvailable(
+      const ppapi::host::HostMessageContext* context);
 
   void DoBind(const ppapi::host::ReplyMessageContext& context,
               const PP_NetAddress_Private& addr);
+  void DoRecvFrom();
   void DoSendTo(const ppapi::host::ReplyMessageContext& context,
                 const std::string& data,
                 const PP_NetAddress_Private& addr);
   void Close();
 
-  void OnRecvFromCompleted(const ppapi::host::ReplyMessageContext& context,
-                           int net_result);
+  void OnRecvFromCompleted(int net_result);
   void OnSendToCompleted(const ppapi::host::ReplyMessageContext& context,
                          int net_result);
 
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
                      int32_t result,
                      const PP_NetAddress_Private& addr);
-  void SendRecvFromReply(const ppapi::host::ReplyMessageContext& context,
-                         int32_t result,
-                         const std::string& data,
-                         const PP_NetAddress_Private& addr);
+  void SendRecvFromResult(int32_t result,
+                          const std::string& data,
+                          const PP_NetAddress_Private& addr);
   void SendSendToReply(const ppapi::host::ReplyMessageContext& context,
                        int32_t result,
                        int32_t bytes_written);
 
   void SendBindError(const ppapi::host::ReplyMessageContext& context,
                      int32_t result);
-  void SendRecvFromError(const ppapi::host::ReplyMessageContext& context,
-                         int32_t result);
+  void SendRecvFromError(int32_t result);
   void SendSendToError(const ppapi::host::ReplyMessageContext& context,
                        int32_t result);
 
@@ -115,6 +113,8 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   scoped_refptr<net::IOBufferWithSize> sendto_buffer_;
 
   net::IPEndPoint recvfrom_address_;
+
+  size_t remaining_recv_slots_;
 
   bool external_plugin_;
   bool private_api_;

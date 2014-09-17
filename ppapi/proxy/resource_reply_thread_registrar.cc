@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "ipc/ipc_message.h"
+#include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
@@ -13,8 +15,8 @@ namespace ppapi {
 namespace proxy {
 
 ResourceReplyThreadRegistrar::ResourceReplyThreadRegistrar(
-    scoped_refptr<base::MessageLoopProxy> default_thread)
-    : default_thread_(default_thread) {
+    scoped_refptr<base::MessageLoopProxy> main_thread)
+    : main_thread_(main_thread) {
 }
 
 ResourceReplyThreadRegistrar::~ResourceReplyThreadRegistrar() {
@@ -26,7 +28,7 @@ void ResourceReplyThreadRegistrar::Register(
     scoped_refptr<TrackedCallback> reply_thread_hint) {
   ProxyLock::AssertAcquiredDebugOnly();
 
-  // Use the default thread if |reply_thread_hint| is NULL or blocking.
+  // Use the main thread if |reply_thread_hint| is NULL or blocking.
   if (!reply_thread_hint.get() || reply_thread_hint->is_blocking())
     return;
 
@@ -36,7 +38,7 @@ void ResourceReplyThreadRegistrar::Register(
   {
     base::AutoLock auto_lock(lock_);
 
-    if (reply_thread.get() == default_thread_.get())
+    if (reply_thread.get() == main_thread_.get())
       return;
 
     map_[resource][sequence_number] = reply_thread;
@@ -48,23 +50,32 @@ void ResourceReplyThreadRegistrar::Unregister(PP_Resource resource) {
   map_.erase(resource);
 }
 
-scoped_refptr<base::MessageLoopProxy>
-ResourceReplyThreadRegistrar::GetTargetThreadAndUnregister(
-    PP_Resource resource,
-    int32_t sequence_number) {
+void ResourceReplyThreadRegistrar::HandleOnIOThread(uint32 nested_msg_type) {
   base::AutoLock auto_lock(lock_);
-  ResourceMap::iterator resource_iter = map_.find(resource);
-  if (resource_iter == map_.end())
-    return default_thread_;
+  io_thread_message_types_.insert(nested_msg_type);
+}
 
-  SequenceNumberMap::iterator sequence_number_iter =
-      resource_iter->second.find(sequence_number);
-  if (sequence_number_iter == resource_iter->second.end())
-    return default_thread_;
+scoped_refptr<base::MessageLoopProxy>
+ResourceReplyThreadRegistrar::GetTargetThread(
+    const ResourceMessageReplyParams& reply_params,
+    const IPC::Message& nested_msg) {
+  base::AutoLock auto_lock(lock_);
+  ResourceMap::iterator resource_iter = map_.find(reply_params.pp_resource());
+  if (resource_iter != map_.end()) {
+    SequenceThreadMap::iterator sequence_thread_iter =
+        resource_iter->second.find(reply_params.sequence());
+    if (sequence_thread_iter != resource_iter->second.end()) {
+      scoped_refptr<base::MessageLoopProxy> target =
+          sequence_thread_iter->second;
+      resource_iter->second.erase(sequence_thread_iter);
+      return target;
+    }
+  }
 
-  scoped_refptr<base::MessageLoopProxy> target = sequence_number_iter->second;
-  resource_iter->second.erase(sequence_number_iter);
-  return target;
+  if (io_thread_message_types_.count(nested_msg.type()) != 0)
+    return scoped_refptr<base::MessageLoopProxy>();
+
+  return main_thread_;
 }
 
 }  // namespace proxy

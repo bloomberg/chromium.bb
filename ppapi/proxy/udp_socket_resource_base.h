@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_UDP_SOCKET_RESOURCE_BASE_H_
 #define PPAPI_PROXY_UDP_SOCKET_RESOURCE_BASE_H_
 
+#include <queue>
 #include <string>
 
 #include "base/basictypes.h"
@@ -23,8 +24,8 @@ class ResourceMessageReplyParams;
 
 class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
  public:
-  // The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_RecvFrom
-  // message is allowed to request.
+  // The maximum number of bytes that each
+  // PpapiPluginMsg_PPBUDPSocket_PushRecvResult message is allowed to carry.
   static const int32_t kMaxReadSize;
   // The maximum number of bytes that each PpapiHostMsg_PPBUDPSocket_SendTo
   // message is allowed to carry.
@@ -40,6 +41,10 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   // argument sanity check, it doesn't mean the browser guarantees to support
   // such a buffer size.
   static const int32_t kMaxReceiveBufferSize;
+
+  // The maximum number of received packets that we allow instances of this
+  // class to buffer.
+  static const size_t kPluginReceiveBufferSlots;
 
  protected:
   UDPSocketResourceBase(Connection connection,
@@ -66,6 +71,16 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   void CloseImpl();
 
  private:
+  struct RecvBuffer {
+    int32_t result;
+    std::string data;
+    PP_NetAddress_Private addr;
+  };
+
+  // Resource overrides.
+  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
+                               const IPC::Message& msg) OVERRIDE;
+
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   // IPC message handlers.
@@ -73,14 +88,22 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
                                  const ResourceMessageReplyParams& params);
   void OnPluginMsgBindReply(const ResourceMessageReplyParams& params,
                             const PP_NetAddress_Private& bound_addr);
-  void OnPluginMsgRecvFromReply(PP_Resource* output_addr,
-                                const ResourceMessageReplyParams& params,
-                                const std::string& data,
-                                const PP_NetAddress_Private& addr);
+  void OnPluginMsgPushRecvResult(const ResourceMessageReplyParams& params,
+                                 int32_t result,
+                                 const std::string& data,
+                                 const PP_NetAddress_Private& addr);
   void OnPluginMsgSendToReply(const ResourceMessageReplyParams& params,
                               int32_t bytes_written);
 
   void RunCallback(scoped_refptr<TrackedCallback> callback, int32_t pp_result);
+
+  // Callers must ensure that |output_buffer| is big enough to store |data|.
+  int32_t SetRecvFromOutput(int32_t browser_result,
+                            const std::string& data,
+                            const PP_NetAddress_Private& addr,
+                            char* output_buffer,
+                            int32_t num_bytes,
+                            PP_Resource* output_addr);
 
   bool private_api_;
   bool bound_;
@@ -92,9 +115,12 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
 
   char* read_buffer_;
   int32_t bytes_to_read_;
+  PP_Resource* recvfrom_addr_resource_;
 
   PP_NetAddress_Private recvfrom_addr_;
   PP_NetAddress_Private bound_addr_;
+
+  std::queue<RecvBuffer> recv_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketResourceBase);
 };

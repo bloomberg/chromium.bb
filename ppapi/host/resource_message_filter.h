@@ -106,6 +106,10 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
  protected:
   virtual ~ResourceMessageFilter();
 
+  // Please see the comments of |resource_host_| for on which thread it can be
+  // used and when it is NULL.
+  ResourceHost* resource_host() const { return resource_host_; }
+
   // If you want the message to be handled on another thread, return a non-null
   // task runner which will target tasks accordingly.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
