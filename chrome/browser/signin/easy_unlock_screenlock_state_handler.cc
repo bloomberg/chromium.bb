@@ -16,7 +16,6 @@
 namespace {
 
 size_t kIconSize = 27u;
-size_t kOpaqueIconOpacity = 50u;
 size_t kSpinnerResourceWidth = 1215u;
 size_t kSpinnerIntervalMs = 50u;
 
@@ -37,14 +36,6 @@ std::string GetIconURLForState(EasyUnlockScreenlockStateHandler::State state) {
     default:
       return "";
   }
-}
-
-bool UseOpaqueIcon(EasyUnlockScreenlockStateHandler::State state) {
-  return state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
-         state == EasyUnlockScreenlockStateHandler::STATE_NO_PHONE ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
 }
 
 bool HasAnimation(EasyUnlockScreenlockStateHandler::State state) {
@@ -134,9 +125,6 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   bool trial_run = IsTrialRun();
 
   UpdateTooltipOptions(trial_run, &icon_options);
-
-  if (UseOpaqueIcon(state_))
-    icon_options.SetOpacity(kOpaqueIconOpacity);
 
   icon_options.SetSize(kIconSize, kIconSize);
 

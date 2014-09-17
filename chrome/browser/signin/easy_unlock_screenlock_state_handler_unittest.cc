@@ -331,53 +331,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, BluetoothConnecting) {
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
 }
 
-TEST_F(EasyUnlockScreenlockStateHandlerTest, PhoneLocked) {
-  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
-  state_handler_->ChangeState(
-      EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED);
-
-  EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
-            lock_handler_->GetAuthType(user_email_));
-
-  ASSERT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(kLockedIconURL, lock_handler_->GetCustomIconURL());
-  EXPECT_TRUE(lock_handler_->CustomIconHasTooltip());
-  EXPECT_FALSE(lock_handler_->IsCustomIconTooltipAutoshown());
-  EXPECT_TRUE(lock_handler_->CustomIconHardlocksOnClick());
-  EXPECT_FALSE(lock_handler_->IsCustomIconAnimated());
-  EXPECT_EQ(100, lock_handler_->GetCustomIconOpacity());
-
-  state_handler_->ChangeState(
-      EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED);
-  // Duplicated state change should be ignored.
-  EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
-}
-
-TEST_F(EasyUnlockScreenlockStateHandlerTest, PhoneNotAuthenticated) {
-  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
-  state_handler_->ChangeState(
-      EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED);
-
-  EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
-  EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
-            lock_handler_->GetAuthType(user_email_));
-
-  ASSERT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(kLockedIconURL, lock_handler_->GetCustomIconURL());
-  EXPECT_TRUE(lock_handler_->CustomIconHasTooltip());
-  EXPECT_FALSE(lock_handler_->IsCustomIconTooltipAutoshown());
-  EXPECT_TRUE(lock_handler_->CustomIconHardlocksOnClick());
-  EXPECT_FALSE(lock_handler_->IsCustomIconAnimated());
-  EXPECT_EQ(100, lock_handler_->GetCustomIconOpacity());
-
-  state_handler_->ChangeState(
-      EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED);
-  // Duplicated state change should be ignored.
-  EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
-}
-
-TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithOpaqueIcons) {
+TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
   pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
 
   std::vector<EasyUnlockScreenlockStateHandler::State> states;
@@ -385,6 +339,9 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithOpaqueIcons) {
   states.push_back(EasyUnlockScreenlockStateHandler::STATE_NO_PHONE);
   states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED);
   states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE);
+  states.push_back(
+      EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED);
+  states.push_back(EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED);
 
   for (size_t i = 0; i < states.size(); ++i) {
     state_handler_->ChangeState(states[i]);
@@ -407,7 +364,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithOpaqueIcons) {
         << "State: " << states[i];
     EXPECT_FALSE(lock_handler_->IsCustomIconAnimated())
         << "State: " << states[i];
-    EXPECT_EQ(50, lock_handler_->GetCustomIconOpacity())
+    EXPECT_EQ(100, lock_handler_->GetCustomIconOpacity())
         << "State: " << states[i];
 
     state_handler_->ChangeState(states[i]);
