@@ -371,7 +371,7 @@ remoting.SessionConnector.prototype.connectSignaling_ = function() {
   // Only use XMPP when TCP API is available and TLS support is enabled. That's
   // not the case for V1 app (socket API is available only to platform apps)
   // and for Chrome releases before 38.
-  if (chrome.socket.secure) {
+  if (chrome.socket && chrome.socket.secure) {
     this.signalStrategy_ = /** @type {remoting.SignalStrategy} */
         (new remoting.XmppConnection(this.onSignalingState_.bind(this)));
   } else {
