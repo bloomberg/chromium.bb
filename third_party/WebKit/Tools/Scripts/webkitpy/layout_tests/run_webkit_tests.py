@@ -40,7 +40,7 @@ from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import configuration_options, platform_options
 from webkitpy.layout_tests.views import buildbot_results
 from webkitpy.layout_tests.views import printing
-from webkitpy.layout_tests.generate_results_dashboard import GenerateDashBoard
+from webkitpy.layout_tests.generate_results_dashboard import DashBoardGenerator
 
 _log = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ def main(argv, stdout, stderr):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
 
-        gen_dash_board = GenerateDashBoard(port)
+        gen_dash_board = DashBoardGenerator(port)
         gen_dash_board.generate()
 
         return run_details.exit_code

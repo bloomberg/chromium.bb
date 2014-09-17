@@ -86,7 +86,7 @@ class ProcessJsonData(object):
         return self._current_result_json_dict
 
 
-class GenerateDashBoard(object):
+class DashBoardGenerator(object):
 
     def __init__(self, port):
         self._port = port
