@@ -27,27 +27,28 @@ const base::FilePath::CharType kAccelerometerDevicePath[] =
 const base::FilePath::CharType kAccelerometerIioBasePath[] =
     FILE_PATH_LITERAL("/sys/bus/iio/devices/");
 
-// Files within the device in kAccelerometerIioBasePath containing the scales of
+// File within the device in kAccelerometerIioBasePath containing the scale of
 // the accelerometers.
-const base::FilePath::CharType kAccelerometerBaseScaleName[] =
-    FILE_PATH_LITERAL("in_accel_base_scale");
-const base::FilePath::CharType kAccelerometerLidScaleName[] =
-    FILE_PATH_LITERAL("in_accel_lid_scale");
+const base::FilePath::CharType kScaleNameFormatString[] = "in_accel_%s_scale";
 
 // The filename giving the path to read the scan index of each accelerometer
 // axis.
 const char kAccelerometerScanIndexPath[] =
     "scan_elements/in_accel_%s_%s_index";
 
-// The names of the accelerometers and axes in the order we want to read them.
-const char kAccelerometerNames[][5] = {"base", "lid"};
-const char kAccelerometerAxes[][2] = {"x", "y", "z"};
-const size_t kTriggerDataValues =
-    arraysize(kAccelerometerNames) * arraysize(kAccelerometerAxes);
-const size_t kTriggerDataLength = kTriggerDataValues * 2;
+// The names of the accelerometers. Matches up with the enum AccelerometerSource
+// in ui/accelerometer/accelerometer_types.h.
+const char kAccelerometerNames[ui::ACCELEROMETER_SOURCE_COUNT][5] = {
+    "lid", "base"};
+
+// The axes on each accelerometer.
+const char kAccelerometerAxes[][2] = {"y", "x", "z"};
 
 // The length required to read uint values from configuration files.
 const size_t kMaxAsciiUintLength = 21;
+
+// The size of individual values.
+const size_t kDataSize = 2;
 
 // The time to wait between reading the accelerometer.
 const int kDelayBetweenReadsMs = 100;
@@ -57,15 +58,14 @@ const float kMeanGravity = 9.80665f;
 
 // Reads |path| to the unsigned int pointed to by |value|. Returns true on
 // success or false on failure.
-bool ReadFileToUint(const base::FilePath& path, unsigned int* value) {
+bool ReadFileToInt(const base::FilePath& path, int* value) {
   std::string s;
   DCHECK(value);
   if (!base::ReadFileToString(path, &s, kMaxAsciiUintLength)) {
-    LOG(ERROR) << "Failed to read " << path.value();
     return false;
   }
   base::TrimWhitespaceASCII(s, base::TRIM_ALL, &s);
-  if (!base::StringToUint(s, value)) {
+  if (!base::StringToInt(s, value)) {
     LOG(ERROR) << "Failed to parse \"" << s << "\" from " << path.value();
     return false;
   }
@@ -90,41 +90,62 @@ bool DetectAndReadAccelerometerConfiguration(
 
   base::FilePath iio_path(base::FilePath(kAccelerometerIioBasePath).Append(
       device));
-  // Read accelerometer scales
-  if (!ReadFileToUint(iio_path.Append(kAccelerometerBaseScaleName),
-                      &(configuration->data.base_scale))) {
-    return false;
-  }
-  if (!ReadFileToUint(iio_path.Append(kAccelerometerLidScaleName),
-                      &(configuration->data.lid_scale))) {
-    return false;
-  }
-
-  // Read indices of each accelerometer axis from each accelerometer from
-  // /sys/bus/iio/devices/iio:deviceX/scan_elements/in_accel_{x,y,z}_%s_index
+  // Read configuration of each accelerometer axis from each accelerometer from
+  // /sys/bus/iio/devices/iio:deviceX/.
   for (size_t i = 0; i < arraysize(kAccelerometerNames); ++i) {
+    // Read scale of accelerometer.
+    std::string accelerometer_scale_path = base::StringPrintf(
+        kScaleNameFormatString, kAccelerometerNames[i]);
+    int scale_divisor;
+    if (!ReadFileToInt(iio_path.Append(accelerometer_scale_path.c_str()),
+        &scale_divisor)) {
+      configuration->data.has[i] = false;
+      continue;
+    }
+
+    configuration->data.has[i] = true;
+    configuration->data.count++;
     for (size_t j = 0; j < arraysize(kAccelerometerAxes); ++j) {
+      configuration->data.scale[i][j] = kMeanGravity / scale_divisor;
       std::string accelerometer_index_path = base::StringPrintf(
           kAccelerometerScanIndexPath, kAccelerometerAxes[j],
           kAccelerometerNames[i]);
-      unsigned int index = 0;
-      if (!ReadFileToUint(iio_path.Append(accelerometer_index_path.c_str()),
-                          &index)) {
+      if (!ReadFileToInt(iio_path.Append(accelerometer_index_path.c_str()),
+                         &(configuration->data.index[i][j]))) {
         return false;
       }
-      if (index >= kTriggerDataValues) {
-        LOG(ERROR) << "Field index from " << accelerometer_index_path
-                   << " out of bounds: " << index;
-        return false;
-      }
-      configuration->data.index.push_back(index);
     }
   }
+
+  // Adjust the directions of accelerometers to match the AccelerometerUpdate
+  // type specified in ui/accelerometer/accelerometer_types.h.
+  configuration->data.scale[ui::ACCELEROMETER_SOURCE_SCREEN][0] *= -1.0f;
+  for (int i = 0; i < 3; ++i) {
+    configuration->data.scale[ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD][i] *=
+        -1.0f;
+  }
+
+  // Verify indices are within bounds.
+  for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+    if (!configuration->data.has[i])
+      continue;
+    for (int j = 0; j < 3; ++j) {
+      if (configuration->data.index[i][j] < 0 ||
+          configuration->data.index[i][j] >=
+              3 * static_cast<int>(configuration->data.count)) {
+        LOG(ERROR) << "Field index for " << kAccelerometerNames[i] << " "
+                   << kAccelerometerAxes[j] << " axis out of bounds.";
+        return false;
+      }
+    }
+  }
+  configuration->data.length = kDataSize * 3 * configuration->data.count;
   return true;
 }
 
 bool ReadAccelerometer(
-    scoped_refptr<AccelerometerReader::Reading> reading) {
+    scoped_refptr<AccelerometerReader::Reading> reading,
+    size_t length) {
   // Initiate the trigger to read accelerometers simultaneously
   int bytes_written = base::WriteFile(
       base::FilePath(kAccelerometerTriggerPath), "1\n", 2);
@@ -135,10 +156,10 @@ bool ReadAccelerometer(
 
   // Read resulting sample from /dev/cros-ec-accel.
   int bytes_read = base::ReadFile(base::FilePath(kAccelerometerDevicePath),
-                                  reading->data, kTriggerDataLength);
-  if (bytes_read < static_cast<int>(kTriggerDataLength)) {
+                                  reading->data, length);
+  if (bytes_read < static_cast<int>(length)) {
     LOG(ERROR) << "Read " << bytes_read << " byte(s), expected "
-               << kTriggerDataLength << " bytes from accelerometer";
+               << length << " bytes from accelerometer";
     return false;
   }
   return true;
@@ -146,16 +167,24 @@ bool ReadAccelerometer(
 
 }  // namespace
 
-AccelerometerReader::ConfigurationData::ConfigurationData() {
+AccelerometerReader::ConfigurationData::ConfigurationData()
+    : count(0) {
+  for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+    has[i] = false;
+    for (int j = 0; j < 3; ++j) {
+      scale[i][j] = 0;
+      index[i][j] = -1;
+    }
+  }
 }
 
 AccelerometerReader::ConfigurationData::~ConfigurationData() {
 }
 
 AccelerometerReader::AccelerometerReader(
-    base::TaskRunner* task_runner,
+    base::TaskRunner* blocking_task_runner,
     AccelerometerReader::Delegate* delegate)
-    : task_runner_(task_runner),
+    : task_runner_(blocking_task_runner),
       delegate_(delegate),
       configuration_(new AccelerometerReader::Configuration()),
       weak_factory_(this) {
@@ -186,7 +215,8 @@ void AccelerometerReader::TriggerRead() {
       new AccelerometerReader::Reading());
   base::PostTaskAndReplyWithResult(task_runner_.get(),
                                    FROM_HERE,
-                                   base::Bind(&ReadAccelerometer, reading),
+                                   base::Bind(&ReadAccelerometer, reading,
+                                              configuration_->data.length),
                                    base::Bind(&AccelerometerReader::OnDataRead,
                                               weak_factory_.GetWeakPtr(),
                                               reading));
@@ -198,17 +228,19 @@ void AccelerometerReader::OnDataRead(
   DCHECK(!task_runner_->RunsTasksOnCurrentThread());
 
   if (success) {
-    int16* values = reinterpret_cast<int16*>(reading->data);
-    float lid_scale = kMeanGravity / configuration_->data.lid_scale;
-    update_.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
-                -values[configuration_->data.index[4]] * lid_scale,
-                values[configuration_->data.index[3]] * lid_scale,
-                values[configuration_->data.index[5]] * lid_scale);
-    float base_scale = kMeanGravity / configuration_->data.base_scale;
-    update_.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
-                -values[configuration_->data.index[1]] * base_scale,
-                -values[configuration_->data.index[0]] * base_scale,
-                -values[configuration_->data.index[2]] * base_scale);
+    for (int i = 0; i < ui::ACCELEROMETER_SOURCE_COUNT; ++i) {
+      if (!configuration_->data.has[i])
+        continue;
+
+      int16* values = reinterpret_cast<int16*>(reading->data);
+      update_.Set(static_cast<ui::AccelerometerSource>(i),
+                  values[configuration_->data.index[i][0]] *
+                      configuration_->data.scale[i][0],
+                  values[configuration_->data.index[i][1]] *
+                      configuration_->data.scale[i][1],
+                  values[configuration_->data.index[i][2]] *
+                      configuration_->data.scale[i][2]);
+    }
     delegate_->HandleAccelerometerUpdate(update_);
   }
 
