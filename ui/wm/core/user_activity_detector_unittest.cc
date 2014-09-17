@@ -139,9 +139,11 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
   AdvanceTime(advance_delta);
   ui::GestureEvent gesture_event(
-      0, 0, ui::EF_NONE,
+      0,
+      0,
+      ui::EF_NONE,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   detector_->OnGestureEvent(&gesture_event);
   EXPECT_FALSE(gesture_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),

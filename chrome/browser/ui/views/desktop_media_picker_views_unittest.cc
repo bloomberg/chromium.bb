@@ -126,13 +126,9 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
                   content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
 
   media_list_->AddSource(kFakeId);
-
-  ui::GestureEvent double_tap(
-      10,
-      10,
-      0,
-      base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 2, 0));
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+  details.set_tap_count(2);
+  ui::GestureEvent double_tap(10, 10, 0, base::TimeDelta(), details);
 
   GetPickerDialogView()->GetMediaSourceViewForTesting(0)->OnGestureEvent(
       &double_tap);

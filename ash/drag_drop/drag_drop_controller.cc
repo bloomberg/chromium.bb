@@ -64,12 +64,11 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
 
 void DispatchGestureEndToWindow(aura::Window* window) {
   if (window && window->delegate()) {
-    ui::GestureEvent gesture_end(
-        0,
-        0,
-        0,
-        ui::EventTimeForNow(),
-        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+    ui::GestureEvent gesture_end(0,
+                                 0,
+                                 0,
+                                 ui::EventTimeForNow(),
+                                 ui::GestureEventDetails(ui::ET_GESTURE_END));
     window->delegate()->OnGestureEvent(&gesture_end);
   }
 }

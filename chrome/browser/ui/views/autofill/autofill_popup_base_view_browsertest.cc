@@ -63,7 +63,7 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
                             point.y(),
                             0,
                             ui::EventTimeForNow(),
-                            ui::GestureEventDetails(type, 0, 0));
+                            ui::GestureEventDetails(type));
   }
 
   void SimulateGesture(ui::GestureEvent* event) {
