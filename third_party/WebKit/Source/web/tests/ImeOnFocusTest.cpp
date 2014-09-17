@@ -19,6 +19,8 @@
 
 using namespace blink;
 using blink::FrameTestHelpers::runPendingTasks;
+using blink::FrameTestHelpers::loadFrame;
+using URLTestHelpers::registerMockedURLFromBaseURL;
 
 namespace {
 
@@ -65,7 +67,7 @@ public:
 protected:
     void sendGestureTap(WebView*, IntPoint);
     void focus(const WTF::AtomicString& element);
-    void runImeOnFocusTest(std::string fileName, int, IntPoint tapPoint = IntPoint(-1, -1), const WTF::AtomicString& focusElement = WTF::nullAtom);
+    void runImeOnFocusTest(std::string fileName, int, IntPoint tapPoint = IntPoint(-1, -1), const WTF::AtomicString& focusElement = WTF::nullAtom, std::string frame = "");
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -93,14 +95,14 @@ void ImeOnFocusTest::focus(const WTF::AtomicString& element)
     m_document->body()->getElementById(element)->focus();
 }
 
-void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequestCount, IntPoint tapPoint, const WTF::AtomicString& focusElement)
+void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequestCount, IntPoint tapPoint, const WTF::AtomicString& focusElement, std::string frame)
 {
     ImeRequestTrackingWebViewClient client;
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(fileName));
+    registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(fileName));
     WebViewImpl* webView = m_webViewHelper.initialize(true, 0, &client);
     m_webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(800, 1200));
-    FrameTestHelpers::loadFrame(webView->mainFrame(), m_baseURL + fileName);
+    loadFrame(webView->mainFrame(), m_baseURL + fileName);
     m_document = m_webViewHelper.webViewImpl()->mainFrameImpl()->document().unwrap<Document>();
 
     if (!focusElement.isNull())
@@ -109,6 +111,12 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequ
 
     if (tapPoint.x() >= 0 && tapPoint.y() >= 0)
         sendGestureTap(webView, tapPoint);
+
+    if (!frame.empty()) {
+        registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(frame));
+        WebFrame* childFrame = webView->mainFrame()->firstChild();
+        loadFrame(childFrame, m_baseURL + frame);
+    }
 
     if (!focusElement.isNull())
         focus(focusElement);
@@ -140,6 +148,11 @@ TEST_F(ImeOnFocusTest, AfterFirstGesture)
 TEST_F(ImeOnFocusTest, AfterNavigationWithinPage)
 {
     runImeOnFocusTest("ime-on-focus-after-navigation-within-page.html", 1, IntPoint(50, 50), "input");
+}
+
+TEST_F(ImeOnFocusTest, AfterFrameLoadOnGesture)
+{
+    runImeOnFocusTest("ime-on-focus-after-frame-load-on-gesture.html", 1, IntPoint(50, 50), "input", "frame.html");
 }
 
 }

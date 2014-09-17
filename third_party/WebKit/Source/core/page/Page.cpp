@@ -573,6 +573,7 @@ void Page::didCommitLoad(LocalFrame* frame)
         frame->console().clearMessages();
         useCounter().didCommitLoad();
         m_inspectorController->didCommitLoadForMainFrame();
+        UserGestureIndicator::clearProcessedUserGestureSinceLoad();
     }
 }
 

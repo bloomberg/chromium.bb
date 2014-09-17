@@ -3754,8 +3754,6 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_linkHighlights.clear();
     endActiveFlingAnimation();
     m_userGestureObserved = false;
-    if (!isNavigationWithinPage)
-        UserGestureIndicator::clearProcessedUserGestureSinceLoad();
 }
 
 void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
