@@ -61,7 +61,7 @@ function initializeBackgroundService(appLauncher) {
 
 function main() {
   if (base.isAppsV2()) {
-    appLauncher = new remoting.V2AppLauncher();
+    var appLauncher = new remoting.V2AppLauncher();
     initializeAppV2(appLauncher);
   }
 }
