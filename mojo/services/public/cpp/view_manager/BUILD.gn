@@ -34,8 +34,6 @@ source_set("view_manager") {
     "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/gpu",
-    "//mojo/services/public/interfaces/native_viewport",
-    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//skia",
@@ -49,7 +47,6 @@ source_set("view_manager") {
 
 source_set("common") {
   sources = [
-    "ids.h",
-    "types.h",
+    "types.h"
   ]
 }

@@ -7,6 +7,7 @@
 
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
+#include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
 namespace service {
@@ -20,7 +21,7 @@ const ConnectionSpecificId kInvalidConnectionId = 0;
 const ConnectionSpecificId kWindowManagerConnection = 1;
 
 // Adds a bit of type safety to view ids.
-struct ViewId {
+struct MOJO_VIEW_MANAGER_EXPORT ViewId {
   ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId view_id)
       : connection_id(connection_id),
         view_id(view_id) {}
