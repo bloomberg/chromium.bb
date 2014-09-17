@@ -93,8 +93,7 @@ FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };
  */
 FullWindowVideoControls.prototype.showErrorMessage = function(message) {
   var errorBanner = document.querySelector('#error');
-  errorBanner.textContent =
-      loadTimeData.getString(message);
+  errorBanner.textContent = loadTimeData.getString(message);
   errorBanner.setAttribute('visible', 'true');
 
   // The window is hidden if the video has not loaded yet.
@@ -257,10 +256,6 @@ VideoPlayer.prototype.prepare = function(videos) {
   else
     videoPlayerElement.removeAttribute('multiple');
 
-  document.querySelector('#cast-menu').setAttribute(
-      'playon-text',
-      loadTimeData.getString('VIDEO_PLAYER_PLAY_ON'));
-
   document.addEventListener('keydown', reloadVideo);
   document.addEventListener('click', reloadVideo);
 };
@@ -331,8 +326,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     if (this.currentCast_) {
       videoPlayerElement.setAttribute('casting', true);
 
-      document.querySelector('#cast-name-label').textContent =
-          loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');
       document.querySelector('#cast-name').textContent =
           this.currentCast_.friendlyName;
 
@@ -567,6 +560,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
 
   var item = new cr.ui.MenuItem();
   item.label = loadTimeData.getString('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
+  item.setAttribute('aria-label', item.label);
   item.castLabel = '';
   item.addEventListener('activate', this.onCastSelected_.wrap(this, null));
   menu.appendChild(item);
@@ -574,6 +568,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
   for (var i = 0; i < casts.length; i++) {
     var item = new cr.ui.MenuItem();
     item.label = casts[i].friendlyName;
+    item.setAttribute('aria-label', item.label);
     item.castLabel = casts[i].label;
     item.addEventListener('activate',
                           this.onCastSelected_.wrap(this, casts[i]));
@@ -662,6 +657,7 @@ var player = new VideoPlayer();
 function initStrings(callback) {
   chrome.fileManagerPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
+    i18nTemplate.process(document, loadTimeData);
     callback();
   }.wrap(null));
 }

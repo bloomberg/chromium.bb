@@ -20,10 +20,12 @@
 </head>
 <body>
   <div id="video-player" tools>
-    <menu id='cast-menu' class='cast-menu tool'></menu>
+    <menu id='cast-menu' class='cast-menu tool'
+          i18n-values="playon-text:VIDEO_PLAYER_PLAY_ON"></menu>
     <div id="cast-container">
       <div id="cast-info">
-        <div class="first-line" id='cast-name-label'></div>
+        <div class="first-line" id='cast-name-label'
+             i18n-content="VIDEO_PLAYER_PLAYING_ON"></div>
         <div class="second-line" id="cast-name"></div>
       </div>
     </div>
@@ -36,7 +38,8 @@
     <div id="header-container" class="header tool">
       <div id="title">&nbsp;</div>
       <button class="cast-button menubutton hidden tool"
-              menu="#cast-menu"></button>
+              menu="#cast-menu"
+              i18n-values="aria-label:VIDEO_PLAYER_PLAY_ON"></button>
       <button class="minimize-button tool" tabindex="-1"></button>
       <button class="maximize-button tool" tabindex="-1"></button>
       <button class="close-button tool" tabindex="-1"></button>
