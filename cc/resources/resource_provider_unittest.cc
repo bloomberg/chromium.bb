@@ -3323,9 +3323,8 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
 
   RasterBuffer* raster_buffer = resource_provider->AcquirePixelRasterBuffer(id);
   skia::RefPtr<SkCanvas> canvas = raster_buffer->AcquireSkCanvas();
-  EXPECT_TRUE(canvas.get() == NULL);
+  EXPECT_TRUE(canvas);
   raster_buffer->ReleaseSkCanvas(canvas);
-  canvas.clear();
   resource_provider->ReleasePixelRasterBuffer(id);
   Mock::VerifyAndClearExpectations(context);
 }

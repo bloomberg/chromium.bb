@@ -25,6 +25,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
@@ -454,8 +455,11 @@ skia::RefPtr<SkCanvas> ResourceProvider::GpuRasterBuffer::AcquireSkCanvas() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "ResourceProvider::GpuRasterBuffer::AcquireSkCanvas");
 
-  return surface_ ? skia::SharePtr(surface_->getCanvas())
-                  : skia::RefPtr<SkCanvas>();
+  skia::RefPtr<SkCanvas> canvas = surface_
+                                      ? skia::SharePtr(surface_->getCanvas())
+                                      : skia::AdoptRef(SkCreateNullCanvas());
+  canvas->save();
+  return canvas;
 }
 
 void ResourceProvider::GpuRasterBuffer::ReleaseSkCanvas(
@@ -463,6 +467,8 @@ void ResourceProvider::GpuRasterBuffer::ReleaseSkCanvas(
   // Note that this function is called from a worker thread.
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "ResourceProvider::GpuRasterBuffer::ReleaseSkCanvas");
+
+  canvas->restore();
 }
 
 ResourceProvider::ImageRasterBuffer::ImageRasterBuffer(
@@ -506,7 +512,7 @@ skia::RefPtr<SkCanvas> ResourceProvider::ImageRasterBuffer::AcquireSkCanvas() {
                "ResourceProvider::ImageRasterBuffer::AcquireSkCanvas");
 
   if (!mapped_buffer_)
-    return skia::RefPtr<SkCanvas>();
+    return skia::AdoptRef(SkCreateNullCanvas());
 
   MakeBitmap(&raster_bitmap_,
              mapped_buffer_,
@@ -570,7 +576,7 @@ skia::RefPtr<SkCanvas> ResourceProvider::PixelRasterBuffer::AcquireSkCanvas() {
                "ResourceProvider::PixelRasterBuffer::AcquireSkCanvas");
 
   if (!mapped_buffer_)
-    return skia::RefPtr<SkCanvas>();
+    return skia::AdoptRef(SkCreateNullCanvas());
 
   MakeBitmap(&raster_bitmap_,
              mapped_buffer_,

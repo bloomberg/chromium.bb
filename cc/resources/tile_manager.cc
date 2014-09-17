@@ -123,9 +123,7 @@ class RasterTaskImpl : public RasterTask {
         devtools_instrumentation::kRasterTask, layer_id_);
 
     skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
-    if (!canvas)
-      return;
-    canvas->save();
+    DCHECK(canvas);
 
     skia::RefPtr<SkDrawFilter> draw_filter;
     switch (raster_mode_) {
@@ -164,7 +162,6 @@ class RasterTaskImpl : public RasterTask {
           100);
     }
 
-    canvas->restore();
     raster_buffer_->ReleaseSkCanvas(canvas);
   }
 
