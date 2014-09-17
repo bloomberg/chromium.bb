@@ -32,11 +32,13 @@ class ContentAction : public base::RefCounted<ContentAction> {
   enum Type {
     ACTION_SHOW_PAGE_ACTION,
     ACTION_REQUEST_CONTENT_SCRIPT,
+    ACTION_SET_ICON,
   };
 
   struct ApplyInfo {
     content::BrowserContext* browser_context;
     content::WebContents* tab;
+    int priority;
   };
 
   ContentAction();

@@ -25,6 +25,7 @@ extern const char kPageUrl[];
 extern const char kPageStateMatcherType[];
 extern const char kShowPageAction[];
 extern const char kRequestContentScript[];
+extern const char kSetIcon[];
 
 }  // namespace declarative_content_constants
 }  // namespace extensions

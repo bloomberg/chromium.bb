@@ -61,6 +61,10 @@ gfx::ImageSkia ExtensionActionIconFactory::GetBaseIconFromAction(int tab_id) {
   if (!icon.isNull())
     return icon;
 
+  icon = action_->GetDeclarativeIcon(tab_id);
+  if (!icon.isNull())
+    return icon;
+
   if (default_icon_)
     return default_icon_->image_skia();
 

@@ -107,8 +107,19 @@ class ExtensionAction {
   // Set this action's icon bitmap on a specific tab.
   void SetIcon(int tab_id, const gfx::Image& image);
 
+  // Tries to parse |*icon| from a dictionary {"19": imageData19, "38":
+  // imageData38}, returning false if a value is corrupt.
+  static bool ParseIconFromCanvasDictionary(const base::DictionaryValue& dict,
+                                            gfx::ImageSkia* icon);
+
   // Gets the icon that has been set using |SetIcon| for the tab.
   gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
+
+  // Sets the icon for a tab, in a way that can't be read by the extension's
+  // javascript.  Multiple icons can be set at the same time; some icon with the
+  // highest priority will be used.
+  void DeclarativeSetIcon(int tab_id, int priority, const gfx::Image& icon);
+  void UndoDeclarativeSetIcon(int tab_id, int priority, const gfx::Image& icon);
 
   // Non-tab-specific icon path. This is used to support the default_icon key of
   // page and browser actions.
@@ -156,6 +167,7 @@ class ExtensionAction {
   // by an appearance set directly on the tab.
   void DeclarativeShow(int tab_id);
   void UndoDeclarativeShow(int tab_id);
+  const gfx::ImageSkia GetDeclarativeIcon(int tab_id) const;
 
   // Get the badge visibility for a tab, or the default badge visibility
   // if none was set.
@@ -265,6 +277,10 @@ class ExtensionAction {
   // Maps tab_id to the number of active (applied-but-not-reverted)
   // declarativeContent.ShowPageAction actions.
   std::map<int, int> declarative_show_count_;
+
+  // declarative_icon_[tab_id][declarative_rule_priority] is a vector of icon
+  // images that are currently in effect
+  std::map<int, std::map<int, std::vector<gfx::Image> > > declarative_icon_;
 
   // ExtensionIconSet containing paths to bitmaps from which default icon's
   // image representations will be selected.

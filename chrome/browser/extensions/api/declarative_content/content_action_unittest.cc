@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 
+#include "base/base64.h"
 #include "base/run_loop.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -18,8 +19,12 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
+#include "ipc/ipc_message_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 
 namespace extensions {
 namespace {
@@ -149,6 +154,60 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   EXPECT_TRUE(page_action->GetIsVisible(tab_id));
   result->Revert(extension->id(), base::Time(), &apply_info);
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+}
+
+TEST(DeclarativeContentActionTest, SetIcon) {
+  TestExtensionEnvironment env;
+
+  // Simulate the process of passing ImageData to SetIcon::Create.
+  SkBitmap bitmap;
+  EXPECT_TRUE(bitmap.tryAllocN32Pixels(19, 19));
+  bitmap.eraseARGB(0,0,0,0);
+  uint32_t* pixels = bitmap.getAddr32(0, 0);
+  for (int i = 0; i < 19 * 19; ++i)
+    pixels[i] = i;
+  IPC::Message bitmap_pickle;
+  IPC::WriteParam(&bitmap_pickle, bitmap);
+  std::string binary_data = std::string(
+      static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
+  std::string data64;
+  base::Base64Encode(binary_data, &data64);
+
+  scoped_ptr<base::DictionaryValue> dict =
+      DictionaryBuilder().Set("instanceType", "declarativeContent.SetIcon")
+                         .Set("imageData",
+                              DictionaryBuilder().Set("19", data64)).Build();
+
+  const Extension* extension = env.MakeExtension(
+      *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      extension,
+      *dict,
+      &error,
+      &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(ContentAction::ACTION_SET_ICON, result->GetType());
+
+  ExtensionAction* page_action =
+      ExtensionActionManager::Get(env.profile())->GetPageAction(*extension);
+  scoped_ptr<content::WebContents> contents = env.MakeTab();
+  const int tab_id = ExtensionTabUtil::GetTabId(contents.get());
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+  ContentAction::ApplyInfo apply_info = {
+    env.profile(), contents.get()
+  };
+
+  // The declarative icon shouldn't exist unless the content action is applied.
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  result->Apply(extension->id(), base::Time(), &apply_info);
+  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
+  result->Revert(extension->id(), base::Time(), &apply_info);
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).bitmap()->empty());
 }
 
 TEST_F(RequestContentScriptTest, MissingScripts) {

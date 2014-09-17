@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative/declarative_api.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task_runner_util.h"
@@ -50,6 +51,63 @@ std::string GetWebRequestEventName(const std::string& event_name) {
         0, strlen(webview::kWebViewEventPrefix), kWebRequest);
   }
   return web_request_event_name;
+}
+
+void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict);
+
+// Encodes |binary| as base64 and returns a new StringValue populated with the
+// encoded string.
+scoped_ptr<base::StringValue> ConvertBinaryToBase64(base::BinaryValue* binary) {
+  std::string binary_data = std::string(binary->GetBuffer(), binary->GetSize());
+  std::string data64;
+  base::Base64Encode(binary_data, &data64);
+  return scoped_ptr<base::StringValue>(new base::StringValue(data64));
+}
+
+// Parses through |args| replacing any BinaryValues with base64 encoded
+// StringValues. Recurses over any nested ListValues, and calls
+// ConvertBinaryDictionaryValuesToBase64 for any nested DictionaryValues.
+void ConvertBinaryListElementsToBase64(base::ListValue* args) {
+  size_t index = 0;
+  for (base::ListValue::iterator iter = args->begin(); iter != args->end();
+       ++iter, ++index) {
+    if ((*iter)->IsType(base::Value::TYPE_BINARY)) {
+      base::BinaryValue* binary = NULL;
+      if (args->GetBinary(index, &binary))
+        args->Set(index, ConvertBinaryToBase64(binary).release());
+    } else if ((*iter)->IsType(base::Value::TYPE_LIST)) {
+      base::ListValue* list;
+      (*iter)->GetAsList(&list);
+      ConvertBinaryListElementsToBase64(list);
+    } else if ((*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* dict;
+      (*iter)->GetAsDictionary(&dict);
+      ConvertBinaryDictionaryValuesToBase64(dict);
+    }
+  }
+}
+
+// Parses through |dict| replacing any BinaryValues with base64 encoded
+// StringValues. Recurses over any nested DictionaryValues, and calls
+// ConvertBinaryListElementsToBase64 for any nested ListValues.
+void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict) {
+  for (base::DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (iter.value().IsType(base::Value::TYPE_BINARY)) {
+      base::BinaryValue* binary = NULL;
+      if (dict->GetBinary(iter.key(), &binary))
+        dict->Set(iter.key(), ConvertBinaryToBase64(binary).release());
+    } else if (iter.value().IsType(base::Value::TYPE_LIST)) {
+      const base::ListValue* list;
+      iter.value().GetAsList(&list);
+      ConvertBinaryListElementsToBase64(const_cast<base::ListValue*>(list));
+    } else if (iter.value().IsType(base::Value::TYPE_DICTIONARY)) {
+      const base::DictionaryValue* dict;
+      iter.value().GetAsDictionary(&dict);
+      ConvertBinaryDictionaryValuesToBase64(
+          const_cast<base::DictionaryValue*>(dict));
+    }
+  }
 }
 
 }  // namespace
@@ -120,6 +178,7 @@ bool RulesFunction::RunAsync() {
 }
 
 bool EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
+  ConvertBinaryListElementsToBase64(args_.get());
   scoped_ptr<AddRules::Params> params(AddRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

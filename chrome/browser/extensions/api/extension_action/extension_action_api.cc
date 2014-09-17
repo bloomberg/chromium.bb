@@ -464,21 +464,9 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
   int icon_index;
   if (details_->GetDictionary("imageData", &canvas_set)) {
     gfx::ImageSkia icon;
-    // Extract icon representations from the ImageDataSet dictionary.
-    for (size_t i = 0; i < extension_misc::kNumExtensionActionIconSizes; i++) {
-      base::BinaryValue* binary = NULL;
-      const extension_misc::IconRepresentationInfo& icon_info =
-          extension_misc::kExtensionActionIconSizes[i];
-      if (canvas_set->GetBinary(icon_info.size_string, &binary)) {
-        IPC::Message pickle(binary->GetBuffer(), binary->GetSize());
-        PickleIterator iter(pickle);
-        SkBitmap bitmap;
-        EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&pickle, &iter, &bitmap));
-        CHECK(!bitmap.isNull());
-        float scale = ui::GetScaleForScaleFactor(icon_info.scale);
-        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
-      }
-    }
+
+    EXTENSION_FUNCTION_VALIDATE(
+        ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon));
 
     extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {

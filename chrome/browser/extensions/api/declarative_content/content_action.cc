@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/render_view_host.h"
@@ -22,6 +23,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 
@@ -29,11 +32,16 @@ namespace keys = declarative_content_constants;
 
 namespace {
 // Error messages.
+const char kInvalidIconDictionary[] =
+    "Icon dictionary must be of the form {\"19\": ImageData1, \"38\": "
+    "ImageData2}";
 const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
+const char kMissingParameter[] = "Missing parameter is required: %s";
 const char kNoPageAction[] =
     "Can't use declarativeContent.ShowPageAction without a page action";
-const char kMissingParameter[] = "Missing parameter is required: %s";
+const char kNoPageOrBrowserAction[] =
+    "Can't use declarativeContent.SetIcon without a page or browser action";
 
 #define INPUT_FORMAT_VALIDATE(test) do { \
     if (!(test)) { \
@@ -108,6 +116,81 @@ class ShowPageAction : public ContentAction {
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
 };
 
+// Action that sets an extension's action icon.
+class SetIcon : public ContentAction {
+ public:
+  SetIcon(const gfx::Image& icon, ActionInfo::Type action_type)
+      : icon_(icon), action_type_(action_type) {}
+
+  static scoped_refptr<ContentAction> Create(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::DictionaryValue* dict,
+      std::string* error,
+      bool* bad_message);
+
+  // Implementation of ContentAction:
+  virtual Type GetType() const OVERRIDE { return ACTION_SET_ICON; }
+  virtual void Apply(const std::string& extension_id,
+                     const base::Time& extension_install_time,
+                     ApplyInfo* apply_info) const OVERRIDE {
+    Profile* profile = Profile::FromBrowserContext(apply_info->browser_context);
+    ExtensionAction* action = GetExtensionAction(profile, extension_id);
+    if (action) {
+      action->DeclarativeSetIcon(ExtensionTabUtil::GetTabId(apply_info->tab),
+                                 apply_info->priority,
+                                 icon_);
+      ExtensionActionAPI::Get(profile)
+          ->NotifyChange(action, apply_info->tab, profile);
+    }
+  }
+
+  virtual void Reapply(const std::string& extension_id,
+                       const base::Time& extension_install_time,
+                       ApplyInfo* apply_info) const OVERRIDE {}
+
+  virtual void Revert(const std::string& extension_id,
+                      const base::Time& extension_install_time,
+                      ApplyInfo* apply_info) const OVERRIDE {
+    Profile* profile = Profile::FromBrowserContext(apply_info->browser_context);
+    ExtensionAction* action = GetExtensionAction(profile, extension_id);
+    if (action) {
+      action->UndoDeclarativeSetIcon(
+          ExtensionTabUtil::GetTabId(apply_info->tab),
+          apply_info->priority,
+          icon_);
+      ExtensionActionAPI::Get(apply_info->browser_context)
+          ->NotifyChange(action, apply_info->tab, profile);
+    }
+  }
+
+ private:
+  ExtensionAction* GetExtensionAction(Profile* profile,
+                                      const std::string& extension_id) const {
+    const Extension* extension =
+        ExtensionRegistry::Get(profile)
+            ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+    if (!extension)
+      return NULL;
+    switch (action_type_) {
+      case ActionInfo::TYPE_BROWSER:
+        return ExtensionActionManager::Get(profile)
+            ->GetBrowserAction(*extension);
+      case ActionInfo::TYPE_PAGE:
+        return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
+      default:
+        NOTREACHED();
+    }
+    return NULL;
+  }
+  virtual ~SetIcon() {}
+
+  gfx::Image icon_;
+  ActionInfo::Type action_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetIcon);
+};
+
 // Helper for getting JS collections into C++.
 static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
                                         std::vector<std::string>* append_to) {
@@ -147,6 +230,8 @@ struct ContentActionFactory {
         &ShowPageAction::Create;
     factory_methods[keys::kRequestContentScript] =
         &RequestContentScript::Create;
+    factory_methods[keys::kSetIcon] =
+        &SetIcon::Create;
   }
 };
 
@@ -342,6 +427,35 @@ void RequestContentScript::InstructRenderProcessToInject(
       extension_id,
       script_.id(),
       contents->GetLastCommittedURL()));
+}
+
+// static
+scoped_refptr<ContentAction> SetIcon::Create(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  // We can't set a page or action's icon if the extension doesn't have one.
+  ActionInfo::Type type;
+  if (ActionInfo::GetPageActionInfo(extension) != NULL) {
+    type = ActionInfo::TYPE_PAGE;
+  } else if (ActionInfo::GetBrowserActionInfo(extension) != NULL) {
+    type = ActionInfo::TYPE_BROWSER;
+  } else {
+    *error = kNoPageOrBrowserAction;
+    return scoped_refptr<ContentAction>();
+  }
+
+  gfx::ImageSkia icon;
+  const base::DictionaryValue* canvas_set = NULL;
+  if (dict->GetDictionary("imageData", &canvas_set) &&
+      !ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon)) {
+    *error = kInvalidIconDictionary;
+    *bad_message = true;
+    return scoped_refptr<ContentAction>();
+  }
+  return scoped_refptr<ContentAction>(new SetIcon(gfx::Image(icon), type));
 }
 
 //

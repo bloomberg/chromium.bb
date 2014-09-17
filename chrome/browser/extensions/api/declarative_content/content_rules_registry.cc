@@ -80,6 +80,7 @@ void ContentRulesRegistry::Apply(
   };
   for (std::set<ContentRule*>::const_iterator it = matching_rules.begin();
        it != matching_rules.end(); ++it) {
+    apply_info.priority = (*it)->priority();
     if (!ContainsKey(prev_matching_rules, *it)) {
       (*it)->actions().Apply((*it)->extension_id(), base::Time(), &apply_info);
     } else {
@@ -89,8 +90,10 @@ void ContentRulesRegistry::Apply(
   }
   for (std::set<ContentRule*>::const_iterator it = prev_matching_rules.begin();
        it != prev_matching_rules.end(); ++it) {
-    if (!ContainsKey(matching_rules, *it))
+    if (!ContainsKey(matching_rules, *it)) {
+      apply_info.priority = (*it)->priority();
       (*it)->actions().Revert((*it)->extension_id(), base::Time(), &apply_info);
+    }
   }
 
   if (matching_rules.empty())

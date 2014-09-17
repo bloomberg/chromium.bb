@@ -22,6 +22,7 @@ const char kPageUrl[] = "pageUrl";
 const char kPageStateMatcherType[] = "declarativeContent.PageStateMatcher";
 const char kShowPageAction[] = "declarativeContent.ShowPageAction";
 const char kRequestContentScript[] = "declarativeContent.RequestContentScript";
+const char kSetIcon[] = "declarativeContent.SetIcon";
 
 }  // namespace declarative_content_constants
 }  // namespace extensions

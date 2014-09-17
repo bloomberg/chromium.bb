@@ -10,6 +10,7 @@ var utils = require('utils');
 var validate = require('schemaUtils').validate;
 var canonicalizeCompoundSelector =
     requireNative('css_natives').CanonicalizeCompoundSelector;
+var setIcon = require('setIcon').setIcon;
 
 binding.registerCustomHook( function(api) {
   var declarativeContent = api.compiledApi;
@@ -62,6 +63,13 @@ binding.registerCustomHook( function(api) {
   };
   declarativeContent.RequestContentScript = function(parameters) {
     setupInstance(this, parameters, 'RequestContentScript');
+  };
+  // TODO(rockot): Do not expose this in M39 stable. Making this restriction
+  // possible will take some extra work. See http://crbug.com/415315
+  declarativeContent.SetIcon = function(parameters) {
+    setIcon(parameters, function (data) {
+      setupInstance(this, data, 'SetIcon');
+    }.bind(this));
   };
 });
 
