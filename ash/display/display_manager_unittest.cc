@@ -1102,6 +1102,33 @@ TEST_F(DisplayManagerTest, UIScaleUpgradeToHighDPI) {
   EXPECT_EQ("480x270", GetDisplayForId(display_id).size().ToString());
 }
 
+TEST_F(DisplayManagerTest, Use125DSFRorUIScaling) {
+  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  gfx::Display::SetInternalDisplayId(display_id);
+  DisplayInfo::SetUse125DSFForUIScaling(true);
+
+  UpdateDisplay("1920x1080*1.25");
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+
+  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("1536x864", GetDisplayForId(display_id).size().ToString());
+
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(0.5f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("960x540", GetDisplayForId(display_id).size().ToString());
+
+  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
+
+  DisplayInfo::SetUse125DSFForUIScaling(false);
+}
+
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
@@ -1472,6 +1499,16 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
   ASSERT_DOUBLE_EQ(
       2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest,
+       TextSubpixelPositioningWithDsf125InternalWithScaling) {
+  DisplayInfo::SetUse125DSFForUIScaling(true);
+  FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
 #endif  // OS_CHROMEOS

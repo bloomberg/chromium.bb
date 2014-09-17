@@ -168,10 +168,6 @@ DisplayManager::DisplayManager()
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
-  DisplayInfo::SetAllowUpgradeToHighDPI(
-      ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor() ==
-      ui::SCALE_FACTOR_200P);
-
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE,
                                  screen_ash_.get());
   gfx::Screen* current_native =
@@ -252,6 +248,7 @@ bool DisplayManager::InitFromCommandLine() {
   for (vector<string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
     info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
+    info_list.back().set_native(true);
   }
   MaybeInitInternalDisplay(info_list[0].id());
   if (info_list.size() > 1 &&
@@ -265,6 +262,7 @@ bool DisplayManager::InitFromCommandLine() {
 void DisplayManager::InitDefaultDisplay() {
   DisplayInfoList info_list;
   info_list.push_back(DisplayInfo::CreateFromSpec(std::string()));
+  info_list.back().set_native(true);
   MaybeInitInternalDisplay(info_list[0].id());
   OnNativeDisplaysChanged(info_list);
 }
@@ -276,7 +274,7 @@ void DisplayManager::InitFontParams() {
   const DisplayInfo& display_info =
       GetDisplayInfo(gfx::Display::InternalDisplayId());
   gfx::SetFontRenderParamsDeviceScaleFactor(
-      display_info.device_scale_factor());
+      display_info.GetEffectiveDeviceScaleFactor());
 #endif  // OS_CHROMEOS
 }
 
