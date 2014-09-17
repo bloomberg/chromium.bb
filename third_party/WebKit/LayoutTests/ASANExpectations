@@ -83,4 +83,5 @@ crbug.com/385015 [ Linux ] fast/loader/frame-creation-removal.html [ Failure ]
 crbug.com/395997 [ Linux ] inspector/elements/styles/style-formatter.html [ Crash Pass Timeout ]
 crbug.com/395997 [ Linux ] inspector/sources/debugger/script-formatter.html [ Crash Pass ]
 
-
+# This test is flaky in debug as well, see FlakyTests
+Bug(gardener) [ Linux ] fast/events/keydown-1.html [ Pass Timeout ]
