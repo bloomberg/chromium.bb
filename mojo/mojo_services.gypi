@@ -5,6 +5,59 @@
 {
   'targets': [
     {
+      # GN version: //mojo/services/clipboard/
+      'target_name': 'mojo_clipboard',
+      'type': 'loadable_module',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_base.gyp:mojo_common_lib',
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_utility',
+        'mojo_base.gyp:mojo_application_chromium',
+        'mojo_clipboard_bindings',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'services/clipboard/clipboard_standalone_impl.cc',
+        'services/clipboard/clipboard_standalone_impl.h',
+        'services/clipboard/main.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/services/public/interfaces/clipboard
+      'target_name': 'mojo_clipboard_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/clipboard/clipboard.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+    },
+    {
+      # GN version: //mojo/services/clipboard:mojo_clipboard_unittests
+      'target_name': 'mojo_clipboard_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_application_manager',
+        'mojo_base.gyp:mojo_application_chromium',
+        'mojo_base.gyp:mojo_run_all_unittests',
+        'mojo_base.gyp:mojo_system_impl',
+        'mojo_clipboard_bindings',
+        'mojo_shell_test_support',
+      ],
+      'sources': [
+        'services/clipboard/clipboard_standalone_unittest.cc',
+      ],
+    },
+    {
       # GN version: //mojo/services/html_viewer
       'target_name': 'mojo_html_viewer',
       'type': 'loadable_module',
@@ -23,6 +76,7 @@
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_utility',
+        'mojo_clipboard_bindings',
         'mojo_cc_support',
         'mojo_content_handler_bindings',
         'mojo_gpu_bindings',
@@ -47,6 +101,8 @@
         'services/html_viewer/html_viewer.cc',
         'services/html_viewer/html_document_view.cc',
         'services/html_viewer/html_document_view.h',
+        'services/html_viewer/webclipboard_impl.cc',
+        'services/html_viewer/webclipboard_impl.h',
         'services/html_viewer/webcookiejar_impl.cc',
         'services/html_viewer/webcookiejar_impl.h',
         'services/html_viewer/webmediaplayer_factory.cc',

@@ -21,4 +21,14 @@ WebString TypeConverter<WebString, String>::Convert(const String& str) {
   return WebString::fromUTF8(str.get());
 }
 
+// static
+Array<uint8_t> TypeConverter<Array<uint8_t>, blink::WebString>::Convert(
+    const blink::WebString& input) {
+  std::string utf8 = input.utf8();
+  Array<uint8_t> result(utf8.size());
+  for (size_t i = 0; i < utf8.size(); ++i)
+    result[i] = utf8[i];
+  return result.Pass();
+}
+
 }  // namespace mojo
