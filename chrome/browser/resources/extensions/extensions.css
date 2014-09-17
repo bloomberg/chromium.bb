@@ -250,11 +250,6 @@ html[dir='rtl'] .extension-list-item {
   position: relative;
 }
 
-.enable-checkbox-text {
-  /* Matches width of trash. */
-  -webkit-margin-end: 30px;
-}
-
 .checkbox {
   display: inline-block;
 }

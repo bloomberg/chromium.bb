@@ -300,7 +300,6 @@ input:disabled:-webkit-any([type='password'],
 }
 
 :-webkit-any(.checkbox, .radio) label input ~ span {
-  -webkit-margin-end: 0.3em;
   -webkit-margin-start: 0.6em;
   -webkit-user-select: none;
   /* Make sure long spans wrap at the same horizontal position they start. */
