@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test currentTime values when setting while HAVE_NOTHING for media fragment URI.</title>
+    </head>
+    <body>
+        <video id="video"></video>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            video = document.getElementById('video');
+
+            video.src = findMediaFile("video", "content/test") + "#t=2";
+            testExpected("video.currentTime", 0);
+            video.currentTime = 1;
+
+            waitForEvent('loadedmetadata', function()
+            {
+                testExpected("video.currentTime", 1);
+            });
+
+            waitForEventAndEnd('seeked');
+        </script>
+    </body>
+</html>

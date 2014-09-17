@@ -331,7 +331,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
-    , m_fragmentStartTime(MediaPlayer::invalidTime())
     , m_fragmentEndTime(MediaPlayer::invalidTime())
     , m_pendingActionFlags(0)
     , m_userGestureRequiredForPlay(false)
@@ -1809,9 +1808,10 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     if (m_readyState >= HAVE_METADATA && oldState < HAVE_METADATA) {
         createPlaceholderTracksIfNecessary();
 
-        prepareMediaFragmentURI();
-
         selectInitialTracksIfNecessary();
+
+        MediaFragmentURIParser fragmentParser(m_currentSrc);
+        m_fragmentEndTime = fragmentParser.endTime();
 
         m_duration = duration();
         scheduleEvent(EventTypeNames::durationchange);
@@ -1820,10 +1820,31 @@ void HTMLMediaElement::setReadyState(ReadyState state)
             scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
 
-        if (m_defaultPlaybackStartPosition > 0)
+        bool jumped = false;
+        if (m_defaultPlaybackStartPosition > 0) {
             seek(m_defaultPlaybackStartPosition);
-
+            jumped = true;
+        }
         m_defaultPlaybackStartPosition = 0;
+
+        double initialPlaybackPosition = fragmentParser.startTime();
+        if (initialPlaybackPosition == MediaPlayer::invalidTime())
+            initialPlaybackPosition = 0;
+
+        if (!jumped && initialPlaybackPosition > 0) {
+            m_sentEndEvent = false;
+            UseCounter::count(document(), UseCounter::HTMLMediaElementSeekToFragmentStart);
+            seek(initialPlaybackPosition);
+            jumped = true;
+        }
+
+        if (m_mediaController) {
+            if (jumped && initialPlaybackPosition > m_mediaController->currentTime())
+                m_mediaController->setCurrentTime(initialPlaybackPosition);
+            else
+                seek(m_mediaController->currentTime());
+        }
+
         if (hasMediaControls())
             mediaControls()->reset();
         if (renderer())
@@ -1837,7 +1858,6 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         shouldUpdateDisplayState = true;
         scheduleEvent(EventTypeNames::loadeddata);
         setShouldDelayLoadEvent(false);
-        applyMediaFragmentURI();
     }
 
     bool isPotentiallyPlaying = potentiallyPlaying();
@@ -3891,42 +3911,6 @@ bool HTMLMediaElement::isBlockedOnMediaController() const
         return true;
 
     return false;
-}
-
-void HTMLMediaElement::prepareMediaFragmentURI()
-{
-    MediaFragmentURIParser fragmentParser(m_currentSrc);
-    double dur = duration();
-
-    double start = fragmentParser.startTime();
-    if (start != MediaFragmentURIParser::invalidTimeValue() && start > 0) {
-        m_fragmentStartTime = start;
-        if (m_fragmentStartTime > dur)
-            m_fragmentStartTime = dur;
-    } else
-        m_fragmentStartTime = MediaPlayer::invalidTime();
-
-    double end = fragmentParser.endTime();
-    if (end != MediaFragmentURIParser::invalidTimeValue() && end > 0 && end > m_fragmentStartTime) {
-        m_fragmentEndTime = end;
-        if (m_fragmentEndTime > dur)
-            m_fragmentEndTime = dur;
-    } else
-        m_fragmentEndTime = MediaPlayer::invalidTime();
-
-    // FIXME: Add support for selecting tracks by ID with the Media Fragments track dimension.
-
-    if (m_fragmentStartTime != MediaPlayer::invalidTime() && m_readyState < HAVE_FUTURE_DATA)
-        prepareToPlay();
-}
-
-void HTMLMediaElement::applyMediaFragmentURI()
-{
-    if (m_fragmentStartTime != MediaPlayer::invalidTime()) {
-        m_sentEndEvent = false;
-        UseCounter::count(document(), UseCounter::HTMLMediaElementSeekToFragmentStart);
-        seek(m_fragmentStartTime);
-    }
 }
 
 WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const

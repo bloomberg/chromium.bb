@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test currentTime of media controller when one of the element has initial start time greater than 0.</title>
+    </head>
+    <body>
+        <video mediaGroup="group"></video>
+        <video mediaGroup="group"></video>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            videos = document.getElementsByTagName('video');
+            video = videos[0];
+            video2 = videos[1];
+            controller = video.controller;
+
+            var src = findMediaFile("video", "content/test");
+            video.src = src + "#t=2";
+            video2.src = src;
+            testExpected("video.currentTime", 0);
+            testExpected("video2.currentTime", 0);
+
+            controller.addEventListener("loadedmetadata", function()
+            {
+                testExpected("video.currentTime", 2);
+                testExpected("video2.currentTime", 2);
+                testExpected("controller.currentTime", 2);
+            });
+
+            waitForEventAndEnd('seeked');
+        </script>
+    </body>
+</html>

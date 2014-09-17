@@ -1,0 +1,9 @@
+ 
+EXPECTED (video.currentTime == '0') OK
+EXPECTED (video2.currentTime == '0') OK
+EXPECTED (video.currentTime == '2') OK
+EXPECTED (video2.currentTime == '2') OK
+EXPECTED (controller.currentTime == '2') OK
+EVENT(seeked)
+END OF TEST
+

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test currentTime for media controller when media element is added after a media fragment URI.</title>
+    </head>
+    <body>
+        <video></video>
+        <video></video>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            videos = document.getElementsByTagName("video");
+            video = videos[0];
+            video2 = videos[1];
+
+            var src = findMediaFile("video", "content/test");
+            video.src = src + "#t=2";
+            video.mediaGroup = "group";
+            video2.mediaGroup = "group";
+            controller = video.controller;
+
+            video.addEventListener("loadeddata", function() {
+                testExpected("video.currentTime", 2);
+                testExpected("video2.currentTime", 0);
+                video2.src = src;
+            });
+
+            video2.addEventListener("loadeddata", function() {
+                testExpected("video.currentTime", 2);
+                testExpected("video2.currentTime", 2);
+                endTest();
+            })
+        </script>
+    </body>
+</html>

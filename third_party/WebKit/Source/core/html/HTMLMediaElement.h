@@ -449,9 +449,6 @@ private:
     bool createMediaControls();
     void configureMediaControls();
 
-    void prepareMediaFragmentURI();
-    void applyMediaFragmentURI();
-
     virtual void* preDispatchEventHandler(Event*) OVERRIDE FINAL;
 
     void changeNetworkStateFromLoadingToIdle();
@@ -549,7 +546,6 @@ private:
     // higher, otherwise the current time is assumed to be zero.
     mutable double m_cachedTime;
 
-    double m_fragmentStartTime;
     double m_fragmentEndTime;
 
     typedef unsigned PendingActionFlags;
