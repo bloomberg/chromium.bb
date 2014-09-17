@@ -71,6 +71,13 @@ const int kPagePadding = 40;
 const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
 
+const int kExperimentalPreferredTileWidth = 90;
+const int kExperimentalPrefferedTileHeight = 90;
+
+// Padding on each side of a tile.
+const int kExperimentalTileLeftRightPadding = 15;
+const int kExperimentalTileTopBottomPadding = 11;
+
 // Width in pixels of the area on the sides that triggers a page flip.
 const int kPageFlipZoneSize = 40;
 
@@ -95,6 +102,23 @@ const int kFolderItemReparentDelay = 50;
 // Radius of the circle, in which if entered, show folder dropping preview
 // UI.
 const int kFolderDroppingCircleRadius = 39;
+
+// Returns the size of a tile view excluding its padding.
+gfx::Size GetTileViewSize() {
+  return switches::IsExperimentalAppListEnabled()
+             ? gfx::Size(kExperimentalPreferredTileWidth,
+                         kExperimentalPrefferedTileHeight)
+             : gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+}
+
+// Returns the size of a tile view inccluding its padding.
+gfx::Size GetTotalTileSize() {
+  gfx::Size size = GetTileViewSize();
+  if (switches::IsExperimentalAppListEnabled())
+    size.Enlarge(2 * kExperimentalTileLeftRightPadding,
+                 2 * kExperimentalTileTopBottomPadding);
+  return size;
+}
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
@@ -1040,8 +1064,7 @@ void AppsGridView::UpdatePulsingBlockViews() {
   }
 
   while (pulsing_blocks_model_.view_size() < desired) {
-    views::View* view = new PulsingBlockView(
-        gfx::Size(kPreferredTileWidth, kPreferredTileHeight), true);
+    views::View* view = new PulsingBlockView(GetTotalTileSize(), true);
     pulsing_blocks_model_.Add(view, 0);
     AddChildView(view);
   }
@@ -1253,7 +1276,7 @@ void AppsGridView::AnimateToIdealBounds() {
     const bool visible = current_visible || target_visible;
 
     const int y_diff = target.y() - current.y();
-    if (visible && y_diff && y_diff % kPreferredTileHeight == 0) {
+    if (visible && y_diff && y_diff % GetTotalTileSize().height() == 0) {
       AnimationBetweenRows(view,
                            current_visible,
                            current,
@@ -1295,12 +1318,13 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
     view->layer()->SetOpacity(0.f);
   }
 
+  gfx::Size total_tile_size = GetTotalTileSize();
   gfx::Rect current_out(current);
-  current_out.Offset(dir * kPreferredTileWidth, 0);
+  current_out.Offset(dir * total_tile_size.width(), 0);
 
   gfx::Rect target_in(target);
   if (animate_target)
-    target_in.Offset(-dir * kPreferredTileWidth, 0);
+    target_in.Offset(-dir * total_tile_size.width(), 0);
   view->SetBoundsRect(target_in);
   bounds_animator_.AnimateViewTo(view, target);
 
@@ -1395,6 +1419,7 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
     x_offset_direction = reorder_placeholder_ < grid_index ? -1 : 1;
   }
 
+  gfx::Size total_tile_size = GetTotalTileSize();
   int row = grid_index.slot / cols_;
 
   // Offset the target column based on the direction of the target. This will
@@ -1404,8 +1429,8 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
   // This makes eordering feel like the user is slotting items into the spaces
   // between apps.
   int x_offset = x_offset_direction *
-                 (kPreferredTileWidth - kFolderDroppingCircleRadius) / 2;
-  int col = (point.x() - bounds.x() + x_offset) / kPreferredTileWidth;
+                 (total_tile_size.width() - kFolderDroppingCircleRadius) / 2;
+  int col = (point.x() - bounds.x() + x_offset) / total_tile_size.width();
   col = ClampToRange(col, 0, cols_ - 1);
   *drop_target =
       std::min(Index(pagination_model_.selected_page(), row * cols_ + col),
@@ -2067,16 +2092,20 @@ bool AppsGridView::CanDropIntoTarget(const Index& drop_target) const {
 AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
     const gfx::Point& point) const {
   gfx::Rect bounds = GetContentsBounds();
-  int col =
-      ClampToRange((point.x() - bounds.x()) / kPreferredTileWidth, 0, cols_);
+  gfx::Size total_tile_size = GetTotalTileSize();
+  int col = ClampToRange(
+      (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_);
   int row = ClampToRange(
-      (point.y() - bounds.y()) / kPreferredTileHeight, 0, rows_per_page_);
+      (point.y() - bounds.y()) / total_tile_size.height(), 0, rows_per_page_);
   return Index(pagination_model_.selected_page(), row * cols_ + col);
 }
 
 gfx::Size AppsGridView::GetTileGridSize() const {
   gfx::Rect bounds = GetExpectedTileBounds(0, 0);
   bounds.Union(GetExpectedTileBounds(rows_per_page_ - 1, cols_ - 1));
+  if (switches::IsExperimentalAppListEnabled())
+    bounds.Inset(-kExperimentalTileLeftRightPadding,
+                 -kExperimentalTileTopBottomPadding);
   return bounds.size();
 }
 
@@ -2086,10 +2115,12 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(int slot) const {
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   gfx::Rect bounds(GetContentsBounds());
-  gfx::Size tile_size(kPreferredTileWidth, kPreferredTileHeight);
-  return gfx::Rect(gfx::Point(bounds.x() + col * tile_size.width(),
-                              bounds.y() + row * tile_size.height()),
-                   tile_size);
+  gfx::Size total_tile_size = GetTotalTileSize();
+  gfx::Rect tile_bounds(gfx::Point(bounds.x() + col * total_tile_size.width(),
+                                   bounds.y() + row * total_tile_size.height()),
+                        total_tile_size);
+  tile_bounds.ClampToCenteredSize(GetTileViewSize());
+  return tile_bounds;
 }
 
 views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
