@@ -6202,3 +6202,12 @@
    fun:_ZN5blink11RenderBlock13paintContentsERNS_9PaintInfoERKNS_11LayoutPointE
    fun:_ZN5blink11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
+{
+   bug_415092
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS_11PendingTaskE
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
+}
