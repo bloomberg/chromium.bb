@@ -66,6 +66,10 @@ class ThumbnailStore : ThumbnailDelegate {
   void InvalidateThumbnailIfChanged(TabId tab_id, const GURL& url);
   bool CheckAndUpdateThumbnailMetaData(TabId tab_id, const GURL& url);
   void UpdateVisibleIds(const TabIdList& priority);
+  void DecompressThumbnailFromFile(
+      TabId tab_id,
+      const base::Callback<void(bool, SkBitmap)>&
+          post_decompress_callback);
 
   // ThumbnailDelegate implementation
   virtual void InvalidateCachedThumbnail(Thumbnail* thumbnail) OVERRIDE;
@@ -118,7 +122,14 @@ class ThumbnailStore : ThumbnailDelegate {
                            float scale,
                            skia::RefPtr<SkPixelRef> compressed_data,
                            const gfx::Size& content_size);
+  static void DecompressionTask(
+      const base::Callback<void(bool, SkBitmap)>&
+          post_decompress_callback,
+          skia::RefPtr<SkPixelRef> compressed_data,
+          float scale,
+          const gfx::Size& encoded_size);
   static void ReadTask(
+      bool decompress,
       const base::FilePath& file_path,
       const base::Callback<
           void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&

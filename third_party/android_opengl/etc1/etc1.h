@@ -35,6 +35,18 @@ bool etc1_encode_image(const unsigned char* pIn, unsigned int width, unsigned in
          unsigned int pixelSize, unsigned int stride, unsigned char* pOut, unsigned int outWidth,
          unsigned int outHeight);
 
+// Decode an entire image.
+// pIn - pointer to encoded data.
+// pOut - pointer to the image data. Will be written such that
+//        pixel (x,y) is at pIn + pixelSize * x + stride * y. Must be
+//        large enough to store entire image.
+// pixelSize can be 2 or 3. 2 is an GL_UNSIGNED_SHORT_5_6_5 image, 3 is a GL_BYTE RGB image.
+// returns false if there is an error.
+
+bool etc1_decode_image(const unsigned char* pIn, unsigned char* pOut,
+        unsigned int width, unsigned int height,
+        unsigned int pixelSize, unsigned int stride);
+
 // Size of a PKM header, in bytes.
 
 #define ETC_PKM_HEADER_SIZE 16

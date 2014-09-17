@@ -301,6 +301,22 @@ void ThumbnailStore::UpdateVisibleIds(const TabIdList& priority) {
   ReadNextThumbnail();
 }
 
+void ThumbnailStore::DecompressThumbnailFromFile(
+    TabId tab_id,
+    const base::Callback<void(bool, SkBitmap)>&
+        post_decompress_callback) {
+  base::FilePath file_path = GetFilePath(tab_id);
+
+  base::Callback<void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>
+      decompress_task = base::Bind(
+          &ThumbnailStore::DecompressionTask, post_decompress_callback);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&ThumbnailStore::ReadTask, true, file_path, decompress_task));
+}
+
 void ThumbnailStore::RemoveFromDisk(TabId tab_id) {
   base::FilePath file_path = GetFilePath(tab_id);
   base::Closure task =
@@ -399,7 +415,7 @@ void ThumbnailStore::ReadNextThumbnail() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&ThumbnailStore::ReadTask, file_path, post_read_task));
+      base::Bind(&ThumbnailStore::ReadTask, false, file_path, post_read_task));
 }
 
 void ThumbnailStore::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
@@ -725,6 +741,7 @@ bool ReadFromFile(base::File& file,
 }// anonymous namespace
 
 void ThumbnailStore::ReadTask(
+    bool decompress,
     const base::FilePath& file_path,
     const base::Callback<
         void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&
@@ -735,6 +752,7 @@ void ThumbnailStore::ReadTask(
 
   if (base::PathExists(file_path)) {
     base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+
 
     bool valid_contents = ReadFromFile(file,
                                        &content_size,
@@ -750,10 +768,17 @@ void ThumbnailStore::ReadTask(
     }
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(post_read_task, compressed_data, scale, content_size));
+  if (decompress) {
+    base::WorkerPool::PostTask(
+        FROM_HERE,
+        base::Bind(post_read_task, compressed_data, scale, content_size),
+        true);
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(post_read_task, compressed_data, scale, content_size));
+  }
 }
 
 void ThumbnailStore::PostReadTask(TabId tab_id,
@@ -808,6 +833,40 @@ void ThumbnailStore::RemoveOnMatchedTimeStamp(TabId tab_id,
     Remove(tab_id);
   }
   return;
+}
+
+void ThumbnailStore::DecompressionTask(
+    const base::Callback<void(bool, SkBitmap)>&
+        post_decompression_callback,
+    skia::RefPtr<SkPixelRef> compressed_data,
+    float scale,
+    const gfx::Size& encoded_size) {
+  SkBitmap raw_data;
+  bool success = false;
+
+  if (compressed_data.get()) {
+    size_t pixel_size = 4;  // Pixel size is 4 bytes for kARGB_8888_Config.
+    size_t stride = pixel_size * encoded_size.width();
+
+    raw_data.allocPixels(SkImageInfo::Make(encoded_size.width(),
+                                            encoded_size.height(),
+                                            kRGBA_8888_SkColorType,
+                                            kOpaque_SkAlphaType));
+    SkAutoLockPixels raw_data_lock(raw_data);
+    success = etc1_decode_image(
+        reinterpret_cast<unsigned char*>(compressed_data->pixels()),
+        reinterpret_cast<unsigned char*>(raw_data.getPixels()),
+        encoded_size.width(),
+        encoded_size.height(),
+        pixel_size,
+        stride);
+    raw_data.setImmutable();
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(post_decompression_callback, success, raw_data));
 }
 
 ThumbnailStore::ThumbnailMetaData::ThumbnailMetaData() {
