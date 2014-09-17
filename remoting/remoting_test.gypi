@@ -131,7 +131,6 @@
         'host/branding.cc',
         'host/branding.h',
         'host/capture_scheduler_unittest.cc',
-        'host/chromeos/aura_desktop_capturer_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
@@ -243,27 +242,19 @@
         [ 'chromeos==0', {
           'sources!': [
             'client/plugin/normalizing_input_filter_cros_unittest.cc',
-            'host/chromeos/aura_desktop_capturer_unittest.cc',
           ],
         }],
         ['enable_remoting_host == 0', {
           'dependencies!': [
             'remoting_host',
             'remoting_host_setup_base',
+            'remoting_it2me_host_static',
             'remoting_native_messaging_base',
           ],
           'sources/': [
             ['exclude', '^codec/'],
             ['exclude', '^host/'],
             ['exclude', '^base/resources_unittest\\.cc$'],
-          ]
-        }],
-        ['enable_it2me_host == 0', {
-          'dependencies!': [
-            'remoting_it2me_host_static',
-          ],
-          'sources/': [
-            ['exclude', '^host/it2me/'],
           ]
         }],
         [ 'OS == "linux" and use_allocator!="none"', {
